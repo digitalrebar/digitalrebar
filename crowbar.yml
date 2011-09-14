@@ -27,11 +27,12 @@ crowbar:
 locale_additions:
   en:
     barclamp:
-      ipmi_edit_attributes: 
-        attributes: Attributes
-        debug: Enable Barclamp Debug
-        bmc_enable: Enable BMC
-        bmc_user: BMC User
-        bmc_password: BMC Password
-      ipmi_edit_deployment: 
-        deployment: Deployment
+      ipmi:
+        edit_attributes: 
+          attributes: Attributes
+          debug: Enable Barclamp Debug
+          bmc_enable: Enable BMC
+          bmc_user: BMC User
+          bmc_password: BMC Password
+        edit_deployment: 
+          deployment: Deployment
