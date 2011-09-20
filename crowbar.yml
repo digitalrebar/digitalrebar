@@ -36,3 +36,11 @@ locale_additions:
           bmc_password: BMC Password
         edit_deployment: 
           deployment: Deployment
+
+debs:
+  pkgs:
+    - ipmitool
+
+rpms:
+  pkgs:
+    - OpenIPMI-tools
