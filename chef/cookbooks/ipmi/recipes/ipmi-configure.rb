@@ -43,7 +43,7 @@ node["crowbar"]["status"]["ipmi"]["user_set"] = false
 node["crowbar"]["status"]["ipmi"]["address_set"] = false
 node.save
 
-unsupported = [ "KVM", "Bochs", "VMWare Virtual Platform", "VMware Virtual Platform" ]
+unsupported = [ "KVM", "Bochs", "VMWare Virtual Platform", "VMware Virtual Platform", "VirtualBox" ]
 
 if node[:ipmi][:bmc_enable]
   if unsupported.member?(node[:dmi][:system][:product_name])
