@@ -19,6 +19,8 @@ barclamp:
   name: ipmi
   display: IPMI
   version: 0
+  member:
+    - crowbar
 
 crowbar:
   layout: 1
