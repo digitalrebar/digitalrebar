@@ -41,12 +41,12 @@ EOH
       bash "bmc user settle time #{item}" do
         code "sleep #{settle_time}"
       end
-      node["crowbar"]["status"]["ipmi"]["messages"] << "Setting user #{item}" unless node.nil?
+      node["crowbar_wall"]["status"]["ipmi"]["messages"] << "Setting user #{item}" unless node.nil?
     end
 
-    node["crowbar"]["status"]["ipmi"]["user_set"] = true
+    node["crowbar_wall"]["status"]["ipmi"]["user_set"] = true
   else
-    node["crowbar"]["status"]["ipmi"]["messages"] << "Unsupported product found #{node[:dmi][:system][:product_name]} - skipping IPMI:User" unless node.nil?
+    node["crowbar_wall"]["status"]["ipmi"]["messages"] << "Unsupported product found #{node[:dmi][:system][:product_name]} - skipping IPMI:User" unless node.nil?
   end  
   node.save
 end

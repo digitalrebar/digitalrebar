@@ -36,12 +36,12 @@ bmc_address  = node["crowbar"]["network"]["bmc"]["address"]
 bmc_netmask  = node["crowbar"]["network"]["bmc"]["netmask"]
 bmc_router   = node["crowbar"]["network"]["bmc"]["router"]
 
-node["crowbar"] = {} if node["crowbar"].nil?
-node["crowbar"]["status"] = {} if node["crowbar"]["status"].nil?
-if node["crowbar"]["status"]["ipmi"].nil?
-  node["crowbar"]["status"]["ipmi"] = {}
-  node["crowbar"]["status"]["ipmi"]["user_set"] = false
-  node["crowbar"]["status"]["ipmi"]["address_set"] = false
+node["crowbar_wall"] = {} if node["crowbar_wall"].nil?
+node["crowbar_wall"]["status"] = {} if node["crowbar_wall"]["status"].nil?
+if node["crowbar_wall"]["status"]["ipmi"].nil?
+  node["crowbar_wall"]["status"]["ipmi"] = {}
+  node["crowbar_wall"]["status"]["ipmi"]["user_set"] = false
+  node["crowbar_wall"]["status"]["ipmi"]["address_set"] = false
   node.save
 end
 
@@ -49,14 +49,14 @@ unsupported = [ "KVM", "Bochs", "VMWare Virtual Platform", "VMware Virtual Platf
 
 if node[:ipmi][:bmc_enable]
   if unsupported.member?(node[:dmi][:system][:product_name])
-    node["crowbar"]["status"]["ipmi"]["messages"] = [ "Unsupported platform: #{node[:dmi][:system][:product_name]} - turning off ipmi for this node" ]
+    node["crowbar_wall"]["status"]["ipmi"]["messages"] = [ "Unsupported platform: #{node[:dmi][:system][:product_name]} - turning off ipmi for this node" ]
     node[:ipmi][:bmc_enable] = false
     node.save
     return
   end
 
-  unless (node["crowbar"]["status"]["ipmi"]["address_set"] and node["crowbar"]["status"]["ipmi"]["user_set"])
-    node["crowbar"]["status"]["ipmi"]["messages"] = []
+  unless (node["crowbar_wall"]["status"]["ipmi"]["address_set"] and node["crowbar_wall"]["status"]["ipmi"]["user_set"])
+    node["crowbar_wall"]["status"]["ipmi"]["messages"] = []
     node.save
 
     ipmi_load "ipmi_load" do
@@ -65,7 +65,7 @@ if node[:ipmi][:bmc_enable]
     end
   end
   
-  unless node["crowbar"]["status"]["ipmi"]["address_set"]
+  unless node["crowbar_wall"]["status"]["ipmi"]["address_set"]
     ### lan parameters to check and set. The loop that follows iterates over this array.
     # [0] = name in "print" output, [1] command to issue, [2] desired value.
     lan_params = [
@@ -100,7 +100,7 @@ if node[:ipmi][:bmc_enable]
     end
   end
 
-  unless node["crowbar"]["status"]["ipmi"]["user_set"]
+  unless node["crowbar_wall"]["status"]["ipmi"]["user_set"]
     ipmi_user_set "#{bmc_user}" do
       password bmc_password
       action :run

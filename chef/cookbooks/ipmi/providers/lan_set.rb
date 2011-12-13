@@ -43,14 +43,14 @@ EOH
         notifies :run, resources(:bash => "#{name} settle time"), :immediately
       end 
 
-      node["crowbar"]["status"]["ipmi"]["messages"] << "#{name} set to #{value}" unless node.nil?
+      node["crowbar_wall"]["status"]["ipmi"]["messages"] << "#{name} set to #{value}" unless node.nil?
     else
-      node["crowbar"]["status"]["ipmi"]["messages"] << "#{name} already set to #{value}" unless node.nil?
+      node["crowbar_wall"]["status"]["ipmi"]["messages"] << "#{name} already set to #{value}" unless node.nil?
     end
 
-    node["crowbar"]["status"]["ipmi"]["address_set"] = true if name == "IP Address"
+    node["crowbar_wall"]["status"]["ipmi"]["address_set"] = true if name == "IP Address"
   else
-    node["crowbar"]["status"]["ipmi"]["messages"] << "Unsupported product found #{node[:dmi][:system][:product_name]} - skipping IPMI:#{name}" unless node.nil?
+    node["crowbar_wall"]["status"]["ipmi"]["messages"] << "Unsupported product found #{node[:dmi][:system][:product_name]} - skipping IPMI:#{name}" unless node.nil?
   end  
   node.save
 end
