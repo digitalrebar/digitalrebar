@@ -55,3 +55,6 @@ rpms:
   redhat-6.2:
     pkgs:
       - ipmitool
+  centos-6.2:
+    pkgs:
+      - ipmitool
