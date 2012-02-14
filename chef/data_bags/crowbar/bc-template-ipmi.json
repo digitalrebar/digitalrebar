@@ -12,6 +12,9 @@
   "deployment": {
     "ipmi": {
       "crowbar-revision": 0,
+      "element_states": {
+        "ipmi-configure": [ "hardware-installing" ]
+      },
       "elements": {},
       "element_order": [
         [ "ipmi-configure"  ]
