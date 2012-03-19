@@ -107,5 +107,9 @@ if node[:ipmi][:bmc_enable]
     end
   end
 
+  ipmi_unload "ipmi_unload" do
+    action :run
+  end
+
 end
 
