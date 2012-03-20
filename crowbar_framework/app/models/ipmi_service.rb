@@ -33,6 +33,20 @@ class IpmiService < ServiceObject
     #
     # If we are discovering the node, make sure that we add the ipmi role to the node
     #
+    if state == "discovering"
+      @logger.debug("IPMI transition: discovering state for #{name} for #{state}")
+      db = ProposalObject.find_proposal "ipmi", inst
+      role = RoleObject.find_role_by_name "ipmi-config-#{inst}"
+      result = add_role_to_instance_and_node("ipmi", inst, name, db, role, "ipmi-discover")
+      @logger.debug("ipmi transition: leaving from installed state for #{name} for #{state}")
+      a = [200, NodeObject.find_node_by_name(name).to_hash ] if result
+      a = [400, "Failed to add role to node"] unless result
+      return a
+    end
+    
+    #
+    # If we are discovering the node, make sure that we add the ipmi role to the node
+    #
     if state == "discovered"
       @logger.debug("IPMI transition: installed state for #{name} for #{state}")
       db = ProposalObject.find_proposal "ipmi", inst
