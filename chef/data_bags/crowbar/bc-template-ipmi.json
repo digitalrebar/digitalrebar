@@ -25,7 +25,7 @@
         "mode": "full",
         "transitions": true,
         "transition_list": [
-          "discovered"
+          "discovering", "discovered"
 	]
       } 
     }
