@@ -19,13 +19,19 @@ action :run do
   settle_time = new_resource.settle_time
 
   if ::File.exists?("/sys/module/ipmi_si")
-    user_commands = [
-      [ "name", "ipmitool user set name 3 #{username}" ],
-      [ "password", "ipmitool user set password 3 #{password}" ],
-      [ "privs", "ipmitool user priv 3 4 1" ],
-      [ "channel", "ipmitool channel setaccess 1 3 callin=on link=on ipmi=on privilege=4" ],
-      [ "enable", "ipmitool user enable 3" ]
-    ]
+    if username == "root"
+      user_commands = [
+        [ "password", "ipmitool user set password 2 #{password}" ]
+      ]
+    else
+      user_commands = [
+        [ "name", "ipmitool user set name 3 #{username}" ],
+        [ "password", "ipmitool user set password 3 #{password}" ],
+        [ "privs", "ipmitool user priv 3 4 1" ],
+        [ "channel", "ipmitool channel setaccess 1 3 callin=on link=on ipmi=on privilege=4" ],
+        [ "enable", "ipmitool user enable 3" ]
+      ]
+    end
 
     user_commands.each do |param|
       item = param[0]
