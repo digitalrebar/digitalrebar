@@ -4,7 +4,7 @@
   "attributes": {
     "ipmi": {
 	  "bmc_enable" : true,
-	  "bmc_user": "crowbar",
+	  "bmc_user": "root",
 	  "bmc_password": "crowbar",
 	  "debug": true
 	 }
@@ -13,7 +13,8 @@
     "ipmi": {
       "crowbar-revision": 0,
       "element_states": {
-        "ipmi-configure": [ "hardware-installing" ]
+        "ipmi-configure": [ "hardware-installing" ],
+        "ipmi-discover": [ "discovering" ]
       },
       "elements": {},
       "element_order": [
@@ -24,7 +25,7 @@
         "mode": "full",
         "transitions": true,
         "transition_list": [
-          "discovered"
+          "discovering", "discovered"
 	]
       } 
     }
