@@ -35,6 +35,12 @@ bmc_password = node[:ipmi][:bmc_password]
 bmc_address  = node["crowbar"]["network"]["bmc"]["address"]
 bmc_netmask  = node["crowbar"]["network"]["bmc"]["netmask"]
 bmc_router   = node["crowbar"]["network"]["bmc"]["router"]
+bmc_use_vlan = node["crowbar"]["network"]["bmc"]["use_vlan"]
+bmc_vlan     = if bmc_use_vlan
+                 node["crowbar"]["network"]["bmc"]["vlan"].to_s
+               else
+                 "off"
+               end
 
 node["crowbar_wall"] = {} if node["crowbar_wall"].nil?
 node["crowbar_wall"]["status"] = {} if node["crowbar_wall"]["status"].nil?
@@ -71,7 +77,8 @@ if node[:ipmi][:bmc_enable]
     lan_params = [
       [ "IP Address Source" ,"ipmitool lan set 1 ipsrc static", "Static Address", 10 ] ,
       [ "IP Address" ,"ipmitool lan set 1 ipaddr #{bmc_address}", bmc_address, 1 ] ,
-      [ "Subnet Mask" , "ipmitool lan set 1 netmask #{bmc_netmask}", bmc_netmask, 1 ]
+      [ "Subnet Mask" , "ipmitool lan set 1 netmask #{bmc_netmask}", bmc_netmask, 1 ] ,
+      [ "Default VLAN", "ipmitool lan set 1 vlan id #{bmc_vlan}", bmc_vlan, 10 ]
     ]
 
     lan_params << [ "Default Gateway IP", "ipmitool lan set 1 defgw ipaddr #{bmc_router}", bmc_router, 1 ] unless bmc_router.nil?
