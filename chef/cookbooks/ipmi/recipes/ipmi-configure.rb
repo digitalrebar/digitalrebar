@@ -81,7 +81,7 @@ if node[:ipmi][:bmc_enable]
       [ "Default VLAN", "ipmitool lan set 1 vlan id #{bmc_vlan}", bmc_vlan, 10 ]
     ]
 
-    lan_params << [ "Default Gateway IP", "ipmitool lan set 1 defgw ipaddr #{bmc_router}", bmc_router, 1 ] unless bmc_router.nil?
+    lan_params << [ "Default Gateway IP", "ipmitool lan set 1 defgw ipaddr #{bmc_router}", bmc_router, 1 ] unless bmc_router.nil? || bmc_router.empty?
 
     lan_params.each do |param| 
       ipmi_lan_set "#{param[0]}" do
