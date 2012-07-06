@@ -30,14 +30,15 @@ unless ::File.exists?("/usr/sbin/ipmitool") or ::File.exists?("/usr/bin/ipmitool
   end
 end
 
-unsupported = [ "KVM", "Bochs", "VMWare Virtual Platform", "VMware Virtual Platform", "VirtualBox" ]
+unsupported = [ "KVM", "Bochs", "VMWare Virtual Platform", "VMware Virtual Platform", "VirtualBox", "Unknown" ]
 
 if node[:ipmi][:bmc_enable]
-  if unsupported.member?(node[:dmi][:system][:product_name])
+  platform = (node[:dmi][:system][:product_name] rescue "Unknown")
+  if unsupported.member?(platform)
     node["crowbar_wall"] = {} unless node["crowbar_wall"]
     node["crowbar_wall"]["status"] = {} unless node["crowbar_wall"]["status"]
     node["crowbar_wall"]["status"]["ipmi"] = {} unless node["crowbar_wall"]["status"]["ipmi"]
-    node["crowbar_wall"]["status"]["ipmi"]["messages"] = [ "Unsupported platform: #{node[:dmi][:system][:product_name]} - turning off ipmi for this node" ]
+    node["crowbar_wall"]["status"]["ipmi"]["messages"] = [ "Unsupported platform: #{platform} - turning off ipmi for this node" ]
     node[:ipmi][:bmc_enable] = false
     node.save
     return
