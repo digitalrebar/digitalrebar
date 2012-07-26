@@ -1,0 +1,11 @@
+# theses are the default meta_data values
+license:    Apache 2
+copyright:  2012 by Dell, Inc
+date:       July 25, 2012
+
+crowbar+book-barclamps:
+  ipmi+barclamp-info
+    
+crowbar+book-licenses:
+  crowbar+licenses-crowbar-meta:
+    ipmi+licenses
