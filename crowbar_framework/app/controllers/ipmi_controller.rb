@@ -14,7 +14,11 @@
 # 
 
 class IpmiController < BarclampController
-  def initialize
+  before_filter :set_service_object
+ 
+  def set_service_object
     @service_object = IpmiService.new logger
   end
+
+  private :set_service_object
 end
