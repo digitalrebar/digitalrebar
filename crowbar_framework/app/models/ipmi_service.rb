@@ -1,4 +1,4 @@
-# Copyright 2011, Dell 
+# Copyright 2012, Dell 
 # 
 # Licensed under the Apache License, Version 2.0 (the "License"); 
 # you may not use this file except in compliance with the License. 
@@ -15,18 +15,6 @@
 
 class IpmiService < ServiceObject
   
-  def initialize(thelogger)
-    @bc_name = "ipmi"
-    @logger = thelogger
-  end
-  
-  def create_proposal
-    @logger.debug("IPMI create_proposal: entering")
-    base = super
-    @logger.debug("IPMI create_proposal: exiting")
-    base
-  end
-  
   def transition(inst, name, state)
     @logger.debug("IPMI transition: make sure that network role is on all nodes: #{name} for #{state}")
     
@@ -35,11 +23,9 @@ class IpmiService < ServiceObject
     #
     if state == "discovering"
       @logger.debug("IPMI transition: discovering state for #{name} for #{state}")
-      db = ProposalObject.find_proposal "ipmi", inst
-      role = RoleObject.find_role_by_name "ipmi-config-#{inst}"
-      result = add_role_to_instance_and_node("ipmi", inst, name, db, role, "ipmi-discover")
+      result = add_role_to_instance_and_node(name, inst, "ipmi-discover")
       @logger.debug("ipmi transition: leaving from installed state for #{name} for #{state}")
-      a = [200, NodeObject.find_node_by_name(name).to_hash ] if result
+      a = [200, "" ] if result
       a = [400, "Failed to add role to node"] unless result
       return a
     end
@@ -49,17 +35,15 @@ class IpmiService < ServiceObject
     #
     if state == "discovered"
       @logger.debug("IPMI transition: installed state for #{name} for #{state}")
-      db = ProposalObject.find_proposal "ipmi", inst
-      role = RoleObject.find_role_by_name "ipmi-config-#{inst}"
-      result = add_role_to_instance_and_node("ipmi", inst, name, db, role, "ipmi-configure")
+      result = add_role_to_instance_and_node(name, inst, "ipmi-configure")
       @logger.debug("ipmi transition: leaving from installed state for #{name} for #{state}")
-      a = [200, NodeObject.find_node_by_name(name).to_hash ] if result
+      a = [200, "" ] if result
       a = [400, "Failed to add role to node"] unless result
       return a
     end
     
     @logger.debug("ipmi transition: leaving for #{name} for #{state}")
-    [200, NodeObject.find_node_by_name(name).to_hash ]
+    [200, ""]
   end
   
 end
