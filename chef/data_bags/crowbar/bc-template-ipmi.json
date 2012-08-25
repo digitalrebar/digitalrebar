@@ -18,7 +18,7 @@
       },
       "elements": {},
       "element_order": [
-        [ "ipmi-configure"  ]
+        [ "ipmi-discover", "ipmi-configure"  ]
       ],
       "config": {
         "environment": "ipmi-base-config",
