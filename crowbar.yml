@@ -1,4 +1,4 @@
-# Copyright 2012, Dell
+# Copyright 2013, Dell
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,10 +26,20 @@ crowbar:
   run_order: 16
   chef_order: 16
 
+orchestration:
+  mode: full
+  transitions:
+    - discovering
+    - discovered
+  
 roles:
   'ipmi-configure':
-    unique: false
-    count: -1
+    order: 100
+    run_order: :auto
+    states:
+      - "hardware-installing"
+    node_unique: false
+    node_count: :unlimited
     attributes:
       'bmc_enable':
         default: true
@@ -42,7 +52,7 @@ roles:
         chef: "impi/bmc_password"
       "debug": 
         default: true
-        chef: "impi//debug"
+        chef: "impi/debug"
   ipmi-discover:
     unique: false
     count: -1
