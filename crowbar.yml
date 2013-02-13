@@ -17,6 +17,10 @@ barclamp:
   name: ipmi
   display: IPMI
   version: 0
+  license: "apache2"
+  copyright: "Dell, Inc 2013"
+  api_version: "v2"
+  api_version_accepts: "v2"
   member:
     - crowbar
 
