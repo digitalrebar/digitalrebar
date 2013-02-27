@@ -51,10 +51,11 @@ if node["crowbar_wall"]["status"]["ipmi"].nil?
   node.save
 end
 
-unsupported = [ "KVM", "Bochs", "VMWare Virtual Platform", "VMware Virtual Platform", "VirtualBox" ]
+unsupported = [ "KVM", "Bochs", "VMWare Virtual Platform", "VMware Virtual Platform", "VirtualBox", "Unknown" ]
 
 if node[:ipmi][:bmc_enable]
-  if unsupported.member?(node[:dmi][:system][:product_name])
+  platform = (node[:dmi][:system][:product_name] rescue "Unknown")
+  if unsupported.member?(platform)
     node.set["crowbar_wall"]["status"]["ipmi"]["messages"] = [ "Unsupported platform: #{node[:dmi][:system][:product_name]} - turning off ipmi for this node" ]
     node.set[:ipmi][:bmc_enable] = false
     node.save
