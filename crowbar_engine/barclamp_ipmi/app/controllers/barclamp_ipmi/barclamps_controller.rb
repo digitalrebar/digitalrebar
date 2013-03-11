@@ -13,5 +13,5 @@
 # limitations under the License. 
 # 
 
-class BarclampIpmi::BarclampsController < BarclampController
+class BarclampIpmi::BarclampsController < BarclampsController
 end
