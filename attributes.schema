@@ -1,0 +1,16 @@
+{
+    "type": "map",
+    "required": true,
+    "mapping": {
+        "ipmi": {
+            "type": "map",
+            "required": true,
+            "mapping": {
+                "bmc_enable": { "type": "bool", "required": true},
+                "bmc_user": { "type": "str", "required": true },
+                "bmc_password": { "type": "str", "required": true },
+                "debug":  { "type": "bool", "required": true}
+            }
+        }
+    }
+}

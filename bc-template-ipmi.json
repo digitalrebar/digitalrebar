@@ -9,6 +9,10 @@
 	  "debug": true
 	 }
   },
+  "roles": {
+      "ipmi-configure": { "jig": "chef" },
+      "ipmi-discover": { "jig": "chef" }
+  },
   "deployment": {
     "ipmi": {
       "crowbar-revision": 0,
