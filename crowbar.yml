@@ -27,12 +27,6 @@ barclamp:
   member:
     - crowbar
 
-jigs:
-  chef:
-    roles:
-      - ipmi-configure
-      - ipmi-discover
-
 crowbar:
   layout: 2.0
   order: 16
