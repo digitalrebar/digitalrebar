@@ -31,38 +31,6 @@ crowbar:
   layout: 2.0
   order: 16
 
-
-orchestration:
-  mode: full
-  transitions:
-    - discovering
-    - discovered
-  
-roles:
-  'ipmi-configure':
-    order: 100
-    run_order: :auto
-    states:
-      - "hardware-installing"
-    node_unique: false
-    node_count: :unlimited
-    attributes:
-      'bmc_enable':
-        default: true
-        chef: 'impi/bmc_enable'
-      'bmc_user':
-        default: root
-        chef: "impi/bmc_user"
-      "bmc_password": 
-        default: crowbar
-        chef: "impi/bmc_password"
-      "debug": 
-        default: true
-        chef: "impi/debug"
-  ipmi-discover:
-    unique: false
-    count: -1
-
 debs:
   pkgs:
     - ipmitool
