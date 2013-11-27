@@ -48,3 +48,9 @@ rpms:
   centos-6.2:
     pkgs:
       - ipmitool
+  opensuse-12.3:
+    pkgs:
+      - ipmitool
+  opensuse-13.1:
+    pkgs:
+      - ipmitool
