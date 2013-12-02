@@ -18,21 +18,16 @@ action :run do
   password = new_resource.password
   settle_time = new_resource.settle_time
 
-  if ::File.exists?("/sys/module/ipmi_si")
-    if username == "root"
-      user_commands = [
-        [ "password", "ipmitool user set password 2 #{password}" ]
-      ]
-    else
-      user_commands = [
-        [ "name", "ipmitool user set name 3 #{username}" ],
-        [ "password", "ipmitool user set password 3 #{password}" ],
-        [ "privs", "ipmitool user priv 3 4 1" ],
-        [ "channel", "ipmitool channel setaccess 1 3 callin=on link=on ipmi=on privilege=4" ],
-        [ "enable", "ipmitool user enable 3" ]
-      ]
-    end
-
+  if ::File.exists?("/sys/module/ipmi_devintf")
+    # some assumptions on ID here!
+    username == "root" ? user_id = "2" : user_id = "3"
+    user_commands = [
+      [ "name", "ipmitool user set name #{user_id} #{username}" ],
+      [ "password", "ipmitool user set password #{user_id} #{password}" ],
+      [ "privs", "ipmitool user priv #{user_id} 4 1" ],
+      [ "channel", "ipmitool channel setaccess 1 #{user_id} callin=on link=on ipmi=on privilege=4" ],
+      [ "enable", "ipmitool user enable #{user_id}" ]
+    ]
     user_commands.each do |param|
       item = param[0]
       command = param[1]
@@ -47,14 +42,13 @@ EOH
       bash "bmc user settle time #{item}" do
         code "sleep #{settle_time}"
       end
-      node["crowbar_wall"]["status"]["ipmi"]["messages"] << "Setting user #{item}" unless node.nil?
+      node.set["crowbar_wall"]["status"]["ipmi"]["messages"] << "Setting user #{item}" unless node.nil?
     end
 
-    node["crowbar_wall"]["status"]["ipmi"]["user_set"] = true
+    node.set["crowbar_wall"]["status"]["ipmi"]["user_set"] = true
   else
-    node["crowbar_wall"]["status"]["ipmi"]["messages"] << "Unsupported product found #{node[:dmi][:system][:product_name]} - skipping IPMI:User" unless node.nil?
+    node.set["crowbar_wall"]["status"]["ipmi"]["messages"] << "Unsupported product found #{node[:dmi][:system][:product_name]} - skipping IPMI:User" unless node.nil?
   end  
-  node.save
 end
 
 

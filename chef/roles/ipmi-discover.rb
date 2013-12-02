@@ -20,5 +20,6 @@
 name "ipmi-discover"
 description "IPMI discover - discover the BMC network information"
 run_list(
-  "recipe[ipmi::ipmi-discover]"
+    "recipe[utils]",
+    "recipe[ipmi::ipmi-discover]"
 )

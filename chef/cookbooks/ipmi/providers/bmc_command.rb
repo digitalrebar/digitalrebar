@@ -28,14 +28,9 @@ action :run do
   value = new_resource.value
   settle_time = new_resource.settle_time
 
-  path = ""
-  path = "/tftpboot/ubuntu_dvd" unless ::File.exists?("/updates/bmc")
-  path = nil unless ::File.exists?("#{path}/updates/bmc")
-
-
-  if ::File.exists?("/sys/module/ipmi_si") and !path.nil?
-    unless check_bmc_value("#{path}#{test}", value)
-      # Set BMC LAN parameters 
+  if ::File.exists?("/sys/module/ipmi_devintf")
+    unless check_bmc_value("#{test}", value)
+      # Set BMC LAN parameters
       bash "#{name} settle time" do
         code "sleep #{settle_time}"
         action :nothing
@@ -43,20 +38,19 @@ action :run do
 
       bash "bmc-set-#{name}" do
         code <<-EOH
-#{path}#{command}
+#{command}
 EOH
         returns [0,5]  # 5 = unsupported platform
         notifies :run, resources(:bash => "#{name} settle time"), :immediately
-      end 
+      end
 
-      node["crowbar_wall"]["status"]["ipmi"]["messages"] << "#{name} set to #{value}" unless node.nil?
+      node.set["crowbar_wall"]["status"]["ipmi"]["messages"] << "#{name} set to #{value}" unless node.nil?
     else
-      node["crowbar_wall"]["status"]["ipmi"]["messages"] << "#{name} already set to #{value}" unless node.nil?
+      node.set["crowbar_wall"]["status"]["ipmi"]["messages"] << "#{name} already set to #{value}" unless node.nil?
     end
   else
-    node["crowbar_wall"]["status"]["ipmi"]["messages"] << "Unsupported product found #{node[:dmi][:system][:product_name]} - skipping IPMI:#{name}" unless node.nil?
-    node["crowbar_wall"]["status"]["ipmi"]["messages"] << "bmc tool not supported - skipping IPMI:#{name}" unless node.nil? or !path.nil?
-  end  
-  node.save
+    node.set["crowbar_wall"]["status"]["ipmi"]["messages"] << "Unsupported product found #{node[:dmi][:system][:product_name]} - skipping IPMI:#{name}" unless node.nil?
+    node.set["crowbar_wall"]["status"]["ipmi"]["messages"] << "bmc tool not supported - skipping IPMI:#{name}" unless node.nil?
+  end
 end
 

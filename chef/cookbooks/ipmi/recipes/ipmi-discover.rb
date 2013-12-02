@@ -18,7 +18,7 @@
 
 include_recipe "utils"
 
-unless ::File.exists?("/usr/sbin/ipmitool") or ::File.exists?("/usr/bin/ipmitool")
+unless node[:platform] == "windows" or ::File.exists?("/usr/sbin/ipmitool") or ::File.exists?("/usr/bin/ipmitool")
   package "ipmitool" do
     case node[:platform]
     when "ubuntu","debian"
@@ -26,44 +26,56 @@ unless ::File.exists?("/usr/sbin/ipmitool") or ::File.exists?("/usr/bin/ipmitool
     when "redhat","centos"
       package_name "OpenIPMI-tools"
     end
+    options("--force-yes")
     action :install
   end
 end
 
-unsupported = [ "KVM", "Bochs", "VMWare Virtual Platform", "VMware Virtual Platform", "VirtualBox", "Unknown" ]
+unsupported = [ "KVM", "Bochs", "VMWare Virtual Platform", "VMware Virtual Platform", "VirtualBox" ]
 
-if node[:ipmi][:bmc_enable]
-  platform = (node[:dmi][:system][:product_name] rescue "Unknown")
-  if unsupported.member?(platform)
+if node[:platform] == "windows"
+  node.set["crowbar_wall"] = {} unless node["crowbar_wall"]
+  node.set["crowbar_wall"]["status"] = {} unless node["crowbar_wall"]["status"]
+  node.set["crowbar_wall"]["status"]["ipmi"] = {} unless node["crowbar_wall"]["status"]["ipmi"]
+  node.set["crowbar_wall"]["status"]["ipmi"]["messages"] = [ "Unsupported platform - turning off ipmi for this node" ]
+  node.set[:ipmi][:bmc_enable] = false
+  return
+elsif node[:ipmi][:bmc_enable]
+  if unsupported.member?(node[:dmi][:system][:product_name])
     node.set["crowbar_wall"] = {} unless node["crowbar_wall"]
     node.set["crowbar_wall"]["status"] = {} unless node["crowbar_wall"]["status"]
     node.set["crowbar_wall"]["status"]["ipmi"] = {} unless node["crowbar_wall"]["status"]["ipmi"]
-    node.set["crowbar_wall"]["status"]["ipmi"]["messages"] = [ "Unsupported platform: #{platform} - turning off ipmi for this node" ]
+    node.set["crowbar_wall"]["status"]["ipmi"]["messages"] = [ "Unsupported platform: #{node[:dmi][:system][:product_name]} - turning off ipmi for this node" ]
     node.set[:ipmi][:bmc_enable] = false
-    node.save
     return
   end
 
-  %x{modprobe ipmi_si ; modprobe ipmi_devintf ; sleep 15}
-  %x{ipmitool lan print 1 > /tmp/lan.print}
-  if $?.exitstatus == 0
-    node.set["crowbar_wall"] = {} unless node["crowbar_wall"]
-    node.set["crowbar_wall"]["ipmi"] = {} unless node["crowbar_wall"]["ipmi"]
-    node.set["crowbar_wall"]["ipmi"]["address"] = %x{grep "IP Address   " /tmp/lan.print | awk -F" " '\{print $4\}'}.strip
-    node.set["crowbar_wall"]["ipmi"]["gateway"] = %x{grep "Default Gateway IP " /tmp/lan.print | awk -F" " '\{ print $5 \}'}.strip
-    node.set["crowbar_wall"]["ipmi"]["netmask"] = %x{grep "Subnet Mask" /tmp/lan.print | awk -F" " '\{ print $4 \}'}.strip
-    node.set["crowbar_wall"]["ipmi"]["mode"] = %x{ipmitool delloem lan get}.strip
-    node.save
-  else
-    node.set["crowbar_wall"] = {} unless node["crowbar_wall"]
-    node.set["crowbar_wall"]["status"] = {} unless node["crowbar_wall"]["status"]
-    node.set["crowbar_wall"]["status"]["ipmi"] = {} unless node["crowbar_wall"]["status"]["ipmi"]
-    node.set["crowbar_wall"]["status"]["ipmi"]["messages"] = [ "Could not get IPMI lan info: #{node[:dmi][:system][:product_name]} - turning off ipmi for this node" ]
-    node.set[:ipmi][:bmc_enable] = false
-    node.save
-    return
-  end
+  ruby_block "discover ipmi settings" do
+    block do
+      if unsupported.member?(node[:dmi][:system][:product_name])
+        return
+      end
+      %x{modprobe ipmi_si &>/dev/null}
+      %x{modprobe ipmi_devintf &>/dev/null; sleep 15}
+      %x{ipmitool lan print 1 > /tmp/lan.print}
+      if $?.exitstatus == 0
+        node.set["crowbar_wall"] = {} unless node["crowbar_wall"]
+        node.set["crowbar_wall"]["ipmi"] = {} unless node["crowbar_wall"]["ipmi"]
+        node.set["crowbar_wall"]["ipmi"]["address"] = %x{grep "IP Address   " /tmp/lan.print | awk -F" " '\{print $4\}'}.strip
+        node.set["crowbar_wall"]["ipmi"]["gateway"] = %x{grep "Default Gateway IP " /tmp/lan.print | awk -F" " '\{ print $5 \}'}.strip
+        node.set["crowbar_wall"]["ipmi"]["netmask"] = %x{grep "Subnet Mask" /tmp/lan.print | awk -F" " '\{ print $4 \}'}.strip
+        node.set["crowbar_wall"]["ipmi"]["mode"] = %x{ipmitool delloem lan get}.strip
+      else
+        node.set["crowbar_wall"] = {} unless node["crowbar_wall"]
+        node.set["crowbar_wall"]["status"] = {} unless node["crowbar_wall"]["status"]
+        node.set["crowbar_wall"]["status"]["ipmi"] = {} unless node["crowbar_wall"]["status"]["ipmi"]
+        node.set["crowbar_wall"]["status"]["ipmi"]["messages"] = [ "Could not get IPMI lan info: #{node[:dmi][:system][:product_name]} - turning off ipmi for this node" ]
+        node.set[:ipmi][:bmc_enable] = false
+      end
 
-  %x{rmmod ipmi_si ; rmmod ipmi_devintf ; rmmod ipmi_msghandler}
+      %x{rmmod ipmi_si &>/dev/null}
+      %x{rmmod ipmi_devintf ; rmmod ipmi_msghandler}
+    end
+    action :create
+  end
 end
-

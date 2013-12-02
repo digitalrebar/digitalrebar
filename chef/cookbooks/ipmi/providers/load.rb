@@ -17,15 +17,17 @@ action :run do
   name = new_resource.name
   settle_time = new_resource.settle_time
 
-  unless ::File.exists?("/sys/module/ipmi_devintf") and ::File.exists?("/sys/module/ipmi_si")
-    # Make sure the IPMI kernel modules are installed
-    bash "install-ipmi_si" do
-      code "/sbin/modprobe ipmi_si"
-      not_if { ::File.exists?("/sys/module/ipmi_si") }
+  unless ::File.exists?("/sys/module/ipmi_devintf")
+    bash "install-si" do
+      code "modprobe ipmi_si &>/dev/null"
       returns [0,1]
       ignore_failure true
     end
- 
+
+    bash "settle si load" do
+      code "sleep #{settle_time}"
+    end
+
     bash "install-devintf" do
       code "/sbin/modprobe ipmi_devintf"
       not_if { ::File.exists?("/sys/module/ipmi_devintf") }
