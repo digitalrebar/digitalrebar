@@ -14,6 +14,6 @@
 #
 
 roles:
-  - name: CB2Template-base
-    description: "CB2Template Base Components"
+  - name: OCBTemplate-base
+    description: "OCBTemplate Base Components"
     jig: noop

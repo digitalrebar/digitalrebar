@@ -24,7 +24,7 @@ os_support:
   - fedora-19
 
 barclamps:
-  - name: template
+  - name: ocbtemplate
     description: "OCBTemplate Workload"
 
 extra_files:
