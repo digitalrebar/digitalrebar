@@ -31,10 +31,13 @@ crowbar:
   layout: 2.0
 
 roles:
+  - name: network-bmc
+    jig: noop
   - name: ipmi-discover
     jig: chef-solo
     requires:
       - deployer-client
+      - network-bmc
     flags:
       - implicit
       - discovery
@@ -47,6 +50,7 @@ roles:
       - provisioner-proxy
     flags:
       - implicit
+
 
 debs:
   pkgs:
