@@ -8,10 +8,9 @@ class BarclampIpmi::Bmc < BarclampNetwork::Role
     NodeRole.transaction do
       if network.allocations.node(nr.node).count == 0
         # we need to create a bmc network
-
+        Rails.logger.info("Creating BMC network for #{nr.node.name}")
       end
-
-      Rails.logger.info("Creating BMC network for #{nr.node.name}")
+      super nr
     end
   end
 
