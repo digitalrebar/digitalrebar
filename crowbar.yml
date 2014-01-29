@@ -49,7 +49,8 @@ roles:
       - network-bmc-address
       - network-bmc-netmask
       - network-bmc-router
-      - network-bmc-user-vlan
+      - network-bmc-use-vlan
+      - network-bmc-vlan
     flags:
       - implicit
 
