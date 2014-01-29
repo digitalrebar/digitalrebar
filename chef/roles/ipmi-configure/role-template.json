@@ -5,7 +5,10 @@
         "bmc_password": "cr0wBar!",
         "ignore_address_suggestions": false,
         "use_dhcp": false,
-        "debug": false
+        "debug": false,
+        "config": {
+            "environment": "bios-config-default"
+        }
     }
 }
 

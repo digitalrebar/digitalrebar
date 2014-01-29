@@ -74,6 +74,11 @@ if node["crowbar_wall"]["status"]["ipmi"].nil?
   node.set["crowbar_wall"]["status"]["ipmi"]["address_set"] = false
 end
 
+# save  input attributes for posterity
+node.set["crowbar_wall"]["status"]["ipmi"]["params"] = {}
+node.set["crowbar_wall"]["status"]["ipmi"]["params"]["bmc"] = node["crowbar"]["network"]["bmc"]
+node.set["crowbar_wall"]["status"]["ipmi"]["params"]["ipmi"] = node["ipmi"]
+
 unsupported = [ "KVM", "Bochs", "VMWare Virtual Platform", "VMware Virtual Platform", "VirtualBox" ]
 
 if node[:ipmi][:bmc_enable]
