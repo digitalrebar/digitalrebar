@@ -35,7 +35,6 @@ roles:
     jig: chef-solo
     requires:
       - deployer-client
-      - network-bmc
     flags:
       - implicit
       - discovery
@@ -43,6 +42,7 @@ roles:
     jig: chef-solo
     requires:
       - provisioner-server
+      - network-bmc
     wants-attribs:
       - provisioner-webserver
       - provisioner-proxy
@@ -53,7 +53,6 @@ roles:
       - network-bmc-vlan
     flags:
       - implicit
-
 
 debs:
   pkgs:
