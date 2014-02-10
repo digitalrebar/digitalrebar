@@ -46,11 +46,6 @@ roles:
     wants-attribs:
       - provisioner-webserver
       - provisioner-proxy
-      - network-bmc-address
-      - network-bmc-netmask
-      - network-bmc-router
-      - network-bmc-use-vlan
-      - network-bmc-vlan
     flags:
       - implicit
 
