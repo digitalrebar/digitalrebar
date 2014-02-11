@@ -9,6 +9,13 @@
         "config": {
             "environment": "bios-config-default"
         }
+    },
+    "crowbar": {
+        "network": {
+            "bmc": {
+                "router": "192.168.124.10"
+            }
+        }
     }
 }
 
