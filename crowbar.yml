@@ -37,16 +37,18 @@ roles:
       - deployer-client
     flags:
       - implicit
-      - discovery
   - name: ipmi-configure
     jig: chef-solo
     requires:
       - network-bmc
+      - provisioner-repos
+      - ipmi-discover
     wants-attribs:
       - provisioner-webserver
       - provisioner-proxy
     flags:
       - implicit
+      - discovery
 
 debs:
   pkgs:
