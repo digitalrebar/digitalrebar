@@ -41,7 +41,6 @@ roles:
   - name: ipmi-configure
     jig: chef-solo
     requires:
-      - provisioner-server
       - network-bmc
     wants-attribs:
       - provisioner-webserver
