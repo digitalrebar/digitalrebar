@@ -56,8 +56,12 @@ a.run_action(:run)
 bmc_user     = node[:ipmi][:bmc_user]
 bmc_password = node[:ipmi][:bmc_password]
 use_dhcp     = node[:ipmi][:use_dhcp]
-bmc_address  = node["crowbar"]["network"]["bmc"]["address"] rescue "0.0.0.0"
-bmc_netmask  = node["crowbar"]["network"]["bmc"]["netmask"] rescue "0.0.0.0"
+
+bmc_addresses  = node["crowbar"]["network"]["bmc"]["addresses"] rescue ["0.0.0.0/24"]
+address = IP.coerce(bmc_addresses[0]) rescue IP.coerce("0.0.0.0/24")
+bmc_address  = address.addr
+bmc_netmask  = address.netmask
+
 bmc_router   = node["crowbar"]["network"]["bmc"]["router"] rescue "0.0.0.0"
 bmc_use_vlan = node["crowbar"]["network"]["bmc"]["use_vlan"] rescue false
 bmc_vlan     = if bmc_use_vlan
@@ -76,12 +80,21 @@ end
 
 # save  input attributes for posterity
 node.set["crowbar_wall"]["status"]["ipmi"]["params"] = {}
-node.set["crowbar_wall"]["status"]["ipmi"]["params"]["bmc"] = node["crowbar"]["network"]["bmc"]
 node.set["crowbar_wall"]["status"]["ipmi"]["params"]["ipmi"] = node["ipmi"]
+node.set["crowbar_wall"]["status"]["ipmi"]["params"]["bmc"]  = node["crowbar"]["network"]["bmc"]
+node.set["crowbar_wall"]["status"]["ipmi"]["params"]["bmc"]["address"] = bmc_address
+node.set["crowbar_wall"]["status"]["ipmi"]["params"]["bmc"]["netmask"] = bmc_netmask
+
 
 unsupported = [ "KVM", "Bochs", "VMWare Virtual Platform", "VMware Virtual Platform", "VirtualBox" ]
 
 if node[:ipmi][:bmc_enable]
+  if bmc_address == "0.0.0.0" || bmc_router == "0.0.0.0"
+    node.set["crowbar_wall"]["status"]["ipmi"]["messages"] = [ "Bad IP address specifications"]
+    node.set[:ipmi][:bmc_enable] = false
+    return
+  end
+
   if unsupported.member?(node[:dmi][:system][:product_name])
     node.set["crowbar_wall"]["status"]["ipmi"]["messages"] = [ "Unsupported platform: #{node[:dmi][:system][:product_name]} - turning off ipmi for this node" ]
     node.set[:ipmi][:bmc_enable] = false
