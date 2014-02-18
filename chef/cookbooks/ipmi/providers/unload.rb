@@ -17,18 +17,17 @@ action :run do
   name = new_resource.name
   settle_time = new_resource.settle_time
 
-  if ::File.exists?("/sys/module/ipmi_devintf") or ::File.exists?("/sys/module/ipmi_si")
-    # Make sure the IPMI kernel modules are removed
-    bash "remove-ipmi_si" do
-      code "/sbin/rmmod ipmi_si"
-      only_if { ::File.exists?("/sys/module/ipmi_si") }
-      returns [0,1]
-      ignore_failure true
-    end
- 
+  if ::File.exists?("/sys/module/ipmi_devintf")
     bash "remove-devintf" do
       code "/sbin/rmmod ipmi_devintf"
       only_if { ::File.exists?("/sys/module/ipmi_devintf") }
+      returns [0,1]
+      ignore_failure true
+    end
+
+    bash "remove-si" do
+      code "/sbin/rmmod ipmi_si &>/dev/null"
+      only_if { ::File.exists?("/sys/module/ipmi_si") }
       returns [0,1]
       ignore_failure true
     end
