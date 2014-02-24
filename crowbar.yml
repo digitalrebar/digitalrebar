@@ -53,10 +53,15 @@ roles:
     jig: chef-solo
     requires:
       - ipmi-configure
+    flags:
+      - implicit
+      - discovery
   - name: bmc-nat-router
     jig: chef-solo
     requires:
       - crowbar-admin-node
+    flags:
+      - bootstrap
 
 debs:
   pkgs:
