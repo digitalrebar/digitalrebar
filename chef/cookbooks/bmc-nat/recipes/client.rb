@@ -18,13 +18,30 @@
 
 nets = node[:crowbar][:network] || return
 nets[:bmc] && nets[:admin] || return
-bmc_subnet    = nets[:bmc][:subnet]
-bmc_netmask   = nets[:bmc][:netmask]
+
+node.set["crowbar_wall"] = {} if node["crowbar_wall"].nil?
+node.set["crowbar_wall"]["status"] = {} if node["crowbar_wall"]["status"].nil?
+if node["crowbar_wall"]["status"]["bmc-nat"].nil?
+  node.set["crowbar_wall"]["status"]["bmc-nat"] = {}
+  node.set["crowbar_wall"]["status"]["bmc-nat"]["bmc-network"] = nets[:bmc]
+  node.set["crowbar_wall"]["status"]["bmc-nat"]["admin-network"] = nets[:admin]
+end
+
+bmc_addresses  = node["crowbar"]["network"]["bmc"]["addresses"] rescue ["0.0.0.0/24"]
+address = IP.coerce(bmc_addresses[0]) rescue IP.coerce("0.0.0.0/24")
+bmc_address  = address.addr
+bmc_subnet = address.network.addr
+bmc_netmask  = address.netmask
+bmc_router   = node["crowbar"]["network"]["bmc"]["router"] rescue "0.0.0.0"
+
+#bmc_subnet    = nets[:bmc][:subnet]
+#bmc_netmask   = nets[:bmc][:netmask]
 admin_subnet  = nets[:admin][:subnet]
 admin_netmask = nets[:admin][:netmask]
-nat_node = search(:node, "roles:bmc-nat-router").first rescue return
-return if nat_node.nil?
-nat_address = nat_node[:crowbar][:network][:admin][:address]
+#nat_node = search(:node, "roles:bmc-nat-router").first rescue return
+#return if nat_node.nil?
+#nat_address = nat_node[:crowbar][:network][:admin][:address]
+nat_address = bmc_router
 
 return if admin_subnet == bmc_subnet && admin_netmask == bmc_netmask
 
