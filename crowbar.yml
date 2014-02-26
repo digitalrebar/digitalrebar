@@ -60,6 +60,7 @@ roles:
     jig: chef-solo
     requires:
       - crowbar-admin-node
+      - network-bmc
     flags:
       - bootstrap
 
