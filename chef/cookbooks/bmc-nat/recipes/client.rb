@@ -19,17 +19,17 @@
 nets = node[:crowbar][:network] || return
 nets[:bmc] && nets[:admin] || return
 
-address = node.address("bmc",::IP::IP4)
-bmc_address  = address.addr
+bmc_addresses  = node["crowbar"]["network"]["bmc"]["addresses"] rescue ["0.0.0.0/24"]
+address = IP.coerce(bmc_addresses[0]) rescue IP.coerce("0.0.0.0/24")
 bmc_subnet = address.network.addr
 bmc_netmask  = address.netmask
-nat_address   = node["crowbar"]["network"]["bmc"]["router"] rescue "0.0.0.0"
-Chef::Log.info "BMC address: #{address.inspect}"
 
-my_address = node.address("admin",::IP::IP4)
-Chef::Log.info "Node address: #{my_address.inspect}"
-admin_subnet = my_address.network
-admin_netmask = my_address.netmask
+nat_address   = node["crowbar"]["network"]["bmc"]["router"] rescue "0.0.0.0"
+
+node_address = node.address("admin",::IP::IP4)
+Chef::Log.info "BMC address: #{address.inspect} - Node address: #{node_address.inspect}"
+admin_subnet = node_address.network
+admin_netmask = node_address.netmask
 
 # no natting needed if host and bmc addresses in the same subnet
 return if admin_subnet == bmc_subnet && admin_netmask == bmc_netmask

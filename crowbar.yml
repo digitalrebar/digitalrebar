@@ -52,6 +52,7 @@ roles:
   - name: ipmi-bmc-nat-client
     jig: chef-solo
     requires:
+      - network-bmc
       - ipmi-configure
     flags:
       - implicit
@@ -59,8 +60,8 @@ roles:
   - name: ipmi-bmc-nat-router
     jig: chef-solo
     requires:
-      - crowbar-admin-node
       - network-bmc
+      - crowbar-admin-node
     flags:
       - bootstrap
 
