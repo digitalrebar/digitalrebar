@@ -23,8 +23,7 @@ address = IP.coerce(bmc_addresses[0]) rescue IP.coerce("0.0.0.0/24")
 bmc_subnet = address.network.addr
 bmc_netmask  = address.netmask
 
-admin_addresses  = node["crowbar"]["network"]["admin"]["addresses"] rescue ["0.0.0.0/24"]
-address = IP.coerce(admin_addresses[0]) rescue IP.coerce("0.0.0.0/24")
+address = node.address("admin",::IP::IP4)
 admin_subnet = address.network.addr
 admin_netmask  = address.netmask
 
