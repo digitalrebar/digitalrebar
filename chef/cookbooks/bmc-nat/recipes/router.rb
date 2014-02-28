@@ -27,6 +27,9 @@ address = node.address("admin",::IP::IP4)
 admin_subnet = address.network.addr
 admin_netmask  = address.netmask
 
+# no natting needed if host and bmc addresses in the same subnet
+return if admin_subnet == bmc_subnet && admin_netmask == bmc_netmask
+
 bash "Set up masquerading for the BMC network" do
   code <<EOC
 iptables -t nat -F POSTROUTING
