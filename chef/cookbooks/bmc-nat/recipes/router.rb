@@ -18,7 +18,7 @@
 nets = node[:crowbar][:network] || return
 nets[:bmc] && nets[:admin]  || return
 
-bmc_addresses  = node["crowbar"]["network"]["bmc"]["addresses"] rescue ["0.0.0.0/24"]
+bmc_addresses  = nets["bmc"]["addresses"] rescue ["0.0.0.0/24"]
 address = IP.coerce(bmc_addresses[0]) rescue IP.coerce("0.0.0.0/24")
 bmc_subnet = address.network.addr
 bmc_netmask  = address.netmask
@@ -30,7 +30,7 @@ admin_netmask  = address.netmask
 bash "Set up masquerading for the BMC network" do
   code <<EOC
 iptables -t nat -F POSTROUTING
-iptables -t nat -A POSTROUTING -s #{admin_subnet}/#{admin_netmask} -d #{bmc_subnet}/#{bmc_netmask} -j SNAT --to-source #{nets[:bmc_vlan][:address]}
+iptables -t nat -A POSTROUTING -s #{admin_subnet}/#{admin_netmask} -d #{bmc_subnet}/#{bmc_netmask} -j SNAT --to-source #{nets[:bmc][:router]}
 iptables -P FORWARD DROP
 iptables -F FORWARD
 iptables -A FORWARD -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
