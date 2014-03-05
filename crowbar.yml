@@ -49,6 +49,22 @@ roles:
     flags:
       - implicit
       - discovery
+  - name: ipmi-bmc-nat-client
+    jig: chef-solo
+    requires:
+      - network-bmc
+      - ipmi-configure
+    flags:
+      - implicit
+      - discovery
+  - name: ipmi-bmc-nat-router
+    jig: chef-solo
+    requires:
+      - network-bmc
+      - crowbar-admin-node
+      - ipmi-configure
+    flags:
+      - bootstrap
 
 debs:
   pkgs:

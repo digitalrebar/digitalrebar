@@ -18,14 +18,20 @@
 
 nets = node[:crowbar][:network] || return
 nets[:bmc] && nets[:admin] || return
-bmc_subnet    = nets[:bmc][:subnet]
-bmc_netmask   = nets[:bmc][:netmask]
-admin_subnet  = nets[:admin][:subnet]
-admin_netmask = nets[:admin][:netmask]
-nat_node = search(:node, "roles:bmc-nat-router").first rescue return
-return if nat_node.nil?
-nat_address = nat_node[:crowbar][:network][:admin][:address]
 
+bmc_addresses  = node["crowbar"]["network"]["bmc"]["addresses"] rescue ["0.0.0.0/24"]
+address = IP.coerce(bmc_addresses[0]) rescue IP.coerce("0.0.0.0/24")
+bmc_subnet = address.network.addr
+bmc_netmask  = address.netmask
+
+nat_address   = node["crowbar"]["network"]["bmc"]["router"] rescue "0.0.0.0"
+
+node_address = node.address("admin",::IP::IP4)
+Chef::Log.info "BMC address: #{address.inspect} - Node address: #{node_address.inspect}"
+admin_subnet = node_address.network
+admin_netmask = node_address.netmask
+
+# no natting needed if host and bmc addresses in the same subnet
 return if admin_subnet == bmc_subnet && admin_netmask == bmc_netmask
 
 bash "Add route to get to our BMC via nat" do
