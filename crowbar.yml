@@ -28,6 +28,11 @@ barclamps:
   - name: ocbtemplate
     description: "OCBTemplate Workload"
 
+jigs:
+  - name: template
+    class: NoopJig
+    description: "Optional: workloads are not required to provide jigs"
+  
 extra_files:
 
 debs:
