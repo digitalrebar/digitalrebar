@@ -18,8 +18,7 @@
 #
 
 name "ipmi-discover"
-description "IPMI discover - discover the BMC network information"
+description "IPMI discover - discover basic information about the IPMI controller on a machine"
 run_list(
-    "recipe[utils]",
-    "recipe[ipmi::ipmi-discover]"
+    "recipe[ipmi::discover]"
 )

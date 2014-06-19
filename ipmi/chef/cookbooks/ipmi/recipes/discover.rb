@@ -17,19 +17,7 @@
 # It intentionally ignores the bios->enable node data flag.
 
 include_recipe "utils"
-
-unless node[:platform] == "windows" or ::File.exists?("/usr/sbin/ipmitool") or ::File.exists?("/usr/bin/ipmitool")
-  package "ipmitool" do
-    case node[:platform]
-    when "ubuntu","debian"
-      package_name "ipmitool"
-    when "redhat","centos"
-      package_name "OpenIPMI-tools"
-    end
-    options("--force-yes")
-    action :install
-  end
-end
+include_recipe "ipmi::ipmitool"
 
 unsupported = [ "KVM", "Bochs", "VMWare Virtual Platform", "VMware Virtual Platform", "VirtualBox" ]
 
