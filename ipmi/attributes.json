@@ -1,0 +1,38 @@
+{
+  "id": "bc-template-ipmi",
+  "description": "The default proposal for the ipmi barclamp",
+  "attributes": {
+    "ipmi": {
+	  "bmc_enable" : true,
+	  "bmc_user": "root",
+	  "bmc_password": "crowbar",
+	  "debug": true
+	 }
+  },
+  "roles": {
+      "ipmi-configure": { "jig": "chef" },
+      "ipmi-discover": { "jig": "chef" }
+  },
+  "deployment": {
+    "ipmi": {
+      "crowbar-revision": 0,
+      "element_states": {
+        "ipmi-configure": [ "hardware-installing" ],
+        "ipmi-discover": [ "discovering" ]
+      },
+      "elements": {},
+      "element_order": [
+        [ "ipmi-discover", "ipmi-configure"  ]
+      ],
+      "config": {
+        "environment": "ipmi-base-config",
+        "mode": "full",
+        "transitions": true,
+        "transition_list": [
+          "discovering", "discovered"
+	]
+      } 
+    }
+  }
+}
+
