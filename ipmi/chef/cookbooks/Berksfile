@@ -1,1 +1,2 @@
+source 'https://api.berkshelf.com'
 cookbook 'ipmi', path: './ipmi/'
