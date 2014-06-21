@@ -22,26 +22,6 @@ include_recipe "ipmi::ipmitool"
 provisioner_server = (node[:crowbar][:provisioner][:server][:webserver] rescue nil)
 Chef::Log.info "Using #{provisioner_server} provisioner server"
 return unless provisioner_server
-bmc="bmc-2013-10-22.tgz"
-
-[bmc].each do |f|
-  a = remote_file "/tmp/#{f}" do
-    source "#{provisioner_server}/files/#{f}"
-    action :nothing
-  end
-  a.run_action(:create)
-end
-
-a = bash "Extract #{bmc}" do
-  code <<EOC
-if [[ ! -x /usr/bin/bmc ]]; then
-    cd /usr/bin; tar xzf /tmp/#{bmc} bmc
-fi
-EOC
-  action :nothing
-end
-a.run_action(:run)
-
 bmc_user     = node[:ipmi][:bmc_user]
 bmc_password = node[:ipmi][:bmc_password]
 use_dhcp     = node[:ipmi][:use_dhcp]
@@ -142,7 +122,6 @@ if node[:ipmi][:bmc_enable]
     end
 
     bmc_commands = [
-      [ "BMC nic_mode", "/usr/bin/bmc nic_mode set dedicated", "/usr/bin/bmc nic_mode get", "dedicated", 10 ],
       [ "Dell BMC nic_mode", "ipmitool delloem lan set dedicated", "ipmitool delloem lan get", "dedicated", 10 ]
     ]
 
@@ -174,4 +153,3 @@ if node[:ipmi][:bmc_enable]
   end
 
 end
-
