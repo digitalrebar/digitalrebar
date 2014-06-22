@@ -16,54 +16,99 @@
 # Note : This script runs on both the admin and compute nodes.
 # It intentionally ignores the bios->enable node data flag.
 
-include_recipe "utils"
 include_recipe "ipmi::ipmitool"
 
 unsupported = [ "KVM", "Bochs", "VMWare Virtual Platform", "VMware Virtual Platform", "VirtualBox" ]
+bmc_info_keys = {
+  "Device ID" => "device_id",
+  "Device Revision" => "device_rev",
+  "Firmware Revision" => "firmware_rev",
+  "IPMI Version" => "ipmi_version",
+  "Manufacturer ID" => "mfgr_id",
+  "Manufacturer Name" => "mfgr_name",
+  "Product ID" => "product_id",
+  "Product Name" => "product_name",
+  "Device Available" => "available",
+  "Provides Device SDRs" => "provides_device_sdrs",
+  "Additional Device Support" => "additional_devs" }
+
+node.set["crowbar_wall"] ||= {}
+node.set["crowbar_wall"]["status"] ||= {}
+node.set["crowbar_wall"]["status"]["ipmi"] ||= {}
+node.set["crowbar_wall"]["status"]["ipmi"]["messages"] ||= []
+node.set[:ipmi][:bmc_enable] = false
 
 if node[:platform] == "windows"
-  node.set["crowbar_wall"] = {} unless node["crowbar_wall"]
-  node.set["crowbar_wall"]["status"] = {} unless node["crowbar_wall"]["status"]
-  node.set["crowbar_wall"]["status"]["ipmi"] = {} unless node["crowbar_wall"]["status"]["ipmi"]
-  node.set["crowbar_wall"]["status"]["ipmi"]["messages"] = [ "Unsupported platform - turning off ipmi for this node" ]
-  node.set[:ipmi][:bmc_enable] = false
+  node.set["crowbar_wall"]["status"]["ipmi"]["messages"] << "Unsupported OS: windows"
   return
-elsif node[:ipmi][:bmc_enable]
-  if unsupported.member?(node[:dmi][:system][:product_name])
-    node.set["crowbar_wall"] = {} unless node["crowbar_wall"]
-    node.set["crowbar_wall"]["status"] = {} unless node["crowbar_wall"]["status"]
-    node.set["crowbar_wall"]["status"]["ipmi"] = {} unless node["crowbar_wall"]["status"]["ipmi"]
-    node.set["crowbar_wall"]["status"]["ipmi"]["messages"] = [ "Unsupported platform: #{node[:dmi][:system][:product_name]} - turning off ipmi for this node" ]
-    node.set[:ipmi][:bmc_enable] = false
-    return
-  end
+elsif unsupported.member?(node[:dmi][:system][:product_name])
+  node.set["crowbar_wall"]["status"]["ipmi"]["messages"] << "Unsupported platform: #{node[:dmi][:system][:product_name]}"
+  return
+end
 
-  ruby_block "discover ipmi settings" do
-    block do
-      if unsupported.member?(node[:dmi][:system][:product_name])
-        return
-      end
+ruby_block "discover ipmi settings" do
+  block do
+    ipmiinfo = Hash.new
+    unless File.directory?("/sys/module/ipmi_devintf")
       %x{modprobe ipmi_si &>/dev/null}
-      %x{modprobe ipmi_devintf &>/dev/null; sleep 15}
-      %x{ipmitool lan print 1 > /tmp/lan.print}
-      if $?.exitstatus == 0
-        node.set["crowbar_wall"] = {} unless node["crowbar_wall"]
-        node.set["crowbar_wall"]["ipmi"] = {} unless node["crowbar_wall"]["ipmi"]
-        node.set["crowbar_wall"]["ipmi"]["address"] = %x{grep "IP Address   " /tmp/lan.print | awk -F" " '\{print $4\}'}.strip
-        node.set["crowbar_wall"]["ipmi"]["gateway"] = %x{grep "Default Gateway IP " /tmp/lan.print | awk -F" " '\{ print $5 \}'}.strip
-        node.set["crowbar_wall"]["ipmi"]["netmask"] = %x{grep "Subnet Mask" /tmp/lan.print | awk -F" " '\{ print $4 \}'}.strip
-        node.set["crowbar_wall"]["ipmi"]["mode"] = %x{ipmitool delloem lan get}.strip
-      else
-        node.set["crowbar_wall"] = {} unless node["crowbar_wall"]
-        node.set["crowbar_wall"]["status"] = {} unless node["crowbar_wall"]["status"]
-        node.set["crowbar_wall"]["status"]["ipmi"] = {} unless node["crowbar_wall"]["status"]["ipmi"]
-        node.set["crowbar_wall"]["status"]["ipmi"]["messages"] = [ "Could not get IPMI lan info: #{node[:dmi][:system][:product_name]} - turning off ipmi for this node" ]
-        node.set[:ipmi][:bmc_enable] = false
-      end
-
-      %x{rmmod ipmi_si &>/dev/null}
-      %x{rmmod ipmi_devintf ; rmmod ipmi_msghandler}
+      %x{modprobe ipmi_devintf &>/dev/null}
     end
-    action :create
+    return unless File.directory?("/sys/module/ipmi_devintf")
+    # Get some basic information about the IPMI comtroller.
+    # Later on we will customize how we talk to the controller based
+    # on the data we find here.
+    loop do
+      mcinfo = %x{ipmitool mc info}
+      if $?.exitstatus == 0
+        in_additional_devices = false
+        mcinfo.lines.each do |line|
+          k,v = line.split(':',2).map{|x|x.strip}
+          case
+          when line[0..3] == "    "
+            ipmiinfo["additional_devs"] << line.strip if in_additional_devices
+          when k == "Additional Device Support"
+            in_additional_devices = true
+            ipmiinfo[bmc_info_keys[k]]=[]
+          when bmc_info_keys[k]
+            in_additional_devices = false
+            ipmiinfo[bmc_info_keys[k]] = v
+          else
+            in_additional_devices = false
+          end
+        end
+        break
+      else
+        sleep 1
+      end
+    end
+    # Figure out what channel the LAN interface is on.
+    # First result wins.
+    laninfo = ''
+    (1..11).each do |chan|
+      tmp = %x{ipmitool lan print #{chan}}
+      next unless $?.exitstatus == 0
+      ipmiinfo['lan_channel'] = chan
+      laninfo = tmp
+      break
+    end
+    # If we never found a working LAN channel, we will not be able to use IPMI remotely.
+    # Give up.
+    return if laninfo.empty? || laninfo =~ /is not a LAN channel/
+    laninfo.lines.each do |line|
+      k,v = line.split(':',2).map{|x|x.strip}
+      case k
+      when "IP Address" then ipmiinfo['address']=v
+      when "Subnet Mask" then ipmiinfo['netmask']=v
+      when "Default Gateway IP" then ipmiinfo['gateway']=v
+      when "MAC Address" then ipmiinfo['macaddr']=v
+      when "IP Address Source" then ipmiinfo['address_source']=v
+      when "802.1q VLAN ID" then ipmiinfo['vlan']=v
+      end
+    end
+    if node["dmi"]["system"]["manufacturer"] =~ /^Dell/
+      ipmiinfo["lan_interface"]= %x{ipmitool delloem lan get}.strip
+    end
+    node.set["crowbar_wall"]["ipmi"] = ipmiinfo
+    node.set[:ipmi][:bmc_enable] = true
   end
 end
