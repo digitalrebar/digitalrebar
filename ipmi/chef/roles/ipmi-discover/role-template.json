@@ -1,10 +1,8 @@
 {
     "ipmi": {
-        "bmc_enable" : true,
+        "bmc_enable" : false,
         "bmc_user": "root",
         "bmc_password": "cr0wBar!",
-        "ignore_address_suggestions": false,
-        "use_dhcp": false,
         "debug": false
     }
 }
