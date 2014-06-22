@@ -50,12 +50,12 @@ roles:
       - network-bmc
       - provisioner-repos
       - ipmi-discover
+      - ipmi-master
     wants-attribs:
       - provisioner-webserver
       - provisioner-proxy
     flags:
       - implicit
-#      - discovery
 
 debs:
   pkgs:
