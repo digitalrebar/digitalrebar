@@ -23,7 +23,7 @@ bmc_info_keys = {
   "Device ID" => "device_id",
   "Device Revision" => "device_rev",
   "Firmware Revision" => "firmware_rev",
-  "IPMI Version" => "ipmi_version",
+  "IPMI Version" => "version",
   "Manufacturer ID" => "mfgr_id",
   "Manufacturer Name" => "mfgr_name",
   "Product ID" => "product_id",
@@ -32,19 +32,9 @@ bmc_info_keys = {
   "Provides Device SDRs" => "provides_device_sdrs",
   "Additional Device Support" => "additional_devs" }
 
-node.set["crowbar_wall"] ||= {}
-node.set["crowbar_wall"]["status"] ||= {}
-node.set["crowbar_wall"]["status"]["ipmi"] ||= {}
-node.set["crowbar_wall"]["status"]["ipmi"]["messages"] ||= []
 node.set[:ipmi][:bmc_enable] = false
 
-if node[:platform] == "windows"
-  node.set["crowbar_wall"]["status"]["ipmi"]["messages"] << "Unsupported OS: windows"
-  return
-elsif unsupported.member?(node[:dmi][:system][:product_name])
-  node.set["crowbar_wall"]["status"]["ipmi"]["messages"] << "Unsupported platform: #{node[:dmi][:system][:product_name]}"
-  return
-end
+return if (node[:platform] == "windows") || unsupported.member?(node[:dmi][:system][:product_name])
 
 ruby_block "discover ipmi settings" do
   block do
@@ -108,7 +98,8 @@ ruby_block "discover ipmi settings" do
     if node["dmi"]["system"]["manufacturer"] =~ /^Dell/
       ipmiinfo["lan_interface"]= %x{ipmitool delloem lan get}.strip
     end
-    node.set["crowbar_wall"]["ipmi"] = ipmiinfo
+    node.set[:crowbar_wall] ||= Mash.new
+    node.set[:crowbar_wall][:ipmi] = ipmiinfo
     node.set[:ipmi][:bmc_enable] = true
   end
 end
