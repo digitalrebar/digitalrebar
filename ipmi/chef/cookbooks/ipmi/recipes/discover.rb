@@ -36,18 +36,20 @@ node.set[:ipmi][:bmc_enable] = false
 
 return if (node[:platform] == "windows") || unsupported.member?(node[:dmi][:system][:product_name])
 
+unless File.directory?("/sys/module/ipmi_devintf")
+  %x{modprobe ipmi_si &>/dev/null}
+  %x{modprobe ipmi_devintf &>/dev/null}
+end
+return unless File.directory?("/sys/module/ipmi_devintf")
+
 ruby_block "discover ipmi settings" do
   block do
     ipmiinfo = Hash.new
-    unless File.directory?("/sys/module/ipmi_devintf")
-      %x{modprobe ipmi_si &>/dev/null}
-      %x{modprobe ipmi_devintf &>/dev/null}
-    end
-    return unless File.directory?("/sys/module/ipmi_devintf")
     # Get some basic information about the IPMI comtroller.
     # Later on we will customize how we talk to the controller based
     # on the data we find here.
-    loop do
+    # If we can't find an IPMI controller after 5 tries, give up.
+    5.times do
       mcinfo = %x{ipmitool mc info}
       if $?.exitstatus == 0
         in_additional_devices = false
@@ -71,35 +73,38 @@ ruby_block "discover ipmi settings" do
         sleep 1
       end
     end
-    # Figure out what channel the LAN interface is on.
-    # First result wins.
-    laninfo = ''
-    (1..11).each do |chan|
-      tmp = %x{ipmitool lan print #{chan}}
-      next unless $?.exitstatus == 0
-      ipmiinfo['lan_channel'] = chan
-      laninfo = tmp
-      break
-    end
-    # If we never found a working LAN channel, we will not be able to use IPMI remotely.
-    # Give up.
-    return if laninfo.empty? || laninfo =~ /is not a LAN channel/
-    laninfo.lines.each do |line|
-      k,v = line.split(':',2).map{|x|x.strip}
-      case k
-      when "IP Address" then ipmiinfo['address']=v
-      when "Subnet Mask" then ipmiinfo['netmask']=v
-      when "Default Gateway IP" then ipmiinfo['gateway']=v
-      when "MAC Address" then ipmiinfo['macaddr']=v
-      when "IP Address Source" then ipmiinfo['address_source']=v
-      when "802.1q VLAN ID" then ipmiinfo['vlan']=v
+    unless ipmiinfo.empty?
+      # Figure out what channel the LAN interface is on.
+      # First result wins.
+      laninfo = ''
+      (1..11).each do |chan|
+        tmp = %x{ipmitool lan print #{chan}}
+        next unless $?.exitstatus == 0
+        ipmiinfo['lan_channel'] = chan
+        laninfo = tmp
+        break
+      end
+      # If we never found a working LAN channel, we will not be able to use IPMI remotely.
+      # Give up.
+      if laninfo.empty? || laninfo =~ /is not a LAN channel/
+        laninfo.lines.each do |line|
+          k,v = line.split(':',2).map{|x|x.strip}
+          case k
+          when "IP Address" then ipmiinfo['address']=v
+          when "Subnet Mask" then ipmiinfo['netmask']=v
+          when "Default Gateway IP" then ipmiinfo['gateway']=v
+          when "MAC Address" then ipmiinfo['macaddr']=v
+          when "IP Address Source" then ipmiinfo['address_source']=v
+          when "802.1q VLAN ID" then ipmiinfo['vlan']=v
+          end
+        end
+        if node["dmi"]["system"]["manufacturer"] =~ /^Dell/
+          ipmiinfo["lan_interface"]= %x{ipmitool delloem lan get}.strip
+        end
+        node.set[:crowbar_wall] ||= Mash.new
+        node.set[:crowbar_wall][:ipmi] = ipmiinfo
+        node.set[:ipmi][:bmc_enable] = true
       end
     end
-    if node["dmi"]["system"]["manufacturer"] =~ /^Dell/
-      ipmiinfo["lan_interface"]= %x{ipmitool delloem lan get}.strip
-    end
-    node.set[:crowbar_wall] ||= Mash.new
-    node.set[:crowbar_wall][:ipmi] = ipmiinfo
-    node.set[:ipmi][:bmc_enable] = true
   end
 end
