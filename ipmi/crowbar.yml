@@ -44,6 +44,13 @@ roles:
     flags:
       - implicit
       - discovery
+    attribs:
+      - name: ipmi-enable
+        description: "Says whether IPMI can be enabled for a specific node"
+        map: 'ipmi/bmc_enable'
+      - name: ipmi-detected-params
+        description: "The firmware and network settings that IPMI is configured with."
+        map: 'crowbar_wall/ipmi'
   - name: ipmi-configure
     jig: chef
     requires:
@@ -54,6 +61,21 @@ roles:
     wants-attribs:
       - provisioner-webserver
       - provisioner-proxy
+      - ipmi-enable
+      - ipmi-detected-params
+    attribs:
+      - name: ipmi-username
+        description: "The username that will be used to access the IPMI controller remotely."
+        map: 'ipmi/bmc_user'
+      - name: ipmi-password
+        description: "The password for the IPMI user."
+        map: 'ipmi/bmc_password'
+      - name: ipmi-use-dhcp
+        description: "Whether the IPMI controller should get its address via DHCP"
+        map: 'ipmi/use_dhcp'
+      - name: ipmi-configured
+        description: "Whether the username and password has been configured for this IPMI controller"
+        map: 'ipmi/configured'
     flags:
       - implicit
 

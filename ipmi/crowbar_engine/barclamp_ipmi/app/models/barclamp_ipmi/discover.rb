@@ -17,27 +17,43 @@ class BarclampIpmi::Discover < Role
 
   def on_active(nr)
     # Do nothing unless we discovered that we can use a BMC on this node.
-    return unless nr.wall["ipmi"]["bmc_enable"]
+    unless nr.wall["ipmi"]["bmc_enable"]
+      Rails.logger.info("BMC not enabled on #{nr.node.name}")
+      return
+    end
     # If we do not have a BMC network defined, we cannot continue.
     bmcnet = Network.find_by(name: "bmc")
-    return unless bmcnet
+    unless bmcnet
+      Rails.logger.info("No BMC network created.")
+      return
+    end
     # All BMCs should get addresses from the host range.
     bmcrange = NetworkRange.find_by!(network_id: bmcnet.id, name: "host")
     # If we have already allocated an IP address for this BMC, we are done.
-    return if NetworkAllocation.find_by(node_id: nr.node.id, network_range_id: bmcrange.id)
-    suggested_addr = IP.coerce("#{nr.wall["crowbar_wall"]["ipmi"]["address"]}/#{nr.wall["crowbar_wall"]["ipmi"]["netmask"]}")
-    address = bmcrange.allocate(nr.node,suggested_addr)
-    # Once we have an address allocated, we will have a noderole created
-    # for this node for the network-bmc role.
-    # Commit it.
-    nr.node.node_roles.find_by!(role_id: bmcnet.role.id).commit!
+    unless NetworkAllocation.find_by(node_id: nr.node.id, network_range_id: bmcrange.id)
+      Rails.logger.info("No address allocated for the BMC on #{nr.node.name}")
+      addr = nr.wall["crowbar_wall"]["ipmi"]["laninfo"]["ipaddr"]
+      mask = nr.wall["crowbar_wall"]["ipmi"]["laninfo"]["netmask"]
+      suggested_addr = IP.coerce("#{addr}/#{mask}")
+      address = bmcrange.allocate(nr.node,suggested_addr)
+      # Once we have an address allocated, we will have a noderole created
+      # for this node for the network-bmc role.
+      # Commit it.
+      Rails.logger.info("BMC address #{address.address.to_s} allocated for #{nr.node.name}")
+      nr.node.node_roles.find_by!(role_id: bmcnet.role.id).commit!
+    end
     # Now that we have the appropriate network information, we need to bind
     # the ipmi-configure role to this node.
-    ipmi_config = Role.find_by!(name: 'ipmi-configure').add_to_node(nr.node)
-    ipmi_config.commit!
-    # Keep the noderole graph sane by making the managed_node role for this node
-    # depend on our newly-added ipmi config noderole.
-    managed_node = nr.node.node_roles.find_by!(role_id: Role.find_by!(name: 'crowbar-managed-node'))
-    managed_node.add_parent(ipmi_config)
+    icr_role = Role.find_by!(name: 'ipmi-configure')
+    unless nr.node.node_roles.find_by(role_id: icr_role.id)
+      Rails.logger.info("Adding ipmi-configure role to #{nr.node.name}")
+      ipmi_config = icr_role.add_to_node(nr.node)
+      ipmi_config.commit!
+      # Keep the noderole graph sane by making the managed_node role for this node
+      # depend on our newly-added ipmi config noderole.
+      Rails.logger.info("Making crowbar-managed-node on #{nr.node.name} depend on ipmi-configure role.")
+      managed_node = nr.node.node_roles.find_by!(role_id: Role.find_by!(name: 'crowbar-managed-node'))
+      managed_node.add_parent(ipmi_config)
+    end
   end
 end
