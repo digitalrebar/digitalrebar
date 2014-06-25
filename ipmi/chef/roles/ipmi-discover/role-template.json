@@ -1,0 +1,10 @@
+{
+    "ipmi": {
+        "bmc_enable" : false,
+        "bmc_user": "root",
+        "bmc_password": "cr0wBar!",
+        "debug": false
+    }
+}
+
+
