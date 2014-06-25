@@ -55,6 +55,7 @@ ipmitool user set password #{bmc_userid} #{bmc_password}
 ipmitool user priv #{bmc_userid} 4 #{chan}
 ipmitool channel setaccess #{chan} #{bmc_userid} callin=on link=on ipmi=on privilege=4
 ipmitool user enable #{bmc_userid}
+ipmitool lan set #{chan} access on
 EOC
   notifies :create, "ruby_block[Signal success in setting user creds]"
   not_if {

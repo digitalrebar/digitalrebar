@@ -51,6 +51,39 @@ roles:
       - name: ipmi-detected-params
         description: "The firmware and network settings that IPMI is configured with."
         map: 'crowbar_wall/ipmi'
+      - name: ipmi-version
+        description: "The version of IPMI that this controller implements"
+        map: 'crowbar_wall/ipmi/bmcinfo/version'
+      - name: ipmi-device-id
+        description: "The device ID of the IPMI controller"
+        map: 'crowbar_wall/ipmi/bmcinfo/device_id'
+      - name: ipmi-device-rev
+        description: "The device revision of the IPMI controller"
+        map: 'crowbar_wall/ipmi/bmcinfo/device_rev'
+      - name: ipmi-firmware-rev
+        description: "The firmware revision the IPMI controller is at"
+        map: 'crowbar_wall/ipmi/bmcinfo/firmware_rev'
+      - name: ipmi-mfgr-id
+        description: "The manufacturer ID of the IPMI controller"
+        map: 'crowbar_wall/ipmi/bmcinfo/mfgr_id'
+      - name: ipmi-mfgr-name
+        description: "The manufacturer of the IPMI controller"
+        map: 'crowbar_wall/ipmi/bmcinfo/mfgr_name'
+      - name: ipmi-product-id
+        description: "The product ID of the IPMI controller"
+        map: 'crowbar_wall/ipmi/bmcinfo/product_id'
+      - name: ipmi-product-name
+        description: "The product name of the IPMI controller"
+        map: 'crowbar_wall/ipmi/bmcinfo/product_name'
+      - name: ipmi-provides-device-sdrs
+        description: "Whether this IPMI controller provides access to additional devices"
+        map: 'crowbar_wall/ipmi/bmcinfo/provides_device_sdrs'
+      - name: ipmi-additional-devices
+        description: "The additional devices this IPMI controller provides"
+        map: 'crowbar_wall/ipmi/bmcinfo/additional_devs'
+      - name: ipmi-macaddr
+        description: "The MAC address of this IPMI controller"
+        map: 'crowbar_wall/ipmi/laninfo/macaddr'
   - name: ipmi-configure
     jig: chef
     requires:
