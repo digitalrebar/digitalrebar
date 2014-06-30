@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
   s.test_files = Dir["test/**/*"]
 
   s.add_dependency "rails"
+  s.add_dependency "openwsman"
 
   # s.add_dependency "jquery-rails"
 

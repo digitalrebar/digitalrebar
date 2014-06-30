@@ -35,7 +35,6 @@ roles:
     jig: chef
     requires:
       - network-bmc
-      - provisioner-repos
     flags:
       - bootstrap
   - name: ipmi-discover
@@ -116,10 +115,17 @@ roles:
 debs:
   required_pkgs:
     - ipmitool
+    - wsl
 
 rpms:
-  pkgs:
+  centos-6.5:
+    repos:
+      - bare openswman 20 http://download.opensuse.org/repositories/Openwsman/CentOS_CentOS-6/
+  required_pkgs:
     - ipmitool
+    - wsl
+    - wsmancli
+    - openwsman-devel
 
 extra_files:
   # Utility for configuring Dell-specific BMC settings on PEC gear.
