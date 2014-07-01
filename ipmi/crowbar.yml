@@ -35,6 +35,7 @@ roles:
     jig: chef
     requires:
       - network-bmc
+      - provisioner-repos
     flags:
       - bootstrap
   - name: ipmi-discover
@@ -113,7 +114,7 @@ roles:
       - implicit
 
 debs:
-  pkgs:
+  required_pkgs:
     - ipmitool
 
 rpms:
