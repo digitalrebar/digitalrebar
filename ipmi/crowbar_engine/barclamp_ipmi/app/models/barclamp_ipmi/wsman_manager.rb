@@ -17,38 +17,42 @@
 # on a node via WSMAN.  It assumes that the node is a Dell server.
 
 require 'openwsman'
+require 'uri'
 
-class Power::WSMAN < Power
+class BarclampIpmi::WsmanManager < NodeManager
 
   def self.probe(node)
     # For now, restrict ourselves to running on a Dell IDRAC 7.
     # We will need to be more flexible in the future.
-    Power::IPMI.probe(node) &&
-      Attrib.get('ipmi-mfgr-id',node) == "674" &&
-      Attrib.get('ipmi-product-id',node) == "256 (0x0100)" &&
-      Attrib.get('ipmi-device-id',node) == "32"
+    return false unless BarclampIpmi::IpmiManager.probe(node)
+    address = Network.address(node: node, network: "bmc", range: "host").address.addr
+    if Attrib.get('ipmi-mfgr-id',node) == "674" &&
+        Attrib.get('ipmi-product-id',node) == "256 (0x0100)" &&
+        Attrib.get('ipmi-device-id',node) == "32"
+      return "https://#{address}/wsman"
+    else
+      return false
+    end
   end
 
-  def self.priority
-    2
-  end
-
-  def initialize(node)
-    raise "#{node.name} does not have a configured bmc!" unless self.class.probe(node)
-    @node = node
-    @address = Network.address(node: node, network: "bmc", range: "host").address.addr
-    @port = 443
-    @scheme = "https"
-    @prefix = "/wsman"
-    @username = Attrib.get('ipmi-username',node)
-    @password = Attrib.get('ipmi-password',node)
-    @node = node
-    @client = Openwsman::Client.new(@address,@port,@prefix,@scheme,@username,@password)
-    if @scheme == "https"
+  def client
+    return @client if @client
+    uri = URI::parse(endpoint)
+    scheme = uri.scheme
+    host = uri.hostname
+    port = uri.port
+    path = uri.path
+    @client = Openwsman::Client.new(host,port,path,scheme,username,authenticator)
+    @client.encoding = "utf-8"
+    if scheme == "https"
       @client.transport.verify_peer = 0
       @client.transport.verify_host = 0
     end
-    @client.encoding = "utf-8"
+    @client
+  end
+
+  def actions
+    { power: [:status,:on?,:on,:off,:cycle,:reset,:halt] }
   end
 
   def status
@@ -68,35 +72,34 @@ class Power::WSMAN < Power
 
   def off
     return unless on?
-    @node.update!(alive: false) if power_state_to(8)
+    node.update!(alive: false) if power_state_to(8)
   end
 
   def cycle
-    @node.update!(alive: false) if power_state_to(on? ? 5 : 2)
+    node.update!(alive: false) if power_state_to(on? ? 5 : 2)
   end
 
   def reset
-    @node.update!(alive: false) if power_state_to(on? ? 10 : 2)
+    node.update!(alive: false) if power_state_to(on? ? 10 : 2)
   end
 
   def halt
     return unless on?
-    @node.update!(alive: false) if power_state_to(12)
+    node.update!(alive: false) if power_state_to(12)
   end
 
-  private
-
+  # WSMAN helper methods that we expose for other OOB tasks
   def identifu
-    res = @client.identify(Openwsman::ClientOptions.new)
-    raise @client.fault_string if res.fault?
+    res = client.identify(Openwsman::ClientOptions.new)
+    raise client.fault_string if res.fault?
     res
   end
 
   def enumerate(resource,filter=nil,opts = Openwsman::ClientOptions.new)
     opts.flags = Openwsman::FLAG_ENUMERATION_OPTIMIZATION
     opts.max_elements = 999
-    res = @client.enumerate(opts,filter,resource)
-    raise @client.fault_string if res.fault?
+    res = client.enumerate(opts,filter,resource)
+    raise client.fault_string if res.fault?
     res
   end
 
@@ -110,10 +113,12 @@ class Power::WSMAN < Power
     args.each do |k,v|
       xml.root.add(resource,k.to_s,v.to_s)
     end if args
-    res = @client.invoke(opts,resource,meth,xml)
-    raise @client.fault_string if res.fault?
+    res = client.invoke(opts,resource,meth,xml)
+    raise client.fault_string if res.fault?
     res
   end
+
+  private
 
   def power_state_to(k)
     resource = "http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_CSPowerManagementService"

@@ -16,7 +16,7 @@
 # This class encapsulates everything we can do w.r.t power state managment
 # on a node via IPMI
 
-class Power::IPMI < Power
+class BarclampIpmi::IpmiManager < NodeManager
 
   # See if a node can be managed via IPMI.
   # To be manageable via IPMI, it must have an ipmi-configure role bound to
@@ -25,21 +25,8 @@ class Power::IPMI < Power
     (Attrib.get('ipmi-configured',node) rescue nil)
   end
 
-  # The IPMI power manager has a higher priority than SSH.
-  def self.priority
-    1
-  end
-
-  # We must have a configured IPMI controller to operate.
-  def initialize(node)
-    raise "#{node.name} does not have a configured bmc!" unless self.class.probe(node)
-    @node = node
-    @address = Network.address(node: node, network: "bmc", range: "host").address.addr
-    @username = Attrib.get('ipmi-username',node)
-    @password = Attrib.get('ipmi-password',node)
-    @version = Attrib.get('ipmi-version',node)
-    @lanproto = @version.to_f >= 2.0 ? "lanplus" : "lan"
-    @node = node
+  def actions
+    { power: [:status,:on?,:on,:off,:cycle,:reset,:halt,:pxeboot,:identify] }
   end
 
   # Whether the node is powered on or not.
@@ -64,7 +51,7 @@ class Power::IPMI < Power
   # OS will not have a chance to clean up.
   def off
     out,res = ipmi("chassis power off")
-    @node.update!(alive: false) if out.strip =~ /Down\/Off$/
+    node.update!(alive: false) if out.strip =~ /Down\/Off$/
   end
 
   # Turn the node off, and then back on again.
@@ -72,14 +59,14 @@ class Power::IPMI < Power
   def cycle
     return on unless on?
     out,res = ipmi("chassis power cycle")
-    @node.update!(alive: false) if out.strip =~ /Cycle$/
+    node.update!(alive: false) if out.strip =~ /Cycle$/
   end
 
   # Hard-reboot the node without powering it off.
   def reset
     return on unless on?
     out,res = ipmi("chassis power reset")
-    @node.update!(alive: false) if out.strip =~ /Reset$/
+    node.update!(alive: false) if out.strip =~ /Reset$/
   end
 
   # Gracefully power the node down.
@@ -88,7 +75,7 @@ class Power::IPMI < Power
   def halt
     return unless on?
     out,res = ipmi("chassis power soft")
-    @node.update!(alive: false) if out.strip =~ /Soft$/
+    node.update!(alive: false) if out.strip =~ /Soft$/
   end
 
   # Force the node to PXE boot.  IF the node is turned on, it
@@ -107,7 +94,8 @@ class Power::IPMI < Power
   private
 
   def ipmi(*args)
-    cmd = "ipmitool -I #{@lanproto} -U #{@username} -P #{@password} -H #{@address} #{args.map{|a|a.to_s}.join(' ')}"
+    @lanproto ||= Attrib.get('ipmi-version',node).to_f >= 2.0 ? "lanplus" : "lan"
+    cmd = "ipmitool -I #{@lanproto} -U #{username} -P #{authenticator} -H #{endpoint} #{args.map{|a|a.to_s}.join(' ')}"
     res = %x{ #{cmd} 2>&1}
     return [res, $?.exitstatus == 0]
   end
