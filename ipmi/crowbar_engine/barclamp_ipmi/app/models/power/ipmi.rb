@@ -95,7 +95,7 @@ class Power::IPMI < Power
   # will be powercycled.
   def pxeboot
     out,res = ipmi("chassis bootparam set bootflag force_pxe")
-    powercycle if out.strip =~ /force_pxe$/
+    cycle if out.strip =~ /force_pxe$/
   end
 
   # Cause the identification lamp on the node to blink.
