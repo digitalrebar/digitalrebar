@@ -16,7 +16,7 @@
 # This class encapsulates everything we can do w.r.t power state managment
 # on a node via IPMI
 
-class BarclampIpmi::IpmiManager < NodeManager
+class BarclampIpmi::IpmiHammer < Hammer
 
   # See if a node can be managed via IPMI.
   # To be manageable via IPMI, it must have an ipmi-configure role bound to
@@ -26,12 +26,14 @@ class BarclampIpmi::IpmiManager < NodeManager
   end
 
   def actions
-    { power: [:status,:on?,:on,:off,:cycle,:reset,:halt,:pxeboot,:identify] }
+    { power: [:status,:on?,:on,:off,:cycle,:reset,:halt,:pxeboot,:identify],
+      run: [:run]
+    }
   end
 
   # Whether the node is powered on or not.
   def status
-    out, res = ipmi("chassis power status")
+    out, res = run("chassis power status")
     !!(out.strip =~ / on$/) ? "on" : "off"
   end
 
@@ -43,14 +45,14 @@ class BarclampIpmi::IpmiManager < NodeManager
   # Turn a node on.
   def on
     return if on?
-    out,res = ipmi("chassis power on")
+    out,res = run("chassis power on")
     !!(out.strip =~ /Up\/On$/)
   end
 
   # Power the node off.  This is an immediate action, the
   # OS will not have a chance to clean up.
   def off
-    out,res = ipmi("chassis power off")
+    out,res = run("chassis power off")
     node.update!(alive: false) if out.strip =~ /Down\/Off$/
   end
 
@@ -58,14 +60,14 @@ class BarclampIpmi::IpmiManager < NodeManager
   # If the node is already off, this just turns it back on.
   def cycle
     return on unless on?
-    out,res = ipmi("chassis power cycle")
+    out,res = run("chassis power cycle")
     node.update!(alive: false) if out.strip =~ /Cycle$/
   end
 
   # Hard-reboot the node without powering it off.
   def reset
     return on unless on?
-    out,res = ipmi("chassis power reset")
+    out,res = run("chassis power reset")
     node.update!(alive: false) if out.strip =~ /Reset$/
   end
 
@@ -74,26 +76,24 @@ class BarclampIpmi::IpmiManager < NodeManager
   # power the node down.
   def halt
     return unless on?
-    out,res = ipmi("chassis power soft")
+    out,res = run("chassis power soft")
     node.update!(alive: false) if out.strip =~ /Soft$/
   end
 
   # Force the node to PXE boot.  IF the node is turned on, it
   # will be powercycled.
   def pxeboot
-    out,res = ipmi("chassis bootparam set bootflag force_pxe")
+    out,res = run("chassis bootparam set bootflag force_pxe")
     cycle if out.strip =~ /force_pxe$/
   end
 
   # Cause the identification lamp on the node to blink.
   # Right now, we only blink for 255 seconds.
   def identify
-    ipmi("chassis identify 255")
+    run("chassis identify 255")
   end
 
-  private
-
-  def ipmi(*args)
+  def run(*args)
     @lanproto ||= Attrib.get('ipmi-version',node).to_f >= 2.0 ? "lanplus" : "lan"
     cmd = "ipmitool -I #{@lanproto} -U #{username} -P #{authenticator} -H #{endpoint} #{args.map{|a|a.to_s}.join(' ')}"
     res = %x{ #{cmd} 2>&1}
