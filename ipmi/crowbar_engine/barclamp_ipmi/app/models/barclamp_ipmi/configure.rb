@@ -24,6 +24,7 @@ class BarclampIpmi::Configure < Role
       BarclampIpmi::IpmiManager.create!(username: username,
                                         authenticator: authenticator,
                                         endpoint: endpoint,
+                                        priority: 1,
                                         node: nr.node)
     end
     unless nr.node.node_managers.find_by(type: "BarclampIpmi::WsmanManager")
@@ -32,6 +33,7 @@ class BarclampIpmi::Configure < Role
       BarclampIpmi::WsmanManager.create!(username: username,
                                          authenticator: authenticator,
                                          endpoint: endpoint,
+                                         priority: 2,
                                          node: nr.node)
     end
   end
