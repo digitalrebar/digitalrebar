@@ -89,7 +89,7 @@ class BarclampIpmi::WsmanManager < NodeManager
   end
 
   # WSMAN helper methods that we expose for other OOB tasks
-  def identifu
+  def identify
     res = client.identify(Openwsman::ClientOptions.new)
     raise client.fault_string if res.fault?
     res
