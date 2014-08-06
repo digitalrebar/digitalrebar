@@ -19,12 +19,12 @@
 require 'openwsman'
 require 'uri'
 
-class BarclampIpmi::WsmanManager < NodeManager
+class BarclampIpmi::WsmanHammer < Hammer
 
   def self.probe(node)
     # For now, restrict ourselves to running on a Dell IDRAC 7.
     # We will need to be more flexible in the future.
-    return false unless BarclampIpmi::IpmiManager.probe(node)
+    return false unless BarclampIpmi::IpmiHammer.probe(node)
     address = Network.address(node: node, network: "bmc", range: "host").address.addr
     if Attrib.get('ipmi-mfgr-id',node) == "674" &&
         Attrib.get('ipmi-product-id',node) == "256 (0x0100)" &&
@@ -52,7 +52,9 @@ class BarclampIpmi::WsmanManager < NodeManager
   end
 
   def actions
-    { power: [:status,:on?,:on,:off,:cycle,:reset,:halt] }
+    { power: [:status,:on?,:on,:off,:cycle,:reset,:halt],
+      run: [:identify, :enumerate, :enumerate_epr, :invoke]
+    }
   end
 
   def status
@@ -118,7 +120,10 @@ class BarclampIpmi::WsmanManager < NodeManager
     res
   end
 
-  private
+  def __perform(meth,*args)
+    res = send(meth,*args)
+    res.respond_to?(:to_xml) ? res.to_xml : res
+  end
 
   def power_state_to(k)
     resource = "http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_CSPowerManagementService"

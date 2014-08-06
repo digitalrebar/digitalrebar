@@ -19,22 +19,22 @@ class BarclampIpmi::Configure < Role
     username = Attrib.get('ipmi-username',nr.node)
     authenticator = Attrib.get('ipmi-password',nr.node)
     endpoint = Network.address(node: nr.node, network: "bmc", range: "host").address.addr
-    unless nr.node.node_managers.find_by(type: "BarclampIpmi::IpmiManager")
+    unless nr.node.hammers.find_by(type: "BarclampIpmi::IpmiHammer")
       # We must have a configured IPMI controller to operate.
-      BarclampIpmi::IpmiManager.create!(username: username,
-                                        authenticator: authenticator,
-                                        endpoint: endpoint,
-                                        priority: 1,
-                                        node: nr.node)
+      Hammer.bind(manager_name: "ipmi",
+                       username: username,
+                       authenticator: authenticator,
+                       endpoint: endpoint,
+                       node: nr.node)
     end
-    unless nr.node.node_managers.find_by(type: "BarclampIpmi::WsmanManager")
-      endpoint = BarclampIpmi::WsmanManager.probe(nr.node)
+    unless nr.node.hammers.find_by(type: "BarclampIpmi::WsmanHammer")
+      endpoint = BarclampIpmi::WsmanHammer.probe(nr.node)
       return unless endpoint
-      BarclampIpmi::WsmanManager.create!(username: username,
-                                         authenticator: authenticator,
-                                         endpoint: endpoint,
-                                         priority: 2,
-                                         node: nr.node)
+      Hammer.bind(manager_name: "wsman",
+                       username: username,
+                       authenticator: authenticator,
+                       endpoint: endpoint,
+                       node: nr.node)
     end
   end
 end

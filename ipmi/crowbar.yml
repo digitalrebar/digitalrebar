@@ -30,6 +30,14 @@ barclamp:
 crowbar:
   layout: 2.0
 
+hammers:
+  - name: ipmi
+    priority: 1
+    type: 'BarclampIpmi::IpmiHammer'
+  - name: wsman
+    priority: 2
+    type: 'BarclampIpmi::WsmanHammer'
+
 roles:
   - name: ipmi-master
     jig: chef
