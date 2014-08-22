@@ -1,0 +1,2105 @@
+{
+  "id": "bios-set-PowerEdgeR620-default",
+  "style": "wsman",
+  "attributes": {
+    "LC": {
+      "default": {
+        "Licensed": {
+          "attr_name": "Licensed",
+          "GroupID": null,
+          "value": "Yes",
+          "instance_id": "LifecycleController.Embedded.1#LCAttributes.1#Licensed",
+          "DefaultValue": "No"
+        },
+        "SYSID": {
+          "attr_name": "SYSID",
+          "GroupID": null,
+          "value": "4ce",
+          "instance_id": "LifecycleController.Embedded.1#LCAttributes.1#SystemID",
+          "DefaultValue": ""
+        },
+        "Part Configuration Update": {
+          "attr_name": "Part Configuration Update",
+          "GroupID": null,
+          "value": "Disabled",
+          "instance_id": "LifecycleController.Embedded.1#LCAttributes.1#PartConfigurationUpdate",
+          "DefaultValue": "Disabled"
+        },
+        "Collect System Inventory on Restart": {
+          "attr_name": "Collect System Inventory on Restart",
+          "GroupID": null,
+          "value": "Enabled",
+          "instance_id": "LifecycleController.Embedded.1#LCAttributes.1#CollectSystemInventoryOnRestart",
+          "DefaultValue": "Enabled"
+        },
+        "Part Firmware Update": {
+          "attr_name": "Part Firmware Update",
+          "GroupID": null,
+          "value": "Disable",
+          "instance_id": "LifecycleController.Embedded.1#LCAttributes.1#PartFirmwareUpdate",
+          "DefaultValue": "Disable"
+        },
+        "Provisioning Server": {
+          "attr_name": "Provisioning Server",
+          "GroupID": null,
+          "value": "",
+          "instance_id": "LifecycleController.Embedded.1#LCAttributes.1#ProvisioningServer",
+          "DefaultValue": ""
+        },
+        "VirtualAddressManagement": {
+          "attr_name": "VirtualAddressManagement",
+          "GroupID": null,
+          "value": "Console",
+          "instance_id": "LifecycleController.Embedded.1#LCAttributes.1#VirtualAddressManagement",
+          "DefaultValue": "Console"
+        },
+        "IPChangeNotifyPS": {
+          "attr_name": "IPChangeNotifyPS",
+          "GroupID": null,
+          "value": "Off",
+          "instance_id": "LifecycleController.Embedded.1#LCAttributes.1#IPChangeNotifyPS",
+          "DefaultValue": "Off"
+        },
+        "Auto Discovery": {
+          "attr_name": "Auto Discovery",
+          "GroupID": null,
+          "value": "Off",
+          "instance_id": "LifecycleController.Embedded.1#LCAttributes.1#AutoDiscovery",
+          "DefaultValue": "Off"
+        },
+        "Lifecycle Controller State": {
+          "attr_name": "Lifecycle Controller State",
+          "GroupID": null,
+          "value": "Enabled",
+          "instance_id": "LifecycleController.Embedded.1#LCAttributes.1#LifecycleControllerState",
+          "DefaultValue": "Enabled"
+        },
+        "Discovery Factory Defaults": {
+          "attr_name": "Discovery Factory Defaults",
+          "GroupID": null,
+          "value": "Off",
+          "instance_id": "LifecycleController.Embedded.1#LCAttributes.1#DiscoveryFactoryDefaults",
+          "DefaultValue": "Off"
+        },
+        "VirtualAddressManagementApplication": {
+          "attr_name": "VirtualAddressManagementApplication",
+          "GroupID": null,
+          "value": "",
+          "instance_id": "LifecycleController.Embedded.1#LCAttributes.1#VirtualAddressManagementApplication",
+          "DefaultValue": ""
+        }
+      }
+    },
+    "BIOS": {
+      "default": {
+        "InternalSdCard": {
+          "instance_id": "BIOS.Setup.1-1:InternalSdCard",
+          "attr_name": "InternalSdCard",
+          "value": "Off",
+          "DefaultValue": null,
+          "GroupID": "IntegratedDevices"
+        },
+        "InternalSdCardRedundancy": {
+          "instance_id": "BIOS.Setup.1-1:InternalSdCardRedundancy",
+          "attr_name": "InternalSdCardRedundancy",
+          "value": "Mirror",
+          "DefaultValue": null,
+          "GroupID": "IntegratedDevices"
+        },
+        "OneTimeBootMode": {
+          "attr_name": "OneTimeBootMode",
+          "GroupID": "OneTimeBoot",
+          "value": "Disabled",
+          "instance_id": "BIOS.Setup.1-1:OneTimeBootMode",
+          "DefaultValue": null
+        },
+        "OneTimeBootSeqDev": {
+          "attr_name": "OneTimeBootSeqDev",
+          "GroupID": "OneTimeBoot",
+          "value": "HardDisk.List.1-1",
+          "instance_id": "BIOS.Setup.1-1:OneTimeBootSeqDev",
+          "DefaultValue": null
+        },
+        "ProcVirtualization": {
+          "attr_name": "ProcVirtualization",
+          "GroupID": "ProcSettings",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:ProcVirtualization",
+          "DefaultValue": null
+        },
+        "OsWatchdogTimer": {
+          "attr_name": "OsWatchdogTimer",
+          "GroupID": "IntegratedDevices",
+          "value": "Disabled",
+          "instance_id": "BIOS.Setup.1-1:OsWatchdogTimer",
+          "DefaultValue": null
+        },
+        "TpmStatus": {
+          "attr_name": "TpmStatus",
+          "GroupID": "SysSecurity",
+          "value": "Unknown",
+          "instance_id": "BIOS.Setup.1-1:TpmStatus",
+          "DefaultValue": null
+        },
+        "Slot2": {
+          "attr_name": "Slot2",
+          "GroupID": "SlotDisablement",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:Slot2",
+          "DefaultValue": null
+        },
+        "BootMode": {
+          "attr_name": "BootMode",
+          "GroupID": "BootSettings",
+          "value": "Bios",
+          "instance_id": "BIOS.Setup.1-1:BootMode",
+          "DefaultValue": null
+        },
+        "SataPortF": {
+          "attr_name": "SataPortF",
+          "GroupID": "SataSettings",
+          "value": "Auto",
+          "instance_id": "BIOS.Setup.1-1:SataPortF",
+          "DefaultValue": null
+        },
+        "SataPortFModel": {
+          "attr_name": "SataPortFModel",
+          "GroupID": "SataSettings",
+          "value": "Unknown",
+          "instance_id": "BIOS.Setup.1-1:SataPortFModel",
+          "DefaultValue": null
+        },
+        "SataPortECapacity": {
+          "attr_name": "SataPortECapacity",
+          "GroupID": "SataSettings",
+          "value": "N/A",
+          "instance_id": "BIOS.Setup.1-1:SataPortECapacity",
+          "DefaultValue": null
+        },
+        "NmiButton": {
+          "attr_name": "NmiButton",
+          "GroupID": "SysSecurity",
+          "value": "Disabled",
+          "instance_id": "BIOS.Setup.1-1:NmiButton",
+          "DefaultValue": null
+        },
+        "OneTimeHddSeqDev": {
+          "attr_name": "OneTimeHddSeqDev",
+          "GroupID": "OneTimeBoot",
+          "value": "RAID.Integrated.1-1",
+          "instance_id": "BIOS.Setup.1-1:OneTimeHddSeqDev",
+          "DefaultValue": null
+        },
+        "OneTimeUefiBootSeqDev": {
+          "attr_name": "OneTimeUefiBootSeqDev",
+          "GroupID": "OneTimeBoot",
+          "value": "NIC.Integrated.1-2-2",
+          "instance_id": "BIOS.Setup.1-1:OneTimeUefiBootSeqDev",
+          "DefaultValue": null
+        },
+        "IntegratedNetwork1": {
+          "attr_name": "IntegratedNetwork1",
+          "GroupID": "IntegratedDevices",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:IntegratedNetwork1",
+          "DefaultValue": null
+        },
+        "MemTest": {
+          "attr_name": "MemTest",
+          "GroupID": "MemSettings",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:MemTest",
+          "DefaultValue": null
+        },
+        "ReportKbdErr": {
+          "attr_name": "ReportKbdErr",
+          "GroupID": "MiscSettings",
+          "value": "Report",
+          "instance_id": "BIOS.Setup.1-1:ReportKbdErr",
+          "DefaultValue": null
+        },
+        "SysMemSize": {
+          "attr_name": "SysMemSize",
+          "GroupID": "MemSettings",
+          "value": "2.0 GB",
+          "instance_id": "BIOS.Setup.1-1:SysMemSize",
+          "DefaultValue": null
+        },
+        "PwrButton": {
+          "attr_name": "PwrButton",
+          "GroupID": "SysSecurity",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:PwrButton",
+          "DefaultValue": null
+        },
+        "SataPortEDriveType": {
+          "attr_name": "SataPortEDriveType",
+          "GroupID": "SataSettings",
+          "value": "Unknown Device",
+          "instance_id": "BIOS.Setup.1-1:SataPortEDriveType",
+          "DefaultValue": null
+        },
+        "LogicalProc": {
+          "attr_name": "LogicalProc",
+          "GroupID": "ProcSettings",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:LogicalProc",
+          "DefaultValue": null
+        },
+        "DcuIpPrefetcher": {
+          "attr_name": "DcuIpPrefetcher",
+          "GroupID": "ProcSettings",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:DcuIpPrefetcher",
+          "DefaultValue": null
+        },
+        "FailSafeBaud": {
+          "attr_name": "FailSafeBaud",
+          "GroupID": "SerialCommTitle",
+          "value": "115200",
+          "instance_id": "BIOS.Setup.1-1:FailSafeBaud",
+          "DefaultValue": null
+        },
+        "BiosUpdateControl": {
+          "attr_name": "BiosUpdateControl",
+          "GroupID": "SysSecurity",
+          "value": "Unlocked",
+          "instance_id": "BIOS.Setup.1-1:BiosUpdateControl",
+          "DefaultValue": null
+        },
+        "DcuStreamerPrefetcher": {
+          "attr_name": "DcuStreamerPrefetcher",
+          "GroupID": "ProcSettings",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:DcuStreamerPrefetcher",
+          "DefaultValue": null
+        },
+        "IntegratedRaid": {
+          "attr_name": "IntegratedRaid",
+          "GroupID": "IntegratedDevices",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:IntegratedRaid",
+          "DefaultValue": null
+        },
+        "ProcAdjCacheLine": {
+          "attr_name": "ProcAdjCacheLine",
+          "GroupID": "ProcSettings",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:ProcAdjCacheLine",
+          "DefaultValue": null
+        },
+        "EmbSata": {
+          "attr_name": "EmbSata",
+          "GroupID": "SataSettings",
+          "value": "Off",
+          "instance_id": "BIOS.Setup.1-1:EmbSata",
+          "DefaultValue": null
+        },
+        "ErrPrompt": {
+          "attr_name": "ErrPrompt",
+          "GroupID": "MiscSettings",
+          "value": "Disabled",
+          "instance_id": "BIOS.Setup.1-1:ErrPrompt",
+          "DefaultValue": null
+        },
+        "AesNi": {
+          "attr_name": "AesNi",
+          "GroupID": "SysSecurity",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:AesNi",
+          "DefaultValue": null
+        },
+        "SataPortEModel": {
+          "attr_name": "SataPortEModel",
+          "GroupID": "SataSettings",
+          "value": "Unknown",
+          "instance_id": "BIOS.Setup.1-1:SataPortEModel",
+          "DefaultValue": null
+        },
+        "ProcCores": {
+          "attr_name": "ProcCores",
+          "GroupID": "ProcSettings",
+          "value": "All",
+          "instance_id": "BIOS.Setup.1-1:ProcCores",
+          "DefaultValue": null
+        },
+        "UsbPorts": {
+          "attr_name": "UsbPorts",
+          "GroupID": "IntegratedDevices",
+          "value": "AllOn",
+          "instance_id": "BIOS.Setup.1-1:UsbPorts",
+          "DefaultValue": null
+        },
+        "ExtSerialConnector": {
+          "attr_name": "ExtSerialConnector",
+          "GroupID": "SerialCommTitle",
+          "value": "Serial1",
+          "instance_id": "BIOS.Setup.1-1:ExtSerialConnector",
+          "DefaultValue": null
+        },
+        "PasswordStatus": {
+          "attr_name": "PasswordStatus",
+          "GroupID": "SysSecurity",
+          "value": "Unlocked",
+          "instance_id": "BIOS.Setup.1-1:PasswordStatus",
+          "DefaultValue": null
+        },
+        "ConTermType": {
+          "attr_name": "ConTermType",
+          "GroupID": "SerialCommTitle",
+          "value": "Vt100Vt220",
+          "instance_id": "BIOS.Setup.1-1:ConTermType",
+          "DefaultValue": null
+        },
+        "Slot1": {
+          "attr_name": "Slot1",
+          "GroupID": "SlotDisablement",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:Slot1",
+          "DefaultValue": null
+        },
+        "SataPortE": {
+          "attr_name": "SataPortE",
+          "GroupID": "SataSettings",
+          "value": "Auto",
+          "instance_id": "BIOS.Setup.1-1:SataPortE",
+          "DefaultValue": null
+        },
+        "MemFrequency": {
+          "attr_name": "MemFrequency",
+          "GroupID": "SysProfileSettings",
+          "value": "MaxPerf",
+          "instance_id": "BIOS.Setup.1-1:MemFrequency",
+          "DefaultValue": null
+        },
+        "ProcC1E": {
+          "attr_name": "ProcC1E",
+          "GroupID": "SysProfileSettings",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:ProcC1E",
+          "DefaultValue": null
+        },
+        "SysMemType": {
+          "attr_name": "SysMemType",
+          "GroupID": "MemSettings",
+          "value": "ECC DDR3",
+          "instance_id": "BIOS.Setup.1-1:SysMemType",
+          "DefaultValue": null
+        },
+        "ProcHwPrefetcher": {
+          "attr_name": "ProcHwPrefetcher",
+          "GroupID": "ProcSettings",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:ProcHwPrefetcher",
+          "DefaultValue": null
+        },
+        "AcPwrRcvryUserDelay": {
+          "attr_name": "AcPwrRcvryUserDelay",
+          "GroupID": "SysSecurity",
+          "value": "60",
+          "instance_id": "BIOS.Setup.1-1:AcPwrRcvryUserDelay",
+          "DefaultValue": null
+        },
+        "RtidSetting": {
+          "attr_name": "RtidSetting",
+          "GroupID": "ProcSettings",
+          "value": "Disabled",
+          "instance_id": "BIOS.Setup.1-1:RtidSetting",
+          "DefaultValue": null
+        },
+        "MemPatrolScrub": {
+          "attr_name": "MemPatrolScrub",
+          "GroupID": "SysProfileSettings",
+          "value": "Standard",
+          "instance_id": "BIOS.Setup.1-1:MemPatrolScrub",
+          "DefaultValue": null
+        },
+        "ProcPwrPerf": {
+          "attr_name": "ProcPwrPerf",
+          "GroupID": "SysProfileSettings",
+          "value": "SysDbpm",
+          "instance_id": "BIOS.Setup.1-1:ProcPwrPerf",
+          "DefaultValue": null
+        },
+        "NumLock": {
+          "attr_name": "NumLock",
+          "GroupID": "MiscSettings",
+          "value": "On",
+          "instance_id": "BIOS.Setup.1-1:NumLock",
+          "DefaultValue": null
+        },
+        "InSystemCharacterization": {
+          "attr_name": "InSystemCharacterization",
+          "GroupID": "MiscSettings",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:InSystemCharacterization",
+          "DefaultValue": null
+        },
+        "MemRefreshRate": {
+          "attr_name": "MemRefreshRate",
+          "GroupID": "SysProfileSettings",
+          "value": "1x",
+          "instance_id": "BIOS.Setup.1-1:MemRefreshRate",
+          "DefaultValue": null
+        },
+        "TpmActivation": {
+          "attr_name": "TpmActivation",
+          "GroupID": "SysSecurity",
+          "value": "NoChange",
+          "instance_id": "BIOS.Setup.1-1:TpmActivation",
+          "DefaultValue": null
+        },
+        "VideoMem": {
+          "attr_name": "VideoMem",
+          "GroupID": "MemSettings",
+          "value": "16 MB",
+          "instance_id": "BIOS.Setup.1-1:VideoMem",
+          "DefaultValue": null
+        },
+        "TpmClear": {
+          "attr_name": "TpmClear",
+          "GroupID": "SysSecurity",
+          "value": "No",
+          "instance_id": "BIOS.Setup.1-1:TpmClear",
+          "DefaultValue": null
+        },
+        "TpmSecurity": {
+          "attr_name": "TpmSecurity",
+          "GroupID": "SysSecurity",
+          "value": "Off",
+          "instance_id": "BIOS.Setup.1-1:TpmSecurity",
+          "DefaultValue": null
+        },
+        "MemVolt": {
+          "attr_name": "MemVolt",
+          "GroupID": "SysProfileSettings",
+          "value": "AutoVolt",
+          "instance_id": "BIOS.Setup.1-1:MemVolt",
+          "DefaultValue": null
+        },
+        "NodeInterleave": {
+          "attr_name": "NodeInterleave",
+          "GroupID": "MemSettings",
+          "value": "Disabled",
+          "instance_id": "BIOS.Setup.1-1:NodeInterleave",
+          "DefaultValue": null
+        },
+        "SystemModelName": {
+          "attr_name": "SystemModelName",
+          "GroupID": "SysInformation",
+          "value": "PowerEdge R620",
+          "instance_id": "BIOS.Setup.1-1:SystemModelName",
+          "DefaultValue": null
+        },
+        "SystemManufacturer": {
+          "attr_name": "SystemManufacturer",
+          "GroupID": "SysInformation",
+          "value": "Dell Inc.",
+          "instance_id": "BIOS.Setup.1-1:SystemManufacturer",
+          "DefaultValue": null
+        },
+        "ProcTurboMode": {
+          "attr_name": "ProcTurboMode",
+          "GroupID": "SysProfileSettings",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:ProcTurboMode",
+          "DefaultValue": null
+        },
+        "ProcCoreSpeed": {
+          "attr_name": "ProcCoreSpeed",
+          "GroupID": "ProcSettings",
+          "value": "2.70 GHz",
+          "instance_id": "BIOS.Setup.1-1:ProcCoreSpeed",
+          "DefaultValue": null
+        },
+        "SerialComm": {
+          "attr_name": "SerialComm",
+          "GroupID": "SerialCommTitle",
+          "value": "OnConRedirCom2",
+          "instance_id": "BIOS.Setup.1-1:SerialComm",
+          "DefaultValue": null
+        },
+        "AcPwrRcvryDelay": {
+          "attr_name": "AcPwrRcvryDelay",
+          "GroupID": "SysSecurity",
+          "value": "Immediate",
+          "instance_id": "BIOS.Setup.1-1:AcPwrRcvryDelay",
+          "DefaultValue": null
+        },
+        "SysMfrContactInfo": {
+          "attr_name": "SysMfrContactInfo",
+          "GroupID": "SysInformation",
+          "value": "www.dell.com",
+          "instance_id": "BIOS.Setup.1-1:SysMfrContactInfo",
+          "DefaultValue": null
+        },
+        "MemOpMode": {
+          "attr_name": "MemOpMode",
+          "GroupID": "MemSettings",
+          "value": "OptimizerMode",
+          "instance_id": "BIOS.Setup.1-1:MemOpMode",
+          "DefaultValue": null
+        },
+        "SerialPortAddress": {
+          "attr_name": "SerialPortAddress",
+          "GroupID": "SerialCommTitle",
+          "value": "Serial1Com1Serial2Com2",
+          "instance_id": "BIOS.Setup.1-1:SerialPortAddress",
+          "DefaultValue": null
+        },
+        "SystemBiosVersion": {
+          "attr_name": "SystemBiosVersion",
+          "GroupID": "SysInformation",
+          "value": "1.0.3",
+          "instance_id": "BIOS.Setup.1-1:SystemBiosVersion",
+          "DefaultValue": null
+        },
+        "IntelTxt": {
+          "attr_name": "IntelTxt",
+          "GroupID": "SysSecurity",
+          "value": "Off",
+          "instance_id": "BIOS.Setup.1-1:IntelTxt",
+          "DefaultValue": null
+        },
+        "SysMemVolt": {
+          "attr_name": "SysMemVolt",
+          "GroupID": "MemSettings",
+          "value": "1.5V",
+          "instance_id": "BIOS.Setup.1-1:SysMemVolt",
+          "DefaultValue": null
+        },
+        "SysProfile": {
+          "attr_name": "SysProfile",
+          "GroupID": "SysProfileSettings",
+          "value": "PerfPerWattOptimizedDapc",
+          "instance_id": "BIOS.Setup.1-1:SysProfile",
+          "DefaultValue": null
+        },
+        "EmbVideo": {
+          "attr_name": "EmbVideo",
+          "GroupID": "IntegratedDevices",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:EmbVideo",
+          "DefaultValue": null
+        },
+        "RedirAfterBoot": {
+          "attr_name": "RedirAfterBoot",
+          "GroupID": "SerialCommTitle",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:RedirAfterBoot",
+          "DefaultValue": null
+        },
+        "ProcCStates": {
+          "attr_name": "ProcCStates",
+          "GroupID": "SysProfileSettings",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:ProcCStates",
+          "DefaultValue": null
+        },
+        "Proc64bit": {
+          "attr_name": "Proc64bit",
+          "GroupID": "ProcSettings",
+          "value": "Yes",
+          "instance_id": "BIOS.Setup.1-1:Proc64bit",
+          "DefaultValue": null
+        },
+        "ProcExecuteDisable": {
+          "attr_name": "ProcExecuteDisable",
+          "GroupID": "ProcSettings",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:ProcExecuteDisable",
+          "DefaultValue": null
+        },
+        "SriovGlobalEnable": {
+          "attr_name": "SriovGlobalEnable",
+          "GroupID": "IntegratedDevices",
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:SriovGlobalEnable",
+          "DefaultValue": null
+        },
+        "AcPwrRcvry": {
+          "attr_name": "AcPwrRcvry",
+          "GroupID": "SysSecurity",
+          "value": "Last",
+          "instance_id": "BIOS.Setup.1-1:AcPwrRcvry",
+          "DefaultValue": null
+        },
+        "QpiSpeed": {
+          "GroupID": "ProcSettings",
+          "value": "MaxDataRate",
+          "DefaultValue": null,
+          "instance_id": "BIOS.Setup.1-1:QpiSpeed",
+          "attr_name": "QpiSpeed"
+        },
+        "SataPortFCapacity": {
+          "attr_name": "SataPortFCapacity",
+          "GroupID": "SataSettings",
+          "value": "N/A",
+          "instance_id": "BIOS.Setup.1-1:SataPortFCapacity",
+          "DefaultValue": null
+        },
+        "SataPortFDriveType": {
+          "attr_name": "SataPortFDriveType",
+          "GroupID": "SataSettings",
+          "value": "Unknown Device",
+          "instance_id": "BIOS.Setup.1-1:SataPortFDriveType",
+          "DefaultValue": null
+        },
+        "InternalUsb": {
+          "attr_name": "InternalUsb",
+          "GroupID": "IntegratedDevices",
+          "value": "Off",
+          "instance_id": "BIOS.Setup.1-1:InternalUsb",
+          "DefaultValue": null
+        },
+        "BootSeqRetry": {
+          "attr_name": "BootSeqRetry",
+          "GroupID": "BootSettings",
+          "value": "Disabled",
+          "instance_id": "BIOS.Setup.1-1:BootSeqRetry",
+          "DefaultValue": null
+        }
+      }
+    },
+    "iDRAC": {
+      "WebServer": {
+        "LowerEncryptionBitLength": {
+          "attr_name": "LowerEncryptionBitLength",
+          "GroupID": "WebServer.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#WebServer.1#LowerEncryptionBitLength",
+          "DefaultValue": "Enabled"
+        },
+        "HttpsPort": {
+          "attr_name": "HttpsPort",
+          "GroupID": "WebServer.1",
+          "value": "443",
+          "instance_id": "iDRAC.Embedded.1#WebServer.1#HttpsPort",
+          "DefaultValue": "443"
+        },
+        "Timeout": {
+          "attr_name": "Timeout",
+          "GroupID": "WebServer.1",
+          "value": "1800",
+          "instance_id": "iDRAC.Embedded.1#WebServer.1#Timeout",
+          "DefaultValue": "1800"
+        },
+        "Enable": {
+          "attr_name": "Enable",
+          "GroupID": "WebServer.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#WebServer.1#Enable",
+          "DefaultValue": "Enabled"
+        },
+        "HttpPort": {
+          "attr_name": "HttpPort",
+          "GroupID": "WebServer.1",
+          "value": "80",
+          "instance_id": "iDRAC.Embedded.1#WebServer.1#HttpPort",
+          "DefaultValue": "80"
+        }
+      },
+      "ADGroup": {
+        "Name": {
+          "attr_name": "Name",
+          "GroupID": "ADGroup.5",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#ADGroup.5#Name",
+          "DefaultValue": ""
+        },
+        "Domain": {
+          "attr_name": "Domain",
+          "GroupID": "ADGroup.5",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#ADGroup.5#Domain",
+          "DefaultValue": ""
+        },
+        "Privilege": {
+          "attr_name": "Privilege",
+          "GroupID": "ADGroup.5",
+          "value": "0",
+          "instance_id": "iDRAC.Embedded.1#ADGroup.5#Privilege",
+          "DefaultValue": "0"
+        }
+      },
+      "LDAPRoleGroup": {
+        "DN": {
+          "attr_name": "DN",
+          "GroupID": "LDAPRoleGroup.5",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#LDAPRoleGroup.5#DN",
+          "DefaultValue": ""
+        },
+        "Privilege": {
+          "attr_name": "Privilege",
+          "GroupID": "LDAPRoleGroup.5",
+          "value": "0",
+          "instance_id": "iDRAC.Embedded.1#LDAPRoleGroup.5#Privilege",
+          "DefaultValue": "0"
+        }
+      },
+      "LDAP": {
+        "BindDN": {
+          "attr_name": "BindDN",
+          "GroupID": "LDAP.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#LDAP.1#BindDN",
+          "DefaultValue": ""
+        },
+        "UserAttribute": {
+          "attr_name": "UserAttribute",
+          "GroupID": "LDAP.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#LDAP.1#UserAttribute",
+          "DefaultValue": ""
+        },
+        "Server": {
+          "attr_name": "Server",
+          "GroupID": "LDAP.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#LDAP.1#Server",
+          "DefaultValue": ""
+        },
+        "Port": {
+          "attr_name": "Port",
+          "GroupID": "LDAP.1",
+          "value": "636",
+          "instance_id": "iDRAC.Embedded.1#LDAP.1#Port",
+          "DefaultValue": "636"
+        },
+        "GroupAttribute": {
+          "attr_name": "GroupAttribute",
+          "GroupID": "LDAP.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#LDAP.1#GroupAttribute",
+          "DefaultValue": ""
+        },
+        "CertValidationEnable": {
+          "attr_name": "CertValidationEnable",
+          "GroupID": "LDAP.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#LDAP.1#CertValidationEnable",
+          "DefaultValue": "Enabled"
+        },
+        "Enable": {
+          "attr_name": "Enable",
+          "GroupID": "LDAP.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#LDAP.1#Enable",
+          "DefaultValue": "Disabled"
+        },
+        "SearchFilter": {
+          "attr_name": "SearchFilter",
+          "GroupID": "LDAP.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#LDAP.1#SearchFilter",
+          "DefaultValue": ""
+        },
+        "BaseDN": {
+          "attr_name": "BaseDN",
+          "GroupID": "LDAP.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#LDAP.1#BaseDN",
+          "DefaultValue": ""
+        },
+        "GroupAttributeIsDN": {
+          "attr_name": "GroupAttributeIsDN",
+          "GroupID": "LDAP.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#LDAP.1#GroupAttributeIsDN",
+          "DefaultValue": "Enabled"
+        }
+      },
+      "UserDomain": {
+        "Name": {
+          "attr_name": "Name",
+          "GroupID": "UserDomain.40",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#UserDomain.40#Name",
+          "DefaultValue": ""
+        }
+      },
+      "Security": {
+        "CsrKeySize": {
+          "attr_name": "CsrKeySize",
+          "GroupID": "Security.1",
+          "value": "1024",
+          "instance_id": "iDRAC.Embedded.1#Security.1#CsrKeySize",
+          "DefaultValue": "1024"
+        },
+        "CsrLocalityName": {
+          "attr_name": "CsrLocalityName",
+          "GroupID": "Security.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#Security.1#CsrLocalityName",
+          "DefaultValue": ""
+        },
+        "CsrOrganizationName": {
+          "attr_name": "CsrOrganizationName",
+          "GroupID": "Security.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#Security.1#CsrOrganizationName",
+          "DefaultValue": ""
+        },
+        "CsrCommonName": {
+          "attr_name": "CsrCommonName",
+          "GroupID": "Security.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#Security.1#CsrCommonName",
+          "DefaultValue": ""
+        },
+        "CsrEmailAddr": {
+          "attr_name": "CsrEmailAddr",
+          "GroupID": "Security.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#Security.1#CsrEmailAddr",
+          "DefaultValue": ""
+        },
+        "CsrStateName": {
+          "attr_name": "CsrStateName",
+          "GroupID": "Security.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#Security.1#CsrStateName",
+          "DefaultValue": ""
+        },
+        "CsrCountryCode": {
+          "attr_name": "CsrCountryCode",
+          "GroupID": "Security.1",
+          "value": "US",
+          "instance_id": "iDRAC.Embedded.1#Security.1#CsrCountryCode",
+          "DefaultValue": "US"
+        },
+        "CsrOrganizationUnit": {
+          "attr_name": "CsrOrganizationUnit",
+          "GroupID": "Security.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#Security.1#CsrOrganizationUnit",
+          "DefaultValue": ""
+        }
+      },
+      "ActiveDirectory": {
+        "DCLookupByUserDomain": {
+          "attr_name": "DCLookupByUserDomain",
+          "GroupID": "ActiveDirectory.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#DCLookupByUserDomain",
+          "DefaultValue": "Enabled"
+        },
+        "GCLookupEnable": {
+          "attr_name": "GCLookupEnable",
+          "GroupID": "ActiveDirectory.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#GCLookupEnable",
+          "DefaultValue": "Disabled"
+        },
+        "AuthTimeout": {
+          "attr_name": "AuthTimeout",
+          "GroupID": "ActiveDirectory.1",
+          "value": "120",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#AuthTimeout",
+          "DefaultValue": "120"
+        },
+        "DomainController3": {
+          "attr_name": "DomainController3",
+          "GroupID": "ActiveDirectory.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#DomainController3",
+          "DefaultValue": ""
+        },
+        "DomainController2": {
+          "attr_name": "DomainController2",
+          "GroupID": "ActiveDirectory.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#DomainController2",
+          "DefaultValue": ""
+        },
+        "DomainController1": {
+          "attr_name": "DomainController1",
+          "GroupID": "ActiveDirectory.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#DomainController1",
+          "DefaultValue": ""
+        },
+        "RacName": {
+          "attr_name": "RacName",
+          "GroupID": "ActiveDirectory.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#RacName",
+          "DefaultValue": ""
+        },
+        "DCLookupEnable": {
+          "attr_name": "DCLookupEnable",
+          "GroupID": "ActiveDirectory.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#DCLookupEnable",
+          "DefaultValue": "Disabled"
+        },
+        "DCLookupDomainName": {
+          "attr_name": "DCLookupDomainName",
+          "GroupID": "ActiveDirectory.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#DCLookupDomainName",
+          "DefaultValue": ""
+        },
+        "Schema": {
+          "attr_name": "Schema",
+          "GroupID": "ActiveDirectory.1",
+          "value": "Extended Schema",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#Schema",
+          "DefaultValue": "Extended Schema"
+        },
+        "RacDomain": {
+          "attr_name": "RacDomain",
+          "GroupID": "ActiveDirectory.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#RacDomain",
+          "DefaultValue": ""
+        },
+        "CertValidationEnable": {
+          "attr_name": "CertValidationEnable",
+          "GroupID": "ActiveDirectory.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#CertValidationEnable",
+          "DefaultValue": "Disabled"
+        },
+        "Enable": {
+          "attr_name": "Enable",
+          "GroupID": "ActiveDirectory.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#Enable",
+          "DefaultValue": "Disabled"
+        },
+        "GCRootDomain": {
+          "attr_name": "GCRootDomain",
+          "GroupID": "ActiveDirectory.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#GCRootDomain",
+          "DefaultValue": ""
+        },
+        "GlobalCatalog3": {
+          "attr_name": "GlobalCatalog3",
+          "GroupID": "ActiveDirectory.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#GlobalCatalog3",
+          "DefaultValue": ""
+        },
+        "GlobalCatalog2": {
+          "attr_name": "GlobalCatalog2",
+          "GroupID": "ActiveDirectory.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#GlobalCatalog2",
+          "DefaultValue": ""
+        },
+        "GlobalCatalog1": {
+          "attr_name": "GlobalCatalog1",
+          "GroupID": "ActiveDirectory.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#GlobalCatalog1",
+          "DefaultValue": ""
+        },
+        "SSOEnable": {
+          "attr_name": "SSOEnable",
+          "GroupID": "ActiveDirectory.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#ActiveDirectory.1#SSOEnable",
+          "DefaultValue": "Disabled"
+        }
+      },
+      "RemoteHosts": {
+        "SMTPServerIPAddress": {
+          "attr_name": "SMTPServerIPAddress",
+          "GroupID": "RemoteHosts.1",
+          "value": "0.0.0.0",
+          "instance_id": "iDRAC.Embedded.1#RemoteHosts.1#SMTPServerIPAddress",
+          "DefaultValue": "0.0.0.0"
+        }
+      },
+      "SmartCard": {
+        "SmartCardLogonEnable": {
+          "attr_name": "SmartCardLogonEnable",
+          "GroupID": "SmartCard.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#SmartCard.1#SmartCardLogonEnable",
+          "DefaultValue": "Disabled"
+        },
+        "SmartCardCRLEnable": {
+          "attr_name": "SmartCardCRLEnable",
+          "GroupID": "SmartCard.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#SmartCard.1#SmartCardCRLEnable",
+          "DefaultValue": "Disabled"
+        }
+      },
+      "IPBlocking": {
+        "RangeEnable": {
+          "attr_name": "RangeEnable",
+          "GroupID": "IPBlocking.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#IPBlocking.1#RangeEnable",
+          "DefaultValue": "Disabled"
+        },
+        "FailCount": {
+          "attr_name": "FailCount",
+          "GroupID": "IPBlocking.1",
+          "value": "3",
+          "instance_id": "iDRAC.Embedded.1#IPBlocking.1#FailCount",
+          "DefaultValue": "3"
+        },
+        "PenaltyTime": {
+          "attr_name": "PenaltyTime",
+          "GroupID": "IPBlocking.1",
+          "value": "600",
+          "instance_id": "iDRAC.Embedded.1#IPBlocking.1#PenaltyTime",
+          "DefaultValue": "600"
+        },
+        "BlockEnable": {
+          "attr_name": "BlockEnable",
+          "GroupID": "IPBlocking.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#IPBlocking.1#BlockEnable",
+          "DefaultValue": "Enabled"
+        },
+        "RangeAddr": {
+          "attr_name": "RangeAddr",
+          "GroupID": "IPBlocking.1",
+          "value": "192.168.1.1",
+          "instance_id": "iDRAC.Embedded.1#IPBlocking.1#RangeAddr",
+          "DefaultValue": "192.168.1.1"
+        },
+        "RangeMask": {
+          "attr_name": "RangeMask",
+          "GroupID": "IPBlocking.1",
+          "value": "255.255.255.0",
+          "instance_id": "iDRAC.Embedded.1#IPBlocking.1#RangeMask",
+          "DefaultValue": "255.255.255.0"
+        },
+        "FailWindow": {
+          "attr_name": "FailWindow",
+          "GroupID": "IPBlocking.1",
+          "value": "60",
+          "instance_id": "iDRAC.Embedded.1#IPBlocking.1#FailWindow",
+          "DefaultValue": "60"
+        }
+      },
+      "Serial": {
+        "NoAuth": {
+          "attr_name": "NoAuth",
+          "GroupID": "Serial.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#Serial.1#NoAuth",
+          "DefaultValue": "Disabled"
+        },
+        "IdleTimeout": {
+          "attr_name": "IdleTimeout",
+          "GroupID": "Serial.1",
+          "value": "300",
+          "instance_id": "iDRAC.Embedded.1#Serial.1#IdleTimeout",
+          "DefaultValue": "300"
+        },
+        "Command": {
+          "attr_name": "Command",
+          "GroupID": "Serial.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#Serial.1#Command",
+          "DefaultValue": ""
+        },
+        "BaudRate": {
+          "attr_name": "BaudRate",
+          "GroupID": "Serial.1",
+          "value": "115200",
+          "instance_id": "iDRAC.Embedded.1#Serial.1#BaudRate",
+          "DefaultValue": "115200"
+        },
+        "HistorySize": {
+          "attr_name": "HistorySize",
+          "GroupID": "Serial.1",
+          "value": "8192",
+          "instance_id": "iDRAC.Embedded.1#Serial.1#HistorySize",
+          "DefaultValue": "8192"
+        },
+        "Enable": {
+          "attr_name": "Enable",
+          "GroupID": "Serial.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#Serial.1#Enable",
+          "DefaultValue": "Disabled"
+        }
+      },
+      "IPMISerial": {
+        "NewLineSeq": {
+          "attr_name": "NewLineSeq",
+          "GroupID": "IPMISerial.1",
+          "value": "CR-LF",
+          "instance_id": "iDRAC.Embedded.1#IPMISerial.1#NewLineSeq",
+          "DefaultValue": "CR-LF"
+        },
+        "ChanPrivLimit": {
+          "attr_name": "ChanPrivLimit",
+          "GroupID": "IPMISerial.1",
+          "value": "Administrator",
+          "instance_id": "iDRAC.Embedded.1#IPMISerial.1#ChanPrivLimit",
+          "DefaultValue": "Administrator"
+        },
+        "LineEdit": {
+          "attr_name": "LineEdit",
+          "GroupID": "IPMISerial.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#IPMISerial.1#LineEdit",
+          "DefaultValue": "Enabled"
+        },
+        "BaudRate": {
+          "attr_name": "BaudRate",
+          "GroupID": "IPMISerial.1",
+          "value": "19200",
+          "instance_id": "iDRAC.Embedded.1#IPMISerial.1#BaudRate",
+          "DefaultValue": "57600"
+        },
+        "HandshakeControl": {
+          "attr_name": "HandshakeControl",
+          "GroupID": "IPMISerial.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#IPMISerial.1#HandshakeControl",
+          "DefaultValue": "Enabled"
+        },
+        "InputNewLineSeq": {
+          "attr_name": "InputNewLineSeq",
+          "GroupID": "IPMISerial.1",
+          "value": "Enter",
+          "instance_id": "iDRAC.Embedded.1#IPMISerial.1#InputNewLineSeq",
+          "DefaultValue": "Null"
+        },
+        "DeleteControl": {
+          "attr_name": "DeleteControl",
+          "GroupID": "IPMISerial.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#IPMISerial.1#DeleteControl",
+          "DefaultValue": "Disabled"
+        },
+        "FlowControl": {
+          "attr_name": "FlowControl",
+          "GroupID": "IPMISerial.1",
+          "value": "None",
+          "instance_id": "iDRAC.Embedded.1#IPMISerial.1#FlowControl",
+          "DefaultValue": "RTS/CTS"
+        },
+        "ConnectionMode": {
+          "attr_name": "ConnectionMode",
+          "GroupID": "IPMISerial.1",
+          "value": "Terminal",
+          "instance_id": "iDRAC.Embedded.1#IPMISerial.1#ConnectionMode",
+          "DefaultValue": "Basic"
+        },
+        "EchoControl": {
+          "attr_name": "EchoControl",
+          "GroupID": "IPMISerial.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#IPMISerial.1#EchoControl",
+          "DefaultValue": "Enabled"
+        }
+      },
+      "Time": {
+        "TimeZoneOffset": {
+          "attr_name": "TimeZoneOffset",
+          "GroupID": "Time.1",
+          "value": "0",
+          "instance_id": "iDRAC.Embedded.1#Time.1#TimeZoneOffset",
+          "DefaultValue": "0"
+        },
+        "DaylightOffset": {
+          "attr_name": "DaylightOffset",
+          "GroupID": "Time.1",
+          "value": "0",
+          "instance_id": "iDRAC.Embedded.1#Time.1#DaylightOffset",
+          "DefaultValue": "0"
+        }
+      },
+      "RFS": {
+        "AttachMode": {
+          "attr_name": "AttachMode",
+          "GroupID": "RFS.1",
+          "value": "Auto Attach",
+          "instance_id": "iDRAC.Embedded.1#RFS.1#AttachMode",
+          "DefaultValue": "Auto Attach"
+        },
+        "MediaAttachState": {
+          "attr_name": "MediaAttachState",
+          "GroupID": "RFS.1",
+          "value": "Detached",
+          "instance_id": "iDRAC.Embedded.1#RFS.1#MediaAttachState",
+          "DefaultValue": "Detached"
+        }
+      },
+      "IPMISOL": {
+        "SendThreshold": {
+          "attr_name": "SendThreshold",
+          "GroupID": "IPMISOL.1",
+          "value": "255",
+          "instance_id": "iDRAC.Embedded.1#IPMISOL.1#SendThreshold",
+          "DefaultValue": "255"
+        },
+        "MinPrivilege": {
+          "attr_name": "MinPrivilege",
+          "GroupID": "IPMISOL.1",
+          "value": "Administrator",
+          "instance_id": "iDRAC.Embedded.1#IPMISOL.1#MinPrivilege",
+          "DefaultValue": "Administrator"
+        },
+        "BaudRate": {
+          "attr_name": "BaudRate",
+          "GroupID": "IPMISOL.1",
+          "value": "115200",
+          "instance_id": "iDRAC.Embedded.1#IPMISOL.1#BaudRate",
+          "DefaultValue": "115200"
+        },
+        "Enable": {
+          "attr_name": "Enable",
+          "GroupID": "IPMISOL.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#IPMISOL.1#Enable",
+          "DefaultValue": "Enabled"
+        },
+        "AccumulateInterval": {
+          "attr_name": "AccumulateInterval",
+          "GroupID": "IPMISOL.1",
+          "value": "10",
+          "instance_id": "iDRAC.Embedded.1#IPMISOL.1#AccumulateInterval",
+          "DefaultValue": "10"
+        }
+      },
+      "Telnet": {
+        "Port": {
+          "attr_name": "Port",
+          "GroupID": "Telnet.1",
+          "value": "23",
+          "instance_id": "iDRAC.Embedded.1#Telnet.1#Port",
+          "DefaultValue": "23"
+        },
+        "Timeout": {
+          "attr_name": "Timeout",
+          "GroupID": "Telnet.1",
+          "value": "1800",
+          "instance_id": "iDRAC.Embedded.1#Telnet.1#Timeout",
+          "DefaultValue": "1800"
+        },
+        "Enable": {
+          "attr_name": "Enable",
+          "GroupID": "Telnet.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#Telnet.1#Enable",
+          "DefaultValue": "Disabled"
+        }
+      },
+      "VirtualMedia": {
+        "FloppyEmulation": {
+          "attr_name": "FloppyEmulation",
+          "GroupID": "VirtualMedia.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#VirtualMedia.1#FloppyEmulation",
+          "DefaultValue": "Disabled"
+        },
+        "KeyEnable": {
+          "attr_name": "KeyEnable",
+          "GroupID": "VirtualMedia.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#VirtualMedia.1#KeyEnable",
+          "DefaultValue": "Disabled"
+        },
+        "BootOnce": {
+          "attr_name": "BootOnce",
+          "GroupID": "VirtualMedia.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#VirtualMedia.1#BootOnce",
+          "DefaultValue": "Disabled"
+        },
+        "Attached": {
+          "attr_name": "Attached",
+          "GroupID": "VirtualMedia.1",
+          "value": "AutoAttach",
+          "instance_id": "iDRAC.Embedded.1#VirtualMedia.1#Attached",
+          "DefaultValue": "AutoAttach"
+        }
+      },
+      "SNMPTrapIPv4": {
+        "State": {
+          "attr_name": "State",
+          "GroupID": "SNMPTrapIPv4.4",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#SNMPTrapIPv4.4#State",
+          "DefaultValue": "Disabled"
+        },
+        "DestIPv4Addr": {
+          "attr_name": "DestIPv4Addr",
+          "GroupID": "SNMPTrapIPv4.4",
+          "value": "0.0.0.0",
+          "instance_id": "iDRAC.Embedded.1#SNMPTrapIPv4.4#DestIPv4Addr",
+          "DefaultValue": "0.0.0.0"
+        }
+      },
+      "SNMPTrapIPv6": {
+        "State": {
+          "attr_name": "State",
+          "GroupID": "SNMPTrapIPv6.4",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#SNMPTrapIPv6.4#State",
+          "DefaultValue": "Disabled"
+        },
+        "DestIPv6Addr": {
+          "attr_name": "DestIPv6Addr",
+          "GroupID": "SNMPTrapIPv6.4",
+          "value": "::",
+          "instance_id": "iDRAC.Embedded.1#SNMPTrapIPv6.4#DestIPv6Addr",
+          "DefaultValue": "::"
+        }
+      },
+      "SerialRedirection": {
+        "QuitKey": {
+          "attr_name": "QuitKey",
+          "GroupID": "SerialRedirection.1",
+          "value": "^\\",
+          "instance_id": "iDRAC.Embedded.1#SerialRedirection.1#QuitKey",
+          "DefaultValue": "^\\"
+        },
+        "Enable": {
+          "attr_name": "Enable",
+          "GroupID": "SerialRedirection.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#SerialRedirection.1#Enable",
+          "DefaultValue": "Enabled"
+        }
+      },
+      "OS-BMC": {
+        "AdminState": {
+          "attr_name": "AdminState",
+          "GroupID": "OS-BMC.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#OS-BMC.1#AdminState",
+          "DefaultValue": "Disabled"
+        }
+      },
+      "SysLog": {
+        "Port": {
+          "attr_name": "Port",
+          "GroupID": "SysLog.1",
+          "value": "514",
+          "instance_id": "iDRAC.Embedded.1#SysLog.1#Port",
+          "DefaultValue": "514"
+        },
+        "SysLogEnable": {
+          "attr_name": "SysLogEnable",
+          "GroupID": "SysLog.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#SysLog.1#SysLogEnable",
+          "DefaultValue": "Disabled"
+        },
+        "Server3": {
+          "attr_name": "Server3",
+          "GroupID": "SysLog.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#SysLog.1#Server3",
+          "DefaultValue": ""
+        },
+        "Server2": {
+          "attr_name": "Server2",
+          "GroupID": "SysLog.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#SysLog.1#Server2",
+          "DefaultValue": ""
+        },
+        "Server1": {
+          "attr_name": "Server1",
+          "GroupID": "SysLog.1",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#SysLog.1#Server1",
+          "DefaultValue": ""
+        }
+      },
+      "EmailAlert": {
+        "Address": {
+          "attr_name": "Address",
+          "GroupID": "EmailAlert.4",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#EmailAlert.4#Address",
+          "DefaultValue": ""
+        },
+        "Enable": {
+          "attr_name": "Enable",
+          "GroupID": "EmailAlert.4",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#EmailAlert.4#Enable",
+          "DefaultValue": "Disabled"
+        },
+        "CustomMsg": {
+          "attr_name": "CustomMsg",
+          "GroupID": "EmailAlert.4",
+          "value": "",
+          "instance_id": "iDRAC.Embedded.1#EmailAlert.4#CustomMsg",
+          "DefaultValue": ""
+        }
+      },
+      "IPMILan": {
+        "EncryptionKey": {
+          "attr_name": "EncryptionKey",
+          "GroupID": "IPMILan.1",
+          "value": "0000000000000000000000000000000000000000",
+          "instance_id": "iDRAC.Embedded.1#IPMILan.1#EncryptionKey",
+          "DefaultValue": "0000000000000000000000000000000000000000"
+        },
+        "CommunityName": {
+          "attr_name": "CommunityName",
+          "GroupID": "IPMILan.1",
+          "value": "public",
+          "instance_id": "iDRAC.Embedded.1#IPMILan.1#CommunityName",
+          "DefaultValue": "public"
+        },
+        "PrivLimit": {
+          "attr_name": "PrivLimit",
+          "GroupID": "IPMILan.1",
+          "value": "Administrator",
+          "instance_id": "iDRAC.Embedded.1#IPMILan.1#PrivLimit",
+          "DefaultValue": "Administrator"
+        },
+        "Enable": {
+          "attr_name": "Enable",
+          "GroupID": "IPMILan.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#IPMILan.1#Enable",
+          "DefaultValue": "Disabled"
+        },
+        "AlertEnable": {
+          "attr_name": "AlertEnable",
+          "GroupID": "IPMILan.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#IPMILan.1#AlertEnable",
+          "DefaultValue": "Disabled"
+        }
+      },
+      "SNMP": {
+        "AgentEnable": {
+          "attr_name": "AgentEnable",
+          "GroupID": "SNMP.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#SNMP.1#AgentEnable",
+          "DefaultValue": "Enabled"
+        },
+        "AgentCommunity": {
+          "attr_name": "AgentCommunity",
+          "GroupID": "SNMP.1",
+          "value": "public",
+          "instance_id": "iDRAC.Embedded.1#SNMP.1#AgentCommunity",
+          "DefaultValue": "public"
+        }
+      },
+      "LocalSecurity": {
+        "LocalConfig": {
+          "attr_name": "LocalConfig",
+          "GroupID": "LocalSecurity.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#LocalSecurity.1#LocalConfig",
+          "DefaultValue": "Disabled"
+        },
+        "PrebootConfig": {
+          "attr_name": "PrebootConfig",
+          "GroupID": "LocalSecurity.1",
+          "value": "Disabled",
+          "instance_id": "iDRAC.Embedded.1#LocalSecurity.1#PrebootConfig",
+          "DefaultValue": "Disabled"
+        }
+      },
+      "Racadm": {
+        "Timeout": {
+          "attr_name": "Timeout",
+          "GroupID": "Racadm.1",
+          "value": "60",
+          "instance_id": "iDRAC.Embedded.1#Racadm.1#Timeout",
+          "DefaultValue": "60"
+        },
+        "Enable": {
+          "attr_name": "Enable",
+          "GroupID": "Racadm.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#Racadm.1#Enable",
+          "DefaultValue": "Enabled"
+        }
+      },
+      "VirtualConsole": {
+        "MaxSessions": {
+          "attr_name": "MaxSessions",
+          "GroupID": "VirtualConsole.1",
+          "value": "4",
+          "instance_id": "iDRAC.Embedded.1#VirtualConsole.1#MaxSessions",
+          "DefaultValue": "4"
+        },
+        "Port": {
+          "attr_name": "Port",
+          "GroupID": "VirtualConsole.1",
+          "value": "5900",
+          "instance_id": "iDRAC.Embedded.1#VirtualConsole.1#Port",
+          "DefaultValue": "5900"
+        },
+        "LocalVideo": {
+          "attr_name": "LocalVideo",
+          "GroupID": "VirtualConsole.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#VirtualConsole.1#LocalVideo",
+          "DefaultValue": "Enabled"
+        },
+        "Timeout": {
+          "attr_name": "Timeout",
+          "GroupID": "VirtualConsole.1",
+          "value": "1800",
+          "instance_id": "iDRAC.Embedded.1#VirtualConsole.1#Timeout",
+          "DefaultValue": "1800"
+        },
+        "Enable": {
+          "attr_name": "Enable",
+          "GroupID": "VirtualConsole.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#VirtualConsole.1#Enable",
+          "DefaultValue": "Enabled"
+        },
+        "PluginType": {
+          "attr_name": "PluginType",
+          "GroupID": "VirtualConsole.1",
+          "value": "Java",
+          "instance_id": "iDRAC.Embedded.1#VirtualConsole.1#PluginType",
+          "DefaultValue": "Active X"
+        },
+        "EncryptEnable": {
+          "attr_name": "EncryptEnable",
+          "GroupID": "VirtualConsole.1",
+          "value": "AES",
+          "instance_id": "iDRAC.Embedded.1#VirtualConsole.1#EncryptEnable",
+          "DefaultValue": "AES"
+        }
+      },
+      "SSH": {
+        "Port": {
+          "attr_name": "Port",
+          "GroupID": "SSH.1",
+          "value": "22",
+          "instance_id": "iDRAC.Embedded.1#SSH.1#Port",
+          "DefaultValue": "22"
+        },
+        "Timeout": {
+          "attr_name": "Timeout",
+          "GroupID": "SSH.1",
+          "value": "1800",
+          "instance_id": "iDRAC.Embedded.1#SSH.1#Timeout",
+          "DefaultValue": "1800"
+        },
+        "Enable": {
+          "attr_name": "Enable",
+          "GroupID": "SSH.1",
+          "value": "Enabled",
+          "instance_id": "iDRAC.Embedded.1#SSH.1#Enable",
+          "DefaultValue": "Enabled"
+        }
+      }
+    },
+    "NIC": {
+      "default": {
+        "SecondaryDeviceMacAddr": {
+          "attr_name": "SecondaryDeviceMacAddr",
+          "GroupID": "SecondaryDevice",
+          "value": "00:00:00:00:00:00",
+          "instance_id": "NIC.Integrated.1-1-1:SecondaryDeviceMacAddr",
+          "DefaultValue": null
+        },
+        "UseIndTgtPortal": {
+          "attr_name": "UseIndTgtPortal",
+          "GroupID": "SecondaryDevice",
+          "value": "Disabled",
+          "instance_id": "NIC.Integrated.1-1-1:UseIndTgtPortal",
+          "DefaultValue": null
+        },
+        "IscsiViaDHCP": {
+          "attr_name": "IscsiViaDHCP",
+          "GroupID": "IscsiGenParams",
+          "value": "Enabled",
+          "instance_id": "NIC.Integrated.1-1-1:IscsiViaDHCP",
+          "DefaultValue": null
+        },
+        "FirstTgtBootLun": {
+          "attr_name": "FirstTgtBootLun",
+          "GroupID": "IscsiFirstTgtParams",
+          "value": "0",
+          "instance_id": "NIC.Integrated.1-1-1:FirstTgtBootLun",
+          "DefaultValue": null
+        },
+        "FirstTgtTcpPort": {
+          "attr_name": "FirstTgtTcpPort",
+          "GroupID": "IscsiFirstTgtParams",
+          "value": "3260",
+          "instance_id": "NIC.Integrated.1-1-1:FirstTgtTcpPort",
+          "DefaultValue": null
+        },
+        "LnkUpDelayTime": {
+          "attr_name": "LnkUpDelayTime",
+          "GroupID": "IscsiGenParams",
+          "value": "0",
+          "instance_id": "NIC.Integrated.1-1-1:LnkUpDelayTime",
+          "DefaultValue": null
+        },
+        "IscsiInitiatorChapId": {
+          "attr_name": "IscsiInitiatorChapId",
+          "GroupID": "IscsiInitiatorParams",
+          "value": "",
+          "instance_id": "NIC.Integrated.1-1-1:IscsiInitiatorChapId",
+          "DefaultValue": null
+        },
+        "IscsiInitiatorGateway": {
+          "attr_name": "IscsiInitiatorGateway",
+          "GroupID": "IscsiInitiatorParams",
+          "value": "0.0.0.0",
+          "instance_id": "NIC.Integrated.1-1-1:IscsiInitiatorGateway",
+          "DefaultValue": null
+        },
+        "IscsiInitiatorIpAddr": {
+          "attr_name": "IscsiInitiatorIpAddr",
+          "GroupID": "IscsiInitiatorParams",
+          "value": "0.0.0.0",
+          "instance_id": "NIC.Integrated.1-1-1:IscsiInitiatorIpAddr",
+          "DefaultValue": null
+        },
+        "IpVer": {
+          "attr_name": "IpVer",
+          "GroupID": "IscsiGenParams",
+          "value": "IPv4",
+          "instance_id": "NIC.Integrated.1-1-1:IpVer",
+          "DefaultValue": null
+        },
+        "SecondTgtIpAddress": {
+          "attr_name": "SecondTgtIpAddress",
+          "GroupID": "IscsiSecondTgtParams",
+          "value": "0.0.0.0",
+          "instance_id": "NIC.Integrated.1-1-1:SecondTgtIpAddress",
+          "DefaultValue": null
+        },
+        "TXBandwidthControlMaximum": {
+          "attr_name": "TXBandwidthControlMaximum",
+          "GroupID": "VndrConfigPage",
+          "value": "Unavailable",
+          "instance_id": "NIC.Integrated.1-1-1:TXBandwidthControlMaximum",
+          "DefaultValue": null
+        },
+        "PCIDeviceID": {
+          "attr_name": "PCIDeviceID",
+          "GroupID": "VndrConfigPage",
+          "value": "165F",
+          "instance_id": "NIC.Integrated.1-1-1:PCIDeviceID",
+          "DefaultValue": null
+        },
+        "UseIndTgtName": {
+          "attr_name": "UseIndTgtName",
+          "GroupID": "SecondaryDevice",
+          "value": "Disabled",
+          "instance_id": "NIC.Integrated.1-1-1:UseIndTgtName",
+          "DefaultValue": null
+        },
+        "FirstHddTarget": {
+          "attr_name": "FirstHddTarget",
+          "GroupID": "IscsiGenParams",
+          "value": "Disabled",
+          "instance_id": "NIC.Integrated.1-1-1:FirstHddTarget",
+          "DefaultValue": null
+        },
+        "ChapAuthEnable": {
+          "attr_name": "ChapAuthEnable",
+          "GroupID": "IscsiGenParams",
+          "value": "Disabled",
+          "instance_id": "NIC.Integrated.1-1-1:ChapAuthEnable",
+          "DefaultValue": null
+        },
+        "TcpIpViaDHCP": {
+          "attr_name": "TcpIpViaDHCP",
+          "GroupID": "IscsiGenParams",
+          "value": "Enabled",
+          "instance_id": "NIC.Integrated.1-1-1:TcpIpViaDHCP",
+          "DefaultValue": null
+        },
+        "IscsiInitiatorPrimDns": {
+          "attr_name": "IscsiInitiatorPrimDns",
+          "GroupID": "IscsiInitiatorParams",
+          "value": "0.0.0.0",
+          "instance_id": "NIC.Integrated.1-1-1:IscsiInitiatorPrimDns",
+          "DefaultValue": null
+        },
+        "VLanMode": {
+          "attr_name": "VLanMode",
+          "GroupID": "NICConfig",
+          "value": "Disabled",
+          "instance_id": "NIC.Integrated.1-1-1:VLanMode",
+          "DefaultValue": null
+        },
+        "LunBusyRetryCnt": {
+          "attr_name": "LunBusyRetryCnt",
+          "GroupID": "IscsiGenParams",
+          "value": "0",
+          "instance_id": "NIC.Integrated.1-1-1:LunBusyRetryCnt",
+          "DefaultValue": null
+        },
+        "FirstTgtChapPwd": {
+          "attr_name": "FirstTgtChapPwd",
+          "GroupID": "IscsiFirstTgtParams",
+          "value": "",
+          "instance_id": "NIC.Integrated.1-1-1:FirstTgtChapPwd",
+          "DefaultValue": null
+        },
+        "IscsiInitiatorSecDns": {
+          "attr_name": "IscsiInitiatorSecDns",
+          "GroupID": "IscsiInitiatorParams",
+          "value": "0.0.0.0",
+          "instance_id": "NIC.Integrated.1-1-1:IscsiInitiatorSecDns",
+          "DefaultValue": null
+        },
+        "LnkSpeed": {
+          "attr_name": "LnkSpeed",
+          "GroupID": "NICConfig",
+          "value": "AutoNeg",
+          "instance_id": "NIC.Integrated.1-1-1:LnkSpeed",
+          "DefaultValue": null
+        },
+        "TcpTimestmp": {
+          "attr_name": "TcpTimestmp",
+          "GroupID": "IscsiGenParams",
+          "value": "Disabled",
+          "instance_id": "NIC.Integrated.1-1-1:TcpTimestmp",
+          "DefaultValue": null
+        },
+        "EFIVersion": {
+          "attr_name": "EFIVersion",
+          "GroupID": "FrmwImgMenu",
+          "value": "15.0.17",
+          "instance_id": "NIC.Integrated.1-1-1:EFIVersion",
+          "DefaultValue": null
+        },
+        "FamilyVersion": {
+          "attr_name": "FamilyVersion",
+          "GroupID": "FrmwImgMenu",
+          "value": "7.0.47",
+          "instance_id": "NIC.Integrated.1-1-1:FamilyVersion",
+          "DefaultValue": null
+        },
+        "NicPartitioningSupport": {
+          "attr_name": "NicPartitioningSupport",
+          "GroupID": "VndrConfigPage",
+          "value": "Unavailable",
+          "instance_id": "NIC.Integrated.1-1-1:NicPartitioningSupport",
+          "DefaultValue": null
+        },
+        "FCoEBootSupport": {
+          "attr_name": "FCoEBootSupport",
+          "GroupID": "VndrConfigPage",
+          "value": "Unavailable",
+          "instance_id": "NIC.Integrated.1-1-1:FCoEBootSupport",
+          "DefaultValue": null
+        },
+        "IscsiInitiatorSubnetPrefix": {
+          "attr_name": "IscsiInitiatorSubnetPrefix",
+          "GroupID": "IscsiInitiatorParams",
+          "value": "",
+          "instance_id": "NIC.Integrated.1-1-1:IscsiInitiatorSubnetPrefix",
+          "DefaultValue": null
+        },
+        "ChipMdl": {
+          "attr_name": "ChipMdl",
+          "GroupID": "VndrConfigPage",
+          "value": "BCM5720 A0",
+          "instance_id": "NIC.Integrated.1-1-1:ChipMdl",
+          "DefaultValue": null
+        },
+        "VLanId": {
+          "attr_name": "VLanId",
+          "GroupID": "NICConfig",
+          "value": "1",
+          "instance_id": "NIC.Integrated.1-1-1:VLanId",
+          "DefaultValue": null
+        },
+        "PXEBootSupport": {
+          "attr_name": "PXEBootSupport",
+          "GroupID": "VndrConfigPage",
+          "value": "Available",
+          "instance_id": "NIC.Integrated.1-1-1:PXEBootSupport",
+          "DefaultValue": null
+        },
+        "ConnectSecondTgt": {
+          "attr_name": "ConnectSecondTgt",
+          "GroupID": "IscsiSecondTgtParams",
+          "value": "Disabled",
+          "instance_id": "NIC.Integrated.1-1-1:ConnectSecondTgt",
+          "DefaultValue": null
+        },
+        "SecondTgtTcpPort": {
+          "attr_name": "SecondTgtTcpPort",
+          "GroupID": "IscsiSecondTgtParams",
+          "value": "3260",
+          "instance_id": "NIC.Integrated.1-1-1:SecondTgtTcpPort",
+          "DefaultValue": null
+        },
+        "BlnkLeds": {
+          "attr_name": "BlnkLeds",
+          "GroupID": "VndrConfigPage",
+          "value": "0",
+          "instance_id": "NIC.Integrated.1-1-1:BlnkLeds",
+          "DefaultValue": null
+        },
+        "ControllerBIOSVersion": {
+          "attr_name": "ControllerBIOSVersion",
+          "GroupID": "FrmwImgMenu",
+          "value": "1.17",
+          "instance_id": "NIC.Integrated.1-1-1:ControllerBIOSVersion",
+          "DefaultValue": null
+        },
+        "SecondTgtIscsiName": {
+          "attr_name": "SecondTgtIscsiName",
+          "GroupID": "IscsiSecondTgtParams",
+          "value": "",
+          "instance_id": "NIC.Integrated.1-1-1:SecondTgtIscsiName",
+          "DefaultValue": null
+        },
+        "SecondTgtChapPwd": {
+          "attr_name": "SecondTgtChapPwd",
+          "GroupID": "IscsiSecondTgtParams",
+          "value": "",
+          "instance_id": "NIC.Integrated.1-1-1:SecondTgtChapPwd",
+          "DefaultValue": null
+        },
+        "FirstTgtChapId": {
+          "attr_name": "FirstTgtChapId",
+          "GroupID": "IscsiFirstTgtParams",
+          "value": "",
+          "instance_id": "NIC.Integrated.1-1-1:FirstTgtChapId",
+          "DefaultValue": null
+        },
+        "FirstTgtIscsiName": {
+          "attr_name": "FirstTgtIscsiName",
+          "GroupID": "IscsiFirstTgtParams",
+          "value": "",
+          "instance_id": "NIC.Integrated.1-1-1:FirstTgtIscsiName",
+          "DefaultValue": null
+        },
+        "iSCSIBootSupport": {
+          "attr_name": "iSCSIBootSupport",
+          "GroupID": "VndrConfigPage",
+          "value": "Available",
+          "instance_id": "NIC.Integrated.1-1-1:iSCSIBootSupport",
+          "DefaultValue": null
+        },
+        "iSCSIOffloadSupport": {
+          "attr_name": "iSCSIOffloadSupport",
+          "GroupID": "VndrConfigPage",
+          "value": "Unavailable",
+          "instance_id": "NIC.Integrated.1-1-1:iSCSIOffloadSupport",
+          "DefaultValue": null
+        },
+        "FirstTgtIpAddress": {
+          "attr_name": "FirstTgtIpAddress",
+          "GroupID": "IscsiFirstTgtParams",
+          "value": "0.0.0.0",
+          "instance_id": "NIC.Integrated.1-1-1:FirstTgtIpAddress",
+          "DefaultValue": null
+        },
+        "IscsiInitiatorChapPwd": {
+          "attr_name": "IscsiInitiatorChapPwd",
+          "GroupID": "IscsiInitiatorParams",
+          "value": "",
+          "instance_id": "NIC.Integrated.1-1-1:IscsiInitiatorChapPwd",
+          "DefaultValue": null
+        },
+        "IscsiInitiatorSubnet": {
+          "attr_name": "IscsiInitiatorSubnet",
+          "GroupID": "IscsiInitiatorParams",
+          "value": "0.0.0.0",
+          "instance_id": "NIC.Integrated.1-1-1:IscsiInitiatorSubnet",
+          "DefaultValue": null
+        },
+        "TXBandwidthControlMinimum": {
+          "attr_name": "TXBandwidthControlMinimum",
+          "GroupID": "VndrConfigPage",
+          "value": "Unavailable",
+          "instance_id": "NIC.Integrated.1-1-1:TXBandwidthControlMinimum",
+          "DefaultValue": null
+        },
+        "WakeOnLan": {
+          "attr_name": "WakeOnLan",
+          "GroupID": "NICConfig",
+          "value": "Disabled",
+          "instance_id": "NIC.Integrated.1-1-1:WakeOnLan",
+          "DefaultValue": null
+        },
+        "ConnectFirstTgt": {
+          "attr_name": "ConnectFirstTgt",
+          "GroupID": "IscsiFirstTgtParams",
+          "value": "Disabled",
+          "instance_id": "NIC.Integrated.1-1-1:ConnectFirstTgt",
+          "DefaultValue": null
+        },
+        "IscsiTgtBoot": {
+          "attr_name": "IscsiTgtBoot",
+          "GroupID": "IscsiGenParams",
+          "value": "Enabled",
+          "instance_id": "NIC.Integrated.1-1-1:IscsiTgtBoot",
+          "DefaultValue": null
+        },
+        "IpAutoConfig": {
+          "attr_name": "IpAutoConfig",
+          "GroupID": "IscsiGenParams",
+          "value": "Enabled",
+          "instance_id": "NIC.Integrated.1-1-1:IpAutoConfig",
+          "DefaultValue": null
+        },
+        "SecondTgtBootLun": {
+          "attr_name": "SecondTgtBootLun",
+          "GroupID": "IscsiSecondTgtParams",
+          "value": "0",
+          "instance_id": "NIC.Integrated.1-1-1:SecondTgtBootLun",
+          "DefaultValue": null
+        },
+        "SecondTgtChapId": {
+          "attr_name": "SecondTgtChapId",
+          "GroupID": "IscsiSecondTgtParams",
+          "value": "",
+          "instance_id": "NIC.Integrated.1-1-1:SecondTgtChapId",
+          "DefaultValue": null
+        },
+        "IscsiInitiatorName": {
+          "attr_name": "IscsiInitiatorName",
+          "GroupID": "IscsiInitiatorParams",
+          "value": "iqn.1995-05.com.broadcom.iscsiboot",
+          "instance_id": "NIC.Integrated.1-1-1:IscsiInitiatorName",
+          "DefaultValue": null
+        },
+        "DhcpVendId": {
+          "attr_name": "DhcpVendId",
+          "GroupID": "IscsiGenParams",
+          "value": "BRCM ISAN",
+          "instance_id": "NIC.Integrated.1-1-1:DhcpVendId",
+          "DefaultValue": null
+        },
+        "FCoEOffloadSupport": {
+          "attr_name": "FCoEOffloadSupport",
+          "GroupID": "VndrConfigPage",
+          "value": "Unavailable",
+          "instance_id": "NIC.Integrated.1-1-1:FCoEOffloadSupport",
+          "DefaultValue": null
+        }
+      }
+    },
+    "RAID": {
+      "default": {
+        "RAIDmaxSupportedVD": {
+          "attr_name": "RAIDmaxSupportedVD",
+          "GroupID": null,
+          "value": "16",
+          "instance_id": "RAID.Integrated.1-1:RAIDmaxSupportedVD",
+          "DefaultValue": null
+        },
+        "RAIDcopybackMode": {
+          "attr_name": "RAIDcopybackMode",
+          "GroupID": null,
+          "value": "On",
+          "instance_id": "RAID.Integrated.1-1:RAIDcopybackMode",
+          "DefaultValue": null
+        },
+        "RAIDmaxSpansInVD": {
+          "attr_name": "RAIDmaxSpansInVD",
+          "GroupID": null,
+          "value": "8",
+          "instance_id": "RAID.Integrated.1-1:RAIDmaxSpansInVD",
+          "DefaultValue": null
+        },
+        "RAIDccRate": {
+          "attr_name": "RAIDccRate",
+          "GroupID": null,
+          "value": "30",
+          "instance_id": "RAID.Integrated.1-1:RAIDccRate",
+          "DefaultValue": null
+        },
+        "RAIDloadBalancedMode": {
+          "attr_name": "RAIDloadBalancedMode",
+          "GroupID": null,
+          "value": "Automatic",
+          "instance_id": "RAID.Integrated.1-1:RAIDloadBalancedMode",
+          "DefaultValue": null
+        },
+        "RAIDprMode": {
+          "attr_name": "RAIDprMode",
+          "GroupID": null,
+          "value": "Automatic",
+          "instance_id": "RAID.Integrated.1-1:RAIDprMode",
+          "DefaultValue": null
+        },
+        "RAIDccMode": {
+          "attr_name": "RAIDccMode",
+          "GroupID": null,
+          "value": "Normal",
+          "instance_id": "RAID.Integrated.1-1:RAIDccMode",
+          "DefaultValue": null
+        },
+        "RAIDSupportedDiskProt": {
+          "attr_name": "RAIDSupportedDiskProt",
+          "GroupID": null,
+          "value": "SATA",
+          "instance_id": "RAID.Integrated.1-1:RAIDSupportedDiskProt",
+          "DefaultValue": null
+        },
+        "RAIDprRate": {
+          "attr_name": "RAIDprRate",
+          "GroupID": null,
+          "value": "30",
+          "instance_id": "RAID.Integrated.1-1:RAIDprRate",
+          "DefaultValue": null
+        },
+        "RAIDrebuildRate": {
+          "attr_name": "RAIDrebuildRate",
+          "GroupID": null,
+          "value": "30",
+          "instance_id": "RAID.Integrated.1-1:RAIDrebuildRate",
+          "DefaultValue": null
+        },
+        "RAIDspinDownIdleTime": {
+          "attr_name": "RAIDspinDownIdleTime",
+          "GroupID": null,
+          "value": "30",
+          "instance_id": "RAID.Integrated.1-1:RAIDspinDownIdleTime",
+          "DefaultValue": null
+        },
+        "RAIDbgiRate": {
+          "attr_name": "RAIDbgiRate",
+          "GroupID": null,
+          "value": "30",
+          "instance_id": "RAID.Integrated.1-1:RAIDbgiRate",
+          "DefaultValue": null
+        },
+        "RAIDmaxPDsInSpan": {
+          "attr_name": "RAIDmaxPDsInSpan",
+          "GroupID": null,
+          "value": "16",
+          "instance_id": "RAID.Integrated.1-1:RAIDmaxPDsInSpan",
+          "DefaultValue": null
+        },
+        "RAIDSupportedRAIDLevels": {
+          "attr_name": "RAIDSupportedRAIDLevels",
+          "GroupID": null,
+          "value": "RAID-50",
+          "instance_id": "RAID.Integrated.1-1:RAIDSupportedRAIDLevels",
+          "DefaultValue": null
+        },
+        "RAIDreconstructRate": {
+          "attr_name": "RAIDreconstructRate",
+          "GroupID": null,
+          "value": "30",
+          "instance_id": "RAID.Integrated.1-1:RAIDreconstructRate",
+          "DefaultValue": null
+        },
+        "RAIDMaxCapableSpeed": {
+          "attr_name": "RAIDMaxCapableSpeed",
+          "GroupID": null,
+          "value": "6_GBS",
+          "instance_id": "RAID.Integrated.1-1:RAIDMaxCapableSpeed",
+          "DefaultValue": null
+        }
+      }
+    }
+  }
+}

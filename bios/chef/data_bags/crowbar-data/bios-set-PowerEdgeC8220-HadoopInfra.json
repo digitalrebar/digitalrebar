@@ -1,0 +1,18 @@
+{
+  "versions": [
+    "1.0.24", "1.1.9", "1.1.11", "1.1.17", "2.1.2"
+  ],
+  "style": "unified_pec",
+  "id": "bios-set-PowerEdgeC8220-HadoopInfra",
+  "attributes": {
+    "virtualization_technology": "disabled",
+    "vt_for_direct_io": "disabled",
+    "sriov_global_enable": "disabled",
+    "boot_mode": "bios",
+    "boot_device_1": "network",
+    "boot_device_2": "hard_disk",
+    "boot_device_3": "raid",
+    "embedded_sata_controller": "off"
+
+  }
+}
