@@ -26,8 +26,8 @@ node.set["crowbar_wall"]["status"] ||= Mash.new
 node.set["crowbar_wall"]["status"]["ipmi"] ||= Mash.new
 node.set["crowbar_wall"]["status"]["ipmi"]["messages"] ||= []
 
-ipmiinfo = IPMI.mc_info
-lan_current_cfg = IPMI.laninfo
+ipmiinfo = IPMI.mc_info(node)
+lan_current_cfg = IPMI.laninfo(node)
 bmc_user     = node[:ipmi][:bmc_user]
 bmc_password = node[:ipmi][:bmc_password]
 chan         = lan_current_cfg["lan_channel"]
@@ -47,16 +47,18 @@ ruby_block "Signal success in setting user creds" do
   action :nothing
 end
 
-bash "Set IPMI credentials and enable LAN channel access" do
-  code <<EOC
-set -e -x
-ipmitool user set name #{bmc_userid} #{bmc_user}
-ipmitool user set password #{bmc_userid} #{bmc_password}
-ipmitool user priv #{bmc_userid} 4 #{chan}
-ipmitool channel setaccess #{chan} #{bmc_userid} callin=on link=on ipmi=on privilege=4
-ipmitool user enable #{bmc_userid}
-ipmitool lan set #{chan} access on
-EOC
+ruby_block "Set IPMI credentials and enable LAN channel access" do
+  block do
+    ["user set name #{bmc_userid} #{bmc_user}",
+     "user set password #{bmc_userid} #{bmc_password}",
+     "user priv #{bmc_userid} 4 #{chan}",
+     "channel setaccess #{chan} #{bmc_userid} callin=on link=on ipmi=on privilege=4",
+     "user enable #{bmc_userid}",
+     "lan set #{chan} access on"].each do |cmd|
+      IPMI.tool(node,cmd)
+      raise "Failed to run #{cmd}" unless $?.exitstatus == 0
+    end
+  end
   notifies :create, "ruby_block[Signal success in setting user creds]"
   not_if {
     salt = (node["crowbar_wall"]["status"]["ipmi"]["user_salt"] || 0 rescue 0)
@@ -66,18 +68,23 @@ EOC
 end
 
 # If this is a Dell system, tell the BMC that we want to use the dedicated nic.
-if node["dmi"]["system"]["manufacturer"] =~ /^Dell/
-  bash "Set Dell BMC nic to dedicated mode" do
-    code "ipmitool delloem lan set dedicated"
-    not_if {%x{ipmitool delloem lan get}.strip == "dedicated" }
+if node["quirks"].member?("ipmi-dell-dedicated-nic")
+  ruby_block "Set Dell BMC nic to dedicated mode" do
+    block do
+      IPMI.tool(node,"delloem lan set dedicated")
+      raise "Unable to set IPMI to dedicated nic mode" unless $?.existatus == 0
+    end
+    not_if { IPMI.tool(node,"delloem lan get").strip == "dedicated" }
   end
 end
 
 if node[:ipmi][:use_dhcp]
-  bash "Configure BMC to use DHCP" do
-    code "ipmitool lan set #{chan} ipsrc dhcp"
-    not_if { lan_current_cfg['ipsrc'] == "dhcp" }
-  end
+  ruby_block "Configure BMC to use DHCP" do
+    block do
+      IPMI.tool(node,"lan set #{chan} ipsrc dhcp")
+      raise "Could not set IPMI to use DHCP" unless $?.exitstatus == 0
+    end
+  end unless lan_current_cfg['ipsrc'] == "dhcp"
 else
   lan_cfg = Mash.new
   lan_cfg['ipsrc'] = node[:ipmi][:use_dhcp] ? "dhcp" : "static"
@@ -100,10 +107,13 @@ else
 
   ['ipsrc','ipaddr','netmask','defgw ipaddr','vlan id'].each do |k|
     v = lan_cfg[k]
-    cmd = "ipmitool lan set #{chan} #{k.to_s} #{v}"
-    bash cmd do
-      code cmd
-      not_if {lan_current_cfg[k] == v}
+    next if lan_current_cfg[k] == v
+    cmd = "lan set #{chan} #{k.to_s} #{v}"
+    ruby_block cmd do
+      block do
+        IPMI.tool(node,cmd)
+        raise "Could not #{cmd}" unless $?.exitstatus == 0
+      end
     end
   end
 end
