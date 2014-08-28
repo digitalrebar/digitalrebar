@@ -35,10 +35,6 @@ actions :apply, :report, :set_boot
 ## what raind configuration to apply - hash, see above
 attribute :config
 ## should really verbose output be produced - true/false
-attribute :debug_flag 
-## where to log problems encountered - string
-attribute :problem_file
+attribute :debug_flag
 ## Boot parameter that indicates if nic should be first
 attribute :nic_first
-
-

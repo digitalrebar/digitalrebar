@@ -18,7 +18,7 @@
 #
 # Actions from resource
 #
-action :report do  
+action :report do
   # Implicitly handled by load_current_resource
 end
 
@@ -42,9 +42,9 @@ end
 def load_current_resource
   log "load_current_resource start..............................."
   @drivers, @controllers = enumerate_topology
-  if @controllers.nil? or 
-     @drivers.nil? or 
-     @controllers.empty? or 
+  if @controllers.nil? or
+     @drivers.nil? or
+     @controllers.empty? or
      @drivers.empty?
     @failed = true
   else
@@ -53,30 +53,9 @@ def load_current_resource
   log "load_current_resource end............................"
 end
 
-### Helper functions ####
-#
-# log to the problem file.
-#
-def report_problem(msg)
-  problem_file = @new_resource.problem_file
-  log_("reporting problem to: #{problem_file}- #{msg}" )
-  unless problem_file.nil?
-    open(problem_file,"a") { |f| f.puts(msg) }
-  end
-  log_(msg)
-end
-
 def log_(msg)
-  Chef::Log.info(msg) 
+  Chef::Log.info(msg)
   true
-end
-
-
-def log_action(action)
-  node["crowbar_wall"] = {} unless node["crowbar_wall"]
-  node["crowbar_wall"]["raid"] = {} unless node["crowbar_wall"]["raid"]
-  node["crowbar_wall"]["raid"]["actions"] = [] unless node["crowbar_wall"]["raid"]["actions"]
-  node["crowbar_wall"]["raid"]["actions"] << action
 end
 
 #
@@ -88,32 +67,30 @@ def do_report(debug_flag)
   s = "\n"
   s << "Current RAID configuration report:\n"
 
-  node["crowbar_wall"] ||= {}
-  node["crowbar_wall"]["raid"] ||= {}
-  node["crowbar_wall"]["raid"]["drivers"] = []
-  node["crowbar_wall"]["raid"]["controllers"] = {}
+  node.set["crowbar_wall"] ||= {}
+  node.set["crowbar_wall"]["raid"] ||= {}
+  node.set["crowbar_wall"]["raid"]["drivers"] = []
+  node.set["crowbar_wall"]["raid"]["controllers"] = {}
 
   s << " drivers:\n"
   @drivers.each do |d|
     d.debug = debug_flag
-    node["crowbar_wall"]["raid"]["drivers"] << d.describe
+    node.set["crowbar_wall"]["raid"]["drivers"] << d.describe
     s << "  #{d.describe}\n"
   end
 
   s << " controllers: #{@controllers.length}\n"
   @controllers.each do |c|
-    node["crowbar_wall"]["raid"]["controllers"][c.controller_id] = c.to_hash
+    node.set["crowbar_wall"]["raid"]["controllers"][c.controller_id] = c.to_hash
     s << "  Controller #{c.controller_id}:\n"
     s << "   disks #{c.disks.length}: #{c.disks.map {|x| x.to_s}.join(", ")}\n"
     s << "   volumes #{c.volumes.length}: #{c.volumes.map {|x| x.to_s}.join(", ")}\n"
   end
-  
+
   log s
 
-  node.save    
 rescue Exception => e
   log("do_report exception: #{e.message} #{e.backtrace}")
-  report_problem($!)  ## $! is the global exception variable
 end
 
 #
@@ -122,7 +99,7 @@ end
 # Return a [ drivers, controllers ]
 #
 def enumerate_topology
-  driver_sets = [[Crowbar::RAID::WsManCli],[Crowbar::RAID::LSI_MegaCli,Crowbar::RAID::LSI_sasIrcu]]  
+  driver_sets = [[Crowbar::RAID::LSI_MegaCli,Crowbar::RAID::LSI_sasIrcu]]
   drivers = []
   controllers = []
 
@@ -211,7 +188,7 @@ def build_volumes(config, controllers)
   end
   cont_names.uniq!
 
-  # Process controllers to get option lists.  
+  # Process controllers to get option lists.
   # Given the names, find the best matches.
   cont_options = {}
   cont_names.each do |c_name|
@@ -233,14 +210,14 @@ def build_volumes(config, controllers)
           new_list = rc.supported_raid_levels & list
           next if new_list.empty?
         end
- 
+
         cont_options[c_name] << rc
       end
     else
       # No criteria, take them all
       cont_options[c_name] = controllers.dup
     end
-  end 
+  end
   cont_options.each do |k,l|
     next if l.length > 0
     errors << "Controller #{k} has no options"
@@ -262,7 +239,7 @@ def build_volumes(config, controllers)
 
     c_set = unused_controllers
     c_set = cont_options[hash["controller"]] if hash["controller"]
-    
+
     if c_set.nil? or c_set.empty?
       errors << "Volume #{name} doesn't have viable controller options"
       next
@@ -290,7 +267,7 @@ def build_volumes(config, controllers)
     my_c = nil
     c_set.each do |c|
       next unless c.supported_raid_levels.include? rl
-      if disk_min > c.avail_disks.length 
+      if disk_min > c.avail_disks.length
         # This is the hack to downgrade a RAID10 to a RAID1
         # for our C6100s
         if rl == :RAID10 and c.avail_disks.length > 1
@@ -332,15 +309,15 @@ def build_volumes(config, controllers)
     v.controller = my_c
     v.raid_level = rl
     v.vol_name = name
-    if hash["max_size"] 
+    if hash["max_size"]
       v.size = hash["max_size"]
     else
       v.size = "MAX"
     end
-    if hash["stripe_size"] 
+    if hash["stripe_size"]
       v.stripe_size = hash["stripe_size"]
     end
-    
+
     disk_count = my_c.avail_disks.length if disk_count == "remaining"
     if should_be_even? rl and disk_count % 2 == 1
       disk_count = disk_count - 1
@@ -359,7 +336,7 @@ def build_volumes(config, controllers)
     disk_count.times do
       v.members << my_c.avail_disks.shift
     end
-    
+
     volumes << v
   end
 
@@ -375,7 +352,7 @@ def build_volumes(config, controllers)
     cc = v.controller
     disks[cc] = disks[cc] - v.members
   end
-  
+
   disks.keys.each do |k|
     next if disks[k].length == 0
     rv = Crowbar::RAID::Volume.new
@@ -397,21 +374,21 @@ def compare_volume(old, new)
   return 1 if old.nil?
 
   reason = "no diff"
-  begin 
+  begin
     ret = 0
     if old.controller != new.controller
-      reason = "different controller" ;ret=1 ; break  
+      reason = "different controller" ;ret=1 ; break
     end
     if old.members.length != new.members.length
-      reason = "different member's count #{old.members.length}/#{new.members.length}" ; ret=1 ; break 
+      reason = "different member's count #{old.members.length}/#{new.members.length}" ; ret=1 ; break
     end
     if  old.raid_level != new.raid_level
-      reason = "different level" ; ret= 1 ; break 
+      reason = "different level" ; ret= 1 ; break
     end
-  
+
     ostr = old.members.map { |d| "#{d.enclosure}:#{d.slot}" }.sort.join(",")
     nstr = new.members.map { |d| "#{d.enclosure}:#{d.slot}" }.sort.join(",")
-    reason = "different members" && ret = ostr <=> nstr 
+    reason = "different members" && ret = ostr <=> nstr
   end while false
   if ret != 0
     log("volume #{old.vol_name} differ because of #{reason}")
@@ -424,8 +401,8 @@ end
 def get_volume_differences(new_volumes, controllers)
   old_volumes = controllers.map { |x| x.volumes }
   old_volumes.flatten!
-  
-  # 
+
+  #
   # Remove matching volumes
   #
   rm_old = []
@@ -478,7 +455,7 @@ def compute_delta(new_volumes, controllers)
 
   #
   # New volumes should be created!
-  # 
+  #
   touched = []
   new_volumes.each do |v|
     next if rm_new.include? v
@@ -512,21 +489,19 @@ def do_actions(actions)
 
     case action[:action]
       when :create_vd
-        log_action("create_vd: #{controller.controller_id} #{action[:volume][:type]} #{action[:volume][:disks].length}")
+        log("create_vd: #{controller.controller_id} #{action[:volume][:type]} #{action[:volume][:disks].length}")
         driver.create_vd(controller, action[:volume])
       when :delete_vd
-        log_action("delete_vd: #{controller.controller_id} #{action[:volume].vol_id}")
+        log("delete_vd: #{controller.controller_id} #{action[:volume].vol_id}")
         driver.delete_vd(action[:volume])
       when :clear_config
-        log_action("clear_config: #{controller.controller_id} Clear all config")
+        log("clear_config: #{controller.controller_id} Clear all config")
         driver.clear_controller_config(controller, :all)
       when :clear_foreign_config
-        log_action("clear_config: #{controller.controller_id} Clear foreign config")
+        log("clear_config: #{controller.controller_id} Clear foreign config")
         driver.clear_controller_config(controller, :foreign)
     end
   end
-
-  node.save # Save the log actions
 
   touched_controllers.each do |controller|
     driver = controller.driver
@@ -541,7 +516,7 @@ def do_actions(actions)
 
   ## Only way to get job id is to use the wsman driver..setup the job queue now
   if (jids and jids.length > 0)
-    wsman_driver.run_multiple_raid_jobs(jids) 
+    wsman_driver.run_multiple_raid_jobs(jids)
   end
 
   []
@@ -568,9 +543,6 @@ def apply_config(config, controllers)
     log("Action Errors:#{errors}")
     throw "Action error #{errors}"
   end
-rescue Exception => e
-  log(e.backtrace)
-  report_problem($!)  ## $! is the global exception variable
 end
 
 #
@@ -597,7 +569,4 @@ def do_set_boot(config, controllers, nic_first)
   controller = boot_vol.controller
   driver = controller.driver
   driver.set_boot(controller, boot_vol, nic_first)
-rescue 
-  report_problem($!)  ## $! is the global exception variable
 end
-

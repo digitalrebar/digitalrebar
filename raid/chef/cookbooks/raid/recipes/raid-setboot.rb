@@ -13,9 +13,6 @@
 # limitations under the License.
 #
 
-
-include_recipe "utils"
-
 raid_enable = node[:raid][:enable] & @@centos & !@@is_admin
 log("BEGIN raid-setboot enabled=#{raid_enable}") {level :info} 
 
@@ -34,7 +31,6 @@ begin
     debug_flag   node[:raid][:debug]  
     nic_first node[:raid][:nic_first]
     action [ :set_boot ] 
-    problem_file "/var/log/chef/hw-problem.log" 
   end
   node.save
 end if raid_enable and !config.nil? and !config.empty?

@@ -15,7 +15,3 @@
 
 default[:raid][:debug]=true
 default[:raid][:enable]=true
-
-default[:crowbar]={}
-default[:crowbar][:hardware]={}
-default[:crowbar][:hardware][:raid_set]="JBODOnly"

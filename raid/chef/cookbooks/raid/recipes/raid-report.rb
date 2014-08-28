@@ -33,12 +33,11 @@ log("Using config: #{config_name}")
 begin 
   ## push the MegaCLI packages, and insall them
   include_recipe "raid::install_tools"
-  
+
   raid_raid_config "lsi-raid-report" do
     config config["config"]
     debug_flag   node[:raid][:debug]  
     action [ :report ]
-    problem_file "/var/log/chef/hw-problem.log"
   end
   node.save
 end if raid_enable and !config.nil? and !config.empty?

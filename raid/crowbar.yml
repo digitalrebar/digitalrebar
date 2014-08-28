@@ -19,3 +19,38 @@ barclamp:
 
 crowbar:
   layout: 1
+
+roles:
+  - name: raid-discover
+    jig: chef
+    flags:
+      - discovery
+      - implicit
+    requires:
+      - deployer-client
+    attribs:
+      - name: raid-known-controllers
+        description: "The RAID controllers that the RAID barclamp knows how to handle"
+        map: 'raid/controllers'
+      - name: raid-detected-controllers
+        description: "The RAID controllers that were detected on this node."
+        map: 'crowbar_wall/raid/controllers'
+      - name: raid-debug
+        description: "Whether to run the RAID recipes with debugging enabled"
+        map: 'raid/debug'
+    wants-attribs:
+      - provisioner-webserver
+  - name: raid-configure
+    jig: chef
+    flags:
+      - implicit
+      - destructive
+    requires:
+      - raid-discover
+    attribs:
+      - name: raid-enable
+        description: "Whether or not to use the RAID controllers on a specific node."
+        map: 'raid/enable'
+      - name: raid-config
+        description: "How RAID shold be configured on this node."
+        map: 'raid/config'
