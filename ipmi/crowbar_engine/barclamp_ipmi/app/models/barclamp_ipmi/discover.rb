@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 
+require 'structurematch'
 class BarclampIpmi::Discover < Role
 
   def on_active(nr)
@@ -27,6 +28,22 @@ class BarclampIpmi::Discover < Role
       Rails.logger.info("No BMC network created.")
       return
     end
+
+    # If the detected IPMI controller needs any quirks, make sure they are added
+    # to the node's quirklist
+    quirklist = []
+    score = 0
+    quirkset = "default"
+    nr.all_deployment_data["ipmi"]["quirks"].each do |k,v|
+      quirk_score = StructureMatch.new(v["match"]).score(nr.wall["crowbar_wall"]["ipmi"])
+      next unless quirk_score > score
+      score = quirk_score
+      quirkset = k
+      quirklist = v["quirklist"]
+    end
+    Rails.logger.info("IPMI: #{nr.node.name} using #{quirkset} quirks.")
+    nr.node.merge_quirks(quirklist)
+
     # All BMCs should get addresses from the host range.
     bmcrange = NetworkRange.find_by!(network_id: bmcnet.id, name: "host")
     # If we have already allocated an IP address for this BMC, we are done.

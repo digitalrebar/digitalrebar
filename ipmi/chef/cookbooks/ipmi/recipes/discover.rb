@@ -28,8 +28,8 @@ unless IPMI.ensure_access(node)
   Chef::Log.info("Could not ensure BMC support is loaded.")
   return
 end
-mcinfo = IPMI.mc_info
-laninfo = IPMI.laninfo
+mcinfo = IPMI.mc_info(node)
+laninfo = IPMI.laninfo(node)
 if mcinfo.empty?
   Chef::Log.info("Cannot validate that systems has a BMC.")
   return

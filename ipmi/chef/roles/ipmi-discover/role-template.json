@@ -3,8 +3,32 @@
         "bmc_enable" : false,
         "bmc_user": "root",
         "bmc_password": "cr0wBar!",
-        "debug": false
+        "debug": false,
+        "quirks": {
+            "dell-rseries": {
+                "quirklist": ["ipmi-nodelay","ipmi-dell-dedicated-nic"],
+                "match": {
+                    "bmcinfo": {
+                        "device_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "32"
+                        },
+                        "mfgr_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "674",
+                            "score": 5
+                        },
+                        "product_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "256 (0x0100)",
+                            "score": 3
+                        }
+                    }
+                }
+            }
+        }
     }
 }
-
-

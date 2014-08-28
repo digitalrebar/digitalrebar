@@ -43,14 +43,20 @@ module IPMI
     File.directory?("/sys/module/ipmi_devintf")
   end
 
+  def self.tool(node,command)
+    sleep(5) unless node["quirks"].member?("ipmi-nodelay")
+    cmd = "ipmitool #{command}"
+    %x{ #{cmd} 2>&1 }
+  end
+
   # Get some basic information about the IPMI comtroller.
   # Later on we will customize how we talk to the controller based
   # on the data we find here.
-  def self.mc_info
+  def self.mc_info(node)
     res = Hash.new
     # If we can't find an IPMI controller after 5 tries, give up.
     5.times do
-      mcinfo = %x{ipmitool mc info}
+      mcinfo = tool(node,"mc info")
       if $?.exitstatus == 0
         in_additional_devices = false
         mcinfo.lines.each do |line|
@@ -76,13 +82,13 @@ module IPMI
     res
   end
 
-  def self.laninfo
+  def self.laninfo(node)
     res = Hash.new
     # Figure out what channel the LAN interface is on.
     # First result wins.
     laninfo = ''
     (1..11).each do |chan|
-      tmp = %x{ipmitool lan print #{chan}}
+      tmp = tool(node,"lan print #{chan}")
       next unless $?.exitstatus == 0
       res['lan_channel'] = chan
       laninfo = tmp
