@@ -1,0 +1,25 @@
+{
+  "id": "bios-set-PowerEdgeR720-Hadoop",
+  "style": "wsman",
+  "attributes": {
+    "BIOS": {
+      "default": {
+        "ProcVirtualization": {
+          "value": "Disabled",
+          "instance_id": "BIOS.Setup.1-1:ProcVirtualization",
+          "DefaultValue": "",
+          "attr_name": "ProcVirtualization",
+          "GroupID": null
+        },
+        "BootMode": {
+          "GroupID": "BootSettings",
+          "value": "Uefi",
+          "DefaultValue": null,
+          "instance_id": "BIOS.Setup.1-1:BootMode",
+          "attr_name": "BootMode"
+        }
+      }
+    }
+  }
+}
+

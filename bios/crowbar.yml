@@ -1,0 +1,57 @@
+# Copyright 2013, Dell, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Author: RobHirschfeld
+#
+
+barclamp:
+  name: bios
+  display: BIOS
+  version: 0
+
+crowbar:
+  layout: 1
+
+gems:
+  required_pkgs:
+    - libxml-ruby
+    - xml-simple
+
+extra_files:
+  # These files must be kept in sync with the ones in bc-template-bios.json
+  # RKR: Files and links updated as of July 2nd 2013
+  # PEC 2100 BIOS C99Q3B22 and BMC 1.82
+  #- http://downloads.dell.com/FOLDER01091388M/1/C2100_BIOS_5PY2C_LN32_B23.BIN bios/2100
+  #- http://downloads.dell.com/FOLDER00699088M/1/C2100_ESM_Firmware_HJR3N_LN32_1.82_A01.BIN bios/2100
+  # PEC 6100 BIOS 1.70 and BMC 1.32
+  #- http://downloads.dell.com/FOLDER01170221M/1/BIOS_P8GRR_LN32_1.70.BIN bios/6100
+  #- http://downloads.dell.com/FOLDER01496500M/1/ESM_Firmware_47XCH_LN32_1.32.BIN bios/6100
+  # PEC 6105 BIOS 2.2.1 and BMC 1.30
+  #- http://downloads.dell.com/FOLDER01316667M/1/BIOS_KDT7G_LN32_2.2.1.BIN bios/6105
+  #- http://downloads.dell.com/FOLDER01084633M/1/ESM_Firmware_WVV5T_LN32_1.30.BIN bios/6105
+  # PEC 6145 BIOS 3.0.0 and BMC 1.13
+  #- http://downloads.dell.com/FOLDER00896230M/1/C6145_BIOS_F3CYY_LN32_3.0.0_A01.BIN bios/6145
+  #- http://downloads.dell.com/FOLDER01383976M/1/C6145_ESM_Firmware_T3PPM_LN32_1.13.BIN bios/6145
+  ## PEC 6220 BIOS 1.1.19 and BMC 2.02
+  #- http://downloads.dell.com/FOLDER01384192M/1/C6220_BIOS_NXJXX_LN32_1.1.19.BIN bios/6220
+  #- http://downloads.dell.com/FOLDER01371273M/1/C6220_ESM_Firmware_9JJW3_LN32_2.02.BIN bios/6220
+  # PEC 8000 BIOS 1.1.19 and BMC 2.03
+  #- http://downloads.dell.com/FOLDER01727106M/1/C8000_BIOS_J3KJW_LN_2.1.2.BIN bios/8000
+  #- http://downloads.dell.com/FOLDER01766418M/1/ESM_Firmware_V4DTW_LN32_2.25.BIN bios/8000
+  # Utility for configuring Dell-specific BMC settings on PEC gear.
+  - http://poweredgec.com/files/bmc-2013-10-22.tgz bios/tools
+  # Utility for configuring BIOS setting on PEC gear.
+  - http://poweredgec.com/files/setupbios-2013-10-03.tgz bios/tools
+  # Utility for doing various things to the ASPEED BMC and BIOS.
+  - http://upload.aspeedtech.com/SOC/socflash_v10601.zip bios/tools

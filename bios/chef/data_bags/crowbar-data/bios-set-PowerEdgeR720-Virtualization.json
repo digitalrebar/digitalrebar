@@ -1,0 +1,38 @@
+{
+  "id": "bios-set-PowerEdgeR720-Virtualization",
+  "style": "wsman",
+  "attributes": { 
+    "BIOS": {
+      "default": {
+        "SriovGlobalEnable": {
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:SriovGlobalEnable",
+          "DefaultValue": "",
+          "attr_name": "SriovGlobalEnable",
+          "GroupID": null
+        },
+        "ProcExecuteDisable": {
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:ProcExecuteDisable",
+          "DefaultValue": "",
+          "attr_name": "ProcExecuteDisable",
+          "GroupID": null
+        },
+        "ProcVirtualization": {
+          "value": "Enabled",
+          "instance_id": "BIOS.Setup.1-1:ProcVirtualization",
+          "DefaultValue": "",
+          "attr_name": "ProcVirtualization",
+          "GroupID": null
+        },
+        "BootMode": {
+          "GroupID": "BootSettings",
+          "value": "Uefi",
+          "DefaultValue": null,
+          "instance_id": "BIOS.Setup.1-1:BootMode",
+          "attr_name": "BootMode"
+        }
+      }
+    }
+  }
+}

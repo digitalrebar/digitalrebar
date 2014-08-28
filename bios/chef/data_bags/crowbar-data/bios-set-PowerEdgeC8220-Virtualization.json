@@ -1,0 +1,20 @@
+{
+  "versions": [
+    "1.0.24", "1.1.9", "1.1.11", "1.1.17", "2.1.2"
+  ],
+  "style": "unified_pec",
+  "id": "bios-set-PowerEdgeC8220-Virtualization",
+  "attributes": {
+    "virtualization_technology": "enabled",
+    "embedded_sata_controller": "ahci",
+    "vt_for_direct_io": "enabled",
+    "sriov_global_enable": "enabled",
+    "boot_mode": "bios",
+    "sata_port0": "auto",
+    "sata_port1": "auto",
+    "sata_port2": "auto",
+    "sata_port3": "auto",
+    "sata_port4": "auto",
+    "sata_port5": "auto"
+  }
+}

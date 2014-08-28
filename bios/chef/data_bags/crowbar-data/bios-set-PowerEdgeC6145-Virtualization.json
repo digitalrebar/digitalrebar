@@ -1,0 +1,12 @@
+{
+  "versions": [
+    "2.8.0"
+  ],
+  "style": "unified_pec",
+  "id": "bios-set-PowerEdgeC6145-Virtualization",
+  "attributes": {
+    "secure_virtual_machine_mode": "enabled",
+    "iommu": "enabled",
+    "SR_IOV_support": "enabled"
+  }
+}
