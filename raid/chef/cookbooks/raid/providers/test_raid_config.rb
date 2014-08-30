@@ -68,8 +68,8 @@ if !$in_chef
   require "../libraries/raid_data.rb"
   require "../libraries/lsi_ircu.rb"
   require "../libraries/lsi_megacli.rb"
-  require "../libraries/wsman_cli.rb"
-  require "../libraries/xml_util.rb"
+  #require "../libraries/wsman_cli.rb"
+  #require "../libraries/xml_util.rb"
   require "raid_config.rb"
 
   

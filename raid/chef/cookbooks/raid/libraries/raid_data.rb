@@ -20,9 +20,9 @@ $in_chef = true
 
 class Crowbar
   class RAID
-    
+
     RAID0 = :RAID0
-    RAID1 = :RAID1      
+    RAID1 = :RAID1
     RAID5 = :RAID5
     RAID6 = :RAID5
     RAID1E = :RAID1E
@@ -30,20 +30,20 @@ class Crowbar
     RAID50 = :RAID50
     RAID60 = :RAID60
     JBOD = :JBOD
-    
+
     KILO = 1024
     MEGA = KILO * 1024
     GIGA = MEGA * 1024
-    TERA = GIGA * 1024  
-    
+    TERA = GIGA * 1024
+
     @@controller_styles = []
 
-    ### 
+    ###
     # Catch classes that inherit us, so we have a list of controller styles to try to use
-    def self.inherited(subclass)      
+    def self.inherited(subclass)
       @@controller_styles  << subclass
     end
-    
+
     def self.controller_styles
       @@controller_styles
     end
@@ -79,7 +79,7 @@ class Crowbar
       #    :type => Raid Level Symbol
       #    :name => Name of volume
       #    :size => Bytes or string MAX
-      #    :disks => List of RaidDisk 
+      #    :disks => List of RaidDisk
       #
       def create_vd(controller, volume_description)
         raise Exception.new("MUST IMPLEMENT THIS")
@@ -115,32 +115,32 @@ class Crowbar
       #
       # Extract the value from text following the pattern:
       #
-      #  Label with some words: <value>    
+      #  Label with some words: <value>
       def extract_value(line, re = /^(.*)\s*:\s(.*)$/)
         re.match(line.strip)
         key = $1.strip rescue ""
         value = $2.strip rescue ""
         [key, value]
       end
-    
+
       ###
       # Skip items in the lines string array until a line matching the given Regexp is found.
       # return the skipped lines. The matching line is the lines[0]
       #
-      def skip_to_find(lines, re) 
+      def skip_to_find(lines, re)
         skipped = []
         skipped << lines.shift while lines.length > 0 and re.match(lines[0]).nil?
         log("first line is:#{lines[0].nil? ? '-' : lines[0]}")
         skipped
       end
-    
-      ##### 
+
+      #####
       #  Execute the given command, and check for errors.
-      #  
-      def run_command(cmd, success, error, &block)    
+      #
+      def run_command(cmd, success, error, &block)
         log "will execute #{cmd}"
         if block_given?
-          ret = IO.popen(cmd,&block)            
+          ret = IO.popen(cmd,&block)
           log("return code is #{$?}")
           raise "cmd #{cmd} returned #{$?}" if ((error and $? == error) or (success and $? != success))
           return ret
@@ -153,21 +153,21 @@ class Crowbar
         end
         text
       end
- 
+
       def log( msg, sev=:DEBUG)
-        if $in_chef == true 
-          case sev 
+        if $in_chef == true
+          case sev
             when :DEBUG
             Chef::Log.info(msg) if @debug
             when :ERROR
             Chef::Log.error(msg)
-          end          
+          end
         else
           puts msg if @debug
-        end        
-        true        
-      end      
-    
+        end
+        true
+      end
+
       def size_to_bytes(s)
         case s
           when /^([0-9.]+)$/
@@ -194,7 +194,7 @@ class Crowbar
     #
     class HashBucket
       attr_accessor :attr_hash
-    
+
       def initialize(hash = {})
         @attr_hash = hash.dup if hash
       end
@@ -209,7 +209,7 @@ class Crowbar
         elsif args.length == 1 and meth.to_s =~ /=$/
           #sublime syntax highlighting seems to go nuts with /=/
           #so use the equivalent %r|xxx|
-          meth_sym = meth.to_s.gsub(%r|=| ,'').to_sym 
+          meth_sym = meth.to_s.gsub(%r|=| ,'').to_sym
           @attr_hash[meth_sym] = args[0]
         else
           super
@@ -253,13 +253,14 @@ class Crowbar
       def to_hash
         ans = super
         ans["disks"] = []
+        ans["driver"] = @driver
         disks.each { |d| ans["disks"] << d.to_hash }
         ans["volumes"] = []
         volumes.each { |v| ans["volumes"] << v.to_hash }
         ans
       end
     end
-    
+
 =begin
     # Expected attributes:
     #   vol_id - driver returned volume id (string)
@@ -276,17 +277,17 @@ class Crowbar
 =end
     class Volume < HashBucket
       attr_accessor :controller, :members
-      
+
       def initialize(hash = {})
         super(hash)
         @members = []
       end
-      
+
       def to_s
         disks = members.map {|d| d.to_s }.sort.join(",")
         "id: #{self.vol_id} name: #{self.vol_name} type: #{self.raid_level} members:#{disks}"
       end
-      
+
       def to_hash
         h = super
         h[:members] = []
@@ -294,7 +295,7 @@ class Crowbar
         h
       end
     end
-    
+
 =begin
     # Expected attributes:
     #   controller - Reference to controller
@@ -309,17 +310,17 @@ class Crowbar
     #   media_type - symbol - :SSD, :DISK
     #   status - String
     #
-=end    
+=end
     class RaidDisk < HashBucket
       attr_accessor :controller
-      
+
       def to_s
         "#{enclosure}:#{slot}-#{vol_id}"
       end
     end
-    
+
     class OSDisk < HashBucket
     end
-    
+
   end
 end
