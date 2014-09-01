@@ -47,6 +47,7 @@ roles:
       - destructive
     requires:
       - raid-discover
+      - crowbar-managed-node
     attribs:
       - name: raid-enable
         description: "Whether or not to use the RAID controllers on a specific node."

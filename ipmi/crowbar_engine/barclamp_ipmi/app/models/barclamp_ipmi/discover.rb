@@ -69,8 +69,7 @@ class BarclampIpmi::Discover < Role
       # Keep the noderole graph sane by making the managed_node role for this node
       # depend on our newly-added ipmi config noderole.
       Rails.logger.info("Making crowbar-managed-node on #{nr.node.name} depend on ipmi-configure role.")
-      managed_node = nr.node.node_roles.find_by!(role_id: Role.find_by!(name: 'crowbar-managed-node'))
-      managed_node.add_parent(ipmi_config)
+      ipmi_config.add_child('crowbar-managed-node')
     end
   end
 end
