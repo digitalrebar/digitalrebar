@@ -28,6 +28,108 @@
                         }
                     }
                 }
+            },
+            "ibm-2-220-bmc": {
+                "quirklist": ["ipmi-immutable-root"],
+                "match": {
+                    "bmcinfo": {
+                        "device_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "32"
+                        },
+                        "mfgr_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "2",
+                            "score": 5
+                        },
+                        "product_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "220 (0x00dc)",
+                            "score": 3
+                        }
+                    }
+                }
+            },
+            "ibm-2-291-bmc": {
+                "quirklist": ["ipmi-immutable-root"],
+                "match": {
+                    "bmcinfo": {
+                        "device_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "32"
+                        },
+                        "mfgr_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "2",
+                            "score": 5
+                        },
+                        "product_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "291 (0x0123)",
+                            "score": 3
+                        }
+                    }
+                }
+            },
+            "ibm-2-other-bmc": {
+                "quirklist": ["ipmi-immutable-root"],
+                "match": {
+                    "bmcinfo": {
+                        "device_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "32"
+                        },
+                        "mfgr_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "2",
+                            "score": 6
+                        }
+                    }
+                }
+            },
+            "super-micro-bmc": {
+                "quirklist": ["ipmi-immutable-root"],
+                "match": {
+                    "bmcinfo": {
+                        "device_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "32"
+                        },
+                        "mfgr_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "47488",
+                            "score": 5
+                        }
+                    }
+                }
+            },
+            "ibm-20301-bmc": {
+                "quirklist": ["ipmi-immutable-root"],
+                "match": {
+                    "bmcinfo": {
+                        "device_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "32"
+                        },
+                        "mfgr_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "20301",
+                            "score": 5
+                        }
+                    }
+                }
             }
         }
     }
