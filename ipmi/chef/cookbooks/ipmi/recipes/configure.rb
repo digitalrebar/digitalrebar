@@ -33,6 +33,10 @@ bmc_password = node[:ipmi][:bmc_password]
 chan         = lan_current_cfg["lan_channel"]
 bmc_userid   = (bmc_user == "root") ? "2" : "3"
 
+if node["quirks"].member?("ipmi-immutable-root")
+    bmc_userid = "3"
+end
+
 # This makes username/password setting half-idempotent.
 # Full idempotency would detect when usernames/passwords
 # changed on the BMC, and fixing them along with their rights.
