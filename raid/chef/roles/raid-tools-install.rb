@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-default[:raid][:debug]=true
-default[:raid][:enable]=true
+name "raid-tools-install"
+description "Install the tools required to talk to the RAID controllers in real time"
+run_list(
+  "recipe[raid::install_tools]"
+)
