@@ -111,12 +111,32 @@ class BarclampIpmi::WsmanHammer < Hammer
   end
 
   def invoke(resource,meth,args=nil,opts = Openwsman::ClientOptions.new)
-    xml = Openwsman::XmlDoc.new("#{meth}_INPUT",resource)
-    args.each do |k,v|
-      xml.root.add(resource,k.to_s,v.to_s)
-    end if args
-    res = client.invoke(opts,resource,meth,xml)
-    raise client.fault_string if res.fault?
+    # We need to pick the power controller we will use.
+    # For now, be stupid and pick the first one.
+    epr = enumerate_epr(resource)
+    epr.Items[0].each do |i|
+      next if i.name.to_s == "ElementName"
+      Rails.logger.debug("Adding invoke selector #{i.name.to_s}: #{i.text.to_s}")
+      opts.add_selector(i.name.to_s,i.text.to_s)
+    end
+    res = nil
+    if args
+      xml = Openwsman::XmlDoc.new("#{meth}_INPUT",resource)
+      args.each do |k,v|
+        if v.is_a?(Array)
+          v.each do |val|
+            xml.root.add(resource,k.to_s,val.to_s)
+          end
+        else
+          xml.root.add(resource,k.to_s,v.to_s)
+        end
+      end
+      res = client.invoke(opts,resource,meth,xml)
+      raise("Fault! #{resource}:#{meth}:#{xml.to_xml}\n => #{client.fault_string}\n#{res.to_xml}") if res.fault?
+    else
+      res = client.invoke(opts,resource,meth)
+      raise("Fault! #{resource}:#{meth}\n => #{client.fault_string}\n#{res.to_xml}") if res.fault?
+    end
     res
   end
 
@@ -129,14 +149,7 @@ class BarclampIpmi::WsmanHammer < Hammer
     resource = "http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_CSPowerManagementService"
     meth = "RequestPowerStateChange"
     args = {"PowerState" => k}
-    opts = Openwsman::ClientOptions.new
-    # We need to pick the power controller we will use.
-    # For now, be stupid and pick the first one.
-    epr = enumerate_epr(resource)
-    epr.Items[0].each do |i|
-      opts.add_selector(i.name.to_s,i.text.to_s)
-    end
-    doc = invoke(resource,meth,args,opts)
+    doc = invoke(resource,meth,args)
     doc.ReturnValue.text == "0"
   end
 
