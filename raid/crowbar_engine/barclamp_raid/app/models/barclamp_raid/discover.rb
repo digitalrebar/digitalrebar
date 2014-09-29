@@ -15,6 +15,10 @@
 
 class BarclampRaid::Discover < Role
 
+  def on_proposed(nr)
+    nr.add_child('crowbar-managed-node')
+  end
+
   def on_active(nr)
     # Do nothing unless we discovered RAID controllers we can manage on this node.
     controllers = (nr.wall["crowbar_wall"]["raid"]["controllers"] || [] rescue [])
@@ -24,15 +28,13 @@ class BarclampRaid::Discover < Role
     end
 
     # Since we have detected controllers we can manage, go ahead and bind the
-    # raid-configure role to this node.
+    # raid-configure and crowbar-hardware-configured roles to this node.
     rcr_role = Role.find_by!(name: 'raid-configure')
-    unless nr.node.node_roles.find_by(role_id: rcr_role.id)
-      Rails.logger.info("Adding raid-configure role to #{nr.node.name}")
-      raid_config = rcr_role.add_to_node(nr.node)
-      raid_config.commit!
-      # Make the raid-configure role depend on the crowbar-hardware-configured noderole.
-      Rails.logger.info("Making crowbar-hardware-configured on #{nr.node.name} depend on raid-configure role.")
-      raid_config.add_child('crowbar-hardware-configured')
+    chc_role = Role.find_by!(name: 'crowbar-hardware-configured')
+    NodeRole.transaction do
+      rcr_noderole = rcr_role.add_to_node(nr.node)
+      chc_noderole = chc_role.add_to_node(nr.node)
+      rcr_noderole.add_child(chc_noderole)
     end
   end
 end

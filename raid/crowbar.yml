@@ -21,27 +21,37 @@ crowbar:
   layout: 1
 
 roles:
-  - name: raid-discover
+  - name: raid-tools-install
     jig: chef
+    requires:
+      - deployer-client
+    flags:
+      - implicit
+    attribs:
+      - name: raid-levels
+        description: "The RAID levels that the RAID barclamp knows how to configure"
+        map: 'raid/raid_levels'
+      - name: raid-drivers
+        description: 'The backend drivers that the RAID barclamp can use'
+        map: 'raid/drivers'
+    wants-attribs:
+      - provisioner-webserver
+  - name: raid-discover
+    jig: raid
     flags:
       - discovery
       - implicit
     requires:
-      - deployer-client
+      - raid-tools-install
     attribs:
-      - name: raid-known-controllers
-        description: "The RAID controllers that the RAID barclamp knows how to handle"
-        map: 'raid/controllers'
       - name: raid-detected-controllers
         description: "The RAID controllers that were detected on this node."
         map: 'crowbar_wall/raid/controllers'
       - name: raid-debug
         description: "Whether to run the RAID recipes with debugging enabled"
         map: 'raid/debug'
-    wants-attribs:
-      - provisioner-webserver
   - name: raid-configure
-    jig: chef
+    jig: raid
     flags:
       - implicit
       - destructive
@@ -52,6 +62,19 @@ roles:
       - name: raid-enable
         description: "Whether or not to use the RAID controllers on a specific node."
         map: 'raid/enable'
-      - name: raid-config
+      - name: raid-wanted-volumes
         description: "How RAID shold be configured on this node."
-        map: 'raid/config'
+        map: 'raid/volumes/wanted'
+      - name: raid-configured-volumes
+        description: "The current RAID volumes on this node"
+        map: 'raid/volumes/configured'
+hammers:
+  - name: raid-hammer
+    type: 'BarclampRaid::RaidHammer'
+    priority: 5
+
+jigs:
+  - name: raid
+    description: 'Manage RAID volumes'
+    class: 'BarclampRaid::Jig'
+    implementor: raid-tools-install
