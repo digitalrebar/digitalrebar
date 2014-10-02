@@ -27,7 +27,8 @@ class BarclampIpmi::IpmiHammer < Hammer
 
   def actions
     { power: [:status,:on?,:on,:off,:cycle,:reset,:halt,:pxeboot,:identify],
-      run: [:invoke]
+      run: [:invoke],
+      boot: [:pxe, :disk]
     }
   end
 
@@ -85,6 +86,16 @@ class BarclampIpmi::IpmiHammer < Hammer
   def pxeboot
     out,res = invoke("chassis bootparam set bootflag force_pxe")
     cycle if out.strip =~ /force_pxe$/
+  end
+
+  # Have the node PXE boot first from now on.
+  def pxe
+    out,res = invoke("chassis bootdev pxe options=persistent")
+  end
+
+  # Have the node disk boot first from now on.
+  def disk
+    out,res = invoke("chassis bootdev disk options=persistent")
   end
 
   # Cause the identification lamp on the node to blink.
