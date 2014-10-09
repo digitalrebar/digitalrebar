@@ -1,0 +1,3 @@
+crowbar_engine/*/app/**/*.rb
+crowbar_engine/*/lib/**/*.rb
+-o doc/internals
