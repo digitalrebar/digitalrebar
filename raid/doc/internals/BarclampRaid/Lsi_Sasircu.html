@@ -1,0 +1,1607 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Class: BarclampRaid::Lsi_Sasircu
+  
+    &mdash; Documentation by YARD 0.8.7.4
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '../';
+  framesUrl = "../frames.html#!BarclampRaid/Lsi_Sasircu.html";
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../_index.html">Index (L)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../BarclampRaid.html" title="BarclampRaid (module)">BarclampRaid</a></span></span>
+     &raquo; 
+    <span class="title">Lsi_Sasircu</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="../method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="../file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><h1>Class: BarclampRaid::Lsi_Sasircu
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+    <dt class="r1">Inherits:</dt>
+    <dd class="r1">
+      <span class="inheritName"><span class='object_link'><a href="Driver.html" title="BarclampRaid::Driver (class)">Driver</a></span></span>
+      
+        <ul class="fullTree">
+          <li>Object</li>
+          
+            <li class="next"><span class='object_link'><a href="Driver.html" title="BarclampRaid::Driver (class)">Driver</a></span></li>
+          
+            <li class="next">BarclampRaid::Lsi_Sasircu</li>
+          
+        </ul>
+        <a href="#" class="inheritanceTree">show all</a>
+      
+      </dd>
+    
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r2 last">Defined in:</dt>
+    <dd class="r2 last">crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_ircu.rb</dd>
+  
+</dl>
+<div class="clear"></div>
+
+
+  <h2>Constant Summary</h2>
+  
+    <dl class="constants">
+      
+        <dt id="MAX_RAID10_DISKS-constant" class="">MAX_RAID10_DISKS =
+          
+        </dt>
+        <dd><pre class="code"><span class='int'>10</span></pre></dd>
+      
+        <dt id="CNTR_KEY_MAP-constant" class="">CNTR_KEY_MAP =
+          
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Controller type</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:product_name</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Bus</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:bus</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Device</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:device</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Function</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:function</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Firmware version</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:firmware_version</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>BIOS version</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:bios_version</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Channel description</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:channel</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Initiator ID</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:initiator_id</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Maximum physical devices</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:max_phys_drives</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Concurrent commands supported</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:concurrent_commands</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Slot</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:slot</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Segment</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:segment</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>RAID Support</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:raid_capable</span>
+<span class='rbrace'>}</span></pre></dd>
+      
+        <dt id="VOL_KEY_MAP-constant" class="">VOL_KEY_MAP =
+          
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Volume ID</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:vol_id</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Volume Name</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:vol_name</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Status of volume</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:status</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>RAID level</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:raid_level</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Size (in MB)</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:size</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Volume wwid</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:vol_wwid</span>
+<span class='rbrace'>}</span></pre></dd>
+      
+        <dt id="DISK_KEY_MAP-constant" class="">DISK_KEY_MAP =
+          
+        </dt>
+        <dd><pre class="code"><span class='lbrace'>{</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Size (in MB)/(in sectors)</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:size</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Enclosure #</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:enclosure</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Slot #</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:slot</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Model Number</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:model</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Manufacturer</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:manufacturer</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Serial No</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:serial_number</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>SAS Address</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:sas_address</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>State</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:status</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Protocol</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:protocol</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Drive Type</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:media_type</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Firmware Revision</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:firmware_revision</span><span class='comma'>,</span>
+  <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>GUID</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='symbol'>:guid</span>
+<span class='rbrace'>}</span></pre></dd>
+      
+    </dl>
+  
+
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#clear_controller_config-instance_method" title="#clear_controller_config (instance method)">- (Object) <strong>clear_controller_config</strong>(controller, type) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#create_vd-instance_method" title="#create_vd (instance method)">- (Object) <strong>create_vd</strong>(controller, volume) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Issue the command to create a RAID volue:         The format of the CREATE
+command is       sas2ircu  create          [Volume Name] [noprompt]      
+where  is:       A controller number between 0 and 255.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#delete_vd-instance_method" title="#delete_vd (instance method)">- (Object) <strong>delete_vd</strong>(volume) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#enumerate_topology-instance_method" title="#enumerate_topology (instance method)">- (Object) <strong>enumerate_topology</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#find_stanza-instance_method" title="#find_stanza (instance method)">- (Object) <strong>find_stanza</strong>(lines, name) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<h1 id="label-begin+++Output+from+the+LSI+util+is+broken+into+stanzas+delineated+with+something+like%3A+++++------------------------------------------------------------------------+++++Controller+information+++------------------------------------------------------------------------.">begin   Output from the LSI util is broken into stanzas delineated with something like:     ————————————————————————     Controller information   ————————————————————————.</h1>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#fix_up_jbod-instance_method" title="#fix_up_jbod (instance method)">- (Object) <strong>fix_up_jbod</strong>(c) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>All unallocated disks are in the jbod volume.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#get_array_size-instance_method" title="#get_array_size (instance method)">- (Object) <strong>get_array_size</strong>(volume) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>Rudimentary algorithm to find array size…assumes that ## all disks are of
+the same size for v0.1                 ##.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#parse_cntr_info-instance_method" title="#parse_cntr_info (instance method)">- (Object) <strong>parse_cntr_info</strong>(lines, raw_cntr) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#parse_dev_info-instance_method" title="#parse_dev_info (instance method)">- (Object) <strong>parse_dev_info</strong>(lines, controller) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#parse_vol_info-instance_method" title="#parse_vol_info (instance method)">- (Object) <strong>parse_vol_info</strong>(lines, controller) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#run_tool-instance_method" title="#run_tool (instance method)">- (Object) <strong>run_tool</strong>(success, error, args, &amp;block) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#set_boot-instance_method" title="#set_boot (instance method)">- (Object) <strong>set_boot</strong>(controller, volume, nic_first = true) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>nic_first is ignored here.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#useable%3F-instance_method" title="#useable? (instance method)">- (Boolean) <strong>useable?</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <h3 class="inherited">Methods inherited from <span class='object_link'><a href="Driver.html" title="BarclampRaid::Driver (class)">Driver</a></span></h3>
+  <p class="inherited"><span class='object_link'><a href="Driver.html#controllers-instance_method" title="BarclampRaid::Driver#controllers (method)">#controllers</a></span>, <span class='object_link'><a href="Driver.html#disks-instance_method" title="BarclampRaid::Driver#disks (method)">#disks</a></span>, <span class='object_link'><a href="Driver.html#extract_value-instance_method" title="BarclampRaid::Driver#extract_value (method)">#extract_value</a></span>, <span class='object_link'><a href="Driver.html#initialize-instance_method" title="BarclampRaid::Driver#initialize (method)">#initialize</a></span>, <span class='object_link'><a href="Driver.html#inspect-instance_method" title="BarclampRaid::Driver#inspect (method)">#inspect</a></span>, <span class='object_link'><a href="Driver.html#log-instance_method" title="BarclampRaid::Driver#log (method)">#log</a></span>, <span class='object_link'><a href="Driver.html#name-instance_method" title="BarclampRaid::Driver#name (method)">#name</a></span>, <span class='object_link'><a href="Driver.html#refresh_controller-instance_method" title="BarclampRaid::Driver#refresh_controller (method)">#refresh_controller</a></span>, <span class='object_link'><a href="Driver.html#run_command-instance_method" title="BarclampRaid::Driver#run_command (method)">#run_command</a></span>, <span class='object_link'><a href="Driver.html#split_lines_on-instance_method" title="BarclampRaid::Driver#split_lines_on (method)">#split_lines_on</a></span>, <span class='object_link'><a href="Driver.html#volumes-instance_method" title="BarclampRaid::Driver#volumes (method)">#volumes</a></span></p>
+<div id="constructor_details" class="method_details_list">
+  <h2>Constructor Details</h2>
+  
+    <p class="notice">This class inherits a constructor from <span class='object_link'><a href="Driver.html#initialize-instance_method" title="BarclampRaid::Driver#initialize (method)">BarclampRaid::Driver</a></span></p>
+  
+</div>
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="clear_controller_config-instance_method">
+  
+    - (<tt>Object</tt>) <strong>clear_controller_config</strong>(controller, type) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+201
+202
+203
+204</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_ircu.rb', line 201</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_clear_controller_config'>clear_controller_config</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span> <span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='kw'>true</span> <span class='kw'>if</span> <span class='id identifier rubyid_type'>type</span> <span class='op'>==</span> <span class='symbol'>:foreign</span>
+  <span class='id identifier rubyid_run_tool'>run_tool</span><span class='lparen'>(</span><span class='int'>0</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_controller_id'>controller_id</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>delete</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>noprompt</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="create_vd-instance_method">
+  
+    - (<tt>Object</tt>) <strong>create_vd</strong>(controller, volume) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Issue the command to create a RAID volue:</p>
+
+<pre class="code ruby"><code class="ruby">  The format of the CREATE command is
+sas2ircu &lt;controller #&gt; create &lt;volume type&gt; &lt;size&gt;
+&lt;Encl:Bay&gt; [Volume Name] [noprompt]
+where &lt;controller #&gt; is:
+A controller number between 0 and 255.
+  where &lt;volume type&gt; is:
+  The type of the volume to create and is either RAID1 (or)
+RAID1E (or) RAID0 (or) RAID10.
+  where &lt;size&gt; is:
+  The size of the volume to create. It should be given in Mbytes
+e.g. 2048 or &#39;MAX&#39; to use the maximum size possible.
+  where &lt;Encl:Bay&gt; is:
+  A list of Encl:Bay pairs identifying the disk drives you
+wish to include in the volume being created. If the volume type is
+&#39;RAID1&#39;, the first drive will be selected as the primary and the
+second as the secondary drive.
+  For a type &#39;RAID1&#39; volume exactly 2 disks must be specified.
+  For a type &#39;RAID1E&#39; volume min of 3 disks must be specified.
+  For a type &#39;RAID0&#39; volume min of 2 disks must be specified.
+  For a type &#39;RAID10&#39; volume min of 4 disks must be specified.
+  where [Volume Name] is an optional argument that can be used
+to identify a Volume with a user specified Alpha-numeric string
+where noprompt is an optional argument that eliminates
+warnings and prompts</code></pre>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_ircu.rb', line 95</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_create_vd'>create_vd</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span> <span class='id identifier rubyid_volume'>volume</span><span class='rparen'>)</span>
+  <span class='comment'>## build up the command...
+</span>  <span class='id identifier rubyid_max_size'>max_size</span>       <span class='op'>=</span> <span class='lparen'>(</span><span class='const'>Crowbar</span><span class='op'>::</span><span class='const'>RAID</span><span class='op'>::</span><span class='const'>TERA</span> <span class='op'>*</span> <span class='int'>2</span> <span class='op'>-</span> <span class='const'>Crowbar</span><span class='op'>::</span><span class='const'>RAID</span><span class='op'>::</span><span class='const'>MEGA</span><span class='rparen'>)</span> <span class='op'>/</span> <span class='const'>Crowbar</span><span class='op'>::</span><span class='const'>RAID</span><span class='op'>::</span><span class='const'>MEGA</span>
+  <span class='id identifier rubyid_size'>size</span>           <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='id identifier rubyid_curr_boot_mode'>curr_boot_mode</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='id identifier rubyid_pend_boot_mode'>pend_boot_mode</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='id identifier rubyid_vol_type'>vol_type</span>       <span class='op'>=</span> <span class='const'>INV_MAP</span><span class='lbracket'>[</span><span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:type</span><span class='rbracket'>]</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_name'>name</span>           <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_name'>name</span>           <span class='op'>=</span> <span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:name</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:name</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_cid'>cid</span>            <span class='op'>=</span> <span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_controller_id'>controller_id</span>
+  <span class='id identifier rubyid_no_boot_mode'>no_boot_mode</span>   <span class='op'>=</span> <span class='kw'>false</span>
+
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='ivar'>@nodeinfo</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>crowbar_wall</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='kw'>and</span> <span class='ivar'>@nodeinfo</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>crowbar_wall</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>track</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='kw'>and</span> <span class='ivar'>@nodeinfo</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>crowbar_wall</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>track</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bios_settings</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='kw'>and</span> <span class='ivar'>@nodeinfo</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>crowbar_wall</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>track</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bios_settings</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>boot_mode</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_boot_mode_data'>boot_mode_data</span> <span class='op'>=</span> <span class='ivar'>@nodeinfo</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>crowbar_wall</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>track</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bios_settings</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>boot_mode</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_curr_boot_mode'>curr_boot_mode</span> <span class='op'>=</span> <span class='id identifier rubyid_boot_mode_data'>boot_mode_data</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>current</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_boot_mode_data'>boot_mode_data</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_pend_boot_mode'>pend_boot_mode</span> <span class='op'>=</span> <span class='id identifier rubyid_boot_mode_data'>boot_mode_data</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>desired</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span> <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_boot_mode_data'>boot_mode_data</span><span class='rparen'>)</span>
+
+    <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Current boot mode  = </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_curr_boot_mode'>curr_boot_mode</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Pending boot mode  = </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_pend_boot_mode'>pend_boot_mode</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Unable to determine boot mode from CB wall..defaulting to BIOS mode</span><span class='tstring_end'>&quot;</span></span>
+    <span class='id identifier rubyid_no_boot_mode'>no_boot_mode</span> <span class='op'>=</span> <span class='kw'>true</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>create_vd: ircu doesn&#39;t support setting stripe size</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:ERROR</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:stripe_size</span><span class='rbracket'>]</span>
+
+  <span class='comment'>## Limit the number of disks being used if it&#39;s a RAID 10 array
+</span>  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:type</span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='symbol'>:RAID10</span> <span class='kw'>and</span> <span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:disks</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&gt;</span> <span class='const'>MAX_RAID10_DISKS</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_numDisks'>numDisks</span> <span class='op'>=</span> <span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:disks</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>-</span> <span class='int'>1</span>
+    <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_numDisks'>numDisks</span> <span class='kw'>and</span> <span class='id identifier rubyid_numDisks'>numDisks</span> <span class='op'>&gt;</span> <span class='const'>MAX_RAID10_DISKS</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:disks</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_slice!'>slice!</span><span class='lparen'>(</span><span class='const'>MAX_RAID10_DISKS</span><span class='comma'>,</span> <span class='id identifier rubyid_numDisks'>numDisks</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_disk_ids'>disk_ids</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:disks</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_d'>d</span><span class='op'>|</span>
+    <span class='id identifier rubyid_disk_ids'>disk_ids</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_d'>d</span><span class='period'>.</span><span class='id identifier rubyid_enclosure'>enclosure</span><span class='embexpr_end'>}</span><span class='tstring_content'>:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_d'>d</span><span class='period'>.</span><span class='id identifier rubyid_slot'>slot</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:type</span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='symbol'>:JBOD</span> <span class='kw'>or</span> <span class='op'>!</span><span class='id identifier rubyid_vol_type'>vol_type</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Not creating JBODs using sas2ircu...Exiting</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+    <span class='kw'>return</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_size'>size</span> <span class='op'>=</span> <span class='id identifier rubyid_get_array_size'>get_array_size</span><span class='lparen'>(</span><span class='id identifier rubyid_volume'>volume</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='lparen'>(</span><span class='op'>!</span><span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:size</span><span class='rbracket'>]</span> <span class='kw'>or</span> <span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:size</span><span class='rbracket'>]</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>MAX</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+
+  <span class='kw'>if</span> <span class='lparen'>(</span> <span class='lparen'>(</span><span class='id identifier rubyid_pend_boot_mode'>pend_boot_mode</span> <span class='kw'>and</span> <span class='id identifier rubyid_pend_boot_mode'>pend_boot_mode</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bios</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>or</span> <span class='lparen'>(</span><span class='id identifier rubyid_curr_boot_mode'>curr_boot_mode</span> <span class='kw'>and</span> <span class='id identifier rubyid_curr_boot_mode'>curr_boot_mode</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bios</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>or</span> <span class='lparen'>(</span><span class='id identifier rubyid_no_boot_mode'>no_boot_mode</span> <span class='op'>==</span> <span class='kw'>true</span><span class='rparen'>)</span><span class='rparen'>)</span>
+    <span class='kw'>if</span> <span class='lparen'>(</span><span class='op'>!</span><span class='id identifier rubyid_size'>size</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_size'>size</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>MAX</span><span class='tstring_end'>&quot;</span></span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_size'>size</span> <span class='op'>=</span> <span class='id identifier rubyid_max_size'>max_size</span> <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_max_size'>max_size</span> <span class='op'>&lt;</span> <span class='id identifier rubyid_size'>size</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Creating VD with size of </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_size'>size</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+
+  <span class='id identifier rubyid_text'>text</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_run_tool'>run_tool</span><span class='lparen'>(</span><span class='int'>0</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_cid'>cid</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>create</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_vol_type'>vol_type</span><span class='comma'>,</span> <span class='id identifier rubyid_size'>size</span><span class='comma'>,</span> <span class='id identifier rubyid_disk_ids'>disk_ids</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>&#39;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>&#39;</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>noprompt</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span>
+    <span class='id identifier rubyid_text'>text</span> <span class='op'>=</span> <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_readlines'>readlines</span>
+  <span class='rbrace'>}</span>
+  <span class='id identifier rubyid_text'>text</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span>
+<span class='kw'>rescue</span>
+  <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>create returned: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_text'>text</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:ERROR</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="delete_vd-instance_method">
+  
+    - (<tt>Object</tt>) <strong>delete_vd</strong>(volume) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_ircu.rb', line 161</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_delete_vd'>delete_vd</span><span class='lparen'>(</span><span class='id identifier rubyid_volume'>volume</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_text'>text</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_cid'>cid</span> <span class='op'>=</span> <span class='id identifier rubyid_volume'>volume</span><span class='period'>.</span><span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_controller_id'>controller_id</span>
+  <span class='id identifier rubyid_id'>id</span> <span class='op'>=</span> <span class='id identifier rubyid_volume'>volume</span><span class='period'>.</span><span class='id identifier rubyid_vol_id'>vol_id</span>
+  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_id'>id</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_run_tool'>run_tool</span><span class='lparen'>(</span><span class='int'>0</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_cid'>cid</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>deletevolume</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>noprompt</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_f'>f</span><span class='op'>|</span>
+      <span class='id identifier rubyid_text'>text</span> <span class='op'>=</span> <span class='id identifier rubyid_f'>f</span><span class='period'>.</span><span class='id identifier rubyid_readlines'>readlines</span>
+    <span class='rbrace'>}</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>No volume id determined....Nothing to delete</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>rescue</span>
+  <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>delete returned: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_text'>text</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:ERROR</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raise'>raise</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="enumerate_topology-instance_method">
+  
+    - (<tt>Object</tt>) <strong>enumerate_topology</strong> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_ircu.rb', line 31</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_enumerate_topology'>enumerate_topology</span>
+  <span class='ivar'>@controllers</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='kw'>begin</span>
+    <span class='id identifier rubyid_text'>text</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+    <span class='comment'># Get a list: returns an array of lists
+</span>    <span class='comment'># list contains:
+</span>    <span class='comment'># [id, type, vendor, device, PCI, SubVen, SubDev]
+</span>    <span class='comment'># e.g.
+</span>    <span class='comment'># [[&quot;0&quot;, &quot;SAS2008&quot;, &quot;1000h&quot;, &quot;72h&quot;, &quot;00h:03h:00h:00h&quot;, &quot;1170h&quot;, &quot;6019h&quot;]]
+</span>    <span class='id identifier rubyid_answer'>answer</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+
+    <span class='comment'># Gather bonus info for each controller found
+</span>    <span class='id identifier rubyid_answer'>answer</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_raw_cntr'>raw_cntr</span><span class='op'>|</span>
+      <span class='id identifier rubyid_lines'>lines</span> <span class='op'>=</span> <span class='id identifier rubyid_run_tool'>run_tool</span><span class='lparen'>(</span><span class='int'>0</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_raw_cntr'>raw_cntr</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>display</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span>
+
+      <span class='id identifier rubyid_cntr_info'>cntr_info</span> <span class='op'>=</span> <span class='id identifier rubyid_find_stanza'>find_stanza</span> <span class='id identifier rubyid_lines'>lines</span><span class='comma'>,</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Controller information</span><span class='tstring_end'>&quot;</span></span>
+      <span class='id identifier rubyid_phyz'>phyz</span> <span class='op'>=</span> <span class='id identifier rubyid_find_stanza'>find_stanza</span> <span class='id identifier rubyid_lines'>lines</span><span class='comma'>,</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Physical device information</span><span class='tstring_end'>&quot;</span></span>
+      <span class='id identifier rubyid_logical'>logical</span> <span class='op'>=</span> <span class='id identifier rubyid_find_stanza'>find_stanza</span> <span class='id identifier rubyid_lines'>lines</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IR Volume information</span><span class='tstring_end'>&quot;</span></span>
+
+      <span class='id identifier rubyid_c'>c</span> <span class='op'>=</span> <span class='id identifier rubyid_parse_cntr_info'>parse_cntr_info</span> <span class='id identifier rubyid_cntr_info'>cntr_info</span><span class='comma'>,</span> <span class='id identifier rubyid_raw_cntr'>raw_cntr</span>
+      <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_disks'>disks</span> <span class='op'>=</span> <span class='id identifier rubyid_parse_dev_info'>parse_dev_info</span> <span class='id identifier rubyid_phyz'>phyz</span><span class='comma'>,</span> <span class='id identifier rubyid_c'>c</span>
+        <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_volumes'>volumes</span> <span class='op'>=</span> <span class='id identifier rubyid_parse_vol_info'>parse_vol_info</span> <span class='id identifier rubyid_logical'>logical</span><span class='comma'>,</span> <span class='id identifier rubyid_c'>c</span>
+
+        <span class='id identifier rubyid_fix_up_jbod'>fix_up_jbod</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span>
+
+        <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_driver'>driver</span> <span class='op'>=</span> <span class='kw'>self</span>
+
+        <span class='ivar'>@controllers</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_c'>c</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>rescue</span> <span class='const'>Exception</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span>
+    <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Failed enumeration of controller/devices on system using sas2ircu...</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+
+  <span class='ivar'>@controllers</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="find_stanza-instance_method">
+  
+    - (<tt>Object</tt>) <strong>find_stanza</strong>(lines, name) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<h1 id="label-begin">begin</h1>
+
+<pre class="code ruby"><code class="ruby">Output from the LSI util is broken into stanzas delineated with something like:
+  ------------------------------------------------------------------------
+  Controller information
+------------------------------------------------------------------------
+
+  This method finds a stanza by name and returns an array with its content
+=end</code></pre>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_ircu.rb', line 427</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_find_stanza'>find_stanza</span><span class='lparen'>(</span><span class='id identifier rubyid_lines'>lines</span><span class='comma'>,</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_lines'>lines</span> <span class='op'>=</span> <span class='id identifier rubyid_lines'>lines</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span>
+  <span class='kw'>begin</span>
+    <span class='comment'># find a stanza mark.
+</span>    <span class='id identifier rubyid_skip_to_find'>skip_to_find</span> <span class='id identifier rubyid_lines'>lines</span><span class='comma'>,</span><span class='cvar'>@@re_lines</span>
+    <span class='id identifier rubyid_lines'>lines</span><span class='period'>.</span><span class='id identifier rubyid_shift'>shift</span>
+    <span class='comment'>#make sure it&#39;s the right one.
+</span>  <span class='kw'>end</span> <span class='kw'>while</span> <span class='id identifier rubyid_lines'>lines</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&gt;</span> <span class='int'>0</span> <span class='kw'>and</span>  <span class='id identifier rubyid_lines'>lines</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span><span class='period'>.</span><span class='id identifier rubyid_casecmp'>casecmp</span><span class='lparen'>(</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span> <span class='op'>!=</span> <span class='int'>0</span>
+  <span class='id identifier rubyid_lines'>lines</span><span class='period'>.</span><span class='id identifier rubyid_shift'>shift</span> <span class='comment'># skip stanza name and marker
+</span>  <span class='id identifier rubyid_lines'>lines</span><span class='period'>.</span><span class='id identifier rubyid_shift'>shift</span>
+  <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>start of </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> is </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_lines'>lines</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+
+  <span class='comment'>#lines now starts with the right stanzs.... filter out the rest.
+</span>  <span class='id identifier rubyid_ours'>ours</span> <span class='op'>=</span> <span class='id identifier rubyid_skip_to_find'>skip_to_find</span> <span class='id identifier rubyid_lines'>lines</span><span class='comma'>,</span><span class='cvar'>@@re_lines</span>
+  <span class='id identifier rubyid_ours'>ours</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="fix_up_jbod-instance_method">
+  
+    - (<tt>Object</tt>) <strong>fix_up_jbod</strong>(c) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>All unallocated disks are in the jbod volume</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_ircu.rb', line 209</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_fix_up_jbod'>fix_up_jbod</span><span class='lparen'>(</span><span class='id identifier rubyid_c'>c</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_disks'>disks</span> <span class='op'>=</span> <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_disks'>disks</span><span class='period'>.</span><span class='id identifier rubyid_dup'>dup</span>
+
+  <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_volumes'>volumes</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span>
+    <span class='id identifier rubyid_disks'>disks</span> <span class='op'>=</span> <span class='id identifier rubyid_disks'>disks</span> <span class='op'>-</span> <span class='id identifier rubyid_v'>v</span><span class='period'>.</span><span class='id identifier rubyid_members'>members</span>
+  <span class='kw'>end</span>
+
+  <span class='kw'>unless</span> <span class='id identifier rubyid_disks'>disks</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+    <span class='id identifier rubyid_rv'>rv</span> <span class='op'>=</span> <span class='const'>Crowbar</span><span class='op'>::</span><span class='const'>RAID</span><span class='op'>::</span><span class='const'>Volume</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+    <span class='id identifier rubyid_rv'>rv</span><span class='period'>.</span><span class='id identifier rubyid_controller'>controller</span> <span class='op'>=</span> <span class='id identifier rubyid_c'>c</span>
+    <span class='id identifier rubyid_rv'>rv</span><span class='period'>.</span><span class='id identifier rubyid_raid_level'>raid_level</span> <span class='op'>=</span> <span class='symbol'>:JBOD</span>
+    <span class='id identifier rubyid_rv'>rv</span><span class='period'>.</span><span class='id identifier rubyid_members'>members</span> <span class='op'>=</span> <span class='id identifier rubyid_disks'>disks</span>
+    <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_volumes'>volumes</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_rv'>rv</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="get_array_size-instance_method">
+  
+    - (<tt>Object</tt>) <strong>get_array_size</strong>(volume) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>Rudimentary algorithm to find array size…assumes that ## all disks are of
+the same size for v0.1                 ##</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_ircu.rb', line 393</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_get_array_size'>get_array_size</span><span class='lparen'>(</span><span class='id identifier rubyid_volume'>volume</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_num_disks'>num_disks</span>  <span class='op'>=</span> <span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:disks</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span>
+  <span class='id identifier rubyid_disk_size'>disk_size</span>  <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:disks</span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_size'>size</span><span class='op'>/</span><span class='const'>Crowbar</span><span class='op'>::</span><span class='const'>RAID</span><span class='op'>::</span><span class='const'>MEGA</span> <span class='op'>-</span> <span class='int'>2048</span><span class='rparen'>)</span>  <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:disks</span><span class='rbracket'>]</span> <span class='kw'>and</span> <span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:disks</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&gt;</span> <span class='int'>0</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_raid_level'>raid_level</span> <span class='op'>=</span> <span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='symbol'>:type</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_array_size'>array_size</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='kw'>case</span> <span class='id identifier rubyid_raid_level'>raid_level</span>
+  <span class='kw'>when</span> <span class='symbol'>:RAID0</span>
+    <span class='id identifier rubyid_array_size'>array_size</span> <span class='op'>=</span> <span class='id identifier rubyid_num_disks'>num_disks</span> <span class='op'>*</span> <span class='id identifier rubyid_disk_size'>disk_size</span>
+  <span class='kw'>when</span> <span class='symbol'>:RAID1</span>
+    <span class='id identifier rubyid_array_size'>array_size</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_num_disks'>num_disks</span> <span class='op'>/</span> <span class='int'>2</span> <span class='rparen'>)</span> <span class='op'>*</span> <span class='id identifier rubyid_disk_size'>disk_size</span>
+  <span class='kw'>when</span> <span class='symbol'>:RAID10</span>
+    <span class='id identifier rubyid_array_size'>array_size</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_num_disks'>num_disks</span> <span class='op'>/</span> <span class='int'>2</span> <span class='rparen'>)</span> <span class='op'>*</span> <span class='id identifier rubyid_disk_size'>disk_size</span>
+  <span class='kw'>when</span> <span class='symbol'>:RAID5</span>
+    <span class='id identifier rubyid_array_size'>array_size</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_num_disks'>num_disks</span> <span class='op'>-</span> <span class='int'>1</span> <span class='rparen'>)</span> <span class='op'>*</span> <span class='id identifier rubyid_disk_size'>disk_size</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Unknown raid level requested..returning nil</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+
+  <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>RAID level is </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_raid_level'>raid_level</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Number of disks  </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_num_disks'>num_disks</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>DiskSize is </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_disk_size'>disk_size</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Array size is </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_array_size'>array_size</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+
+  <span class='kw'>return</span> <span class='id identifier rubyid_array_size'>array_size</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="parse_cntr_info-instance_method">
+  
+    - (<tt>Object</tt>) <strong>parse_cntr_info</strong>(lines, raw_cntr) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_ircu.rb', line 241</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_parse_cntr_info'>parse_cntr_info</span><span class='lparen'>(</span><span class='id identifier rubyid_lines'>lines</span><span class='comma'>,</span> <span class='id identifier rubyid_raw_cntr'>raw_cntr</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_c'>c</span> <span class='op'>=</span> <span class='const'>Controller</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='symbol'>:controller_id</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_raw_cntr'>raw_cntr</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                     <span class='symbol'>:vendor_id</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_raw_cntr'>raw_cntr</span><span class='lbracket'>[</span><span class='int'>2</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                     <span class='symbol'>:sub_vendor_id</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_raw_cntr'>raw_cntr</span><span class='lbracket'>[</span><span class='int'>5</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                     <span class='symbol'>:device_id</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_raw_cntr'>raw_cntr</span><span class='lbracket'>[</span><span class='int'>3</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                     <span class='symbol'>:sub_device_id</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_raw_cntr'>raw_cntr</span><span class='lbracket'>[</span><span class='int'>6</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                     <span class='symbol'>:device_type</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_raw_cntr'>raw_cntr</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='comma'>,</span>
+                     <span class='symbol'>:pci_address</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_raw_cntr'>raw_cntr</span><span class='lbracket'>[</span><span class='int'>4</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+
+  <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_set'>set</span><span class='lparen'>(</span><span class='symbol'>:supported_raid_levels</span><span class='comma'>,</span> <span class='const'>INV_MAP</span><span class='period'>.</span><span class='id identifier rubyid_keys'>keys</span> <span class='op'>&lt;&lt;</span> <span class='symbol'>:JBOD</span><span class='rparen'>)</span>
+
+  <span class='kw'>begin</span>
+    <span class='id identifier rubyid_key'>key</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_extract_value'>extract_value</span><span class='lparen'>(</span><span class='id identifier rubyid_lines'>lines</span><span class='period'>.</span><span class='id identifier rubyid_shift'>shift</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_new_key'>new_key</span> <span class='op'>=</span> <span class='const'>CNTR_KEY_MAP</span><span class='lbracket'>[</span><span class='id identifier rubyid_key'>key</span><span class='rbracket'>]</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_new_key'>new_key</span>
+      <span class='kw'>case</span> <span class='id identifier rubyid_new_key'>new_key</span>
+      <span class='kw'>when</span> <span class='symbol'>:bus</span><span class='comma'>,</span> <span class='symbol'>:function</span><span class='comma'>,</span> <span class='symbol'>:device</span>
+        <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span>
+      <span class='kw'>when</span> <span class='symbol'>:raid_capable</span>
+        <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_casecmp'>casecmp</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>YES</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='op'>==</span> <span class='int'>0</span>
+        <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_set'>set</span><span class='lparen'>(</span><span class='symbol'>:supported_raid_levels</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='symbol'>:JBOD</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_value'>value</span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_c'>c</span><span class='period'>.</span><span class='id identifier rubyid_set'>set</span><span class='lparen'>(</span><span class='id identifier rubyid_new_key'>new_key</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+    <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IRCU Controller Unknown key: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_key'>key</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_value'>value</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:WARN</span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_new_key'>new_key</span>
+  <span class='kw'>end</span> <span class='kw'>while</span> <span class='lparen'>(</span><span class='op'>!</span><span class='id identifier rubyid_lines'>lines</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_c'>c</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="parse_dev_info-instance_method">
+  
+    - (<tt>Object</tt>) <strong>parse_dev_info</strong>(lines, controller) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_ircu.rb', line 351</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_parse_dev_info'>parse_dev_info</span><span class='lparen'>(</span><span class='id identifier rubyid_lines'>lines</span><span class='comma'>,</span> <span class='id identifier rubyid_controller'>controller</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_disks'>disks</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_rd'>rd</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='kw'>begin</span>
+    <span class='id identifier rubyid_line'>line</span> <span class='op'>=</span> <span class='id identifier rubyid_lines'>lines</span><span class='period'>.</span><span class='id identifier rubyid_shift'>shift</span>
+
+    <span class='kw'>if</span> <span class='id identifier rubyid_line'>line</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^Device is a (.*)$</span><span class='regexp_end'>/</span></span>
+      <span class='kw'>if</span> <span class='backref'>$1</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Hard disk</span><span class='tstring_end'>&quot;</span></span>
+        <span class='id identifier rubyid_rd'>rd</span> <span class='op'>=</span> <span class='const'>Crowbar</span><span class='op'>::</span><span class='const'>RAID</span><span class='op'>::</span><span class='const'>RaidDisk</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+        <span class='id identifier rubyid_rd'>rd</span><span class='period'>.</span><span class='id identifier rubyid_controller'>controller</span> <span class='op'>=</span> <span class='id identifier rubyid_controller'>controller</span>
+        <span class='id identifier rubyid_disks'>disks</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_rd'>rd</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_rd'>rd</span> <span class='op'>=</span> <span class='kw'>nil</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='kw'>next</span> <span class='kw'>unless</span> <span class='id identifier rubyid_rd'>rd</span>
+
+    <span class='id identifier rubyid_key'>key</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_extract_value'>extract_value</span><span class='lparen'>(</span><span class='id identifier rubyid_line'>line</span><span class='rparen'>)</span>
+
+    <span class='id identifier rubyid_new_key'>new_key</span> <span class='op'>=</span> <span class='const'>DISK_KEY_MAP</span><span class='lbracket'>[</span><span class='id identifier rubyid_key'>key</span><span class='rbracket'>]</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_new_key'>new_key</span>
+      <span class='kw'>case</span> <span class='id identifier rubyid_new_key'>new_key</span>
+      <span class='kw'>when</span> <span class='symbol'>:size</span>
+        <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='const'>Integer</span><span class='lparen'>(</span><span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_split'>split</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>/</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='op'>*</span><span class='int'>512</span> <span class='comment'># use sectors
+</span>      <span class='kw'>when</span> <span class='symbol'>:media_type</span>
+        <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='symbol'>:DISK</span> <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>HDD</span><span class='regexp_end'>/</span></span>
+        <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='symbol'>:SSD</span> <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>SSD</span><span class='regexp_end'>/</span></span>
+      <span class='kw'>when</span> <span class='symbol'>:protocol</span>
+        <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='symbol'>:SATA</span> <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>SATA</span><span class='tstring_end'>&quot;</span></span>
+        <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='symbol'>:SAS</span> <span class='kw'>if</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>SAS</span><span class='tstring_end'>&quot;</span></span>
+      <span class='kw'>end</span>
+
+      <span class='id identifier rubyid_rd'>rd</span><span class='period'>.</span><span class='id identifier rubyid_set'>set</span><span class='lparen'>(</span><span class='id identifier rubyid_new_key'>new_key</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IRCU Disk Unknown key: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_key'>key</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_value'>value</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:WARN</span><span class='rparen'>)</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span> <span class='kw'>while</span> <span class='id identifier rubyid_lines'>lines</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&gt;</span> <span class='int'>0</span>
+  <span class='id identifier rubyid_disks'>disks</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="parse_vol_info-instance_method">
+  
+    - (<tt>Object</tt>) <strong>parse_vol_info</strong>(lines, controller) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_ircu.rb', line 279</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_parse_vol_info'>parse_vol_info</span><span class='lparen'>(</span><span class='id identifier rubyid_lines'>lines</span><span class='comma'>,</span> <span class='id identifier rubyid_controller'>controller</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_vols'>vols</span><span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
+
+  <span class='id identifier rubyid_rv'>rv</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='kw'>begin</span>
+    <span class='id identifier rubyid_line'>line</span> <span class='op'>=</span> <span class='id identifier rubyid_lines'>lines</span><span class='period'>.</span><span class='id identifier rubyid_shift'>shift</span>
+
+    <span class='kw'>if</span> <span class='id identifier rubyid_line'>line</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>^IR volume (\d+)\s*</span><span class='regexp_end'>/</span></span>
+      <span class='id identifier rubyid_rv'>rv</span> <span class='op'>=</span> <span class='const'>Crowbar</span><span class='op'>::</span><span class='const'>RAID</span><span class='op'>::</span><span class='const'>Volume</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+      <span class='id identifier rubyid_rv'>rv</span><span class='period'>.</span><span class='id identifier rubyid_controller'>controller</span> <span class='op'>=</span> <span class='id identifier rubyid_controller'>controller</span>
+      <span class='id identifier rubyid_vols'>vols</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_rv'>rv</span>
+    <span class='kw'>end</span>
+    <span class='kw'>next</span> <span class='kw'>unless</span> <span class='id identifier rubyid_rv'>rv</span>
+
+    <span class='kw'>if</span> <span class='id identifier rubyid_line'>line</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\s+Physical hard disks\s*:\s*$</span><span class='regexp_end'>/</span></span>
+      <span class='comment'># Skipping
+</span>    <span class='kw'>elsif</span> <span class='id identifier rubyid_line'>line</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>\s+PHY.* : (\d+):(\d+)\s*$</span><span class='regexp_end'>/</span></span>
+      <span class='id identifier rubyid_enclosure'>enclosure</span> <span class='op'>=</span> <span class='backref'>$1</span>
+      <span class='id identifier rubyid_slot'>slot</span> <span class='op'>=</span> <span class='backref'>$2</span>
+      <span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='backref'>$1</span><span class='embexpr_end'>}</span><span class='tstring_content'>:</span><span class='embexpr_beg'>#{</span><span class='backref'>$2</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+
+      <span class='id identifier rubyid_rd'>rd</span> <span class='op'>=</span> <span class='kw'>nil</span>
+      <span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_disks'>disks</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_d'>d</span><span class='op'>|</span>
+        <span class='kw'>if</span> <span class='id identifier rubyid_d'>d</span><span class='period'>.</span><span class='id identifier rubyid_enclosure'>enclosure</span> <span class='op'>==</span> <span class='id identifier rubyid_enclosure'>enclosure</span> <span class='kw'>and</span> <span class='id identifier rubyid_d'>d</span><span class='period'>.</span><span class='id identifier rubyid_slot'>slot</span> <span class='op'>==</span> <span class='id identifier rubyid_slot'>slot</span>
+          <span class='id identifier rubyid_rd'>rd</span> <span class='op'>=</span> <span class='id identifier rubyid_d'>d</span>
+          <span class='kw'>break</span>
+        <span class='kw'>end</span>
+      <span class='kw'>end</span>
+      <span class='kw'>unless</span> <span class='id identifier rubyid_rd'>rd</span>
+        <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Failed to find disk in physical list</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:WARN</span><span class='rparen'>)</span>
+        <span class='id identifier rubyid_rd'>rd</span> <span class='op'>=</span> <span class='const'>Crowbar</span><span class='op'>::</span><span class='const'>RAID</span><span class='op'>::</span><span class='const'>RaidDisk</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
+        <span class='id identifier rubyid_rd'>rd</span><span class='period'>.</span><span class='id identifier rubyid_enclosure'>enclosure</span> <span class='op'>=</span> <span class='id identifier rubyid_enclosure'>enclosure</span>
+        <span class='id identifier rubyid_rd'>rd</span><span class='period'>.</span><span class='id identifier rubyid_slot'>slot</span> <span class='op'>=</span> <span class='id identifier rubyid_slot'>slot</span>
+        <span class='id identifier rubyid_rd'>rd</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span> <span class='op'>=</span> <span class='id identifier rubyid_name'>name</span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_rv'>rv</span><span class='period'>.</span><span class='id identifier rubyid_members'>members</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_rd'>rd</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_key'>key</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_extract_value'>extract_value</span><span class='lparen'>(</span><span class='id identifier rubyid_line'>line</span><span class='rparen'>)</span>
+
+      <span class='id identifier rubyid_new_key'>new_key</span> <span class='op'>=</span> <span class='const'>VOL_KEY_MAP</span><span class='lbracket'>[</span><span class='id identifier rubyid_key'>key</span><span class='rbracket'>]</span>
+      <span class='kw'>if</span> <span class='id identifier rubyid_new_key'>new_key</span>
+        <span class='kw'>case</span> <span class='id identifier rubyid_new_key'>new_key</span>
+        <span class='kw'>when</span> <span class='symbol'>:size</span>
+          <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span> <span class='op'>*</span> <span class='const'>MEGA</span>
+        <span class='kw'>when</span> <span class='symbol'>:raid_level</span>
+          <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='const'>RAID_MAP</span><span class='lbracket'>[</span><span class='id identifier rubyid_value'>value</span><span class='rbracket'>]</span>
+        <span class='kw'>end</span>
+
+        <span class='id identifier rubyid_rv'>rv</span><span class='period'>.</span><span class='id identifier rubyid_set'>set</span><span class='lparen'>(</span><span class='id identifier rubyid_new_key'>new_key</span><span class='comma'>,</span> <span class='id identifier rubyid_value'>value</span><span class='rparen'>)</span>
+      <span class='kw'>else</span>
+        <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>IRCU Volume Unknown key: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_key'>key</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_value'>value</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='symbol'>:WARN</span><span class='rparen'>)</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+  <span class='kw'>end</span> <span class='kw'>while</span> <span class='id identifier rubyid_lines'>lines</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span> <span class='op'>&gt;</span> <span class='int'>0</span>
+  <span class='id identifier rubyid_vols'>vols</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="run_tool-instance_method">
+  
+    - (<tt>Object</tt>) <strong>run_tool</strong>(success, error, args, &amp;block) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+444
+445
+446
+447
+448</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_ircu.rb', line 444</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_run_tool'>run_tool</span><span class='lparen'>(</span><span class='id identifier rubyid_success'>success</span><span class='comma'>,</span> <span class='id identifier rubyid_error'>error</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='const'>CMD</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>=</span> <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>+</span> <span class='lbracket'>[</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rbracket'>]</span>
+  <span class='id identifier rubyid_run_command'>run_command</span><span class='lparen'>(</span><span class='id identifier rubyid_cmd'>cmd</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span> <span class='id identifier rubyid_success'>success</span><span class='comma'>,</span> <span class='id identifier rubyid_error'>error</span><span class='comma'>,</span> <span class='op'>&amp;</span><span class='id identifier rubyid_block'>block</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="set_boot-instance_method">
+  
+    - (<tt>Object</tt>) <strong>set_boot</strong>(controller, volume, nic_first = true) 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>nic_first is ignored here.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_ircu.rb', line 178</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_set_boot'>set_boot</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span> <span class='id identifier rubyid_volume'>volume</span><span class='comma'>,</span> <span class='id identifier rubyid_nic_first'>nic_first</span> <span class='op'>=</span> <span class='kw'>true</span><span class='rparen'>)</span>
+  <span class='comment'>## set the boot volume or drive.
+</span>  <span class='comment'>## if we have a volume, otherwise, first drive.
+</span>  <span class='kw'>begin</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_volume'>volume</span> <span class='kw'>and</span> <span class='id identifier rubyid_volume'>volume</span><span class='period'>.</span><span class='id identifier rubyid_raid_level'>raid_level</span> <span class='op'>!=</span> <span class='symbol'>:JBOD</span>
+      <span class='id identifier rubyid_bootVol'>bootVol</span> <span class='op'>=</span> <span class='id identifier rubyid_volume'>volume</span><span class='period'>.</span><span class='id identifier rubyid_vol_id'>vol_id</span>
+      <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Will use boot volume:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_bootVol'>bootVol</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Will use boot volume:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_bootVol'>bootVol</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+      <span class='id identifier rubyid_run_tool'>run_tool</span><span class='lparen'>(</span><span class='int'>0</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_controller_id'>controller_id</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bootir</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_bootVol'>bootVol</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_bootVol'>bootVol</span><span class='rparen'>)</span>
+    <span class='kw'>elsif</span> <span class='op'>!</span><span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_disks'>disks</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span> <span class='kw'>and</span> <span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_raid_capable'>raid_capable</span>
+      <span class='id identifier rubyid_d'>d</span> <span class='op'>=</span> <span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_disks'>disks</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span>
+      <span class='id identifier rubyid_d'>d</span> <span class='op'>=</span> <span class='id identifier rubyid_volume'>volume</span><span class='period'>.</span><span class='id identifier rubyid_members'>members</span><span class='lbracket'>[</span><span class='int'>0</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_volume'>volume</span> <span class='kw'>and</span> <span class='op'>!</span><span class='id identifier rubyid_volume'>volume</span><span class='period'>.</span><span class='id identifier rubyid_members'>members</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+      <span class='id identifier rubyid_boot'>boot</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_d'>d</span><span class='period'>.</span><span class='id identifier rubyid_enclosure'>enclosure</span><span class='embexpr_end'>}</span><span class='tstring_content'>:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_d'>d</span><span class='period'>.</span><span class='id identifier rubyid_slot'>slot</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='lparen'>(</span><span class='lparen'>(</span><span class='id identifier rubyid_d'>d</span><span class='period'>.</span><span class='id identifier rubyid_enclosure'>enclosure</span><span class='rparen'>)</span> <span class='kw'>and</span> <span class='lparen'>(</span><span class='id identifier rubyid_d'>d</span><span class='period'>.</span><span class='id identifier rubyid_slot'>slot</span><span class='rparen'>)</span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Will use boot disk: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_boot'>boot</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+      <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Will use boot disk: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_boot'>boot</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+      <span class='id identifier rubyid_run_tool'>run_tool</span><span class='lparen'>(</span><span class='int'>0</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_controller_id'>controller_id</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>bootencl</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_boot'>boot</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_boot'>boot</span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+    <span class='kw'>end</span>
+  <span class='kw'>rescue</span> <span class='const'>Exception</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_e'>e</span>
+    <span class='id identifier rubyid_puts'>puts</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Caught exception in set_boot..</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_e'>e</span><span class='period'>.</span><span class='id identifier rubyid_message'>message</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="useable?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>useable?</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+23
+24
+25
+26
+27
+28
+29</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_ircu.rb', line 23</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_useable?'>useable?</span>
+  <span class='kw'>false</span>
+  <span class='id identifier rubyid_run_tool'>run_tool</span><span class='lparen'>(</span><span class='int'>0</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>list</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_line'>line</span><span class='op'>|</span>
+    <span class='kw'>next</span> <span class='kw'>unless</span> <span class='lparen'>(</span><span class='id identifier rubyid_line'>line</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>:</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span> <span class='kw'>and</span> <span class='op'>!</span><span class='lparen'>(</span><span class='id identifier rubyid_line'>line</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>SAS2IRCU</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_answer'>answer</span> <span class='op'>&lt;&lt;</span> <span class='id identifier rubyid_line'>line</span><span class='period'>.</span><span class='id identifier rubyid_split'>split</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'> </span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+    <div id="footer">
+  Generated on Thu Oct  9 20:28:07 2014 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.4 (ruby-2.1.2).
+</div>
+
+  </body>
+</html>
