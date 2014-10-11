@@ -33,7 +33,7 @@ module IPMI
   def self.supported?(node)
     return false if node[:platform] == "windows"
     return false if node[:dmi] && node[:dmi].empty?
-    UNSUPPORTED.member?(node[:dmi][:system][:product_name])
+    !UNSUPPORTED.member?(node[:dmi][:system][:product_name])
   end
 
   def self.ensure_access(node)
