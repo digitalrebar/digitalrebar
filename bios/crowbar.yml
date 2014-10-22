@@ -28,6 +28,40 @@ gems:
     - libxml-ruby
     - xml-simple
 
+roles:
+  - name: bios-discover
+    jig: noop
+    flags:
+      - implicit
+      - discovery
+    requires:
+      - deployer-client
+    attribs:
+      - name: set-mapping
+        map: 'bios/set_mapping'
+        description: "Mapping of chassis manufacturers and product names to config sets"
+      - name: bios-all_configs
+        map: 'bios/all_configs'
+        description: 'All the BIOS configurations the BIOS barclamp knows how to handle'
+      - name: bios-config-sets
+        map: 'bios/config_sets'
+        description: 'The permitted BIOS configurations for this node.'
+  - name: bios-dell-rseries-configure
+    jig: role-provided
+    requires:
+      - crowbar-managed-node
+      - bios-discover
+    wants-attribs:
+      - bios-config-sets
+    attribs:
+      - name: bios-configuration
+        map: 'bios/config'
+        description: "The desired BIOS configuration for this node."
+        schema:
+          type: seq
+          sequence:
+            - type: str
+
 extra_files:
   # These files must be kept in sync with the ones in bc-template-bios.json
   # RKR: Files and links updated as of July 2nd 2013
