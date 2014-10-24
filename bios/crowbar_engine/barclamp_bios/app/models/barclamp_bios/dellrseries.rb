@@ -22,6 +22,7 @@
 # a Dell R series box.
 class BarclampBios::Dellrseries < BarclampBios::Driver
 
+  # The WSMAN namespaces we are going to get and set our BIOS configs from.
   @@namespaces=["http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_BIOSEnumeration",
                 "http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_BIOSString",
                 "http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_BIOSInteger"]
@@ -31,6 +32,7 @@ class BarclampBios::Dellrseries < BarclampBios::Driver
     @client = @node.hammers.find_by!(name: "wsman")
   end
 
+  # Get the settings from WSMAN and cache them locally.
   def settings
     return @settings if @settings
     res = Hash.new
@@ -108,11 +110,12 @@ class BarclampBios::Dellrseries < BarclampBios::Driver
     # non-BIOS settings, but this does the job for now.
     res = @client.invoke("http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_BIOSService",
                          "CreateTargetedConfigJob",
-                         { "RebootJobType" => "3",
-                           "ScheduledStartTime" => "TIME_NOW",
+                         { "ScheduledStartTime" => "TIME_NOW",
                            "Target" => "BIOS.Setup.1-1"})
     raise("Unable to commit BIOS settings!\n#{res.to_xml}") if res.ReturnValue.text != "4096"
-    res.to_xml
+    # We could parse the XML that came back to see of we need to reboot, but
+    # we always should in any case.
+    true
   end
 
   # Arguably not correct, but it is what we have right now.

@@ -19,7 +19,7 @@
 			    "AcPwrRcvryDelay": "Immediate",
 			    "AcPwrRcvryUserDelay": "60",
 			    "AesNi": "Enabled",
-			    "BootMode": "Uefi",
+			    "BootMode": "Bios",
 			    "BootSeqRetry": "Enabled",
 			    "ConTermType": "Vt100Vt220",
 			    "CorePerfBoost": "Enabled",
@@ -74,7 +74,7 @@
 			    "ProcHyperTransport": "HT3",
 			    "ProcPwrPerf": "SysDbpm",
 			    "ProcTurboMode": "Enabled",
-			    "ProcVirtualization": "Enabled",
+			    "ProcVirtualization": "Disabled",
 			    "PwrButton": "Enabled",
 			    "QpiSpeed": "MaxDataRate",
 			    "RedirAfterBoot": "Enabled",
@@ -98,7 +98,7 @@
 			    "Slot6": "Enabled",
 			    "Slot7": "Enabled",
 			    "SnoopFilter": "Enabled",
-			    "SriovGlobalEnable": "Enabled",
+			    "SriovGlobalEnable": "Disabled",
 			    "SysProfile": "PerfPerWattOptimizedDapc",
 			    "SystemUefiShell": "Disabled",
 			    "TpmActivation": "NoChange",
@@ -106,6 +106,21 @@
 			    "TpmSecurity": "Off",
 			    "TpmStatus": "Unknown",
 			    "UsbPorts": "AllOn"
+			}
+		    },
+		    {
+			"name": "uefi",
+			"parent": "default",
+			"settings": {
+			    "BootMode": "Uefi"
+			}
+		    },
+		    {
+			"name": "virtualization",
+			"parent": "default",
+			"settings": {
+			    "ProcVirtualization": "Enabled",
+			    "SriovGlobalEnable": "Enabled"
 			}
 		    }
 		]

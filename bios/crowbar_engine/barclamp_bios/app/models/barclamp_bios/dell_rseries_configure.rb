@@ -24,6 +24,9 @@
 
 class BarclampBios::DellRseriesConfigure < Role
 
+  # Configure the BIOS settings we care about for Dell R-series gear.
+  # @param nr [NodeRole] The noderole that we are acting on behalf of.
+  # @param data [Hash] The merged attrib data that we should use for configuration.
   def do_transition(nr,data)
     driver = BarclampBios::Dellrseries.new(nr.node)
     cfg_target = Attrib.get('bios-configuration',data)
@@ -49,11 +52,19 @@ class BarclampBios::DellRseriesConfigure < Role
       @runlog << "Setting BIOS setting #{k} to #{v}"
       driver[k] = v
     end
-    driver.commit
-    # The node is going to reboot, so mark it as not alive.
+    @runlog << "Committing changes"
+    if driver.commit
+      @runlog << "Rebooting node to let changes take effect."
+      if nr.node.bootenv == "local"
+        nr.node.power.reboot
+      else
+        nr.node.power[:reset] ? nr.node.power.reset : nr.node.power.reboot
+      end
+      # The node is rebooting, so mark it as not alive.
+      nr.node.alive = false
+      nr.node.save!
+    end
     nr.runlog = @runlog.join("\n")
-    node.alive = false
-    node.save!
   end
 
   private
