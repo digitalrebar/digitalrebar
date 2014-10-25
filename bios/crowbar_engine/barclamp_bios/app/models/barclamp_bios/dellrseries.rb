@@ -85,12 +85,11 @@ class BarclampBios::Dellrseries < BarclampBios::Driver
   def commit
     # Clear any pending config job.
     # We do not care about the results.
-    @client.invoke("http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_BIOSService",
-                   "DeletePendingConfiguration",
-                   {"Target" => "BIOS.Setup.1-1"})
+    @client.invoke("http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_JobService","DeleteJobQueue",{"JobID" => "JID_CLEARALL"})
+    @client.invoke("http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_BIOSService","DeletePendingConfiguration",{"Target" => "BIOS.Setup.1-1"})
     # Gather all the changed settings.
     to_commit = @settings.values.reject{|s|s.current_value == s.proposed_value || s.proposed_value.nil?}
-    return if to_commit.empty?
+    return false if to_commit.empty?
     args = {
       "Target" => "BIOS.Setup.1-1",
       "AttributeName" => [],
@@ -101,20 +100,17 @@ class BarclampBios::Dellrseries < BarclampBios::Driver
       args["AttributeValue"] << setting.proposed_value
     end
     # Propose the changes via WSMAN
-    res = @client.invoke("http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_BIOSService",
-                         "SetAttributes",
-                         args)
+    res = @client.invoke("http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_BIOSService","SetAttributes",args)
     raise("Could not set BIOS settings!\n#{res.to_xml}") if res.ReturnValue.text != "0"
     # Now, create a targeted config job to apply the proposed changes
     # Arguably, we will need to be more intelligent than this once we start handling
     # non-BIOS settings, but this does the job for now.
     res = @client.invoke("http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_BIOSService",
                          "CreateTargetedConfigJob",
-                         { "ScheduledStartTime" => "TIME_NOW",
-                           "Target" => "BIOS.Setup.1-1"})
+                         { "Target" => "BIOS.Setup.1-1",
+                           "RebootJobType" => "3",
+                           "scheduledStartTime" => "TIME_NOW"})
     raise("Unable to commit BIOS settings!\n#{res.to_xml}") if res.ReturnValue.text != "4096"
-    # We could parse the XML that came back to see of we need to reboot, but
-    # we always should in any case.
     true
   end
 
