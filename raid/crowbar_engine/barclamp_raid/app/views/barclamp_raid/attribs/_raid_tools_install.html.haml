@@ -1,0 +1,9 @@
+- value = Attrib.get(attrib.name, obj)
+- value.each do |v|
+  %tr
+    %td
+      = link_to attrib.name_i18n, attrib_path(attrib.id), :title=>attrib.description
+      = v["name"]
+    %td= link_to v["archive"], v["source"], :target=>"_new"
+    - if current_user and current_user.settings(:ui).debug
+      %td= attrib.ui_renderer rescue Attrib::UI_RENDERER

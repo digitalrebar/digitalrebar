@@ -34,6 +34,7 @@ roles:
       - name: raid-drivers
         description: 'The backend drivers that the RAID barclamp can use'
         map: 'raid/drivers'
+        ui_renderer: 'barclamp_raid/attribs/raid_tools_install'
     wants-attribs:
       - provisioner-webserver
   - name: raid-discover

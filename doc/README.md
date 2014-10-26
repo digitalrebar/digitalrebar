@@ -2,6 +2,11 @@
 
 If you are using OpenCrowbar with the Hardware workload, then please review this documentation.
 
+### Attach to BMC Network
+
+By default, Crowbar sets up the BMC network from 192.168.128.21/22 and up.  That network will be bridged between your docker admin and your external NIC.  
+
+If you'd like to connect to that network on your local system then you need to bind an IP for your desktop to that network:  `sudo ip a add 192.168.128.2/22 dev docker0`
 
 ### RAID Tools
 
