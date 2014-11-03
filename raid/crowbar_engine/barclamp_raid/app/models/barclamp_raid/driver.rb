@@ -103,16 +103,16 @@ module BarclampRaid
   # @param s [Integer,String] Either the number of bytes, or a string in the format of "100 GB"
   # @return [Integer] The number of bytes.
   def self.size_to_bytes(s)
-      case s
-      when /^([0-9.]+)$/ then $1.to_f
-      when /^([0-9]+)\s*[Kk][Bb]$/ then $1.to_f * KILO
-      when /^([0-9.]+)\s*[Mm][Bb]$/ then $1.to_f * MEGA
-      when /^([0-9.]+)\s*[Gg][Bb]$/ then $1.to_f * GIGA
-      when /^([0-9.]+)\s*[Tt][Bb]$/ then $1.to_f * TERA
-      else
-        s.to_f
-      end.ceil
-    end
+    case s
+    when /^([0-9.]+)$/ then $1.to_f
+    when /^([0-9]+)\s*[Kk][Bb]$/ then $1.to_f * KILO
+    when /^([0-9.]+)\s*[Mm][Bb]$/ then $1.to_f * MEGA
+    when /^([0-9.]+)\s*[Gg][Bb]$/ then $1.to_f * GIGA
+    when /^([0-9.]+)\s*[Tt][Bb]$/ then $1.to_f * TERA
+    else
+      s.to_f
+    end.ceil
+  end
 
   # Calculate how many spans are needed for the RAID type and number of disks.
   # @param raid_level [String] The raid level to calculate for.
@@ -232,8 +232,7 @@ module BarclampRaid
     # @return [Array<BarclampRaid::RaidDisk>] The disks that should be used to create
     #  the volume.
     def find_candidates(volume)
-      raid_level   = volume["raid_level"]
-      name        = volume["name"]
+      raid_level  = volume["raid_level"]
       disks       = volume["disks"]
       size        = volume["vol_size"] || "max"
       exclusive   = (volume["exclusive"].nil? || size.nil?) ? true : !!volume["exclusive"]
@@ -241,7 +240,7 @@ module BarclampRaid
       protocol    = volume["protocol"]
       stripe_size = BarclampRaid.size_to_bytes(volume["stripe_size"] || "64 KB")
       disks, spans = BarclampRaid.calc_spans(raid_level,disks)
-      min_disks, max_disks, overhead = BarclampRaid.calc_raid_overhead(raid_level,spans)
+      min_disks, max_disks, _ = BarclampRaid.calc_raid_overhead(raid_level,spans)
       raise "RAID type #{raid_level} requires at least #{min_disks} disks" unless disks >= min_disks
       raise "RAID type #{raid_level} cannot have more than #{max_disks} disks" unless disks <= max_disks
       candidate_sizes = Hash.new
@@ -601,7 +600,7 @@ module BarclampRaid
     #
     def run_command(cmd, success, error)
       log "will execute #{cmd}"
-      out,err,status = @node.run(cmd)
+      out,_,status = @node.run(cmd)
       if ((error and status.exitstatus == error) or (success and status.exitstatus != success))
         raise "cmd #{cmd} returned #{status.exitstatus}. #{out}"
       end
