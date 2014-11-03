@@ -87,9 +87,9 @@ module BarclampRaid
 
     def useable?
       begin
-        run_tool(nil, 0, ["-adpCount"])
+        lines = run_tool(nil, 0, ["-adpCount"])
       rescue Exception => e
-        log "Node #{@node.name} has no controllers controllable via MegaCLI...#{e.message}"
+        @logger << "Node #{@node.name} has no controllers controllable via MegaCLI...#{e.message}\n" if @logger
         return false
       end
       true
@@ -260,11 +260,12 @@ module BarclampRaid
 
     def create_vd(controller, volume)
       cid         = controller.id
-      raid_level   = volume["raid_level"]
+      raid_level  = volume["raid_level"]
       name        = volume["name"]
       size        = volume["vol_size"] || "max"
       stripe_size = BarclampRaid.size_to_bytes(volume["stripe_size"] || "64 KB")
       candidates = Array.new
+      @logger << "Creating #{name} on #{controller.name}\n" if @logger
       if volume["disks"].is_a?(Numeric)
         candidates = controller.find_candidates(volume)
       elsif volume["disks"].is_a?(Array)
@@ -324,21 +325,37 @@ module BarclampRaid
                param,
                "-L#{vol_id}",
                "-a#{cid}"]
-        run_tool(0, nil, cmd)
+        lines = run_tool(0, nil, cmd)
+        lines.each do |line|
+          @logger << line
+        end if @logger
       end
       _set_boot(controller, vol_id) if volume["boot"]
-      self.refresh_controller(controller)
+      volumes = self.refresh_controller(controller)
+
+      # Return the actual volume per api contract.
+      volumes.each do |v|
+        return v if v.name == name
+      end
     end
 
     def delete_vd(volume)
-      run_tool(0, nil, ["-CfgLdDel", "-L#{volume.id}", "-force","-a#{volume.controller.id}"])
+      @logger << "Delete VD on #{volume.controller.name} for #{volume.id}\n" if @logger
+      lines = run_tool(0, nil, ["-CfgLdDel", "-L#{volume.id}", "-force","-a#{volume.controller.id}"])
+      lines.each do |line|
+        @logger << line
+      end if @logger
       self.refresh_controller(volume.controller)
     end
 
     def _set_boot(controller, volume_id)
+      @logger << "setting boot volume on #{controller.name} for #{volume_id}\n" if @logger
       #### set a bood drive.
       ## - If there is any kind of volume info, pick first volume
-      run_tool(0, nil, ["-adpBootDrive", "-set", "-l#{volume_id}", "-a#{controller.id}"])
+      lines = run_tool(0, nil, ["-adpBootDrive", "-set", "-l#{volume_id}", "-a#{controller.id}"])
+      lines.each do |line|
+        @logger << line
+      end if @logger
     end
 
     def set_boot(controller, volume)
@@ -346,11 +363,15 @@ module BarclampRaid
     end
 
     def clear_controller_config(controller, type)
-      if type == :foreign
+      @logger << "clearing controller config for #{controller.name}\n" if @logger
+      lines = if type == :foreign
         run_tool(0, nil, ["-CfgForeign", "-Clear", "-a#{controller.controller_id}"])
       else
         run_tool(0, nil, ["-CfgClr", "-a#{controller.controller_id}"])
       end
+      lines.each do |line|
+        @logger << line
+      end if @logger
       self.refresh_controller(controller)
     end
   end

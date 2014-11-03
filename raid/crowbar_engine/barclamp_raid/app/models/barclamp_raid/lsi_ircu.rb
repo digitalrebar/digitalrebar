@@ -91,7 +91,7 @@ module BarclampRaid
     #       to identify a Volume with a user specified Alpha-numeric string
     #       where noprompt is an optional argument that eliminates
     #       warnings and prompts
-    
+
     def create_vd(controller, volume)
       ## build up the command...
       max_size       = (Crowbar::RAID::TERA * 2 - Crowbar::RAID::MEGA) / Crowbar::RAID::MEGA
@@ -109,14 +109,14 @@ module BarclampRaid
         curr_boot_mode = boot_mode_data["current"].to_s if (boot_mode_data)
         pend_boot_mode = boot_mode_data["desired"].to_s if (boot_mode_data)
 
-        puts "Current boot mode  = #{curr_boot_mode}"
-        puts "Pending boot mode  = #{pend_boot_mode}"
+        @logger << "Current boot mode  = #{curr_boot_mode}\n" if @logger
+        @logger << "Pending boot mode  = #{pend_boot_mode}\n" if @logger
       else
-        puts "Unable to determine boot mode from CB wall..defaulting to BIOS mode"
+        @logger << "Unable to determine boot mode from CB wall..defaulting to BIOS mode\n" if @logger
         no_boot_mode = true
       end
 
-      log("create_vd: ircu doesn't support setting stripe size", :ERROR) if volume[:stripe_size]
+      @logger << "create_vd: ircu doesn't support setting stripe size\n" if volume[:stripe_size] && @logger
 
       ## Limit the number of disks being used if it's a RAID 10 array
       if (volume[:type] == :RAID10 and volume[:disks].length > MAX_RAID10_DISKS)
@@ -132,7 +132,7 @@ module BarclampRaid
       end
 
       if (volume[:type] == :JBOD or !vol_type)
-        log("Not creating JBODs using sas2ircu...Exiting")
+        @logger << "Not creating JBODs using sas2ircu...Exiting\n" if @logger
         return
       end
 
@@ -146,15 +146,16 @@ module BarclampRaid
         end
       end
 
-      puts "Creating VD with size of #{size}"
+      @logger << "Creating VD with size of #{size}\n" if @logger
 
       text = ""
       run_tool(0, nil, [cid, "create", vol_type, size, disk_ids.join(" "), "'#{name}'", "noprompt"]){ |f|
         text = f.readlines
       }
+      @logger << text if @logger
       text.to_s.strip
     rescue
-      log("create returned: #{text}", :ERROR)
+      @logger << "create returned: #{text}\n" if @logger
       raise
     end
 
@@ -167,10 +168,10 @@ module BarclampRaid
           text = f.readlines
         }
       else
-        log("No volume id determined....Nothing to delete")
+        @logger << "No volume id determined....Nothing to delete\n" if @logger
       end
     rescue
-      log("delete returned: #{text}", :ERROR)
+      @logger << "delete returned: #{text}\n" if @logger
       raise
     end
 
@@ -182,25 +183,27 @@ module BarclampRaid
         if volume and volume.raid_level != :JBOD
           bootVol = volume.vol_id
           log("Will use boot volume:#{bootVol}")
-          puts "Will use boot volume:#{bootVol}"
+          @logger << "Will use boot volume:#{bootVol}\n" if @logger
           run_tool(0, nil, [controller.controller_id, "bootir", "#{bootVol}"]) if (bootVol)
         elsif !controller.disks.empty? and controller.raid_capable
           d = controller.disks[0]
           d = volume.members[0] if volume and !volume.members.empty?
           boot = "#{d.enclosure}:#{d.slot}" if ((d.enclosure) and (d.slot))
           log("Will use boot disk: #{boot}")
-          puts "Will use boot disk: #{boot}"
+          @logger << "Will use boot disk: #{boot}\n" if @logger
           run_tool(0, nil, [controller.controller_id, "bootencl", boot]) if (boot)
         else
         end
       rescue Exception => e
-        puts "Caught exception in set_boot..#{e.message}"
+        @logger << "Caught exception in set_boot..#{e.message}\n" if @logger
       end
     end
 
     def clear_controller_config(controller, type)
       return true if type == :foreign
-      run_tool(0, nil, [controller.controller_id, "delete", "noprompt"])
+      lines = run_tool(0, nil, [controller.controller_id, "delete", "noprompt"])
+      @logger << "Clear controller config\n" if @logger
+      @logger << lines if @logger
     end
 
     #

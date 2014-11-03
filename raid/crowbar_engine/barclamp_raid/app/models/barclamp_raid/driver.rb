@@ -441,9 +441,11 @@ module BarclampRaid
 
     # Creates a new driver conifgured to control RAID arrays on node
     # @param node [Node] A Crowbar node object.
+    # @param logger [StringIO] A StringIO buffer to accumulate user feedback
     # @param params [Hash] The corresponding entry from Attrib.get(node,'raid-drivers')
-    def initialize(node,params)
+    def initialize(node,logger,params)
       @node = node
+      @logger = logger
       @params = params
     end
 
@@ -483,6 +485,7 @@ module BarclampRaid
     # Refresh the physical disk and volume information for a controller.
     # @param controller [BarclampRaid::Controller] The controller pull current disk and volume information from.
     def refresh_controller(controller)
+      @logger << "#{controller.name} refreshed\n" if @logger
       controller["disks"] = disks(controller)
       controller["volumes"] = volumes(controller)
     end
