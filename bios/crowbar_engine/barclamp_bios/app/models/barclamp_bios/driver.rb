@@ -47,7 +47,7 @@ module BarclampBios
 
     # Set a new proposed value.  Will call @validator with the new value to verify
     # that it is a permissible value.
-    # @params v The value to propose.
+    # @param v The value to propose.
     def proposed_value=(v)
       case
       when validator.is_a?(Array)
@@ -126,7 +126,7 @@ module BarclampBios
 
     # Refresh this driver's settings by setting @settings to nil,
     # and then calling the settings method
-    # @return [Hash{String => <BarclampBios::Setting}]
+    # @return [Hash{String => <BarclampBios::Setting>}]
     def refresh
       @settings = nil
       self.settings
