@@ -42,6 +42,25 @@ class BarclampRaid::RaidHammer < Hammer
     drivers.map{|d|d.controllers}.flatten
   end
 
+  # Compares a configed volume versus a wanted volume
+  #
+  # @param cv [BarclampRaid::Volume] configured volume
+  # @param wv [Config Request Volume] requested volume
+  # @requestedreturn [Boolean] true if volumes are the same
+  def same_volume(cv, wv)
+    return false unless cv
+    return false unless wv
+    return false if cv['name'] != wv['name']
+    return false if cv['raid_level'] != wv['raid_level']
+    return false if cv['disks'].length != wv['disks']
+    return true
+  end
+
+  # Apply the raid configuration from the provided      noderole and update
+  # the output log.
+  #
+  # @param nr [NodeRole]param noderole containing raid configuration
+  # @return [Array<Volumes>] The current volumes on the system
   def converge(nr)
     wanted_config = Attrib.get('raid-wanted-volumes',nr) || []
     # Figure out what our current volumes are
@@ -50,11 +69,14 @@ class BarclampRaid::RaidHammer < Hammer
     current_controllers.each do |c|
       current_volumes += c.volumes
     end
+
     # Figure out what to kill and what to keep.
-    current_volume_names = current_volumes.map{|v|v["name"]}
-    wanted_volume_names = wanted_config.map{|v|v["name"]}
-    obsolete_volumes = current_volumes.reject{|v|wanted_volume_names.member?(v["name"])}
-    new_volumes = wanted_config.reject{|v|current_volume_names.member?(v["name"])}
+    current_volume_hash = current_volumes.map{|v|[v["name"], v]}.to_h
+    wanted_volume_hash = wanted_config.map{|v|[v["name"], v]}.to_h
+
+    obsolete_volumes = current_volumes.reject{|v|same_volume(v, wanted_volume_hash[v['name']])}
+    new_volumes = wanted_config.reject{|v|same_volume(current_volume_hash[v['name']], v)}
+
     # kill any volumes we no longer care about
     obsolete_volumes.each do |v|
       Rails.logger.info("Deleting RAID volume #{v.inspect}")
