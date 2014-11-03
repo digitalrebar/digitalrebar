@@ -184,7 +184,7 @@ module BarclampRaid
     def parse_volume(controller,lines)
       volume_lines = []
       disk_lines = []
-      in_volume=true
+      in_volume = true
       lines.each do |line|
         in_volume = false if line =~ /^PD:/
         if in_volume
@@ -263,9 +263,6 @@ module BarclampRaid
       raid_level   = volume["raid_level"]
       name        = volume["name"]
       size        = volume["vol_size"] || "max"
-      exclusive   = (volume["exclusive"].nil? || size.nil?) ? true : !!volume["exclusive"]
-      disk_type   = volume["disk_type"]
-      protocol    = volume["protocol"]
       stripe_size = BarclampRaid.size_to_bytes(volume["stripe_size"] || "64 KB")
       candidates = Array.new
       if volume["disks"].is_a?(Numeric)
@@ -281,7 +278,7 @@ module BarclampRaid
         raise "Was not passed a satisfiable volume specification to create_vd"
       end
       disks,spans = BarclampRaid.calc_spans(raid_level,candidates.length)
-      min_disks,max_disks,overhead = BarclampRaid.calc_raid_overhead(raid_level,spans)
+      min_disks, max_disks, _ = BarclampRaid.calc_raid_overhead(raid_level,spans)
       raise "Not enough disks passed to create_vd" unless disks >= min_disks
       raise "Too many disks passed to create_vd" unless disks <= max_disks
 
