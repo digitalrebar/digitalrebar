@@ -23,7 +23,7 @@ class BarclampRaid::Jig < Jig
   def run(nr,data)
     case nr.role.name
     when "raid-discover"
-      config = nr.node.actions[:raid].detect
+      config = nr.node.actions[:raid].detect(nr)
       Attrib.set('raid-detected-controllers',nr,config,:wall)
     when "raid-configure"
       enabled = Attrib.get('raid-enable',nr)

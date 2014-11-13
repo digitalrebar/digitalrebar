@@ -229,7 +229,7 @@ configuration and the current raid configuration.</p>
 <span class='kw'>def</span> <span class='id identifier rubyid_run'>run</span><span class='lparen'>(</span><span class='id identifier rubyid_nr'>nr</span><span class='comma'>,</span><span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span>
   <span class='kw'>case</span> <span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_role'>role</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span>
   <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>raid-discover</span><span class='tstring_end'>&quot;</span></span>
-    <span class='id identifier rubyid_config'>config</span> <span class='op'>=</span> <span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_actions'>actions</span><span class='lbracket'>[</span><span class='symbol'>:raid</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_detect'>detect</span>
+    <span class='id identifier rubyid_config'>config</span> <span class='op'>=</span> <span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_actions'>actions</span><span class='lbracket'>[</span><span class='symbol'>:raid</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_detect'>detect</span><span class='lparen'>(</span><span class='id identifier rubyid_nr'>nr</span><span class='rparen'>)</span>
     <span class='const'>Attrib</span><span class='period'>.</span><span class='id identifier rubyid_set'>set</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>raid-detected-controllers</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span><span class='id identifier rubyid_nr'>nr</span><span class='comma'>,</span><span class='id identifier rubyid_config'>config</span><span class='comma'>,</span><span class='symbol'>:wall</span><span class='rparen'>)</span>
   <span class='kw'>when</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>raid-configure</span><span class='tstring_end'>&quot;</span></span>
     <span class='id identifier rubyid_enabled'>enabled</span> <span class='op'>=</span> <span class='const'>Attrib</span><span class='period'>.</span><span class='id identifier rubyid_get'>get</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>raid-enable</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span><span class='id identifier rubyid_nr'>nr</span><span class='rparen'>)</span>
@@ -253,7 +253,7 @@ configuration and the current raid configuration.</p>
 </div>
 
     <div id="footer">
-  Generated on Thu Oct  9 20:28:06 2014 by
+  Generated on Tue Nov  4 04:15:57 2014 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.8.7.4 (ruby-2.1.2).
 </div>
