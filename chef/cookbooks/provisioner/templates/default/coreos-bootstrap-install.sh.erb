@@ -1,0 +1,52 @@
+#!/bin/bash
+
+curl -O <%=@web_path%>/cloud-config.yaml
+sudo http_proxy="<%=@proxy%>" coreos-install -d /dev/sda -c cloud-config.yaml
+
+sudo mount -o subvol=root /dev/sda9 /mnt/
+
+key_re='crowbar\.install\.key=([^ ]+)'
+if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
+   export CROWBAR_KEY="${BASH_REMATCH[1]}"
+   echo "$CROWBAR_KEY" >/mnt/etc/crowbar.install.key
+elif [[ -f /etc/crowbar.install.key ]]; then
+    export CROWBAR_KEY="$(cat /etc/crowbar.install.key)"
+fi
+
+# Setup root keys the same as core keys
+sudo mkdir -p /mnt/root/.ssh
+sudo chmod 700 /mnt/root/.ssh
+cat > /mnt/root/.ssh/authorized_keys <<EOF
+<% @keys.each do |key| -%>
+<%=key%>
+<% end -%>
+EOF
+sudo chmod 600 /mnt/root/.ssh/authorized_keys
+
+# Add crowbar join startup scripts
+sudo mkdir -p /mnt/opt/opencrowbar/bin
+sudo curl -s -f -L -o /mnt/opt/opencrowbar/bin/crowbar_join.sh "<%=@provisioner_web%>/nodes/$HOSTNAME/crowbar_join.sh"
+sudo chmod +x /mnt/opt/opencrowbar/bin/crowbar_join.sh
+
+# Make sure the ssh script jig will work correctly.
+sudo echo "AcceptEnv http_proxy https_proxy no_proxy PATH" >> /mnt/etc/ssh/sshd_config
+sudo echo "PermitUserEnvironment yes" >> /mnt/etc/ssh/sshd_config
+sudo chmod 600 /mnt/etc/ssh/sshd_config
+
+sudo echo "PATH=/usr/bin:/bin:/usr/sbin:/sbin:/opt/bin:/opt/chef/bin:/opt/opencrowbar/core/bin" >> /mnt/root/.ssh/environment
+sudo chmod 600 /mnt/root/.ssh/environment
+
+sudo umount /mnt
+
+HOSTNAME=$(hostname -f)
+
+curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" "http://<%=@admin_ip%>:3000/api/v2/nodes/$HOSTNAME"
+
+# Wait for the provisioner to catch up
+while true; do
+    curl -s -f -L -o /tmp/bootstate "<%=@provisioner_web%>/nodes/$HOSTNAME/bootstate" && \
+        [[ -f /tmp/bootstate && $(cat /tmp/bootstate) = local ]] && break
+    sleep 1
+done
+
+sudo reboot

@@ -13,6 +13,9 @@
 # limitations under the License.
 #
 
+# This is a little bit of a hack for now.
+return if node[:platform] == "coreos"
+
 package "rsyslog" unless Kernel.system("which rsyslogd")
 
 # Don't configure this node as a logging client if it is already a server.

@@ -77,6 +77,11 @@
                         "initrd": "boot/x86_64/loader/initrd",
                         "kernel": "boot/x86_64/loader/linux",
                         "append": "install=%os_install_site%"
+                    },
+                    "coreos": {
+                        "initrd": "coreos/cpio.gz",
+                        "kernel": "coreos/vmlinuz",
+                        "iso_file": "coreos_production_iso_image.iso"
                     }
                 }
             }

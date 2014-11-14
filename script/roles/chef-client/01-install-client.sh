@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [[ -f /etc/os-release ]]; then
+  . /etc/os-release
+fi
+
 if ! which chef-client; then
     if [[ -f /etc/redhat-release || -f /etc/centos-release ]]; then
         yum -y makecache
@@ -9,6 +13,15 @@ if ! which chef-client; then
         apt-get -y --force-yes install chef
     elif [[ -f /etc/SuSE-release ]]; then
         zypper install -y -l chef
+    elif [[ "x$NAME" == "xCoreOS" ]]; then
+        webserver=$(read_attribute "crowbar/provisioner/server/webserver")
+        mkdir -p /opt
+        cd /opt
+        wget --quiet "$webserver/files/coreos-chef.tgz"
+        tar -zxf coreos-chef.tgz
+        cd -
+        mkdir -p /etc/profile.d
+        echo 'export PATH="$PATH:/opt/chef/bin"' > /etc/profile.d/chef_path.sh
     else
         die "Staged on to unknown OS media!"
     fi

@@ -69,6 +69,8 @@ else
 fi
 EOC
   end
+when "coreos"
+  # Do nothing
 else
   raise "Cannot handle configuring the proxy for OS #{node["platform"]}"
 end

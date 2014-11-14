@@ -148,6 +148,14 @@ new_clients = {}
       target mnode_name
       action :add
     end
+  when "coreos-install"
+    provisioner_coreos mnode_name do
+      distro 'coreos'
+      version 'latest'
+      address v4addr
+      target mnode_name
+      action :add
+    end
   when "debian-7.8.0-install"
     provisioner_debian mnode_name do
       distro "debian"

@@ -36,15 +36,19 @@ if [[ -f /etc/crowbar.install.key ]]; then
 fi
 
 put_alive() {
+    echo "Seting node alive=$1"
     while ! curl -f -u "$CROWBAR_KEY" --digest -L -X PUT \
         -d "bootenv=local" \
         -d "alive=$1" \
         "http://<%=@admin_ip%>:3000/api/v2/nodes/<%=@name%>" &>/dev/null; do
         sleep 1
+        # Get our hostname - Sometimes it isn't set yet.
+        HOSTNAME=$(hostname -f)
     done
 }
 
-ntpdate <%=@admin_ip%>
+# Force time (some OS already have this done
+ntpdate <%=@admin_ip%> 2>/dev/null >/dev/null
 
 case $1 in
     stop) put_alive false;;
