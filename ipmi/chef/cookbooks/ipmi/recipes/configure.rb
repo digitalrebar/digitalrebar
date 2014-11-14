@@ -76,7 +76,7 @@ if node["quirks"].member?("ipmi-dell-dedicated-nic")
   ruby_block "Set Dell BMC nic to dedicated mode" do
     block do
       IPMI.tool(node,"delloem lan set dedicated")
-      raise "Unable to set IPMI to dedicated nic mode" unless $?.existatus == 0
+      raise "Unable to set IPMI to dedicated nic mode" unless $?.exitstatus == 0
     end
     not_if { IPMI.tool(node,"delloem lan get").strip == "dedicated" }
   end
