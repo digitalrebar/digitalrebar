@@ -121,4 +121,6 @@ which chef-solo &>/dev/null || curl -L https://www.opscode.com/chef/install.sh |
 curl -g -f -u "$CROWBAR_KEY" --digest -L -X PUT -d 'alive=false' '<%=@admin_url%>/api/v2/nodes/<%=@name%>'
 curl -g -f -u "$CROWBAR_KEY" --digest -L -X PUT -d 'alive=true' '<%=@admin_url%>/api/v2/nodes/<%=@name%>'
 
+hostname <%=@name%>
+
 /bin/bash -i
