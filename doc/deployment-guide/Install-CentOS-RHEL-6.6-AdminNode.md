@@ -1,4 +1,4 @@
-# RHEL/CentOS 6.5 Deployment Guide
+# RHEL/CentOS 6.6 Deployment Guide
 
 ## Objectives
 
@@ -7,7 +7,7 @@ Create an OpenCrowbar admin node on a VM or physical machine to begin the proces
 The following steps will be completed:
 
     * Prepare a Virtual or Physical machine
-    * Installation of CentOS 6.5 x86_64
+    * Installation of CentOS 6.6 x86_64
     * Install OpenCrowbar
     * Start OpenCrowbar webUI
     * Connect to the webUI using a browser
@@ -20,7 +20,7 @@ Known limitations of the installation process, its sensitivities to updates and 
 
 Before commencing installation and configuration, ensure that everything needed is available and that all remote resources that must be accessed are capable of being reached.
 
-   * CentOS 6.5 x86_64 - download site: http://www.centos.org/download/
+   * CentOS 6.6 x86_64 - download site: http://www.centos.org/download/
    * You will need to know how to access the internet from your VM/Physical environment.
    * Optional: Proxy Services
        * Windows - Fiddler 2 is a good one
@@ -35,7 +35,7 @@ Machine requirements are:
    * CPU Cores: 2 or more
    * Network Interface Controllers: 2 preferred, 1 minimum (can use virtio if using a VM)
       * The first NIC (may be named eth0, em1, or en1) must be wired into the private space (192.168.124.0/24)
-      * The second NIC will be wired into a network that routes to the internet. Internet access is required for installation of CentOS/RHEL 6.5
+      * The second NIC will be wired into a network that routes to the internet. Internet access is required for installation of CentOS/RHEL 6.6
       * Note: It is possible to use a single NIC. In that case the default network address will be 192.168.124.0/24, the admin node IP address will be 192.168.124.10
       * Where a single NIC is used, the private admin network (192.168.124.0/24) must be capable of download of files from the internet or from a local caching server
    * Storage: A disk capacity of at least 80 GB is preferred. * Make sure you configure RAID on the drives before installing.
@@ -49,12 +49,12 @@ If using a virtual machine (VM), where VM motion (ability to migrated VMs across
 
 Where network-managed power switches are in use, ensure that network access is secure from unwanted access.
 
-## CentOS 6.5 installation
+## CentOS 6.6 installation
 
-The following is a screen/selector step process to get CentOS 6.5
+The following is a screen/selector step process to get CentOS 6.6
 installed:
 
-   * Boot CentOS 6.5 x86_64 from pristine ISO media
+   * Boot CentOS 6.6 x86_64 from pristine ISO media
    * At the boot screen select "Install or upgrade an existing system", hit Enter
    * Screen: "Welcome to CentOS for x86_64", select [Skip], hit Enter
    * At the first graphical screen, "CentOS 6 Community ENTerprise Operating System", Click [Next]
@@ -111,19 +111,23 @@ To install OpenCrowbar, the following things need to be done:
 All of these things are done with the crowbar-install.sh script.  After
 logging in as root, run the following command:
 
+```
 wget --no-check-certificate -O -
-https://raw.githubusercontent.com/opencrowbar/core/master/tools/crowbar-install.sh
+https://raw.githubusercontent.com/opencrowbar/core/develop/tools/crowbar-install.sh
 | source /dev/stdin
+```
 
 or if you don't want hardware support (bios, RAID, and IPMI), run the
 following command:
 
+```
 wget --no-check-certificate -O -
-https://raw.githubusercontent.com/opencrowbar/core/master/tools/crowbar-install.sh
+https://raw.githubusercontent.com/opencrowbar/core/develop/tools/crowbar-install.sh
 | source /dev/stdin --without-hardware
+```
 
 This will take a little bit of time.  Once complete, you will need to
-add the RAID configuration tools displayed as output or described at
+add the RAID configuration tools displayed as output or described 
 [here|https://github.com/opencrowbar/hardware/tree/master/doc].
 
 If you are running on a VM, you may want to snapshot the VM support
@@ -132,8 +136,10 @@ updates, see below.
 ## OpenCrowbar Configuration
 
 Execute the following commands:
-   1. cd /opt/opencrowbar/core
-   1. ./production.sh &lt;FQDN of the admin node&gt;
+```
+  cd /opt/opencrowbar/core
+  ./production.sh &lt;FQDN of the admin node&gt;
+```
 
 Once this is complete, the admin node is configured.  Don't worry about
 the failed to converge message, continue on to the next.

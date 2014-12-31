@@ -9,6 +9,8 @@ Welcome to the OpenCrowbar Project - the gateway to a new hardware provisioning 
 Documentation close by and located in under the **/doc** directory of OpenCrowbar and for each workload module.
 
 Want to _try out OpenCrowbar_?  Install following the [**deployment guide (for Centos)**](/doc/deployment-guide).
+For the quick start, just go [here](/doc/deployment-guide/Install-
+CentOS-RHEL-6.6-AdminNode.md) to build an admin node.
 
 Please refer to the [/doc directories](/doc/README.md) for detailed information.  We attempt to define and maintain one sub-directory for each functional element.  This structure is intended to be common across all workloads in the [OpenCrowbar project](https://github.com/opencrowbar/)
 
