@@ -4,6 +4,11 @@
 
 Create an OpenCrowbar admin node on a VM or physical machine to begin the process of configuring or managing deployment of a cluster (openstack, hadoop, ceph, etc.).
 
+*NOTE*: OpenCrowbar assumes complete ownership of the admin node and is
+*NOT* meant to be a shared services machine.  The installation process
+will turn off firewalls and turn off selinux.  The installation process
+will reduce exposed ports and restrict ssh access.
+
 The following steps will be completed:
 
     * Prepare a Virtual or Physical machine
