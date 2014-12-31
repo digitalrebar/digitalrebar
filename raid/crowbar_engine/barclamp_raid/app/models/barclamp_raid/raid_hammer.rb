@@ -86,8 +86,8 @@ class BarclampRaid::RaidHammer < Hammer
     end
 
     # Figure out what to kill and what to keep.
-    current_volume_hash = current_volumes.map{|v|[v["name"], v]}.to_h
-    wanted_volume_hash = wanted_config.map{|v|[v["name"], v]}.to_h
+    current_volume_hash = (current_volumes.map{|v|[v["name"], v]}.to_h rescue {})
+    wanted_volume_hash = (wanted_config.map{|v|[v["name"], v]}.to_h rescue {})
 
     obsolete_volumes = current_volumes.reject{|v|same_volume(v, wanted_volume_hash[v['name']])}
     new_volumes = wanted_config.reject{|v|same_volume(current_volume_hash[v['name']], v)}

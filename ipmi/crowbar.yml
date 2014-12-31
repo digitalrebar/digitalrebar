@@ -123,7 +123,6 @@ roles:
 debs:
   required_pkgs:
     - ipmitool
-    - wsl
 
 rpms:
   centos-6.5:
@@ -131,8 +130,6 @@ rpms:
       - bare openswman 20 http://download.opensuse.org/repositories/Openwsman/CentOS_CentOS-6/
   required_pkgs:
     - ipmitool
-    - openwsman-devel
-    - swig
 
 extra_files:
   # Utility for configuring Dell-specific BMC settings on PEC gear.
