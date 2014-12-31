@@ -110,11 +110,18 @@ installed:
 To install OpenCrowbar, the following things need to be done:
    * Turn off firewalls
    * Turn off or set SELinux to permissive
-   * Add the OpenCrowbar repo
-   * Download the default installation OS
+   * Add the OpenCrowbar and OpenCrowbar Ruby repo 
+   * Download the default installation OS [Optional]
  
-All of these things are done with the crowbar-install.sh script.  After
-logging in as root, run the following command:
+The crowbar-install.sh script supports three flags given (or not in this
+order):
+   * --develop - Use RPMs built from the develop tree.
+   * --without-hardware - Don't install the hardware RPM
+   * --download-os - This will download the Centos-7.0.1406 ISO for
+installation of nodes. By default, this is not done.
+
+After logging in as root, run the following command (as an example) to
+install hardware support off of the latest master build:
 
 ```
 wget --no-check-certificate -O -
@@ -134,6 +141,10 @@ https://raw.githubusercontent.com/opencrowbar/core/develop/tools/crowbar-install
 This will take a little bit of time.  Once complete, you will need to
 add the RAID configuration tools displayed as output or described 
 [here|https://github.com/opencrowbar/hardware/tree/master/doc].
+
+You may also want to add supported ISOs to your installation as
+described
+[here|https://github.com/opencrowbar/core/tree/master/doc/deployment-guide/adding-operating-systems.md].
 
 If you are running on a VM, you may want to snapshot the VM support
 updates, see below.
