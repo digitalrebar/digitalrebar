@@ -1,0 +1,17 @@
+= javascript_include_tag 'doc'
+
+%h1= t('.title')
+
+/ Full Index
+%div#docindex
+  %ul
+    = render partial: 'tree', collection: @top_index
+
+/ Table of Contents
+%div{:class=>"toc box"}
+  %h2= t('.toc_title')
+  %ol(type="1")
+    - Doc.roots.sort.each do |x|
+      - if x.level==1
+        %li= link_to x.description, doc_path(x.id)
+.clear

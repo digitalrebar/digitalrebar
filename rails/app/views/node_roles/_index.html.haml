@@ -1,0 +1,24 @@
+- if list.length==0
+  %p= t 'no_items'
+- else
+  %table.data.box
+    %thead
+      %tr
+        %th= t '.deployment'
+        %th= t '.node'
+        %th= t '.role'
+        %th= t '.jig'
+        %th
+        %th= t '.state'
+        %th= t '.status'
+    %tbody
+      - list.each do |nr|
+        %tr.node{ :class => cycle(:odd, :even) }
+          %td= link_to nr.deployment.name, deployment_path(:id=>nr.deployment.id) rescue t 'unknown'
+          %td= link_to nr.node.name, node_path(:id=>nr.node.id) rescue t 'unknown'
+          %td= link_to nr.role.name, role_path(:id=>nr.role.id) rescue t 'unknown'
+          %td= link_to nr.role.jig_name, jig_path(:id=>nr.role.jig_name) rescue t 'unknown'
+          %td
+            .led{:class => NodeRole::STATES[nr.state], :title=>nr.state_name}
+          %td= link_to nr.state_name, node_role_path(nr.id)
+          %td= nr.status

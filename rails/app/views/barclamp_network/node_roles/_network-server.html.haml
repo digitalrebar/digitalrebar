@@ -1,0 +1,7 @@
+
+%h2
+  = t 'title', :scope=>'barclamp_network.interfaces.index'
+  = link_to t('edit'), barclamp_network.interfaces_path(), :class=>:button
+
+- interfaces = Role.find_key('network-server').interfaces
+= interfaces.map{|k,v| k}.join(", ")

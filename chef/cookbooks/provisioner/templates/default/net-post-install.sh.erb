@@ -1,0 +1,138 @@
+#!/bin/sh
+# Copyright 2011, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# This script is called by the net_ubuntu.seed file during
+# ubuntu install.  It handles doing the manual sets needed to layout the
+# filesystem the rest of the way before running the common_install.sh.
+#
+# The intent is that once the system is finished installing, the customer
+# will edit the config.json file and run install.sh to complete installation
+# and initial configuration.
+#
+
+#
+# We are a net install.
+#
+set -x
+exec 2>&1
+exec >>/target/root/post-install.log
+echo "Acquire::http::Proxy \"<%=@proxy%>\";" >/target/etc/apt/apt.conf.d/00-proxy
+
+<% @repos.keys.sort.each do |repo|
+     @repos[repo].keys.sort.each do |url|
+       case repo
+       when "base" -%>
+echo "deb <%=url%> <%= @os_codename %> main restricted" > \
+    /target/etc/apt/sources.list.d/00-base.list
+<%     else -%>
+echo "<%=url%>" >> \
+    /target/etc/apt/sources.list.d/10-barclamp-<%=repo%>.list
+<%     end
+     end
+   end -%>
+
+# This is the one we used to bootstrap from.  It is useless to us now.
+rm -f /target/etc/apt/sources.list
+rsyslog_dir="/target/etc/rsyslog.d"
+if [ -d "$rsyslog_dir" ]; then
+    if [ ! -f "$rsyslog_dir/10-crowbar-client.conf" ]; then
+        echo "*.* @@<%= @admin_ip %>" > "$rsyslog_dir/10-crowbar-client.conf"
+	if ! wget -O "$rsyslog_dir/00-crowbar-debug.conf" -q http://<%=@provisioner_web%>/rsyslog.d/00-crowbar-debug.conf
+	then
+	    rm -f "$rsyslog_dir/00-crowbar-debug.conf"
+	fi
+    fi
+fi
+
+# Make sure we can install gems
+cat >/target/etc/gemrc <<EOF
+:sources:
+<% if @online -%>
+- http://rubygems.org/
+<% end -%>
+- <%=@provisioner_web%>/gemsite/
+gem: --no-ri --no-rdoc --bindir /usr/local/bin --http-proxy <%=@proxy%>
+EOF
+
+cp /etc/gemrc /root/.gemrc
+
+wget -q <%=@web_path%>/crowbar_join.sh -O- > /target/etc/init.d/crowbar_join.sh
+
+cat > /target/update_system2.sh <<"EOF"
+#!/bin/bash
+
+set -x
+key_re='crowbar\.install\.key=([^ ]+)'
+if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
+    export CROWBAR_KEY="${BASH_REMATCH[1]}"
+    echo "$CROWBAR_KEY" >/etc/crowbar.install.key
+elif [[ -f /etc/crowbar.install.key ]]; then
+    export CROWBAR_KEY="$(cat /etc/crowbar.install.key)"
+fi
+
+hostname_re='crowbar\.fqdn=([^ ]+)'
+if [[ $(cat /proc/cmdline) =~ $hostname_re ]]; then
+   HOSTNAME=${BASH_REMATCH[1]}
+   if [ -f /etc/sysconfig/network ] ; then
+      sed -i -e "s/HOSTNAME=.*/HOSTNAME=${HOSTNAME}/" /etc/sysconfig/network
+    fi
+    echo "${HOSTNAME#*.}" >/etc/domainname
+else
+    echo "Cannot set hostname, we fail."
+    sleep 999
+    reboot -f
+fi
+echo "$HOSTNAME" >/etc/hostname
+hostname "$HOSTNAME"
+
+
+export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+export LC_ALL=C LANGUAGE=C LANG=C
+apt-get -y --force-yes update
+apt-get -y --force-yes remove apparmor
+apt-get -y --force-yes install ntpdate
+
+echo "PermitRootLogin without-password" >> /etc/ssh/sshd_config
+# Allow client to pass http proxy environment variables
+echo "AcceptEnv http_proxy https_proxy no_proxy" >> /etc/ssh/sshd_config
+
+
+curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
+    "http://<%=@admin_ip%>:3000/api/v2/nodes/$HOSTNAME"
+
+# Wait for the provisioner to catch up
+while true; do
+      curl -s -f -L -o /tmp/bootstate "<%=@provisioner_web%>/nodes/$HOSTNAME/bootstate" && \
+        [[ -f /tmp/bootstate && $(cat /tmp/bootstate) = local ]] && break
+    sleep 1
+done
+EOF
+
+mkdir -p /target/root/.ssh
+
+cat >/target/root/.ssh/authorized_keys <<EOF
+<%= @keys %>
+EOF
+
+
+mount /proc /target/proc
+chmod +x /target/etc/init.d/crowbar_join.sh
+chmod +x /target/update_system2.sh
+chroot /target ln -s /etc/init.d/crowbar_join.sh /etc/rc3.d/S80crowbar
+chroot /target ln -s /etc/init.d/crowbar_join.sh /etc/rc5.d/S80crowbar
+chroot /target ln -s /etc/init.d/crowbar_join.sh /etc/rc2.d/S80crowbar
+chroot /target /update_system2.sh
+sync

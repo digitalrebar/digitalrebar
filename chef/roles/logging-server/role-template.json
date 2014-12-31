@@ -1,0 +1,8 @@
+{
+    "crowbar": {
+        "logging": {
+            "external_servers": []
+        }
+    }
+}
+

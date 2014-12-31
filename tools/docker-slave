@@ -1,0 +1,9 @@
+#!/bin/bash
+NODE_DIR="$HOME/.cache/opencrowbar/tftpboot/nodes/$1"
+init="$NODE_DIR/crowbar-init"
+echo "Waiting for $1 to be launchable"
+while [[ ! -x $init ]]; do
+    printf '%s' "."
+    sleep 1
+done
+sudo "$init"

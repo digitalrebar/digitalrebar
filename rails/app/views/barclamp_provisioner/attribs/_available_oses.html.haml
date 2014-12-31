@@ -1,0 +1,11 @@
+- value_raw = Attrib.get(attrib.name, obj)
+- value = value_raw.map{ |k, v| k }.join "," rescue nil
+%tr
+  %td= link_to attrib.name_i18n, attrib_path(attrib.id), :title=>attrib.description
+  - if value
+    %td= value
+  - else
+    %td= t('not_set')
+  %td= ''
+  - if current_user and current_user.settings(:ui).debug
+    %td= attrib.ui_renderer rescue Attrib::UI_RENDERER

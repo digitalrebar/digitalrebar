@@ -1,0 +1,19 @@
+%h1
+  = t '.title'
+  = link_to @deployment_role.deployment.name, deployment_path(@deployment_role.deployment.id)
+  = link_to @deployment_role.role.name_i18n, role_path(@deployment_role.role.id)
+  - if @deployment_role.proposed?
+    = link_to t('.commit'), deployment_role_commit_path(@deployment_role.id, :version=>2), :class => 'button', :method=>:put
+  - if @deployment_role.committed?
+    = link_to t('.propose'), deployment_role_propose_path(:deployment_role_id=>@deployment_role.id), :class => 'button', :method=>:put
+
+
+%h2= t '.attribs'
+
+= render :partial => 'node_roles/raw', :locals => { :obj => @deployment_role }
+
+%h3
+  %a.toggle.with_label{:href => "#", :id => "#data_toggle", :rel => "rawdata"}= t '.rawdata'
+
+%div{:id=>"rawdata", :style =>"display:none"}
+  %pre= JSON.pretty_generate @deployment_role.data

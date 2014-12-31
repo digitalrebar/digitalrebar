@@ -1,0 +1,27 @@
+- if list.length == 0
+  = t 'no_items'
+- else
+  %table.data.box
+    %thead
+      %tr
+        %th= t '.state'
+        %th= t '.deployment'
+        %th= t '.description'
+        %th= t '.parent'
+    %tbody
+      - list.each do |i|
+        - state = i.state 
+        %tr.node{ :class => cycle(:odd, :even) }
+          %td
+            .led{:class => Deployment::STATES[state], :title=>Deployment.state_name(state)}
+          %td= link_to i.name, deployment_path(i.id)
+          %td
+            - if i.description
+              = i.description
+            - else
+              = form_for :deployment, :remote => true, :url => deployment_path(:id=>i.id), :html => { :method=>:put, :'data-type' => 'html',  :class => "formtastic", :onsubmit =>"location.reload();"  } do |f|
+                = text_field_tag :description, "", :size => 30
+                %input.button{:type => "submit", :name => "update", :method=>:post, :value => t('.update')}
+          %td
+            - if i.parent_id
+              = link_to i.parent.name, deployment_path(i.parent_id), :title=>i.parent.description

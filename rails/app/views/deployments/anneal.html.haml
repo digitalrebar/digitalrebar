@@ -1,0 +1,31 @@
+- state = @deployment.state
+- if @deployment and state == NodeRole::TODO
+  %p{:style => 'float:right'}
+    = link_to t('.anneal'), annealer_path(), :class => 'button', :"data-method"=>:put
+%table.plane
+  %tr
+    %td
+      .led{:class => NodeRole::STATES[state || NodeRole::ERROR], :title=>NodeRole.state_name(state)}
+    %td
+      %h1
+        = link_to @deployment.name, deployment_path(@deployment.id) if @deployment
+        = t '.title'
+
+= render :partial=>'node_roles/index', :locals => { :list => @list }
+
+%h2= t '.todo'
+- todo = NodeRole.peers_by_state(@deployment, NodeRole::TODO)
+= render :partial=>'node_roles/index', :locals => { :list => todo }
+
+%h2= t '.blocked'
+- blocked = NodeRole.peers_by_state(@deployment, NodeRole::BLOCKED)
+= render :partial=>'node_roles/index', :locals => { :list => blocked }
+
+.clear
+
+:javascript
+
+  function update() {
+    $.ajaxSetup({ timeout: 1000 });
+    location.reload();
+  }

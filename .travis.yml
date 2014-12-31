@@ -1,0 +1,51 @@
+#!/bin/bash
+# Copyright 2014, Rob Hirschfeld
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+language: ruby
+rvm:
+  - "2.1.2"
+addons:
+  postgresql: "9.3"
+env:
+  - RAILS_ENV='development'
+
+before_script:
+  - cd rails
+  - cp config/database.yml.travis config/database.yml
+  - psql -c 'create database opencrowbar_dev;' -U postgres
+  - psql -c 'create database opencrowbar_test;' -U postgres
+  - bundle install
+
+script: 
+  - pwd
+  - bundle exec rake db:migrate
+  - bundle exec rake db:seed
+  - bundle exec script/delayed_job --queue=NodeRoleRunner -n 2 start
+  - bundle exec rails server -d
+  - curl -I --fail http://127.0.0.1:3000/docs?id=framework%2Flicenses 
+  - cd ../BDD 
+  - erlc +debug_info *.erl
+  - erl -s bdd test travis -s init stop -noshell
+  - cd ../rails
+  - kill `cat tmp/pids/server.pid`
+  - bundle exec script/delayed_job stop
+  - RAILS_ENV=test bundle exec rake db:migrate
+  - RAILS_ENV=test bundle exec rake db:seed
+  - RAILS_ENV=test bundle exec rake test
+  - RAILS_ENV=test bundle exec rspec
+
+after_failure:
+  - erl -s bdd failed travis -s init stop -noshell
+  - tail -n 100 ../rails/log/development.log

@@ -1,0 +1,29 @@
+%h1= t '.title'
+
+%table.data.box
+  %thead
+    %tr
+      %th= t '.pattern'
+      %th= t '.bus_order'
+      %th
+  %tbody
+    - if @interfaces
+      - @interfaces.each do |pattern, bus_order|
+        - bo = bus_order.join(" | ") rescue bus_order
+        %tr{ :class => cycle(:odd, :even) }
+          = form_for :interfaces, :'data-remote' => true, :url => interface_path(pattern), :html => { :method=>:put, :'data-type' => 'html',  :class => "formtastic" } do |f|
+            %td= pattern
+            %td= text_field_tag :bus_order, bo, :size=>80
+            %td
+              %input.button{:type => "submit", :value => t('update')}
+    - else
+      %tr
+        %td= t 'no_items'
+  %tfoot
+    %tr
+      = form_for :interfaces, :'data-remote' => true, :url => interfaces_path(), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
+        %td= text_field_tag :pattern, "New Pattern", :size=>20
+        %td= text_field_tag :bus_order, "0000:00/0000:00:01 | 0000:00/0000:00:02", :size=>80
+        %td
+          %input.button{:type => "submit", :value => t('add')}
+    

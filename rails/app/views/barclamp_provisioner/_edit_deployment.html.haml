@@ -1,0 +1,12 @@
+
+%p
+  = render :partial => "barclamp/node_selector"
+
+:javascript
+  $(document).ready(function(){
+    var constraints = { 
+        "provisioner-server": { "unique": false, "count": 1, "admin":true }, 
+        "provisioner-base": { "unique": false, "count": -1, "admin":true } };
+    node_selector($('#drag_drop'), constraints);
+  });
+

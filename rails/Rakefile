@@ -1,0 +1,14 @@
+#!/usr/bin/env rake
+# Add your own tasks in files placed in lib/tasks ending in .rake,
+# for example lib/tasks/capistrano.rake, and they will automatically be available to Rake.
+
+require File.expand_path('../config/application', __FILE__)
+
+Crowbar::Application.load_tasks
+
+
+desc "this task simulates the commands executed on the travis CI testing"
+task :travis => ["db:drop", "railties:install:migrations", "db:migrate", "db:fixtures:dump", "test:units", "spec"] do
+
+end
+

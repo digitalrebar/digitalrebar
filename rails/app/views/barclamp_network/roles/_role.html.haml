@@ -1,0 +1,37 @@
+- network = role.network
+
+%h2
+  = t 'title', :scope=>'barclamp_network.networks.index'
+  = t network.name, :scope=>'barclamp_network.nets', :default=>network.name
+  = link_to t('edit'), barclamp_network.network_path(network.id), :class=>:button
+
+.box
+  %dl
+    %dt= t 'description', :scope=>'barclamp_network.networks.show'
+    %dd= network.description
+    %dt= t 'deployment', :scope=>'barclamp_network.networks.show'
+    %dd= network.deployment.name
+    %dt= t 'conduit', :scope=>'barclamp_network.networks.show'
+    %dd= network.conduit
+    %dt= t 'vlan', :scope=>'barclamp_network.networks.show'
+    %dd= network.vlan
+    %dt= t 'team', :scope=>'barclamp_network.networks.show'
+    %dd= network.team_mode
+    %dt= t 'bridge', :scope=>'barclamp_network.networks.show'
+    %dd= network.use_bridge
+
+%h2= t 'ranges', :scope=>'barclamp_network.networks.show'
+
+%table.data.box
+  %thead
+    %tr
+      %th= t 'name', :scope=>'barclamp_network.roles.index'
+      %th= t 'first', :scope=>'barclamp_network.roles.index'
+      %th= t 'last', :scope=>'barclamp_network.roles.index'
+      %th
+  %tbody
+    - network.ranges.each do |range|
+      %tr
+        %td= range.name
+        %td= range.first
+        %td= range.last

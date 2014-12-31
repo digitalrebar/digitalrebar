@@ -1,0 +1,69 @@
+- s = @node.state
+- led = NodeRole::STATES[s]
+- if !@node.available
+  - led = (@node.alive ? 'reserved' : 'idle')
+- elsif !@node.alive
+  - led = 'off'
+
+
+%p{:style => 'float:right'}
+  = link_to t('.all_node_roles'), node_node_roles_path(:node_id=>@node.id), :class => 'button'
+
+%table
+  %tr
+    %td
+      .led{:valign=>'center', :class => led, :title=>t(".#{led}")}
+    %td
+      %h1
+        = @node.alias || @node.name
+        = t '.admin' if @node.admin
+
+= render :partial => 'show', :locals => { :node => @node }
+
+%h3
+  = t '.power'
+  = ":"
+  - [ :on, :off, :reboot, :reset, :cycle, :identify].select{|m|@node.power[m]}.each do |meth|
+    = link_to t(".#{meth.to_s}"), "/api/v2/nodes/#{@node.id}/power?poweraction=#{meth.to_s}", :method=>:put, :class => 'button', :'data-remote' => true,:'data-confirm' => t('are_you_sure') 
+
+%h3= t '.addresses'
+%table.data.box
+  %thead
+    %tr
+      %th= t ".network"
+      %th= t ".range"
+      %th= t ".address"
+      %th= t ".conduit"
+      %th= t ".vlan"
+  %tbody
+    - @node.network_allocations.order("id ASC").each do |a|
+      %tr
+        %td= link_to a.network.name, network_path(a.network.id)
+        %td= a.network_range.name
+        %td= a.address.to_s
+        %td= a.network_range.conduit
+        %td= a.network_range.use_vlan? ? a.network_range.vlan : t("none")
+
+%h3= t '.node_roles'
+- node_roles = NodeRole.committed_by_node(@node).order("cohort, id")
+= render :partial=>'node_roles/index', :locals => { :list => node_roles }
+
+%h3= t '.attribs'
+
+%table.data.box
+  %thead
+    %tr
+      %th= t '.name'
+      %th= t '.value'
+      %th= t '.description'
+  %tbody
+    - @node.attribs.order("name ASC").each do |a|
+      %tr
+        %td= link_to a.name, attrib_path(a.id)
+        %td
+          - v = a.get(@node) rescue nil
+          - unless v.nil?
+            = v
+          - else
+            %em= t('not_set')
+        %td= a.description

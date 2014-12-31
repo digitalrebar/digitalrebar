@@ -1,0 +1,10 @@
+- begin 
+  - d = JSON.parse(template)["crowbar"]["dns"] 
+  %dl
+    %dt= t ".domain"
+    %dd= d["domain"]
+    %dt= t ".forwarders"
+    %dd= (d["forwarders"].length==0 ? t('not_set') : d["forwarders"].join(","))
+- rescue Exception => e
+  = e.message
+  = template.inspect

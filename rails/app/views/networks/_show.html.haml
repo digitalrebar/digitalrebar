@@ -1,0 +1,33 @@
+= form_for :network, :'data-remote' => true, :url => network_path(network.id), :html => { :method=>:put, :'data-type' => 'html',  :class => "formtastic" } do |f|
+  %table.data.box
+    %thead
+      %th{:width=>'10%'}= t '.name'
+      - if network.role
+        %th= link_to network.name, role_path(network.role.id)
+      - else
+        %th= network.name
+    %tbody
+      %tr{:class => cycle(:odd,:even)}
+        %td= t '.description'
+        %td= text_field_tag :description, network.description, :size=>30
+      %tr{:class => cycle(:odd,:even)}
+        %td= t '.deployment'
+        %td= select_tag :deployment_id, options_from_collection_for_select(Deployment.all, :id, :name, :selected=>network.deployment.id)
+      %tr{:class => cycle(:odd,:even)}
+        %td= t '.conduit'
+        %td= text_field_tag :conduit, network.conduit, :size=>15
+      %tr{:class => cycle(:odd,:even)}
+        %td= t '.vlan'
+        %td= text_field_tag :vlan, network.vlan, :size=>5
+      %tr{:class => cycle(:odd,:even)}
+        %td= t '.v6prefix'
+        %td= text_field_tag :v6prefix, network.v6prefix, :size=>20
+      %tr{:class => cycle(:odd,:even)}
+        %td= t '.team'
+        %td= text_field_tag :team_mode, network.team_mode, :size=>5
+      %tr{:class => cycle(:odd,:even)}
+        %td= t '.bridge'
+        %td= text_field_tag :use_bridge, network.use_bridge, :size=>5
+
+  %input.button{:type => "submit", :value => t('update')}
+

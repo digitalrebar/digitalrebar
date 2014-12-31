@@ -1,0 +1,9 @@
+{
+    "chefjig": {
+        "server": {
+            "client-name": "crowbar",
+            "port": 4646,
+            "protocol": "http"
+        }
+    }
+}

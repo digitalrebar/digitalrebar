@@ -1,0 +1,14 @@
+%h1= @jig.name
+
+%table.plane
+  %tr    
+    %td
+      - if @jig.active
+        .led{:id => @jig.name, :class => 'active', :style => "float:left", :title=>t('active')}
+      - else
+        .led{:id => @jig.name, :class => 'proposed', :style => "float:left", :title=>t('inactive')}
+    %td= @jig.description
+
+
+%h3= t '.roles'
+= render :partial => 'roles/index', :locals => { :list => @jig.roles, :jig_name => @jig.name }

@@ -1,0 +1,8 @@
+%h1= t '.title'
+
+%ul
+  - @list.each do |i|
+    %li
+      = link_to i.deployment.name, deployment_path(i.deployment.id)
+      = ": "
+      = link_to i.name, deployment_role_path(i.id)

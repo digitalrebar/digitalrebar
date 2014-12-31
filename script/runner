@@ -1,0 +1,60 @@
+#!/bin/bash
+exec 2>&1
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+set -o pipefail -o errexit -o xtrace
+shopt -s nullglob extglob globstar
+export TMPDIR=$1
+export ROLE=$2
+
+# To force dpkg on Debian-based distros to play nice.
+export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+export LC_ALL=C LANGUAGE=C LANG=C
+
+has_attribute() {
+    [[ -f $TMPDIR/attrs/$1/attr ]]
+}
+
+get_keys() {
+    local loc="$TMPDIR/attrs/$1"
+
+    if [[ -d $TMPDIR/attrs/$1 ]]; then
+        ls "$loc"
+    else
+        echo ""
+    fi
+}
+
+read_attribute() {
+    if [[ -f $TMPDIR/attrs/$1/attr ]]; then
+        cat "$TMPDIR/attrs/$1/attr"
+    else
+        echo ""
+    fi
+}
+
+read_attribute_file_content() {
+    local loc="$TMPDIR/attrs/$1"
+    cp "$loc/attr" $2
+    # The write content stripped the newline - in rails
+    echo "" >> $2
+}
+
+write_attribute() {
+    local loc="$TMPDIR/attrs/$1"
+    mkdir -p "$loc"
+    printf "%s" "$2" > "$loc/wall"
+}
+
+write_attribute_file_content() {
+    local loc="$TMPDIR/attrs/$1"
+    mkdir -p "$loc"
+    cp $2 "$loc/wall"
+}
+
+mkdir -p "$TMPDIR/attrs"
+mkdir -p "$TMPDIR/logs"
+
+for script in "$TMPDIR/$ROLE/"*.sh; do
+    (. "$script" 2>&1 |tee  "$TMPDIR/logs/${script##*/}.log") || exit $?
+done
+exit 0

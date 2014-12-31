@@ -1,0 +1,43 @@
+%p{:style => 'float:right'}
+  - Barclamp.all.each do |bc|
+    - c = "Barclamp#{bc.name.camelize}::#{bc.name.camelize}Controller"
+    - if (eval(c).new.methods.include?('export') rescue false)
+      = link_to t("export.#{bc.name}_export"), utils_export_path(:controller=>bc.name), :class => 'button'
+    - ec = "Barclamp#{bc.name.camelize}::BarclampsController"
+    - if (eval(ec).new.methods.include?('export') rescue false)
+      = link_to t("export.#{bc.name}_export"), eval("barclamp_#{bc.name}.export_barclamps_path"), :class => 'button'
+
+%h1= t '.title'
+-if @waiting
+  %em= t '.wait'
+  
+-if @exports[:count] == 0
+  %h3= t '.none_exported'
+-else
+  - @exports.each do |key, value|
+    - if key != :count
+      -if value.length != 0
+        %h3=t ".#{key}", :default=>key.to_s.titlecase
+        %ul        
+          -value.sort.reverse.each do |file|
+            %li
+              -if @file==file
+                %em#new= t('new')
+              %a{:href=>"/export/#{file}"}
+                = file
+              = link_to image_tag('/images/icons/delete.png'), utils_files_path(:id => file), :title=>t('.delete_hint')
+            
+.clear
+
+:javascript
+  
+  function update() {
+    $.ajaxSetup({ timeout: #{ (@waiting ? 1000 : 10000) }})
+    $.getJSON('utils?format=json', function(data) {     
+      if (data['count'] != #{@exports[:count]})
+        location.href = '#{utils_path}?file=#{Haml::Helpers.html_escape params["file"]}';
+    });      
+  }
+
+  $('#new').hide(5000);
+  

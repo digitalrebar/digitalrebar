@@ -1,0 +1,83 @@
+#!/bin/bash
+# chkconfig:         2345 90 10
+# description:       Service runner for Crowbar
+### BEGIN INIT INFO
+# Provides:          opencrowbar-webserver
+# Required-Start:    $syslog $network $named postrgesql-9.3
+# Required-Stop:     $syslog $network $named postgresql-9.3
+# Should-Start:      xinetd
+# Should-Stop:       xinetd
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start the OpenCrowbar Web application
+# Description:       Manages the OpenCrowbar Web application
+### END INIT INFO
+
+PATH="/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
+GEMFILE_LOCK=/opt/opencrowbar/core/rails/Gemfile.lock
+[[ $RAILS_ENV ]] || RAILS_ENV=production
+export RAILS_ENV
+if [[ -f /etc/redhat-release || -f /etc/centos-release ]]; then
+    OS=redhat
+elif [[ -d /etc/apt ]]; then
+    OS=ubuntu
+elif [[ -f /etc/SuSE-release ]]; then
+    OS=suse
+fi
+
+case $RAILS_ENV in
+    development) PUMA_CFG="puma-dev.cfg";;
+    production)  PUMA_CFG="puma.cfg";;
+    test)        PUMA_CFG="puma-test.cfg";;
+esac
+
+
+if [[ -f /etc/crowbar.install.key ]]; then
+    read CROWBAR_KEY < /etc/crowbar.install.key
+    export CROWBAR_KEY
+fi
+
+as_crowbar() (
+    su -l -c "cd /opt/opencrowbar/core/rails; RAILS_ENV=$RAILS_ENV $*" crowbar
+)
+
+start(){
+    if [[ $OS = suse ]]; then
+        # refresh the Gemfile.lock content before starting the server
+        # (outdated file can cause problems after any of the required
+        # rubygems were updated)
+        rm -f $GEMFILE_LOCK
+        as_crowbar bundle install --local --quiet
+    fi
+    as_crowbar bundle exec puma -d -C $PUMA_CFG
+    echo "Starting delayed_job NodeRoleRunner queue (10 workers)"
+    as_crowbar bundle exec script/delayed_job --queue=NodeRoleRunner -n 10 start
+}
+
+stop() {
+    as_crowbar bundle exec pumactl -F $PUMA_CFG stop
+    as_crowbar bundle exec script/delayed_job stop
+}
+
+restart() {
+    as_crowbar bundle exec pumactl -F $PUMA_CFG restart
+    as_crowbar bundle exec script/delayed_job restart
+}
+
+status() {
+    as_crowbar bundle exec pumactl -F $PUMA_CFG status && \
+        pgrep -f delayed_job
+}
+
+mkdir -p /var/run/crowbar && chown crowbar:crowbar /var/run/crowbar
+
+case "$1" in
+    start) start;;
+    stop) stop;;
+    status) status;;
+    restart) restart;;
+    *)
+        echo "Usage: $0 {start|stop|status|restart}"
+        exit 1
+        ;;
+esac

@@ -1,0 +1,47 @@
+.nav-container
+  position: relative
+  width: 100%
+  height: 1em
+  padding-bottom: 1em
+  margin-bottom: 1em
+  text-align: center
+  font-size: small
+  border-bottom-style: solid
+  border-bottom-width: thin
+
+.nav-prev, .nav-up, .nav-next
+  display: inline-block
+  position: relative
+  width: 0
+  z-index: 2
+  & a
+    white-space: nowrap
+    position: absolute
+
+.nav-prev
+  text-align: left
+  float: left
+  & a
+    left: 0
+  & a:before
+    content: '<-- '
+
+.nav-up
+  width: 100%
+  text-align: center
+  float: left
+  z-index: 1
+  & a
+    position: relative
+  & a:before
+    content: '^ '
+  & a:after
+    content: ' ^'
+
+.nav-next
+  text-align: right
+  float: right
+  & a
+    right: 0
+  & a:after
+    content: ' -->'

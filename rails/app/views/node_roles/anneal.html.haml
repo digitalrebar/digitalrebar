@@ -1,0 +1,26 @@
+%h1= t '.title'
+
+%h2= t '.error'
+- error = NodeRole.all_by_state(NodeRole::ERROR)
+= render :partial=>'node_roles/index', :locals => { :list => error }
+
+%h2= t '.transition'
+- trans = NodeRole.all_by_state(NodeRole::TRANSITION)
+= render :partial=>'node_roles/index', :locals => { :list => trans }
+
+%h2= t '.todo'
+- todo = NodeRole.all_by_state(NodeRole::TODO)
+= render :partial=>'node_roles/index', :locals => { :list => todo }
+  
+%h2= t '.blocked'
+- blocked = NodeRole.all_by_state(NodeRole::BLOCKED)
+= render :partial=>'node_roles/index', :locals => { :list => blocked }
+
+.clear
+
+:javascript
+
+  function update() {
+    $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
+    location.reload();
+  }

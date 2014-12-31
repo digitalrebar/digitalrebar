@@ -1,0 +1,113 @@
+# Copyright 2013, Dell 
+# 
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+# 
+#  http://www.apache.org/licenses/LICENSE-2.0 
+# 
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License.  
+#
+# Sample localization file for English. Add more files in this directory for other locales.
+# See http://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
+
+en:
+
+  # DO NOT ADD BARCLAMP LOCALIZATIONS HERE!!  
+  # they belong in a barclamp subdirectory!
+
+  # Global
+  show: "View"
+  all: "All"
+  none: "None"
+  destroy: "Remove"
+  save: "Save"
+  add: "Add"
+  update: "Update"
+  edit: "Edit"
+  back: "Go Back"
+  cancel: "Cancel"
+  actions: "Actions"
+  active: "Active"
+  inactive: "Inactive"
+  are_you_sure: "Are you sure?"
+  unknown: "Unknown"
+  tbd: "TBD"
+  error: "Error"
+  not_set: "Not set"
+  undetermined: "Undetermined"
+  na: "N/A"
+  feature_na: "Feature Not Available"
+  name: "Name"
+  up: "Up" 
+  down: "Down"
+  raw: "Raw"
+  custom: "Custom"
+  clear_msg: "clear"
+  created_on: "Created on %{date}"
+  updated_on: "Updated on %{date}"
+  no_items: "No Items"
+  complete: "Complete"
+  'yes': 'Yes'
+  'no': 'No'
+  maybe: "Maybe"
+  chuck_norris: "Die!!!"
+  ignore: "Ignore - used by testing"
+  depricated: "WARNING Depricated!"
+  work_in_progress: "Work in progress notice: %{message}"
+  updating: "Updating..."
+  note: "Note:"
+  hint: "Hint"
+  help: "Help"
+  link: "Link"
+  virtual: "Virtual"
+  new: "New Item!"
+  next: "Next"
+  prev: "Previous"
+  export: "Export"
+  default: "Default"
+  useradded: "Created by user '%{user}'"
+  automatic: "Created Automatically by System"
+  automatic_by: "Created Automatically by %{name}"
+  automatic_item_by: "%{item}: Created Automatically by %{name}"
+  version: "Version %{version}"
+  debug: "Debug Info"
+
+  error:
+    title: "We're sorry, but something is fuzzy about that request."
+    logfile: "Please check the URL you're trying to reach and check the applications logs."
+    filebug: "We encourage you to visit the Crowbar site for more information or to submit a bug report."
+    details: "Error Details for '%{message}'"
+    backtrace: "Error Backtrace"
+
+  test:
+    verify: "Affirmative"
+
+  ui:
+    not_supported: "Requested action %{verb} is not supported on %{obj}"
+
+  api:
+    wrong_version: "Requested API version (%{version}) is not supported."
+    not_found: "Could not find %{type} with id %{id}."
+    not_supported: "Requested action %{verb} is not supported on %{obj}"
+    deleted: "Successfully deleted %{obj} id %{id}."
+    removed: "Successfully removed %{item} from %{collection}."
+    added: "Successfully added %{item} to %{collection}."
+    unknown_request: "Unable to process request"
+    by_id_or_username_record_not_found: "User not found with id/username %{id_username} not found"    
+
+  db:
+    notunique: "Item must be unique"
+    notuniqueincategory: "Item must be unique in category"
+    lettersnumbers: "Cannot Save: Item can only contain letters (a..z, A..Z), numbers (0..9) and underscore (_)."
+    fqdn: "Item must be a fully qualified domain name (FQDN) such as 'server.example.com'."
+    alias: "Item must be a valid hostname."
+    group_category: "Group Model Validation Error: type is not an allowed category"
+    barclamp_excludes: "Barclamp name is reserved for Crowbar internal operations"
+    config_excludes: "Config name 'template' is reserved for Crowbar internal operations"
+    not_in_set: "Object %{obj} property %{prop} can only take one of [%{set}]."
+    v6prefix: "Invalid IPv6 prefix."

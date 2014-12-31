@@ -1,0 +1,58 @@
+# Copyright 2014, Victor Lowther
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+roles:
+  - name: consul
+    description: "Consul is our default service monitoring and discovery tool."
+    jig: chef
+    flags:
+      - bootstrap
+      - implicit
+    requires:
+      - network-admin
+    attribs:
+      - name: consul-mode
+        description: "The mode that Consul is operating in on a specific node"
+        map: 'consul/service_mode'
+        schema:
+          type: str
+          required: true
+          enum:
+            - bootstrap
+            - server
+            - client
+      - name: consul-data-dir
+        description: "The location that Consul will store its running data"
+        map: 'consul/data_dir'
+      - name: consul-config-dir
+        description: "The location that Consul will store its config data"
+        map: 'consul/config_dir'
+      - name: consul-servers
+        description: "The addresses of the Consul server nodes"
+        map: 'consul/servers'
+      - name: consul-address
+        description: "The address that Consul should use for inter-cluster communications."
+        map: 'consul/bind_addr'
+        schema:
+          type: str
+          required: false
+      - name: consul-domain
+        description: "The domain that Consul assume it owns for DNS lookups"
+        map: 'consul/domain'
+        schema:
+          type: str
+          required: false
+      - name: consul-datacenter
+        description: "The name of the datacenter that this Consul instance is running in"
+        map: 'consul/datacenter'

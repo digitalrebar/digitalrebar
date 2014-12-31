@@ -1,0 +1,138 @@
+# Copyright 2013, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+roles:
+  - name: provisioner-server
+    jig: chef
+    requires:
+      - network-admin
+      - dns-client
+      - logging-server
+      - ntp-server
+    attribs:
+      - name: provisioner-machine_key
+        description: 'The username and password that managed nodes should use to talk to the Crowbar API'
+        map: 'crowbar/provisioner/machine_key'
+      - name: provisioner-access_keys
+        description: 'The SSH public keys that should allow passwordless root access on managed nodes.'
+        map: 'crowbar/provisioner/server/access_keys'
+      - name: provisioner-name
+        description: 'The DNS name of the provisioner server.'
+        map: 'crowbar/provisioner/server/name'
+      - name: provisioner-v4addr
+        description: 'The IPv4 address of the provisioner server'
+        map: 'crowbar/provisioner/server/v4addr'
+      - name: provisioner-v6addr
+        description: 'The IPv6 address of the provisioner server'
+        map: 'crowbar/provisioner/server/v6addr'
+      - name: provisioner-proxy
+        description: 'The caching HTTP proxy that managed nodes should use'
+        map: 'crowbar/provisioner/server/proxy'
+      - name: provisioner-webserver
+        description: 'The URL that managed nodes should use to contact the provisioner webserver.'
+        map: 'crowbar/provisioner/server/webserver'
+      - name: provisioner-online
+        description: 'Whether or not the provisioner is operating in online mode..'
+        map: 'crowbar/provisioner/server/online'
+      - name: provisioner-upstream_proxy
+        description: "The upstream Web proxy that the proxy on the provisioner will use"
+        map: 'crowbar/provisioner/server/upstream_proxy'
+        schema:
+          type: str
+          required: true
+          pattern: '/\Ahttp:\/\/.+\z/'
+  - name: provisioner-base-images
+    jig: chef
+    attribs:
+      - name: provisioner-package-repos
+        description: 'The packages repositories that managed nodes should use to install packages.'
+        map: 'crowbar/provisioner/server/repositories'
+        ui_renderer: 'barclamp_provisioner/attribs/package_repos'
+      - name: provisioner-available-oses
+        description: 'The operating systems that the provisioner knows how to install'
+        map: 'crowbar/provisioner/server/available_oses'
+        ui_renderer: 'barclamp_provisioner/attribs/available_oses'
+    requires:
+      - provisioner-server
+    wants-attribs:
+      - dns-domain
+      - dns_servers
+  - name: provisioner-repos
+    jig: chef
+    requires:
+      - network-admin
+      - provisioner-server
+      - provisioner-base-images
+    flags:
+      - implicit
+    wants-attribs:
+      - provisioner-package-repos
+      - provisioner-proxy
+      - provisioner-webserver
+      - provisioner-online
+  - name: provisioner-dhcp-server
+    jig: chef
+    requires:
+      - provisioner-server
+      - provisioner-base-images
+  - name: provisioner-dhcp-database
+    jig: chef
+    requires:
+      - provisioner-dhcp-server
+  - name: provisioner-docker-setup
+    jig: chef
+    conflicts:
+      - crowbar-docker-node
+    requires:
+      - provisioner-repos
+    wants-attribs:
+      - dns_servers
+      - provisioner-package-repos
+      - provisioner-proxy
+      - provisioner-webserver
+      - provisioner-machine_key
+      - provisioner-access_keys
+    attribs:
+      - name: provisioner-docker-image
+        description: 'The default image to use for docker images unless overriden by hints'
+        map: 'crowbar/provisioner/docker_image'
+        schema:
+          type: str
+          required: false
+  - name: provisioner-os-install
+    jig: script
+    requires:
+      - crowbar-hardware-configured
+      - provisioner-dhcp-server
+    flags:
+      - implicit
+      - destructive
+    wants-attribs:
+      - provisioner-webserver
+    attribs:
+      - name: provisioner-target_os
+        description: "The operating system to install on a node"
+        map: 'crowbar/target_os'
+        ui_renderer: 'barclamp_provisioner/attribs/target_os'
+        schema:
+          type: str
+          required: true
+          enum:
+            - ubuntu-12.04
+            - ubuntu-14.04
+            - redhat-6.5
+            - centos-6.6
+            - fedora-20
+            - centos-7.0.1406
+            - redhat-7.0

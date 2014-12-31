@@ -1,0 +1,40 @@
+%h1= t '.title'
+
+%table.data.box
+  %thead
+    %tr
+      %th= t '.name'
+      %th= t '.description'
+      %th= t '.deployment'
+      %th= t '.vlan'
+      %th= t '.v6prefix'
+      %th= t '.bridge'
+      %th= t '.team'
+      %th= t '.conduit'
+      %th= t '.ranges'
+  %tbody
+    - @networks.each do |n|
+      %tr.node{ :class => cycle(:odd, :even) }
+        %td= link_to n.name, network_path(n.id)
+        %td= n.description
+        %td= n.deployment.name
+        %td= (n.use_vlan ? n.vlan : t('not_set') )
+        %td= n.v6prefix
+        %td= (n.use_bridge ? t('yes') : t('no') )
+        %td= (n.use_team ? n.team_mode : t('not_set') )
+        %td= n.conduit
+        %td= n.ranges.map{ |r| r.name }.join(', ')
+  %tfoot
+    = form_for :network, :'data-remote' => true, :url => networks_path(), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
+      %tr
+        %td= text_field_tag :name, t('default'), :size=>6
+        %td= text_field_tag :description, "", :size=>20
+        %td= select_tag :deployment_id, options_from_collection_for_select(Deployment.all, :id, :name)
+        %td= text_field_tag :vlan, "-1", :size=>4
+        %td= text_field_tag :v6prefix, "auto", :size=>4
+        %td= text_field_tag :bridge, "-1", :size=>4
+        %td= text_field_tag :team_mode, "-1", :size=>4
+        %td= text_field_tag :conduit, "10g1", :size=>4
+        %td
+          %input.button{:type => "submit", :value => t('.add')}
+

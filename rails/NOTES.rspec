@@ -1,0 +1,32 @@
+Add Factory Girl for Test Objects
+
+The factory_girl gem is used to create default model objects for tests. For example, if a controller action requires finding a User object before displaying a .show. page, Factory Girl will create a user just for a test of the controller. You.ll need gem 'factory_girl_rails', :group => :test in your Gemfile.
+
+You.ll need a spec/factories/users.rb file to contain the factory definitions for any default objects used for testing. You can create one like this:
+
+spec/factories/users.rb
+
+FactoryGirl.define do
+  factory :user do
+    name 'Test User'
+    email 'example@example.com'
+    password 'please'
+    password_confirmation 'please'
+    # required if the Devise Confirmable module is used
+    # confirmed_at Time.now
+  end
+end
+
+If you.ve chosen to create the application with the Devise Confirmable module, remove the commenting to enable confirmed_at Time.now.
+Add Devise Test Helpers
+
+Using Devise, your controllers will often include before_filter :authenticate_user! to limit access to signed-in users. Your tests will fail unless a default user is created and logs in before each test runs. Devise provides test helpers to make it simple to create and log in a default user.
+
+Create a file spec/support/devise.rb:
+
+spec/support/devise.rb
+
+RSpec.configure do |config|
+  config.include Devise::TestHelpers, :type => :controller
+end
+

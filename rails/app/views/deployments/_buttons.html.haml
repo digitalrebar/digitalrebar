@@ -1,0 +1,10 @@
+- case
+  - when deployment.proposed?
+    = link_to t('.commit'), deployment_commit_path(deployment.id, :version=>2), :class => 'button', :method=>:put
+  - when deployment.proposable?
+    = link_to t('.propose'), deployment_propose_path(:deployment_id=>deployment.id), :class => 'button', :method=>:put
+  - when deployment.annealable? & !deployment.system
+    = link_to t('.recall'), deployment_recall_path(:deployment_id=>deployment.id), :class => 'button', :method=>:put
+  - when deployment.error?
+    = link_to t('.correct'), deployment_propose_path(:deployment_id=>deployment.id), :class => 'button', :method=>:put
+

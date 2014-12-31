@@ -1,0 +1,39 @@
+-if !params.has_key? :expand
+  %section.box#nav
+    %p#button{:style => 'float:right'}
+      = link_to t('.export'), docs_topic_path(:id=>@topic.name, :expand=>true), :class => 'button', :id=>'expand_button'
+    %h3= t('.nav')
+    %ol  
+      %li= link_to t('docs.root'), docs_path
+      - p = @topic.parent
+      - stack = []
+      - while !p.name.eql? 'root'
+        - stack.push p
+        - p = p.parent
+      - while stack.length > 0
+        - p = stack.pop
+        %li{:title=>t('details', :scope=>'docs', :date=>p.date, :author=>p.author, :license=>p.license)}
+          = link_to p.description, docs_topic_path(:id=>p.name)
+    - if (current_user.settings(:docs).sources rescue false)
+      %p= "Local File: #{@file}"
+      %p
+        = "Git Source: "
+        = link_to @topic.git_url, @topic.git_url
+-else
+  %div{:style => 'right:20px; position:fixed; z-index:10'}
+    = link_to t('.return'), docs_topic_path(:id=>@topic.name), :class => 'button', :id=>'expand_button'
+
+
+%topic= @text.html_safe
+
+- if @topic.children.length > 0 and !params.has_key? :expand
+  %section.box#children
+    %author{:style => 'float:right'}= t('details', :scope=>'docs', :date=>@topic.date, :author=>@topic.author, :license=>@topic.license)
+    %h3= t '.children'
+    %ol
+      - @topic.children.each do |section|
+        %li{:title=>t('details', :scope=>'docs', :date=>section.date, :author=>section.author, :license=>section.license)}
+          = link_to section.description, docs_topic_path(:id=>section.name)
+          = "(p=#{section.parent_name}, o=#{section.order})" if (current_user.settings(:docs).sources rescue false)
+
+.clear

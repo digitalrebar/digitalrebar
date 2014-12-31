@@ -1,0 +1,6 @@
+:sources:
+<% if @online -%>
+- http://rubygems.org/
+<% end -%>
+- <%=@webserver%>/gemsite/
+gem: --no-ri --no-rdoc --bindir /usr/local/bin --http-proxy http://<%=@proxy%>

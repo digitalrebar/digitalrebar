@@ -1,0 +1,50 @@
+%h1= t '.title'
+
+- if @list.length == 0
+  %p= t '.no_nodes'
+  %p= link_to t('.bootstrap'), bootstrap_path, :class=>'button'
+- else
+  = render :partial => 'index', :locals=>{:nodes => @list}
+
+.clear
+
+:javascript
+
+  function update() {
+
+    if (#{params.include?(:nopoll) ? 'false' : 'true'}) {
+      $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} })
+
+      $.getJSON('#{nodes_status_path()}', function(data) {
+        
+        // If node count has changed, re-render the page
+        var current_nodes = $('.node').length;
+        
+        // Update nodes
+        var count = 0;
+        $.each(data, function(id,node) {
+          count ++;
+          if (count > current_nodes) {
+          	location.reload();
+          	return;
+          }
+          var tr = $('#'+id+'.node');
+          var td = tr.children('.status');
+          var led = td.children('.led');
+          if(led.attr('raw') != node['state']) {
+            led.destroy();
+            led.attr('class', 'led '+node['status']);
+            led.attr('raw', node['state']);
+            td.effect("highlight", {color: '#666666'}, 2000);
+            led.attr('title', node['status']);
+          }
+          var status = tr.children('.strStatus');
+          if(status.html() != node['strStatus']) {
+            status.destroy();
+            status.html(node['strStatus']);
+            status.effect("highlight", {color: '#666666'}, 2000);
+          }
+        });
+      });
+    }
+  }

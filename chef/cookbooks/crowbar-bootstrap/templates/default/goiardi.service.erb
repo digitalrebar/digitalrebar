@@ -1,0 +1,10 @@
+[Unit]
+Description=Goiardi Chef Server
+Requires=postgresql-9.3.service
+After=postgresql-9.3.service
+
+[Service]
+ExecStart=/usr/local/bin/goiardi -c /etc/goiardi/goiardi.conf
+
+[Install]
+WantedBy=multi-user.target

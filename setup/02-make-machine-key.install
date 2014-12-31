@@ -1,0 +1,32 @@
+#!/bin/bash
+## only do this on real installs.
+[[  -d /opt/opencrowbar/core ]] || \
+    { echo "Not an admin node, not creating machine key"; exit 0; }
+
+[[ -f /etc/profile.d/crowbar-key.sh ]] && exit 0
+touch "/tmp/.crowbar_in_bootstrap"
+
+if [[ ! -e /etc/crowbar.install.key ]]; then
+    read key rest < <(dd if=/dev/urandom bs=65536 count=1 2>/dev/null |sha512sum - 2>/dev/null)
+    echo "Creating machine-install user"
+    machine_user="
+{
+  \"username\": \"machine-install\",
+  \"email\": \"root@localhost.localdomain\",
+  \"password\": \"$key\",
+  \"password_confirmation\": \"$key\",
+  \"remember_me\": false,
+  \"is_admin\": false,
+  \"digest\": true
+}"
+
+    if ! /opt/opencrowbar/core/bin/crowbar -U crowbar -P crowbar users create "$machine_user"; then
+        echo "Could not create machine-install user!"
+        exit 1
+    fi
+    echo "machine-install:$key" >/etc/crowbar.install.key
+    cat >/etc/profile.d/crowbar-key.sh <<EOF
+export CROWBAR_KEY=$(cat /etc/crowbar.install.key)
+EOF
+    rm "/tmp/.crowbar_in_bootstrap"
+fi

@@ -1,0 +1,6 @@
+DEFAULT localboot
+PROMPT 0
+TIMEOUT 10
+
+LABEL localboot
+  LOCALBOOT 0x80

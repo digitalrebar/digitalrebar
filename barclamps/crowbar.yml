@@ -1,0 +1,141 @@
+# Copyright 2013, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+roles:
+  # Crowbar  Core
+  - name: crowbar-admin-node
+    description: "Core Crowbar Services Bundle"
+    jig: noop
+    flags:
+      - milestone
+      - implicit
+    requires:
+      - network-server
+      - dns-database
+      - provisioner-dhcp-database
+      - provisioner-repos
+      - provisioner-docker-setup
+      - network-lldpd
+    conflicts:
+      - crowbar-managed-node
+    provides:
+      - crowbar-installed-node
+  - name: crowbar-managed-node
+    description: "Crowbar Node Service Bundle"
+    jig: noop
+    flags:
+      - milestone
+      - implicit
+    requires:
+      - deployer-client
+      - dns-client
+      - logging-client
+      - ntp-client
+      - network-lldpd
+  - name: crowbar-hardware-configured
+    description: "Crowbar Harware Configured Checkpoint"
+    jig: noop
+    flags:
+      - implicit
+      - milestone
+    requires:
+      - crowbar-managed-node
+  - name: crowbar-installed-node
+    description: "Crowbar Node Ready Checkpoint"
+    jig: noop
+    flags:
+      - milestone
+      - implicit
+    requires:
+      - crowbar-hardware-configured
+      - provisioner-os-install
+  - name: crowbar-docker-node
+    description: "Docker Node Ready Checkpoint"
+    jig: noop
+    flags:
+      - milestone
+      - implicit
+    requires:
+      - provisioner-repos
+      - provisioner-docker-setup
+    provides:
+      - crowbar-managed-node
+      - crowbar-installed-node
+
+hammers:
+  - name: 'ssh'
+    type: 'SecureShellHammer'
+    priority: 0
+
+attribs:
+  # Crowbar Core
+  - name: asset_tag
+    map: 'ohai/dmi/base_board/asset_tag'
+    description: 'BIOS configured system identifier'
+  - name: system_serial_number
+    description: 'System Serial Number'
+    map: 'ohai/dmi/system/serial_number'
+  - name: 'system_product'
+    description: 'System Product Name'
+    map: 'ohai/dmi/system/product_name'
+  - name: 'system_manufacturer'
+    description: 'System Vendor'
+    map: 'ohai/dmi/system/manufacturer'
+  - name: chassis_serial_number
+    description: 'Chassis Serial Number'
+    map: 'ohai/dmi/chassis/serial_number'
+  - name: 'chassis_product'
+    description: 'Chassis Product Name'
+    map: 'ohai/dmi/chassis/product_name'
+  - name: 'chassis_manufacturer'
+    description: 'Chassis Vendor'
+    map: 'ohai/dmi/chassis/manufacturer'
+  - name: 'kernel'
+    description: 'Kernel Name'
+    map: 'ohai/kernel/name'
+  - name: 'kernel_version'
+    description: 'Kernel Version'
+    map: 'ohai/kernel/version'
+  - name: 'os'
+    description: 'O/S Name'
+    map: 'ohai/platform'
+  - name: 'os_version'
+    description: 'O/S Version'
+    map: 'ohai/platform_version'
+  - name: 'os_description'
+    description: 'O/S Description'
+    map: 'ohai/lsb/description'
+  - name: 'memory'
+    description: 'System Memory'
+    map: 'ohai/memory/total'
+  - name: 'cpu'
+    description: 'System Processor'
+    map: 'ohai/cpu/0/model_name'
+  - name: 'cpu_count'
+    description: 'Number of Processors'
+    map: 'ohai/cpu/total'
+  - name: 'number_of_drives'
+    description: 'RAID set'
+    map: 'ohai/block_device'
+  # Node specific hints.
+  - name: 'hint-admin-macs'
+    description: 'Hint for Admin MAC addresses'
+    map: 'admin_macs'
+    schema:
+      type: seq
+      required: true
+      sequence:
+        - type: str
+          pattern: '/([0-9a-fA-F]{2}:){5}[0-9a-fA-F]/'

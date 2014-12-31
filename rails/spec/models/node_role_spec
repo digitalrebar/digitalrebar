@@ -1,0 +1,41 @@
+# Copyright 2013, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+require 'spec_helper'
+
+describe "node_role annealer" do
+  # make sure that the there's a crowbar deploment (named 'test')
+  include_context "crowbar test deployment"
+  # just 2 nodes.
+  include_context "2 dummy nodes"
+
+  # get a role from the deployment (ideally, active)
+  context "node_role states work correctly" do
+
+    subject { node1.node_roles.first }
+
+    before(:all) {            
+      # nothing
+    }
+
+    its(:state)   { should == NodeRole.TODO }
+    its(:node_id) { should == node1.id}
+
+    it "" do
+      pending deployment.commit
+    end
+
+  end
+end
+

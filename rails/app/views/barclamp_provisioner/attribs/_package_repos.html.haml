@@ -1,0 +1,13 @@
+- value = Attrib.get(attrib.name, obj)
+%tr
+  %td= link_to attrib.name_i18n, attrib_path(attrib.id), :title=>attrib.description
+  - if value
+    %td
+      %a.toggle.with_label{:href => "#", :id => "#data_toggle", :rel => "value"}= t 'show'
+      %div{:id=>"value", :style =>"display:none"}
+        %pre= JSON.pretty_generate value
+  - else
+    %td= t('not_set')
+  %td= ''
+  - if current_user and current_user.settings(:ui).debug
+    %td= attrib.ui_renderer rescue Attrib::UI_RENDERER

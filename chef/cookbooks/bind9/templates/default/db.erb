@@ -1,0 +1,40 @@
+<% zone_map={ "ip4addr" => "A",
+   "ip6addr" => "AAAA",
+   "alias" => "CNAME",
+   "pointer" => "PTR"
+   } -%>
+; Managed by Crowbar
+; Do not edit.
+$ORIGIN <%= @zone[:domain] %>.
+$TTL <%= @zone[:ttl] %>
+
+<%= @zone[:domain] -%>. IN SOA (
+    <%= @nameserver %>
+    <%= @admin %>
+    <%= @serial %>
+    <%= @zone[:slave_refresh] %>
+    <%= @zone[:slave_retry] %>
+    <%= @zone[:slave_expire] %>
+    <%= @zone[:negative_cache] %>
+    )
+
+; Nameservers
+@ NS <%= @nameserver %>
+
+; Mail exchangers
+<% @zone[:mail_exchangers].each do |host,prio| -%>
+@ MX <%= prio -%> <%= host %>
+<% end if @zone[:mail_exchangers]-%>
+
+; Per-host records
+<% @zone[:hosts].keys.sort.each do |host|
+   record=@zone[:hosts][host]
+   record.keys.sort.each do |k|
+   next unless zone_map[k]
+   if k == "alias" -%>
+<%= record[k] -%> IN <%= zone_map[k] -%> <%= host %>
+<% else -%>
+<%= host -%> IN <%= zone_map[k] -%> <%= record[k] %>
+<% end -%>
+<% end -%>
+<% end -%>

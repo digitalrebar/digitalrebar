@@ -1,0 +1,60 @@
+# Copyright 2013, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+roles:
+  - name: chef-server
+    jig: script
+    description: 'Provides a chef-server instance.'
+    attribs:
+      - name: chef-server_port
+        description: "The TCP port that the chef server is listening on"
+        map: 'chefjig/server/port'
+      - name: chef-server_protocol
+        description: "The protocol used to talk to the chef server"
+        map: 'chefjig/server/protocol'
+      - name: chef-server_url
+        description: 'URL that clients should use to talk to the chef server'
+        map: 'chefjig/server/url'
+      - name: 'chef-server_admin_client_name'
+        description: 'The name of the client with admin privs that Crowbar should use'
+        map: 'chefjig/server/client-name'
+      - name: chef-server_admin_client_key
+        description: 'The private key for the admin client that Crowbar should use.'
+        map: 'chefjig/server/client-key'
+  - name: chef-client
+    jig: script
+    description: 'Provides a chef client.'
+    requires:
+      - chef-server
+    flags:
+      - implicit
+    attribs:
+      - name: chef-client_name
+        description: 'The name that this node should use for its chef client.'
+        map: 'chefjig/client/name'
+      - name: chef-client_key
+        description: 'The private key that this node should use to authenticate with the chef server'
+        map: 'chefjig/client/key'
+    wants-attribs:
+      - chef-server_url
+  - name: chef-solo
+    jig: script
+    description: 'Configures chef-solo for a node.'
+    flags:
+      - implicit
+    attribs:
+      - name: chef-solo_client_name
+        description: 'The client name that chef-solo should use'
+        map: 'crowbar/chef-solo/name'

@@ -1,0 +1,84 @@
+!!!
+%html
+  %head
+    %title= "OpenCrowbar"
+    = csrf_meta_tags
+    = stylesheet_link_tag 'application'
+    /[if IE]
+      = stylesheet_link_tag 'ie', :media => "all"
+    = javascript_include_tag 'application'
+    = csrf_meta_tag
+    %link{:rel=>"SHORTCUT ICON", :href=>"/images/icons/bunny.ico"}
+  
+  %body
+    %header
+      .container
+        %h1
+          %a{:href => "/"}
+            %span logo
+        - if current_user or session[:digest_user]
+          %div{:style=>'float:right; padding-top:10px; z-index:10; height:0px'}
+            -if session[:digest_user]
+              = t 'user.digested_as', :user=>session[:digest_user]
+            -else 
+              = t 'user.signed_in_as', :user=>current_user.username
+            (
+            = link_to t('user.sign_out'), main_app.destroy_user_session_path(), :method=>'delete' rescue t('error')
+            )
+            %a{:href=>annealer_path}
+              = image_tag('/images/icons/led/active.png', :id=>"active_led")
+              %span#active_heartbeat= "?"
+              = image_tag('/images/icons/led/todo.png', :id=>"todo_led", :style=>"display:none")
+              %span#todo_heartbeat= ""
+              = image_tag('/images/icons/led/error.png', :id=>"error_led", :style=>"display:none") 
+              %span#error_heartbeat= ""
+          %nav
+            = render_navigation :expand_all => true, :skip_if_empty => true
+        - else
+          %nav
+            = link_to t('user.sign_in'),  main_app.new_user_session_path
+    - if flash[:notice]
+      .notice#flash
+        .container
+          %p
+            = flash[:notice]
+            = link_to " [#{t('clear_msg')}]", "#", :onClick=>"$('#flash').attr('style', 'display:none');"
+
+    #main_body.container
+      = yield
+
+    %footer
+      =t '.provided_by'
+      %a{:href=>"http://opencrowbar.org", :target=>"_new"}
+        %img{:src=>"/images/ocb_logo.png", :alt=>"Crowbar Project", :title=>"Crowbar Project", :width=>'20px', :style=>"vertical-align:middle;padding-bottom:2px"}
+      %a{:href=>"https://github.com/orgs/opencrowbar/people", :target=>"_new", :alt=>"OpenCrowbar"}
+        OpenCrowbar Project Team
+      =t 'version', :version=>(Rails.env.development? ? "Development" : Barclamp.where( :name => "crowbar").first.build_version)
+
+:javascript
+
+  function heartbeat() {
+    $.ajaxSetup({ timeout: 2500 });
+
+    $.getJSON("#{heartbeat_status_path()}", function(data) {
+
+      $('span#active_heartbeat').text(data['active']);
+      if (data["todo"]==0) {
+        $('span#todo_heartbeat').text("");
+        $('img#todo_led').attr('style', 'display:none');
+      } else {      
+        $('span#todo_heartbeat').text(data['todo']);
+        $('img#todo_led').attr('style', 'display:inline');
+      }
+      if (data["error"]==0) {
+        $('span#error_heartbeat').text("");
+        $('img#error_led').attr('style', 'display:none');
+      } else {
+        $('span#error_heartbeat').text(data['error']);
+        $('img#error_led').attr('style', 'display:inline');
+      }
+
+    });
+  }
+
+  heartbeat(); 

@@ -1,0 +1,34 @@
+#layercake
+
+  %h1.title= t '.title'
+
+  .column_25.first
+    #core{:class=>(@status['core'] || 'ready')}
+      = render :partial=>'layercake', :locals=>{ :layer=>'core' }
+    #jigs{:class=>(@status['jigs'] || 'ready')}
+      = render :partial=>'layercake', :locals=>{ :layer=>'jigs' }
+
+  .column_75.last
+
+    #apps{:class=>(@status['apps'] || 'ready')}
+      = render :partial=>'layercake', :locals=>{ :layer=>'apps' }
+    #services{:class=>(@status['services'] || 'ready')}
+      = render :partial=>'layercake', :locals=>{ :layer=>'services' }
+    #clients{:class=>(@status['clients'] || 'ready')}
+      = render :partial=>'layercake', :locals=>{ :layer=>'clients' }
+    #os{:class=>(@status['is'] || 'ready')}
+      = render :partial=>'layercake', :locals=>{ :layer=>'os' }
+    #nodes{:class=>(@status['nodes'] || 'ready')}
+      = render :partial=>'layercake', :locals=>{ :layer=>'nodes' }
+    #network{:class=>(@status['network'] || 'ready')}
+      = render :partial=>'layercake', :locals=>{ :layer=>'network' }
+
+.clear
+
+
+:javascript
+
+  function update() {
+    $.ajaxSetup({ timeout: #{current_user.settings(:ui).refresh} });
+    location.reload();
+  }

@@ -1,0 +1,7 @@
+{
+  "realm": "Crowbar",
+  "web_port": 3000,
+  "users": {
+    "crowbar": { "password": "crowbar" }
+  }
+}

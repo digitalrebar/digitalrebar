@@ -1,0 +1,59 @@
+#!/bin/bash
+NODE_DIR="$HOME/.cache/opencrowbar/tftpboot/nodes"
+
+if [[ $0 = /* ]]; then
+    tools="${0}"
+elif [[ $0 = .*  || $0 = */* ]]; then
+    tools="$(readlink -f "$PWD/$0")"
+else
+    echo "Cannot figure out where our tools are!"
+    exit 1
+fi
+# This gets us to core
+tools="${tools%/*}"
+
+. "$tools/tmux_lib.sh"
+
+if [[ ! $1 ]]; then
+    echo "First argument to $0 must be the address of the Crowbar admin node!"
+    exit 1
+fi
+if ! ssh "root@$1" -- test -x /opt/opencrowbar/core/bin/crowbar; then
+    echo "Crowbar not accessible at root@$1!"
+    exit 1
+fi
+echo "Crowbar admin accessble at root@$1"
+root="root@$1"
+
+if [[ ! $2 || ! ($2 =~ ^[0-9]+$) ]]; then
+    echo "Second argument to $0 must be the number of docker slaves to run!"
+    exit 1
+fi
+
+shift
+
+on_admin() {
+    ssh "$root" -- "$@"
+}
+crowbar() {
+    on_admin /opt/opencrowbar/core/bin/crowbar "$@"
+}
+
+# Create our nodes.
+echo "Creating docker nodes"
+for ((n=1;n<=$1;n++)); do
+    node="docker-$n.smoke.test"
+    if [[ -x "$NODE_DIR/$node/crowbar-init" ]]; then
+        echo "$node already created!"
+        tmux new-window -d -n "$SESSION:$node" "$tools/docker-slave $node"
+    else
+        if crowbar nodes create "\"{\\\"name\\\": \\\"$node\\\"}\"" && \
+            crowbar roles bind crowbar-docker-node to "$node" && \
+            crowbar nodes commit "$node"; then
+            echo "Created $node"
+            tmux new-window -d -n "$SESSION:$node" "$tools/docker-slave $node"
+        else
+            break
+        fi
+    fi
+done

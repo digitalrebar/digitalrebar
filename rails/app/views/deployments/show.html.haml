@@ -1,0 +1,117 @@
+- state = @deployment.state rescue Deployment::ERROR
+%table{:width=>'100%'}
+  %tr
+    %td
+      .led{:class => Deployment::STATES[state], :title=>Deployment.state_name(state)}
+    %td
+      %h1
+        - if @deployment.parent
+          = link_to @deployment.parent.name, deployment_path(@deployment.parent.id), :title => @deployment.parent.description
+          = "/"
+        = link_to @deployment.name, deployment_path(@deployment.id), :title => @deployment.description
+        = @deployment.state_name(state)
+    - if state == Deployment::PROPOSED
+      %td
+        = form_for :add_role, :'data-remote' => true, :url => deployment_roles_path(:deployment_id=>@deployment.id, :version=>'v2'), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
+          - aroles = @deployment.available_roles
+          - if current_user and current_user.settings(:ui).milestone_roles
+            - aroles.keep_if {| r | r.milestone } 
+          - if aroles.length > 0 
+            = hidden_field_tag :deployment_id, @deployment.id
+            = f.collection_select :role_id, aroles, :id, :name_i18n
+            %input.button{:type => "submit", :name => "add", :value => t('.add_role')}
+      %td= link_to t('.pick'), bulk_edit_path(), :title=>t('.pick_hint'), :class=>'button'
+    - elsif current_user and current_user.settings(:ui).edge
+      %td= link_to t('.graph'), deployment_graph_path(@deployment.id), :class => 'button', :method=>:get
+    %td= render :partial => 'deployments/buttons', :locals => { :state=>state, :deployment=>@deployment }
+ 
+%table.snap{:align=>'left'}
+  - if @nodes.count > 0 or  @roles.count > 0
+    %thead
+      %tr
+        %th.anode= link_to t('.nodes'), bulk_edit_path()
+        - @roles.each do |dr|
+          %th.dr{:id=>dr.id}
+            %div
+              - name = dr.role.name_safe.truncate(30).html_safe
+              = link_to name, deployment_role_path(dr.id), :title=>dr.role.description
+    %tbody
+      - @nodes.each do |node|
+        %tr.node{:id => node.id, :class => cycle(:odd, :even) }
+          %td.nodename
+            = link_to node.alias, node_path(node.id), :title=>node.description
+            - unless node.deployment_id == @deployment.id
+              = "("
+              = link_to node.deployment.name, deployment_path(node.deployment_id), :title=>node.deployment.description
+              = ")"
+          - @roles.each do |dr|
+            - nr = node.node_roles.where(:role_id => dr.role_id, :deployment_id => dr.deployment_id).first
+            - id = (!nr.nil? ? nr.id : ((dr.role.noop? and state == Deployment::PROPOSED) ? -1 : 0))
+            %td.noderole{:style=>"text-align:center", :id=>id, :dr=>dr.id}
+              - if nr
+                %span{:align=>'center'}
+                  .led{:style=>"width:16px; margin:0px auto; text-align:center", :class => NodeRole::STATES[nr.state || NodeRole::ERROR], :title=>nr.role.name}
+                    = link_to "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".html_safe, node_role_path(nr.id)
+              - elsif state == Deployment::PROPOSED
+                - display = (dr.role.noop? ? "inline" : "none" )
+                %span{:style=>"margin-left:30%; display:#{display}"}
+                  = link_to image_tag('/images/icons/add.png'), node_roles_path(:deployment_id=>@deployment.id, :format=>:json, :version=>'v2', :node_id=>node.id, :role_id=>dr.role.id), :'data-remote'=>true, :method=>:post, :class=>'node_role_add'
+              - else
+                %span{:style=>"width:16px; margin:0px auto; text-align:center"}= "-"
+  - else
+    %tr
+      %td= t 'no_items'
+
+.clear
+
+:javascript
+
+  var height = 100;
+
+  function update() {
+    $.ajaxSetup({ timeout: 1000 });
+    if (#{state != Deployment::PROPOSED}) {
+      location.reload();
+    }
+  };
+  
+  $('th.dr div a').each(function(){ 
+    w = parseInt($(this).width());
+    if (w > height) height = w;
+  });
+
+  // return message if error creating noderole
+  $('.node_role_add')
+    .bind("ajax:error", function(evt, xhr, status, error){ 
+      alert(JSON.parse(xhr.responseText)["message"]); 
+      })
+    .bind("ajax:success", function(data, status, xhr){ 
+      location.reload();
+      });
+  
+  // set hover showing
+  $('td.noderole')
+    .bind('hover',
+      function( ev ) {
+        id = $(this).attr("id")
+        dr = $(this).attr("dr");
+        if (id == 0 && dr > 0) {
+          if (ev['type']=="mouseenter")
+            { $(this).children().show();  
+              // $("td.dr#"+dr).css("font-weight","italic"); 
+            }
+          else if (ev['type']=="mouseleave")
+            { $(this).children().hide(); 
+              // $("td.dr#"+dr).css("font-weight","normal"); 
+            }
+        }
+      }
+    );
+
+  $(document).ready(function() {
+
+    $('th.dr').each(function(){
+      $(this).height(height+5);
+    });
+
+  });

@@ -1,0 +1,41 @@
+#!/bin/bash
+# chkconfig:         2345 90 10
+# description:       Service runner for goiardi
+### BEGIN INIT INFO
+# Provides:          goiardi
+# Required-Start:    $syslog $network postgresql-9.3
+# Required-Stop:     $syslog $network postgresql-9.3
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start the Goiardi Chef Server
+# Description:       Manages the Goiardi Chef Server
+
+start() {
+    status && exit 0
+    /usr/local/bin/goiardi -c /etc/goiardi/goiardi.conf </dev/null 2>&1 1>/var/log/goiardi.log &
+    disown %1
+}
+
+stop() {
+    if status; then
+        pkill /usr/local/bin/goiardi
+    else
+        echo sws is not running
+        exit 0
+    fi
+}
+
+restart() {
+    stop; start
+}
+
+status() {
+    pgrep /usr/local/bin/goiardi
+}
+
+case "$1" in
+    start|stop|status|restart) "$1";;
+    *)
+        echo "Usage: $0 {start|stop|status|restart}"
+        exit 1;;
+esac

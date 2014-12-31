@@ -1,0 +1,68 @@
+# Copyright 2013, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+
+roles:
+  - name: test-admin
+    jig: test
+    flags:
+      - bootstrap
+    attribs:
+      - name: delay
+        map: 'test/delay'
+        description: 'UI Simulated Delay'
+        ui_renderer: 'barclamp_test/attribs/delay'
+  - name: test-server
+    jig: test
+    requires:
+      - test-admin
+  - name: test-client
+    jig: test
+    flags:
+      - implicit
+      - milestone
+    requires:
+      - test-server
+      - test-library
+  - name: test-client-client
+    jig: test
+    requires:
+      - test-client
+  - name: test-discovery
+    jig: test
+    flags:
+      - discovery
+      - bootstrap
+    requires:
+      - test-admin
+  - name: test-library
+    jig: test
+    flags:
+      - library
+      - implicit
+    requires:
+      - test-admin
+  - name: test-fails
+    jig: test
+  - name: test-event
+    jig: test
+
+attribs:
+  - name: random
+    map: 'test/random'
+    description: 'Random # created by Test Jig instrumentation'
+  - name: marker
+    map: 'test/marker'
+    description: 'Last touched by information created by Test Jig instrumentation'

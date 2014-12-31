@@ -1,0 +1,49 @@
+#!/bin/bash
+# Copyright 2011, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Spin while we wait for the interface to come up.
+
+echo "Waiting on our network interface to come up..."
+while ! ip addr | grep -v " lo" | grep -q "inet "
+do
+  sleep 1
+done
+
+# Get our hostname
+HOSTNAME=$(hostname -f)
+
+if [[ -f /etc/crowbar.install.key ]]; then
+    export CROWBAR_KEY="$(cat /etc/crowbar.install.key)"
+fi
+
+put_alive() {
+    while ! curl -f -u "$CROWBAR_KEY" --digest -L -X PUT \
+        -d "bootenv=local" \
+        -d "alive=$1" \
+        "http://<%=@admin_ip%>:3000/api/v2/nodes/$HOSTNAME" &>/dev/null; do
+        sleep 1
+    done
+}
+
+ntpdate <%=@admin_ip%>
+
+case $1 in
+    stop) put_alive false;;
+    status) echo "OK";;
+    start) put_alive false; put_alive true;;
+    *) echo "Unknown action to crowbar_join.sh."
+        exit 1;;
+esac

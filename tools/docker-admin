@@ -1,0 +1,96 @@
+#!/bin/bash
+# Copyright 2014, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Run opencrowbar in a docker container.
+# $1 = OS to run in
+# $@ = Command to run, if nothing then /bin/bash -i
+
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+# If we are not running inside of Docker, put ourselves in a container.
+if ! which docker &>/dev/null; then
+    echo "Please install Docker!"
+    exit 1
+fi
+
+if [[ $0 = /* ]]; then
+    mountdir="$0"
+elif [[ $0 = .*  || $0 = */* ]]; then
+    mountdir="$(readlink -f "$PWD/$0")"
+else
+    echo "Cannot figure out where core is!"
+    exit 1
+fi
+# This gets us to core
+mountdir="${mountdir%/tools/docker-admin}"
+# This gets us to the parent directory of core, where presumably the rest of our repos are checked out
+mountdir="${mountdir%/*}"
+
+declare -A image_map
+#image_map["ubuntu"]="ubuntu:precise"
+image_map["ubuntu"]="opencrowbar/ubuntu:12.04-4"
+#image_map["centos"]="centos:centos6"
+image_map["centos"]="opencrowbar/centos:6.6-2"
+image_map["centos7"]="centos:centos7"
+image_map["opensuse"]="mmckeen/opensuse-13-1:latest"
+image_map["fedora"]="fedora:20"
+image_map["debian"]="debian:jessie"
+image="${image_map[$1]}"
+tftproot="/tftpboot"
+if [[ ! $image ]]; then
+    echo "$1 is not an image we can run on!"
+    printf "Try one of: "
+    printf "%s " "${!image_map[@]}"
+    echo
+    exit 1
+fi
+shift
+
+echo "We will mount $mountdir at /opt/opencrowbar"
+mkdir -p "$HOME/.cache/opencrowbar/tftpboot"
+
+docker_args=(-t -i -w /opt/opencrowbar/core -v "$mountdir:/opt/opencrowbar")
+docker_args+=(-v "$HOME/.cache/opencrowbar/tftpboot:$tftproot")
+docker_args+=(-e "OUTER_UID=$(id -u)")
+docker_args+=(-e "OUTER_GID=$(id -g)")
+if [[ -f $HOME/.ssh/id_rsa.pub ]]; then
+    docker_args+=(-e "SSH_PUBKEY=$(cat "$HOME/.ssh/id_rsa.pub")")
+else
+    docker_args+=(-e "SSH_PUBKEY=")
+fi
+docker_args+=(-p "3000:3000")
+docker_args+=(-p "443:443")
+bridge="docker0"
+bridge_re='-b=([^ ])'
+bridge_addr_re='inet ([0-9.]+)/'
+# If we told Docker to use a custom bridge, here is where it is at.
+[[ $(ps -C docker -o 'command=') =~ $bridge_re ]] && \
+    bridge="${BASH_REMATCH[1]}"
+# Capture the IP of the bridge for later when we are hacking up
+# proxies.
+[[ $(ip -o -4 addr show dev $bridge) =~ $bridge_addr_re ]] && \
+    bridge_ip="${BASH_REMATCH[1]}"
+# Make sure the container knows about our proxies, if applicable.
+. "$mountdir/core/tools/proxy_lib.sh"
+mangle_proxies "$bridge_ip"
+for proxy in "${!mangled_proxies[@]}"; do
+    docker_args+=(-e "$proxy=${mangled_proxies[$proxy]}")
+done
+
+# since 0.8.1 we need to run in privileged mode so we can change the networking
+docker_args+=("--privileged")
+# Run whatever we specified to run inside a container.
+sudo rm -rf "$HOME/.cache/opencrowbar/tftpboot/nodes"
+docker run "${docker_args[@]}" "$image" /opt/opencrowbar/core/tools/docker-init.sh "$@"
+exit $?

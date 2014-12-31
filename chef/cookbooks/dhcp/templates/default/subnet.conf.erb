@@ -1,0 +1,21 @@
+# File managed by Crowbar
+subnet <%= @addr.addr -%> netmask <%= @addr.netmask %> {
+<% if @network["router"] -%>
+  option routers <%= @network["router"]["address"].addr %>;
+<% else -%>
+  option routers <%= @admin_ip.addr %>;
+<% end -%>
+  option subnet-mask <%= @addr.netmask %>;
+  option broadcast-address <%= @addr.broadcast.addr %>;
+<% @options.each do |option| -%>
+  <%= option %><%=if option[-1,1] != '}' then ';' else '' end%>
+<%   end -%>
+<% @pools.each do |pool| -%>
+   pool {
+     range <%=IP.coerce(pool["first"]).addr%> <%=IP.coerce(pool["last"]).addr%>;
+     <% @pool_options[pool["name"]].each do |opt| -%>
+     <%=opt%><%=if opt[-1,1] != '}' then ';' else '' end%>
+     <% end if @pool_options[pool["name"]] -%>
+   }
+<% end -%>
+}

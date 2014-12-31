@@ -1,0 +1,3 @@
+%tr{:class => cycle(:odd,:even)}
+  %td= t(".#{name}")
+  %td= check_box_tag name, true, value, {:id=>name}

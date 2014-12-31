@@ -1,0 +1,51 @@
+# Managed by Crowbar via Chef.
+# Do not manually edit, all your changes will be reverted and your
+# networking will be undone.
+auto lo
+iface lo inet loopback
+
+<% ::Nic.nics.each do |nic|
+  next unless @interfaces[nic.name]
+  name = nic.name
+  i = @interfaces[name]
+  addrs = i["addresses"].dup.map{|a|::IP.coerce(a)}
+  addr = addrs.shift
+  -%>
+auto <%= name %>
+<% if addr.nil? -%>
+iface <%= name %> inet manual
+<% else %>
+iface <%= name %> <%= addr.v4? ? "inet" : "inet6" %> static
+    address <%= addr.to_s.split('/')[0] %>
+    netmask <%= addr.to_s.split('/')[1] %>
+<% end -%>
+<% addrs.each do |a| -%>
+    post-up ip addr add <%= a %> dev <%= name %> || true
+    pre-down ip addr del <%= a %> dev <%= name %> || true
+<% end -%>
+<% if i["gateway"] -%>
+    post-up ip route add default via <%= i["gateway"] %> dev <%= name %> || true
+    pre-down ip route del default via <%= i["gateway"] %> dev <%= name %> || true
+<% end -%>
+<% case
+       when i["type"] == "bridge"-%>
+    bridge_ports <%= i["slaves"].join %>
+    bridge_stp on
+    bridge_maxwait 0
+    bridge_fd 0
+<% when i["type"] == "vlan" -%>
+    vlan_raw_device <%= i["parent"] %>
+<% when i["type"] == "bond" -%>
+    pre-up test -f /sys/class/net/bonding_masters || modprobe bonding
+    pre-up grep -qw <%=name%> /sys/class/net/bonding_masters || echo +<%=name%> >/sys/class/net/bonding_masters || true
+    pre-up echo <%=i["mode"] %> >/sys/class/net/<%=name%>/bonding/mode || true
+    pre-up echo 100 >/sys/clas/net/<%=name%>/bonding/miimon || true
+       <% i["slaves"].each do |slave| -%>
+    up ip link set <%=slave%> down
+    up echo +<%=slave%> > /sys/class/net/<%=name%>/bonding/slaves || true
+    down echo -<%=slave%> > /sys/class/net/<%=name%>/bonding/slaves || true
+       <% end # interface.slaves.each -%>
+    post-down echo -<%=name%> >/sys/class/net/bonding_masters || true
+    <% end # case -%>
+<% end # loop -%>
+

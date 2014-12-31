@@ -1,0 +1,3 @@
+
+default[:dns][:forwarders] = [ ]
+

@@ -1,0 +1,5 @@
+{
+    "crowbar": {
+        "target_os": "ubuntu-12.04"
+    }
+}
