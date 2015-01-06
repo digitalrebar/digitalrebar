@@ -124,9 +124,7 @@ After logging in as root, run the following command (as an example) to
 install hardware support off of the latest master build:
 
 ```
-wget --no-check-certificate -O -
-https://raw.githubusercontent.com/opencrowbar/core/develop/tools/crowbar-install.sh
-| source /dev/stdin
+wget --no-check-certificate -O - https://raw.githubusercontent.com/opencrowbar/core/develop/tools/crowbar-install.sh | source /dev/stdin
 ```
 
 or if you don't want hardware support (bios, RAID, and IPMI), run the
@@ -152,10 +150,8 @@ updates, see below.
 ## OpenCrowbar Configuration
 
 Execute the following commands:
-```
-  cd /opt/opencrowbar/core
-  ./production.sh &lt;FQDN of the admin node&gt;
-```
+  `cd /opt/opencrowbar/core
+  ./production.sh `&lt;FQDN of the admin node&gt;
 
 Once this is complete, the admin node is configured.  Don't worry about
 the failed to converge message, continue on to the next.
