@@ -129,6 +129,7 @@ class NodesController < ApplicationController
                                          :deployment_id,
                                          :allocated,
                                          :alive,
+                                         :system,
                                          :available,
                                          :bootenv))
       # Keep suport for mac and ip hints in short form around for legacy Sledgehammer purposes

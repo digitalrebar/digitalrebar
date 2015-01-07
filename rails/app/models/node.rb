@@ -160,6 +160,10 @@ class Node < ActiveRecord::Base
     admin
   end
 
+  def is_system?
+    system
+  end
+
   def virtual?
     virtual = [ "KVM", "VMware Virtual Platform", "VMWare Virtual Platform", "VirtualBox" ]
     virtual.include? get_attrib('hardware')
@@ -334,7 +338,7 @@ class Node < ActiveRecord::Base
 
   def commit!
     Role.all_cohorts.each do |r|
-      if (!admin && !is_docker_node? && r.discovery)
+      if (!system && !admin && !is_docker_node? && r.discovery)
         r.add_to_node(self)
       end
     end
@@ -408,6 +412,7 @@ class Node < ActiveRecord::Base
 
   def alive?
     return false if alive == false
+    return true if self.is_system?
     return true unless Rails.env == "production"
     a = address
     return true if a && self.run("echo alive")[2].success?
@@ -533,12 +538,15 @@ class Node < ActiveRecord::Base
     # Call all role on_node_create hooks with self.
     # These should happen synchronously.
     # do the low cohorts first
-    Hammer.bind(manager_name: "ssh", username: "root", node: self)
+    if !self.is_system?
+      Hammer.bind(manager_name: "ssh", username: "root", node: self)
+    end
     Rails.logger.info("Node: calling all role on_node_create hooks for #{name}")
     Role.all_cohorts.each do |r|
       Rails.logger.info("Node: Calling #{r.name} on_node_create for #{self.name}")
       r.on_node_create(self)
       if (admin && r.bootstrap)
+        Rails.logger.info("Node: Adding #{r.name} to #{self.name} (bootstrap)")
         r.add_to_node(self)
       end
     end
