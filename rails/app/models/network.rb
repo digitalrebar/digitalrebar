@@ -126,7 +126,7 @@ class Network < ActiveRecord::Base
     res = template_cleaner(attributes)
     res[:ranges] = ranges.map{|r|template_cleaner(r.attributes)}
     if router
-      res[:router] = template_cleaner(n.router.attributes)
+      res[:router] = template_cleaner(router.attributes)
     end
     res
   end

@@ -36,6 +36,8 @@ en:
     description: "Description"
     deployment: "Deployment"
     router: "Router"
+    address: "Address"
+    pref: "Preference"
     vlan: "VLAN"
     bridge: "Bridge"
     team: "Team"

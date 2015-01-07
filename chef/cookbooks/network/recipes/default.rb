@@ -413,10 +413,12 @@ node["crowbar"]["network"]["addresses"].keys.sort{|a,b|
   ifs[our_iface.name]["addresses"] ||= Array.new
   ifs[our_iface.name]["addresses"] << IP.coerce(addr)
   # Ditto for our default route
-  if network["router_pref"] && (network["router_pref"].to_i < route_pref)
-    Chef::Log.info("#{name}: Will use #{network["router"]} as our default route")
-    route_pref = network["router_pref"].to_i
-    default_route = {:nic => our_iface.name, :gateway => network["router"]}
+  if network["router"] && network["router"]["pref"] && 
+     (network["router"]["pref"].to_i < route_pref)
+    Chef::Log.info("#{network["network"]}: Will use #{network["router"]} as our default route")
+    route_pref = network["router"]["pref"].to_i
+    default_route = {:nic => our_iface.name,
+                     :gateway => IP.coerce(network["router"]["address"]).addr}
   end
 end
 
