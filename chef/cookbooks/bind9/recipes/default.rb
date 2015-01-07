@@ -85,3 +85,16 @@ template "/etc/named.conf" do
   variables(:forwarders => node[:crowbar][:dns][:forwarders])
   notifies :restart, "service[bind9]", :immediately
 end
+
+bash "reload consul" do
+  code "/usr/local/bin/consul reload"
+  action :nothing
+end
+
+template "/etc/consul.d/crowbar-dns.json" do
+  source "consul-dns-server.json.erb"
+  mode 0644
+  owner "root"
+  notifies :run, "bash[reload consul]", :immediately
+end
+

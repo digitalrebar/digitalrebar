@@ -23,7 +23,6 @@ roles:
       - implicit
     requires:
       - network-server
-      - dns-database
       - provisioner-dhcp-database
       - provisioner-repos
       - provisioner-docker-setup

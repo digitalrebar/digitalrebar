@@ -83,11 +83,15 @@ roles:
       - provisioner-online
   - name: provisioner-dhcp-server
     jig: chef
+    wants-attribs:
+      - dns_servers
     requires:
       - provisioner-server
       - provisioner-base-images
   - name: provisioner-dhcp-database
     jig: chef
+    wants-attribs:
+      - dns_servers
     requires:
       - provisioner-dhcp-server
   - name: provisioner-docker-setup

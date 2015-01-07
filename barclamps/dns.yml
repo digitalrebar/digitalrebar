@@ -19,15 +19,6 @@ roles:
     requires:
       - network-admin
     attribs:
-      - name: dns_servers
-        description: 'DNS servers that all Crowbar clients should use'
-        map: 'crowbar/dns/nameservers'
-      - name: dns-domain
-        description: 'DNS domain name for the cluster'
-        map: 'crowbar/dns/domain'
-      - name: dns-all
-        description: 'All the DNS attributes in one internally useful block'
-        map: 'crowbar/dns'
       - name: dns-forwarders
         description: 'DNS servers that Crowbar will use for recursive queries'
         map: 'crowbar/dns/forwarders'
@@ -38,17 +29,52 @@ roles:
               pattern: /[0-9a-f:.]*/
   - name: dns-database
     jig: chef
-    flags:
     requires:
       - dns-server
-    wants-attribs:
-      - dns-all
+  - name: dns-service
+    jig: role-provided
+    flags:
+      - service
+    attribs:
+      - name: dns_servers
+        description: 'DNS servers that all Crowbar clients should use'
+        map: 'crowbar/dns/nameservers'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/
+      - name: dns-domain
+        description: 'DNS domain name for the cluster'
+        map: 'crowbar/dns/domain'
+        schema:
+          type: str
+          required: true
   - name: dns-client
     jig: chef
     flags:
       - implicit
     requires:
-      - dns-server
+      - dns-service
       - network-admin
     wants-attribs:
       - dns_servers
+      - dns-domain
+  - name: dns-mgmt_service
+    jig: role-provided
+    flags:
+      - service
+    attribs:
+      - name: dns_shm_servers
+        description: 'DNS Shim servers that all Crowbar admins should use'
+        map: 'crowbar/dns/shimservers'
+  - name: dns-mgmt_shim_provider
+    jig: noop
+  - name: dns-mgmt_shim_crowbar_dns
+    jig: chef
+    provides:
+      - dns-mgmt_shim_provider
+  - name: dns-mgmt_shim_power_dns
+    jig: script
+    provides:
+      - dns-mgmt_shim_provider
