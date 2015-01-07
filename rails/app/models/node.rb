@@ -510,7 +510,6 @@ class Node < ActiveRecord::Base
 
   # make sure some safe values are set for the node
   def default_population
-    self.admin = true if Node.admin.count == 0    # first node, needs to be admin
     self.name = self.name.downcase
     self.alias ||= self.name.split(".")[0]
     self.deployment ||= Deployment.system
