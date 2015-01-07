@@ -16,7 +16,8 @@
 class BarclampChef::Server < Role
 
   def sysdata(nr)
-    addr = nr.node.addresses.detect{|addr|addr.v4?}.addr
+    addr = nr.node.addresses.detect{|a|a.v4?}
+    addr = addr.addr if addr
     port = Attrib.get("chef-server_port",nr.role)
     protocol = Attrib.get("chef-server_protocol",nr.role)
     { "chefjig" => {

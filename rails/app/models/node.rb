@@ -136,7 +136,8 @@ class Node < ActiveRecord::Base
   end
 
   def addresses
-    net = Network.find_by!(:name => "admin")
+    net = Network.find_by!(:name => "admin") rescue nil
+    return [] unless net
     res = network_allocations.where(network_id: net.id).map do |a|
       a.address
     end
