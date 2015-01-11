@@ -571,6 +571,7 @@ class NodeRole < ActiveRecord::Base
       Run.run!
     end
     if active?
+      node.halt_if_bored(self) if role.powersave
       NodeRole.transaction do
         # Immediate children of an ACTIVE node go to TODO
         children.where(state: BLOCKED).each do |c|

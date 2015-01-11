@@ -1,4 +1,4 @@
-# Copyright 2014, Victor Lowther
+# Copyright 2015, Victor Lowther
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,15 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
-class BarclampCrowbar::ManagedNode < Role
+class AddPowersaveFlag < ActiveRecord::Migration
 
-  # If we know how to turn the node back on, we have no children,
-  # and crowbar-managed-node is not our target role,
-  # then turn the node off for now.
-  def on_active(nr)
-    nr.node.power.off if nr.node.power[:on] &&
-      !(nr.node.target_role_id && nr.node.target_role_id == nr.role_id) &&
-      (nr.children.empty? || nr.all_children.not_in_state(NodeRole::PROPOSED).empty?)
+  def change
+    change_table :roles do |t|
+      t.boolean   :powersave,   null: true, default: false
+    end
   end
+
 end

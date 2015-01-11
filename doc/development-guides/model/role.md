@@ -82,6 +82,13 @@ lifecycle.  Milestone roles are exposed in the UI as selectable by
 the user for adding to deployments.  They are generally only added
 to deployments by users or during discovery.
 
+#### powersave
+
+Indicates that the node should power down if the noderole for this role
+transitions to active and the noderole either has no children or all of
+its children are proposed. This can be overridden on a per-node basis by
+setting the stay_on attribute on the node to true.
+
 > Noop and Network roles are almost always Milestones.
 
 Non-milestone roles are typically added automatically when Crowbar 

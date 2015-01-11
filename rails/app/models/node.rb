@@ -166,7 +166,7 @@ class Node < ActiveRecord::Base
 
   # retrieves the Attrib from Attrib
   def get_attrib(attrib)
-    Attrib.get(attrib, self, :discovery) rescue nil
+    Attrib.get(attrib, self) rescue nil
   end
 
   def merge_quirks(new_quirks)
@@ -193,6 +193,14 @@ class Node < ActiveRecord::Base
   def actions
     @nodemgr_actions = Hammer.gather(self) unless @nodemgr_actions
     @nodemgr_actions
+  end
+
+  def halt_if_bored(nr)
+    return unless power[:on]
+    return unless nr.children.empty? || nr.children.all?{|nr|nr.proposed?}
+    return if get_attrib("stay_on")
+    Rails.logger.info("Node #{self.name} is bored, powering off.")
+    self.bootenv == "local" ? power.halt : power.off
   end
 
   def power
