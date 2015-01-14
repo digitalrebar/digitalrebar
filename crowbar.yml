@@ -680,7 +680,7 @@ gems:
     - bunny-(<0.8.0)
     - cancan
     - coveralls
-    - 'chef-(=11.6)'
+    - chef-(~>11.6.4)
     - cstruct
     - database_cleaner
     - devise-(~>3.0.0)
@@ -690,7 +690,7 @@ gems:
     - highline
     - i18n
     - jquery-rails
-    - json-(~>1.7.0)
+    - json-(~>1.8.0)
     - kwalify
     - launchy
     - libxml-ruby
@@ -723,3 +723,4 @@ gems:
     - delayed_job_active_record
     - delayed_job
     - daemons
+    - diplomat-(~>0.2.1)
