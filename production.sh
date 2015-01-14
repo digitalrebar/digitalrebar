@@ -29,5 +29,5 @@ fi
 ./crowbar-boot.sh
 ./crowbar-consul.sh
 ./crowbar-database.sh
-./crowbar-core.sh
+./crowbar-core.sh "$RAILS_ENV"
 ./crowbar-config.sh "$@"
