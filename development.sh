@@ -17,29 +17,22 @@ set -e
 date 
 export RAILS_ENV=development
 
-# use the host proxy 
-if [[ $http_proxy ]] && ! pidof squid; then
-    export upstream_proxy=$http_proxy
-fi
-
 # developers may not want TMUX, give them a hint
 if [[ $TMUX ]]; then
   echo 'Using TMUX > "export TMUX=false" to disable.'
 fi
 
 cd /opt/opencrowbar/core
-# setup & load env info
-. ./bootstrap.sh 
+. ./bootstrap.sh
 
-# install the database
-chef-solo -c /opt/opencrowbar/core/bootstrap/chef-solo.rb -o "${database_recipes}"
+if [[ $http_proxy && !$upstream_proxy ]] && ! pidof squid; then
+    export upstream_proxy=$http_proxy
+fi
 
-./setup/00-crowbar-rake-tasks.install && \
-    ./setup/01-crowbar-start.install && \
-    ./setup/02-make-machine-key.install || {
-    echo "Failed to bootstrap the Crowbar UI"
-    exit 1
-}
+./crowbar-boot.sh
+./crowbar-consul.sh
+./crowbar-database.sh
+./crowbar-core.sh "$RAILS_ENV"
 
-. /etc/profile
-/bin/bash -i
+#. /etc/profile
+#/bin/bash -i
