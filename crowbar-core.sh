@@ -26,7 +26,9 @@ EOF
 fi
 . ./bootstrap.sh
 
-export RAILS_ENV=production
+if [[ ! $RAILS_ENV ]]; then
+	export RAILS_ENV=$1
+fi
 
 . /etc/profile
 ./setup/00-crowbar-rake-tasks.install && \
