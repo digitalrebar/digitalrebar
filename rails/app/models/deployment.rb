@@ -27,6 +27,7 @@ class Deployment < ActiveRecord::Base
   }
 
   after_commit :run_if_any_runnable, on: :update
+  after_commit :add_phantom_node, on: :create
   before_destroy :release_nodes    # also prevent deleting if deployment is a system deployment
 
   has_many        :deployment_roles,  :dependent => :destroy
@@ -126,6 +127,19 @@ class Deployment < ActiveRecord::Base
   end
 
   private
+
+  def add_phantom_node
+    begin
+      Node.create!(name: "#{name}-phantom.internal.local",
+                   admin: false,
+                   system: true,
+                   alive: true,
+                   bootenv: "local")
+    rescue Exception => e
+      puts "failed to add node: #{e.message}"
+      Rails.logger.fatal("Failed to add node: #{e.message}")
+    end
+  end
 
   def run_if_any_runnable
     Rails.logger.debug("Deployment: after_commit hook called")

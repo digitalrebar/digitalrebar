@@ -129,28 +129,15 @@ admin_node="
   \"bootenv\": \"local\"
 }
 "
-system_node="
-{
-  \"name\": \"crowbar-system.$DOMAINNAME\",
-  \"admin\": false,
-  \"alive\": false,
-  \"system\": true,
-  \"bootenv\": \"local\"
-}
-"
-
 
 ###
 # This should vanish once we have a real bootstrapping story.
 ###
 ip_re='([0-9a-f.:]+/[0-9]+)'
 
-# Create system node
-crowbar nodes create "$system_node"
-
 # Add required or desired services
-crowbar roles bind dns-service to "crowbar-system.$DOMAINNAME"
-crowbar roles bind dns-mgmt_service to "crowbar-system.$DOMAINNAME"
+crowbar roles bind dns-service to "system-phantom.internal.local"
+crowbar roles bind dns-mgmt_service to "system-phantom.internal.local"
 
 # Set the domain name to use to the derived one
 ROLE_ID=`crowbar roles show dns-service | grep '"id"'`
@@ -161,7 +148,7 @@ NODE_ROLE_ID=${NODE_ROLE_ID##*:}
 NODE_ROLE_ID=${NODE_ROLE_ID%,}
 crowbar noderoles set $NODE_ROLE_ID attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
 
-crowbar nodes commit "crowbar-system.$DOMAINNAME"
+crowbar nodes commit "system-phantom.internal.local"
 
 # Create a stupid default admin network
 crowbar networks create "$admin_net"
@@ -208,8 +195,6 @@ done
 # Make sure that Crowbar is running with the proper environment variables
 service crowbar stop
 service crowbar start
-
-crowbar nodes update "crowbar-system.$DOMAINNAME" '{"alive": true}'
 
 # flag allows you to stop before final step
 if ! [[ $* = *--zombie* ]]; then
