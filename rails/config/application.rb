@@ -89,7 +89,7 @@ module Crowbar
     config.i18n.default_locale = :en
     I18n.config.enforce_available_locales = true
 
-    CROWBAR_VERSION = '2.0.0' unless defined? CROWBAR_VERSION
+    CROWBAR_VERSION = '2.x' unless defined? CROWBAR_VERSION
     SERVER_PID = %x[ps ax | grep "puma" | grep -v grep].split(' ')[0]  # get a consistent number that changes when the server restarts
 
     
