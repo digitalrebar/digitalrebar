@@ -100,7 +100,7 @@ else
     lan_cfg['vlan id'] = opts[:use_vlan] ? opts[:vlan].to_s : "off"
     lan_cfg['ipaddr'] = address.addr
     lan_cfg['netmask'] = address.netmask
-    lan_cfg['defgw ipaddr'] = (node["crowbar"]["network"]["bmc"]["router"] || "0.0.0.0" rescue "0.0.0.0")
+    lan_cfg['defgw ipaddr'] = (IP.coerce(opts["router"]["address"]).addr || "0.0.0.0" rescue "0.0.0.0")
     break
   end
   unless address
