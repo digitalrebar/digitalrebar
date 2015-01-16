@@ -37,9 +37,15 @@ class BarclampNetwork::Role < Role
   end
 
   def sysdata(nr)
+    nnr = network.network_router
     addrs = {}
     nr.node.network_allocations.where(network_id: network.id).each do |addr|
       
+      router = nil
+      if nnr and IP.coerce(addr.address).v4? == IP.coerce(nnr.address).v4?
+        router = { "pref" => nnr.pref, "address" => nnr.address.to_s }
+      end
+
       addrs[addr.address.to_s] = { "network" => addr.network.name,
         "range" => addr.range.name,
         "conduit" => addr.range.conduit.split(',').map{|a|a.strip}.sort.join(','),
@@ -47,7 +53,8 @@ class BarclampNetwork::Role < Role
         "team_mode" => addr.range.team_mode,
         "use_vlan" => !!addr.range.use_vlan,
         "use_team" => !!addr.range.use_team,
-        "use_bridge" => !!addr.range.use_bridge
+        "use_bridge" => !!addr.range.use_bridge,
+        "router" => router
       }
     end
 
