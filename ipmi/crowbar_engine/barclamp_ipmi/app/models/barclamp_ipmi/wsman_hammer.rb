@@ -35,6 +35,13 @@ class BarclampIpmi::WsmanHammer < Hammer
     end
   end
 
+  def default_opts
+    r = Openwsman::ClientOptions.new
+    r.set_dump_request
+    return r
+  end
+    
+  
   def client
     return @client if @client
     uri = URI::parse(endpoint)
@@ -48,6 +55,7 @@ class BarclampIpmi::WsmanHammer < Hammer
       @client.transport.verify_peer = 0
       @client.transport.verify_host = 0
     end
+    @client.dumpfile=File.open("/var/log/crowbar/wsman_xml.log",File::CREAT|File::APPEND|File::WRONLY)
     @client
   end
 
@@ -92,12 +100,12 @@ class BarclampIpmi::WsmanHammer < Hammer
 
   # WSMAN helper methods that we expose for other OOB tasks
   def identify
-    res = client.identify(Openwsman::ClientOptions.new)
+    res = client.identify(self.default_opts)
     raise client.fault_string if res.fault?
     res
   end
 
-  def enumerate(resource,filter=nil,opts = Openwsman::ClientOptions.new)
+  def enumerate(resource,filter=nil,opts = self.default_opts)
     opts.flags = Openwsman::FLAG_ENUMERATION_OPTIMIZATION
     opts.max_elements = 999
     res = client.enumerate(opts,filter,resource)
@@ -105,12 +113,12 @@ class BarclampIpmi::WsmanHammer < Hammer
     res
   end
 
-  def enumerate_epr(resource,filter=nil,opts = Openwsman::ClientOptions.new)
+  def enumerate_epr(resource,filter=nil,opts = self.default_opts)
     opts.add_option("EnumerationMode","EnumerateEPR")
     enumerate(resource,filter,opts)
   end
 
-  def invoke(resource,meth,args=nil,opts = Openwsman::ClientOptions.new)
+  def invoke(resource,meth,args=nil,opts = self.default_opts)
     # We need to pick the power controller we will use.
     # For now, be stupid and pick the first one.
     epr = enumerate_epr(resource)
