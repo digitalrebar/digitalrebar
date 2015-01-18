@@ -87,7 +87,7 @@ class NetworksController < ::ApplicationController
         router_params.require(:network_id)
         router_params.require(:address)
         router_params.require(:pref)
-        Router.create! router_params.permit(:network_id,:address,:pref)
+        NetworkRouter.create! router_params.permit(:network_id,:address,:pref)
         params.delete :router
       end
     end
