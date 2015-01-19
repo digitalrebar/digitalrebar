@@ -28,6 +28,7 @@ fi
 
 if ! which salt-master; then
     if [[ -f /etc/redhat-release || -f /etc/centos-release ]]; then
+        yum install -y epel-release  # tested to work on cent 6.5, 6.6, and 7.0 as of 01/19/2015
         yum -y makecache
         yum install -y GitPython
         yum install -y salt-master
