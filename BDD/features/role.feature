@@ -6,11 +6,11 @@ Feature: Role
   Scenario: REST List
     When REST gets the {object:role} list
     Then the page returns {integer:200}
-  
+
   Scenario: REST JSON check
     When REST gets the {object:role} "test-admin"
     Then the {object:role} is properly formatted
-    
+
   Scenario: The page renders
     Given I am on the "roles" page
     Then I should see a heading {bdd:crowbar.i18n.roles.index.title}

@@ -33,8 +33,9 @@ g(Item) ->
 validate(JSON) when is_record(JSON, obj) ->
   J = JSON#obj.data,
   R =[JSON#obj.type == "role",
-      bdd_utils:is_a(J, length, 19),
+      bdd_utils:is_a(J, length, 20),
       bdd_utils:is_a(J, boolean, library),
+      bdd_utils:is_a(J, boolean, powersave),
       bdd_utils:is_a(J, boolean, implicit),
       bdd_utils:is_a(J, boolean, bootstrap),
       bdd_utils:is_a(J, boolean, milestone),
