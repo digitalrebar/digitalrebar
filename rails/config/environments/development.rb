@@ -34,5 +34,4 @@ Crowbar::Application.configure do
   # config.threadsafe! unless $rails_rake_task
   config.log_level = :info
 
-  CROWBAR_VERSION = "v2.0-dev"
 end
