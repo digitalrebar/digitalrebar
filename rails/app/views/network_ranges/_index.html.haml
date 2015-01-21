@@ -7,7 +7,7 @@
       %th
   %tbody
     - network.ranges.each do |range|
-      = form_for :network_range, :'data-remote' => true, :url => network_network_range_path(:id=>range.id, :network_id=>network.id, :version=>'v2'), :method=>:put, :html => { :method=>:put, :'data-type' => 'html',  :class => "formtastic", :remote=>true } do |f|
+      = form_for :network_range, :remote => true, :url => network_network_range_path(:id=>range.id, :network_id=>network.id, :version=>'v2'), :method=>:put, :html => { :method=>:put, :'data-type' => 'json',  :class => "formtastic", :remote=>true } do |f|
         %tr{ :class => cycle(:odd, :even) }
           %td= text_field_tag :name, range.name, :size => 10
           %td= text_field_tag :first, range.first, :size => 18
@@ -15,7 +15,7 @@
           %td
             %input.button{:type => "submit", :value => t('update')}
 
-    = form_for :network_range, :'data-remote' => true, :url => network_network_ranges_path(:network_id=>network.id, :version=>'v2'), :method=>:post, :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic", :remote=>true } do |f|
+    = form_for :network_range, :'data-remote' => true, :url => network_network_ranges_path(:network_id=>network.id, :version=>'v2'), :method=>:post, :html => { :method=>:post, :'data-type' => 'json',  :class => "formtastic", :remote=>true } do |f|
       %tr{ :class => cycle(:odd, :even) }
         %td
           = hidden_field_tag :network_id, network.id
