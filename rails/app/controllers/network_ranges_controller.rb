@@ -44,8 +44,8 @@ class NetworkRangesController < ::ApplicationController
     params[:network_id] = Network.find_key(params[:network]).id if params.has_key? :network
     params.require(:network_id)
     params.require(:name)
-    params.require(:new_first)
-    params.require(:new_last)
+    params.require(:first)
+    params.require(:last)
     @range =  NetworkRange.create! params.permit(:name,
                                                  :network_id,
                                                  :first,

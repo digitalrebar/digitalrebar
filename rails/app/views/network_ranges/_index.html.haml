@@ -20,7 +20,7 @@
         %td
           = hidden_field_tag :network_id, network.id
           = text_field_tag :name, t('default'), :size => 10
-        %td= text_field_tag :new_first, "10.10.10.1/24", :size => 18
-        %td= text_field_tag :new_last, "10.10.10.254/24", :size => 18
+        %td= text_field_tag :first, "10.10.10.1/24", :size => 18
+        %td= text_field_tag :last, "10.10.10.254/24", :size => 18
         %td
           %input.button{:type => "submit", :value => t('add')}
