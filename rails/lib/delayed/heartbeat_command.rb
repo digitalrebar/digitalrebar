@@ -64,6 +64,7 @@ module Delayed
       Delayed::Heartbeat::WorkerModel.dead_workers(timeout_seconds).delete_all
       orphaned_jobs = Delayed::Job.where("locked_at IS NOT NULL AND " \
                                          "locked_by NOT IN (#{Delayed::Heartbeat::WorkerModel.active_names.to_sql})")
+      Rails.logger.info("Unlocking the following jobs: #{orphaned_jobs.inspect}")
       orphaned_jobs.update_all('locked_at = NULL, locked_by = NULL, attempts = attempts + 1')
     end
 

@@ -42,6 +42,7 @@ module Delayed
       def run_heartbeat_loop
         while true
           break if sleep_interruptibly(heartbeat_interval)
+          Rails.logger.info("Updating heartbeat: #{@worker_model.name}")
           @worker_model.update_heartbeat
         end
       rescue Exception => e
