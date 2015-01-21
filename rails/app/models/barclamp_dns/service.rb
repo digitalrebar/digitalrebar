@@ -22,35 +22,46 @@ class BarclampDns::Service < Role
     pieces = nil
     options = {}
     meta = {}
+    count=0
     while pieces == nil
       begin
+        count += 1
+        break if count > 20
         pieces = Diplomat::Service.get("dns-service", :all, options, meta)
         if pieces and pieces.empty?
-          runlog << "dns-service not availabe ... wait 10m or next update"
+          Rails.logger.info("dns-service not available ... wait 10m or next update")
+          runlog << "dns-service not available ... wait 10m or next update"
           if meta[:index]
             options[:wait] = "10m"
             options[:index] = meta[:index]
           else
-            sleep 1
+            sleep 10
           end
           pieces = nil
+        elsif pieces == nil
+          Rails.logger.info("dns-service not found ... wait 10s")
+          runlog << "dns-service not found ... wait 10s"
+          sleep 10
         end
       rescue Exception => e
         runlog << "Failed to talk to consul: #{e.message}"
-        nr.runlog = runlog.join("\n")
-        sleep 1
+        Rails.logger.info("Failed to talk to consul: #{e.message}")
+        sleep 10
       end
     end
 
     runlog << "Processing pieces"
-    pieces.each do |p|
-      addr_arr << p.Address
+    if pieces
+      pieces.each do |p|
+        addr_arr << p.Address
+      end
+      runlog << "Setting dns-service attribute"
+      Attrib.set("dns_servers", nr, addr_arr, :system)
     end
 
-    runlog << "Setting dns-service attribute"
-    Attrib.set("dns_servers", nr, addr_arr, :system)
+    Rails.logger.info("Finished waiting for service: #{addr_arr.length} found")
     nr.runlog = runlog.join("\n")
-    raise "dns-service not available" if pieces.empty?
+    raise "dns-service not available" if pieces == nil or pieces.empty?
   end
 
 end
