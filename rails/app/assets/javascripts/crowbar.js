@@ -81,7 +81,12 @@ jQuery(document).ready(function($) {
 
   $('.formtastic')
     .bind("ajax:error", function(evt, xhr, status, error){ 
-      alert(JSON.parse(xhr.responseText)["message"]); 
+      try {
+        alert(JSON.parse(xhr.responseText)["message"]); 
+      } 
+      catch (e) {
+        alert("Error without detail.  Could not parse error message from response: " + error);
+      }
       $('.button').removeClass('pressed');
       })
     .bind("ajax:success", function(data, status, xhr){ 
