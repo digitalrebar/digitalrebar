@@ -126,21 +126,14 @@ debs:
 
 rpms:
   centos-6.5:
-    repos:
-      - bare openswman 20 http://download.opensuse.org/repositories/Openwsman/CentOS_CentOS-6/
     required_pkgs:
       - libwsman1
       - libwsman-devel
   centos-6.6:
-    repos:
-      - bare openswman 20 http://download.opensuse.org/repositories/Openwsman/CentOS_CentOS-6/
     required_pkgs:
       - libwsman1
       - libwsman-devel
-  required_pkgs:
-    - ipmitool
 
-      
 extra_files:
   # Utility for configuring Dell-specific BMC settings on PEC gear.
   - http://poweredgec.com/files/bmc-2013-10-22.tgz
