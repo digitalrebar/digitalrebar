@@ -328,6 +328,7 @@ rpms:
       - rpm http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-redhat93-9.3-1.noarch.rpm
       - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
       - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/RedHat_RHEL-6/
+      - bare openswman 20 http://download.opensuse.org/repositories/Openwsman/CentOS_CentOS-6/
     build_pkgs:
       - libcurl-devel
       - yum-plugin-downloadonly
@@ -345,6 +346,9 @@ rpms:
       - gecode
       - gecode-devel
       - iproute
+      - ipmitool
+      - swig
+      - openwsman-devel
     pkgs:
       # openldap stuff
       - openldap
@@ -378,6 +382,7 @@ rpms:
       - rpm http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-redhat93-9.3-1.noarch.rpm
       - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
       - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/CentOS_CentOS-6/
+      - bare openwsman 20 http://download.opensuse.org/repositories/Openwsman/CentOS_CentOS-6/
     build_pkgs:
       - libcurl-devel
       - yum-plugin-downloadonly
@@ -400,6 +405,8 @@ rpms:
       - perl-devel
       - perl-CPAN
       - perl-DBD-Pg
+      - swig
+      - openwsman-devel
     pkgs:
       # openldap stuff
       - openldap
@@ -424,6 +431,7 @@ rpms:
       - httpd-devel
       - mod_fcgid
       - mod_ssl
+      - ipmitool
   centos-7.0.1406:
     raw_pkgs:
       - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
