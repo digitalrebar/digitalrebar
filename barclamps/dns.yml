@@ -18,6 +18,7 @@ roles:
     jig: chef
     requires:
       - network-admin
+      - consul
     attribs:
       - name: dns-forwarders
         description: 'DNS servers that Crowbar will use for recursive queries'
