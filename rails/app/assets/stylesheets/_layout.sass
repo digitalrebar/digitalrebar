@@ -17,7 +17,7 @@ header
     float: left
     a
       display: block
-      background: url('/images/#{$theme}layout/crowbar.png') no-repeat
+      background: image-url('#{$theme}layout/crowbar.png') no-repeat
       width: 279px
       height: 72px
       span
@@ -29,7 +29,7 @@ header
       > li
         > ul
           top: 19px !important
-        
+
     ul /*top*/
       +inline_list
       z-index: 1000
@@ -56,7 +56,7 @@ header
         &:hover > ul
           display: block
           +shadow
-          
+
 .notice
   text-align: center
   color: $notice_fg

@@ -20,7 +20,7 @@
 %>
 <td>
   <a onclick='$.colorbox({href:"/main/nodebox?id=<%= URI.escape(node.name, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]")) %>", width:"80%", height:"60%", scrolling:true});'>
-    <img class="state" id="<%= name %>" src="/images/<%= icon %>.png" title="<%= state %>">
+    <%= image_tag("<%= icon %>.png", :class => "state", :id => name, :title => state) %>
     <strong><%= name %></strong>
   </a>
 </td>
@@ -32,12 +32,12 @@
 <% end -%>
 <td>
 <% unless name == "admin" -%>
-<a href="/machines/reinstall?name=<%= name %>"><img src="/images/reinstall.png" title="Reinstall"/></a>
-<a href="/machines/reset?name=<%= name %>"><img src="/images/delete.png" title="Reset"/></a>
-<a href="/machines/identify?name=<%= name %>"><img src="/images/i_info.png" title="Identify"/></a>
-<a href="/machines/reboot?name=<%= name %>"><img src="/images/reboot.jpeg" title="Reboot"/></a>
-<a href="/machines/shutdown?name=<%= name %>"><img src="/images/shutdown.jpeg" title="Shutdown"/></a>
-<a href="/machines/poweron?name=<%= name %>"><img src="/images/poweron.png" title="Power On"/></a>
+<a href="/machines/reinstall?name=<%= name %>"><%= image_tag("reinstall.png", :title => "Reinstall") %></a>
+<a href="/machines/reset?name=<%= name %>"><%= image_tag("delete.png", :title => "Reset") %></a>
+<a href="/machines/identify?name=<%= name %>"><%= image_tag("i_info.png", :title => "Identify") %></a>
+<a href="/machines/reboot?name=<%= name %>"><%= image_tag("reboot.png", :title => "Reboot") %></a>
+<a href="/machines/shutdown?name=<%= name %>"><%= image_tag("shutdown.png", :title => "Shutdown") %></a>
+<a href="/machines/poweron?name=<%= name %>"><%= image_tag("poweron.png", :title => "Power On") %></a>
 <% end -%>
 </td>
 

@@ -8,8 +8,8 @@
       = stylesheet_link_tag 'ie', :media => "all"
     = javascript_include_tag 'application'
     = csrf_meta_tag
-    %link{:rel=>"SHORTCUT ICON", :href=>"/images/icons/bunny.ico"}
-  
+    %link{:rel=>"SHORTCUT ICON", :href=>image_path("icons/bunny.ico")}
+
   %body
     %header
       .container
@@ -20,17 +20,17 @@
           %div{:style=>'float:right; padding-top:10px; z-index:10; height:0px'}
             -if session[:digest_user]
               = t 'user.digested_as', :user=>session[:digest_user]
-            -else 
+            -else
               = t 'user.signed_in_as', :user=>current_user.username
             (
             = link_to t('user.sign_out'), main_app.destroy_user_session_path(), :method=>'delete' rescue t('error')
             )
             %a{:href=>annealer_path}
-              = image_tag('/images/icons/led/active.png', :id=>"active_led")
+              = image_tag('icons/led/active.png', :id=>"active_led")
               %span#active_heartbeat= "?"
-              = image_tag('/images/icons/led/todo.png', :id=>"todo_led", :style=>"display:none")
+              = image_tag('icons/led/todo.png', :id=>"todo_led", :style=>"display:none")
               %span#todo_heartbeat= ""
-              = image_tag('/images/icons/led/error.png', :id=>"error_led", :style=>"display:none") 
+              = image_tag('icons/led/error.png', :id=>"error_led", :style=>"display:none")
               %span#error_heartbeat= ""
           %nav
             = render_navigation :expand_all => true, :skip_if_empty => true
@@ -50,7 +50,7 @@
     %footer
       =t '.provided_by'
       %a{:href=>"http://opencrowbar.org", :target=>"_new"}
-        %img{:src=>"/images/ocb_logo.png", :alt=>"Crowbar Project", :title=>"Crowbar Project", :width=>'20px', :style=>"vertical-align:middle;padding-bottom:2px"}
+        = image_tag("ocb_logo.png", :alt=>"Crowbar Project", :title=>"Crowbar Project", :width=>'20px', :style=>"vertical-align:middle;padding-bottom:2px")
       %a{:href=>"https://github.com/orgs/opencrowbar/people", :target=>"_new", :alt=>"OpenCrowbar"}
         OpenCrowbar Project Team
       =t 'version', :version=>(Rails.env.development? ? "Development" : Barclamp.where( :name => "crowbar").first.build_version)
@@ -66,7 +66,7 @@
       if (data["todo"]==0) {
         $('span#todo_heartbeat').text("");
         $('img#todo_led').attr('style', 'display:none');
-      } else {      
+      } else {
         $('span#todo_heartbeat').text(data['todo']);
         $('img#todo_led').attr('style', 'display:inline');
       }
@@ -81,4 +81,4 @@
     });
   }
 
-  heartbeat(); 
+  heartbeat();
