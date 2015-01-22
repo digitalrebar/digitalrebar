@@ -26,12 +26,12 @@
           %tr
             %th.status
               %a{:href=>"javascript:hide_group();", :title=>t('.hide')}
-                %img{:src=>"/images/icons/server_add.png"}
+                = image_tag("icons/server_add.png")
             %th{ :id=> 'new_group', :droptarget=>'true' }
               = "THIS TEXT GETS REPLACED"
         %tbody
           %tr
-            %td 
+            %td
             %td= t('.new_drag')
     - @groups.sort.each do |group|
       - next if group.name.eql? 'not_set' and group.nodes.count == 0
@@ -41,7 +41,7 @@
             %tr
               - if group.nodes.count == 0
                 %th.status{:title => t('.remove_group')}
-                  %img{ :src=>'/images/icons/delete.png', :title=>t('.remove_group'), :onclick=>"javascript:remove_group(#{group.id});" }
+                  = image_tag("icons/delete.png", :title=>t('.remove_group'), :onclick=>"javascript:remove_group(#{group.id});")
               - else
                 %th.status{:title => t('updating')}
                   .inline_piechart= [0, 0, 1, 0, 0]*','
@@ -52,22 +52,22 @@
                 - else
                   %div{ :class=>'group', :draggable=>'true', :id=>'USE_AUTOMATIC!' }
                     %i= truncate(group.name, :length => 25)
-  
+
           %tbody
             - group.nodes.each do |node|
               %tr{ :class => ["node", cycle(:odd, :even, :name => "nodes_#{i}")], :id => node.id }
                 %td.status{:raw=> node.state }
-                  .led{:class => node.status, :title=>t(node.status, :scope=>'status', :default=>node.status)} 
+                  .led{:class => node.status, :title=>t(node.status, :scope=>'status', :default=>node.status)}
                 %td.name
                   %a{:href => node_path(node.id), :draggable=>'true', :title=> (node.description.nil? ? t(:not_set) : node.description), :class => 'node_details', :id => node.id}
                     = truncate(node.alias, :length => 25)
-  
+
 .clear
 
 :javascript
   groups = {};
   selected = '#{session[:node]}';
-  
+
   function pie_title(total, ready, failed, unknown, unready, pending, building) {
     var status = "#{t :status_pie, :scope=>'dashboard.index'}";
     status = status.replace("{0}", total);
@@ -77,7 +77,7 @@
     status = status.replace("{4}", unready+pending+building);
     return status;
   }
-  
+
     // set draggable attributes
   $('a.node_details[draggable="true"]')
     .bind('dragend', function( ev ) {
@@ -93,7 +93,7 @@
   // set droppable attributes using bind_drop
   $('div.group[draggable="true"]').each(function() { bind_drop($(this))} );
 
-    
+
   function bind_drop(div) {
     // Decide whether the thing dragged in is welcome.
     div.bind('dragover', function(ev) {
@@ -107,22 +107,22 @@
       var node = ev.originalEvent.dataTransfer.getData("Text");
       var group = $(this).attr('id');
       // console.debug(node + ' into ' + group );
-      $.ajax({url:'/2.0/crowbar/2.0/group/'+group+'/node/'+node, dataType:'json', type:"PUT", 
+      $.ajax({url:'/2.0/crowbar/2.0/group/'+group+'/node/'+node, dataType:'json', type:"PUT",
         statusCode: { 200: function(data) { location.href = '#{dashboard_path}/'+selected; }}
       });
     });
   }
-  
+
   function hide_group() {
     $('#add_group_div').attr('style','display:none');
   }
-  
+
   function remove_group(id) {
     $.ajax({url:'/2.0/crowbar/2.0/group/'+id, type:"DELETE", dataType: 'json',
       statusCode: { 200: function(data) { $('#group_'+id).remove(); } }
     });
   }
-  
+
   function add_group() {
     var group_div = $('#add_group_div');
     var new_group = $('#new_group').val();
@@ -131,7 +131,7 @@
     if (new_group.match(valid_group_regex)) {
       // Create the group json and post it
       var group_data = {'name': new_group, 'description': new_group, 'category': 'ui'}
-      $.ajax({url:"/2.0/crowbar/2.0/group", data:group_data, type:'POST', dataType:'json', 
+      $.ajax({url:"/2.0/crowbar/2.0/group", data:group_data, type:'POST', dataType:'json',
         success:function(data) {
           // on success, add to the UI
           var id = data['id']
@@ -139,51 +139,51 @@
           group.text(new_group);
           bind_drop($('#'+id.toString()));
           group_div.attr('style', 'display:inline');
-          $('a#add_button').attr('class','button');}, 
-        error:function(data) { 
+          $('a#add_button').attr('class','button');},
+        error:function(data) {
           alert("#{t '.add_group_exists'}"); $('a#add_button').attr('class','button'); }
-      })} 
+      })}
     else {
       alert("#{t '.add_group_error'}");
       $('a#add_button').attr('class','button');
     }
   }
-  
+
   function update() {
     // use nopoll parameter for debugging to prevent activity on web server
     // TODO: restore this:
     if (#{params.include?(:nopoll) ? 'false' : 'true'}) {
       $.ajaxSetup({ timeout: 3000 })
       $.getJSON('#{nodes_status_path()}', function(data) {
-        
+
         // reload path
         var repath = '#{dashboard_path}/'+selected;
-        
+
         // If node count has changed, re-render the page
         var current_nodes = $('.node').length;
         if(data['count'] != current_nodes) {
           location.href = repath;
         }
-  
+
         // If node name sum has changed, re-render the page
         if(data['sum'] != #{@sum}) {
           location.href = repath;
         }
-        
+
         // Update group-level piecharts
         $.each(data['groups'], function(key,val) {
           k = key.toString();
           var values = val['ready'] + ', ' + val['failed'] + ', ' + val['unknown'] + ', ' + (val['building']+val['unready']+val['pending']);
           var total = val['ready']+val['unready']+val['unknown']+val['building']+val['pending']+val['failed'];
-          if (groups[k]==undefined) { 
-            groups[k] = total; 
+          if (groups[k]==undefined) {
+            groups[k] = total;
           } else if (groups[k]!=total) {
             location.href =repath;
           }
           $('#group_'+k+' th.status .inline_piechart').html(values).sparkline('html', piechart_options );
           $('#group_'+k+' th.status').attr('title', pie_title(total, val['ready'], val['failed'], val['unknown'], val['building'], val['unready'], val['pending']));
         });
-        
+
         // Update nodes
         $.each(data['status'], function(key,val) {
           k = key.toString();

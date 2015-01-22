@@ -2,20 +2,20 @@
 var piechart_options = {type: 'pie', width: '17px', height: '17px', sliceColors: ["#0f0", "#f00", "#999", "#ff0"] };
 
 /**
- * Utility method stripping any html out of a localized string.  In particular if the 
+ * Utility method stripping any html out of a localized string.  In particular if the
  * key is not present in the localization file you'll see something like:
  * <span class="missing_transaltion">need,to,strip,html</span> which will break your javascript.
- * 
+ *
  * @usage $.localizedValue("<span class="missing_transaltion">need,to,strip,html</span>");
  * @param value
  * @returns string
  */
-jQuery.localizedValue = function(val){ 
-	return $(val).text();	
+jQuery.localizedValue = function(val){
+	return $(val).text();
 };
 
 jQuery(document).ready(function($) {
-	
+
 
 	/**
 	 * Utility method for retrieving a jQuery element by passing in the id of the element you want.
@@ -28,7 +28,7 @@ jQuery(document).ready(function($) {
 	jQuery.getById = function(id) {
 		return $("#" + id);
 	};
-	
+
 	/**
 	 * Add load details behavior to anchor tags by class.
 	 *
@@ -48,16 +48,16 @@ jQuery(document).ready(function($) {
 		});
 		return true;
 	};
-  
+
   $('textarea.editor').each(function(index) {
     CodeMirror.fromTextArea(this, {
       lineNumbers: true,
       matchBrackets: true
     });
   });
-  
+
   $('.inline_piechart').sparkline('html', piechart_options );
-  
+
   // Blinking lights
   setInterval( function() {
     $('.led.failed, .led.pending, .led.waiting, led.red').toggleClass('blink');
@@ -69,9 +69,9 @@ jQuery(document).ready(function($) {
   }
 
   animate(); // Call this again when new animatable elements are created...
-  
+
   // Auto-run update functions periodically
-  if(typeof update == 'function') { 
+  if(typeof update == 'function') {
     setInterval(function() {
       update();
       animate();
@@ -80,19 +80,19 @@ jQuery(document).ready(function($) {
   }
 
   $('.formtastic')
-    .bind("ajax:error", function(evt, xhr, status, error){ 
+    .bind("ajax:error", function(evt, xhr, status, error){
       try {
-        alert(JSON.parse(xhr.responseText)["message"]); 
-      } 
+        alert(JSON.parse(xhr.responseText)["message"]);
+      }
       catch (e) {
         alert("Error without detail.  Could not parse error message from response: " + error);
       }
       $('.button').removeClass('pressed');
       })
-    .bind("ajax:success", function(data, status, xhr){ 
+    .bind("ajax:success", function(data, status, xhr){
       location.reload();
       });
-    
+
   $('.button').live('click', function() {
     var button = $(this);
     button2 = $('.button[source="'+button.attr('match')+'"]');
@@ -104,7 +104,7 @@ jQuery(document).ready(function($) {
       if (button2) button2.bind('handleRemote', function(){ button2.removeClass('pressed'); });
     }
   });
-  
+
   $('input[data-default]').each(function() {
     $(this).val($(this).attr('data-default'))
   })
@@ -126,8 +126,8 @@ jQuery(document).ready(function($) {
       }
     });
   });
-  
+
   $(document).konami(function(){
-    $("header h1 a").css('background-image','url("/images/layout/bunny.png")').css('width','279px');
+    $("header h1 a").css('background-image','url("/assets/layout/bunny.png")').css('width','279px');
   });
 });
