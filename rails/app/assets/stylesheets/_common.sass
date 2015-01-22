@@ -28,7 +28,7 @@ a
     border: none
   &.highlight
     background: desaturate($link_color - #444, 50%)
-    
+
 ul.plain
   +plain_list
 
@@ -75,38 +75,38 @@ pre.code
   +shadow
   margin-bottom: 1em
   width: 80%
-  
+
 .translation_missing
   background: yellow
   color: black
 
-// { ERROR => 'error', ACTIVE => 'active', TODO => 'todo', TRANSITION => 'transition', BLOCKED => 'blocked', PROPOSED => 'proposed'  } 
+// { ERROR => 'error', ACTIVE => 'active', TODO => 'todo', TRANSITION => 'transition', BLOCKED => 'blocked', PROPOSED => 'proposed'  }
 .led
   display: block
   width: 16px
   height: 16px
-  background: url('/images/icons/led/off.png')
+  background: image-url('led/off.png')
   &.error
-    background: url('/images/icons/led/error.png')
+    background: image-url('icons/led/error.png')
   &.active
-    background: url('/images/icons/led/active.png')
+    background: image-url('icons/led/active.png')
   &.todo
-    background: url('/images/icons/led/todo.png')
+    background: image-url('icons/led/todo.png')
   // blinking classes
   &.blink
     +opacity(0.5)
   &.transition
-    background: url('/images/icons/led/transition-spin.png')
+    background: image-url('icons/led/transition-spin.png')
   &.blocked
-    background: url('/images/icons/led/blocked.png')
+    background: image-url('icons/led/blocked.png')
   &.proposed
-    background: url('/images/icons/led/proposed.png')
+    background: image-url('icons/led/proposed.png')
   &.reserved
-    background: url('/images/icons/led/reserved.png')
+    background: image-url('icons/led/reserved.png')
   &.idle
-    background: url('/images/icons/led/idle.png')
+    background: image-url('icons/led/idle.png')
   &.committed
-    background: url('/images/icons/led/transition.png')
+    background: image-url('icons/led/transition.png')
 
 h1,h2,h3
   &.led
@@ -181,15 +181,15 @@ form.box
       color: #ccc
 
 .toggle
-  background: url('/images/icons/toggle-off.png') no-repeat
+  background: image-url('icons/toggle-off.png') no-repeat
   display: block
   width: 16px
   height: 16px
   &.on
-    background-image: url('/images/icons/toggle-on.png')
+    background-image: image-url('icons/toggle-on.png')
   &.with_label
     width: auto
     padding-left: 20px
-    
+
 .nowrap
   white-space: nowrap

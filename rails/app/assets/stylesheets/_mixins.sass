@@ -96,7 +96,7 @@
     border-color: $button_border_color + #111
     +gradient($button_bg, $button_bg + #111)
   &.pressed
-    background: ($button_bg - #222) url('/images/icons/ajax-loader.gif') no-repeat 2px 2px
+    background: ($button_bg - #222) image-url('icons/ajax-loader.gif') no-repeat 2px 2px
 
 =columns($width: 960px)
   width: $width
@@ -137,14 +137,14 @@
     height: 0
     clear: both
     visibility: hidden
-    
+
 =nav_a
   display: block
   line-height: 18px
   text-align: right
   margin: 0
   padding: 5px 10px !important
-  
+
 =nav_ul
   display: none
   border: 1px solid $header_border
@@ -154,5 +154,5 @@
   width: 150px
   @media screen and (-webkit-min-device-pixel-ratio:0)
     top: -25px
-  
+
 
