@@ -16,18 +16,39 @@
 roles:
   - name: ntp-server
     jig: chef
+    provides:
+      - ntp-client
     requires:
       - dns-client
       - network-admin
+      - consul
+    attribs:
+      - name: ntp_servers_external
+        description: "Addresses of the external NTP servers to use for upstream time synchronization"
+        map: 'crowbar/ntp/external_servers'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/
+  - name: ntp-service
+    jig: role-provided
+    flags:
+      - service
     attribs:
       - name: ntp_servers
         description: "Addresses of the NTP servers to use for cluster-wide time synchronization"
         map: 'crowbar/ntp/servers'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/
   - name: ntp-client
     jig: chef
     requires:
       - dns-client
-      - ntp-server
+      - ntp-service
       - network-admin
     flags:
       - implicit

@@ -19,7 +19,7 @@ roles:
       - network-admin
       - dns-client
       - logging-server
-      - ntp-server
+      - ntp-client
     attribs:
       - name: provisioner-machine_key
         description: 'The username and password that managed nodes should use to talk to the Crowbar API'

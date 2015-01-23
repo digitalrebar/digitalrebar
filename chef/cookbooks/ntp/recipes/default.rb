@@ -19,10 +19,6 @@ end unless Kernel.system("which ntpd")
 
 if node["roles"].include?("ntp-server")
   ntp_servers = node[:crowbar][:ntp][:external_servers]
-  unless node[:crowbar][:ntp][:servers] &&
-      node[:crowbar][:ntp][:servers].include?(node.address.addr)
-    node.normal[:crowbar][:ntp][:servers] = node.addresses("admin").map{|a|a.addr}
-  end
 else
   ntp_servers = node[:crowbar][:ntp][:servers]
 end
@@ -52,3 +48,18 @@ service "ntp" do
   enabled true
   action [ :enable, :start ]
 end
+
+if node["roles"].include?("ntp-server")
+  bash "reload consul ntp" do
+    code "/usr/local/bin/consul reload"
+    action :nothing
+  end
+
+  template "/etc/consul.d/crowbar-ntp.json" do
+    source "consul-ntp-server.json.erb"
+    mode 0644
+    owner "root"
+    notifies :run, "bash[reload consul ntp]", :immediately
+  end
+end
+
