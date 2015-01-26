@@ -69,12 +69,6 @@ as their init system, perform the following steps:
   After making the above changes. reboot or restart the Docker service (`sudo service docker restart`) for them to
   take effect.
 
-Time saving tips
-
-  * preload the with `docker pull opencrowbar/centos`
-    * while you wait, you can setup your [git remotes](../contributing.md) in another session
-  * test docker, use `docker run -i -t centos /bin/bash`
-
 ### The docker-admin command and its environment
 
 The `docker-admin` command (located in the `tools` directory in the
