@@ -121,6 +121,9 @@ step(_Given, {step_when, {_Scenario, _N}, ["REST sets the",node,Node,Field,"stat
   JSON = crowbar:json([{Field, Value}]),
   bdd_crud:update(URI, JSON);
 
+step(_Global, {step_given, {ScenarioID, _N}, ["REST creates and commits the",node,Name]}) ->
+  add_node(Name, [], ScenarioID);
+
 step(_Global, {step_setup, _N, _}) -> 
   % create node(s) for tests
   Node = json(g(name), g(description), 100),

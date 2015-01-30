@@ -38,6 +38,14 @@ Feature: Nodes
     Then I get a {integer:200} result
       And there are no pending Crowbar runs for {o:node} "going.going.gone"
       And there is not a {object:node} "going.going.gone"
+
+  Scenario: REST Can Delete Committed
+    Given REST creates and commits the {object:node} "going.committed.gone"
+      And there are no pending Crowbar runs for {o:node} "going.committed.gone"
+    When REST deletes the {object:node} "going.committed.gone"
+    Then I get a {integer:200} result
+      And there are no pending Crowbar runs for {o:node} "going.committed.gone"
+      And there is not a {object:node} "going.committed.gone"
   
   Scenario: REST Get 404
     When REST gets the {object:node} "thisdoesnotexist"
