@@ -149,16 +149,20 @@ class Jig < ActiveRecord::Base
       nr = job.node_role
       begin
         nr.transition!
+        mark_active = true  # allows jigs to skip the active state as an exit condition (allows for async jigs)
         unless nr.role.destructive && (nr.run_count > 0)
           Rails.logger.info("Run: Running job #{job.id} for #{nr.name}")
-          nr.jig.run(nr,job.run_data["data"])
+          run_return = nr.jig.run(nr,job.run_data["data"])
+          # mark the run as active unless it returns the :async symbol
+          # when a jig returns this flag, then it needs to retry the node role for it to continue
+          mark_active = run_return != :async
           Rails.logger.debug("Run: Finished job #{job.id} for #{nr.name}, no exceptions raised.")
         else
           Rails.logger.info("Run: Skipping run for job #{job.id} for #{nr.name} due to destructiveness")
         end
         # Only go to active if the node is still alive -- the jig may
         # have marked it as not alive.
-        nr.active! if nr.node.alive? && nr.node.available?
+        nr.active! if nr.node.alive? && nr.node.available? && mark_active
       rescue Exception => e
         NodeRole.transaction do
           nr.update!(runlog: "#{e.class.name}: #{e.message}\nBacktrace:\n#{e.backtrace.join("\n")}")
