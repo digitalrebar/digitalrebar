@@ -102,6 +102,7 @@ Crowbar::Application.routes.draw do
       resources :nodes do as_routes end
       resources :hammers do as_routes end
       resources :node_roles do as_routes end
+      resources :node_role_attrib_links do as_routes end
       resources :roles do as_routes end
       resources :role_requires do as_routes end
       resources :runs do as_routes end
