@@ -41,7 +41,7 @@ class Attrib < ActiveRecord::Base
 
   belongs_to      :role
   belongs_to      :barclamp
-  has_many        :node_role_attrib_links
+  has_many        :node_role_attrib_links, :dependent => :destroy
 
   def name_i18n
     I18n.t(name, :default=>name.humanize, :scope=>'common.attribs')
