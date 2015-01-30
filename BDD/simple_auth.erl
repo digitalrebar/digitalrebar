@@ -140,6 +140,15 @@ request(Method, {URL, Headers, ContentType, Input}, HTTPOptions, Options) ->
   % use the old response that returns the HTTPC tuple
   bdd_utils:log(trace, simple_auth, request, "~p to ~p", [Method, URL]),
   Response = request_action(Method, {URL, Headers, ContentType, Input}, HTTPOptions, Options),
+  case Response of
+    {ok, _} -> no_action;
+    {error, ResponseError1} -> 
+               bdd_utils:log(error, simple_auth, request, "~p to ~p error ~p~n", [Method, URL, ResponseError1]),
+               throw("ERROR in HTTP Action");
+    {_, ResponseError2} -> 
+               bdd_utils:log(error, simple_auth, request, "~p to ~p unexpected ~p~n", [Method, URL, ResponseError2]),
+               throw("UNEXPECTED in HTTP Action")
+  end,
   {ok, {{"HTTP/1.1",Code,_State}, Header, Body}} = Response,
   MediaType = proplists:get_value("content-type", Header),
   {DataType, Version} = case string:tokens(MediaType, ";=") of

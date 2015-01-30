@@ -187,7 +187,6 @@ Crowbar::Application.routes.draw do
             put :debug
             put :undebug
             put :redeploy
-            put :commit
             get 'addresses'
           end
           resources :hammers do
