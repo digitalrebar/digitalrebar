@@ -26,6 +26,7 @@ class BarclampTest::Async < Role
     if File.exists? file_name
       # read the file
       ticket = JSON::load File.open(file_name, 'r')
+      File.delete file_name
       # set the attributes
       runlog << "Setting #{service_name} attribute"
       Attrib.set('async-result', nr, ticket, :system)
