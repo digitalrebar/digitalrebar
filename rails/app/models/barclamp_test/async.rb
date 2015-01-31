@@ -45,7 +45,7 @@ class BarclampTest::Async < Role
     File.open(file_name,"w") { |f| f.write("{\"async\":{\"result\":#{nr.id}}}") }
     Rails.logger.info("Started waiting for #{service_name}.  Created file #{file_name}")
       # put data into the run log
-    runlog << "Processing pieces for #{service_name}"
+    runlog << "Retry the NodeRole to complete processing for #{service_name}"
     nr.runlog = runlog.join("\n")
     nr.save!
     # this will allow run to complete but role stays in execute
