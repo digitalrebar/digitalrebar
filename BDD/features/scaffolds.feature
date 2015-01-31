@@ -55,6 +55,18 @@ Scenario: NodeRoles
       And I should see "Create New"
       And there should be no translation errors
 
+Scenario: NodeRoleAttribLinks
+    When I go to the "utils/scaffolds/node_role_attrib_links?limit=1" page
+    Then I should see heading "NodeRoleAttribLinks"
+      And I should see "Attrib"
+      And I should see "Parent"
+      And I should see "Child"
+      And I should see "Created At"
+      And I should see "Updated At"
+      And I should see "Search"
+      And I should see "Create New"
+      And there should be no translation errors
+
   Scenario: Runs
     When I go to the "utils/scaffolds/runs?limit=1" page
     Then I should see heading "Runs"
