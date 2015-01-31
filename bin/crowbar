@@ -486,6 +486,13 @@ class ProxyWithAttribs < CrowbarProxy
     self
   end
 
+  def do_retry(*rest)
+    obj,res = REST.put("#{self.class.path}/#{id}/retry")
+    maybe_json_die(obj,res)
+    @blob = obj
+    self
+  end
+
 end
 
 module OpenCrowbar
