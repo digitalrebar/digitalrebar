@@ -47,7 +47,7 @@
           - @roles.each do |dr|
             - nr = node.node_roles.where(:role_id => dr.role_id, :deployment_id => dr.deployment_id).first
             - id = (!nr.nil? ? nr.id : ((dr.role.noop? and state == Deployment::PROPOSED) ? -1 : 0))
-            %td.noderole{:style=>"text-align:center", :id=>"role#{id}", :dr=>dr.id, :state=>nr.state}
+            %td.noderole{:style=>"text-align:center", :id=>"role#{id}", :dr=>dr.id, :state=>nr && nr.state || 0}
               - if nr
                 %span{:align=>'center'}
                   .led{:style=>"width:16px; margin:0px auto; text-align:center", :class => NodeRole::STATES[nr.state || NodeRole::ERROR], :title=>nr.role.name}
@@ -74,6 +74,10 @@
 
       $.each(data['node_roles'], function(id, node) {
         var td = $('td#role'+id);
+        if(!td) {
+          location.reload();
+          return;
+        }
         var led = td.children('span').children('.led');
         if(td.attr('state') != node['state']) {
           led.destroy();
