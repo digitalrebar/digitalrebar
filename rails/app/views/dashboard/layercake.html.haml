@@ -29,6 +29,22 @@
 :javascript
 
   function update() {
-    $.ajaxSetup({ timeout: #{current_user.settings(:ui).refresh} });
-    location.reload();
-  }
+    $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
+    $.getJSON("#{deployments_status_path()}",  function(data) {
+
+      $.each(data['node_roles'], function(id, node) {
+        var led = $('span#role'+id);
+        if(!led) {
+          location.reload();
+          return;
+        }
+        if(led.attr('state') != node['state']) {
+          led.destroy();
+          led.attr('class', node['status']+' led');
+          led.attr('state', node['state']);
+          led.effect("highlight", {color: '#666666'}, 2000);
+        }
+      })
+
+    });
+  };
