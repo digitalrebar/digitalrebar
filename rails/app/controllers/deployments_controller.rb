@@ -39,9 +39,11 @@ class DeploymentsController < ApplicationController
     }
 
     nr.each do |role|
+      state = role.state
+      #state = rand(4) #testing random states (for updating)
       out['node_roles'][role.id] = {
-        'status' => NodeRole::STATES[role.state],
-        'state' => role.state
+        'status' => NodeRole::STATES[state],
+        'state' => state
       }
     end
 
