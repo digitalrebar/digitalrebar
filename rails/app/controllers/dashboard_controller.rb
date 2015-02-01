@@ -24,13 +24,13 @@ class DashboardController < ApplicationController
     NodeRole.all.each do |nr|
       layer = taxmap[nr.role.name] || 'apps'
       @layers[layer] << nr 
-      if nr.state == NodeRole::ERROR
-        @status[layer] = 'alert'
-      elsif (nr.state == NodeRole::PROPOSED)
-        @status[layer] = 'user'
-      elsif nr.state != NodeRole::ACTIVE
-        @status[layer] = 'system'
-      end
+      #if nr.state == NodeRole::ERROR
+      #  @status[layer] = 'alert'
+      #elsif (nr.state == NodeRole::PROPOSED)
+      #  @status[layer] = 'user'
+      #elsif nr.state != NodeRole::ACTIVE
+      #  @status[layer] = 'system'
+      #end
     end
 
     respond_to do |format|
