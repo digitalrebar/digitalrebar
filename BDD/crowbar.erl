@@ -233,16 +233,48 @@ step(_Given, {step_when, _N, ["REST gets the",network,Network,range,Key]})  ->
   bdd_utils:log(debug, crowbar, step, "REST range get the object ~p for ~p path", [Network, URI]),
   bdd_restrat:step(_Given, {step_when, _N, ["REST requests the",URI,"page"]});
 
+step(_Global, {_, {_Scenario, _N}, [node,Node,"has the",Role,"role"]}) -> 
+  bdd_utils:log(debug, crowbar, step, "REST add role ~p to node ~p", [Role, Node]),
+  node:bind(Node, Role);
+
+step(_Given, {_, {_Scenario, _N}, [node,Node,"is committed"]}) -> 
+  bdd_utils:log(debug, crowbar, step, "REST commits node ~p", [Node]),
+  node:commit(Node),
+  node:alive(Node);
+
+step(_Given, {_, {_Scenario, _N}, ["REST retries",node,Node,node_role,Role]}) -> 
+  bdd_utils:log(debug, crowbar, step, "REST retry Node ~p Role ~p", [Node, Role]),
+  Path = eurl:path([node:g(path),Node,"node_roles"]),
+  Obj = bdd_crud:read_obj(Path,Role),
+  bdd_utils:log(trace, crowbar, step, "REST retry object ~p", [Obj]),
+  R = eurl:path([node_role:g(path),Obj#obj.id,"retry"]),
+  bdd_utils:log(debug, crowbar, step, "REST retry path ~p", [R]),
+  bdd_crud:update(R, "");
+
 % ============================  THEN STEPS =========================================
 
 
 % helper for limiting checks to body
-step(Result, {step_then, _N, ["I should see", Text, "in the body"]}) -> 
+step(Result, {step_then, {_Scenario, _N}, ["I should see", Text, "in the body"]}) -> 
   bdd_webrat:step(Result, {step_then, _N, ["I should see", Text, "in section", "main_body"]});
 
 % helper for limiting checks to body
-step(Result, {step_then, _N, ["I should not see", Text, "in the body"]}) -> 
+step(Result, {step_then, {_Scenario, _N}, ["I should not see", Text, "in the body"]}) -> 
   bdd_webrat:step(Result, {step_then, _N, ["I should not see", Text, "in section", "main_body"]});
+
+% check node status
+step(Result, {step_then, {_Scenario, _N}, [node, Node, "should not be in state", State]}) -> 
+  not step(Result, {step_then, {_Scenario, _N}, [node, Node, "should be in state", State]});
+
+step(_Result, {step_then, {_Scenario, _N}, [node, Node, "should be in state", State]}) -> 
+  URI = eurl:path(["api","status", "nodes", Node]),
+  bdd_utils:log(debug, crowbar, step, "Node ~p checking for state ~p", [URI, State]),
+  R = eurl:get_http(URI),
+  {array, crowbar, "json", J, _, _, _} = bdd_restrat:get_object(R),
+  bdd_utils:log(trace, crowbar, step, "Node ~p returned ~p", [Node, J]),  
+  [{_ID,[{"name",Node},{"state",_},{"status",Status},_]}] = J,
+  bdd_utils:log(debug, crowbar, step, "Node ~p returned ~p", [Node, Status]),  
+  Status =:= State;
 
 % ============================  CLEANUP =============================================
 
