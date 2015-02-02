@@ -14,6 +14,7 @@
 #
 
 include_recipe "utils"
+include_recipe "bind9::install"
 
 provisioner_port = (node["crowbar"]["provisioner"]["server"]["web_port"] rescue 8091)
 

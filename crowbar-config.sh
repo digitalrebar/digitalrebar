@@ -169,7 +169,16 @@ crowbar nodes create "$admin_node"
 # crowbar roles bind dns-mgmt_shim_crowbar_dns to "$FQDN"
 crowbar roles bind dns-database to "$FQDN"
 
+# Example external dns server - use instead of dns-database above
+#curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "209.18.47.61", "Service": {"Service": "dns-service", "Port": 43, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
+
+# Ntp Service configuration
+# Use the admin node as the ntp server for the cluster
 crowbar roles bind ntp-server to "$FQDN"
+
+# Example external ntp server - use instead of ntp-server above
+#curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "pool.ntp.org", "Service": {"Service": "ntp-service", "Port": 123, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
+
 
 crowbar roles bind crowbar-admin-node to "$FQDN"
 crowbar nodes commit "$FQDN"
