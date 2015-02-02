@@ -1,7 +1,6 @@
 $green: #84d300
 $pink: #ff92a4
 $orange: #f2af00
-$white: #fafafa
 $light_green: #b9ff8f
 $blue: #95c2ff
 $yellow: #b9ff8f
@@ -39,11 +38,6 @@ $yellow_dark: #df3
       font-size: 16px
     &.off
       color: #777
-
-  .ready
-    +gradient($white, $white - #222)
-    border: 1px solid #555
-
   .yellow
     +gradient($yellow, $yellow - #333)
     border: 1px solid #555
@@ -64,7 +58,7 @@ $yellow_dark: #df3
     &.off
       color: #fff
       background: desaturate($secondary_bg - #111, 90%)
-  .green
+  .green, .ready
     +gradient($light_green + #222, $light_green)
     border: 1px solid $light_green - #555
     &.off

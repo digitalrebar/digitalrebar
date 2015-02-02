@@ -3,24 +3,24 @@
   %h1.title= t '.title'
 
   .column_25.first
-    #core{:class=>('ready')}
+    #core{:class=>(@status['core'] || 'ready')}
       = render :partial=>'layercake', :locals=>{ :layer=>'core' }
-    #jigs{:class=>('ready')}
+    #jigs{:class=>(@status['jigs'] || 'ready')}
       = render :partial=>'layercake', :locals=>{ :layer=>'jigs' }
 
   .column_75.last
 
-    #apps{:class=>('ready')}
+    #apps{:class=>(@status['apps'] || 'ready')}
       = render :partial=>'layercake', :locals=>{ :layer=>'apps' }
-    #services{:class=>('ready')}
+    #services{:class=>(@status['services'] || 'ready')}
       = render :partial=>'layercake', :locals=>{ :layer=>'services' }
-    #clients{:class=>('ready')}
+    #clients{:class=>(@status['clients'] || 'ready')}
       = render :partial=>'layercake', :locals=>{ :layer=>'clients' }
-    #os{:class=>('ready')}
+    #os{:class=>(@status['is'] || 'ready')}
       = render :partial=>'layercake', :locals=>{ :layer=>'os' }
-    #nodes{:class=>('ready')}
+    #nodes{:class=>(@status['nodes'] || 'ready')}
       = render :partial=>'layercake', :locals=>{ :layer=>'nodes' }
-    #network{:class=>('ready')}
+    #network{:class=>(@status['network'] || 'ready')}
       = render :partial=>'layercake', :locals=>{ :layer=>'network' }
 
 .clear
@@ -29,22 +29,6 @@
 :javascript
 
   function update() {
-    $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
-    $.getJSON("#{deployments_status_path()}",  function(data) {
-
-      $.each(data['node_roles'], function(id, node) {
-        var led = $('span#role'+id);
-        if(!led) {
-          location.reload();
-          return;
-        }
-        if(led.attr('state') != node['state']) {
-          led.destroy();
-          led.attr('class', node['status']+' led');
-          led.attr('state', node['state']);
-          led.effect("highlight", {color: '#666666'}, 2000);
-        }
-      })
-
-    });
-  };
+    $.ajaxSetup({ timeout: #{current_user.settings(:ui).refresh} });
+    location.reload();
+  }
