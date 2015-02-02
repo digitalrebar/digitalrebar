@@ -23,6 +23,35 @@ class DeploymentsController < ApplicationController
     end
   end
 
+  def status 
+
+    id = params[:id]
+
+    nr = if id
+      Deployment.find_key(id).node_roles
+    else
+      NodeRole.all
+    end
+
+    out = {
+      'id' => id || -1,
+      'node_roles' => {}
+    }
+
+    nr.each do |role|
+      state = role.state
+      #state = rand(4) #testing random states (for updating)
+      out['node_roles'][role.id] = {
+        'status' => NodeRole::STATES[state],
+        'state' => state
+      }
+    end
+
+    render api_array out.to_json
+
+
+  end
+
   def show
     @deployment = Deployment.find_key params[:id]
     respond_to do |format|

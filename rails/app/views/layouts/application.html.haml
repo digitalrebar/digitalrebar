@@ -55,31 +55,31 @@
         OpenCrowbar Project Team
       =t 'version', :version=>(Rails.env.development? ? "Development" : Barclamp.where( :name => "crowbar").first.build_version)
 
-:javascript
+- if current_user or session[:digest_user]
+  :javascript
 
-  function heartbeat() {
-    $.ajaxSetup({ timeout: 2500 });
+    function heartbeat() {
+      $.ajaxSetup({ timeout: 2500 });
 
-    $.getJSON("#{heartbeat_status_path()}", function(data) {
+      $.getJSON("#{heartbeat_status_path()}", function(data) {
 
-      $('span#active_heartbeat').text(data['active']);
-      if (data["todo"]==0) {
-        $('span#todo_heartbeat').text("");
-        $('img#todo_led').attr('style', 'display:none');
-      } else {
-        $('span#todo_heartbeat').text(data['todo']);
-        $('img#todo_led').attr('style', 'display:inline');
-      }
-      if (data["error"]==0) {
-        $('span#error_heartbeat').text("");
-        $('img#error_led').attr('style', 'display:none');
-      } else {
-        $('span#error_heartbeat').text(data['error']);
-        $('img#error_led').attr('style', 'display:inline');
-      }
+        $('span#active_heartbeat').text(data['active']);
+        if (data["todo"]==0) {
+          $('span#todo_heartbeat').text("");
+          $('img#todo_led').attr('style', 'display:none');
+        } else {
+          $('span#todo_heartbeat').text(data['todo']);
+          $('img#todo_led').attr('style', 'display:inline');
+        }
+        if (data["error"]==0) {
+          $('span#error_heartbeat').text("");
+          $('img#error_led').attr('style', 'display:none');
+        } else {
+          $('span#error_heartbeat').text(data['error']);
+          $('img#error_led').attr('style', 'display:inline');
+        }
 
-    });
-  }
+      });
+    }
 
-  - if current_user or session[:digest_user]
     heartbeat();
