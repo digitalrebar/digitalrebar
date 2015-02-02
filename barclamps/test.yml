@@ -26,6 +26,8 @@ roles:
         ui_renderer: 'barclamp_test/attribs/delay'
   - name: test-async
     jig: role-provided
+    requires:
+      - test-client
     attribs:
       - name: async-result 
         map: 'async/result'
