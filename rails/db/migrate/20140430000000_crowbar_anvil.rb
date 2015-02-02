@@ -238,7 +238,7 @@ with recursive arrp (child_name, parent_name, path) as (
       t.boolean     :available,         null: false, default: true
       t.integer     :order,             default: 10000
       t.json        :proposed_data,     null: false, default: { expr: "'{}'::json" }
-      t.json        :committed_data,    null: true
+      t.json        :committed_data,    null: false, default: { expr: "'{}'::json" }
       t.json        :sysdata,           null: false, default: { expr: "'{}'::json" }
       t.json        :wall,              null: false, default: { expr: "'{}'::json" }
       t.timestamps
