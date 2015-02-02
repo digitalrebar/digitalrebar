@@ -137,6 +137,7 @@ ip_re='([0-9a-f.:]+/[0-9]+)'
 
 # Add required or desired services
 crowbar roles bind dns-service to "system-phantom.internal.local"
+crowbar roles bind ntp-service to "system-phantom.internal.local"
 crowbar roles bind dns-mgmt_service to "system-phantom.internal.local"
 
 # Set the domain name to use to the derived one
@@ -167,6 +168,8 @@ crowbar nodes create "$admin_node"
 # crowbar roles bind dns-server to "$FQDN"
 # crowbar roles bind dns-mgmt_shim_crowbar_dns to "$FQDN"
 crowbar roles bind dns-database to "$FQDN"
+
+crowbar roles bind ntp-server to "$FQDN"
 
 crowbar roles bind crowbar-admin-node to "$FQDN"
 crowbar nodes commit "$FQDN"

@@ -13,12 +13,12 @@
 # limitations under the License. 
 # 
 
-class BarclampDns::Service < Role
+class BarclampNtp::Service < Role
 
   def do_transition(nr,data)
     runlog = []
     addr_arr = []
-    runlog << "Getting dns-service information from consul"
+    runlog << "Getting ntp-service information from consul"
     pieces = nil
     options = {}
     meta = {}
@@ -27,10 +27,10 @@ class BarclampDns::Service < Role
       begin
         count += 1
         break if count > 20
-        pieces = Diplomat::Service.get("dns-service", :all, options, meta)
+        pieces = Diplomat::Service.get("ntp-service", :all, options, meta)
         if pieces and pieces.empty?
-          Rails.logger.info("dns-service not available ... wait 10m or next update")
-          runlog << "dns-service not available ... wait 10m or next update"
+          Rails.logger.info("ntp-service not available ... wait 10m or next update")
+          runlog << "ntp-service not available ... wait 10m or next update"
           if meta[:index]
             options[:wait] = "10m"
             options[:index] = meta[:index]
@@ -39,8 +39,8 @@ class BarclampDns::Service < Role
           end
           pieces = nil
         elsif pieces == nil
-          Rails.logger.info("dns-service not found ... wait 10s")
-          runlog << "dns-service not found ... wait 10s"
+          Rails.logger.info("ntp-service not found ... wait 10s")
+          runlog << "ntp-service not found ... wait 10s"
           sleep 10
         end
       rescue Exception => e
@@ -55,13 +55,13 @@ class BarclampDns::Service < Role
       pieces.each do |p|
         addr_arr << p.Address
       end
-      runlog << "Setting dns-service attribute"
-      Attrib.set("dns_servers", nr, addr_arr, :system)
+      runlog << "Setting ntp-service attribute"
+      Attrib.set("ntp_servers", nr, addr_arr, :system)
     end
 
-    Rails.logger.info("Finished waiting for dns-service: #{addr_arr.length} found")
+    Rails.logger.info("Finished waiting for ntp service: #{addr_arr.length} found")
     nr.runlog = runlog.join("\n")
-    raise "dns-service not available" if pieces == nil or pieces.empty?
+    raise "ntp-service not available" if pieces == nil or pieces.empty?
   end
 
 end
