@@ -52,16 +52,19 @@ start(){
     as_crowbar bundle exec puma -d -C $PUMA_CFG
     echo "Starting delayed_job NodeRoleRunner queue (10 workers)"
     as_crowbar bundle exec script/delayed_job --queue=NodeRoleRunner -n 10 start
+    as_crowbar bundle exec script/dj_reaper start
 }
 
 stop() {
     as_crowbar bundle exec pumactl -F $PUMA_CFG stop
     as_crowbar bundle exec script/delayed_job stop
+    as_crowbar bundle exec script/dj_reaper stop
 }
 
 restart() {
     as_crowbar bundle exec pumactl -F $PUMA_CFG restart
     as_crowbar bundle exec script/delayed_job restart
+    as_crowbar bundle exec script/dj_reaper restart
 }
 
 status() {

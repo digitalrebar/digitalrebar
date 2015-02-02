@@ -43,7 +43,7 @@
     %tbody
       - if @nodes and @nodes.count > 1
         - @nodes.sort_by{|n| n.name }.each do |node|
-          - unless node.is_admin?
+          - unless node.is_admin? or node.is_system?
             %tr.node{ :class => cycle(:odd, :even, :name => "nodes"), :id => node.id }
               %td= check_box_tag "node_#{node.id}", "include", !node.is_admin?
               %td.status

@@ -31,7 +31,7 @@ module Crowbar
     # -- all .rb files in that directory are automatically loaded.
 
     # Custom directories with classes and modules you want to be autoloadable.
-    # config.autoload_paths += %W(#{config.root}/extras)
+    config.autoload_paths += %W(#{config.root}/lib)
 
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.
@@ -92,6 +92,15 @@ module Crowbar
     CROWBAR_VERSION = '2.x' unless defined? CROWBAR_VERSION
     SERVER_PID = %x[ps ax | grep "puma" | grep -v grep].split(' ')[0]  # get a consistent number that changes when the server restarts
 
-    
+    config.jobs = ActiveSupport::OrderedOptions.new
+    # Controls whether or not workers report heartbeats
+    config.jobs.heartbeat_enabled = true
+    # How often workers should send heartbeats
+    config.jobs.heartbeat_interval_seconds = 15
+    # How long a worker can go without sending a heartbeat before they're considered dead
+    config.jobs.heartbeat_timeout_seconds = 3 * 15
+    # How often to check for dead workers
+    config.jobs.dead_worker_polling_interval_seconds = 15
+
   end
 end

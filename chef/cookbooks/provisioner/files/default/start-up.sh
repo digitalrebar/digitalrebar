@@ -33,6 +33,10 @@ netline=$(curl -f -g --digest -u "$CROWBAR_KEY" \
     -X GET "$CROWBAR_WEB/api/v2/networks/admin/allocations" \
     -d "node=$HOSTNAME")
 
+routerline=$(curl -f -g --digest -u "$CROWBAR_KEY" \
+    -X GET "$CROWBAR_WEB/api/v2/networks/admin/network_routers/1" \
+    -d "node=$HOSTNAME")
+
 # Bye bye to DHCP.
 killall dhclient || :
 ip addr flush "$BOOTDEV"
@@ -44,6 +48,14 @@ for net in "${nets[@]}"; do
     net=${BASH_REMATCH[1]}
     # Make this more complicated and exact later.
     ip addr add "$net" dev "$BOOTDEV" || :
+done
+
+routers=(${routerline//,/ })
+iponly_re='([0-9a-f.:]+)/[0-9]+'
+for router in "${routers[@]}"; do
+    [[ $router =~ $iponly_re ]] || continue
+    router=${BASH_REMATCH[1]}
+    ip route add default via "$router" || :
 done
 
 # Set our hostname for everything else.

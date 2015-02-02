@@ -135,6 +135,21 @@ admin_node="
 ###
 ip_re='([0-9a-f.:]+/[0-9]+)'
 
+# Add required or desired services
+crowbar roles bind dns-service to "system-phantom.internal.local"
+crowbar roles bind dns-mgmt_service to "system-phantom.internal.local"
+
+# Set the domain name to use to the derived one
+ROLE_ID=`crowbar roles show dns-service | grep '"id"'`
+ROLE_ID=${ROLE_ID##*:}
+ROLE_ID=${ROLE_ID%,}
+NODE_ROLE_ID=`crowbar noderoles list | grep -B2 -A2 "\"role_id\":$ROLE_ID" | grep -B3 -A2 '"node_id": 1' | grep \"id\"`
+NODE_ROLE_ID=${NODE_ROLE_ID##*:}
+NODE_ROLE_ID=${NODE_ROLE_ID%,}
+crowbar noderoles set $NODE_ROLE_ID attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
+
+crowbar nodes commit "system-phantom.internal.local"
+
 # Create a stupid default admin network
 crowbar networks create "$admin_net"
 
@@ -146,6 +161,13 @@ crowbar nodes create "$admin_node"
 
 # Bind the admin role to it, and commit the resulting
 # proposed noderoles.
+
+# TODO: One day do it this way:
+# Setup DNS Server and Mgmt Shim for our own DNS Server
+# crowbar roles bind dns-server to "$FQDN"
+# crowbar roles bind dns-mgmt_shim_crowbar_dns to "$FQDN"
+crowbar roles bind dns-database to "$FQDN"
+
 crowbar roles bind crowbar-admin-node to "$FQDN"
 crowbar nodes commit "$FQDN"
 
