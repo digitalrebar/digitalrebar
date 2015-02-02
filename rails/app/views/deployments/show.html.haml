@@ -47,7 +47,7 @@
           - @roles.each do |dr|
             - nr = node.node_roles.where(:role_id => dr.role_id, :deployment_id => dr.deployment_id).first
             - id = (!nr.nil? ? nr.id : ((dr.role.noop? and state == Deployment::PROPOSED) ? -1 : 0))
-            %td.noderole{:style=>"text-align:center", :id=>id, :dr=>dr.id}
+            %td.noderole{:style=>"text-align:center", :id=>"role#{id}", :dr=>dr.id, :state=>nr && nr.state || 0}
               - if nr
                 %span{:align=>'center'}
                   .led{:style=>"width:16px; margin:0px auto; text-align:center", :class => NodeRole::STATES[nr.state || NodeRole::ERROR], :title=>nr.role.name}
@@ -69,10 +69,25 @@
   var height = 100;
 
   function update() {
-    $.ajaxSetup({ timeout: 1000 });
-    if (#{state != Deployment::PROPOSED}) {
-      location.reload();
-    }
+    $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
+    $.getJSON("#{deployments_status_path(:id => @deployment.id)}",  function(data) {
+
+      $.each(data['node_roles'], function(id, node) {
+        var td = $('td#role'+id);
+        if(!td) {
+          location.reload();
+          return;
+        }
+        var led = td.children('span').children('.led');
+        if(td.attr('state') != node['state']) {
+          led.destroy();
+          led.attr('class', node['status']+' led');
+          td.attr('state', node['state']);
+          td.effect("highlight", {color: '#666666'}, 2000);
+        }
+      })
+
+    });
   };
 
   $('th.dr div a').each(function(){
