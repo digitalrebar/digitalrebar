@@ -2,6 +2,6 @@
 %div.dots
   - @layers[layer].each do |nr|
     - unless nr.nil?
-      %span.led{:style=>"float:left", :id => "role#{nr.id}", :state => nr.state, :class => NodeRole::STATES[nr.state || NodeRole::ERROR], 
+      %span.led{:style=>"float:left", :class => NodeRole::STATES[nr.state || NodeRole::ERROR], 
                   :title=>"#{nr.node.alias} #{nr.role.name}"}
         = link_to "&nbsp;&nbsp;&nbsp;&nbsp;".html_safe, node_role_path(nr.id)
