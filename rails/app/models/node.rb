@@ -101,7 +101,9 @@ class Node < ActiveRecord::Base
           return NodeRole::PROPOSED
         elsif nr.error?
           return NodeRole::ERROR
-        elsif [NodeRole::BLOCKED, NodeRole::TODO, NodeRole::TRANSITION].include? nr.state
+        elsif nr.transition?
+          return NodeRole::TRANSITION
+        elsif [NodeRole::BLOCKED, NodeRole::TODO].include? nr.state
           return NodeRole::TODO
         end
       end
