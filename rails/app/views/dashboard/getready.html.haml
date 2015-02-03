@@ -41,7 +41,7 @@
         %th= t('.proc')
         %th= t('.asset')
     %tbody
-      - if @nodes and @nodes.count > 1
+      - if @nodes and @nodes.count > 0
         - @nodes.sort_by{|n| n.name }.each do |node|
           - unless node.is_admin? or node.is_system?
             %tr.node{ :class => cycle(:odd, :even, :name => "nodes"), :id => node.id }

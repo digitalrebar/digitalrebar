@@ -407,6 +407,9 @@ rpms:
       - perl-DBD-Pg
       - swig
       - openwsman-devel
+      - git
+      - mercurial
+      - subversion
     pkgs:
       # openldap stuff
       - openldap

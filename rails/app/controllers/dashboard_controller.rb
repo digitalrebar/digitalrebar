@@ -108,19 +108,21 @@ class DashboardController < ApplicationController
   # multi-step node allocation
   def getready
     if request.get?
-      @nodes = Deployment.system.nodes
+      @nodes = Deployment.system.nodes.where(:admin=>false, :system=>false)
     elsif request.post?
-      d = Deployment.find_or_create_by_name! :name=>params[:deployment], :parent=>Deployment.system
+      ready_name = params[:deployment]
+      throw "Deployment Name is required" unless ready_name
+      d = Deployment.find_or_create_by_name! :name=>ready_name, :parent=>Deployment.system
       if params[:conduit]
-        n = Network.find_or_create_by_name! :name=>params[:deployment], :conduit=>params[:conduit], :deployment=>d, :v6prefix=>Network::V6AUTO
+        n = Network.find_or_create_by_name! :name=>ready_name, :conduit=>params[:conduit], :deployment=>d, :v6prefix=>Network::V6AUTO
         NetworkRange.create! :name=>params[:range], :network=>n, :first=>params[:first_ip], :last=>params[:last_ip] if n.ranges.count < 2
       end
 
       # milestone for OS assignment
       ready = Role.find_key 'crowbar-installed-node'
       ready.add_to_deployment d
-      pilot_network = Role.find_key 'network-pilot'
-      pilot_network.add_to_deployment d
+      ready_network = Role.find_key "network-#{ready_name}"
+      ready_network.add_to_deployment d
 
       params.each do |node_id, value|
         if node_id =~ /^node_([0-9]*)/
@@ -131,7 +133,7 @@ class DashboardController < ApplicationController
             Rails.logger.info "Dashboard GetReady Deployment #{d.name} added node #{n.name}"
             # assign milestone for OS assignment
             ready.add_to_node_in_deployment n, d unless n.is_docker_node?
-            pilot_network.add_to_node_in_deployment n, d
+            ready_network.add_to_node_in_deployment n, d
           end
           # set desired OS to attribute
           Attrib.set "provisioner-target_os", n, params["dashboard"]["#{node_id}_os"], :user unless n.is_docker_node?
