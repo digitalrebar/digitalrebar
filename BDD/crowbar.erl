@@ -136,7 +136,7 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
   bdd_utils:alias(networkrange, range),
   % skip some activity if we're logging at debug level
   case lists:member(debug,get(log)) of
-    true -> bdd_utils:log(debug, crowbar, step, "Skipping Setup Queue Empty, Make Admin Net & Test Attribs",[]);
+    true -> bdd_utils:log(debug, crowbar, global_setup, "Skipping Setup Queue Empty, Make Admin Net & Test Attribs",[]);
     _ ->
       % make sure that the delayed job queues are running
       true = bdd_clirat:step([], {foo, {0,0}, ["process", "delayed","returns", "delayed_job.([0..9])"]}),
@@ -150,8 +150,22 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
       network:make_admin()
   end,
   % create node for testing
-  bdd_utils:log(debug, crowbar, step, "Global Setup running (creating node ~p)",[g(node_name)]),
+  bdd_utils:log(debug, crowbar, global_setup, "Global Setup running (creating node ~p)",[g(node_name)]),
   node:add_node(g(node_name), "crowbar-admin-node", [{description, Test ++ g(description)}, {order, 100}, {admin, "true"}], g(node_atom)),
+  % setup phantom node roles
+  bdd_utils:log(debug, crowbar, global_setup, "Adding Service Roles", []),
+  Phantom = bdd_utils:config(system_phantom,"system-phantom.internal.local"),
+  PhantomRoles = bdd_utils:config(system_phantom_roles, ["dns-service", "ntp-service","dns-mgmt_service"]),
+  ServiceNRs = eurl:path([node:g(path), Phantom, "node_roles"]),
+  R = eurl:get_http(ServiceNRs),
+  O = bdd_restrat:get_object(R),
+  bdd_utils:log(debug, crowbar, global_setup, "Checking for Phantom Node Roles ~p",[O#list.count]),
+  case O#list.count of
+    1 -> [node:bind(Phantom,PR) || PR <- PhantomRoles],
+            node:commit(Phantom),
+            node:alive(Phantom);
+    _  -> noop 
+  end,
   true;
 
 % find the node from setup and remove it
