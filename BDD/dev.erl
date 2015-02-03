@@ -66,7 +66,8 @@ pop(ConfigRaw)  ->
 % tear it down
 unpop()       ->  
   {ok, Build} = file:consult(bdd_utils:config(simulator, "dev.config")),
-  [ remove(N) || {N, _, _, _, _} <- buildlist(Build, nodes) ], 
+  [ remove(N2) || {N2, _, _} <- buildlist(Build, deployments) ], 
+  [ remove(N1) || {N1, _, _, _, _} <- buildlist(Build, nodes) ], 
   bdd_crud:delete(node:g(path), g(node_name)),
   bdd:stop([]). 
 
@@ -75,7 +76,8 @@ buildlist(Source, Type) ->
   R.
 
 remove(Atom) ->
-  bdd_crud:delete(Atom).
+  [{http, Msg, _Code, _URL, _, _, crowbar, _}] = bdd_crud:delete(Atom),
+  bdd_utils:log(info, dev, remove, "Removed ~p with status ~p", [Atom, Msg]).
 
 add_node({Atom, Name, Description, Order, Group}) ->
   Path = bdd_restrat:alias(node, g, [path]),

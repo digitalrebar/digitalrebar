@@ -16,7 +16,8 @@
     %td
       %h1
         = @node.alias || @node.name
-        = t '.admin' if @node.admin
+        = t '.admin' if @node.is_admin?
+        = t '.system' if @node.is_system?
 
 = render :partial => 'show', :locals => { :node => @node }
 

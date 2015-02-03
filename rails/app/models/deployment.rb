@@ -56,6 +56,10 @@ class Deployment < ActiveRecord::Base
     read_attribute("system")
   end
 
+  def system_node
+    nodes.where(:system => true).first
+  end
+
   def available_roles
     Role.active - roles
   end
@@ -134,6 +138,7 @@ class Deployment < ActiveRecord::Base
                    admin: false,
                    system: true,
                    alive: true,
+                   deployment_id: self.id,
                    bootenv: "local")
     rescue Exception => e
       puts "failed to add node: #{e.message}"
