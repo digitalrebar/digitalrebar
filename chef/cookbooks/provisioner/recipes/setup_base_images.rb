@@ -60,6 +60,15 @@ append_line = node["crowbar"]["provisioner"]["server"]["sledgehammer_kernel_para
 # If the comitted proposal has a defualt, try it.
 # Otherwise use the OS the provisioner node is using.
 
+bash "Set up selinux contexts for #{tftproot}" do
+  code <<EOC
+semanage fcontext -a -f '' -t public_content_t "#{tftproot}"
+semanage fcontext -a -f '' -t public_content_t "#{tftproot}(/.*)?"
+EOC
+  only_if "which selinuxenabled && selinuxenabled"
+  not_if "ls -adZ #{tftproot} |grep -q public_content_t"
+end
+
 unless default = node["crowbar"]["provisioner"]["server"]["default_os"]
   node.normal["crowbar"]["provisioner"]["server"]["default_os"] = default = os_token
 end
@@ -280,3 +289,9 @@ EOC
     end
   end
 end
+
+bash "Restore selinux contexts for #{tftproot}" do
+  code "restorecon -R -F #{tftproot}"
+  only_if "which selinuxenabled && selinuxenabled"
+end
+

@@ -608,6 +608,9 @@ rpms:
     - tcpdump
     - vim
     - zlib-devel
+    - mercurial
+    - screen
+    - policycoreutils-python
     # postgresql 93 stuff
     - postgresql93
     - postgresql93-devel
