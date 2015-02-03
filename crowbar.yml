@@ -19,6 +19,7 @@ source_url: "https://github.com/opencrowbar/core"
 os_support:
   - ubuntu-12.04
   - redhat-6.6
+  - centos-6.5
   - centos-6.6
   - centos-7.0.1406
   - opensuse-13.1
