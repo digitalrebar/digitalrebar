@@ -61,6 +61,8 @@ class Node < ActiveRecord::Base
   scope    :admin,              -> { where(:admin => true) }
   scope    :alive,              -> { where(:alive => true) }
   scope    :available,          -> { where(:available => true) }
+  scope    :regular,            -> { where(:admin => false, :system=>false) }
+  scope    :system,             -> { where(:system => true) }
 
   # Get all the attributes applicable to a node.
   # This includes:
