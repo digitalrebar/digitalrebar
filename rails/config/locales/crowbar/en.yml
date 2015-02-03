@@ -274,6 +274,7 @@ en:
     show:
       graph: "Graph"
       assign: "Assign Nodes to Roles"
+      services: Deployment Services
       assigned: "Assigned Nodes to Roles"
       roles: "Assigned Roles"
       available_nodes: "Available Nodes"
@@ -352,7 +353,8 @@ en:
       available: "Available"
       addresses: "Addresses"
       all_node_roles: "All Node Roles"
-      admin: "(admin)"
+      admin: "(Admin)"
+      system: "(System)"
       attribs: "Attributes"
       name: "Name"
       description: "Description"

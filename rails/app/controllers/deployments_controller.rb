@@ -30,8 +30,9 @@ class DeploymentsController < ApplicationController
         @roles = @deployment.deployment_roles.sort{|a,b|a.role.cohort <=> b.role.cohort}
         # alpha lists by ID
         @nodes = Node.order("name ASC").select do |n|
+          (!n.is_system? and
           (n.deployment_id == @deployment.id) ||
-          (n.node_roles.where(:deployment_id => @deployment.id).count > 0)
+          (n.node_roles.where(:deployment_id => @deployment.id).count > 0))
         end
       }
       format.json { render api_show @deployment }

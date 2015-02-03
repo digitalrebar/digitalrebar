@@ -1,5 +1,18 @@
 - state = @deployment.state rescue Deployment::ERROR
-%table{:width=>'100%'}
+
+- if @deployment.system_node
+  %table.services{:align=>'right'}
+    %tr
+      %td{:colspan=>2, :align=>'right'}= t '.services'
+    - @deployment.system_node.node_roles.each do |srv_role|
+      %tr
+        %td{:align=>'right'}
+          = link_to srv_role.role.name.html_safe, node_role_path(srv_role.id)
+        %td
+          %span{:align=>'center'}
+            .led{:style=>"margin:0px auto; text-align:left", :class => NodeRole::STATES[srv_role.state || NodeRole::ERROR], :title=>srv_role.role.name}
+
+%table
   %tr
     %td
       .led{:class => Deployment::STATES[state], :title=>Deployment.state_name(state)}
