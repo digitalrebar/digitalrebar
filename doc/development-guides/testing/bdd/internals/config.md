@@ -95,7 +95,18 @@ BDD selects the `default.config` file automatically.  You can choose which confi
     <td>--url</td>
     <td>Used by bdd_clirat to pass the URL into the CLI</td>
   </tr>
-  
+  <tr>
+    <td>system_phantom</td>
+    <td>no</td>
+    <td>system-phantom.internal.local</td>
+    <td>Used by Crowbar to set the name of the phantom</td>
+  </tr>
+  <tr>
+    <td>system_phantom_roles</td>
+    <td>no</td>
+    <td>["dns-service", "ntp-service","dns-mgmt_service"]</td>
+    <td>Used by Crowbar to set the name of the phantom roles</td>
+  </tr>
 </table>
 
 
