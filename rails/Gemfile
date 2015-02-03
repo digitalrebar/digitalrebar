@@ -32,7 +32,7 @@ gem 'puma'
 #gem 'amqp'
 gem 'xml-simple'
 gem 'daemons'
-gem 'active_scaffold', git: 'https://github.com/activescaffold/active_scaffold', ref: '190145f4905a88'
+gem 'active_scaffold'
 gem 'devise', "~>3.0.0"
 gem 'rails_config'
 gem 'delayed_job'
