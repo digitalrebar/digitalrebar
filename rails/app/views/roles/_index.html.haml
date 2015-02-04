@@ -1,4 +1,4 @@
-- mylist = list.select { |r| r.jig_name.eql? jig_name }
+- mylist = ( jig_name.nil? ? list : list.select { |r| r.jig_name.eql? jig_name })
 - if mylist.length  == 0
   %p= t 'no_items'
 - else
@@ -26,6 +26,7 @@
             = t '.abstract' if role.abstract
             = t '.cluster' if role.cluster
             = t '.destructive' if role.destructive
+            = t '.service' if role.service
           %td
             - role.parents.each do |p|
               = link_to p.name, role_path(p), :title=>p.description

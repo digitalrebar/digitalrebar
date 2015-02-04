@@ -445,6 +445,7 @@ en:
       abstract: "Abstract"
       cluster: "Cluster"
       destructive: "Destructive"
+      service: "Service"
       provides: "Provides"
       conflicts: "Conflicts"
       server: "Server"

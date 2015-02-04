@@ -79,6 +79,7 @@ before user editing (Proposed) or system error (Error) states.
 |Template|String|Yes|Another json blob|
 |Jig Name|String|Yes||
 |Destructive|Boolean|Yes||
+|Service|Boolean|Yes||
 |id|Internal Ref|??|Actually an Int|
 |Discovery|Boolean|Yes||
 

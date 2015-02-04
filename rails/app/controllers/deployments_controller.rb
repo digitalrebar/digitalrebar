@@ -28,6 +28,8 @@ class DeploymentsController < ApplicationController
     respond_to do |format|
       format.html {
         @roles = @deployment.deployment_roles.sort{|a,b|a.role.cohort <=> b.role.cohort}
+        # remove the service roles
+        @roles.delete_if { |r| r.role.service }
         # alpha lists by ID
         @nodes = Node.order("name ASC").select do |n|
           (!n.is_system? and

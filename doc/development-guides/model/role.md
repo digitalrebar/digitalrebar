@@ -64,6 +64,10 @@ It is needed to create linked set of services like the ceph-mons.
 When we add a new monitor then we want all the children of the monitor
 to be held until all the other cluster noderoles are updated together.
 
+#### service
+
+Indiciates that this role is used to manage an external service.
+
 #### destructive
 
 Indicates that this role is not idempotent, and that after it
