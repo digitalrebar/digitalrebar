@@ -92,7 +92,7 @@ class DashboardController < ApplicationController
       @deployment = Deployment.find_key params[:deployment]
       @deployment.nodes.where(:system=>false)
     else
-      Node.regular
+      Node.all.where(:system=>false)
     end
   end
 
