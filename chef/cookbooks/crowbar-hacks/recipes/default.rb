@@ -76,7 +76,7 @@ if File.exists?("/sys/firmware/efi")
       end
     end
   end
-  unless bootargs.empty? || bootargs["Entries"].empty?
+  unless bootargs.empty? || bootargs["Entries"].empty? || bootargs["BootCurrent"].nil? || bootargs["Entries"][bootargs["BootCurrent"]].nil? || bootargs["Entries"][bootargs["BootCurrent"]].empty? || bootargs["Entries"][bootargs["BootCurrent"]]["Device"].nil?
     if bootargs["Entries"][bootargs["BootCurrent"]]["Device"] =~ /[\/)]MAC\(/i
       macaddr = bootargs["Entries"][bootargs["BootCurrent"]]["Device"].match(/[\/)]MAC\(([0-9a-f]+)/i)[1]
       bootargs["LastNetBootMac"] = ''
