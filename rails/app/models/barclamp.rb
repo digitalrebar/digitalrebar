@@ -65,7 +65,7 @@ class Barclamp < ActiveRecord::Base
       version = bc["version"] || '2.0'
       build_version = bc["build_version"] || '2.0'
 
-      source_url = bc["source_url"] || "http://github/opencrowbar/unknown"
+      source_url = bc["source_url"]
       barclamp.update_attributes!(:description   => bc['description'] || bc_name.humanize,
                                   :version       => version,
                                   :build_version => build_version,
