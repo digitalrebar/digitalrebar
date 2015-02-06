@@ -97,7 +97,7 @@ if [[ ! $use_image = true ]]; then
             (cd "$OCBDIR" && git clone https://github.com/opencrowbar/build-tools)
         fi
         echo "Creating OCB install RPM packages"
-        "$OCBDIR/build-tools/bin/make-rpms.sh"
+        "$OCBDIR/build-tools/bin/make-rpms.sh --target_dir=${admin_server_loc#/*opencrowbar}"
     fi
 fi
 
