@@ -28,6 +28,7 @@ class SecureShellHammer < Hammer
   end
 
   def run(cmd)
+    throw "ERROR: SecureShellHammer.run cannot determine address for #{node.name}" unless node.address
     run_on(". /etc/profile; exec ssh -l #{username} #{node.address.addr} -- #{cmd}")
   end
 
