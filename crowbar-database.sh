@@ -21,6 +21,8 @@ date
 
 which consul && consul watch -service=crowbar-database -type=service  | grep -q Node && exit 0
 
+check_hostname
+
 # install the database
 chef-solo -c /opt/opencrowbar/core/bootstrap/chef-solo.rb -o "${database_recipes}"
 

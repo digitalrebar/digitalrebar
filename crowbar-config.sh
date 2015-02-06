@@ -18,37 +18,14 @@ date
 
 . /etc/profile
 cd /opt/opencrowbar/core
+. ./bootstrap.sh
 
-[[ $1 ]] || {
-    echo "Must pass the FQDN you want the admin node to have as the first argument!"
-    exit 1
-}
+check_hostname
 
-FQDN=$1
+[[ $FQDN ]] || export FQDN="$(hostname)"
 
 DOMAINNAME=${FQDN#*.}
-if [[ ! -f /.dockerenv ]]; then
-    HOSTNAME=${FQDN%%.*}
-    # Fix up the localhost address mapping.
-    sed -i -e "s/\(127\.0\.0\.1.*\)/127.0.0.1 $FQDN $HOSTNAME localhost.localdomain localhost/" /etc/hosts
-    sed -i -e "s/\(127\.0\.1\.1.*\)/127.0.1.1 $FQDN $HOSTNAME localhost.localdomain localhost/" /etc/hosts
-    # Fix Ubuntu/Debian Hostname
-    echo "$FQDN" > /etc/hostname
-    hostname $FQDN
-else
-    HOSTNAME=$(cat /etc/hostname)
-    FQDN="${HOSTNAME}.${DOMAINNAME}"
-fi
-
-export FQDN
-
-# Fix CentOs/RedHat Hostname
-if [ -f /etc/sysconfig/network ] ; then
-  sed -i -e "s/HOSTNAME=.*/HOSTNAME=$FQDN/" /etc/sysconfig/network
-fi
-
-# Set domainname (for dns)
-echo "$DOMAINNAME" > /etc/domainname
+HOSTNAME=${FQDN%%.*}
 
 if [[ $http_proxy && !$upstream_proxy ]] && ! pidof squid; then
     export upstream_proxy=$http_proxy

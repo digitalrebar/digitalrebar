@@ -4,6 +4,7 @@ conf-root = "<%= @conf_root %>"
 use-auth = <%= @use_auth %>
 db-pool-size = 5
 max-connections = 50
+hostname = "<%= @hostname %>"
 <% if @protocol == "https" -%>
 use-ssl = true
 ssl-cert = "https-cert.pem"

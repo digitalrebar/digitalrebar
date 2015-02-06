@@ -27,8 +27,11 @@ fi
 . ./bootstrap.sh
 
 if [[ ! $RAILS_ENV ]]; then
-	export RAILS_ENV=$1
+    echo "RAILS_ENV not set!"
+    exit 1
 fi
+
+check_hostname
 
 . /etc/profile
 ./setup/00-crowbar-rake-tasks.install && \

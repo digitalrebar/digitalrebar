@@ -7,6 +7,14 @@ if [[ $http_proxy && !$no_proxy ]] ; then
     export no_proxy="127.0.0.1,localhost,::1"
 fi
 
+hostname_re='([[:alnum:]]+\.){2,}[[:alnum:]]+'
+
+check_hostname() {
+    [[ $(hostname) =~ $hostname_re ]] && return
+    echo "The hostname for the system must already be set to its proper name!"
+    exit 1
+}
+
 prefix_r=(recipe[barclamp]
           recipe[ohai]
           recipe[utils])
