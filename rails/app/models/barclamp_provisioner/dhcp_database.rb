@@ -24,14 +24,15 @@ class BarclampProvisioner::DhcpDatabase < Role
   end
 
   def on_node_delete(node)
-    rerun_my_noderoles
+    rerun_my_noderoles node.name
   end
 
-  def rerun_my_noderoles
+  def rerun_my_noderoles(skip_node=nil)
     hosts = {}
     to_enqueue = []
     ActiveRecord::Base.connection.execute("select * from dhcp_database").each do |row|
       name,v4addr,bootenv = row["name"],row["address"],row["bootenv"]
+      next if name.eql? skip_node
       ints = JSON.parse(row["discovered_macs"]) if row["discovered_macs"]
       mac_list = row["hinted_macs"] ? JSON.parse(row["hinted_macs"]) : []
       unless ints.nil?
