@@ -31,8 +31,14 @@ class NodesController < ApplicationController
     end
   end
   
+  # API /api/status/nodes(/:id)
   def status
-    nodes = Node.all
+    nodes = if params[:id]
+      node = Node.find_key params[:id]
+      nodes = Node.where :id=>node.id
+    else
+      nodes = Node.all
+    end
     status = {}
     nodes.each do |n|
       state = n.state

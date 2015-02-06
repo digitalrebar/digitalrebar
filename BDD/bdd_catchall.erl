@@ -32,10 +32,12 @@ step(_Result, {_, _N, ["pause", Time, "seconds to", Message]}) ->
   {T, _} = string:to_integer(Time),
   io:format("\t\t\t...paused ~p seconds in order to ~s.~n", [T, Message]),
   timer:sleep(T*1000);
+step(_Result, {_S, _N, ["after 1 second"]}) -> step(_Result, {_S, _N, ["after", "1", "seconds"]});
 step(_Result, {_, _N, ["after", Time, "seconds"]}) -> 
   {T, _} = string:to_integer(Time),
   io:format("\t\t\tzzz...sleeping ~p seconds.~n", [T]),
   timer:sleep(T*1000);
+step(_Result, {_S, _N, ["after 1 minute"]}) -> step(_Result, {_S, _N, ["after", "1", "minutes"]});
 step(_Result, {_, _N, ["after", Time, "minutes"]}) -> 
   {T, _} = string:to_integer(Time),
   io:format("\t\t\tzzz...sleeping ~p minutes.~n", [T]),

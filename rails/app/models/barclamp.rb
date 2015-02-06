@@ -95,7 +95,7 @@ class Barclamp < ActiveRecord::Base
         jig_active = if (Rails.env == "production")
                        jig_name != "test"
                      else
-                       ["noop","test"].include? jig_name
+                       ["noop","test","role-provided"].include? jig_name
                      end
         jig = jig_type.constantize.find_or_create_by!(:name => jig_name)
         jig.update_attributes!(:order => 100,
