@@ -36,6 +36,7 @@ erl_crash.dump
 /rails/coverage
 /rails/db/schema.rb
 /rails/db/structure.sql
+/rails/db/migrate/*_create_delayed_jobs.rb
 /rails/Gemfile.lock
 /rails/.bundle/
 /rails/bin/
