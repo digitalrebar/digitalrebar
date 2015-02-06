@@ -30,6 +30,7 @@ template "/etc/goiardi/goiardi.conf" do
             protocol: goiardi_protocol,
             conf_root: "/etc/goiardi",
             use_auth: true,
+            hostname: node[:machinename],
             local_filestore: "/var/cache/goiardi",
             index_file: "/var/cache/goiardi/index.bin"
 end

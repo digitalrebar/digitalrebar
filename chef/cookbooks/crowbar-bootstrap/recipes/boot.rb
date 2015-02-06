@@ -372,6 +372,11 @@ directory "/home/crowbar/.ssh" do
   mode 0755
 end
 
+bash "Fix up /opt/opencrowbar permissions" do
+  code 'cd /opt/opencrowbar; chown -R crowbar:crowbar .'
+  not_if "su -c 'test -w /opt/opencrowbar/core' crowbar"
+end
+
 bash "Regenerate Crowbar SSH keys" do
   code "su -l -c 'ssh-keygen -q -b 2048 -P \"\" -f /home/crowbar/.ssh/id_rsa' crowbar"
   not_if "test -f /home/crowbar/.ssh/id_rsa"

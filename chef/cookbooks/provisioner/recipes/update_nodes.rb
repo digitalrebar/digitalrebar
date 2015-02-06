@@ -196,4 +196,11 @@ end
   end
   a.run_action(:remove)
 end
+
+
+bash "Restore selinux contexts for #{tftproot}" do
+  code "restorecon -R -F #{tftproot}"
+  only_if "which selinuxenabled && selinxenabled"
+end
+
 node.normal["crowbar_wall"]["dhcp"]["clients"]=new_clients

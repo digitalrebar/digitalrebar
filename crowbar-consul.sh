@@ -21,6 +21,8 @@ date
 
 which consul && consul watch -service=consul -type=service  | grep -q Node && exit 0
 
-# install the database
+check_hostname
+
+# install Consul
 chef-solo -c /opt/opencrowbar/core/bootstrap/chef-solo.rb -o "${consul_recipes}"
 

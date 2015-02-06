@@ -19,16 +19,19 @@ date
 # setup & load env info
 if [[ ! -f /etc/profile.d/crowbar.sh ]]; then
     cat > /etc/profile.d/crowbar.sh <<EOF
-if ! fgrep -q '/opt/opencrowbar/core/bin' < <(echo $PATH); then
-    export PATH=$PATH:/opt/opencrowbar/core/bin
+if ! fgrep -q '/opt/opencrowbar/core/bin' < <(echo \$PATH); then
+    export PATH=\$PATH:/opt/opencrowbar/core/bin
 fi
 EOF
 fi
 . ./bootstrap.sh
 
 if [[ ! $RAILS_ENV ]]; then
-	export RAILS_ENV=$1
+    echo "RAILS_ENV not set!"
+    exit 1
 fi
+
+check_hostname
 
 . /etc/profile
 ./setup/00-crowbar-rake-tasks.install && \
