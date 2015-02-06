@@ -147,7 +147,9 @@ class Node < ActiveRecord::Base
   end
 
   def address
-    addresses.detect{|a|a.reachable?}
+    res = addresses.detect{|a|a.reachable?}
+    Rails.logger.warn("Node #{name} did not have any reachable addresses in #{addresses.map{ |a| a.addr }.join(",")}") unless res
+    res 
   end
 
   def url_address

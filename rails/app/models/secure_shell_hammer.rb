@@ -28,7 +28,9 @@ class SecureShellHammer < Hammer
   end
 
   def run(cmd)
-    run_on(". /etc/profile; exec ssh -l #{username} #{node.address.addr} -- #{cmd}")
+    node_address = node.address
+    throw "ERROR: SecureShellHammer.run cannot find a reachable address for #{node.name}" unless node_address
+    run_on(". /etc/profile; exec ssh -l #{username} #{node_address.addr} -- #{cmd}")
   end
 
   def copy_from(remote_src, local_dest, opts="")
