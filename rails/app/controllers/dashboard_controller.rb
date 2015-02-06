@@ -90,9 +90,9 @@ class DashboardController < ApplicationController
     end
     @nodes = if params.key? :deployment
       @deployment = Deployment.find_key params[:deployment]
-      @deployment.nodes
+      @deployment.nodes.where(:system=>false)
     else
-      Node.all
+      Node.all.where(:system=>false)
     end
   end
 

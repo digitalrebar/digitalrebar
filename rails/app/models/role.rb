@@ -49,6 +49,7 @@ class Role < ActiveRecord::Base
   scope           :bootstrap,          -> { where(:bootstrap=>true) }
   scope           :abstract,           -> { where(abstract: true)}
   scope           :milestone,          -> { where(milestone: true)}
+  scope           :service,            -> { where(service: true)}
   scope           :active,             -> { joins(:jig).where(["jigs.active = ?", true]) }
   scope           :all_cohorts,        -> { active.order("cohort ASC, name ASC") }
   scope           :all_cohorts_desc,   -> { active.order("cohort DESC, name ASC") }

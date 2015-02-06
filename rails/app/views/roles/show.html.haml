@@ -23,6 +23,7 @@
         = t '.implicit' if @role.implicit
         = t '.bootstrap' if @role.bootstrap
         = t '.abstract' if @role.abstract
+        = t '.service' if @role.service
 
   .clear
 
@@ -35,7 +36,6 @@
 
   - unless params.include? :form
     %h3= t '.upstream'
-
     = render :partial => "index", :locals => { :list => @role.parents, :jig_name => nil }
 
 %h3= t'.attributes'

@@ -70,12 +70,12 @@ create_node(Name, Params, Atom) ->
     "-1" -> 
           P = lists:append([{name, Name}, {alive, true}, {bootenv, node:g(bootenv)}], Params),
           JSON = crowbar:json(P),
-          bdd_utils:log(debug, node, create_node, "Creating Node ~p on ~p with ~p", [Name, Path, JSON]),
+          bdd_utils:log(trace, node, create_node, "Creating Node ~p on ~p with ~p", [Name, Path, JSON]),
           [_R, O] = bdd_crud:create(Path, JSON, Atom),
-          bdd_utils:log(info, node, create_node, "Node ~p created (id ~p)", [Name, O#obj.id]),
+          bdd_utils:log(debug, node, create_node, "Node ~p created (id ~p)", [Name, O#obj.id]),
           O;
     _  -> bdd_utils:config_set(Atom, Obj),
-          bdd_utils:log(info, node, create_node, "Node ~p already exists (id ~p)", [Name, Obj#obj.id]),
+          bdd_utils:log(debug, node, create_node, "Node ~p already exists (id ~p)", [Name, Obj#obj.id]),
           Obj
   end.
 

@@ -1,30 +1,18 @@
 - state = @deployment.state rescue Deployment::ERROR
+- system_roles = @deployment.system_node.node_roles.count
 
-- if @deployment.system_node
-  %table.services{:align=>'right'}
-    %tr
-      %td{:colspan=>2, :align=>'right'}= t '.services'
-    - @deployment.system_node.node_roles.each do |srv_role|
-      %tr
-        %td{:align=>'right'}
-          = link_to srv_role.role.name.html_safe, node_role_path(srv_role.id)
-        %td
-          %span{:align=>'center'}
-            .led{:style=>"margin:0px auto; text-align:left", :class => NodeRole::STATES[srv_role.state || NodeRole::ERROR], :title=>srv_role.role.name}
-
-%table
+%table{:width=>'100%'}
   %tr
-    %td
+    %td{:style=>"width:16px;"}
       .led{:class => Deployment::STATES[state], :title=>Deployment.state_name(state)}
     %td
-      %h1
+      %h2
         - if @deployment.parent
           = link_to @deployment.parent.name, deployment_path(@deployment.parent.id), :title => @deployment.parent.description
           = "/"
         = link_to @deployment.name, deployment_path(@deployment.id), :title => @deployment.description
-        = @deployment.state_name(state)
-    - if state == Deployment::PROPOSED
-      %td
+    %td
+      - if state == Deployment::PROPOSED
         = form_for :add_role, :'data-remote' => true, :url => deployment_roles_path(:deployment_id=>@deployment.id, :version=>'v2'), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
           - aroles = @deployment.available_roles
           - if current_user and current_user.settings(:ui).milestone_roles
@@ -33,10 +21,33 @@
             = hidden_field_tag :deployment_id, @deployment.id
             = f.collection_select :role_id, aroles, :id, :name_i18n
             %input.button{:type => "submit", :name => "add", :value => t('.add_role')}
-      %td= link_to t('.pick'), bulk_edit_path(), :title=>t('.pick_hint'), :class=>'button'
-    - elsif current_user and current_user.settings(:ui).edge
-      %td= link_to t('.graph'), deployment_graph_path(@deployment.id), :class => 'button', :method=>:get
-    %td= render :partial => 'deployments/buttons', :locals => { :state=>state, :deployment=>@deployment }
+    %td{:align=>'right'}
+      %h3= t '.services'
+    %td{:style=>"width:16px;"}
+  - 0.upto(system_roles) do |row|
+    %tr{:valign=>'top'}
+      - if row == 0 
+        %td{:rowspan=>system_roles}
+        %td{:rowspan=>system_roles}
+          %h3= @deployment.state_name(state)
+        %td{:rowspan=>system_roles}
+          = render :partial => 'deployments/buttons', :locals => { :state=>state, :deployment=>@deployment }
+          - if state == Deployment::PROPOSED
+            = link_to t('.pick'), bulk_edit_path(), :title=>t('.pick_hint'), :class=>'button'
+          - if current_user and current_user.settings(:ui).edge
+            = link_to t('.graph'), deployment_graph_path(@deployment.id), :class => 'button', :method=>:get  
+      - if @deployment.system_node and system_roles > 0 and row < system_roles
+        - srv_role = @deployment.system_node.node_roles[row]
+        %td{:align=>'right'}= link_to srv_role.role.name.html_safe, node_role_path(srv_role.id)
+        %td
+          %span{:align=>'center'}
+            .led{:style=>"margin:0px auto; text-align:left", :class => NodeRole::STATES[srv_role.state || NodeRole::ERROR], :title=>srv_role.role.name}
+      - if system_roles == 0
+        %td{:align=>'right'}= t 'no_items'
+        %td
+
+  %tr
+    %td= " "
 
 %table.snap{:align=>'left'}
   - if @nodes.count > 0 or  @roles.count > 0
