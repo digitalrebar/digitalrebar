@@ -80,7 +80,7 @@ myclean() {
     if [[ $save_image = true ]]; then
         kill_vm killed
         echo "Saving the disk image to $image_name.  Please do not interrupt!"
-        qemu-img convert -c -p -f raw -O qcow2 "$VM_DIR/$VMID.disk" "$image_name"
+        qemu-img convert -c -p -f qcow2 -O qcow2 "$VM_DIR/$VMID.disk" "$image_name"
     fi
     cleanup
     kill_ocb_bridge
@@ -262,7 +262,7 @@ fi
 
 make_ocb_bridge
 if [[ ! $use_image = true ]]; then
-    qemu-img create -f raw "$VM_DIR/$VMID.disk" 30G &>/dev/null
+    qemu-img create -f qcow2 "$VM_DIR/$VMID.disk" 30G &>/dev/null
 fi
 makenics
 # Let the admin node talk to the outside world.
@@ -270,14 +270,15 @@ sudo iptables -t nat -A POSTROUTING -s 192.168.124.0/24 \! -d 192.168.124.0/24 -
 
 if [[ ! $use_image = true ]]; then
     # Kick off the installer
-    run_kvm -kernel "$admin_server_loc/install/images/pxeboot/vmlinuz" \
+    run_kvm -diskformat qcow2 \
+            -kernel "$admin_server_loc/install/images/pxeboot/vmlinuz" \
             -initrd "$TMPDIR/initrd.img" \
             -append "${install_params[*]}" \
-            -cdrom "$admin_server_iso"
+            -cdrom "$admin_server_iso" 
 fi
 
 # Once we get here, the OS should be installed.
-admin_args=(-bootc)
+admin_args=(-bootc -diskformat qcow2)
 if [[ $use_image = true ]]; then
     admin_args+=(-disk "$image_name")
 fi
@@ -292,6 +293,7 @@ while [[ ! -f $VM_DIR/$VMID.killed ]]; do
         done
         ssh -f root@192.168.124.10 -- screen -d -m -S ocb-install -t 'Shell'
         ssh -f root@192.168.124.10 -- "screen -X caption always '%{-b ..}%-w%{+b ..}[[%n%f*%t]]%{-}%+w'"
+        ssh -f root@192.168.124.10 -- screen -S ocb-install -X zombie kr
         if [[ $autoinstall = true ]]; then
             ssh root@192.168.124.10 -- screen -S ocb-install -X \
                 screen -t 'Install' "/opt/opencrowbar/core/production.sh $ADMIN_HOSTNAME"

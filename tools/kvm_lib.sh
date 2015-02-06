@@ -344,7 +344,7 @@ run_kvm() {
     # In addition, we expect that the caller has set vm_nics appropriatly.
     local waitargs=() reboot=false snapshot=''
     local pxeboot='' driveboot='' diskfile="$VM_DIR/$VMID.disk"
-    local disk_format="raw"
+    local disk_format="raw" discard=''
     while true; do
         case $1 in
             # -daemon tells the framework to stop active monitoring
@@ -365,6 +365,8 @@ run_kvm() {
             -reboot) reboot=true;;
             # Run the main disk in snapshot mode.
             -snapshot) snapshot=true;;
+            # Use the specified disk format.
+            -diskformat) disk_format="$2"; shift;;
             # Use the passed disk as the main one instead of $VMID.disk
             -disk)
                 diskfile="$2"
@@ -393,6 +395,9 @@ run_kvm() {
         if "$KVM" -device \? 2>&1 |grep -q ahci; then
             kvm_use_ahci=true
         fi
+        if "$KVM" --help |grep -q 'discard.*unmap'; then
+            discard=unmap
+        fi
     fi
     local vm_gen="$VMID.${kvm_generations[$VMID]}"
     # create a new log directory for us.  vm_logdir needs to be global
@@ -412,8 +417,12 @@ run_kvm() {
         -serial "file:$vm_logdir/ttyS1.log"
         -name "kvm-$vm_gen")
     if [[ $kvm_use_ahci = true ]]; then
+        local drivestr="file=$diskfile,if=none,format=$disk_format,cache=$drive_cache,id=drive-ahci-0"
+        if [[ $discard ]]; then
+            drivestr+=",discard=unmap"
+        fi
         kvmargs+=(-device "ahci,id=ahci0,bus=pci.0,multifunction=on")
-        kvmargs+=(-drive "file=$diskfile,if=none,format=$disk_format,cache=$drive_cache,id=drive-ahci-0")
+        kvmargs+=(-drive "$drivestr")
         kvmargs+=(-device "ide-drive,bus=ahci0.0,drive=drive-ahci-0,id=drive-0")
         local drive_idx=1
         for image in "$VM_DIR/$VMID-"*".disk"; do
