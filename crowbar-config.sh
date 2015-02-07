@@ -174,8 +174,14 @@ crowbar roles bind ntp-server to "$FQDN"
 # to use the ADMIN NODE IP as the next server
 # and serve grub or pxelinux image.
 # GREG: Add filenames.
-#crowbar roles bind dhcp-database to "$FQDN"
+crowbar roles bind dhcp-database to "$FQDN"
 
+# Setup Up provisioner.
+crowbar roles bind provisioner-database to "$FQDN"
+crowbar roles bind provisioner-repos to "$FQDN"
+crowbar roles bind provisioner-docker-setup to "$FQDN"
+
+# Add the now mostly empty admin-node
 crowbar roles bind crowbar-admin-node to "$FQDN"
 crowbar nodes commit "$FQDN"
 
