@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-class BarclampProvisioner::DhcpDatabase < Role
+class BarclampDhcp::Database < Role
 
   def on_node_create(node)
     rerun_my_noderoles

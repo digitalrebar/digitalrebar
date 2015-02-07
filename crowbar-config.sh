@@ -169,6 +169,12 @@ crowbar roles bind ntp-server to "$FQDN"
 # Example external ntp server - use instead of ntp-server above
 #curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "pool.ntp.org", "Service": {"Service": "ntp-service", "Port": 123, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
 
+# Setup DHCP Server - this can be optional
+# If not used, the external DHCP server will need
+# to use the ADMIN NODE IP as the next server
+# and serve grub or pxelinux image.
+# GREG: Add filenames.
+#crowbar roles bind dhcp-database to "$FQDN"
 
 crowbar roles bind crowbar-admin-node to "$FQDN"
 crowbar nodes commit "$FQDN"

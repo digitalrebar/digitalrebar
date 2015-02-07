@@ -20,16 +20,16 @@ class BarclampProvisioner::DhcpsController < ::ApplicationController
     # we need to get the database
     entries = {}
     begin
-      nr = Node.admin.first.node_roles.where(:name => 'provisioner-dhcp-database').first
+      nr = Node.admin.first.node_roles.where(:name => 'provisioner-database').first
       if params.key? :id
         node = Node.find_key params[:id]
-        entries = nr.sysdata['crowbar']['dhcp']['clients'][node.name]
+        entries = nr.sysdata['crowbar']['provisioner']['clients'][node.name]
       else
-        entries = nr.sysdata['crowbar']['dhcp']
+        entries = nr.sysdata['crowbar']['provisioner']
       end
       render api_array entries
     rescue
-      render :text=>I18n.t('api.not_found', :type=>'dhcp_client', :id=>(params[:id] || ':all')), :status => :not_found
+      render :text=>I18n.t('api.not_found', :type=>'provisioner_client', :id=>(params[:id] || ':all')), :status => :not_found
     end
   end
 

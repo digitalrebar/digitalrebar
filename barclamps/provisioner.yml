@@ -81,19 +81,13 @@ roles:
       - provisioner-proxy
       - provisioner-webserver
       - provisioner-online
-  - name: provisioner-dhcp-server
+  - name: provisioner-database
     jig: chef
-    wants-attribs:
-      - dns_servers
     requires:
       - provisioner-server
       - provisioner-base-images
-  - name: provisioner-dhcp-database
-    jig: chef
     wants-attribs:
-      - dns_servers
-    requires:
-      - provisioner-dhcp-server
+      - dns-domain
   - name: provisioner-docker-setup
     jig: chef
     conflicts:
@@ -118,7 +112,6 @@ roles:
     jig: script
     requires:
       - crowbar-hardware-configured
-      - provisioner-dhcp-server
     flags:
       - implicit
       - destructive
