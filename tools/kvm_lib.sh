@@ -65,7 +65,6 @@ OCB_SCREEN="ocb-test"
 
 ADMIN_HOSTNAMES=("cr0wbar.pwns.joo"
     "vltima.ratio.regvm"
-    "admin.nihil.fit"
     "omnia.fines.bon"
     "admin.smoke.test"
     "eheyeh.asher.eheyeh"
