@@ -29,6 +29,18 @@ if [[ $http_proxy && !$upstream_proxy ]] && ! pidof squid; then
     export upstream_proxy=$http_proxy
 fi
 
+# for dev environment, we force the FQDN
+FQDN="devadmin.opencrowbar.org"
+hostname $FQDN
+
+# Fix CentOs/RedHat Hostname
+if [ -f /etc/sysconfig/network ] ; then
+  sed -i -e "s/HOSTNAME=.*/HOSTNAME=$FQDN/" /etc/sysconfig/network
+fi
+# Set domainname (for dns)
+echo "${FQDN#*.}" > /etc/domainname
+export FQDN
+
 ./crowbar-boot.sh
 ./crowbar-consul.sh
 ./crowbar-database.sh
