@@ -151,8 +151,8 @@ updates, see below.
 Execute the following commands:
 
 ```
-  `cd /opt/opencrowbar/core
-  ./production.sh `&lt;FQDN of the admin node&gt;
+  cd /opt/opencrowbar/core
+  ./production.sh <FQDN of the admin node>
 ```
 
 Once this is complete, the admin node is configured.  Don't worry about
