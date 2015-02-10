@@ -161,10 +161,17 @@ start(Config) ->
   case Started of
     false -> 
       bdd_utils:config_unset(auth_field),    % clear field to get new token
-      case {application:start(crypto), application:start(inets)} of
-        {ok, ok}                 -> log(trace, "Started Crypto & Inets Services",[]);
-        {{error, A}, {error, B}} -> log(trace, "Errors Reported: Inets ~p Crypto ~p",[B, A]);
-        {A, B}                   -> log(trace, "Start Reporting: Inets ~p Crypto ~p",[B, A])
+      case application:start(inets) of
+        ok          -> log(trace, "Started Crypto & Inets Services",[]);
+        {error,{already_started,inets}} -> log(trace, "Already Started Inets Services",[]);
+        {error, A}  -> log(warn, "Errors Reported: Inets ~p",[A]);
+        A           -> log(warn, "Start Reporting: Inets ~p",[A])
+      end,
+      case application:start(crypto) of
+        {ok, ok}     -> log(trace, "Started Crypto & Inets Services",[]);
+        {error,{already_started,crypto}} -> log(trace, "Already Started Crypto Services",[]);
+        {error, B}   -> log(warn, "Errors Reported: Crypto ~p",[B]);
+        B            -> log(warn, "Start Reporting: Crypto ~p",[B])
       end,
       AzConfig = bdd_utils:is_site_up(),
       file:write_file("/tmp/inspection.list",io_lib:fwrite("~p.\n",[inspect(AzConfig)])),

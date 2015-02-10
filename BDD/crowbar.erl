@@ -134,6 +134,9 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
   bdd_utils:alias(group, group_cb),
   bdd_utils:alias(user, user_cb),
   bdd_utils:alias(networkrange, range),
+  % before we do anything else, we need to create some consul services
+  Services = bdd_utils:config(services, ["dns-service", "ntp-service"]),
+  _ = [consul:reg_serv(S) || S <- Services],
   % skip some activity if we're logging at debug level
   case lists:member(debug,get(log)) of
     true -> bdd_utils:log(debug, crowbar, global_setup, "Skipping Setup Queue Empty, Make Admin Net & Test Attribs",[]);
