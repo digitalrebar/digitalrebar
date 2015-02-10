@@ -141,6 +141,14 @@ class Role < ActiveRecord::Base
     name_i18n.gsub("-","&#8209;").gsub(" ","&nbsp;")
   end
 
+  def github
+    baseurl = barclamp.source_url
+    baseurl ||= barclamp.parent.source_url    
+    return I18n.t('unknown') unless baseurl
+    "#{baseurl}\/tree\/master\/#{jig.name}\/roles\/#{name}"
+
+  end
+
   def update_cohort
     Role.transaction do
       c = (parents.maximum("cohort") || -1)
