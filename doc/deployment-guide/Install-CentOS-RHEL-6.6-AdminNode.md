@@ -67,7 +67,7 @@ installed:
    * Screen: "Select the appropriate keyboard ...", Select "U.S. English", Click [Next]
    * Screen: "What type of devices will your installation involve\?", Select "Basic Storage Devices", Click [Next]
    * Pop-up: "Storage Device Warning", Click [Yes, discard any data]
-   * Screen: "Please name this computer. The hostname ...", In the Hostname field enter as valid FCDN (Ex. admin.mytest.lcl)
+   * Screen: "Please name this computer. The hostname ...", In the Hostname field enter as valid FQDN (Ex. admin.mytest.lcl)
    * Click [Configure Network]
       * Network configuration requirements depend on how many NICs are available, and on available network topology
       * For Single NIC configuration:
@@ -110,7 +110,6 @@ installed:
 To install OpenCrowbar, the following things need to be done:
    * Turn off firewalls
    * Turn off or set SELinux to permissive
-   * Add the OpenCrowbar and OpenCrowbar Ruby repo 
    * Download the default installation OS [Optional]
  
 The crowbar-install.sh script supports three flags given (or not in this
@@ -150,8 +149,11 @@ updates, see below.
 ## OpenCrowbar Configuration
 
 Execute the following commands:
+
+```
   `cd /opt/opencrowbar/core
   ./production.sh `&lt;FQDN of the admin node&gt;
+```
 
 Once this is complete, the admin node is configured.  Don't worry about
 the failed to converge message, continue on to the next.
