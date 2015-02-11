@@ -84,6 +84,7 @@ add_node({Atom, Name, Description, Order, Group}) ->
   Obj = bdd_crud:read_obj(Path,Name),
   case Obj#obj.id of
     "-1" -> O = node:add_node(Name, [{description, Description}, {order, Order}, {group, Group}], Atom),
+          bdd_utils:log(info, node, create_node, "Node ~p created (id ~p)", [Name, O#obj.id]),
           % load test data
           crowbar:step([], {step_given, {0, 1}, ["test loads the","node_discovery","data into",node, Name]}),
           O;

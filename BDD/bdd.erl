@@ -28,7 +28,6 @@ test(ConfigName)         ->
   %run the tests
   Complete = run([], [], Features),
   % cleanup application services
-  stop([]),
   Results = lists:filter(fun(R) -> case R of {feature, _, _, _}->true; _ -> false end end, Complete),
   File = bdd_print:file(),
   file:write_file(File,io_lib:fwrite("{test, ~p, ~p, ~p}.\n",[date(), time(),Results])),
@@ -36,7 +35,8 @@ test(ConfigName)         ->
   Total = lists:sum([ T || {_Feature, {T, _P, _F, _, _}} <- Final]),
   Fail = lists:sum([ F || {_Feature, {_T, _P, F, _, _}} <- Final]),
   case Fail of
-    0 -> log(result,"PASSED ALL TESTS (~p tests in ~p features).~n",[Total,length(Final)]);
+    0 -> log(result,"PASSED ALL TESTS (~p tests in ~p features).~n",[Total,length(Final)]),
+         stop([]);
     X -> log(info,"Test Results: ~p.  Run `bdd:failed().` to re-run failed tests.",[File]),
          log(result,"FAILED ~p TESTS of ~p tests in ~p features.~n",[X, Total,length(Final)]),
          throw('FAILED >0 TESTS')
@@ -95,6 +95,7 @@ debug(Config, Feature, ID, Log)   ->
 % used after a test() run to rerun just the failed tests
 failed()        -> failed(default).
 failed(Config)  ->
+  start(Config),
   {ok, [{test, _Date, _Time, Results} | _]} = file:consult(bdd_print:file()),
   Fails = [{Feature, lists:keyfind(fail, 1, bdd_print:result(Fails))} || {feature, Feature, _, Fails} <- Results],
   % please optimize to use just 1 global setup!

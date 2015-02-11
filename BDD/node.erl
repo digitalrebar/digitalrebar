@@ -72,7 +72,7 @@ create_node(Name, Params, Atom) ->
           JSON = crowbar:json(P),
           bdd_utils:log(trace, node, create_node, "Creating Node ~p on ~p with ~p", [Name, Path, JSON]),
           [_R, O] = bdd_crud:create(Path, JSON, Atom),
-          bdd_utils:log(debug, node, create_node, "Node ~p created (id ~p)", [Name, O#obj.id]),
+          bdd_utils:log(info, node, create_node, "Node ~p created (id ~p)", [Name, O#obj.id]),
           O;
     _  -> bdd_utils:config_set(Atom, Obj),
           bdd_utils:log(debug, node, create_node, "Node ~p already exists (id ~p)", [Name, Obj#obj.id]),
@@ -129,7 +129,7 @@ step(_Global, {step_setup, _N, _}) ->
   % create node(s) for tests
   Node = json(g(name), g(description), 100),
   bdd_crud:create(g(path), Node, g(atom)),
-  true = bdd_clirat:step([], {foo, {0,0}, ["process", "delayed","returns", "delayed_job.([0..9])"]});
+  crowbar:step([], {foo, {0,0}, ["process", "delayed","returns", "delayed_job.([0..9])"]});
 
 step(_Global, {step_teardown, _N, _}) -> 
   % find the node from setup and remove it

@@ -18,14 +18,14 @@ Feature: DeploymentRole
     Then the {o:deployment_role} is properly formatted
     Finally REST deletes the {o:deployment} "bdd_deployment_role"
 
-  Scenario: Deployment Role 2 page renders
-    Given I am on the "deployment_roles/2" page
-    Then I should see a heading {bdd:crowbar.i18n.deployment_roles.show.attribs} 
-      And I should see "Network interface maps"
+  Scenario: Deployment Role network-server page renders
+    Given I am on the "deployment_roles/network-server?deployment=system" page
+    Then I should see a heading {bdd:crowbar.i18n.deployment_roles.show.attribs}
+      And I should see {bdd:crowbar.i18n.common.roles.network-server} 
       And there are no localization errors
 
   Scenario: Deployment Role 3 page renders
-    Given I am on the "deployment_roles/3" page
+    Given I am on the "deployment_roles/network-admin?deployment=system" page
     Then I should see a heading {bdd:crowbar.i18n.deployment_roles.show.attribs} 
-      And I should see "Network-admin addresses"
+      And I should see {bdd:crowbar.i18n.common.roles.network-admin}
       And there are no localization errors

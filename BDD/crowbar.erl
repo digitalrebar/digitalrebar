@@ -136,13 +136,16 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
   bdd_utils:alias(networkrange, range),
   % before we do anything else, we need to create some consul services
   Services = bdd_utils:config(services, ["dns-service", "ntp-service"]),
-  _ = [consul:reg_serv(S) || S <- Services],
+  [true,true] = [consul:reg_serv(S) || S <- Services],
+  bdd_utils:log(info, crowbar, global_setup, "Consul Registered ~p",[Services]),
+  % make sure there's a worker
+  true = worker(),
   % skip some activity if we're logging at debug level
   case lists:member(debug,get(log)) of
     true -> bdd_utils:log(debug, crowbar, global_setup, "Skipping Setup Queue Empty, Make Admin Net & Test Attribs",[]);
     _ ->
       % make sure that the delayed job queues are running
-      true = bdd_clirat:step([], {foo, {0,0}, ["process", "delayed","returns", "delayed_job.([0..9])"]}),
+      crowbar:step([], {foo, {0,0}, ["process", "delayed","returns", "delayed_job.([0..9])"]}),
       % turn off the delays in the test jig
       %role:step(Global, {step_given, {Scenario, _N}, ["I set the",role, "test-admin", "property", "test", "to", "false"]}), 
       %role:step(Global, {step_given, {Scenario, _N}, ["I set the",role, "test-server", "property", "test", "to", "false"]}), 
@@ -166,8 +169,10 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
   case O#list.count of
     1 -> Attribs = ["chef-server_port", "chef-server_protocol"],
           JSON = [crowbar:json([{name, A}, {description, g(description)}, {barclamp, 'test'}, {order, g(order)}, {writable, true}]) || A <- Attribs],
+          bdd_utils:log(info, crowbar, global_setup, "Creating Attribs ~p",[Attribs]),
           [bdd_restrat:create(attrib:g(path), J, attrib, 0) || J <- JSON],
           [node:bind(Phantom,PR) || PR <- PhantomRoles],
+          bdd_utils:log(info, crowbar, global_setup, "Bound Roles ~p to Phantom ~p",[PhantomRoles, Phantom]),
           node:commit(Phantom),
           node:alive(Phantom);
     _  -> noop 
@@ -297,6 +302,12 @@ step(_Result, {step_then, {_Scenario, _N}, [node, Node, "should be in state", St
   Status =:= State;
 
 % ============================  CLEANUP =============================================
+
+step(_, {_Any, {_Scenario, _N}, ["process", PS, "returns", Test]}) ->
+  case worker() of
+    true -> true;
+    _ -> bdd_clirat:step([], {_Any, {_Scenario, _N}, ["process", PS,"returns", Test]}), false
+  end;
 
 step(_, {_, {_Scenario, _N}, ["there are no pending Crowbar runs for",node,Node]}) -> 
   timer:sleep(250),   % we want a little pause to allow for settling
