@@ -46,5 +46,6 @@ export FQDN
 ./crowbar-database.sh
 ./crowbar-core.sh "$RAILS_ENV"
 
-#. /etc/profile
-#/bin/bash -i
+# Make sure that Crowbar is running with the proper environment variables
+service crowbar stop
+service crowbar start
