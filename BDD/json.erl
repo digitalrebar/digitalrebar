@@ -178,7 +178,13 @@ atomize({K, [{K1, V1}]}) when is_integer(K1)     -> lists:concat([quote_key(K),"
 atomize({K, [{K1, V1}]})                         -> lists:concat([quote_key(K),":", output([{K1, V1}])]);
 atomize({K, [{K1, V1} | T]}) when is_integer(K1) -> lists:concat([quote_key(K),":[", output(V1), ", ", array(T), "]"]);
 atomize({K, [{K1, V1} | T]})                     -> lists:concat([quote_key(K),":", output([{K1, V1} | T])]);
+atomize({K, [V | T]}) when is_atom(V)            -> lists:concat([quote_key(K),":[", atomize_array(V,T), "]"]);
+atomize({K, [V | T]}) when is_list(V)            -> lists:concat([quote_key(K),":[", atomize_array(V,T), "]"]);
 atomize({K, V})                                  -> lists:concat([quote_key(K),":\"", V, "\""]).
+
+atomize_array(V, []) -> lists:concat(["\"", V, "\""]);
+atomize_array(V, T) when is_atom(V) -> atomize_array(atom_to_list(V),T);
+atomize_array(V, [H | T])  -> lists:concat(["\"", V, "\", ",atomize_array(H, T)]).
 
 % strip out the index for arrays
 array([{K, V}])     when is_integer(K) -> output(V);
@@ -192,7 +198,7 @@ quote_key(K)                    -> lists:concat(["\"",K,"\""]).
 output_inner([Head | []]) ->
   atomize(Head);
 output_inner([Head | Tail]) ->
-  atomize(Head) ++ ", " ++ output_inner(Tail).
+  string:join([atomize(Head), output_inner(Tail)], ", ").
 
 
 % handle case where we are given raw json by mistake

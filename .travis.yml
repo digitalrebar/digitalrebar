@@ -22,6 +22,7 @@ env:
   - RAILS_ENV='development'
 
 before_script:
+  - tools/travis_consul.sh
   - cd rails
   - cp config/database.yml.travis config/database.yml
   - psql -c 'create database opencrowbar_dev;' -U postgres
@@ -29,6 +30,7 @@ before_script:
   - bundle install
 
 script: 
+  - ../consul agent -server -bootstrap-expect 1 -data-dir /tmp/consul &
   - pwd
   - bundle exec rake db:migrate
   - bundle exec rake db:seed

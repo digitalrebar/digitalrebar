@@ -30,10 +30,8 @@ roles:
       - test-client
     attribs:
       - name: async-result 
+        description: "track return info from async action"
         map: 'async/result'
-        schema:
-          type: str
-          required: false
   - name: test-server
     jig: test
     requires:

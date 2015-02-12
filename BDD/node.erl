@@ -129,7 +129,7 @@ step(_Global, {step_setup, _N, _}) ->
   % create node(s) for tests
   Node = json(g(name), g(description), 100),
   bdd_crud:create(g(path), Node, g(atom)),
-  true = bdd_clirat:step([], {foo, {0,0}, ["process", "delayed","returns", "delayed_job.([0..9])"]});
+  crowbar:step([], {foo, {0,0}, ["process", "delayed","returns", "delayed_job.([0..9])"]});
 
 step(_Global, {step_teardown, _N, _}) -> 
   % find the node from setup and remove it
