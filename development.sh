@@ -16,6 +16,7 @@
 set -e
 date 
 export RAILS_ENV=development
+touch /tmp/development.txt
 
 # developers may not want TMUX, give them a hint
 if [[ $TMUX ]]; then

@@ -15,7 +15,14 @@
 
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
 GEMFILE_LOCK=/opt/opencrowbar/core/rails/Gemfile.lock
-[[ $RAILS_ENV ]] || RAILS_ENV=production
+
+# if we started in development, make sure we're running development
+if [[ -f /tmp/development.txt ]]; then
+    RAILS_ENV=development
+else
+    [[ $RAILS_ENV ]] || RAILS_ENV=production
+fi
+
 export RAILS_ENV
 if [[ -f /etc/redhat-release || -f /etc/centos-release ]]; then
     OS=redhat
