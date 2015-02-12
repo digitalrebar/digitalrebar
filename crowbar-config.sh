@@ -146,6 +146,19 @@ crowbar nodes create "$admin_node"
 # crowbar roles bind dns-mgmt_shim_crowbar_dns to "$FQDN"
 crowbar roles bind dns-database to "$FQDN"
 
+# Set the dns forwarder if you have them
+DNS_FORWARDER=""
+#DNS_FORWARDER="YOUR DNS IP HERE"
+ROLE_ID=`crowbar roles show dns-server | grep '"id"'`
+ROLE_ID=${ROLE_ID##*:}
+ROLE_ID=${ROLE_ID%,}
+NODE_ROLE_ID=`crowbar noderoles list | grep -B2 -A2 "\"role_id\":$ROLE_ID" | grep -B3 -A2 '"node_id": 2' | grep \"id\"`
+NODE_ROLE_ID=${NODE_ROLE_ID##*:}
+NODE_ROLE_ID=${NODE_ROLE_ID%,}
+if [ "$DNS_FORWARDER" != "" ] ; then
+    crowbar noderoles set $NODE_ROLE_ID attrib dns-domain to "{ \"value\": [ \"$DNS_FORWARDER\" ] }"
+fi
+
 # Example external dns server - use instead of dns-database above
 #curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "209.18.47.61", "Service": {"Service": "dns-service", "Port": 43, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
 
