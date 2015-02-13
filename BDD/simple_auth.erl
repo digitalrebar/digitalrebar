@@ -241,14 +241,14 @@ calcResponse(DigestLine, User, Password, URI, Method, Nc) ->
 	{User, Realm, Nonce,  URI, Nc, CNonce, Response, Opaque}.	
 
 calc_response(Method, User, Password, URI, Realm, _Opaque, Nonce, Nc, CNonce, Qop) ->	
-	HA1 = 	hex(binary_to_list(crypto:md5( string:join([User, Realm, Password], ":")))),
-	HA2 = 	hex(binary_to_list(crypto:md5( string:join([Method, URI], ":")))),
+	HA1 = 	hex(binary_to_list(crypto:hash( string:join([User, Realm, Password], ":")))),
+	HA2 = 	hex(binary_to_list(crypto:hash( string:join([Method, URI], ":")))),
 	%io:format("HA1:~p~n", [HA1]),
 	%io:format("HA2:~p~n", [HA2]),	
 	%HA1 result, server nonce (nonce), request counter (nc), client nonce (cnonce), quality of protection code (qop) and HA2 result is calculated.
 	Step3Arg = string:join([HA1, Nonce, Nc, CNonce, Qop, HA2], ":"),
   %io:format("3rd step:~p~n", [Step3Arg]),
-	hex(binary_to_list(crypto:md5( Step3Arg))).
+	hex(binary_to_list(crypto:hash( Step3Arg))).
 
 %% Implements example of digest response calculation from Wikipedia 
 %% (http://en.wikipedia.org/wiki/Digest_access_authentication)
