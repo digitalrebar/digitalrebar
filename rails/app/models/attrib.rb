@@ -82,7 +82,12 @@ class Attrib < ActiveRecord::Base
   end
 
   def self.get(name, from, source=:all)
-    (name.is_a?(Attrib) ? name : Attrib.find_key(name)).get(from, source)
+    begin
+      (name.is_a?(Attrib) ? name : Attrib.find_key(name)).get(from, source)       
+    rescue Exception => e
+      Rails.logger.warn "Warn, did not get #{name} from #{from.name} with error #{e.message}"
+      nil      
+    end
   end
 
   # Get the attribute value from the passed object.
