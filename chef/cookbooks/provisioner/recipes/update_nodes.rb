@@ -175,7 +175,7 @@ end
 # Now that we have handled any updates we care about, delete any info about nodes we have deleted.
 (node["crowbar_wall"]["dhcp"]["clients"].keys - new_clients.keys).each do |old_node_name|
   old_node = node["crowbar_wall"]["dhcp"]["clients"][old_node_name]
-  mac_list = old_node["mac_addresses"]
+  mac_list = old_node["mac_addresses"] || []
   mac_list.each_index do |idx|
     a = dhcp_host "#{old_node_name}-#{idx}" do
       hostname old_node_name
@@ -185,7 +185,7 @@ end
     end
     a.run_action(:remove)
   end
-  a = provisioner_bootfile old_node["bootenv"] do
+  a = provisioner_bootfile old_node_name do
     action :nothing
     address mac_list
   end
@@ -194,7 +194,7 @@ end
     action :nothing
     recursive true
   end
-  a.run_action(:remove)
+  a.run_action(:delete)
 end
 
 

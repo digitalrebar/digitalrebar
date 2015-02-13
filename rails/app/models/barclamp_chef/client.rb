@@ -34,4 +34,15 @@ class BarclampChef::Client < Role
       nr.save!
     end
   end
+
+  def on_node_delete(node)
+    chefjig = Jig.where(:name => "chef").first
+    raise "Cannot load Chef Jig" unless chefjig
+    # we have a problem is if the chef jig is not active
+    unless chefjig.active
+      Rails.logger.warn "Unexpected: Chef Jig should have been active for Chef Client Role to delete" unless Rails.env.development?
+      return
+    end
+    chefjig.delete_node(node)
+  end
 end
