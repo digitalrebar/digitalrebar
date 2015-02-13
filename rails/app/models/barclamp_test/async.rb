@@ -19,6 +19,7 @@ class BarclampTest::Async < Role
     runlog = []
     service_name = 'async-result'
     file_name = File.join 'tmp', "async_#{nr.id}.txt"
+    Rails.logger.debug("Async Using File #{file_name} as detection token")
     
     runlog << "Processing pieces for #{service_name}"
 

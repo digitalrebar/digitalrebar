@@ -97,19 +97,15 @@ class Node < ActiveRecord::Base
 
   # look at Node state by scanning all node roles.
   def state
-    Node.transaction do
-      node_roles.each do |nr|
-        if nr.proposed?
-          return NodeRole::PROPOSED
-        elsif nr.error?
-          return NodeRole::ERROR
-        elsif nr.transition?
-          return NodeRole::TRANSITION
-        elsif [NodeRole::BLOCKED, NodeRole::TODO].include? nr.state
-          return NodeRole::TODO
-        end
-      end
+    # first look for single items that change the whole node
+    node_roles.each do |nr|
+      return nr.state if [NodeRole::TRANSITION, NodeRole::ERROR, NodeRole::PROPOSED].include? nr.state
     end
+    # then scan for secondary items (ordering could hide the earlier items)
+    node_roles.each do |nr|
+      return NodeRole::TODO if [NodeRole::BLOCKED, NodeRole::TODO].include? nr.state
+    end
+    # fall through (all NRs must be active)
     return NodeRole::ACTIVE
   end
 
