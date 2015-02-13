@@ -51,14 +51,17 @@ ruby_block "Signal success in setting user creds" do
   action :nothing
 end
 
+cmd_list = []
+cmd_list << "user set name #{bmc_userid} #{bmc_user}" unless node["quirks"].member?("ipmi-immutable-rootname")
+cmd_list << "user set password #{bmc_userid} #{bmc_password}"
+cmd_list << "user priv #{bmc_userid} 4 #{chan}"
+cmd_list << "channel setaccess #{chan} #{bmc_userid} callin=on link=on ipmi=on privilege=4" unless node["quirks"].member?("ipmi-crossed-access-channels")
+cmd_list << "user enable #{bmc_userid}"
+cmd_list << "lan set #{chan} access on" unless node["quirks"].member?("ipmi-crossed-access-channels")
+
 ruby_block "Set IPMI credentials and enable LAN channel access" do
   block do
-    ["user set name #{bmc_userid} #{bmc_user}",
-     "user set password #{bmc_userid} #{bmc_password}",
-     "user priv #{bmc_userid} 4 #{chan}",
-     "channel setaccess #{chan} #{bmc_userid} callin=on link=on ipmi=on privilege=4",
-     "user enable #{bmc_userid}",
-     "lan set #{chan} access on"].each do |cmd|
+     cmd_list.each do |cmd|
       IPMI.tool(node,cmd)
       raise "Failed to run #{cmd}" unless $?.exitstatus == 0
     end
