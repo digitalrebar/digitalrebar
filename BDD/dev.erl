@@ -15,6 +15,7 @@
 
 -module(dev).
 -export([pop/0, pop/1, unpop/0, g/1]).  
+-export([watch/1, watch/2]).  
 -include("bdd.hrl").
 
 g(Item)         -> 
@@ -70,6 +71,20 @@ unpop()       ->
   [ remove(N1) || {N1, _, _, _, _} <- buildlist(Build, nodes) ], 
   bdd_crud:delete(node:g(path), g(node_name)),
   bdd:stop([]). 
+
+% watch a URL and inject into the log
+watch(URL)          -> watch(URL, "<<<<<< LOG WATCHER >>>>>>").
+watch(URL, LogMsg)  -> watch(URL, LogMsg, 250, 0).
+watch(URL, LogMsg, Delay, Iter) ->
+  R = eurl:get_http(URL),
+  case Iter rem 4 of
+    1 -> bdd_utils:log(info, dev, watch, "Checking URL ~p every ~p (iteration ~p)", [URL, Delay, Iter]);
+    _ -> noop
+  end,
+  case R#http.code of
+    200 -> timer:sleep(Delay), watch(URL, LogMsg, Delay, Iter+1);
+    _   ->  bdd_utils:marker(LogMsg), R
+  end.
 
 buildlist(Source, Type) ->
   {Type, R} = lists:keyfind(Type, 1, Source),
