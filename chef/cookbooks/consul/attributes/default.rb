@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-default[:consul][:base_url] = 'https://dl.bintray.com/mitchellh/consul/'
+default[:consul][:base_url] = 'http://dl.bintray.com/mitchellh/consul/'
 default[:consul][:version] = '0.4.1'
 default[:consul][:install_dir] = '/usr/local/bin'
 default[:consul][:checksums] = {
