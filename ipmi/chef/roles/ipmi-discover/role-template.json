@@ -29,6 +29,42 @@
                     }
                 }
             },
+            "hp-19-11-bmc": {
+                "quirklist": ["ipmi-crossed-access-channels"],
+                "match": {
+                    "bmcinfo": {
+                        "device_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "19"
+                        },
+                        "mfgr_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "11",
+                            "score": 5
+                        }
+                    }
+                }
+            },
+            "intel-33-343-bmc": {
+                "quirklist": ["ipmi-immutable-rootname"],
+                "match": {
+                    "bmcinfo": {
+                        "device_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "33"
+                        },
+                        "mfgr_id": {
+                            "__sm_leaf": true,
+                            "op": "==",
+                            "match": "343",
+                            "score": 5
+                        }
+                    }
+                }
+            },
             "ibm-2-220-bmc": {
                 "quirklist": ["ipmi-immutable-root"],
                 "match": {
