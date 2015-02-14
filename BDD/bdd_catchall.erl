@@ -16,6 +16,11 @@
 -module(bdd_catchall).
 -export([step/2]).
 
+sleepy(Time, Multiplier, Units) ->
+  {T, _} = string:to_integer(Time),
+  bdd_utils:log(debug, bdd_catchall, step, "zzz...sleeping ~p ~p.", [T, Units]),
+  timer:sleep(T*Multiplier).
+
 step(_Global, {step_given, {Scenario, _N}, ["I mark the logs with",Mark]}) -> 
   URL = bdd_utils:config(marker_url, undefined),
   S = integer_to_list(Scenario),
@@ -29,23 +34,15 @@ step(_Global, {step_given, {Scenario, _N}, ["I mark the logs with",Mark]}) ->
   end;
 
 step(_Result, {_, _N, ["pause", Time, "seconds to", Message]}) -> 
-  {T, _} = string:to_integer(Time),
-  io:format("\t\t\t...paused ~p seconds in order to ~s.~n", [T, Message]),
-  timer:sleep(T*1000);
+  sleepy(Time, 1000, "seconds to "++Message);
 step(_Result, {_S, _N, ["after 1 second"]}) -> step(_Result, {_S, _N, ["after", "1", "seconds"]});
 step(_Result, {_, _N, ["after", Time, "seconds"]}) -> 
-  {T, _} = string:to_integer(Time),
-  io:format("\t\t\tzzz...sleeping ~p seconds.~n", [T]),
-  timer:sleep(T*1000);
+  sleepy(Time, 1000, "seconds");
 step(_Result, {_S, _N, ["after 1 minute"]}) -> step(_Result, {_S, _N, ["after", "1", "minutes"]});
 step(_Result, {_, _N, ["after", Time, "minutes"]}) -> 
-  {T, _} = string:to_integer(Time),
-  io:format("\t\t\tzzz...sleeping ~p minutes.~n", [T]),
-  timer:sleep(T*60000);
+  sleepy(Time, 60000, "minutes");
 step(_Result, {_, _N, ["after", Time, "milliseconds"]}) -> 
-  {T, _} = string:to_integer(Time),
-  io:format("\t\t\tzzz...sleeping ~p milliseconds.~n", [T]),
-  timer:sleep(string:to_integer(T));
+  sleepy(Time, 1, "milliseconds");
 
 step( _Global, {step_setup, _N, _}) -> 
   bdd_utils:log(info, bdd_catchall, step, "No Feature Setup Step.", []);
