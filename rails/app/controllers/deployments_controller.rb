@@ -69,6 +69,32 @@ class DeploymentsController < ApplicationController
     render api_delete @deployment
   end
 
+  def status 
+    id = params[:id]
+
+    nr = if id
+      Deployment.find_key(id).node_roles
+    else
+      NodeRole.all
+    end
+
+    out = {
+      'id' => id || -1,
+      'node_roles' => {}
+    }
+
+    nr.each do |role|
+      state = role.state
+      #state = rand(4) #testing random states (for updating)
+      out['node_roles'][role.id] = {
+        'status' => NodeRole::STATES[state],
+        'state' => state
+      }
+    end
+
+    render api_array out.to_json
+  end
+
   def anneal
     @deployment = Deployment.find_key params[:deployment_id]
     @list = NodeRole.peers_by_state(@deployment, NodeRole::TRANSITION).order("cohort,id")
