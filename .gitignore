@@ -15,6 +15,7 @@
 .#*
 *~
 *.dia.autosave
+install-*.log
 
 # BDD files
 /BDD/erl_crash.dump
