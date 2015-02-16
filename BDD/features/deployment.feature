@@ -50,3 +50,31 @@ Feature: Deployments
     Then I should see a link to "system"
     Finally REST removes the {object:deployment} "bdd_deploy_child_ui"
   
+  Scenario: Validate deployment status
+    Given there is a {object:deployment} "status1"
+    When REST requests the "/api/status/deployments/status1" page
+    Then Array key "id" matches "([\\d])"
+      And Array key "status" matches "([proposed])"
+      And Array key "state" matches "([0-5])"
+      And Array key "md5" is an empty string
+      And Array contains key "node_roles"
+    Finally REST removes the {object:deployment} "status1"
+
+Scenario: Validate deployment status all
+    Skip while ZEHICLE figures out 404 on this page
+    When REST requests the "/api/status/deployments/" page
+    Then Array key "id" matches "-1"
+      And Array key "status" matches "([unknown])"
+      And Array key "state" matches "-1"
+      And Array key "md5" is an empty string
+      And Array contains key "node_roles"
+
+  Scenario: Validate system deployment status
+    Given there is a {object:node} "status1"
+    When REST requests the "/api/status/deployments/system" page
+    Then Array key "id" matches "1"
+      And Array key "status" matches "([active|committed])"
+      And Array key "state" matches "([0-5])"
+      And Array key "md5" matches "([\\da-f]{32})"
+      And Array contains key "node_roles"
+    Finally REST removes the {object:node} "status1"
