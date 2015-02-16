@@ -156,7 +156,7 @@ NODE_ROLE_ID=`crowbar noderoles list | grep -B2 -A2 "\"role_id\":$ROLE_ID" | gre
 NODE_ROLE_ID=${NODE_ROLE_ID##*:}
 NODE_ROLE_ID=${NODE_ROLE_ID%,}
 if [ "$DNS_FORWARDER" != "" ] ; then
-    crowbar noderoles set $NODE_ROLE_ID attrib dns-domain to "{ \"value\": [ \"$DNS_FORWARDER\" ] }"
+    crowbar noderoles set $NODE_ROLE_ID attrib dns-forwarders to "{ \"value\": [ \"$DNS_FORWARDER\" ] }"
 fi
 
 # Example external dns server - use instead of dns-database above
