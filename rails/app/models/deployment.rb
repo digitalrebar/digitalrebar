@@ -111,7 +111,7 @@ class Deployment < ActiveRecord::Base
 
   # returns a md5 sum of all of the node ids
   def node_role_md5
-    return '' if node_roles.count == 0
+    return '' if !node_roles || node_roles.count == 0
     data = node_roles.map(&:id)*'_'
     return Digest::MD5.hexdigest(data)
   end
