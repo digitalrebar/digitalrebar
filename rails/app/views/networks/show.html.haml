@@ -1,5 +1,8 @@
 %h1= @network.name
 
+- if @network.role.nil?
+  %span=t '.role_missing'
+
 = render :partial => 'networks/show', :locals  => { :network => @network } 
 
 %h2= t '.ranges'

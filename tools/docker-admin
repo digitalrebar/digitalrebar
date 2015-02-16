@@ -94,4 +94,8 @@ docker_args+=("--privileged")
 # Run whatever we specified to run inside a container.
 sudo rm -rf "$HOME/.cache/opencrowbar/tftpboot/nodes"
 docker run "${docker_args[@]}" "$image" /opt/opencrowbar/core/tools/docker-init.sh "$@"
+
+# helpful reminder for docker hygene
+echo "now may be a good time to run: docker ps -q -a | xargs docker rm"
+
 exit $?

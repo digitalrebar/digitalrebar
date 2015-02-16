@@ -24,6 +24,13 @@ if [[ $TMUX ]]; then
 fi
 
 cd /opt/opencrowbar/core
+
+# cleanup logs
+if [ -f rails/log/development.log ]; then
+  rm rails/log/development.log
+fi
+
+# bootstrap
 . ./bootstrap.sh
 
 if [[ $http_proxy && !$upstream_proxy ]] && ! pidof squid; then

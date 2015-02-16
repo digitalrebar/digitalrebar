@@ -132,8 +132,8 @@ class Network < ActiveRecord::Base
   end
 
   def role
-    bc = Barclamp.where(:name => "network").first
-    Role.where(:name => "network-#{name}", :barclamp_id => bc.id).first
+    bc = Barclamp.where(name: "network").first
+    bc.roles.where(name: "network-#{name}").first
   end
 
   def node_allocations(node)
@@ -270,9 +270,8 @@ class Network < ActiveRecord::Base
   end
 
   def remove_role
-    rid = self.id
-    Role.destroy_all :name=>"network-#{name}"
-    Attrib.destroy_all :role_id => rid
+    role = self.role
+    role.destroy! if role  # just in case the role was lost, we still want to be able to delete
     # Also destroy the hints
     ["v4addr","v6addr"].each do |n|
       Attrib.destroy_all(name: "hint-#{name}-v4addr")

@@ -64,6 +64,7 @@ en:
       <<: *network_common
     show:
       <<: *network_common
+      role_missing: "WARNING: Missing Network Role Mapping!"
     map:
       title: "Network-Node Map"
       node: "Node"
