@@ -30,9 +30,6 @@ Feature: Hammers API
     When I go to the "available_hammers" page
     Then I should see a heading {bdd:crowbar.i18n.available_hammers.index.title}
       And I should see "ssh"
-      And I should see "ipmi"
-      And I should see "wsman"
-      And I should see "raid-hammer"
       And there should be no translation errors
 
   Scenario: Available Hammers UI Drill Down Test
