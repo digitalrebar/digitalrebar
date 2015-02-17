@@ -111,8 +111,10 @@ en:
     utils_description: "Tools and System Functions "
     util_logs: "Exported Items"
     util_logs_description: "Download information complied for review"
-    jigs: "Installed Jigs"
+    jigs: "Jigs"
     jigs_description: "Configuration Manager Plug-ins"
+    hammers: "Hammers"
+    hammers_description: "External Interface Mechanisms"
     barclamps: "Barclamps"
     barclamps_description: "Provisioning and Operations Modules "
     bootstrap: "Bootstrap"
@@ -435,6 +437,38 @@ en:
       value: "Value"
       save: "Update"
       error: "Render Error"
+  available_hammers:
+    index:
+      id: "ID"
+      title: "Available Hammers"
+      name: "Name"
+      klass: "Class"
+      priority: "Priority"
+      hammers: "Hammer Count"
+    show:
+      name: "Name"
+      class: "Class"
+      priority: "Priority"
+      hammers: "Implemented Hammers"
+  hammers:
+    index:
+      title: "Hammers"
+      name: "Name"
+      authenticator: "Authenticator"
+      endpoint: "End Point"
+      priority: "Priority"
+      username: "Username"
+      nodes: "Node"
+    show:
+      id: "ID"
+      title: "%{hammer} on %{node}"
+      name: "Name"
+      authenticator: "Authenticator"
+      endpoint: "End Point"
+      priority: "Priority"
+      username: "Username"
+      nodes: "Node"
+      hammer: "Hammer"
   roles:
     common: &roles_common
       flags: "Flags"

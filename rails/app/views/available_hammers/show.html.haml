@@ -1,0 +1,13 @@
+%h1= @hammer.name
+
+%dl
+  = dl_item t('.name'), @hammer.name
+  = dl_item t('.class'), @hammer.klass
+  = dl_item t('.priority'), @hammer.priority
+
+%h3= t '.hammers'
+
+- if @hammer.hammers.count > 0
+  = render :partial => 'hammers/index', :locals => { :hammers => @hammer.hammers }
+- else
+  = t 'no_items'

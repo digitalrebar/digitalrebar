@@ -41,8 +41,9 @@ class Hammer < ActiveRecord::Base
     Hammer.create!(args)
   end
 
-  def as_json
-    super(methods: :actions)
+  def as_json(args)
+    args[:methods] = :actions
+    super(args)
   end
 
   def actions
