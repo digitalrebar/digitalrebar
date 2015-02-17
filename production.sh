@@ -60,8 +60,10 @@ echo "${FQDN#*.}" > /etc/domainname
 
 export FQDN
 
-./crowbar-boot.sh
-./crowbar-consul.sh
-./crowbar-database.sh
-./crowbar-core.sh
-./crowbar-config.sh
+rm -rf install-*.log
+./crowbar-boot.sh 2>&1 | tee -a install-boot.log
+./crowbar-consul.sh 2>&1 | tee -a install-consul.log
+./crowbar-database.sh 2>&1 | tee -a install-database.log
+./crowbar-core.sh 2>&1 | tee -a install-core.log
+./crowbar-config.sh 2>&1 | tee -a install-config.log
+
