@@ -28,6 +28,17 @@
     = link_to t(".#{meth.to_s}"), "/api/v2/nodes/#{@node.id}/power?poweraction=#{meth.to_s}", :method=>:put, :class => 'button', :'data-remote' => true,:'data-confirm' => t('are_you_sure') 
 
 %h3= t '.addresses'
+
+%dl
+  - switch = @node.attrib_switches.detect{ |k, v| v["link"] }.second  rescue nil # get the first active switch
+  - if switch and switch.length > 0
+    -if switch["unit"].eql? "-1"
+      = dl_item(t('.switch_name_port'), "#{switch["name"]} / #{switch["port"]}")
+    -else
+      = dl_item(t('.switch_name_unit_port'), "#{switch["name"]} / #{switch["unit"]} / #{switch["port"]}")
+  - else
+    = dl_item(t('.switch_name'), t('.switch_no_link'))
+
 %table.data.box
   %thead
     %tr
