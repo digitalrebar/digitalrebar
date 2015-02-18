@@ -353,7 +353,7 @@ en:
       node_roles: "In Process Actions"
       alive: "Alive"
       available: "Available"
-      addresses: "Addresses"
+      addresses: "Networking"
       all_node_roles: "All Node Roles"
       admin: "(Admin)"
       system: "(System)"
@@ -368,6 +368,8 @@ en:
       ip: IP Address
       status: Status
       state: State
+      vendor: "System Type"
+      serial: "Serial #"
       hardware: Hardware
       switch_name: "Switch Name"
       switch_port: "Switch Port"
@@ -389,7 +391,7 @@ en:
       release: "Release"
       bootenv: "Boot Environment"
       power: "Available Power Actions"
-      network: Network"
+      network: "Network"
       range: "Range"
       address: "Address"
       conduit: "Conduit"
