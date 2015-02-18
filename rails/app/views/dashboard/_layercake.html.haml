@@ -2,6 +2,16 @@
 %div.dots
   - @layers[layer].each do |nr|
     - unless nr.nil?
-      %span.led{:style=>"float:left", :class => NodeRole::STATES[nr.state || NodeRole::ERROR], 
+      - working = true
+      - node_led = 'on'
+      - if !nr.node.available
+        - node_led = (nr.node.alive ? 'reserved' : 'idle')
+        - working = false
+      - elsif !nr.node.alive
+        - node_led = 'off'
+        - working = false
+      - nr_led = NodeRole::STATES[nr.state || NodeRole::ERROR]
+      - nr_led = "wait" if !working and nr.state == NodeRole::TODO 
+      %span.led{:style=>"float:left", :class => nr_led, 
                   :title=>"#{nr.node.alias} #{nr.role.name}"}
         = link_to "&nbsp;&nbsp;&nbsp;&nbsp;".html_safe, node_role_path(nr.id)

@@ -47,6 +47,7 @@ script:
   - RAILS_ENV=test bundle exec rake db:seed
   - RAILS_ENV=test bundle exec rake test
   - RAILS_ENV=test bundle exec rspec
+  - sleep 10
 
 after_failure:
   - erl -s bdd failed travis -s init stop -noshell
