@@ -123,8 +123,7 @@ class ApplicationController < ActionController::Base
   # formats API json for output
   # using this makes it easier to update the API format for all models
   def api_show(o, type_override=nil)
-    ret = o.as_json
-    return {:json=>ret, :content_type=>cb_content_type(o, "obj", type_override) }
+    return {:json=>o, :content_type=>cb_content_type(o, "obj", type_override) }
   end
 
   # formats API for delete

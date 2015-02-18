@@ -53,7 +53,7 @@
   - if @nodes.count > 0 or  @roles.count > 0
     %thead
       %tr
-        %th.anode= link_to t('.nodes'), bulk_edit_path()
+        %th.anode{colspan: 2}= link_to t('.nodes'), bulk_edit_path()
         - @roles.each do |dr|
           %th.dr{:id=>dr.id}
             %div
@@ -61,7 +61,18 @@
               = link_to name, deployment_role_path(dr.id), :title=>dr.role.description
     %tbody
       - @nodes.each do |node|
-        %tr.node{:id => node.id, :class => cycle(:odd, :even) }
+        - working = true
+        - node_led = 'on'
+        - if !node.available
+          - node_led = (node.alive ? 'reserved' : 'idle')
+          - working = false
+        - elsif !node.alive
+          - node_led = 'off'
+          - working = false
+        %tr.node{id: node.id, class: cycle(:odd, :even), working: working.to_s }
+          %td
+            - unless working
+              = image_tag "icons/led/#{node_led}.png", {title: t(node_led, scope: "common.state")}
           %td.nodename
             = link_to node.alias, node_path(node.id), :title=>node.description
             - unless node.deployment_id == @deployment.id
@@ -73,8 +84,10 @@
             - id = (!nr.nil? ? nr.id : ((dr.role.noop? and state == Deployment::PROPOSED) ? -1 : 0))
             %td.noderole{:style=>"text-align:center", :id=>id, :dr=>dr.id}
               - if nr
+                - nr_led = NodeRole::STATES[nr.state || NodeRole::ERROR]
+                - nr_led = "wait" if !working and nr.state == NodeRole::TODO 
                 %span{:align=>'center'}
-                  .led{:style=>"width:16px; margin:0px auto; text-align:center", :class => NodeRole::STATES[nr.state || NodeRole::ERROR], :title=>nr.role.name}
+                  .led{:style=>"width:16px; margin:0px auto; text-align:center", :class => nr_led, :title=>nr.role.name}
                     = link_to "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".html_safe, node_role_path(nr.id)
               - elsif state == Deployment::PROPOSED
                 - display = (dr.role.noop? ? "inline" : "none" )

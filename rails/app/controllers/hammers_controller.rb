@@ -15,18 +15,26 @@
 #
 class HammersController < ApplicationController
 
-  # API GET /crowbar/v2/hammers
+
+  # API GET /api/v2/hammers
   def index
-    render api_index(Hammer,
-                     if params.has_key?(:node_id)
-                       Node.find_key(params[:group_id]).hammers
-                     else
-                       Hammer.all
-                     end)
+    @hammers = if params.has_key?(:node_id)
+      Node.find_key (params[:node_id]).hammers
+    else
+      Hammer.all
+    end
+    respond_to do |format|
+      format.html { } 
+      format.json { render api_index Hammer, @hammers }
+    end
   end
 
   def show
-    render api_show Hammer.find_key(params[:id])
+    @hammer = Hammer.find_key(params[:id])
+    respond_to do |format|
+      format.html {  }
+      format.json { render api_show @hammer }
+    end
   end
 
   def update

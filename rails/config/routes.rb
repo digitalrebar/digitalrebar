@@ -46,6 +46,8 @@ Crowbar::Application.routes.draw do
   resources :docs, constraints: {id: /[^\?]*/}
 
   resources :groups
+  resources :hammers
+  resources :available_hammers
   resources :jigs
   resources :node_roles  do
     put :retry

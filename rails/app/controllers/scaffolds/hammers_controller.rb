@@ -1,4 +1,4 @@
-# Copyright 2014, Dell
+# Copyright 2015, RackN, Rob Hirschfeld
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,24 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-#
-class AvailableHammersController < ApplicationController
 
-  # API GET /api/v2/available_hammers
-  def index
-    @hammers = AvailableHammer.order('priority')
-    respond_to do |format|
-      format.html { } # show.html.erb
-      format.json { render api_index AvailableHammer, @hammers }
-    end
+class Scaffolds::HammersController < ApplicationController
+  active_scaffold :hammer do |conf|
   end
-
-  def show
-    @hammer = AvailableHammer.find_key params[:id]
-    respond_to do |format|
-      format.html {  }
-      format.json { render api_show @hammer }
-    end
-  end
-
-end
+end 

@@ -1,0 +1,20 @@
+%table.data.box
+  %thead
+    %tr
+      %th= t '.nodes'
+      %th= t '.name'
+      %th= t '.authenticator'
+      %th= t '.endpoint'
+      %th= t '.priority'
+      %th= t '.endpoint'
+      %th= t '.username'
+  %tbody
+    - hammers.each do |h|
+      %tr.hammer{ :class => cycle(:odd, :even) }
+        %td= link_to h.node.name, node_path(id: h.node.id)
+        %td= link_to h.name, hammer_path(id: h.id)
+        %td= h.authenticator || t('not_set')
+        %td= h.endpoint || t('not_set')
+        %td= h.priority
+        %td= h.endpoint || t('not_set')
+        %td= h.username
