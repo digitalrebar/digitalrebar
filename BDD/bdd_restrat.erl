@@ -310,6 +310,16 @@ step(Result, {step_then, {_Scenario, _N}, ["Array contains",Item]}) ->
   bdd_utils:log(debug, bdd_restrat, step, "looking for ~p in array ~p",[Item, Array#array.data]),
   lists:member(Item,Array#array.data);
 
+step(Result, {step_then, {_Scenario, _N}, ["Array contains key",Key]}) -> 
+  Array = eurl:get_result(Result, array),
+  bdd_utils:log(debug, bdd_restrat, step, "looking for key ~p in array ~p",[Key, Array#array.data]),
+  json:value(Array#array.data, Key) =/= ok;
+
+step(Result, {step_then, {_Scenario, _N}, ["Array key",Key,"is an empty string"]}) -> 
+  Array = eurl:get_result(Result, array),
+  bdd_utils:log(debug, bdd_restrat, step, "looking for key ~p with empty string in array ~p",[Key, Array#array.data]),
+  json:value(Array#array.data, Key) =:= "";
+
 step(Result, {step_then, {_Scenario, _N}, ["Array matches",Item]}) -> 
   Array = eurl:get_result(Result, array),
   bdd_utils:log(debug, bdd_restrat, step, "looking for ~p in array ~p",[Item, Array#array.data]),
