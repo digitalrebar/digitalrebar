@@ -2,7 +2,6 @@
 
 - if @list.length == 0
   %p= t '.no_nodes'
-  %p= link_to t('.bootstrap'), bootstrap_path, :class=>'button'
 - else
   = render :partial => 'index', :locals=>{:nodes => @list}
 

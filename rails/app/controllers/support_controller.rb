@@ -92,15 +92,7 @@ class SupportController < ApplicationController
     end
   end
 
-  def bootstrap
-    @attribs = []
-    @attribs << [Role.find_key("dns-server"), Attrib.find_key("dns_servers")]
-    @attribs << [Role.find_key("dns-server"), Attrib.find_key("dns-forwarders")]
-    @attribs << [Role.find_key("ntp-server"), Attrib.find_key("ntp_servers")]
-    @node = Node.admin.first
-    @net = Network.find_key("admin")
-  end
-
+  # used by BDD to create Admin node
   def bootstrap_post
     # only create if no other netwroks
     if Network.where(:name=>Network::ADMIN_NET).count == 0

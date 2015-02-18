@@ -58,7 +58,6 @@ ActiveRecord::Base.transaction do
   # utils
   Nav.find_or_create_by(item: 'utils', parent_item: 'root', name: 'nav.utils', description: 'nav.utils_description', path: "main_app.utils_path", order: 6000)
   Nav.find_or_create_by(item: 'utils_child', parent_item: 'utils', name: 'nav.utils', description: 'nav.utils_description', path: "main_app.utils_path", order: 100)
-  Nav.find_or_create_by(item: 'bootstrap', parent_item: 'utils', name: 'nav.bootstrap', description: 'nav.bootstrap_description', path: "main_app.bootstrap_path", order: 150)
   Nav.find_or_create_by(item: 'util_index', parent_item: 'utils', name: 'nav.util_logs', description: 'nav.util_logs_description', path: "main_app.utils_path", order: 200)
   Nav.find_or_create_by(item: 'jigs', parent_item: 'utils', name: 'nav.jigs', description: 'nav.jigs_description', path: "main_app.jigs_path", order: 300)
   Nav.find_or_create_by(item: 'hammers', parent_item: 'utils', name: 'nav.hammers', description: 'nav.hammers_description', path: "main_app.available_hammers_path", order: 400)

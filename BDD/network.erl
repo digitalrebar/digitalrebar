@@ -51,7 +51,7 @@ json(Name, Description, Order) ->
 make_admin() ->
   Test = eurl:get_http(eurl:path([g(path),"admin"])),
   if Test#http.code == 404 ->
-      URI = eurl:path(["utils","bootstrap"]),
+      URI = eurl:path(["support","bootstrap"]),
       R = eurl:put_post(URI, [], post),
       bdd_utils:log(debug, network, make_admin, "Code: ~p, URL: ~p", [R#http.code, R#http.url]);
     true -> 
