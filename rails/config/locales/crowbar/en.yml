@@ -117,8 +117,6 @@ en:
     hammers_description: "External Interface Mechanisms"
     barclamps: "Barclamps"
     barclamps_description: "Provisioning and Operations Modules "
-    bootstrap: "Bootstrap"
-    bootstrap_description: "Review Settings for Initial Configuration"
 
     help: Help
     help_description: Help
@@ -346,7 +344,6 @@ en:
       admin: "Admin?"
       alias: "Alias"
       no_nodes: "No Nodes Registered.  Suggested action: configure Crowbar."
-      bootstrap: "Configure System"
       <<: *deployment_common
       <<: *node_role_states
     show:
@@ -527,32 +524,6 @@ en:
 #      delete_succeeded: Delete Succeeded
 #      delete_failed: Delete Failed
 #      wait: "Exporting... Please wait or check back later (screen will automatically update when complete)"
-    bootstrap:
-      title: "Initial System Configuration"
-      admin_server: "Assign Admin Node"
-      admin_net: "Create Admin Network"
-      bmc_net: "Create BMC Network"
-      bind_admin_server: "Bind Roles"
-      attribs: "Review Key Attributes"
-      start_server: "Activate Admin Node"
-      monitor: "Monitor Installation"
-      create: "Add '%{server}' Node"
-      add: "Add '%{role}' Role"
-      anneal: "Annealer View"
-      hint: 'Select Role to edit initial settings'
-      attrib: 'Attribute'
-      value: 'Value'
-      ui_renderer: "Debug"
-      name: "Name"
-      description: 'Description'
-      deployment: 'Deployment'
-      vlan: "VLAN"
-      v6prefix: "IPv6 Prefix"
-      bridge: "Bridge"
-      team: "Team"
-      conduit: "Conduit"
-      ranges: "Ranges"
-      start: "Start Server"
     settings:
       name: "Name"
       value: "Value"
