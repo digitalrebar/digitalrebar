@@ -45,7 +45,13 @@ class User < ActiveRecord::Base
   def self.name_column
     :username
   end
-  
+ 
+  def as_json(args)
+    # brings devise method into Crowbar json
+    args[:methods] = :is_locked
+    super(args)
+  end
+
   def self.find_by_id_or_username(id)
     if id.kind_of?(Integer)
       ret = find(id)
@@ -62,6 +68,10 @@ class User < ActiveRecord::Base
     self.encrypted_password = digester(new_pass)
   end
   
+  def is_locked
+    access_locked?
+  end
+
   def email_required?
     false
   end

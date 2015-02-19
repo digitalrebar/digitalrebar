@@ -122,7 +122,7 @@ class UsersController < ApplicationController
           ret = [500, ex.message]
       end  if ret[0]==200
       return render :text => ret[1], :status => ret[0] unless ret[0] == 200
-      render :json => @user.to_json
+      render api_show @user
     end
    end
   end
@@ -144,7 +144,7 @@ class UsersController < ApplicationController
       format.json do
         ret = update_admin(true) if ret[0] == 200
         return render :text => ret[1], :status => ret[0] unless ret[0] == 200
-        render :json => @user.to_json
+        render api_show @user
       end
     end
   end

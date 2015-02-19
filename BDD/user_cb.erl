@@ -42,12 +42,13 @@ g(Item) ->
 validate(JSON) when is_record(JSON, obj) ->
   J = JSON#obj.data,
   R = [ JSON#obj.type == "user",
-        bdd_utils:is_a(J, length, 6),
+        bdd_utils:is_a(J, length, 7),
         bdd_utils:is_a(J, string, created_at), 
         bdd_utils:is_a(J, string, updated_at), 
         bdd_utils:is_a(J, name, username),
         bdd_utils:is_a(J, string, email),
         bdd_utils:is_a(J, boolean, is_admin),
+        bdd_utils:is_a(J, boolean, is_locked),
         bdd_utils:is_a(J, dbid, id)],
   bdd_utils:assert(R).
 
@@ -67,17 +68,29 @@ json(Username, Email, Password, Password_Confirmation, Remember_Me, Is_Admin) ->
 json_update(Username, Email, Remember_Me, Is_Admin) ->
   json:output([{"username",Username},{"email", Email},{"remember_me", Remember_Me},{"is_admin", Is_Admin}]).
 
-json_reset_password(Username, Password) ->
-  json:output([{"username",Username},{"password", Password},{"password_confirmation", Password}]).
-
-fetch_user(Result, N, Username) ->
-  {_Atom, List, _Path} = bdd_restrat:step(Result, {step_when, N, ["REST requests the", eurl:path(g(path),Username),"page"]}),
-  bdd_utils:log(debug, "users:step Fetch User: ~p", [List]),
-  List.
+json_reset_password(Password) ->
+  json:output([{"password", Password},{"password_confirmation", Password}]).
 
 email()               -> email(g(username)).
 email(User)           -> email(User, g(domain)).
 email(User, Domain)   -> User ++integer_to_list(random:uniform(100000)) ++ "@" ++ Domain.
+
+get_user(Username) ->
+  GetPath = eurl:path([bdd_restrat:alias(user, g, [path]), Username]),
+  Result = eurl:get_http(GetPath),
+  bdd_utils:log(debug, users, step, "Updating user returned: ~p", [Result]),
+  [Result, bdd_restrat:get_object(Result)].
+
+user_action(Username, Action, Verb) ->
+  Path = eurl:path([bdd_restrat:alias(user, g, [path]), Username, Action]),
+  R = case Verb of
+    delete -> eurl:delete(Path);
+    post -> eurl:put_post(Path, [], post)
+  end,
+  bdd_utils:log(debug, "Removed user ~p ~p ~p returned: ~p", [Username, Action, Verb, R]),
+  200 = R#http.code,
+  get_user(Username).
+
 
 %setup, takes care of create               
 step(_Global, {step_setup, _N, _}) -> 
@@ -93,13 +106,13 @@ step(_Global, {step_teardown, _N, _}) ->
 % GIVEN STEP =======================================================
 
 step(_Global, {step_given, _N, ["there is not a user", Username]}) -> 
-  bdd_utils:log(trace, "users:step there is not a user: ~p", [Username]),
+  bdd_utils:log(debug, "users:step there is not a user: ~p", [Username]),
   R = eurl:delete(g(path),Username,all),
   bdd_utils:log(debug, users, step, "there is not a user: ~p, returning: ~p", [Username,R]),
   R;
 
 step(_Global, {step_given, _N, ["there is a user", Username, "with email", Email]}) -> 
-  bdd_utils:log(trace, "users:step there is a user: ~p", [Username]),
+  bdd_utils:log(debug, "users:step there is a user: ~p", [Username]),
   User = json(Username, Email, g(password), g(password_confirmation), g(remember_me), g(is_admin)),
   R = bdd_restrat:create(g(path),username,User),
   bdd_utils:log(debug, "users:step Created user: ~p", [User]),
@@ -108,67 +121,71 @@ step(_Global, {step_given, _N, ["there is a user", Username, "with email", Email
 step(_Global, {step_given, _N, ["there is a user", Username]}) -> 
   step(_Global, {step_given, _N, ["there is a user", Username, "with email", g(test_email)]});  
 
-step(_Global, {step_given, _N, ["there is an admin user", Username]}) -> 
-  bdd_utils:log(trace, "users:step there is an admin user: ~p", [Username]),
+step(_Global, {step_given, {Scenario, _N}, ["there is an admin",user, Username]}) -> 
+  bdd_utils:log(debug, users, step, "there is an admin user: ~p", [Username]),
   User = json(Username, g(test_email), g(password), g(password_confirmation), g(remember_me), true),
-  R = bdd_restrat:create(g(path),username,User),
-  bdd_utils:log(debug, "users:step Created admin user: ~p", [User]),
+  R = bdd_restrat:create(g(path),User,user,Scenario),
+  bdd_utils:log(debug, users, step, "Created admin user: ~p result ~p", [User, R]),
   R;
 
 % WHEN STEP =======================================================
 
 step( _Given, {step_when, _N, ["REST elevates user", Username, "to administrator"]}) -> 
-   bdd_utils:log(debug, "Elevating user: ~p, to administrator", [Username]),
-   R = json:parse(eurl:put_post(g(path)++"/"++Username++"/admin", [], post)),
-   bdd_utils:log(trace, "Make user admin returned: ~p", [R]),
-   R;
+  bdd_utils:log(debug, user, step, "Elevating user: ~p, to administrator", [Username]),
+  user_action(Username, "admin", post);
 
 step(_Given, {step_when, _N, ["REST removes admin privilege for user", Username]}) -> 
-   bdd_utils:log(debug, "Removing admin privilege for user: ~p", [Username]),
-   R = eurl:delete(g(path)++"/"++Username++"/admin",[]),
-   bdd_utils:log(trace, "Removed user admin returned: ~p", [R]),
-   R;
+  bdd_utils:log(debug, "Removing admin privilege for user: ~p", [Username]),
+  user_action(Username, "admin", delete);
 
 step(_Given, {step_when, _N, ["REST modifies user", Username, "setting email to", Email]}) -> 
-   bdd_utils:log(trace, "users:step Updating user: ~p, setting email to: ~p", [Username,Email]),
-   User = json_update(Username, Email, g(remember_me), g(is_admin)),
-   R = bdd_restrat:update(g(path)++"/"++Username, update ,username, User),
-   bdd_utils:log(debug, "users:step Updating user returned: ~p", [R]),
-   R;
+  bdd_utils:log(debug,  users, step, "Updating user: ~p, setting email to: ~p", [Username,Email]),
+  JSON = json_update(Username, Email, g(remember_me), g(is_admin)),
+  Path = eurl:path([bdd_restrat:alias(user, g, [path]), Username]),
+  Result = eurl:put_post(Path, JSON, put),
+  bdd_utils:log(debug, users, step, "Updating user returned: ~p", [Result]),
+  [Result, bdd_restrat:get_object(Result)];
 
-step(_Given, {step_when, _N, ["REST modifies user", Username, "setting password and password_confirmation to", Password]}) -> 
-   bdd_utils:log(trace, "users:step Updating user: ~p, resetting password to: ~p", [Username,Password]),
-   User = json_reset_password(Username, Password),
-   R = bdd_restrat:update(g(path)++"/"++Username++"/reset_password", update ,username, User),
-   bdd_utils:log(debug, "users:step Updating user returned: ~p", [R]),
-   R;
+step(_Given, {step_when, _N, ["REST modifies", user, Username, "setting password and password_confirmation to", Password]}) -> 
+  bdd_utils:log(debug, users, step, "Updating user: ~p, resetting password to: ~p", [Username,Password]),
+  JSON = json_reset_password(Password),
+  Path = eurl:path([bdd_restrat:alias(user, g, [path]), Username, "reset_password"]),
+  Result = eurl:put_post(Path, JSON, put),
+  bdd_utils:log(debug, users, step, "Updating user returned: ~p", [Result]),
+  [Result, bdd_restrat:get_object(Result)];
 
-step(_Given, {step_when, _N, ["REST locks user", Username]}) -> 
-   bdd_utils:log(debug, "Locking user: ~p", [Username]),
-   R = json:parse(eurl:put_post(g(path)++"/"++Username++"/lock", [], post)),
-   bdd_utils:log(trace, "Lock user returned: ~p", [R]),
-   R;
+step(_Given, {step_when, _N, ["REST locks",user, Username]}) -> 
+  bdd_utils:log(debug, users, step, "Locking user: ~p", [Username]),
+  user_action(Username, "lock", post);
 
-step(_Given, {step_when, _N, ["REST unlocks user", Username]}) -> 
-   bdd_utils:log(trace, "Unlocking user: ~p", [Username]),
-   R = eurl:delete(g(path)++"/"++Username++"/lock",[]),
-   bdd_utils:log(debug, "Unlock user returned: ~p", [R]),
-   R;
+step(_Given, {step_when, _N, ["REST unlocks",user, Username]}) -> 
+   bdd_utils:log(debug, "Unlocking user: ~p", [Username]),
+  user_action(Username, "lock", delete);
 
 % THEN STEP  =======================================================
 
-step(_Result, {step_then, _N, ["the user",Username, "email should be", Email]}) -> 
-   bdd_utils:log(trace, "users:step Checking user: ~p email has been set to: ~p", [Username,Email]),
-   User_JSON = fetch_user(_Result, _N, Username),
-   _Email = element(2,lists:keyfind("email", 1, User_JSON)), 
-   bdd_utils:log(trace, "users:step Checking user _Email: ~p ", [_Email]), 
-   bdd_utils:log(trace, "users:step Checking user (_Email == Email): ~p ", [(_Email == Email)]), 
-   (_Email == Email);
+step(_Result, {step_then, _N, ["I verify",user,Username,"uses password",Password]}) ->
+  % keep the current user
+  BDDUser = bdd_utils:config(user),
+  BDDPass = bdd_utils:config(password),
+  URL = bdd_utils:config(url),
+  bdd_utils:config_set(user, Username),
+  bdd_utils:config_set(password, Password),
+  R = simple_auth:authenticate_session(URL),
+  bdd_utils:log(debug, user_cb, step, "Verify user ~p with ~p returned ~p", [Username, Password, R]),
+  % put it back
+  bdd_utils:config_set(user, BDDUser),
+  bdd_utils:config_set(password, BDDPass),
+  {auth_field, _} = simple_auth:authenticate_session(URL),
+  case R of
+    {auth_field, _} -> true;
+    {auth_error, _} -> false;
+    _ -> false
+  end;
 
-step(_Result, {step_then, _N, ["the user",Username, "is_admin should be", Is_Admin]}) -> 
-   bdd_utils:log(trace, "users:step Checking user: ~p is_admin has been set to: ~p", [Username,Is_Admin]),
-   User_JSON = fetch_user(_Result, _N, Username),
-   _Is_Admin = element(2,lists:keyfind("is_admin", 1, User_JSON)), 
-   bdd_utils:log(trace, "users:step Checking user _Is_Admin: ~p ", [_Is_Admin]), 
-   bdd_utils:log(trace, "users:step Checking user (_Is_Admin == Is_Admin): ~p ", [(_Is_Admin == Is_Admin)]), 
-   (_Is_Admin == Is_Admin).
+step(Result, {step_then, _N, ["the user field",Field, "should be", Value]}) -> 
+   bdd_utils:log(debug, users, step, "Checking user field ~p has been set to ~p", [Field, Value]),
+   R = eurl:get_result(Result, obj),
+   {Field, RValue} = lists:keyfind(Field, 1, R#obj.data), 
+   bdd_utils:log(debug, "users:step Checking ~p = ~p (~p)", [Value, RValue, Value == RValue]), 
+   (RValue == Value).

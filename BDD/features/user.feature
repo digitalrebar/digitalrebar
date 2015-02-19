@@ -100,44 +100,44 @@ Feature: User
     Given there is not a {object:user} "test_user_12"
     When REST creates the {object:user} "test_user_12"
     Then the {object:user} is properly formatted
+      And the user field "is_locked" should be "false"
+      And the user field "is_admin" should be "false"
     Finally REST removes the {object:user} "test_user_12"
     
   Scenario: REST Updates a user email
-    Skip ZEHICLE refactoring
     Given there is a {object:user} "test_user_1"
     When REST modifies user "test_user_1" setting email to "test_user_zed@test.com" 
-    Then the user "test_user_1" email should be "test_user_zed@test.com"
-    Finally REST removes the user "test_user_1"
+    Then the user field "email" should be "test_user_zed@test.com"
+    Finally REST removes the {object:user} "test_user_1"
     
   Scenario: REST makes user admin
-    Skip ZEHICLE refactoring
-    Given there is a {object:user} "test_user_1"
-    When REST elevates user "test_user_1" to administrator
-    Then the user "test_user_1" is_admin should be "true"
-    Finally REST removes the {object:user} "test_user_1"
+    Given there is a {object:user} "test_user_2"
+    When REST elevates user "test_user_2" to administrator
+    Then the user field "is_admin" should be "true"
+    Finally REST removes the {object:user} "test_user_2"
     
   Scenario: REST remove user admin
-    Skip ZEHICLE refactoring
-    Given there is an admin {object:user} "test_user_1"
-    When REST removes admin privilege for user "test_user_1"
-    Then the {object:user} "test_user_1" is_admin should be "false"
-    Finally REST removes the user "test_user_1"
+    Given there is an admin {object:user} "test_user_3"
+    When REST removes admin privilege for user "test_user_3"
+    Then the user field "is_admin" should be "false"
+    Finally REST removes the {object:user} "test_user_3"
     
   Scenario: REST resets a user password
-    Skip ZEHICLE refactoring
-    Given there is a {object:user} "test_user_1"
-    When REST modifies {object:user} "test_user_1" setting password and password_confirmation to "password123" 
-    Finally REST removes the user "test_user_1"
+    Given there is a {object:user} "test_user_4"
+    When REST modifies {object:user} "test_user_4" setting password and password_confirmation to "password123" 
+    Then the {object:user} is properly formatted 
+      And I verify {object:user} "test_user_4" uses password "password123"
+    Finally REST removes the {object:user} "test_user_4"
     
   Scenario: REST locks a user
-    Skip ZEHICLE refactoring
-    Given there is a {object:user} "test_user_1"
-    When REST locks {object:user} "test_user_1"
-    Finally REST removes the {object:user} "test_user_1"
+    Given there is a {object:user} "test_user_5"
+    When REST locks {object:user} "test_user_5"
+    Then  the user field "is_locked" should be "true"
+    Finally REST removes the {object:user} "test_user_5"
     
   Scenario: REST unlocks a user
-    Skip ZEHICLE refactoring
-    Given there is a {object:user} "test_user_1"
-    When REST unlocks {object:user} "test_user_1"
-    Finally REST removes the {object:user} "test_user_1"
+    Given there is a {object:user} "test_user6"
+    When REST unlocks {object:user} "test_user6"
+    Then  the user field "is_locked" should be "false"
+    Finally REST removes the {object:user} "test_user6"
 
