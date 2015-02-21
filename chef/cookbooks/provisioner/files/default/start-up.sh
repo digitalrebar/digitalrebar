@@ -2,12 +2,20 @@
 # Figure out where we PXE booted from.
 if ! [[ $(cat /proc/cmdline) =~ $host_re ]]; then
     export HOSTNAME="d${MAC//:/-}.${DOMAIN}"
+
+    IP=""
+    bootdev_ip_re='inet ([0-9.]+)/([0-9]+)'
+    if [[ $(ip -4 -o addr show dev $BOOTDEV) =~ $bootdev_ip_re ]]; then
+      IP="${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
+    fi
+
     # Create a new node for us,
     # Add the default noderoles we will need, and
     # Let the annealer do its thing.
     curl -f -g --digest -u "$CROWBAR_KEY" -X POST \
         -d "name=$HOSTNAME" \
         -d "mac=$MAC" \
+        -d "ip=$IP" \
         "$CROWBAR_WEB/api/v2/nodes/" && \
         curl -f -g --digest -u "$CROWBAR_KEY" -X POST \
         -d "node=$HOSTNAME" \
