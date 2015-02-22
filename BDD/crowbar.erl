@@ -18,6 +18,7 @@
 -export([json_build/1]).
 -include("bdd.hrl").
 
+g(Item) when is_list(Item) -> g(list_to_atom(Item));
 g(Item) ->
   case Item of
     "cli"   -> g(cli);
@@ -74,6 +75,8 @@ parse_object(Results) ->
                 ID = proplists:get_value("id", JSON),
                 #obj{namespace = crowbar, data=JSON, type = Type, id = ID, url = Results#http.url};
     "array" ->  JSON = json:parse(Results#http.data),
+                #array{namespace = crowbar, data=JSON, type = Type, url = Results#http.url, count = length(JSON) };
+    "result" -> JSON = json:parse(Results#http.data),
                 #array{namespace = crowbar, data=JSON, type = Type, url = Results#http.url, count = length(JSON) };
     "list"  ->  JSON = json:parse(Results#http.data),
                 IDs = [proplists:get_value("id", I) || I <- JSON],

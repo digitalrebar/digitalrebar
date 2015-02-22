@@ -107,6 +107,17 @@ class ApplicationController < ActionController::Base
     }
   end
 
+  # 501 for actions that are not supported
+  def api_not_implemented(object, attempted, suggestion)
+    return {:json => {
+        :message => I18n.t('api.not_implemented', :requested=>attempted, :suggestion=>suggestion),
+        :status => 501
+      },
+      :status => 501,
+      :content_type=>cb_content_type(object, "error")
+    }
+  end
+
   def ui_not_supported(verb, object)
     return { :text=>I18n.t('ui.not_supported', :verb=>verb.upcase, :obj=>object),
       :status => 405,
@@ -138,6 +149,12 @@ class ApplicationController < ActionController::Base
 
   # formats API json output 
   # used for json output that is not mapped to a Crowbar model
+  def api_result(json)
+    return {json: json, content_type: cb_content_type("json", "result") }
+  end
+
+  # formats API json output 
+  # used for json results output that is not mapped to a Crowbar model
   def api_array(json)
     return {:json=>json, :content_type=>cb_content_type("json", "array") }
   end

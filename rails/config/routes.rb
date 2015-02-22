@@ -186,7 +186,7 @@ Crowbar::Application.routes.draw do
             resources :roles
             put :propose
             put :commit
-            put :power
+            match :power, via: [:get, :put]
             put :debug
             put :undebug
             put :redeploy

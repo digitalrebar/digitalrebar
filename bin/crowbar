@@ -209,7 +209,7 @@ class Command
         # Val and Json are special.
         # Val indicates that no processing should be done to this parameter
         # Json indicates that this parameter should be valid json.
-        next if ["Val", "Json"].member?(p)
+        next if ["Val", "Json", "String"].member?(p)
         # Anything else must be something that is a subclass of CrowbarProxy.
         klass = OpenCrowbar.const_get(p)
         next if klass &&
@@ -262,6 +262,7 @@ class Command
       when c == c.downcase then c
       when c == "Val" then "<ID or name>"
       when c == "Json" "<JSON>"
+      when c == "String" "<string>"
       else "<#{c}>"
       end
     end.join(" ")
@@ -635,7 +636,26 @@ module OpenCrowbar
   end
 
   class Barclamp < CrowbarProxy; end
-  class User < CrowbarProxy; end
+  
+  class User < ProxyWithAttribs
+
+    def self.path
+      "api/v2/users"
+    end
+
+    def name
+      @blob["name"]
+    end
+
+    def do_password_set_String(password)
+      data = {password: password, password_confirmation: password}
+      obj, res = REST.put("#{self.class.path}/#{id}/reset_password",data)
+      maybe_json_die(obj,res)
+      obj
+    end
+
+  end
+  
   class Attrib < CrowbarProxy; end
 
   class Jig < CrowbarProxy; end
@@ -784,6 +804,14 @@ def run_command
             params << JSON.parse(arg)
           rescue
             STDERR.puts("#{arg} is not valid JSON!")
+            exit(1)
+          end
+        when "String"
+          # We parse String arguments directly, and capture the parsed value.
+          begin
+            params << arg
+          rescue
+            STDERR.puts("#{arg} is not valid string!")
             exit(1)
           end
         else

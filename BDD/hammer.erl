@@ -72,6 +72,24 @@ step(_Global, {step_given, {Scenario, _N}, ["there is a hammer",Hammer]}) ->
   JSON = json(Hammer),
   bdd_crud:create(g(path), JSON, Scenario, Hammer);
 
+step(_Given, {step_when, {_Scenario, _N}, ["REST tells",node,Node,"to",Action]}) -> 
+  bdd_utils:log(debug, hammer, step, "Power request ~p to ~p",[Node, Action]),
+  URI = eurl:path([node:g(path),Node,"power?poweraction="++Action]),
+  bdd_utils:log(debug, hammer, step, "Power request URI ~p",[URI]),
+  R = eurl:put_post(URI, [], put),
+  bdd_utils:log(debug, hammer, step, "Power returned ~p",[R]),
+  [R, bdd_restrat:get_object(R)];
+
+step(_Result, {step_then, {_Scenario, _N}, [node,Node,"is not alive"]}) -> 
+  step(_Result, {step_then, {_Scenario, _N}, [node,Node,"is alive"]}) =/= true;
+
+step(_Result, {step_then, {_Scenario, _N}, [node,Node,"is alive"]}) -> 
+  [_R, Obj] = bdd_restrat:step([], {step_when, _N, ["REST gets the",node,Node]}),
+  bdd_utils:log(debug, hammer, step, "~p alive in ~p",[Node, Obj#obj.data]),
+  bdd_utils:log(debug, hammer, step, "~p alive = ~p",[lists:keyfind("alive", 1, Obj#obj.data), "true"]),
+  {"alive", R} = lists:keyfind("alive", 1, Obj#obj.data),
+  R == "true";
+
 step(_Global, {step_setup, _N, _}) -> 
   % create Hammer entry
   Hammer = json(g(name)),
