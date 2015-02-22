@@ -18,6 +18,7 @@
 -export([json_build/1]).
 -include("bdd.hrl").
 
+g(Item) when is_list(Item) -> g(list_to_atom(Item));
 g(Item) ->
   case Item of
     "cli"   -> g(cli);
