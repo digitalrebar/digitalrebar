@@ -128,7 +128,16 @@ Feature: User
     Then the {object:user} is properly formatted 
       And I verify {object:user} "test_user_4" uses password "password123"
     Finally REST removes the {object:user} "test_user_4"
-    
+
+  Scenario: CLI resets a user password
+    Unless windows
+    Given CLI is {apply:crowbar.g.cli}
+      And there is a {object:user} "test_user_7"
+    When I run the "users password test_user_7 set password123" command
+    Then the CLI should return "test_user_7"
+      And I verify {object:user} "test_user_7" uses password "password123"
+    Finally REST removes the {object:user} "test_user_7"
+        
   Scenario: REST locks a user
     Given there is a {object:user} "test_user_5"
     When REST locks {object:user} "test_user_5"
