@@ -17,7 +17,6 @@ Feature: Crowbar CLI
     Given CLI is {apply:crowbar.g.cli}
     When I run the "users list --attributes username" command
     Then the CLI should return "crowbar"
-      And the CLI should return "machine-install"
       And the CLI should return "developer"
       
   Scenario: Nodes List
