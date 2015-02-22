@@ -136,6 +136,7 @@ when "suse"
 end
 
 domain_name = (node[:crowbar][:dns][:domain] || node[:domain] rescue node[:domain])
+# XXX: This should be done by attribute injection - fix as part of provisioner service work
 admin_ip = node.address("admin",IP::IP4)
 admin_net = node[:crowbar][:network][:admin]
 lease_time = node[:crowbar][:dhcp][:lease_time]
