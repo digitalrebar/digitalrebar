@@ -4,7 +4,6 @@ Feature: Crowbar CLI
   wants to use a command line interface
 
   Scenario: CLI has help
-    Skip TODO ZEHICLE disable during refactoring
     Unless windows
     Given CLI is {apply:crowbar.g.cli}
     When I run the "users help" command
@@ -15,7 +14,6 @@ Feature: Crowbar CLI
       And the CLI should return "--url"    
     
   Scenario: CLI Connects
-    Skip TODO ZEHICLE disable during refactoring
     Unless windows
     Given CLI is {apply:crowbar.g.cli}
     When I run the "users list" command
@@ -23,12 +21,11 @@ Feature: Crowbar CLI
       And the CLI should return "machine-install"
       And the CLI should return "developer"
       
-  Scenario: Machines List
-    Skip TODO ZEHICLE disable during refactoring
+  Scenario: Nodes List
     Unless windows
     Given there is a {object:node} "cli.cr0wbar.com"
     Given CLI is {apply:crowbar.g.cli} 
-    When I run the "machines list" command
+    When I run the "nodes list" command
     Then the CLI should return "cli.cr0wbar.com"
       And the CLI should return "global-node.testing.com""
     Finally REST removes {object:node} "cli.cr0wbar.com"

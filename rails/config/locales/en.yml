@@ -99,6 +99,7 @@ en:
     added: "Successfully added %{item} to %{collection}."
     unknown_request: "Unable to process request"
     by_id_or_username_record_not_found: "User not found with id/username %{id_username} not found"    
+    not_implemented: "API call ok but '%{requested}' not available, try %{suggestion}"
 
   db:
     notunique: "Item must be unique"

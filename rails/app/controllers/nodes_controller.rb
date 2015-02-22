@@ -89,16 +89,25 @@ class NodesController < ApplicationController
   end
 
   def power
-    params.require(:poweraction)
     @node = Node.find_key(params[:id] || params[:name] || params[:node_id])
-    @poweraction = params[:poweraction].to_sym
-    render :json => {
-      "id" => @node.id,
-      "action" => params[:poweraction],
-      "result" => @node.power.send(@poweraction)
-    },
-    :status => 200,
-    :content_type => cb_content_type(:json,"result")
+    if request.put?
+      params.require(:poweraction)
+      @poweraction = params[:poweraction].to_sym
+      if @node.power.include? @poweraction
+        result = @node.power.send(@poweraction) rescue nil
+        # special case for development
+        if result.nil? 
+          render api_not_implemented(@poweraction, "see logs for internal error") unless Rails.env.development?
+          result = "development faked"
+        end
+        render api_result({"id" => @node.id, "action" => @poweraction, "result" => result })
+      else
+        render api_not_implemented @node, @poweraction, @node.power.keys
+      end
+    elsif request.get?
+      render api_array @node.power
+    end
+      
   end
 
   def debug

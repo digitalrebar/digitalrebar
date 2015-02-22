@@ -19,7 +19,7 @@ class HammersController < ApplicationController
   # API GET /api/v2/hammers
   def index
     @hammers = if params.has_key?(:node_id)
-      Node.find_key (params[:node_id]).hammers
+      Node.find_key(params[:node_id]).hammers
     else
       Hammer.all
     end
