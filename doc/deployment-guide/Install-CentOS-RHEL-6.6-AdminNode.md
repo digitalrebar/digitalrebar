@@ -112,10 +112,13 @@ To install OpenCrowbar, the following things need to be done:
    * Turn off or set SELinux to permissive
    * Download the default installation OS [Optional]
  
-Optional Steps:
-   *Install admin user (e.g. adduser admin) and make sure sudo works, or
-     modify /root/.ssh/authorized_keys and add key for ssh access.
-     The standard install will remove access to root account using password. 
+Remote Access Step (Do one of the following):
+   * Install an admin user (e.g. adduser admin) and make sure sudo works
+   * Install an ssh public key in the root directory /root/.ssh/authorized_keys file
+     to enable key-less root access
+   * Use the crowbar user that is installed by the production.sh script to access the box after installation.  The default password is crowbar.
+
+The standard install will remove access to root account using password.  Key-less access is allowed.
 
 The crowbar-install.sh script supports three flags given (or not in this
 order):
