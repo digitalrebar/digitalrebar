@@ -18,6 +18,7 @@ source_url: "https://github.com/opencrowbar/core"
 
 os_support:
   - ubuntu-12.04
+  - redhat-6.5
   - redhat-6.6
   - centos-6.5
   - centos-6.6
@@ -323,6 +324,60 @@ debs:
     - ntp
 
 rpms:
+  redhat-6.5:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
+    repos:
+      - rpm http://mirrors.kernel.org/fedora-epel/6/x86_64/epel-release-6-8.noarch.rpm
+      - rpm http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-redhat93-9.3-1.noarch.rpm
+      - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
+      - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/RedHat_RHEL-6/
+      - bare openswman 20 http://download.opensuse.org/repositories/Openwsman/CentOS_CentOS-6/
+    build_pkgs:
+      - libcurl-devel
+      - yum-plugin-downloadonly
+      - createrepo
+      - libxml2-devel
+      - zlib-devel
+      - tar
+    required_pkgs:
+      # ruby stuff
+      - ruby
+      # openssh stuff
+      - openssh-clients
+      - openssh-server
+      - openssl-devel
+      - gecode
+      - gecode-devel
+      - iproute
+      - ipmitool
+      - swig
+      - openwsman-devel
+    pkgs:
+      # openldap stuff
+      - openldap
+      - openldap-servers
+      - openldap-clients
+      - krb5-workstation
+      - vim-enhanced
+      # SaltStack
+      - salt-master
+      - salt-minion
+      # network
+      - vconfig
+      - iptables-ipv6
+      # provisioner
+      - rpcbind
+      - ipmitool
+      - dhclient
+      - nfs-utils
+      - tftp-server
+      # apache stuff
+      - httpd
+      - httpd-devel
+      - mod_fcgid
+      - mod_ssl
+      - mod_wsgi
   redhat-6.6:
     raw_pkgs:
       - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
@@ -377,6 +432,67 @@ rpms:
       - mod_fcgid
       - mod_ssl
       - mod_wsgi
+  centos-6.5:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
+    repos:
+      - rpm http://mirrors.kernel.org/fedora-epel/6/x86_64/epel-release-6-8.noarch.rpm
+      - rpm http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-redhat93-9.3-1.noarch.rpm
+      - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
+      - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/CentOS_CentOS-6/
+      - bare openwsman 20 http://download.opensuse.org/repositories/Openwsman/CentOS_CentOS-6/
+    build_pkgs:
+      - libcurl-devel
+      - yum-plugin-downloadonly
+      - yum-plugin-priorities
+      - createrepo
+      - libxml2-devel
+      - zlib-devel
+      - tar
+    required_pkgs:
+      # ruby stuff
+      - ruby
+      # openssh stuff
+      - openssh-clients
+      - openssh-server
+      - openssl-devel
+      - gecode
+      - gecode-devel
+      - iproute
+      - squid
+      - perl-devel
+      - perl-CPAN
+      - perl-DBD-Pg
+      - swig
+      - openwsman-devel
+      - git
+      - mercurial
+      - subversion
+    pkgs:
+      # openldap stuff
+      - openldap
+      - openldap-servers
+      - openldap-clients
+      - krb5-workstation
+      - vim-enhanced
+      # SaltStack
+      - salt-master
+      - salt-minion
+      # network
+      - vconfig
+      - iptables-ipv6
+      # provisioner
+      - rpcbind
+      - ipmitool
+      - dhclient
+      - nfs-utils
+      - tftp-server
+      # apache stuff
+      - httpd
+      - httpd-devel
+      - mod_fcgid
+      - mod_ssl
+      - ipmitool
   centos-6.6:
     raw_pkgs:
       - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
