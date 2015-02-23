@@ -43,7 +43,8 @@ Machine requirements are:
       * The second NIC will be wired into a network that routes to the internet. Internet access is required for installation of CentOS/RHEL 6.6
       * Note: It is possible to use a single NIC. In that case the default network address will be 192.168.124.0/24, the admin node IP address will be 192.168.124.10
       * Where a single NIC is used, the private admin network (192.168.124.0/24) must be capable of download of files from the internet or from a local caching server
-   * Storage: A disk capacity of at least 80 GB is preferred. * Make sure you configure RAID on the drives before installing.
+   * Storage: A disk capacity of at least 80 GB is preferred. 
+   * Make sure you configure RAID on the drives before installing.
  
 Ensure that all physical network transports are correctly configured and are operational - at least check/verify that:
    * All network cabling is in place
@@ -123,6 +124,8 @@ The standard install will remove access to root account using password.  Key-les
 The crowbar-install.sh script supports three flags given (or not in this
 order):
    * --develop - Use RPMs built from the develop tree.
+      * When using the --develop flag, the base OS for the admin node must be *CentOS-6.6*.
+      * Without the --develop flag, the base OS for the admin node must be *CentOS-6.5*.
    * --without-hardware - Don't install the hardware RPM
    * --download-os - This will download the Centos-7.0.1406 ISO for
 installation of nodes. By default, this is not done.
@@ -131,7 +134,7 @@ After logging in as root, run the following command (as an example) to
 install hardware support off of the latest master build:
 
 ```
-wget --no-check-certificate -O - https://raw.githubusercontent.com/opencrowbar/core/develop/tools/crowbar-install.sh | source /dev/stdin
+wget --no-check-certificate -O - https://raw.githubusercontent.com/opencrowbar/core/develop/tools/crowbar-install.sh | source /dev/stdin --develop
 ```
 
 or if you don't want hardware support (bios, RAID, and IPMI), run the
@@ -140,16 +143,16 @@ following command:
 ```
 wget --no-check-certificate -O -
 https://raw.githubusercontent.com/opencrowbar/core/develop/tools/crowbar-install.sh
-| source /dev/stdin --without-hardware
+| source /dev/stdin --develop --without-hardware
 ```
 
 This will take a little bit of time.  Once complete, you will need to
 add the RAID configuration tools displayed as output or described 
-[here|https://github.com/opencrowbar/hardware/tree/master/doc].
+[here](https://github.com/opencrowbar/hardware/tree/master/doc).
 
 You may also want to add supported ISOs to your installation as
 described
-[here|https://github.com/opencrowbar/core/tree/master/doc/deployment-guide/adding-operating-systems.md].
+[here](https://github.com/opencrowbar/core/tree/master/doc/deployment-guide/adding-operating-systems.md).
 
 If you are running on a VM, you may want to snapshot the VM support
 updates, see below.
