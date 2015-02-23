@@ -3,38 +3,60 @@
 if ! [[ $(cat /proc/cmdline) =~ $host_re ]]; then
     export HOSTNAME="d${MAC//:/-}.${DOMAIN}"
 
-    IP=""
-    bootdev_ip_re='inet ([0-9.]+)/([0-9]+)'
-    if [[ $(ip -4 -o addr show dev $BOOTDEV) =~ $bootdev_ip_re ]]; then
-      IP="${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
+    # does the node exist?
+    exists=$(curl -s -o /dev/null -w "%{http_code}" --digest -u "$CROWBAR_KEY" \
+      -X GET "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME")
+    if [[ $exists == 404 ]]; then
+        # Get IP for create suggestion
+        IP=""
+        bootdev_ip_re='inet ([0-9.]+)/([0-9]+)'
+        if [[ $(ip -4 -o addr show dev $BOOTDEV) =~ $bootdev_ip_re ]]; then
+          IP="${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
+        fi
+
+        # Create a new node for us,
+        # Add the default noderoles we will need, and
+        # Let the annealer do its thing.
+        curl -f -g --digest -u "$CROWBAR_KEY" -X POST \
+          -d "name=$HOSTNAME" \
+          -d "mac=$MAC" \
+          -d "ip=$IP" \
+          "$CROWBAR_WEB/api/v2/nodes/" || {
+            echo "We could not create a node for ourself!"
+            exit 1
+        }
+    else
+        echo "Node already created, moving on"
     fi
 
-    # Create a new node for us,
-    # Add the default noderoles we will need, and
-    # Let the annealer do its thing.
-    curl -f -g --digest -u "$CROWBAR_KEY" -X POST \
-        -d "name=$HOSTNAME" \
-        -d "mac=$MAC" \
-        -d "ip=$IP" \
-        "$CROWBAR_WEB/api/v2/nodes/" && \
+    # does the crowbar-managed-role exist?
+    managed=$(curl -s -o /dev/null -w "%{http_code}" --digest -u "$CROWBAR_KEY" \
+      -X GET "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME/node_roles/crowbar-managed-node")
+    if [[ $managed == 404 ]]; then
         curl -f -g --digest -u "$CROWBAR_KEY" -X POST \
-        -d "node=$HOSTNAME" \
-        -d "role=crowbar-managed-node" \
-        "$CROWBAR_WEB/api/v2/node_roles/" && \
+          -d "node=$HOSTNAME" \
+          -d "role=crowbar-managed-node" \
+          "$CROWBAR_WEB/api/v2/node_roles/" && \
         curl -f -g --digest -u "$CROWBAR_KEY" -X PUT \
-        "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME/commit" || {
-        echo "We could not create a node for ourself!"
-        exit 1
-    }
-
+          "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME/commit" || {
+            echo "We could not commit the node!"
+            exit 1
+        }
+    else
+        echo "Node already committed, moving on"
+    fi
 else
     # Let Crowbar know that we are back, and booted into Sledgehammer.
     export HOSTNAME="${BASH_REMATCH[1]}"
-    curl -f -g --digest -u "$CROWBAR_KEY" \
-        -X PUT "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME" \
-        -d 'alive=false' \
-        -d 'bootenv=sledgehammer'
+    echo "Node is back."
 fi
+
+# Always make sure we are marking the node not alive. It will comeback later.
+curl -f -g --digest -u "$CROWBAR_KEY" \
+    -X PUT "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME" \
+    -d 'alive=false' \
+    -d 'bootenv=sledgehammer'
+echo "Set node not alive - will be set in control.sh!"
 
 # Figure out what IP addresses we should have.
 netline=$(curl -f -g --digest -u "$CROWBAR_KEY" \
@@ -109,6 +131,8 @@ chmod 755 /tmp/control.sh
 
 export CROWBAR_KEY PROVISIONER_WEB CROWBAR_WEB
 export MAC BOOTDEV DOMAIN HOSTNAME
+
+echo "transfer from start-up to control script"
 
 [[ -x /tmp/control.sh ]] && exec /tmp/control.sh
 
