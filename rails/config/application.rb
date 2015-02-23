@@ -29,6 +29,8 @@ module Crowbar
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
+    config.crowbar = ActiveSupport::OrderedOptions.new 
+    config.crowbar.version = '2.x'
 
     # Custom directories with classes and modules you want to be autoloadable.
     config.autoload_paths += %W(#{config.root}/lib)
@@ -89,7 +91,6 @@ module Crowbar
     config.i18n.default_locale = :en
     I18n.config.enforce_available_locales = true
 
-    CROWBAR_VERSION = '2.x' unless defined? CROWBAR_VERSION
     SERVER_PID = %x[ps ax | grep "puma" | grep -v grep].split(' ')[0]  # get a consistent number that changes when the server restarts
 
     config.jobs = ActiveSupport::OrderedOptions.new

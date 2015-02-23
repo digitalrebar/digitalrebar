@@ -42,7 +42,7 @@ roles:
       - ntp-client
       - network-lldpd
   - name: crowbar-hardware-configured
-    description: "Crowbar Harware Configured Checkpoint"
+    description: "Crowbar Hardware Configured Checkpoint"
     jig: noop
     flags:
       - implicit
