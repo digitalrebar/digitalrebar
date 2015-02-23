@@ -18,7 +18,7 @@ Feature: Navigation, Check Core Navigation
       And I should see a menu for "Nodes"
       And I should see a menu for "Utilities"
       And I should see a menu for "Help"
-      And I should see "OpenCrowbar Project Team"
+      And I should see "OpenCrowbar"
       And I should not see "something went wrong"
       And there should be no translation errors
 
