@@ -1,7 +1,7 @@
 !!!
 %html
   %head
-    %title= "OpenCrowbar"
+    %title= t 'title', default: "OpenCrowbar"
     = csrf_meta_tags
     = stylesheet_link_tag 'application'
     /[if IE]
@@ -11,6 +11,7 @@
     %link{:rel=>"SHORTCUT ICON", :href=>image_path("icons/bunny.ico")}
 
   %body
+
     %header
       .container
         %h1
@@ -50,10 +51,10 @@
     %footer
       =t '.provided_by'
       %a{:href=>"http://opencrowbar.org", :target=>"_new"}
-        = image_tag("ocb_logo.png", :alt=>"Crowbar Project", :title=>"Crowbar Project", :width=>'20px', :style=>"vertical-align:middle;padding-bottom:2px")
+        = image_tag("ocb_logo.png", :alt=>"OpenCrowbar Project", :title=>"OpenCrowbar Project", :width=>'20px', :style=>"vertical-align:middle;padding-bottom:2px")
       %a{:href=>"https://github.com/orgs/opencrowbar/people", :target=>"_new", :alt=>"OpenCrowbar"}
-        OpenCrowbar Project Team
-      =t 'version', :version=>(Rails.env.development? ? "Development" : Barclamp.where( :name => "crowbar").first.build_version)
+        OpenCrowbar
+      =t 'version', :version=>Rails.configuration.crowbar.version || '2.x'
 
 - if current_user or session[:digest_user]
   :javascript
