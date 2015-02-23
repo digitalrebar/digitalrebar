@@ -38,6 +38,8 @@ barclamps:
     description: "SaltStack CMDB & DevOps Framework"
   - name: deployer
     description: "Discover and Inventory Systems (aka Sledgehammer)"
+  - name: dhcp
+    description: "Dynamic Host Configuration Protocol (DHCP)"
   - name: provisioner
     description: "Install Persistent Operating System"
   - name: dns 

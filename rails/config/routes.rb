@@ -214,8 +214,6 @@ Crowbar::Application.routes.draw do
             put "reset_password", :controller => "users", :action => "reset_password"
           end
 
-          resources :dhcps
-
         end # version
       end # api
     end # id constraints

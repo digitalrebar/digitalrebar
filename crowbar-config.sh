@@ -169,7 +169,44 @@ crowbar roles bind ntp-server to "$FQDN"
 # Example external ntp server - use instead of ntp-server above
 #curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "pool.ntp.org", "Service": {"Service": "ntp-service", "Port": 123, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
 
+# Setup DHCP Server - this can be optional
+#
+# If not used, the external DHCP server will need
+# to use the ADMIN NODE IP as the next server
+# and serve grub or pxelinux image.
+#
+# Here is an ISC DHCP Server stanza to use for an external dhcp server.
+# ++++++++
+# subnet 192.168.124.0 netmask 255.255.255.0 {
+#   option routers 192.168.124.10;  # Router here
+#   option subnet-mask 255.255.255.0;
+#   option broadcast-address 192.168.124.255;
+#   option domain-name "neode.com";
+#   option domain-name-servers 192.168.124.10; # Admin IP/DNS Server IP
+#   default-lease-time 7200;
+#   max-lease-time 36000;
+#    pool {
+#      range 192.168.124.81 192.168.124.254;   # Host Range from your Admin Network.
+#      allow unknown-clients;
+#      if option arch = 00:07 or option arch = 00:09 {
+#        filename = "grub-x86_64.efi";
+#      } else {
+#        filename = "grub.pxe";
+#      }
+#      next-server 192.168.124.10;            # Admin IP/Provisioner IP
+#    }
+# }
+# ++++++++
+#
+# Comment out this line if using your own DHCP server
+crowbar roles bind dhcp-database to "$FQDN"
 
+# Setup Up provisioner.
+crowbar roles bind provisioner-database to "$FQDN"
+crowbar roles bind provisioner-repos to "$FQDN"
+crowbar roles bind provisioner-docker-setup to "$FQDN"
+
+# Add the now mostly empty admin-node
 crowbar roles bind crowbar-admin-node to "$FQDN"
 crowbar nodes commit "$FQDN"
 

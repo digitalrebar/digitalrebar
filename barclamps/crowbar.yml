@@ -23,9 +23,6 @@ roles:
       - implicit
     requires:
       - network-server
-      - provisioner-dhcp-database
-      - provisioner-repos
-      - provisioner-docker-setup
       - network-lldpd
     conflicts:
       - crowbar-managed-node
