@@ -139,3 +139,4 @@ roles:
             - coreos
             - xenserver-6.5
             - esxi-5.5
+            - fuel-6.0

@@ -30,6 +30,7 @@ os_support:
   - debian-7.8.0
   - xenserver-6.5
   - esxi-5.5
+  - fuel-6.0
 
 barclamps:
   - name: crowbar

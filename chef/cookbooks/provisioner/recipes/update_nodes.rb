@@ -180,6 +180,14 @@ new_clients = {}
       target mnode_name
       action :add
     end
+  when "fuel-6.0-install"
+    provisioner_fuel mnode_name do
+      distro "fuel"
+      version "6.0"
+      address v4addr
+      target mnode_name
+      action :add
+    end
   else
     Chef::Log.info("Not messing with boot files for bootenv #{bootenv}")
   end

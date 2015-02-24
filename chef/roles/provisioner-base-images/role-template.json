@@ -16,6 +16,14 @@
                         "iso_file": "VMware-VMvisor-Installer-5.5.0.update02-2068190.x86_64.iso",
                         "codename": "esxi"
                     },
+                    "fuel-6.0": {
+                        "initrd": "isolinux/initrd.img",
+                        "kernel": "isolinux/vmlinuz",
+                        "iso_file": "MirantisOpenStack-6.0.iso",
+                        "append": "biosdevname=0 showmenu=no",
+                        "example_holder": "biosdevname=0 ks=nfs:10.20.0.1:/var/lib/tftpboot/fuel/ks.cfg repo=nfs:10.20.0.1:/var/lib/tftpboot/fuel ip=10.20.0.2 netmask=255.255.255.0 gw=10.20.0.1 dns1=10.20.0.1 hostname=fuel.mirantis.com showmenu=no",
+                        "codename": "fuel"
+                    },
                     "ubuntu-12.04": {
                         "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz",
                         "kernel": "install/netboot/ubuntu-installer/amd64/linux",

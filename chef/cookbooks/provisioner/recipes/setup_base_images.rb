@@ -184,6 +184,28 @@ EOC
     end
   end
 
+  #
+  # TODO:Make generic NFS one day
+  # Make sure we setup an nfs server and export the fuel directory
+  #
+  if os =~ /^(fuel)/
+    package "nfs-utils"
+
+    service "rpcbind" do
+      action [ :enable, :start ]
+    end
+
+    service "nfs" do
+      action [ :enable, :start ]
+    end
+
+    utils_line "#{os_install_dir} *(ro,async,no_subtree_check,no_root_squash,crossmnt)" do
+      action :add
+      file '/etc/exports'
+      notifies :restart, "service[nfs]", :delayed
+    end
+  end
+
   # For CentOS and RHEL, we need to rewrite the package metadata
   # to make sure it does not refer to packages that do not exist on the first DVD.
   bash "Rewrite package repo metadata for #{params["iso_file"]}" do
@@ -203,7 +225,7 @@ EOC
   pkgtype = case
             when os =~ /^(ubuntu|debian)/ then "debs"
             when os =~ /^(redhat|centos|suse|fedora)/ then "rpms"
-            when os =~ /^(coreos|esxi|xenserver)/ then "custom"
+            when os =~ /^(coreos|fuel|esxi|xenserver)/ then "custom"
             else raise "Unknown OS type #{os}"
             end
   # If we are running in online mode, we need to do a few extra tasks.
