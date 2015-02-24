@@ -59,7 +59,8 @@ action :add do
     owner "root"
     group "root"
     source "net-post-install.sh.erb"
-    variables(:os_codename => os_codename,
+    variables(:install_name => os,
+              :os_codename => os_codename,
               :repos => repos,
               :admin_ip => provisioner_addr,
               :online => online,

@@ -12,6 +12,13 @@ d-i console-setup/layoutcode string us
 # basic form of the layout will be used):
 #d-i console-setup/variantcode string dvorak
 
+d-i keyboard-configuration/xkb-keymap select us
+d-i debian-installer/locale string en_US
+d-i console-tools/archs select at
+d-i console-keymaps-at/keymap select American English
+d-i debian-installer/keymap string us
+d-i keyboard-configuration/toggle select No toggling
+
 ### Network configuration
 # netcfg will choose an interface that has link if possible. This makes it
 # skip displaying a list if there is more than one interface.
