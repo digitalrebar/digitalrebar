@@ -144,6 +144,14 @@ new_clients = {}
       target mnode_name
       action :add
     end
+  when "debian-7.8.0-install"
+    provisioner_debian mnode_name do
+      distro "debian"
+      version "7.8.0"
+      address mac_list
+      target mnode_name
+      action :add
+    end
   else
     Chef::Log.info("Not messing with boot files for bootenv #{bootenv}")
   end

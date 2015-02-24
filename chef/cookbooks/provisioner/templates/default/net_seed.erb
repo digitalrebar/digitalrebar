@@ -12,6 +12,13 @@ d-i console-setup/layoutcode string us
 # basic form of the layout will be used):
 #d-i console-setup/variantcode string dvorak
 
+d-i keyboard-configuration/xkb-keymap select us
+d-i debian-installer/locale string en_US
+d-i console-tools/archs select at
+d-i console-keymaps-at/keymap select American English
+d-i debian-installer/keymap string us
+d-i keyboard-configuration/toggle select No toggling
+
 ### Network configuration
 # netcfg will choose an interface that has link if possible. This makes it
 # skip displaying a list if there is more than one interface.
@@ -63,8 +70,13 @@ d-i netcfg/get_domain string unassigned-domain
     install_path = "/#{m[3]}"   -%>
 d-i mirror/country string manual
 d-i mirror/protocol string <%=install_protocol%>
+<% if @install_name =~ /^debian-/ -%> 
+d-i mirror/http/hostname string http.us.debian.org
+d-i mirror/http/directory string /debian
+<% else -%>
 d-i mirror/http/hostname string <%=install_site%>
 d-i mirror/http/directory string <%=install_path%>
+<% end -%>
 <% if @online -%>
 d-i mirror/http/proxy string <%=@proxy%>
 <% else -%>
@@ -84,7 +96,7 @@ d-i mirror/http/proxy string
 #d-i apt-setup/services-select multiselect security
 #d-i apt-setup/security_host string security.ubuntu.com
 #d-i apt-setup/security_path string /ubuntu
-<% if @cc_use_local_security -%>
+<% if @cc_use_local_security and @install_name !~ /^debian-/ -%> 
 d-i apt-setup/security_host string <%=install_site %>
 d-i apt-setup/security_path string <%=install_path %>
 <% else %>

@@ -14,6 +14,8 @@ As of Dec, 2014, the provisioner knows how to install the following operating sy
  * `centos-7.0.1406`: `CentOS-7.0-1406-x86_64-DVD.iso`
  * `redhat-6.5`: `RHEL6.5-20131111.0-Server-x86_64-DVD1.iso`
  * `redhat-7.0`: `rhel-server-7.0-x86_64-dvd.iso`
+ * `debian-7.8.0`: `debian-7.8.0-mini-amd64.iso`
+   * *NOTE* This is really the netboot mini.iso renamed.  This can be found [here](http://ftp.nl.debian.org/debian/dists/wheezy/main/installer-amd64/current/images/netboot/mini.iso)
 
 > This list is subject to change!  For the latest list, consult [Provisioner Base Images](https://github.com/opencrowbar/core/blob/master/chef/roles/provisioner-base-images/role-template.json) template file.
 

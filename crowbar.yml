@@ -25,6 +25,7 @@ os_support:
   - centos-7.0.1406
   - opensuse-13.1
   - fedora-20
+  - debian-7.8.0
 
 barclamps:
   - name: crowbar
@@ -101,105 +102,6 @@ debs:
       - deb http://ppa.launchpad.net/saltstack/salt/ubuntu precise main
     pkgs:
       - rpcbind
-  #repos:
-    # Rabbit MQ repo
-    #- deb http://www.rabbitmq.com/debian/ testing main
-  required_pkgs:
-    - build-essential
-    - curl
-    - kwalify
-    - libpq-dev
-    - libxml2-dev
-    - libxslt1-dev
-    - postgresql-9.3
-    - postgresql-client-9.3
-    - postgresql-contrib-9.3
-    - ruby1.9.1
-    - ruby1.9.1-dev
-    - sudo
-    - vim
-    - zlib1g-dev
-    # openssh stuff
-    - openssh-client
-    - openssh-server
-    - less
-    - efibootmgr
-    - iputils-ping
-    # Package mangling stuff
-    - createrepo
-    - dpkg-dev
-    # To let us extract ISO images without loopback mounting them.
-    - bsdtar
-    - git
-  build_pkgs:
-    - bison
-    - flex
-    - make
-  pkgs:
-    # build-essential stuff
-    - build-essential
-    - binutils-doc
-    - autoconf
-    - flex
-    - bison
-    - patch
-    # crowbar stuff
-    - curl
-    - postgresql-9.3
-    - postgresql-client-9.3
-    - postgresql-contrib-9.3
-    - libpq-dev
-    - kwalify
-    - libcurl4-gnutls-dev
-    # minicom stuff
-    - minicom
-    # openldap stuff
-    - libnss-ldap
-    - libpam-ldap
-    - ldap-utils
-    - db4.8-util
-    - slapd
-    # SaltStack
-    - salt-master
-    - salt-minion
-    # rabbitmq stuff
-    - rabbitmq-server
-    # ruby stuff
-    - ruby1.9.1
-    - ruby1.9.1-dev
-    # runit stuff
-    - runit
-    # sudo stuff
-    #- sudo
-    # java stuff
-    #- sun-java6-jdk
-    #- sun-java6-jre
-    - dpkg-dev
-    - screen
-    - tcpdump
-    - alien
-    - graphviz
-    - vim
-    # for nokogiri
-    - libxslt1.1
-    # provisioner
-    - dhcp3-server
-    - nfs-common
-    - nfs-kernel-server
-    - ipmitool
-    - syslinux
-    - tftpd-hpa
-    - efibootmgr
-    # apache stuff
-    - apache2
-    - apache2-prefork-dev
-    - libapache2-mod-fcgid
-    - libapache2-mod-wsgi   
-    # dns
-    - bind9
-    - bind9utils
-    # ntp
-    - ntp
   ubuntu-14.04:
     raw_pkgs:
       - http://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef_11.14.2-1_amd64.deb
@@ -219,9 +121,20 @@ debs:
       - deb http://ppa.launchpad.net/saltstack/salt/ubuntu trusty main
     pkgs:
       - rpcbind
-  #repos:
-    # Rabbit MQ repo
-    #- deb http://www.rabbitmq.com/debian/ testing main
+  debian-7.8.0:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/debian/6/x86_64/chef_11.14.2-1_amd64.deb
+    repos:
+      - deb http://ftp.us.debian.org/debian wheezy main contrib non-free
+      - deb-src http://ftp.us.debian.org/debian wheezy main contrib non-free
+      - deb http://security.debian.org/ wheezy/updates main contrib non-free
+      - deb-src http://security.debian.org/ wheezy/updates main contrib non-free
+      - deb http://ftp.us.debian.org/debian wheezy-updates main contrib non-free
+      - deb-src http://ftp.us.debian.org/debian wheezy-updates main contrib non-free
+      - deb http://ftp.us.debian.org/debian wheezy-backports main contrib non-free
+      - deb-src http://ftp.us.debian.org/debian wheezy-backports main contrib non-free
+    pkgs:
+      - rpcbind
   required_pkgs:
     - build-essential
     - curl
@@ -300,10 +213,6 @@ debs:
     - vim
     # for nokogiri
     - libxslt1.1
-    # docker support (Ubuntu only for now)
-    - linux-image-generic-lts-raring 
-    - linux-headers-generic-lts-raring
-    - lxc-docker
     # provisioner
     - dhcp3-server
     - nfs-common
