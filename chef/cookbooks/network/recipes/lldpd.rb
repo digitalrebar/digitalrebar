@@ -17,9 +17,18 @@
 # Install and start lldpd
 #
 
-package "lldpd"
+package_name = "lldpd"
+service_name = "lldpd"
 
-service "lldpd" do
+case node[:platform]
+when "centos"
+  package_name = "lldpad" if node[:platform_version] == "6.5"
+  service_name = "lldpad" if node[:platform_version] == "6.5"
+end
+
+package package_name
+
+service service_name do
   action [ :enable, :start ]
 end
 

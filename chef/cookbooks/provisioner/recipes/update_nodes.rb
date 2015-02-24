@@ -112,6 +112,14 @@ new_clients = {}
       target mnode_name
       action :add
     end
+  when 'redhat-6.6-install'
+    provisioner_redhat mnode_name do
+      distro 'redhat'
+      version '6.6'
+      address mac_list
+      target mnode_name
+      action :add
+    end
   when 'fedora-20-install'
     provisioner_fedora mnode_name do
       distro 'fedora'
