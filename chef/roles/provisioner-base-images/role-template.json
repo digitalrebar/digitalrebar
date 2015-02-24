@@ -20,6 +20,14 @@
                         "iso_file": "ubuntu-14.04.1-server-amd64.iso",
                         "codename": "trusty"
                     },
+                    "debian-7.8.0": {
+                        "initrd": "install/netboot/debian-installer/amd64/initrd.gz",
+                        "kernel": "install/netboot/debian-installer/amd64/linux",
+                        "append": "debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --",
+                        "online_mirror": "http://ftp.us.debian.org/debian/",
+                        "iso_file": "debian-7.8.0-amd64-DVD-1.iso",
+                        "codename": "wheezy"
+                    },
                     "redhat-6.5": {
                         "initrd": "images/pxeboot/initrd.img",
                         "kernel": "images/pxeboot/vmlinuz",

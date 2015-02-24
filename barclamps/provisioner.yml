@@ -135,3 +135,4 @@ roles:
             - fedora-20
             - centos-7.0.1406
             - redhat-7.0
+            - debian-7.8.0
