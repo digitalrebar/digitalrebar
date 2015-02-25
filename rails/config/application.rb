@@ -31,6 +31,7 @@ module Crowbar
     # -- all .rb files in that directory are automatically loaded.
     config.crowbar = ActiveSupport::OrderedOptions.new 
     config.crowbar.version = '2.x'
+    config.crowbar.commit = %x[git log -n 1].split("\n")[0] rescue 'n/a'
 
     # Custom directories with classes and modules you want to be autoloadable.
     config.autoload_paths += %W(#{config.root}/lib)
