@@ -172,6 +172,14 @@ new_clients = {}
       target mnode_name
       action :add
     end
+  when "esxi-5.5-install"
+    provisioner_esxi mnode_name do
+      distro "esxi"
+      version "5.5"
+      address v4addr
+      target mnode_name
+      action :add
+    end
   else
     Chef::Log.info("Not messing with boot files for bootenv #{bootenv}")
   end

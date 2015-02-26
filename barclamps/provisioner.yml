@@ -138,3 +138,4 @@ roles:
             - debian-7.8.0
             - coreos
             - xenserver-6.5
+            - esxi-5.5

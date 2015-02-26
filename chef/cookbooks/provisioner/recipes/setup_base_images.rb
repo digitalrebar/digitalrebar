@@ -140,11 +140,37 @@ node["crowbar"]["provisioner"]["server"]["supported_oses"].each do |os,params|
   node.normal["crowbar"]["provisioner"]["server"]["available_oses"][os] = true
   node.normal["crowbar"]["provisioner"]["server"]["repositories"][os] = Mash.new
 
-  # Extract the ISO install image.
-  # Do so in such a way the we avoid using loopback mounts and get
-  # proper filenames in the end.
-  bash "Extract #{params["iso_file"]}" do
-    code <<EOC
+  if os =~ /^(esxi)/
+    # Extract esxi iso through rsync - bsdtar messes up the filenames
+    tmpesxi="/tmp/esxi_mnt_pt/"
+    bash "Extract rsync #{params["iso_file"]}" do
+      code <<EOC
+set -e
+[[ -d "#{os_install_dir}.extracting" ]] && rm -rf "#{os_install_dir}.extracting"
+mkdir -p "#{os_install_dir}.extracting"
+
+mkdir -v #{tmpesxi}
+mount -o loop "#{iso_dir}/#{params["iso_file"]}" #{tmpesxi}
+rsync -av #{tmpesxi} "#{os_install_dir}.extracting"
+sync && umount #{tmpesxi} && rmdir -v #{tmpesxi}
+losetup -j "#{iso_dir}/#{params["iso_file"]}" | awk -F: '{ print $1 }' | xargs losetup -d
+
+chmod +w "#{os_install_dir}.extracting"/*
+sed -e "s:/::g" -e "3s:^:prefix=/../#{os}/install/\\n:" -i.bak "#{os_install_dir}.extracting"/boot.cfg
+
+touch "#{os_install_dir}.extracting/.#{params["iso_file"]}.crowbar_canary"
+[[ -d "#{os_install_dir}" ]] && rm -rf "#{os_install_dir}"
+mv "#{os_install_dir}.extracting" "#{os_install_dir}"
+EOC
+      only_if do File.file?("#{iso_dir}/#{params["iso_file"]}") &&
+          !File.file?("#{os_install_dir}/.#{params["iso_file"]}.crowbar_canary") end
+    end
+  else
+    # Extract the ISO install image.
+    # Do so in such a way the we avoid using loopback mounts and get
+    # proper filenames in the end.
+    bash "Extract #{params["iso_file"]}" do
+      code <<EOC
 set -e
 [[ -d "#{os_install_dir}.extracting" ]] && rm -rf "#{os_install_dir}.extracting"
 mkdir -p "#{os_install_dir}.extracting"
@@ -153,8 +179,9 @@ touch "#{os_install_dir}.extracting/.#{params["iso_file"]}.crowbar_canary"
 [[ -d "#{os_install_dir}" ]] && rm -rf "#{os_install_dir}"
 mv "#{os_install_dir}.extracting" "#{os_install_dir}"
 EOC
-    only_if do File.file?("#{iso_dir}/#{params["iso_file"]}") &&
-        !File.file?("#{os_install_dir}/.#{params["iso_file"]}.crowbar_canary") end
+      only_if do File.file?("#{iso_dir}/#{params["iso_file"]}") &&
+          !File.file?("#{os_install_dir}/.#{params["iso_file"]}.crowbar_canary") end
+    end
   end
 
   # For CentOS and RHEL, we need to rewrite the package metadata
@@ -176,7 +203,7 @@ EOC
   pkgtype = case
             when os =~ /^(ubuntu|debian)/ then "debs"
             when os =~ /^(redhat|centos|suse|fedora)/ then "rpms"
-            when os =~ /^(coreos|xenserver)/ then "custom"
+            when os =~ /^(coreos|esxi|xenserver)/ then "custom"
             else raise "Unknown OS type #{os}"
             end
   # If we are running in online mode, we need to do a few extra tasks.

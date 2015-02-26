@@ -29,6 +29,7 @@ os_support:
   - fedora-20
   - debian-7.8.0
   - xenserver-6.5
+  - esxi-5.5
 
 barclamps:
   - name: crowbar

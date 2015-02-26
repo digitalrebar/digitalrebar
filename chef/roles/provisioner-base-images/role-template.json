@@ -10,6 +10,12 @@
                         "iso_file": "XenServer-6.5.0-xenserver.org-install-cd.iso",
                         "codename": "xenserver"
                     },
+                    "esxi-5.5": {
+                        "initrd": "",
+                        "kernel": "mboot.c32",
+                        "iso_file": "VMware-VMvisor-Installer-5.5.0.update02-2068190.x86_64.iso",
+                        "codename": "esxi"
+                    },
                     "ubuntu-12.04": {
                         "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz",
                         "kernel": "install/netboot/ubuntu-installer/amd64/linux",
