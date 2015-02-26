@@ -10,6 +10,7 @@
         %th= t '.parent'
         %th= t '.description'
         %th= t '.roles'
+        %th= t '.commit'
     %tbody
       - @list.each do |bc|
         %tr.node{ :class => cycle(:odd, :even) }
@@ -22,3 +23,4 @@
           %td
             - bc.roles.each do |r|
               = link_to r.name, role_path(r.id)
+          %td= bc.commit
