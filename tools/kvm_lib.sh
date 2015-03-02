@@ -74,7 +74,7 @@ ADMIN_HOSTNAME=${ADMIN_HOSTNAMES[$(($RANDOM % ${#ADMIN_HOSTNAMES[@]}))]}
 #debug "Picked $ADMIN_HOSTNAME"
 export OCB_DOMAIN=${ADMIN_HOSTNAME#*.}
 
-OCB_BRIDGE=ocb-br
+: ${OCB_BRIDGE:="ocb-br"}
 NICS_PER_VM=3
 VM_DIR="$HOME/.cache/opencrowbar/vms"
 
