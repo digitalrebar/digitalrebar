@@ -38,13 +38,16 @@ new_clients = {}
       dhcp_opts = []
     else
       dhcp_opts = [
-'  if option arch = 00:07 or option arch = 00:09 {
-      filename = "grub-x86_64.efi";
+'  if option arch = 00:06 {
+      filename = "discovery/bootia32.efi";
+   } else if option arch = 00:07 {
+      filename = "discovery/bootx64.efi";
    } else {
-      filename = "grub.pxe";
+      filename = "discovery/pxelinux.0";
    }',
        "next-server #{provisioner_addr}"]
     end
+
     dhcp_host "#{mnode_name}-#{idx}" do
       hostname mnode_name
       ipaddress v4addr.addr

@@ -15,30 +15,49 @@
 
 
 action :add do
+  nodeaddr = sprintf("%X",new_resource.address.address)
   tftproot = node["crowbar"]["provisioner"]["server"]["root"]
-  new_resource.address.each do |mac|
-    ["#{tftproot}/nodes/#{mac.downcase}.grub",
-     "#{tftproot}/nodes/#{mac.upcase}.grub"].each do |grubfile|
-      template grubfile do
-        mode 0644
-        owner "root"
-        group "root"
-        source "grub.cfg.erb"
-        variables(:append_line => "crowbar.fqdn=#{new_resource.name} #{new_resource.kernel_params}",
-                  :initrd => new_resource.initrd,
-                  :machine_key => node["crowbar"]["provisioner"]["machine_key"],
-                  :kernel => new_resource.kernel)
-      end
-    end
+  discover_dir="#{tftproot}/discovery"
+  uefi_dir=discover_dir
+  pxecfg_dir="#{discover_dir}/pxelinux.cfg"
+  pxefile = "#{pxecfg_dir}/#{nodeaddr}"
+  uefifile = "#{uefi_dir}/#{nodeaddr}.conf"
+  template pxefile do
+    mode 0644
+    owner "root"
+    group "root"
+    source "default.erb"
+    variables(:append_line => "crowbar.fqdn=#{new_resource.name} #{new_resource.kernel_params}",
+              :install_name => new_resource.bootenv,
+              :initrd => new_resource.initrd,
+              :machine_key => node["crowbar"]["provisioner"]["machine_key"],
+              :kernel => new_resource.kernel)
+  end
+  template uefifile do
+    mode 0644
+    owner "root"
+    group "root"
+    source "default.elilo.erb"
+    variables(:append_line => "crowbar.fqdn=#{new_resource.name} #{new_resource.kernel_params}",
+              :install_name => new_resource.bootenv,
+              :initrd => new_resource.initrd,
+              :machine_key => node["crowbar"]["provisioner"]["machine_key"],
+              :kernel => new_resource.kernel)
   end
 end
 
 action :remove do
+  nodeaddr = sprintf("%X",new_resource.address.address)
   tftproot = node["crowbar"]["provisioner"]["server"]["root"]
-  new_resource.address.each do |mac|
-    grubfile = "#{tftproot}/nodes/#{mac.downcase}.grub"
-    file grubfile do
-      action :delete
-    end
+  discover_dir="#{tftproot}/discovery"
+  uefi_dir=discover_dir
+  pxecfg_dir="#{discover_dir}/pxelinux.cfg"
+  pxefile = "#{pxecfg_dir}/#{nodeaddr}"
+  uefifile = "#{uefi_dir}/#{nodeaddr}.conf"
+  file pxefile do
+    action :delete
+  end
+  file uefifile do
+    action :delete
   end
 end

@@ -32,7 +32,7 @@ action :add do
   crowbar_repo_web="#{web_path}/crowbar-extra"
   admin_web="#{web_path}/install"
   append = "ksdevice=bootif ks=#{web_path}/compute.ks #{params["kernel_params"]}"
-  mac_list = new_resource.address
+  v4addr = new_resource.address
 
   directory node_dir do
     action :create
@@ -67,7 +67,7 @@ action :add do
     bootenv "#{os}-install"
     kernel params["kernel"]
     initrd params["initrd"]
-    address mac_list
+    address v4addr
     kernel_params append
     action :add
   end

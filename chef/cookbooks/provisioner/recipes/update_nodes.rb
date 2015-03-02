@@ -17,21 +17,27 @@ domain_name = node['crowbar']['dns']['domain']
 provisioner_web=node['crowbar']['provisioner']['server']['webserver']
 tftproot = node['crowbar']['provisioner']['server']['root']
 node_dir="#{tftproot}/nodes"
+discover_dir="#{tftproot}/discovery"
+pxecfg_dir="#{discover_dir}/pxelinux.cfg"
+uefi_dir=discover_dir
+pxecfg_default="#{pxecfg_dir}/default"
 node.normal['crowbar_wall'] ||= Mash.new
 node.normal['crowbar_wall']['provisioner'] ||= Mash.new
 node.normal['crowbar_wall']['provisioner']['clients'] ||= Mash.new
 new_clients = {}
 
 (node['crowbar']['provisioner']['clients'] || {} rescue {}).each do |mnode_name,provisioner_info|
-  # Build PXE, and ELILO config files for each system
-  v4addr = IP.coerce(provisioner_info['v4addr'])
-  nodeaddr = sprintf('%X',v4addr.address)
-  bootenv = provisioner_info['bootenv']
-  mac_list = provisioner_info['mac_addresses']
+  # Build PXE and ELILO config files for each system
+  v4addr = IP.coerce(provisioner_info["v4addr"])
+  nodeaddr = sprintf("%X",v4addr.address)
+  bootenv = provisioner_info["bootenv"]
+  pxefile = "#{pxecfg_dir}/#{nodeaddr}"
+  uefifile = "#{uefi_dir}/#{nodeaddr}.conf"
   new_clients[mnode_name] = {
-    'v4addr' => provisioner_info['v4addr'],
-    'nodeaddr' => nodeaddr,
-    'mac_addresses' => mac_list,
+    "v4addr" => provisioner_info["v4addr"],
+    "nodeaddr" => nodeaddr,
+    "pxefile" => pxefile,
+    "uefifile" => uefifile
   }
   # Generate an appropriate control.sh for the system.
   directory "#{node_dir}/#{mnode_name}" do
@@ -41,23 +47,19 @@ new_clients = {}
   Chef::Log.info("PROVISIONER: #{mnode_name} Updating PXE and UEFI boot for bootenv #{bootenv}")
   # Default to creating appropriate boot config files for Sledgehammer.
   case bootenv
-  when 'local'
-    mac_list.each_index do |idx|
-      ["#{tftproot}/nodes/#{mac_list[idx].downcase}.grub",
-       "#{tftproot}/nodes/#{mac_list[idx].upcase}.grub"].each do |grubfile|
-        template grubfile do
-          source 'grub.local.erb'
-          action 'create'
-        end
-      end
+  when "local"
+    provisioner_bootfile mnode_name do
+      bootenv "sledgehammer"
+      address v4addr
+      action :remove
     end
   when 'sledgehammer'
     pxe_params = node['crowbar']['provisioner']['server']['sledgehammer_kernel_params'].split(' ')
     pxe_params << "crowbar.fqdn=#{mnode_name}"
     provisioner_bootfile mnode_name do
       kernel_params pxe_params.join(' ')
-      address mac_list
-      bootenv 'sledgehammer'
+      address v4addr
+      bootenv "sledgehammer"
       action :add
     end
     template "#{node_dir}/#{mnode_name}/control.sh" do
@@ -72,11 +74,11 @@ new_clients = {}
                 :v4_addr => node.address('admin',IP::IP4).addr
                 )
     end
-  when 'ubuntu-12.04-install'
+  when "ubuntu-12.04-install"
     provisioner_debian mnode_name do
-      distro 'ubuntu'
-      version '12.04'
-      address mac_list
+      distro "ubuntu"
+      version "12.04"
+      address v4addr
       target mnode_name
       action :add
     end
@@ -84,7 +86,7 @@ new_clients = {}
     provisioner_debian mnode_name do
       distro 'ubuntu'
       version '14.04'
-      address mac_list
+      address v4addr
       target mnode_name
       action :add
     end
@@ -92,7 +94,7 @@ new_clients = {}
     provisioner_redhat mnode_name do
       distro 'centos'
       version '6.5'
-      address mac_list
+      address v4addr
       target mnode_name
       action :add
     end
@@ -100,7 +102,7 @@ new_clients = {}
     provisioner_redhat mnode_name do
       distro 'centos'
       version '6.6'
-      address mac_list
+      address v4addr
       target mnode_name
       action :add
     end
@@ -108,7 +110,7 @@ new_clients = {}
     provisioner_redhat mnode_name do
       distro 'redhat'
       version '6.5'
-      address mac_list
+      address v4addr
       target mnode_name
       action :add
     end
@@ -116,7 +118,7 @@ new_clients = {}
     provisioner_redhat mnode_name do
       distro 'redhat'
       version '6.6'
-      address mac_list
+      address v4addr
       target mnode_name
       action :add
     end
@@ -124,7 +126,7 @@ new_clients = {}
     provisioner_fedora mnode_name do
       distro 'fedora'
       version '20'
-      address mac_list
+      address v4addr
       target mnode_name
       action :add
     end
@@ -132,7 +134,7 @@ new_clients = {}
     provisioner_fedora mnode_name do
       distro 'redhat'
       version '7.0'
-      address mac_list
+      address v4addr
       target mnode_name
       action :add
     end
@@ -140,7 +142,7 @@ new_clients = {}
     provisioner_fedora mnode_name do
       distro 'centos'
       version '7.0.1406'
-      address mac_list
+      address v4addr
       target mnode_name
       action :add
     end
@@ -148,7 +150,7 @@ new_clients = {}
     provisioner_debian mnode_name do
       distro "debian"
       version "7.8.0"
-      address mac_list
+      address v4addr
       target mnode_name
       action :add
     end
@@ -164,10 +166,9 @@ end
 # Now that we have handled any updates we care about, delete any info about nodes we have deleted.
 (node['crowbar_wall']['provisioner']['clients'].keys - new_clients.keys).each do |old_node_name|
   old_node = node['crowbar_wall']['provisioner']['clients'][old_node_name]
-  mac_list = old_node['mac_addresses'] || []
   a = provisioner_bootfile old_node_name do
     action :nothing
-    address mac_list
+    address IP.coerce(old_node["v4addr"])
   end
   a.run_action(:remove)
   a = directory "#{node_dir}/#{old_node_name}" do

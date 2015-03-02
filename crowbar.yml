@@ -81,6 +81,7 @@ jigs:
     description: "Jig that delegates back to a role-provided do_transition method"
 
 extra_files:
+  - http://downloads.sourceforge.net/project/elilo/elilo/elilo-3.16/elilo-3.16-all.tar.gz
   - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
 
 debs:
@@ -647,9 +648,6 @@ rpms:
     - libpq5
     - libossp-uuid16
     - libecpg6
-    - binutils-devel
-    - autoconf
-    - automake
     - sudo
     # Repo and iso mangling stuff
     - createrepo

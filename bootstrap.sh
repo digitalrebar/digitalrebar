@@ -20,7 +20,6 @@ prefix_r=(recipe[barclamp]
           recipe[utils])
 boot_r=('recipe[crowbar-bootstrap::boot]'
         'recipe[crowbar-bootstrap::wsman]'
-        'recipe[crowbar-bootstrap::grub]'
         'recipe[crowbar-bootstrap::sledgehammer]'
         'recipe[crowbar-bootstrap::gemstuff]'
         'recipe[crowbar-bootstrap::go]'
