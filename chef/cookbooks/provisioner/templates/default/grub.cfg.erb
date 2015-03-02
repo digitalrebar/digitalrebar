@@ -1,8 +1,0 @@
-echo Loading Linux kernel /<%= @kernel %> ...
-linux /<%= @kernel %> <%=@append_line%> crowbar.install.key=<%=@machine_key%> BOOTIF=$bootif
-echo Loading initrd /<%= @initrd %> ...
-initrd /<%= @initrd %>
-echo Done.  Booting.
-boot
-echo Boot failed! Rebooting to try again.
-reboot

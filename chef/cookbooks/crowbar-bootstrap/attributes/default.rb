@@ -13,16 +13,3 @@ default["bootstrap"]["goiardi"]["protocol"] = "http"
 default["bootstrap"]["sws"] = "github.com/VictorLowther/sws"
 default["bootstrap"]["openwsman"]["repo"]="https://github.com/openwsman/openwsman"
 default["bootstrap"]["openwsman"]["version"]="v2.4.12"
-default["bootstrap"]["grub2"]["repo"]="https://github.com/VictorLowther/grub"
-default["bootstrap"]["grub2"]["bootfont"]="http://mirrors2.kernel.org/opensuse/factory/repo/oss/boot/x86_64/grub2-efi/unicode.pf2"
-default["bootstrap"]["grub2"]["version"]="allow-ports-in-protocols"
-default["bootstrap"]["grub2"]["platforms"]={
-  "efi" => {
-    cmd: "--format=x86_64-efi --prefix='(tftp)/boot/grub' tftp http efinet net",
-    file: "grub-x86_64.efi"
-  },
-  "pc" => {
-    cmd: "--format=i386-pc-pxe --prefix='(pxe)/boot/grub' pxe tftp http net pxechain",
-    file: "grub.pxe"
-  }
-}

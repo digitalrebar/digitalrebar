@@ -144,11 +144,13 @@ net_pools = admin_net["ranges"].select{|range|["dhcp","host"].include? range["na
 
 pool_opts = {
   "dhcp" => ['allow unknown-clients',
-                                "  if option arch = 00:07 or option arch = 00:09 {
-      filename = \"grub-x86_64.efi\";
+             '      if option arch = 00:06 {
+      filename = "discovery/bootia32.efi";
+   } else if option arch = 00:07 {
+      filename = "discovery/bootx64.efi";
    } else {
-      filename = \"grub.pxe\";
-   }",
+      filename = "discovery/pxelinux.0";
+   }',
              "next-server #{admin_ip.addr}" ],
   "host" => ['deny unknown-clients']
 }

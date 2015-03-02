@@ -52,6 +52,18 @@ if states.include?(node[:state])
   end unless node[:recipes].include?("crowbar")
 end
 
+def sort_boot_order(bootargs,pxestate)
+  res = []
+  netboot,driveboot = bootargs["BootOrder"].partition{ |e|
+    bootargs["Entries"][e]["Device"] =~ /[\/)]MAC\(/i rescue false
+  }
+  case pxestate
+  when "execute" then res = [driveboot,netboot].flatten
+  else res = [netboot,driveboot].flatten
+  end
+  res
+end
+
 # This should really be its own recipe, but...
 if File.exists?("/sys/firmware/efi")
   bootargs = Mash.new
@@ -92,6 +104,13 @@ if File.exists?("/sys/firmware/efi")
       next if bootargs["Entries"][e]["Active"]
       Chef::Log.info("Activating UEFI boot entry #{sprintf('%x',e)}: #{bootargs["Entries"][e]["Description"]}")
       ::Kernel.system("efibootmgr -a -b #{sprintf('%x',e)}")
+    end
+  neworder = sort_boot_order(bootargs,node[:provisioner_state])
+    if neworder != bootargs["BootOrder"]
+      Chef::Log.info("Change UEFI Boot Order: #{node[:provisioner_state]} #{bootargs["BootOrder"].inspect} => #{neworder.inspect}")
+      ::Kernel.system("efibootmgr -o #{neworder.map{|e|sprintf('%x',e)}.join(',')}")
+      bootargs["OldBootOrder"] = bootargs["BootOrder"]
+      bootargs["BootOrder"] = neworder
     end
   end
 end
