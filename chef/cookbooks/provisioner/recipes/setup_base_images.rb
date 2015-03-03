@@ -264,7 +264,7 @@ EOC
     '%os_site%'         => web_path,
     '%os_install_site%' => os_install_site
   }
-  append = params["append"]
+  append = params["append"] || ""
 
   # Sigh.  There has to be a more elegant way.
   replaces.each { |k,v|

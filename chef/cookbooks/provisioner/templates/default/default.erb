@@ -3,5 +3,7 @@ PROMPT 0
 TIMEOUT 10
 LABEL <%= @install_name %>
   KERNEL <%= @kernel %>
-  append initrd=<%= @initrd %> <%= @append_line %> crowbar.install.key=<%=@machine_key%>
+<% iird="" -%>
+<% iird="initrd=../#{@initrd}" if @initrd and @initrd != "" -%>
+  append <%= iird %> <%= @append_line %> crowbar.install.key=<%=@machine_key%>
   IPAPPEND 2
