@@ -3,7 +3,7 @@
   %head
     %title= t 'title', default: "OpenCrowbar"
     = csrf_meta_tags
-    = stylesheet_link_tag 'application'
+    = stylesheet_link_tag Rails.configuration.crowbar.sass_base || 'application'
     /[if IE]
       = stylesheet_link_tag 'ie', :media => "all"
     = javascript_include_tag 'application'

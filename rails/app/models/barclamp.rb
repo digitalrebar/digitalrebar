@@ -55,15 +55,16 @@ class Barclamp < ActiveRecord::Base
 
       Rails.logger.info "Importing Barclamp #{bc_name} from #{source_path}"
 
-      # verson tracking
-      gitcommit = "unknown"
-      gitdate = "unknown"
+      # verson tracking (use Git if we don't get it from the RPM)
+      gitinfo = %x[cd '#{source_path}' && git log -n 1].split("\n") rescue ['unknown']*3
+      gitcommit = gitinfo[0] || "unknown" rescue "unknown"
+      gitdate = gitinfo[2] || "unknown" rescue "unknown"
       if bc['git']
-        gitcommit = bc['git']['commit'] || 'unknown'
-        gitdate = bc['git']['date'] || 'unknown'
+        gitcommit = bc['git']['commit'] || gitcommit
+        gitdate = bc['git']['date'] || gitdate
       end
-      version = bc["version"] || '2.0'
-      build_version = bc["build_version"] || '2.0'
+      version = bc["version"] || '0.0'
+      build_version = bc["build_version"] || '0.0'
 
       source_url = bc["source_url"]
       barclamp.update_attributes!(:description   => bc['description'] || bc_name.humanize,

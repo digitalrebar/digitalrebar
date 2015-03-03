@@ -215,6 +215,7 @@ en:
       parent: "Parent"
       description: "Description"
       roles: "Roles"
+      commit: "xRef"
     show:
       description: "Description"
       roles: "Roles"
@@ -222,6 +223,8 @@ en:
       source_url: "Source URL"
       version: "Version"
       rawconfig: "Raw Configuration"
+      commit: "Commit xRef"
+      build_on: "Date xRef"
   dashboard:
     list:
       title: "Bulk Edit Nodes"
