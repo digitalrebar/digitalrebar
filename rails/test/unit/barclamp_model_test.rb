@@ -38,7 +38,7 @@ class BarclampModelTest < ActiveSupport::TestCase
   test "Versions" do
     b = Barclamp.find_or_create_by(:name=>"crowbar")
     assert_not_nil b
-    assert_equal 2.0, b.version.to_f
+    assert_equal 0.0, b.version.to_f
   end
 
   test "Naming Conventions" do
