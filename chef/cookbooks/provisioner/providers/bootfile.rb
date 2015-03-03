@@ -27,7 +27,7 @@ action :add do
     owner "root"
     group "root"
     source "default.erb"
-    variables(:append_line => "crowbar.fqdn=#{new_resource.name} #{new_resource.kernel_params}",
+    variables(:append_line => "#{new_resource.kernel_params} crowbar.fqdn=#{new_resource.name}",
               :install_name => new_resource.bootenv,
               :initrd => new_resource.initrd,
               :machine_key => node["crowbar"]["provisioner"]["machine_key"],
@@ -38,7 +38,7 @@ action :add do
     owner "root"
     group "root"
     source "default.elilo.erb"
-    variables(:append_line => "crowbar.fqdn=#{new_resource.name} #{new_resource.kernel_params}",
+    variables(:append_line => "#{new_resource.kernel_params} crowbar.fqdn=#{new_resource.name}",
               :install_name => new_resource.bootenv,
               :initrd => new_resource.initrd,
               :machine_key => node["crowbar"]["provisioner"]["machine_key"],
