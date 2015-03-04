@@ -25,13 +25,14 @@ action :add do
   use_local_security = node["crowbar"]["provisioner"]["server"]["use_local_security"]
   os_codename = node["crowbar"]["provisioner"]["server"]["supported_oses"][os]["codename"]
   keys = node["crowbar"]["provisioner"]["server"]["access_keys"].values.sort.join($/)
+  machine_key = node["crowbar"]["provisioner"]["machine_key"]
   os_dir = "#{tftproot}/#{os}"
   mnode_name = new_resource.name
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
   web_path = "#{provisioner_web}/nodes/#{mnode_name}"
   crowbar_repo_web="#{web_path}/crowbar-extra"
   admin_web="#{web_path}/install"
-  append = "url=#{web_path}/seed netcfg/get_hostname=#{mnode_name} #{params["kernel_params"]}"
+  append = "url=#{web_path}/seed netcfg/get_hostname=#{mnode_name} #{params["kernel_params"]} crowbar.fqdn=#{mnode_name} crowbar.install.key=#{machine_key}"
   v4addr = new_resource.address
 
   directory node_dir do

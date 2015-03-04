@@ -27,10 +27,9 @@ action :add do
     owner "root"
     group "root"
     source "default.erb"
-    variables(:append_line => "#{new_resource.kernel_params} crowbar.fqdn=#{new_resource.name}",
+    variables(:append_line => new_resource.kernel_params,
               :install_name => new_resource.bootenv,
               :initrd => new_resource.initrd,
-              :machine_key => node["crowbar"]["provisioner"]["machine_key"],
               :kernel => new_resource.kernel)
   end
   template uefifile do
@@ -38,10 +37,9 @@ action :add do
     owner "root"
     group "root"
     source "default.elilo.erb"
-    variables(:append_line => "#{new_resource.kernel_params} crowbar.fqdn=#{new_resource.name}",
+    variables(:append_line => new_resource.kernel_params,
               :install_name => new_resource.bootenv,
               :initrd => new_resource.initrd,
-              :machine_key => node["crowbar"]["provisioner"]["machine_key"],
               :kernel => new_resource.kernel)
   end
 end

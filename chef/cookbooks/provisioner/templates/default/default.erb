@@ -5,5 +5,5 @@ LABEL <%= @install_name %>
   KERNEL <%= @kernel %>
 <% iird="" -%>
 <% iird="initrd=../#{@initrd}" if @initrd and @initrd != "" -%>
-  append <%= iird %> <%= @append_line %> crowbar.install.key=<%=@machine_key%>
+  append <%= iird %> <%= @append_line %>
   IPAPPEND 2
