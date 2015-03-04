@@ -176,7 +176,7 @@ EOC
   pkgtype = case
             when os =~ /^(ubuntu|debian)/ then "debs"
             when os =~ /^(redhat|centos|suse|fedora)/ then "rpms"
-            when os =~ /^(coreos)/ then "none"
+            when os =~ /^(coreos|xenserver)/ then "custom"
             else raise "Unknown OS type #{os}"
             end
   # If we are running in online mode, we need to do a few extra tasks.

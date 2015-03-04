@@ -164,6 +164,14 @@ new_clients = {}
       target mnode_name
       action :add
     end
+  when "xenserver-6.5-install"
+    provisioner_xenserver mnode_name do
+      distro "xenserver"
+      version "6.5"
+      address v4addr
+      target mnode_name
+      action :add
+    end
   else
     Chef::Log.info("Not messing with boot files for bootenv #{bootenv}")
   end

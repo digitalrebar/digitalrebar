@@ -137,3 +137,4 @@ roles:
             - redhat-7.0
             - debian-7.8.0
             - coreos
+            - xenserver-6.5

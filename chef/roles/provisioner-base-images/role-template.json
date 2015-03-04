@@ -4,6 +4,12 @@
             "server": {
                 "default_os": "ubuntu-12.04",
                 "supported_oses": {
+                    "xenserver-6.5": {
+                        "initrd": "",
+                        "kernel": "boot/pxelinux/mboot.c32",
+                        "iso_file": "XenServer-6.5.0-xenserver.org-install-cd.iso",
+                        "codename": "xenserver"
+                    },
                     "ubuntu-12.04": {
                         "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz",
                         "kernel": "install/netboot/ubuntu-installer/amd64/linux",

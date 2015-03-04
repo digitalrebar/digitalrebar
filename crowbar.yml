@@ -28,6 +28,7 @@ os_support:
   - opensuse-13.1
   - fedora-20
   - debian-7.8.0
+  - xenserver-6.5
 
 barclamps:
   - name: crowbar
