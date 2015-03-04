@@ -16,6 +16,7 @@
 domain_name = node['crowbar']['dns']['domain']
 provisioner_web=node['crowbar']['provisioner']['server']['webserver']
 tftproot = node['crowbar']['provisioner']['server']['root']
+machine_key = node["crowbar"]["provisioner"]["machine_key"]
 node_dir="#{tftproot}/nodes"
 discover_dir="#{tftproot}/discovery"
 pxecfg_dir="#{discover_dir}/pxelinux.cfg"
@@ -56,6 +57,7 @@ new_clients = {}
   when 'sledgehammer'
     pxe_params = node['crowbar']['provisioner']['server']['sledgehammer_kernel_params'].split(' ')
     pxe_params << "crowbar.fqdn=#{mnode_name}"
+    pxe_params << "crowbar.install.key=#{machine_key}"
     provisioner_bootfile mnode_name do
       kernel_params pxe_params.join(' ')
       address v4addr

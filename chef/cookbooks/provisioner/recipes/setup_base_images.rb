@@ -29,6 +29,7 @@ web_port = node["crowbar"]["provisioner"]["server"]["web_port"]
 use_local_security = node["crowbar"]["provisioner"]["server"]["use_local_security"]
 provisioner_web="http://#{v4addr.addr}:#{web_port}"
 node.normal["crowbar"]["provisioner"]["server"]["webserver"]=provisioner_web
+machine_key = node["crowbar"]["provisioner"]["machine_key"]
 os_token="#{node["platform"]}-#{node["platform_version"]}"
 tftproot =  node["crowbar"]["provisioner"]["server"]["root"]
 discover_dir="#{tftproot}/discovery"
@@ -101,7 +102,7 @@ template "#{pxecfg_dir}/default" do
   owner "root"
   group "root"
   source "default.erb"
-  variables(:append_line => "#{append_line} crowbar.state=discovery",
+  variables(:append_line => "#{append_line} crowbar.state=discovery crowbar.install.key=#{machine_key}",
             :install_name => "discovery",
             :initrd => "initrd0.img",
             :machine_key => node["crowbar"]["provisioner"]["machine_key"],
