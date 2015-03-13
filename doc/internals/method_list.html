@@ -20,7 +20,11 @@
   </head>
   <body>
     <script type="text/javascript" charset="utf-8">
-      if (window.top.frames.main) {
+      var hasFrames = false;
+      try {
+        hasFrames = window.top.frames.main ? true : false;
+      } catch (e) { }
+      if (hasFrames) {
         document.getElementById('base_target').target = 'main';
         document.body.className = 'frames';
       }
@@ -48,18 +52,6 @@
         
 
   <li class="r1 ">
-    <span class='object_link'><a href="Group.html#%3C%3D%3E-instance_method" title="Group#&lt;=&gt; (method)">#&lt;=&gt;</a></span>
-    <small>Group</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="IP.html#%3C%3D%3E-instance_method" title="IP#&lt;=&gt; (method)">#&lt;=&gt;</a></span>
-    <small>IP</small>
-  </li>
-  
-
-  <li class="r1 ">
     <span class='object_link'><a href="Doc.html#%3C%3D%3E-instance_method" title="Doc#&lt;=&gt; (method)">#&lt;=&gt;</a></span>
     <small>Doc</small>
   </li>
@@ -78,20 +70,32 @@
   
 
   <li class="r2 ">
+    <span class='object_link'><a href="IP.html#%3C%3D%3E-instance_method" title="IP#&lt;=&gt; (method)">#&lt;=&gt;</a></span>
+    <small>IP</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="Group.html#%3C%3D%3E-instance_method" title="Group#&lt;=&gt; (method)">#&lt;=&gt;</a></span>
+    <small>Group</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="NetworkRange.html#%3D%3D%3D-instance_method" title="NetworkRange#=== (method)">#===</a></span>
     <small>NetworkRange</small>
   </li>
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="Hammer.html#actions-instance_method" title="Hammer#actions (method)">#actions</a></span>
-    <small>Hammer</small>
+    <span class='object_link'><a href="Node.html#actions-instance_method" title="Node#actions (method)">#actions</a></span>
+    <small>Node</small>
   </li>
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="Node.html#actions-instance_method" title="Node#actions (method)">#actions</a></span>
-    <small>Node</small>
+    <span class='object_link'><a href="Hammer.html#actions-instance_method" title="Hammer#actions (method)">#actions</a></span>
+    <small>Hammer</small>
   </li>
   
 
@@ -120,8 +124,8 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="NodeRole.html#active%3F-instance_method" title="NodeRole#active? (method)">#active?</a></span>
-    <small>NodeRole</small>
+    <span class='object_link'><a href="Role.html#active%3F-instance_method" title="Role#active? (method)">#active?</a></span>
+    <small>Role</small>
   </li>
   
 
@@ -132,8 +136,8 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="Role.html#active%3F-instance_method" title="Role#active? (method)">#active?</a></span>
-    <small>Role</small>
+    <span class='object_link'><a href="NodeRole.html#active%3F-instance_method" title="NodeRole#active? (method)">#active?</a></span>
+    <small>NodeRole</small>
   </li>
   
 
@@ -186,20 +190,8 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="NetworkRouter.html#address-instance_method" title="NetworkRouter#address (method)">#address</a></span>
-    <small>NetworkRouter</small>
-  </li>
-  
-
-  <li class="r1 ">
     <span class='object_link'><a href="Node.html#address-instance_method" title="Node#address (method)">#address</a></span>
     <small>Node</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="NetworkAllocation.html#address-instance_method" title="NetworkAllocation#address (method)">#address</a></span>
-    <small>NetworkAllocation</small>
   </li>
   
 
@@ -210,32 +202,44 @@
   
 
   <li class="r2 ">
+    <span class='object_link'><a href="NetworkRouter.html#address-instance_method" title="NetworkRouter#address (method)">#address</a></span>
+    <small>NetworkRouter</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="NetworkAllocation.html#address-instance_method" title="NetworkAllocation#address (method)">#address</a></span>
+    <small>NetworkAllocation</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="NetworkRouter.html#address%3D-instance_method" title="NetworkRouter#address= (method)">#address=</a></span>
     <small>NetworkRouter</small>
   </li>
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="IP.html#address%3D-instance_method" title="IP#address= (method)">#address=</a></span>
-    <small>IP</small>
-  </li>
-  
-
-  <li class="r2 ">
     <span class='object_link'><a href="NetworkAllocation.html#address%3D-instance_method" title="NetworkAllocation#address= (method)">#address=</a></span>
     <small>NetworkAllocation</small>
   </li>
   
 
+  <li class="r2 ">
+    <span class='object_link'><a href="IP.html#address%3D-instance_method" title="IP#address= (method)">#address=</a></span>
+    <small>IP</small>
+  </li>
+  
+
   <li class="r1 ">
-    <span class='object_link'><a href="Node.html#addresses-instance_method" title="Node#addresses (method)">#addresses</a></span>
-    <small>Node</small>
+    <span class='object_link'><a href="NodesController.html#addresses-instance_method" title="NodesController#addresses (method)">#addresses</a></span>
+    <small>NodesController</small>
   </li>
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="NodesController.html#addresses-instance_method" title="NodesController#addresses (method)">#addresses</a></span>
-    <small>NodesController</small>
+    <span class='object_link'><a href="Node.html#addresses-instance_method" title="Node#addresses (method)">#addresses</a></span>
+    <small>Node</small>
   </li>
   
 
@@ -270,68 +274,68 @@
   
 
   <li class="r2 ">
+    <span class='object_link'><a href="NodeRole.html#all_committed_data-instance_method" title="NodeRole#all_committed_data (method)">#all_committed_data</a></span>
+    <small>NodeRole</small>
+  </li>
+  
+
+  <li class="r1 ">
     <span class='object_link'><a href="NodeRole.html#all_data-instance_method" title="NodeRole#all_data (method)">#all_data</a></span>
     <small>NodeRole</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="DeploymentRole.html#all_data-instance_method" title="DeploymentRole#all_data (method)">#all_data</a></span>
     <small>DeploymentRole</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="NodeRole.html#all_deployment_data-instance_method" title="NodeRole#all_deployment_data (method)">#all_deployment_data</a></span>
     <small>NodeRole</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="NodeRole.html#all_my_data-instance_method" title="NodeRole#all_my_data (method)">#all_my_data</a></span>
     <small>NodeRole</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="NodeRole.html#all_parent_data-instance_method" title="NodeRole#all_parent_data (method)">#all_parent_data</a></span>
     <small>NodeRole</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Role.html#all_parents-instance_method" title="Role#all_parents (method)">#all_parents</a></span>
     <small>Role</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="NodeRole.html#all_transition_data-instance_method" title="NodeRole#all_transition_data (method)">#all_transition_data</a></span>
     <small>NodeRole</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="NetworkRange.html#allocate-instance_method" title="NetworkRange#allocate (method)">#allocate</a></span>
     <small>NetworkRange</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="NetworksController.html#allocate_ip-instance_method" title="NetworksController#allocate_ip (method)">#allocate_ip</a></span>
     <small>NetworksController</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="NetworksController.html#allocations-instance_method" title="NetworksController#allocations (method)">#allocations</a></span>
     <small>NetworksController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="NodeRolesController.html#anneal-instance_method" title="NodeRolesController#anneal (method)">#anneal</a></span>
-    <small>NodeRolesController</small>
   </li>
   
 
@@ -342,31 +346,43 @@
   
 
   <li class="r2 ">
+    <span class='object_link'><a href="NodeRolesController.html#anneal-instance_method" title="NodeRolesController#anneal (method)">#anneal</a></span>
+    <small>NodeRolesController</small>
+  </li>
+  
+
+  <li class="r1 ">
     <span class='object_link'><a href="Deployment.html#annealable%3F-instance_method" title="Deployment#annealable? (method)">#annealable?</a></span>
     <small>Deployment</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="ApplicationController.html#api_array-instance_method" title="ApplicationController#api_array (method)">#api_array</a></span>
     <small>ApplicationController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="ApplicationController.html#api_delete-instance_method" title="ApplicationController#api_delete (method)">#api_delete</a></span>
     <small>ApplicationController</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="ApplicationController.html#api_index-instance_method" title="ApplicationController#api_index (method)">#api_index</a></span>
     <small>ApplicationController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="ApplicationController.html#api_not_found-instance_method" title="ApplicationController#api_not_found (method)">#api_not_found</a></span>
+    <small>ApplicationController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="ApplicationController.html#api_not_implemented-instance_method" title="ApplicationController#api_not_implemented (method)">#api_not_implemented</a></span>
     <small>ApplicationController</small>
   </li>
   
@@ -378,26 +394,38 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="ApplicationController.html#api_show-instance_method" title="ApplicationController#api_show (method)">#api_show</a></span>
+    <span class='object_link'><a href="ApplicationController.html#api_result-instance_method" title="ApplicationController#api_result (method)">#api_result</a></span>
     <small>ApplicationController</small>
   </li>
   
 
   <li class="r1 ">
+    <span class='object_link'><a href="ApplicationController.html#api_show-instance_method" title="ApplicationController#api_show (method)">#api_show</a></span>
+    <small>ApplicationController</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="Barclamp.html#api_version-instance_method" title="Barclamp#api_version (method)">#api_version</a></span>
     <small>Barclamp</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Barclamp.html#api_version_accepts-instance_method" title="Barclamp#api_version_accepts (method)">#api_version_accepts</a></span>
     <small>Barclamp</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Hammer.html#as_json-instance_method" title="Hammer#as_json (method)">#as_json</a></span>
     <small>Hammer</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="User.html#as_json-instance_method" title="User#as_json (method)">#as_json</a></span>
+    <small>User</small>
   </li>
   
 
@@ -474,26 +502,14 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="SupportController.html#bootstrap-instance_method" title="SupportController#bootstrap (method)">#bootstrap</a></span>
-    <small>SupportController</small>
-  </li>
-  
-
-  <li class="r1 ">
     <span class='object_link'><a href="SupportController.html#bootstrap_post-instance_method" title="SupportController#bootstrap_post (method)">#bootstrap_post</a></span>
     <small>SupportController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="IP.html#broadcast-instance_method" title="IP#broadcast (method)">#broadcast</a></span>
     <small>IP</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="ApplicationHelper.html#build_scaffold_nav-instance_method" title="ApplicationHelper#build_scaffold_nav (method)">#build_scaffold_nav</a></span>
-    <small>ApplicationHelper</small>
   </li>
   
 
@@ -546,8 +562,8 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="Deployment.html#commit-instance_method" title="Deployment#commit (method)">#commit</a></span>
-    <small>Deployment</small>
+    <span class='object_link'><a href="NodeRolesController.html#commit-instance_method" title="NodeRolesController#commit (method)">#commit</a></span>
+    <small>NodeRolesController</small>
   </li>
   
 
@@ -558,26 +574,50 @@
   
 
   <li class="r2 ">
+    <span class='object_link'><a href="Deployment.html#commit-instance_method" title="Deployment#commit (method)">#commit</a></span>
+    <small>Deployment</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="DeploymentRolesController.html#commit-instance_method" title="DeploymentRolesController#commit (method)">#commit</a></span>
+    <small>DeploymentRolesController</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="DeploymentsController.html#commit-instance_method" title="DeploymentsController#commit (method)">#commit</a></span>
     <small>DeploymentsController</small>
   </li>
   
 
   <li class="r1 ">
+    <span class='object_link'><a href="DeploymentRole.html#commit-instance_method" title="DeploymentRole#commit (method)">#commit</a></span>
+    <small>DeploymentRole</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="Node.html#commit%21-instance_method" title="Node#commit! (method)">#commit!</a></span>
     <small>Node</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="NodeRole.html#commit%21-instance_method" title="NodeRole#commit! (method)">#commit!</a></span>
     <small>NodeRole</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Deployment.html#committed%3F-instance_method" title="Deployment#committed? (method)">#committed?</a></span>
     <small>Deployment</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="DeploymentRole.html#committed%3F-instance_method" title="DeploymentRole#committed? (method)">#committed?</a></span>
+    <small>DeploymentRole</small>
   </li>
   
 
@@ -612,56 +652,8 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="NodeRolesController.html#create-instance_method" title="NodeRolesController#create (method)">#create</a></span>
-    <small>NodeRolesController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="BarclampsController.html#create-instance_method" title="BarclampsController#create (method)">#create</a></span>
-    <small>BarclampsController</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="DeploymentsController.html#create-instance_method" title="DeploymentsController#create (method)">#create</a></span>
-    <small>DeploymentsController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="DeploymentRolesController.html#create-instance_method" title="DeploymentRolesController#create (method)">#create</a></span>
-    <small>DeploymentRolesController</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="NetworksController.html#create-instance_method" title="NetworksController#create (method)">#create</a></span>
-    <small>NetworksController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="HammersController.html#create-instance_method" title="HammersController#create (method)">#create</a></span>
-    <small>HammersController</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="AttribsController.html#create-instance_method" title="AttribsController#create (method)">#create</a></span>
-    <small>AttribsController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="RolesController.html#create-instance_method" title="RolesController#create (method)">#create</a></span>
-    <small>RolesController</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="GroupsController.html#create-instance_method" title="GroupsController#create (method)">#create</a></span>
-    <small>GroupsController</small>
+    <span class='object_link'><a href="InterfacesController.html#create-instance_method" title="InterfacesController#create (method)">#create</a></span>
+    <small>InterfacesController</small>
   </li>
   
 
@@ -672,8 +664,8 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="NodesController.html#create-instance_method" title="NodesController#create (method)">#create</a></span>
-    <small>NodesController</small>
+    <span class='object_link'><a href="RolesController.html#create-instance_method" title="RolesController#create (method)">#create</a></span>
+    <small>RolesController</small>
   </li>
   
 
@@ -690,8 +682,56 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="InterfacesController.html#create-instance_method" title="InterfacesController#create (method)">#create</a></span>
-    <small>InterfacesController</small>
+    <span class='object_link'><a href="GroupsController.html#create-instance_method" title="GroupsController#create (method)">#create</a></span>
+    <small>GroupsController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="AttribsController.html#create-instance_method" title="AttribsController#create (method)">#create</a></span>
+    <small>AttribsController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="DeploymentsController.html#create-instance_method" title="DeploymentsController#create (method)">#create</a></span>
+    <small>DeploymentsController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="NetworksController.html#create-instance_method" title="NetworksController#create (method)">#create</a></span>
+    <small>NetworksController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="BarclampsController.html#create-instance_method" title="BarclampsController#create (method)">#create</a></span>
+    <small>BarclampsController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="DeploymentRolesController.html#create-instance_method" title="DeploymentRolesController#create (method)">#create</a></span>
+    <small>DeploymentRolesController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="HammersController.html#create-instance_method" title="HammersController#create (method)">#create</a></span>
+    <small>HammersController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="NodesController.html#create-instance_method" title="NodesController#create (method)">#create</a></span>
+    <small>NodesController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="NodeRolesController.html#create-instance_method" title="NodeRolesController#create (method)">#create</a></span>
+    <small>NodeRolesController</small>
   </li>
   
 
@@ -702,26 +742,26 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="BarclampTest/Jig.html#create_node-instance_method" title="BarclampTest::Jig#create_node (method)">#create_node</a></span>
-    <small>BarclampTest::Jig</small>
+    <span class='object_link'><a href="BarclampCrowbar/Jig.html#create_node-instance_method" title="BarclampCrowbar::Jig#create_node (method)">#create_node</a></span>
+    <small>BarclampCrowbar::Jig</small>
   </li>
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="Jig.html#create_node-instance_method" title="Jig#create_node (method)">#create_node</a></span>
-    <small>Jig</small>
-  </li>
-  
-
-  <li class="r2 ">
     <span class='object_link'><a href="BarclampChef/Jig.html#create_node-instance_method" title="BarclampChef::Jig#create_node (method)">#create_node</a></span>
     <small>BarclampChef::Jig</small>
   </li>
   
 
+  <li class="r2 ">
+    <span class='object_link'><a href="Jig.html#create_node-instance_method" title="Jig#create_node (method)">#create_node</a></span>
+    <small>Jig</small>
+  </li>
+  
+
   <li class="r1 ">
-    <span class='object_link'><a href="BarclampCrowbar/Jig.html#create_node-instance_method" title="BarclampCrowbar::Jig#create_node (method)">#create_node</a></span>
-    <small>BarclampCrowbar::Jig</small>
+    <span class='object_link'><a href="BarclampTest/Jig.html#create_node-instance_method" title="BarclampTest::Jig#create_node (method)">#create_node</a></span>
+    <small>BarclampTest::Jig</small>
   </li>
   
 
@@ -744,14 +784,26 @@
   
 
   <li class="r1 ">
+    <span class='object_link'><a href="NodeRole.html#data-instance_method" title="NodeRole#data (method)">#data</a></span>
+    <small>NodeRole</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="BarclampNetwork/Attrib/Switches.html#data-instance_method" title="BarclampNetwork::Attrib::Switches#data (method)">#data</a></span>
     <small>BarclampNetwork::Attrib::Switches</small>
   </li>
   
 
+  <li class="r1 ">
+    <span class='object_link'><a href="DeploymentRole.html#data-instance_method" title="DeploymentRole#data (method)">#data</a></span>
+    <small>DeploymentRole</small>
+  </li>
+  
+
   <li class="r2 ">
-    <span class='object_link'><a href="NodeRole.html#data-instance_method" title="NodeRole#data (method)">#data</a></span>
-    <small>NodeRole</small>
+    <span class='object_link'><a href="DeploymentRole.html#data%3D-instance_method" title="DeploymentRole#data= (method)">#data=</a></span>
+    <small>DeploymentRole</small>
   </li>
   
 
@@ -792,14 +844,14 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="Node.html#debug-instance_method" title="Node#debug (method)">#debug</a></span>
-    <small>Node</small>
+    <span class='object_link'><a href="NodesController.html#debug-instance_method" title="NodesController#debug (method)">#debug</a></span>
+    <small>NodesController</small>
   </li>
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="NodesController.html#debug-instance_method" title="NodesController#debug (method)">#debug</a></span>
-    <small>NodesController</small>
+    <span class='object_link'><a href="Node.html#debug-instance_method" title="Node#debug (method)">#debug</a></span>
+    <small>Node</small>
   </li>
   
 
@@ -810,14 +862,14 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="BarclampChef/Jig.html#delete_node-instance_method" title="BarclampChef::Jig#delete_node (method)">#delete_node</a></span>
-    <small>BarclampChef::Jig</small>
+    <span class='object_link'><a href="Jig.html#delete_node-instance_method" title="Jig#delete_node (method)">#delete_node</a></span>
+    <small>Jig</small>
   </li>
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="Jig.html#delete_node-instance_method" title="Jig#delete_node (method)">#delete_node</a></span>
-    <small>Jig</small>
+    <span class='object_link'><a href="BarclampChef/Jig.html#delete_node-instance_method" title="BarclampChef::Jig#delete_node (method)">#delete_node</a></span>
+    <small>BarclampChef::Jig</small>
   </li>
   
 
@@ -846,56 +898,20 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="NodeRole.html#description-instance_method" title="NodeRole#description (method)">#description</a></span>
-    <small>NodeRole</small>
-  </li>
-  
-
-  <li class="r1 ">
     <span class='object_link'><a href="DeploymentRole.html#description-instance_method" title="DeploymentRole#description (method)">#description</a></span>
     <small>DeploymentRole</small>
   </li>
   
 
-  <li class="r2 ">
-    <span class='object_link'><a href="AttribsController.html#destroy-instance_method" title="AttribsController#destroy (method)">#destroy</a></span>
-    <small>AttribsController</small>
+  <li class="r1 ">
+    <span class='object_link'><a href="NodeRole.html#description-instance_method" title="NodeRole#description (method)">#description</a></span>
+    <small>NodeRole</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="RolesController.html#destroy-instance_method" title="RolesController#destroy (method)">#destroy</a></span>
     <small>RolesController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="HammersController.html#destroy-instance_method" title="HammersController#destroy (method)">#destroy</a></span>
-    <small>HammersController</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="BarclampsController.html#destroy-instance_method" title="BarclampsController#destroy (method)">#destroy</a></span>
-    <small>BarclampsController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="JigsController.html#destroy-instance_method" title="JigsController#destroy (method)">#destroy</a></span>
-    <small>JigsController</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="NodeRolesController.html#destroy-instance_method" title="NodeRolesController#destroy (method)">#destroy</a></span>
-    <small>NodeRolesController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="GroupsController.html#destroy-instance_method" title="GroupsController#destroy (method)">#destroy</a></span>
-    <small>GroupsController</small>
   </li>
   
 
@@ -906,8 +922,20 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="UsersController.html#destroy-instance_method" title="UsersController#destroy (method)">#destroy</a></span>
-    <small>UsersController</small>
+    <span class='object_link'><a href="NodeRolesController.html#destroy-instance_method" title="NodeRolesController#destroy (method)">#destroy</a></span>
+    <small>NodeRolesController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="JigsController.html#destroy-instance_method" title="JigsController#destroy (method)">#destroy</a></span>
+    <small>JigsController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="GroupsController.html#destroy-instance_method" title="GroupsController#destroy (method)">#destroy</a></span>
+    <small>GroupsController</small>
   </li>
   
 
@@ -918,14 +946,38 @@
   
 
   <li class="r2 ">
+    <span class='object_link'><a href="DeploymentRolesController.html#destroy-instance_method" title="DeploymentRolesController#destroy (method)">#destroy</a></span>
+    <small>DeploymentRolesController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="HammersController.html#destroy-instance_method" title="HammersController#destroy (method)">#destroy</a></span>
+    <small>HammersController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="AttribsController.html#destroy-instance_method" title="AttribsController#destroy (method)">#destroy</a></span>
+    <small>AttribsController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="BarclampsController.html#destroy-instance_method" title="BarclampsController#destroy (method)">#destroy</a></span>
+    <small>BarclampsController</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="NetworksController.html#destroy-instance_method" title="NetworksController#destroy (method)">#destroy</a></span>
     <small>NetworksController</small>
   </li>
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="DeploymentRolesController.html#destroy-instance_method" title="DeploymentRolesController#destroy (method)">#destroy</a></span>
-    <small>DeploymentRolesController</small>
+    <span class='object_link'><a href="UsersController.html#destroy-instance_method" title="UsersController#destroy (method)">#destroy</a></span>
+    <small>UsersController</small>
   </li>
   
 
@@ -978,128 +1030,152 @@
   
 
   <li class="r2 ">
+    <span class='object_link'><a href="BarclampDns/MgmtService.html#do_transition-instance_method" title="BarclampDns::MgmtService#do_transition (method)">#do_transition</a></span>
+    <small>BarclampDns::MgmtService</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="BarclampNtp/Service.html#do_transition-instance_method" title="BarclampNtp::Service#do_transition (method)">#do_transition</a></span>
+    <small>BarclampNtp::Service</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="BarclampDns/Service.html#do_transition-instance_method" title="BarclampDns::Service#do_transition (method)">#do_transition</a></span>
+    <small>BarclampDns::Service</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="BarclampTest/Async.html#do_transition-instance_method" title="BarclampTest::Async#do_transition (method)">#do_transition</a></span>
+    <small>BarclampTest::Async</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="BarclampDhcp/Service.html#do_transition-instance_method" title="BarclampDhcp::Service#do_transition (method)">#do_transition</a></span>
+    <small>BarclampDhcp::Service</small>
+  </li>
+  
+
+  <li class="r1 ">
     <span class='object_link'><a href="Doc.html#doc_path-instance_method" title="Doc#doc_path (method)">#doc_path</a></span>
     <small>Doc</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="NetworksController.html#edit-instance_method" title="NetworksController#edit (method)">#edit</a></span>
     <small>NetworksController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="UsersController.html#edit-instance_method" title="UsersController#edit (method)">#edit</a></span>
     <small>UsersController</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="UsersController.html#edit_password-instance_method" title="UsersController#edit_password (method)">#edit_password</a></span>
     <small>UsersController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="User.html#email_required%3F-instance_method" title="User#email_required? (method)">#email_required?</a></span>
     <small>User</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Run.html#empty%3F-class_method" title="Run.empty? (method)">empty?</a></span>
     <small>Run</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="NetworksController.html#enable_interface-instance_method" title="NetworksController#enable_interface (method)">#enable_interface</a></span>
     <small>NetworksController</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Run.html#enqueue-class_method" title="Run.enqueue (method)">enqueue</a></span>
     <small>Run</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="NodeRole.html#error%21-instance_method" title="NodeRole#error! (method)">#error!</a></span>
     <small>NodeRole</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="NodeRole.html#error%3F-instance_method" title="NodeRole#error? (method)">#error?</a></span>
     <small>NodeRole</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Deployment.html#error%3F-instance_method" title="Deployment#error? (method)">#error?</a></span>
     <small>Deployment</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Doc.html#exist%3F-instance_method" title="Doc#exist? (method)">#exist?</a></span>
     <small>Doc</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="DocsController.html#export-instance_method" title="DocsController#export (method)">#export</a></span>
     <small>DocsController</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="BarclampNtp/Server.html#external_servers-instance_method" title="BarclampNtp::Server#external_servers (method)">#external_servers</a></span>
     <small>BarclampNtp::Server</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Attrib.html#extract-instance_method" title="Attrib#extract (method)">#extract</a></span>
     <small>Attrib</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="SupportController.html#fail-instance_method" title="SupportController#fail (method)">#fail</a></span>
     <small>SupportController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="DashboardController.html#families-instance_method" title="DashboardController#families (method)">#families</a></span>
     <small>DashboardController</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Doc.html#file_name-instance_method" title="Doc#file_name (method)">#file_name</a></span>
     <small>Doc</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="DocsController.html#file_name-instance_method" title="DocsController#file_name (method)">#file_name</a></span>
     <small>DocsController</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="User.html#find_by_id_or_username-class_method" title="User.find_by_id_or_username (method)">find_by_id_or_username</a></span>
     <small>User</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="ApiHelper/ClassMethods.html#find_key-instance_method" title="ApiHelper::ClassMethods#find_key (method)">#find_key</a></span>
-    <small>ApiHelper::ClassMethods</small>
   </li>
   
 
@@ -1110,98 +1186,98 @@
   
 
   <li class="r2 ">
+    <span class='object_link'><a href="ApiHelper/ClassMethods.html#find_key-instance_method" title="ApiHelper::ClassMethods#find_key (method)">#find_key</a></span>
+    <small>ApiHelper::ClassMethods</small>
+  </li>
+  
+
+  <li class="r1 ">
     <span class='object_link'><a href="NodeRole.html#find_needed_parents-class_method" title="NodeRole.find_needed_parents (method)">find_needed_parents</a></span>
     <small>NodeRole</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Doc.html#find_order-instance_method" title="Doc#find_order (method)">#find_order</a></span>
     <small>Doc</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Doc.html#find_parent_name-instance_method" title="Doc#find_parent_name (method)">#find_parent_name</a></span>
     <small>Doc</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Doc.html#find_title-instance_method" title="Doc#find_title (method)">#find_title</a></span>
     <small>Doc</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Jig.html#finish_run-instance_method" title="Jig#finish_run (method)">#finish_run</a></span>
     <small>Jig</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="NetworkRange.html#first-instance_method" title="NetworkRange#first (method)">#first</a></span>
     <small>NetworkRange</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="NetworkRange.html#first%3D-instance_method" title="NetworkRange#first= (method)">#first=</a></span>
     <small>NetworkRange</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="DocsController.html#fix_encoding%21-instance_method" title="DocsController#fix_encoding! (method)">#fix_encoding!</a></span>
     <small>DocsController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="ApplicationHelper.html#format_memory-instance_method" title="ApplicationHelper#format_memory (method)">#format_memory</a></span>
     <small>ApplicationHelper</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="NetworkRange.html#fullname-instance_method" title="NetworkRange#fullname (method)">#fullname</a></span>
     <small>NetworkRange</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Hammer.html#gather-class_method" title="Hammer.gather (method)">gather</a></span>
     <small>Hammer</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Doc.html#gen_doc_index-class_method" title="Doc.gen_doc_index (method)">gen_doc_index</a></span>
     <small>Doc</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Doc.html#generate_parent-instance_method" title="Doc#generate_parent (method)">#generate_parent</a></span>
     <small>Doc</small>
   </li>
   
 
-  <li class="r1 ">
-    <span class='object_link'><a href="Attrib.html#get-instance_method" title="Attrib#get (method)">#get</a></span>
-    <small>Attrib</small>
-  </li>
-  
-
   <li class="r2 ">
-    <span class='object_link'><a href="BarclampCrowbar/Attrib/NumberOfDrives.html#get-instance_method" title="BarclampCrowbar::Attrib::NumberOfDrives#get (method)">#get</a></span>
-    <small>BarclampCrowbar::Attrib::NumberOfDrives</small>
-  </li>
-  
-
-  <li class="r1 ">
     <span class='object_link'><a href="Attrib.html#get-class_method" title="Attrib.get (method)">get</a></span>
     <small>Attrib</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="BarclampCrowbar/Attrib/NumberOfDrives.html#get-instance_method" title="BarclampCrowbar::Attrib::NumberOfDrives#get (method)">#get</a></span>
+    <small>BarclampCrowbar::Attrib::NumberOfDrives</small>
   </li>
   
 
@@ -1212,26 +1288,38 @@
   
 
   <li class="r1 ">
+    <span class='object_link'><a href="Attrib.html#get-instance_method" title="Attrib#get (method)">#get</a></span>
+    <small>Attrib</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="Node.html#get_attrib-instance_method" title="Node#get_attrib (method)">#get_attrib</a></span>
     <small>Node</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="SupportController.html#get_cli-instance_method" title="SupportController#get_cli (method)">#get_cli</a></span>
     <small>SupportController</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="DashboardController.html#getready-instance_method" title="DashboardController#getready (method)">#getready</a></span>
     <small>DashboardController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Doc.html#git_url-instance_method" title="Doc#git_url (method)">#git_url</a></span>
     <small>Doc</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="Role.html#github-instance_method" title="Role#github (method)">#github</a></span>
+    <small>Role</small>
   </li>
   
 
@@ -1260,8 +1348,20 @@
   
 
   <li class="r1 ">
+    <span class='object_link'><a href="Node.html#halt_if_bored-instance_method" title="Node#halt_if_bored (method)">#halt_if_bored</a></span>
+    <small>Node</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="ApplicationHelper.html#hash_to_ul-instance_method" title="ApplicationHelper#hash_to_ul (method)">#hash_to_ul</a></span>
     <small>ApplicationHelper</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="SupportController.html#heartbeat-instance_method" title="SupportController#heartbeat (method)">#heartbeat</a></span>
+    <small>SupportController</small>
   </li>
   
 
@@ -1314,32 +1414,8 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="AttribsController.html#index-instance_method" title="AttribsController#index (method)">#index</a></span>
-    <small>AttribsController</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="NetworksController.html#index-instance_method" title="NetworksController#index (method)">#index</a></span>
-    <small>NetworksController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="HammersController.html#index-instance_method" title="HammersController#index (method)">#index</a></span>
-    <small>HammersController</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="BarclampsController.html#index-instance_method" title="BarclampsController#index (method)">#index</a></span>
-    <small>BarclampsController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="SupportController.html#index-instance_method" title="SupportController#index (method)">#index</a></span>
-    <small>SupportController</small>
+    <span class='object_link'><a href="AvailableHammersController.html#index-instance_method" title="AvailableHammersController#index (method)">#index</a></span>
+    <small>AvailableHammersController</small>
   </li>
   
 
@@ -1350,50 +1426,14 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="NodeRolesController.html#index-instance_method" title="NodeRolesController#index (method)">#index</a></span>
-    <small>NodeRolesController</small>
+    <span class='object_link'><a href="SupportController.html#index-instance_method" title="SupportController#index (method)">#index</a></span>
+    <small>SupportController</small>
   </li>
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="DeploymentsController.html#index-instance_method" title="DeploymentsController#index (method)">#index</a></span>
-    <small>DeploymentsController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="BarclampProvisioner/DhcpsController.html#index-instance_method" title="BarclampProvisioner::DhcpsController#index (method)">#index</a></span>
-    <small>BarclampProvisioner::DhcpsController</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="GroupsController.html#index-instance_method" title="GroupsController#index (method)">#index</a></span>
-    <small>GroupsController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="DocsController.html#index-instance_method" title="DocsController#index (method)">#index</a></span>
-    <small>DocsController</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="NodesController.html#index-instance_method" title="NodesController#index (method)">#index</a></span>
-    <small>NodesController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="NetworkRangesController.html#index-instance_method" title="NetworkRangesController#index (method)">#index</a></span>
-    <small>NetworkRangesController</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="RolesController.html#index-instance_method" title="RolesController#index (method)">#index</a></span>
-    <small>RolesController</small>
+    <span class='object_link'><a href="RunsController.html#index-instance_method" title="RunsController#index (method)">#index</a></span>
+    <small>RunsController</small>
   </li>
   
 
@@ -1410,20 +1450,80 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="RunsController.html#index-instance_method" title="RunsController#index (method)">#index</a></span>
-    <small>RunsController</small>
+    <span class='object_link'><a href="NodeRolesController.html#index-instance_method" title="NodeRolesController#index (method)">#index</a></span>
+    <small>NodeRolesController</small>
   </li>
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="AvailableHammersController.html#index-instance_method" title="AvailableHammersController#index (method)">#index</a></span>
-    <small>AvailableHammersController</small>
+    <span class='object_link'><a href="NetworksController.html#index-instance_method" title="NetworksController#index (method)">#index</a></span>
+    <small>NetworksController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="NetworkRoutersController.html#index-instance_method" title="NetworkRoutersController#index (method)">#index</a></span>
+    <small>NetworkRoutersController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="NetworkRangesController.html#index-instance_method" title="NetworkRangesController#index (method)">#index</a></span>
+    <small>NetworkRangesController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="DocsController.html#index-instance_method" title="DocsController#index (method)">#index</a></span>
+    <small>DocsController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="AttribsController.html#index-instance_method" title="AttribsController#index (method)">#index</a></span>
+    <small>AttribsController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="NodesController.html#index-instance_method" title="NodesController#index (method)">#index</a></span>
+    <small>NodesController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="HammersController.html#index-instance_method" title="HammersController#index (method)">#index</a></span>
+    <small>HammersController</small>
   </li>
   
 
   <li class="r2 ">
     <span class='object_link'><a href="UsersController.html#index-instance_method" title="UsersController#index (method)">#index</a></span>
     <small>UsersController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="GroupsController.html#index-instance_method" title="GroupsController#index (method)">#index</a></span>
+    <small>GroupsController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="BarclampsController.html#index-instance_method" title="BarclampsController#index (method)">#index</a></span>
+    <small>BarclampsController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="DeploymentsController.html#index-instance_method" title="DeploymentsController#index (method)">#index</a></span>
+    <small>DeploymentsController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="RolesController.html#index-instance_method" title="RolesController#index (method)">#index</a></span>
+    <small>RolesController</small>
   </li>
   
 
@@ -1452,14 +1552,14 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="NodeRole/InvalidTransition.html#initialize-instance_method" title="NodeRole::InvalidTransition#initialize (method)">#initialize</a></span>
-    <small>NodeRole::InvalidTransition</small>
+    <span class='object_link'><a href="Attrib/AttribValidationFailed.html#initialize-instance_method" title="Attrib::AttribValidationFailed#initialize (method)">#initialize</a></span>
+    <small>Attrib::AttribValidationFailed</small>
   </li>
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="Attrib/AttribValidationFailed.html#initialize-instance_method" title="Attrib::AttribValidationFailed#initialize (method)">#initialize</a></span>
-    <small>Attrib::AttribValidationFailed</small>
+    <span class='object_link'><a href="NodeRole/InvalidTransition.html#initialize-instance_method" title="NodeRole::InvalidTransition#initialize (method)">#initialize</a></span>
+    <small>NodeRole::InvalidTransition</small>
   </li>
   
 
@@ -1476,38 +1576,50 @@
   
 
   <li class="r1 ">
+    <span class='object_link'><a href="Service.html#internal_do_transition-instance_method" title="Service#internal_do_transition (method)">#internal_do_transition</a></span>
+    <small>Service</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="NetworksController.html#ip-instance_method" title="NetworksController#ip (method)">#ip</a></span>
     <small>NetworksController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Node.html#is_admin%3F-instance_method" title="Node#is_admin? (method)">#is_admin?</a></span>
     <small>Node</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="ApplicationController.html#is_ajax%3F-instance_method" title="ApplicationController#is_ajax? (method)">#is_ajax?</a></span>
     <small>ApplicationController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Node.html#is_docker_node%3F-instance_method" title="Node#is_docker_node? (method)">#is_docker_node?</a></span>
     <small>Node</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="UsersController.html#is_edit_mode%3F-instance_method" title="UsersController#is_edit_mode? (method)">#is_edit_mode?</a></span>
     <small>UsersController</small>
   </li>
   
 
+  <li class="r1 ">
+    <span class='object_link'><a href="User.html#is_locked-instance_method" title="User#is_locked (method)">#is_locked</a></span>
+    <small>User</small>
+  </li>
+  
+
   <li class="r2 ">
-    <span class='object_link'><a href="Role.html#jig-instance_method" title="Role#jig (method)">#jig</a></span>
-    <small>Role</small>
+    <span class='object_link'><a href="Node.html#is_system%3F-instance_method" title="Node#is_system? (method)">#is_system?</a></span>
+    <small>Node</small>
   </li>
   
 
@@ -1518,110 +1630,110 @@
   
 
   <li class="r2 ">
+    <span class='object_link'><a href="Role.html#jig-instance_method" title="Role#jig (method)">#jig</a></span>
+    <small>Role</small>
+  </li>
+  
+
+  <li class="r1 ">
     <span class='object_link'><a href="BarclampNetwork/Role.html#jig_role-instance_method" title="BarclampNetwork::Role#jig_role (method)">#jig_role</a></span>
     <small>BarclampNetwork::Role</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Attrib.html#kwalify_validate-instance_method" title="Attrib#kwalify_validate (method)">#kwalify_validate</a></span>
     <small>Attrib</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="NetworkRange.html#last-instance_method" title="NetworkRange#last (method)">#last</a></span>
     <small>NetworkRange</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="NetworkRange.html#last%3D-instance_method" title="NetworkRange#last= (method)">#last=</a></span>
     <small>NetworkRange</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="DashboardController.html#layercake-instance_method" title="DashboardController#layercake (method)">#layercake</a></span>
     <small>DashboardController</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Doc.html#level-instance_method" title="Doc#level (method)">#level</a></span>
     <small>Doc</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="DashboardController.html#list-instance_method" title="DashboardController#list (method)">#list</a></span>
     <small>DashboardController</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="ApplicationHelper.html#list_from_hashes-instance_method" title="ApplicationHelper#list_from_hashes (method)">#list_from_hashes</a></span>
     <small>ApplicationHelper</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="UsersController.html#lock-instance_method" title="UsersController#lock (method)">#lock</a></span>
     <small>UsersController</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="ApiHelper/ClassMethods.html#locked_transaction-instance_method" title="ApiHelper::ClassMethods#locked_transaction (method)">#locked_transaction</a></span>
     <small>ApiHelper::ClassMethods</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Node.html#login-instance_method" title="Node#login (method)">#login</a></span>
     <small>Node</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="SupportController.html#logs-instance_method" title="SupportController#logs (method)">#logs</a></span>
     <small>SupportController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="UsersController.html#make_admin-instance_method" title="UsersController#make_admin (method)">#make_admin</a></span>
     <small>UsersController</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Network.html#make_global_v6prefix-class_method" title="Network.make_global_v6prefix (method)">make_global_v6prefix</a></span>
     <small>Network</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Doc.html#make_index-class_method" title="Doc.make_index (method)">make_index</a></span>
     <small>Doc</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Doc.html#make_index_entries-class_method" title="Doc.make_index_entries (method)">make_index_entries</a></span>
     <small>Doc</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Network.html#make_node_role-instance_method" title="Network#make_node_role (method)">#make_node_role</a></span>
     <small>Network</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="BarclampChef/SoloJig.html#make_run_list-instance_method" title="BarclampChef::SoloJig#make_run_list (method)">#make_run_list</a></span>
-    <small>BarclampChef::SoloJig</small>
   </li>
   
 
@@ -1632,44 +1744,44 @@
   
 
   <li class="r1 ">
+    <span class='object_link'><a href="BarclampChef/SoloJig.html#make_run_list-instance_method" title="BarclampChef::SoloJig#make_run_list (method)">#make_run_list</a></span>
+    <small>BarclampChef::SoloJig</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="NetworksController.html#map-instance_method" title="NetworksController#map (method)">#map</a></span>
     <small>NetworksController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="RoleRequireAttrib.html#map-instance_method" title="RoleRequireAttrib#map (method)">#map</a></span>
     <small>RoleRequireAttrib</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="SupportController.html#marker-instance_method" title="SupportController#marker (method)">#marker</a></span>
     <small>SupportController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Node.html#merge_quirks-instance_method" title="Node#merge_quirks (method)">#merge_quirks</a></span>
     <small>Node</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="IP.html#method_missing-instance_method" title="IP#method_missing (method)">#method_missing</a></span>
     <small>IP</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Node.html#method_missing-instance_method" title="Node#method_missing (method)">#method_missing</a></span>
     <small>Node</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="NodeRole.html#name-instance_method" title="NodeRole#name (method)">#name</a></span>
-    <small>NodeRole</small>
   </li>
   
 
@@ -1680,62 +1792,74 @@
   
 
   <li class="r1 ">
+    <span class='object_link'><a href="NodeRole.html#name-instance_method" title="NodeRole#name (method)">#name</a></span>
+    <small>NodeRole</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="User.html#name_column-class_method" title="User.name_column (method)">name_column</a></span>
     <small>User</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Node.html#name_hash-class_method" title="Node.name_hash (method)">name_hash</a></span>
     <small>Node</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Role.html#name_i18n-instance_method" title="Role#name_i18n (method)">#name_i18n</a></span>
     <small>Role</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Attrib.html#name_i18n-instance_method" title="Attrib#name_i18n (method)">#name_i18n</a></span>
     <small>Attrib</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Role.html#name_safe-instance_method" title="Role#name_safe (method)">#name_safe</a></span>
     <small>Role</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="IP/IP4.html#netmask-instance_method" title="IP::IP4#netmask (method)">#netmask</a></span>
     <small>IP::IP4</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="IP/IP4.html#netmask%3D-instance_method" title="IP::IP4#netmask= (method)">#netmask=</a></span>
     <small>IP::IP4</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="IP.html#network-instance_method" title="IP#network (method)">#network</a></span>
     <small>IP</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="BarclampNetwork/Role.html#network-instance_method" title="BarclampNetwork::Role#network (method)">#network</a></span>
     <small>BarclampNetwork::Role</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Network.html#node_allocations-instance_method" title="Network#node_allocations (method)">#node_allocations</a></span>
     <small>Network</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="Deployment.html#node_role_md5-instance_method" title="Deployment#node_role_md5 (method)">#node_role_md5</a></span>
+    <small>Deployment</small>
   </li>
   
 
@@ -1752,8 +1876,8 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="BarclampCrowbar/HardwareConfigured.html#on_active-instance_method" title="BarclampCrowbar::HardwareConfigured#on_active (method)">#on_active</a></span>
-    <small>BarclampCrowbar::HardwareConfigured</small>
+    <span class='object_link'><a href="BarclampSaltstack/Minion.html#on_active-instance_method" title="BarclampSaltstack::Minion#on_active (method)">#on_active</a></span>
+    <small>BarclampSaltstack::Minion</small>
   </li>
   
 
@@ -1764,68 +1888,44 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="BarclampCrowbar/InstalledNode.html#on_active-instance_method" title="BarclampCrowbar::InstalledNode#on_active (method)">#on_active</a></span>
-    <small>BarclampCrowbar::InstalledNode</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="BarclampSaltstack/Minion.html#on_active-instance_method" title="BarclampSaltstack::Minion#on_active (method)">#on_active</a></span>
-    <small>BarclampSaltstack::Minion</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="BarclampTest/Event.html#on_active-instance_method" title="BarclampTest::Event#on_active (method)">#on_active</a></span>
-    <small>BarclampTest::Event</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="BarclampProvisioner/OsInstall.html#on_active-instance_method" title="BarclampProvisioner::OsInstall#on_active (method)">#on_active</a></span>
-    <small>BarclampProvisioner::OsInstall</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="BarclampCrowbar/ManagedNode.html#on_active-instance_method" title="BarclampCrowbar::ManagedNode#on_active (method)">#on_active</a></span>
-    <small>BarclampCrowbar::ManagedNode</small>
-  </li>
-  
-
-  <li class="r2 ">
     <span class='object_link'><a href="Role.html#on_active-instance_method" title="Role#on_active (method)">#on_active</a></span>
     <small>Role</small>
   </li>
   
 
-  <li class="r1 ">
-    <span class='object_link'><a href="Role.html#on_blocked-instance_method" title="Role#on_blocked (method)">#on_blocked</a></span>
-    <small>Role</small>
-  </li>
-  
-
   <li class="r2 ">
-    <span class='object_link'><a href="BarclampTest/Event.html#on_blocked-instance_method" title="BarclampTest::Event#on_blocked (method)">#on_blocked</a></span>
+    <span class='object_link'><a href="BarclampTest/Event.html#on_active-instance_method" title="BarclampTest::Event#on_active (method)">#on_active</a></span>
     <small>BarclampTest::Event</small>
   </li>
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="Role.html#on_deployment_create-instance_method" title="Role#on_deployment_create (method)">#on_deployment_create</a></span>
-    <small>Role</small>
+    <span class='object_link'><a href="BarclampProvisioner/OsInstall.html#on_active-instance_method" title="BarclampProvisioner::OsInstall#on_active (method)">#on_active</a></span>
+    <small>BarclampProvisioner::OsInstall</small>
   </li>
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="Role.html#on_deployment_delete-instance_method" title="Role#on_deployment_delete (method)">#on_deployment_delete</a></span>
+    <span class='object_link'><a href="Role.html#on_blocked-instance_method" title="Role#on_blocked (method)">#on_blocked</a></span>
     <small>Role</small>
   </li>
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="Jig.html#on_disk_name-instance_method" title="Jig#on_disk_name (method)">#on_disk_name</a></span>
-    <small>Jig</small>
+    <span class='object_link'><a href="BarclampTest/Event.html#on_blocked-instance_method" title="BarclampTest::Event#on_blocked (method)">#on_blocked</a></span>
+    <small>BarclampTest::Event</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="Role.html#on_deployment_create-instance_method" title="Role#on_deployment_create (method)">#on_deployment_create</a></span>
+    <small>Role</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="Role.html#on_deployment_delete-instance_method" title="Role#on_deployment_delete (method)">#on_deployment_delete</a></span>
+    <small>Role</small>
   </li>
   
 
@@ -1836,8 +1936,8 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="Role.html#on_error-instance_method" title="Role#on_error (method)">#on_error</a></span>
-    <small>Role</small>
+    <span class='object_link'><a href="Jig.html#on_disk_name-instance_method" title="Jig#on_disk_name (method)">#on_disk_name</a></span>
+    <small>Jig</small>
   </li>
   
 
@@ -1848,20 +1948,8 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="BarclampDns/Database.html#on_node_change-instance_method" title="BarclampDns::Database#on_node_change (method)">#on_node_change</a></span>
-    <small>BarclampDns::Database</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="BarclampProvisioner/DockerSetup.html#on_node_change-instance_method" title="BarclampProvisioner::DockerSetup#on_node_change (method)">#on_node_change</a></span>
-    <small>BarclampProvisioner::DockerSetup</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="BarclampProvisioner/DhcpDatabase.html#on_node_change-instance_method" title="BarclampProvisioner::DhcpDatabase#on_node_change (method)">#on_node_change</a></span>
-    <small>BarclampProvisioner::DhcpDatabase</small>
+    <span class='object_link'><a href="Role.html#on_error-instance_method" title="Role#on_error (method)">#on_error</a></span>
+    <small>Role</small>
   </li>
   
 
@@ -1872,8 +1960,32 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="BarclampProvisioner/DhcpDatabase.html#on_node_create-instance_method" title="BarclampProvisioner::DhcpDatabase#on_node_create (method)">#on_node_create</a></span>
-    <small>BarclampProvisioner::DhcpDatabase</small>
+    <span class='object_link'><a href="BarclampDhcp/Database.html#on_node_change-instance_method" title="BarclampDhcp::Database#on_node_change (method)">#on_node_change</a></span>
+    <small>BarclampDhcp::Database</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="BarclampProvisioner/Database.html#on_node_change-instance_method" title="BarclampProvisioner::Database#on_node_change (method)">#on_node_change</a></span>
+    <small>BarclampProvisioner::Database</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="BarclampDns/MgmtShimCrowbarDns.html#on_node_change-instance_method" title="BarclampDns::MgmtShimCrowbarDns#on_node_change (method)">#on_node_change</a></span>
+    <small>BarclampDns::MgmtShimCrowbarDns</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="BarclampProvisioner/DockerSetup.html#on_node_change-instance_method" title="BarclampProvisioner::DockerSetup#on_node_change (method)">#on_node_change</a></span>
+    <small>BarclampProvisioner::DockerSetup</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="BarclampDns/Database.html#on_node_change-instance_method" title="BarclampDns::Database#on_node_change (method)">#on_node_change</a></span>
+    <small>BarclampDns::Database</small>
   </li>
   
 
@@ -1896,32 +2008,80 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="BarclampProvisioner/DhcpDatabase.html#on_node_delete-instance_method" title="BarclampProvisioner::DhcpDatabase#on_node_delete (method)">#on_node_delete</a></span>
-    <small>BarclampProvisioner::DhcpDatabase</small>
+    <span class='object_link'><a href="BarclampDhcp/Database.html#on_node_create-instance_method" title="BarclampDhcp::Database#on_node_create (method)">#on_node_create</a></span>
+    <small>BarclampDhcp::Database</small>
   </li>
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="BarclampSaltstack/Master.html#on_node_delete-instance_method" title="BarclampSaltstack::Master#on_node_delete (method)">#on_node_delete</a></span>
-    <small>BarclampSaltstack::Master</small>
+    <span class='object_link'><a href="BarclampDns/MgmtShimCrowbarDns.html#on_node_create-instance_method" title="BarclampDns::MgmtShimCrowbarDns#on_node_create (method)">#on_node_create</a></span>
+    <small>BarclampDns::MgmtShimCrowbarDns</small>
   </li>
   
 
   <li class="r1 ">
+    <span class='object_link'><a href="BarclampProvisioner/Database.html#on_node_create-instance_method" title="BarclampProvisioner::Database#on_node_create (method)">#on_node_create</a></span>
+    <small>BarclampProvisioner::Database</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="Role.html#on_node_delete-instance_method" title="Role#on_node_delete (method)">#on_node_delete</a></span>
     <small>Role</small>
   </li>
   
 
+  <li class="r1 ">
+    <span class='object_link'><a href="BarclampSaltstack/Master.html#on_node_delete-instance_method" title="BarclampSaltstack::Master#on_node_delete (method)">#on_node_delete</a></span>
+    <small>BarclampSaltstack::Master</small>
+  </li>
+  
+
   <li class="r2 ">
+    <span class='object_link'><a href="BarclampDhcp/Database.html#on_node_delete-instance_method" title="BarclampDhcp::Database#on_node_delete (method)">#on_node_delete</a></span>
+    <small>BarclampDhcp::Database</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="BarclampProvisioner/Database.html#on_node_delete-instance_method" title="BarclampProvisioner::Database#on_node_delete (method)">#on_node_delete</a></span>
+    <small>BarclampProvisioner::Database</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="BarclampChef/Client.html#on_node_delete-instance_method" title="BarclampChef::Client#on_node_delete (method)">#on_node_delete</a></span>
+    <small>BarclampChef::Client</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="BarclampDns/MgmtShimCrowbarDns.html#on_node_delete-instance_method" title="BarclampDns::MgmtShimCrowbarDns#on_node_delete (method)">#on_node_delete</a></span>
+    <small>BarclampDns::MgmtShimCrowbarDns</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="BarclampProvisioner/DockerSetup.html#on_node_delete-instance_method" title="BarclampProvisioner::DockerSetup#on_node_delete (method)">#on_node_delete</a></span>
+    <small>BarclampProvisioner::DockerSetup</small>
+  </li>
+  
+
+  <li class="r1 ">
     <span class='object_link'><a href="BarclampDns/Database.html#on_node_delete-instance_method" title="BarclampDns::Database#on_node_delete (method)">#on_node_delete</a></span>
     <small>BarclampDns::Database</small>
   </li>
   
 
+  <li class="r2 ">
+    <span class='object_link'><a href="BarclampProvisioner/Server.html#on_proposed-instance_method" title="BarclampProvisioner::Server#on_proposed (method)">#on_proposed</a></span>
+    <small>BarclampProvisioner::Server</small>
+  </li>
+  
+
   <li class="r1 ">
-    <span class='object_link'><a href="BarclampProvisioner/DockerSetup.html#on_node_delete-instance_method" title="BarclampProvisioner::DockerSetup#on_node_delete (method)">#on_node_delete</a></span>
-    <small>BarclampProvisioner::DockerSetup</small>
+    <span class='object_link'><a href="BarclampConsul/Consul.html#on_proposed-instance_method" title="BarclampConsul::Consul#on_proposed (method)">#on_proposed</a></span>
+    <small>BarclampConsul::Consul</small>
   </li>
   
 
@@ -1938,37 +2098,13 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="BarclampProvisioner/Server.html#on_proposed-instance_method" title="BarclampProvisioner::Server#on_proposed (method)">#on_proposed</a></span>
-    <small>BarclampProvisioner::Server</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="BarclampTest/Event.html#on_proposed-instance_method" title="BarclampTest::Event#on_proposed (method)">#on_proposed</a></span>
-    <small>BarclampTest::Event</small>
-  </li>
-  
-
-  <li class="r2 ">
     <span class='object_link'><a href="Role.html#on_proposed-instance_method" title="Role#on_proposed (method)">#on_proposed</a></span>
     <small>Role</small>
   </li>
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="BarclampConsul/Consul.html#on_proposed-instance_method" title="BarclampConsul::Consul#on_proposed (method)">#on_proposed</a></span>
-    <small>BarclampConsul::Consul</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="BarclampConsul/Consul.html#on_todo-instance_method" title="BarclampConsul::Consul#on_todo (method)">#on_todo</a></span>
-    <small>BarclampConsul::Consul</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="BarclampTest/Event.html#on_todo-instance_method" title="BarclampTest::Event#on_todo (method)">#on_todo</a></span>
+    <span class='object_link'><a href="BarclampTest/Event.html#on_proposed-instance_method" title="BarclampTest::Event#on_proposed (method)">#on_proposed</a></span>
     <small>BarclampTest::Event</small>
   </li>
   
@@ -1980,26 +2116,38 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="Role.html#on_todo-instance_method" title="Role#on_todo (method)">#on_todo</a></span>
-    <small>Role</small>
-  </li>
-  
-
-  <li class="r2 ">
     <span class='object_link'><a href="BarclampChef/Client.html#on_todo-instance_method" title="BarclampChef::Client#on_todo (method)">#on_todo</a></span>
     <small>BarclampChef::Client</small>
   </li>
   
 
-  <li class="r1 ">
-    <span class='object_link'><a href="Role.html#on_transition-instance_method" title="Role#on_transition (method)">#on_transition</a></span>
+  <li class="r2 ">
+    <span class='object_link'><a href="Role.html#on_todo-instance_method" title="Role#on_todo (method)">#on_todo</a></span>
     <small>Role</small>
   </li>
   
 
+  <li class="r1 ">
+    <span class='object_link'><a href="BarclampTest/Event.html#on_todo-instance_method" title="BarclampTest::Event#on_todo (method)">#on_todo</a></span>
+    <small>BarclampTest::Event</small>
+  </li>
+  
+
   <li class="r2 ">
+    <span class='object_link'><a href="BarclampConsul/Consul.html#on_todo-instance_method" title="BarclampConsul::Consul#on_todo (method)">#on_todo</a></span>
+    <small>BarclampConsul::Consul</small>
+  </li>
+  
+
+  <li class="r1 ">
     <span class='object_link'><a href="BarclampTest/Event.html#on_transition-instance_method" title="BarclampTest::Event#on_transition (method)">#on_transition</a></span>
     <small>BarclampTest::Event</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="Role.html#on_transition-instance_method" title="Role#on_transition (method)">#on_transition</a></span>
+    <small>Role</small>
   </li>
   
 
@@ -2016,14 +2164,14 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="NodesController.html#power-instance_method" title="NodesController#power (method)">#power</a></span>
-    <small>NodesController</small>
+    <span class='object_link'><a href="Node.html#power-instance_method" title="Node#power (method)">#power</a></span>
+    <small>Node</small>
   </li>
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="Node.html#power-instance_method" title="Node#power (method)">#power</a></span>
-    <small>Node</small>
+    <span class='object_link'><a href="NodesController.html#power-instance_method" title="NodesController#power (method)">#power</a></span>
+    <small>NodesController</small>
   </li>
   
 
@@ -2046,8 +2194,20 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="Deployment.html#propose-instance_method" title="Deployment#propose (method)">#propose</a></span>
-    <small>Deployment</small>
+    <span class='object_link'><a href="NodeRolesController.html#propose-instance_method" title="NodeRolesController#propose (method)">#propose</a></span>
+    <small>NodeRolesController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="DeploymentRolesController.html#propose-instance_method" title="DeploymentRolesController#propose (method)">#propose</a></span>
+    <small>DeploymentRolesController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="NodesController.html#propose-instance_method" title="NodesController#propose (method)">#propose</a></span>
+    <small>NodesController</small>
   </li>
   
 
@@ -2058,20 +2218,44 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="NodeRole.html#propose%21-instance_method" title="NodeRole#propose! (method)">#propose!</a></span>
-    <small>NodeRole</small>
+    <span class='object_link'><a href="Deployment.html#propose-instance_method" title="Deployment#propose (method)">#propose</a></span>
+    <small>Deployment</small>
   </li>
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="Deployment.html#proposed%3F-instance_method" title="Deployment#proposed? (method)">#proposed?</a></span>
-    <small>Deployment</small>
+    <span class='object_link'><a href="DeploymentRole.html#propose-instance_method" title="DeploymentRole#propose (method)">#propose</a></span>
+    <small>DeploymentRole</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="Node.html#propose%21-instance_method" title="Node#propose! (method)">#propose!</a></span>
+    <small>Node</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="NodeRole.html#propose%21-instance_method" title="NodeRole#propose! (method)">#propose!</a></span>
+    <small>NodeRole</small>
   </li>
   
 
   <li class="r2 ">
     <span class='object_link'><a href="NodeRole.html#proposed%3F-instance_method" title="NodeRole#proposed? (method)">#proposed?</a></span>
     <small>NodeRole</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="DeploymentRole.html#proposed%3F-instance_method" title="DeploymentRole#proposed? (method)">#proposed?</a></span>
+    <small>DeploymentRole</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="Deployment.html#proposed%3F-instance_method" title="Deployment#proposed? (method)">#proposed?</a></span>
+    <small>Deployment</small>
   </li>
   
 
@@ -2100,50 +2284,62 @@
   
 
   <li class="r1 ">
+    <span class='object_link'><a href="NodeRole.html#rebind_attrib_parents-instance_method" title="NodeRole#rebind_attrib_parents (method)">#rebind_attrib_parents</a></span>
+    <small>NodeRole</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="SecureShellHammer.html#reboot-instance_method" title="SecureShellHammer#reboot (method)">#reboot</a></span>
     <small>SecureShellHammer</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="DeploymentsController.html#recall-instance_method" title="DeploymentsController#recall (method)">#recall</a></span>
     <small>DeploymentsController</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="NodesController.html#redeploy-instance_method" title="NodesController#redeploy (method)">#redeploy</a></span>
     <small>NodesController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Node.html#redeploy%21-instance_method" title="Node#redeploy! (method)">#redeploy!</a></span>
     <small>Node</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="UsersController.html#remove_admin-instance_method" title="UsersController#remove_admin (method)">#remove_admin</a></span>
     <small>UsersController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="NodeRole.html#rerun-instance_method" title="NodeRole#rerun (method)">#rerun</a></span>
     <small>NodeRole</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="BarclampProvisioner/DockerSetup.html#rerun_my_noderoles-instance_method" title="BarclampProvisioner::DockerSetup#rerun_my_noderoles (method)">#rerun_my_noderoles</a></span>
     <small>BarclampProvisioner::DockerSetup</small>
   </li>
   
 
+  <li class="r1 ">
+    <span class='object_link'><a href="BarclampDhcp/Database.html#rerun_my_noderoles-instance_method" title="BarclampDhcp::Database#rerun_my_noderoles (method)">#rerun_my_noderoles</a></span>
+    <small>BarclampDhcp::Database</small>
+  </li>
+  
+
   <li class="r2 ">
-    <span class='object_link'><a href="BarclampProvisioner/DhcpDatabase.html#rerun_my_noderoles-instance_method" title="BarclampProvisioner::DhcpDatabase#rerun_my_noderoles (method)">#rerun_my_noderoles</a></span>
-    <small>BarclampProvisioner::DhcpDatabase</small>
+    <span class='object_link'><a href="BarclampProvisioner/Database.html#rerun_my_noderoles-instance_method" title="BarclampProvisioner::Database#rerun_my_noderoles (method)">#rerun_my_noderoles</a></span>
+    <small>BarclampProvisioner::Database</small>
   </li>
   
 
@@ -2208,8 +2404,8 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="BarclampChef/Jig.html#run-instance_method" title="BarclampChef::Jig#run (method)">#run</a></span>
-    <small>BarclampChef::Jig</small>
+    <span class='object_link'><a href="NoopJig.html#run-instance_method" title="NoopJig#run (method)">#run</a></span>
+    <small>NoopJig</small>
   </li>
   
 
@@ -2220,32 +2416,32 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="SecureShellHammer.html#run-instance_method" title="SecureShellHammer#run (method)">#run</a></span>
-    <small>SecureShellHammer</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="Jig.html#run-instance_method" title="Jig#run (method)">#run</a></span>
-    <small>Jig</small>
-  </li>
-  
-
-  <li class="r1 ">
     <span class='object_link'><a href="Node.html#run-instance_method" title="Node#run (method)">#run</a></span>
     <small>Node</small>
   </li>
   
 
   <li class="r2 ">
+    <span class='object_link'><a href="BarclampCrowbar/RoleProvidedJig.html#run-instance_method" title="BarclampCrowbar::RoleProvidedJig#run (method)">#run</a></span>
+    <small>BarclampCrowbar::RoleProvidedJig</small>
+  </li>
+  
+
+  <li class="r1 ">
     <span class='object_link'><a href="BarclampPuppet/SaJig.html#run-instance_method" title="BarclampPuppet::SaJig#run (method)">#run</a></span>
     <small>BarclampPuppet::SaJig</small>
   </li>
   
 
+  <li class="r2 ">
+    <span class='object_link'><a href="SecureShellHammer.html#run-instance_method" title="SecureShellHammer#run (method)">#run</a></span>
+    <small>SecureShellHammer</small>
+  </li>
+  
+
   <li class="r1 ">
-    <span class='object_link'><a href="NoopJig.html#run-instance_method" title="NoopJig#run (method)">#run</a></span>
-    <small>NoopJig</small>
+    <span class='object_link'><a href="BarclampChef/Jig.html#run-instance_method" title="BarclampChef::Jig#run (method)">#run</a></span>
+    <small>BarclampChef::Jig</small>
   </li>
   
 
@@ -2262,152 +2458,104 @@
   
 
   <li class="r2 ">
+    <span class='object_link'><a href="Jig.html#run-instance_method" title="Jig#run (method)">#run</a></span>
+    <small>Jig</small>
+  </li>
+  
+
+  <li class="r1 ">
     <span class='object_link'><a href="Run.html#run%21-class_method" title="Run.run! (method)">run!</a></span>
     <small>Run</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Jig.html#run_job-instance_method" title="Jig#run_job (method)">#run_job</a></span>
     <small>Jig</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="SecureShellHammer.html#run_on-instance_method" title="SecureShellHammer#run_on (method)">#run_on</a></span>
     <small>SecureShellHammer</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="NodeRole.html#runnable%3F-instance_method" title="NodeRole#runnable? (method)">#runnable?</a></span>
     <small>NodeRole</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="NodeRole.html#safe_create%21-class_method" title="NodeRole.safe_create! (method)">safe_create!</a></span>
     <small>NodeRole</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Node.html#scp_from-instance_method" title="Node#scp_from (method)">#scp_from</a></span>
     <small>Node</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Node.html#scp_to-instance_method" title="Node#scp_to (method)">#scp_to</a></span>
     <small>Node</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Attrib.html#set-class_method" title="Attrib.set (method)">set</a></span>
     <small>Attrib</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Attrib.html#set-instance_method" title="Attrib#set (method)">#set</a></span>
     <small>Attrib</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="ApplicationController.html#set_layout-class_method" title="ApplicationController.set_layout (method)">set_layout</a></span>
     <small>ApplicationController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="SupportController.html#settings-instance_method" title="SupportController#settings (method)">#settings</a></span>
     <small>SupportController</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="SupportController.html#settings_put-instance_method" title="SupportController#settings_put (method)">#settings_put</a></span>
     <small>SupportController</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Node.html#shortname-instance_method" title="Node#shortname (method)">#shortname</a></span>
     <small>Node</small>
   </li>
   
 
-  <li class="r1 ">
-    <span class='object_link'><a href="NodeRolesController.html#show-instance_method" title="NodeRolesController#show (method)">#show</a></span>
-    <small>NodeRolesController</small>
-  </li>
-  
-
   <li class="r2 ">
-    <span class='object_link'><a href="UsersController.html#show-instance_method" title="UsersController#show (method)">#show</a></span>
-    <small>UsersController</small>
-  </li>
-  
-
-  <li class="r1 ">
     <span class='object_link'><a href="RolesController.html#show-instance_method" title="RolesController#show (method)">#show</a></span>
     <small>RolesController</small>
   </li>
   
 
-  <li class="r2 ">
-    <span class='object_link'><a href="NodesController.html#show-instance_method" title="NodesController#show (method)">#show</a></span>
-    <small>NodesController</small>
-  </li>
-  
-
   <li class="r1 ">
-    <span class='object_link'><a href="DocsController.html#show-instance_method" title="DocsController#show (method)">#show</a></span>
-    <small>DocsController</small>
+    <span class='object_link'><a href="NetworkRoutersController.html#show-instance_method" title="NetworkRoutersController#show (method)">#show</a></span>
+    <small>NetworkRoutersController</small>
   </li>
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="GroupsController.html#show-instance_method" title="GroupsController#show (method)">#show</a></span>
-    <small>GroupsController</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="RunsController.html#show-instance_method" title="RunsController#show (method)">#show</a></span>
-    <small>RunsController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="InterfacesController.html#show-instance_method" title="InterfacesController#show (method)">#show</a></span>
-    <small>InterfacesController</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="NetworkRangesController.html#show-instance_method" title="NetworkRangesController#show (method)">#show</a></span>
-    <small>NetworkRangesController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="JigsController.html#show-instance_method" title="JigsController#show (method)">#show</a></span>
-    <small>JigsController</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="DeploymentsController.html#show-instance_method" title="DeploymentsController#show (method)">#show</a></span>
-    <small>DeploymentsController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="BarclampsController.html#show-instance_method" title="BarclampsController#show (method)">#show</a></span>
-    <small>BarclampsController</small>
+    <span class='object_link'><a href="NodeRolesController.html#show-instance_method" title="NodeRolesController#show (method)">#show</a></span>
+    <small>NodeRolesController</small>
   </li>
   
 
@@ -2418,26 +2566,86 @@
   
 
   <li class="r2 ">
+    <span class='object_link'><a href="UsersController.html#show-instance_method" title="UsersController#show (method)">#show</a></span>
+    <small>UsersController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="NetworksController.html#show-instance_method" title="NetworksController#show (method)">#show</a></span>
+    <small>NetworksController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="RunsController.html#show-instance_method" title="RunsController#show (method)">#show</a></span>
+    <small>RunsController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="NetworkRangesController.html#show-instance_method" title="NetworkRangesController#show (method)">#show</a></span>
+    <small>NetworkRangesController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="InterfacesController.html#show-instance_method" title="InterfacesController#show (method)">#show</a></span>
+    <small>InterfacesController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="GroupsController.html#show-instance_method" title="GroupsController#show (method)">#show</a></span>
+    <small>GroupsController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="AvailableHammersController.html#show-instance_method" title="AvailableHammersController#show (method)">#show</a></span>
+    <small>AvailableHammersController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="NodesController.html#show-instance_method" title="NodesController#show (method)">#show</a></span>
+    <small>NodesController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="JigsController.html#show-instance_method" title="JigsController#show (method)">#show</a></span>
+    <small>JigsController</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="DocsController.html#show-instance_method" title="DocsController#show (method)">#show</a></span>
+    <small>DocsController</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="HammersController.html#show-instance_method" title="HammersController#show (method)">#show</a></span>
     <small>HammersController</small>
   </li>
   
 
   <li class="r1 ">
+    <span class='object_link'><a href="BarclampsController.html#show-instance_method" title="BarclampsController#show (method)">#show</a></span>
+    <small>BarclampsController</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="AttribsController.html#show-instance_method" title="AttribsController#show (method)">#show</a></span>
     <small>AttribsController</small>
   </li>
   
 
-  <li class="r2 ">
-    <span class='object_link'><a href="NetworksController.html#show-instance_method" title="NetworksController#show (method)">#show</a></span>
-    <small>NetworksController</small>
-  </li>
-  
-
   <li class="r1 ">
-    <span class='object_link'><a href="AvailableHammersController.html#show-instance_method" title="AvailableHammersController#show (method)">#show</a></span>
-    <small>AvailableHammersController</small>
+    <span class='object_link'><a href="DeploymentsController.html#show-instance_method" title="DeploymentsController#show (method)">#show</a></span>
+    <small>DeploymentsController</small>
   </li>
   
 
@@ -2454,20 +2662,20 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="BarclampPuppet/SaJig.html#stage_run-instance_method" title="BarclampPuppet::SaJig#stage_run (method)">#stage_run</a></span>
-    <small>BarclampPuppet::SaJig</small>
-  </li>
-  
-
-  <li class="r1 ">
     <span class='object_link'><a href="Jig.html#stage_run-instance_method" title="Jig#stage_run (method)">#stage_run</a></span>
     <small>Jig</small>
   </li>
   
 
+  <li class="r1 ">
+    <span class='object_link'><a href="BarclampChef/SoloJig.html#stage_run-instance_method" title="BarclampChef::SoloJig#stage_run (method)">#stage_run</a></span>
+    <small>BarclampChef::SoloJig</small>
+  </li>
+  
+
   <li class="r2 ">
-    <span class='object_link'><a href="NoopJig.html#stage_run-instance_method" title="NoopJig#stage_run (method)">#stage_run</a></span>
-    <small>NoopJig</small>
+    <span class='object_link'><a href="BarclampChef/Jig.html#stage_run-instance_method" title="BarclampChef::Jig#stage_run (method)">#stage_run</a></span>
+    <small>BarclampChef::Jig</small>
   </li>
   
 
@@ -2478,68 +2686,56 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="BarclampChef/SoloJig.html#stage_run-instance_method" title="BarclampChef::SoloJig#stage_run (method)">#stage_run</a></span>
-    <small>BarclampChef::SoloJig</small>
+    <span class='object_link'><a href="BarclampPuppet/SaJig.html#stage_run-instance_method" title="BarclampPuppet::SaJig#stage_run (method)">#stage_run</a></span>
+    <small>BarclampPuppet::SaJig</small>
   </li>
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="BarclampChef/Jig.html#stage_run-instance_method" title="BarclampChef::Jig#stage_run (method)">#stage_run</a></span>
-    <small>BarclampChef::Jig</small>
-  </li>
-  
-
-  <li class="r2 ">
     <span class='object_link'><a href="BarclampCrowbar/Jig.html#stage_run-instance_method" title="BarclampCrowbar::Jig#stage_run (method)">#stage_run</a></span>
     <small>BarclampCrowbar::Jig</small>
   </li>
   
 
-  <li class="r1 ">
-    <span class='object_link'><a href="Node.html#state-instance_method" title="Node#state (method)">#state</a></span>
-    <small>Node</small>
+  <li class="r2 ">
+    <span class='object_link'><a href="NoopJig.html#stage_run-instance_method" title="NoopJig#stage_run (method)">#stage_run</a></span>
+    <small>NoopJig</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Deployment.html#state-instance_method" title="Deployment#state (method)">#state</a></span>
     <small>Deployment</small>
   </li>
   
 
-  <li class="r1 ">
-    <span class='object_link'><a href="NodeRole.html#state_name-class_method" title="NodeRole.state_name (method)">state_name</a></span>
-    <small>NodeRole</small>
+  <li class="r2 ">
+    <span class='object_link'><a href="Node.html#state-instance_method" title="Node#state (method)">#state</a></span>
+    <small>Node</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Deployment.html#state_name-class_method" title="Deployment.state_name (method)">state_name</a></span>
     <small>Deployment</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Deployment.html#state_name-instance_method" title="Deployment#state_name (method)">#state_name</a></span>
     <small>Deployment</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="NodeRole.html#state_name-instance_method" title="NodeRole#state_name (method)">#state_name</a></span>
     <small>NodeRole</small>
   </li>
   
 
-  <li class="r1 ">
-    <span class='object_link'><a href="Node.html#status-instance_method" title="Node#status (method)">#status</a></span>
-    <small>Node</small>
-  </li>
-  
-
   <li class="r2 ">
-    <span class='object_link'><a href="NodesController.html#status-instance_method" title="NodesController#status (method)">#status</a></span>
-    <small>NodesController</small>
+    <span class='object_link'><a href="NodeRole.html#state_name-class_method" title="NodeRole.state_name (method)">state_name</a></span>
+    <small>NodeRole</small>
   </li>
   
 
@@ -2550,26 +2746,50 @@
   
 
   <li class="r2 ">
+    <span class='object_link'><a href="Node.html#status-instance_method" title="Node#status (method)">#status</a></span>
+    <small>Node</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="DeploymentsController.html#status-instance_method" title="DeploymentsController#status (method)">#status</a></span>
+    <small>DeploymentsController</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="NodesController.html#status-instance_method" title="NodesController#status (method)">#status</a></span>
+    <small>NodesController</small>
+  </li>
+  
+
+  <li class="r1 ">
     <span class='object_link'><a href="IP.html#subnet-instance_method" title="IP#subnet (method)">#subnet</a></span>
     <small>IP</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="IP.html#subnet%3D-instance_method" title="IP#subnet= (method)">#subnet=</a></span>
     <small>IP</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="IP.html#succ-instance_method" title="IP#succ (method)">#succ</a></span>
     <small>IP</small>
   </li>
   
 
+  <li class="r2 ">
+    <span class='object_link'><a href="BarclampChef/Server.html#sysdata-instance_method" title="BarclampChef::Server#sysdata (method)">#sysdata</a></span>
+    <small>BarclampChef::Server</small>
+  </li>
+  
+
   <li class="r1 ">
-    <span class='object_link'><a href="BarclampNetwork/Role.html#sysdata-instance_method" title="BarclampNetwork::Role#sysdata (method)">#sysdata</a></span>
-    <small>BarclampNetwork::Role</small>
+    <span class='object_link'><a href="NodeRole.html#sysdata-instance_method" title="NodeRole#sysdata (method)">#sysdata</a></span>
+    <small>NodeRole</small>
   </li>
   
 
@@ -2580,20 +2800,8 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="BarclampPuppet/AgentSa.html#sysdata-instance_method" title="BarclampPuppet::AgentSa#sysdata (method)">#sysdata</a></span>
-    <small>BarclampPuppet::AgentSa</small>
-  </li>
-  
-
-  <li class="r2 ">
     <span class='object_link'><a href="BarclampChef/Solo.html#sysdata-instance_method" title="BarclampChef::Solo#sysdata (method)">#sysdata</a></span>
     <small>BarclampChef::Solo</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="BarclampSaltstack/Minion.html#sysdata-instance_method" title="BarclampSaltstack::Minion#sysdata (method)">#sysdata</a></span>
-    <small>BarclampSaltstack::Minion</small>
   </li>
   
 
@@ -2604,37 +2812,49 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="BarclampChef/Server.html#sysdata-instance_method" title="BarclampChef::Server#sysdata (method)">#sysdata</a></span>
-    <small>BarclampChef::Server</small>
+    <span class='object_link'><a href="BarclampPuppet/AgentSa.html#sysdata-instance_method" title="BarclampPuppet::AgentSa#sysdata (method)">#sysdata</a></span>
+    <small>BarclampPuppet::AgentSa</small>
   </li>
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="NodeRole.html#sysdata-instance_method" title="NodeRole#sysdata (method)">#sysdata</a></span>
-    <small>NodeRole</small>
+    <span class='object_link'><a href="BarclampSaltstack/Minion.html#sysdata-instance_method" title="BarclampSaltstack::Minion#sysdata (method)">#sysdata</a></span>
+    <small>BarclampSaltstack::Minion</small>
   </li>
   
 
   <li class="r1 ">
+    <span class='object_link'><a href="BarclampNetwork/Role.html#sysdata-instance_method" title="BarclampNetwork::Role#sysdata (method)">#sysdata</a></span>
+    <small>BarclampNetwork::Role</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="NodeRole.html#sysdata%3D-instance_method" title="NodeRole#sysdata= (method)">#sysdata=</a></span>
     <small>NodeRole</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="NodeRole.html#sysdata_update-instance_method" title="NodeRole#sysdata_update (method)">#sysdata_update</a></span>
     <small>NodeRole</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Deployment.html#system-class_method" title="Deployment.system (method)">system</a></span>
     <small>Deployment</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Deployment.html#system%3F-instance_method" title="Deployment#system? (method)">#system?</a></span>
+    <small>Deployment</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="Deployment.html#system_node-instance_method" title="Deployment#system_node (method)">#system_node</a></span>
     <small>Deployment</small>
   </li>
   
@@ -2664,20 +2884,20 @@
   
 
   <li class="r1 ">
+    <span class='object_link'><a href="BarclampDns/Server.html#template-instance_method" title="BarclampDns::Server#template (method)">#template</a></span>
+    <small>BarclampDns::Server</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="BarclampNetwork/Role.html#template-instance_method" title="BarclampNetwork::Role#template (method)">#template</a></span>
     <small>BarclampNetwork::Role</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="Attrib.html#template-instance_method" title="Attrib#template (method)">#template</a></span>
     <small>Attrib</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="BarclampDns/Server.html#template-instance_method" title="BarclampDns::Server#template (method)">#template</a></span>
-    <small>BarclampDns::Server</small>
   </li>
   
 
@@ -2706,14 +2926,38 @@
   
 
   <li class="r2 ">
+    <span class='object_link'><a href="NodeRole/MissingJig.html#to_s-instance_method" title="NodeRole::MissingJig#to_s (method)">#to_s</a></span>
+    <small>NodeRole::MissingJig</small>
+  </li>
+  
+
+  <li class="r1 ">
     <span class='object_link'><a href="Group.html#to_s-instance_method" title="Group#to_s (method)">#to_s</a></span>
     <small>Group</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="IP/IP4.html#to_s-instance_method" title="IP::IP4#to_s (method)">#to_s</a></span>
     <small>IP::IP4</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="Attrib/AttribValidationFailed.html#to_s-instance_method" title="Attrib::AttribValidationFailed#to_s (method)">#to_s</a></span>
+    <small>Attrib::AttribValidationFailed</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="IP/IP6.html#to_s-instance_method" title="IP::IP6#to_s (method)">#to_s</a></span>
+    <small>IP::IP6</small>
+  </li>
+  
+
+  <li class="r1 ">
+    <span class='object_link'><a href="NodeRole/InvalidTransition.html#to_s-instance_method" title="NodeRole::InvalidTransition#to_s (method)">#to_s</a></span>
+    <small>NodeRole::InvalidTransition</small>
   </li>
   
 
@@ -2724,50 +2968,26 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="IP/IP6.html#to_s-instance_method" title="IP::IP6#to_s (method)">#to_s</a></span>
-    <small>IP::IP6</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="Attrib/AttribValidationFailed.html#to_s-instance_method" title="Attrib::AttribValidationFailed#to_s (method)">#to_s</a></span>
-    <small>Attrib::AttribValidationFailed</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="NodeRole/MissingJig.html#to_s-instance_method" title="NodeRole::MissingJig#to_s (method)">#to_s</a></span>
-    <small>NodeRole::MissingJig</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="NodeRole/InvalidTransition.html#to_s-instance_method" title="NodeRole::InvalidTransition#to_s (method)">#to_s</a></span>
-    <small>NodeRole::InvalidTransition</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="NodeRole/MissingJig.html#to_str-instance_method" title="NodeRole::MissingJig#to_str (method)">#to_str</a></span>
-    <small>NodeRole::MissingJig</small>
-  </li>
-  
-
-  <li class="r2 ">
     <span class='object_link'><a href="Attrib/AttribReadOnly.html#to_str-instance_method" title="Attrib::AttribReadOnly#to_str (method)">#to_str</a></span>
     <small>Attrib::AttribReadOnly</small>
   </li>
   
 
-  <li class="r1 ">
+  <li class="r2 ">
     <span class='object_link'><a href="Attrib/AttribValidationFailed.html#to_str-instance_method" title="Attrib::AttribValidationFailed#to_str (method)">#to_str</a></span>
     <small>Attrib::AttribValidationFailed</small>
   </li>
   
 
-  <li class="r2 ">
+  <li class="r1 ">
     <span class='object_link'><a href="NodeRole/InvalidTransition.html#to_str-instance_method" title="NodeRole::InvalidTransition#to_str (method)">#to_str</a></span>
     <small>NodeRole::InvalidTransition</small>
+  </li>
+  
+
+  <li class="r2 ">
+    <span class='object_link'><a href="NodeRole/MissingJig.html#to_str-instance_method" title="NodeRole::MissingJig#to_str (method)">#to_str</a></span>
+    <small>NodeRole::MissingJig</small>
   </li>
   
 
@@ -2820,14 +3040,14 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="Node.html#undebug-instance_method" title="Node#undebug (method)">#undebug</a></span>
-    <small>Node</small>
+    <span class='object_link'><a href="NodesController.html#undebug-instance_method" title="NodesController#undebug (method)">#undebug</a></span>
+    <small>NodesController</small>
   </li>
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="NodesController.html#undebug-instance_method" title="NodesController#undebug (method)">#undebug</a></span>
-    <small>NodesController</small>
+    <span class='object_link'><a href="Node.html#undebug-instance_method" title="Node#undebug (method)">#undebug</a></span>
+    <small>Node</small>
   </li>
   
 
@@ -2850,38 +3070,38 @@
   
 
   <li class="r2 ">
+    <span class='object_link'><a href="HammersController.html#update-instance_method" title="HammersController#update (method)">#update</a></span>
+    <small>HammersController</small>
+  </li>
+  
+
+  <li class="r1 ">
     <span class='object_link'><a href="RolesController.html#update-instance_method" title="RolesController#update (method)">#update</a></span>
     <small>RolesController</small>
   </li>
   
 
-  <li class="r1 ">
-    <span class='object_link'><a href="DeploymentRolesController.html#update-instance_method" title="DeploymentRolesController#update (method)">#update</a></span>
-    <small>DeploymentRolesController</small>
-  </li>
-  
-
   <li class="r2 ">
-    <span class='object_link'><a href="NetworkRangesController.html#update-instance_method" title="NetworkRangesController#update (method)">#update</a></span>
-    <small>NetworkRangesController</small>
+    <span class='object_link'><a href="NodesController.html#update-instance_method" title="NodesController#update (method)">#update</a></span>
+    <small>NodesController</small>
   </li>
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="JigsController.html#update-instance_method" title="JigsController#update (method)">#update</a></span>
-    <small>JigsController</small>
-  </li>
-  
-
-  <li class="r2 ">
     <span class='object_link'><a href="DeploymentsController.html#update-instance_method" title="DeploymentsController#update (method)">#update</a></span>
     <small>DeploymentsController</small>
   </li>
   
 
+  <li class="r2 ">
+    <span class='object_link'><a href="DeploymentRolesController.html#update-instance_method" title="DeploymentRolesController#update (method)">#update</a></span>
+    <small>DeploymentRolesController</small>
+  </li>
+  
+
   <li class="r1 ">
-    <span class='object_link'><a href="NodeRolesController.html#update-instance_method" title="NodeRolesController#update (method)">#update</a></span>
-    <small>NodeRolesController</small>
+    <span class='object_link'><a href="NetworkRangesController.html#update-instance_method" title="NetworkRangesController#update (method)">#update</a></span>
+    <small>NetworkRangesController</small>
   </li>
   
 
@@ -2898,20 +3118,8 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="NetworksController.html#update-instance_method" title="NetworksController#update (method)">#update</a></span>
-    <small>NetworksController</small>
-  </li>
-  
-
-  <li class="r1 ">
-    <span class='object_link'><a href="NodesController.html#update-instance_method" title="NodesController#update (method)">#update</a></span>
-    <small>NodesController</small>
-  </li>
-  
-
-  <li class="r2 ">
-    <span class='object_link'><a href="HammersController.html#update-instance_method" title="HammersController#update (method)">#update</a></span>
-    <small>HammersController</small>
+    <span class='object_link'><a href="JigsController.html#update-instance_method" title="JigsController#update (method)">#update</a></span>
+    <small>JigsController</small>
   </li>
   
 
@@ -2928,20 +3136,32 @@
   
 
   <li class="r1 ">
+    <span class='object_link'><a href="NodeRolesController.html#update-instance_method" title="NodeRolesController#update (method)">#update</a></span>
+    <small>NodeRolesController</small>
+  </li>
+  
+
+  <li class="r2 ">
     <span class='object_link'><a href="AttribsController.html#update-instance_method" title="AttribsController#update (method)">#update</a></span>
     <small>AttribsController</small>
   </li>
   
 
+  <li class="r1 ">
+    <span class='object_link'><a href="NetworksController.html#update-instance_method" title="NetworksController#update (method)">#update</a></span>
+    <small>NetworksController</small>
+  </li>
+  
+
   <li class="r2 ">
-    <span class='object_link'><a href="Role.html#update_cohort-instance_method" title="Role#update_cohort (method)">#update_cohort</a></span>
-    <small>Role</small>
+    <span class='object_link'><a href="NodeRole.html#update_cohort-instance_method" title="NodeRole#update_cohort (method)">#update_cohort</a></span>
+    <small>NodeRole</small>
   </li>
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="NodeRole.html#update_cohort-instance_method" title="NodeRole#update_cohort (method)">#update_cohort</a></span>
-    <small>NodeRole</small>
+    <span class='object_link'><a href="Role.html#update_cohort-instance_method" title="Role#update_cohort (method)">#update_cohort</a></span>
+    <small>Role</small>
   </li>
   
 
@@ -2982,26 +3202,26 @@
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="IP/IP4.html#v4%3F-instance_method" title="IP::IP4#v4? (method)">#v4?</a></span>
-    <small>IP::IP4</small>
-  </li>
-  
-
-  <li class="r1 ">
     <span class='object_link'><a href="IP.html#v4%3F-instance_method" title="IP#v4? (method)">#v4?</a></span>
     <small>IP</small>
   </li>
   
 
+  <li class="r1 ">
+    <span class='object_link'><a href="IP/IP4.html#v4%3F-instance_method" title="IP::IP4#v4? (method)">#v4?</a></span>
+    <small>IP::IP4</small>
+  </li>
+  
+
   <li class="r2 ">
-    <span class='object_link'><a href="IP.html#v6%3F-instance_method" title="IP#v6? (method)">#v6?</a></span>
-    <small>IP</small>
+    <span class='object_link'><a href="IP/IP6.html#v6%3F-instance_method" title="IP::IP6#v6? (method)">#v6?</a></span>
+    <small>IP::IP6</small>
   </li>
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="IP/IP6.html#v6%3F-instance_method" title="IP::IP6#v6? (method)">#v6?</a></span>
-    <small>IP::IP6</small>
+    <span class='object_link'><a href="IP.html#v6%3F-instance_method" title="IP#v6? (method)">#v6?</a></span>
+    <small>IP</small>
   </li>
   
 
@@ -3048,14 +3268,14 @@
   
 
   <li class="r1 ">
-    <span class='object_link'><a href="DeploymentRole.html#wall_update-instance_method" title="DeploymentRole#wall_update (method)">#wall_update</a></span>
-    <small>DeploymentRole</small>
+    <span class='object_link'><a href="NodeRole.html#wall_update-instance_method" title="NodeRole#wall_update (method)">#wall_update</a></span>
+    <small>NodeRole</small>
   </li>
   
 
   <li class="r2 ">
-    <span class='object_link'><a href="NodeRole.html#wall_update-instance_method" title="NodeRole#wall_update (method)">#wall_update</a></span>
-    <small>NodeRole</small>
+    <span class='object_link'><a href="DeploymentRole.html#wall_update-instance_method" title="DeploymentRole#wall_update (method)">#wall_update</a></span>
+    <small>DeploymentRole</small>
   </li>
   
 

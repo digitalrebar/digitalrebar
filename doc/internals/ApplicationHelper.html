@@ -6,7 +6,7 @@
 <title>
   Module: ApplicationHelper
   
-    &mdash; Documentation by YARD 0.8.7.4
+    &mdash; Documentation by YARD 0.8.7.6
   
 </title>
 
@@ -128,28 +128,6 @@ application.</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#build_scaffold_nav-instance_method" title="#build_scaffold_nav (instance method)">- (Object) <strong>build_scaffold_nav</strong>(subnav, item, level = 0, sub_num = 0) </a>
-    
-
-    
-  </span>
-  
-  
-  
-  
-  
-  
-  
-
-  
-    <span class="summary_desc"><div class='inline'></div></span>
-  
-</li>
-
-      
-        <li class="public ">
-  <span class="summary_signature">
-    
       <a href="#cb_column_class-instance_method" title="#cb_column_class (instance method)">- (Object) <strong>cb_column_class</strong>(current_column, total) </a>
     
 
@@ -267,79 +245,7 @@ application.</p>
 
     
       <div class="method_details first">
-  <h3 class="signature first" id="build_scaffold_nav-instance_method">
-  
-    - (<tt>Object</tt>) <strong>build_scaffold_nav</strong>(subnav, item, level = 0, sub_num = 0) 
-  
-
-  
-
-  
-</h3><table class="source_code">
-  <tr>
-    <td>
-      <pre class="lines">
-
-
-71
-72
-73
-74
-75
-76
-77
-78
-79
-80
-81
-82
-83
-84
-85
-86
-87
-88
-89
-90
-91
-92
-93
-94</pre>
-    </td>
-    <td>
-      <pre class="code"><span class="info file"># File 'rails/app/helpers/application_helper.rb', line 71</span>
-
-<span class='kw'>def</span> <span class='id identifier rubyid_build_scaffold_nav'>build_scaffold_nav</span><span class='lparen'>(</span><span class='id identifier rubyid_subnav'>subnav</span><span class='comma'>,</span><span class='id identifier rubyid_item'>item</span><span class='comma'>,</span><span class='id identifier rubyid_level'>level</span><span class='op'>=</span><span class='int'>0</span><span class='comma'>,</span><span class='id identifier rubyid_sub_num'>sub_num</span><span class='op'>=</span><span class='int'>0</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_ul_class'>ul_class</span><span class='op'>=</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>nav_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_level'>level</span><span class='embexpr_end'>}</span><span class='tstring_content'>-</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_sub_num'>sub_num</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
-  <span class='id identifier rubyid_subnav'>subnav</span><span class='period'>.</span><span class='id identifier rubyid_dom_class'>dom_class</span> <span class='op'>=</span> <span class='id identifier rubyid_ul_class'>ul_class</span>
-  <span class='comment'># puts &quot;build_scaffold_nav  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! item.name: #{item.name}&quot;
-</span>  <span class='comment'># puts &quot;build_scaffold_nav  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! subnav.dom_class: #{subnav.dom_class}&quot;
-</span>  <span class='id identifier rubyid_tmp_sub_num'>tmp_sub_num</span> <span class='op'>=</span> <span class='int'>0</span>
-  <span class='id identifier rubyid_level'>level</span> <span class='op'>+=</span> <span class='int'>1</span>
-  <span class='id identifier rubyid_item'>item</span><span class='period'>.</span><span class='id identifier rubyid_children'>children</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_nav'>nav</span><span class='op'>|</span>
-   <span class='comment'># puts &quot;children: #{nav.children}&quot;
-</span>    <span class='comment'>#puts &quot;nav.children.is_a? Nav #{nav.children.is_a? Nav}&quot;
-</span>   <span class='comment'># puts &quot;children empty? #{nav.children.empty?}&quot;
-</span>    <span class='id identifier rubyid_has_children'>has_children</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_nav'>nav</span><span class='period'>.</span><span class='id identifier rubyid_children'>children</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span> <span class='const'>Nav</span> <span class='kw'>or</span> <span class='op'>!</span><span class='id identifier rubyid_nav'>nav</span><span class='period'>.</span><span class='id identifier rubyid_children'>children</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span><span class='rparen'>)</span>
-  <span class='comment'>#  puts &quot;has_children #{has_children}&quot;
-</span>    <span class='id identifier rubyid_options'>options</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='symbol'>:title</span><span class='op'>=&gt;</span><span class='id identifier rubyid_t'>t</span><span class='lparen'>(</span><span class='id identifier rubyid_nav'>nav</span><span class='period'>.</span><span class='id identifier rubyid_description'>description</span><span class='comma'>,</span> <span class='symbol'>:default</span><span class='op'>=&gt;</span><span class='id identifier rubyid_t'>t</span><span class='lparen'>(</span><span class='id identifier rubyid_nav'>nav</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span><span class='rparen'>)</span><span class='rbrace'>}</span>
-    <span class='id identifier rubyid_options'>options</span><span class='lbracket'>[</span><span class='symbol'>:class</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>has_children</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='op'>!</span><span class='id identifier rubyid_has_children'>has_children</span>
-    <span class='id identifier rubyid_subnav'>subnav</span><span class='period'>.</span><span class='id identifier rubyid_item'>item</span> <span class='id identifier rubyid_nav'>nav</span><span class='period'>.</span><span class='id identifier rubyid_item'>item</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>[</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_t'>t</span><span class='lparen'>(</span><span class='id identifier rubyid_nav'>nav</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'>]</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_eval'>eval</span><span class='lparen'>(</span><span class='id identifier rubyid_nav'>nav</span><span class='period'>.</span><span class='id identifier rubyid_path'>path</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='id identifier rubyid_options'>options</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_nextnav'>nextnav</span><span class='op'>|</span>
-      <span class='kw'>if</span> <span class='lparen'>(</span><span class='id identifier rubyid_has_children'>has_children</span><span class='rparen'>)</span>
-      <span class='comment'># puts &quot;build_scaffold_nav  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! nav.name: #{nav.name}&quot;
-</span>        <span class='id identifier rubyid_tmp_sub_num'>tmp_sub_num</span> <span class='op'>+=</span> <span class='int'>1</span>
-        <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_build_scaffold_nav'>build_scaffold_nav</span><span class='lparen'>(</span><span class='id identifier rubyid_nextnav'>nextnav</span><span class='comma'>,</span><span class='id identifier rubyid_nav'>nav</span><span class='comma'>,</span><span class='id identifier rubyid_level'>level</span><span class='comma'>,</span><span class='id identifier rubyid_tmp_sub_num'>tmp_sub_num</span><span class='rparen'>)</span>
-      <span class='kw'>end</span>
-    <span class='kw'>end</span>
-  <span class='kw'>end</span>
-<span class='kw'>end</span></pre>
-    </td>
-  </tr>
-</table>
-</div>
-    
-      <div class="method_details ">
-  <h3 class="signature " id="cb_column_class-instance_method">
+  <h3 class="signature first" id="cb_column_class-instance_method">
   
     - (<tt>Object</tt>) <strong>cb_column_class</strong>(current_column, total) 
   
@@ -559,9 +465,9 @@ application.</p>
 </div>
 
     <div id="footer">
-  Generated on Wed Oct 22 14:55:43 2014 by
+  Generated on Fri Mar 13 01:25:13 2015 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.8.7.4 (ruby-2.1.2).
+  0.8.7.6 (ruby-2.1.5).
 </div>
 
   </body>

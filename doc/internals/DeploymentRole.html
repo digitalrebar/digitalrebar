@@ -6,7 +6,7 @@
 <title>
   Class: DeploymentRole
   
-    &mdash; Documentation by YARD 0.8.7.4
+    &mdash; Documentation by YARD 0.8.7.6
   
 </title>
 
@@ -141,6 +141,94 @@
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#commit-instance_method" title="#commit (instance method)">- (Object) <strong>commit</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#committed%3F-instance_method" title="#committed? (instance method)">- (Boolean) <strong>committed?</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#data-instance_method" title="#data (instance method)">- (Object) <strong>data</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#data%3D-instance_method" title="#data= (instance method)">- (Object) <strong>data=</strong>(val) </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#data_update-instance_method" title="#data_update (instance method)">- (Object) <strong>data_update</strong>(val) </a>
     
 
@@ -209,6 +297,50 @@
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#propose-instance_method" title="#propose (instance method)">- (Object) <strong>propose</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#proposed%3F-instance_method" title="#proposed? (instance method)">- (Boolean) <strong>proposed?</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#wall_update-instance_method" title="#wall_update (instance method)">- (Object) <strong>wall_update</strong>(val) </a>
     
 
@@ -253,15 +385,15 @@
       <pre class="lines">
 
 
-38
-39
-40</pre>
+77
+78
+79</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment_role.rb', line 38</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment_role.rb', line 77</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_all_data'>all_data</span>
-  <span class='id identifier rubyid_role'>role</span><span class='period'>.</span><span class='id identifier rubyid_template'>template</span><span class='period'>.</span><span class='id identifier rubyid_deep_merge'>deep_merge</span><span class='lparen'>(</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_role'>role</span><span class='period'>.</span><span class='id identifier rubyid_template'>template</span><span class='period'>.</span><span class='id identifier rubyid_deep_merge'>deep_merge</span><span class='lparen'>(</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_committed_data'>committed_data</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_deep_merge'>deep_merge</span><span class='lparen'>(</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_wall'>wall</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -269,9 +401,143 @@
 </div>
     
       <div class="method_details ">
-  <h3 class="signature " id="data_update-instance_method">
+  <h3 class="signature " id="commit-instance_method">
   
-    - (<tt>Object</tt>) <strong>data_update</strong>(val) 
+    - (<tt>Object</tt>) <strong>commit</strong> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment_role.rb', line 57</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_commit'>commit</span>
+  <span class='kw'>return</span> <span class='kw'>if</span> <span class='id identifier rubyid_committed?'>committed?</span>
+  <span class='const'>DeploymentRole</span><span class='period'>.</span><span class='id identifier rubyid_transaction'>transaction</span> <span class='kw'>do</span>
+    <span class='kw'>if</span> <span class='id identifier rubyid_committed_data'>committed_data</span> <span class='op'>!=</span> <span class='id identifier rubyid_proposed_data'>proposed_data</span>
+      <span class='id identifier rubyid_committed_data'>committed_data</span> <span class='op'>=</span> <span class='id identifier rubyid_proposed_data'>proposed_data</span>
+      <span class='comment'># Have any runnable noderoles that use this deployment role rerun.
+</span>      <span class='id identifier rubyid_deployment'>deployment</span><span class='period'>.</span><span class='id identifier rubyid_node_roles'>node_roles</span><span class='period'>.</span><span class='id identifier rubyid_where'>where</span><span class='lparen'>(</span><span class='label'>role_id:</span> <span class='id identifier rubyid_role'>role</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_nr'>nr</span><span class='op'>|</span>
+        <span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_todo!'>todo!</span> <span class='kw'>if</span> <span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_runnable?'>runnable?</span>
+      <span class='kw'>end</span>
+    <span class='kw'>end</span>
+    <span class='kw'>self</span><span class='lbracket'>[</span><span class='symbol'>:proposed_data</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='kw'>nil</span>
+    <span class='id identifier rubyid_save!'>save!</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="committed?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>committed?</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+49
+50
+51</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment_role.rb', line 49</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_committed?'>committed?</span>
+  <span class='id identifier rubyid_proposed_data'>proposed_data</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="data-instance_method">
+  
+    - (<tt>Object</tt>) <strong>data</strong> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+38
+39
+40</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment_role.rb', line 38</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_data'>data</span>
+  <span class='id identifier rubyid_deployment'>deployment</span><span class='period'>.</span><span class='id identifier rubyid_proposed?'>proposed?</span> <span class='op'>?</span> <span class='id identifier rubyid_proposed_data'>proposed_data</span> <span class='op'>:</span> <span class='id identifier rubyid_committed_data'>committed_data</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="data=-instance_method">
+  
+    - (<tt>Object</tt>) <strong>data=</strong>(val) 
   
 
   
@@ -293,10 +559,44 @@
     <td>
       <pre class="code"><span class="info file"># File 'rails/app/models/deployment_role.rb', line 42</span>
 
+<span class='kw'>def</span> <span class='id identifier rubyid_data='>data=</span><span class='lparen'>(</span><span class='id identifier rubyid_val'>val</span><span class='rparen'>)</span>
+  <span class='const'>DeploymentRole</span><span class='period'>.</span><span class='id identifier rubyid_transaction'>transaction</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Cannot edit deployment_role data when deployment is not proposed!</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_deployment'>deployment</span><span class='period'>.</span><span class='id identifier rubyid_proposed?'>proposed?</span>
+    <span class='id identifier rubyid_update!'>update!</span><span class='lparen'>(</span><span class='label'>proposed_data:</span> <span class='id identifier rubyid_val'>val</span><span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="data_update-instance_method">
+  
+    - (<tt>Object</tt>) <strong>data_update</strong>(val) 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+81
+82
+83
+84
+85</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment_role.rb', line 81</span>
+
 <span class='kw'>def</span> <span class='id identifier rubyid_data_update'>data_update</span><span class='lparen'>(</span><span class='id identifier rubyid_val'>val</span><span class='rparen'>)</span>
   <span class='const'>DeploymentRole</span><span class='period'>.</span><span class='id identifier rubyid_transaction'>transaction</span> <span class='kw'>do</span>
-    <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_data'>data</span><span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_data'>data</span><span class='period'>.</span><span class='id identifier rubyid_deep_merge'>deep_merge</span><span class='lparen'>(</span><span class='id identifier rubyid_val'>val</span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_save!'>save!</span>
+    <span class='id identifier rubyid_update!'>update!</span><span class='lparen'>(</span><span class='label'>proposed_data:</span> <span class='id identifier rubyid_proposed_data'>proposed_data</span><span class='period'>.</span><span class='id identifier rubyid_deep_merge'>deep_merge</span><span class='lparen'>(</span><span class='id identifier rubyid_val'>val</span><span class='rparen'>)</span><span class='rparen'>)</span>
   <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -376,6 +676,90 @@
 </div>
     
       <div class="method_details ">
+  <h3 class="signature " id="propose-instance_method">
+  
+    - (<tt>Object</tt>) <strong>propose</strong> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+72
+73
+74
+75</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment_role.rb', line 72</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_propose'>propose</span>
+  <span class='id identifier rubyid_update!'>update!</span><span class='lparen'>(</span><span class='label'>proposed_data:</span> <span class='id identifier rubyid_committed_data'>committed_data</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_save!'>save!</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="proposed?-instance_method">
+  
+    - (<tt>Boolean</tt>) <strong>proposed?</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+53
+54
+55</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment_role.rb', line 53</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_proposed?'>proposed?</span>
+  <span class='op'>!</span><span class='id identifier rubyid_committed?'>committed?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
   <h3 class="signature " id="wall_update-instance_method">
   
     - (<tt>Object</tt>) <strong>wall_update</strong>(val) 
@@ -390,20 +774,18 @@
       <pre class="lines">
 
 
-49
-50
-51
-52
-53
-54</pre>
+87
+88
+89
+90
+91</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment_role.rb', line 49</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment_role.rb', line 87</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_wall_update'>wall_update</span><span class='lparen'>(</span><span class='id identifier rubyid_val'>val</span><span class='rparen'>)</span>
   <span class='const'>DeploymentRole</span><span class='period'>.</span><span class='id identifier rubyid_transaction'>transaction</span> <span class='kw'>do</span>
-    <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_wall'>wall</span> <span class='op'>=</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_wall'>wall</span><span class='period'>.</span><span class='id identifier rubyid_deep_merge'>deep_merge</span><span class='lparen'>(</span><span class='id identifier rubyid_val'>val</span><span class='rparen'>)</span>
-    <span class='id identifier rubyid_save!'>save!</span>
+    <span class='id identifier rubyid_update!'>update!</span><span class='lparen'>(</span><span class='label'>wall:</span> <span class='id identifier rubyid_wall'>wall</span><span class='period'>.</span><span class='id identifier rubyid_deep_merge'>deep_merge</span><span class='lparen'>(</span><span class='id identifier rubyid_val'>val</span><span class='rparen'>)</span><span class='rparen'>)</span>
   <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
     </td>
@@ -416,9 +798,9 @@
 </div>
 
     <div id="footer">
-  Generated on Wed Oct 22 14:55:44 2014 by
+  Generated on Fri Mar 13 01:25:14 2015 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.8.7.4 (ruby-2.1.2).
+  0.8.7.6 (ruby-2.1.5).
 </div>
 
   </body>

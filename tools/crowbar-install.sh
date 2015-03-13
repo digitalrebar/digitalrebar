@@ -23,47 +23,38 @@ service iptables stop
 setenforce 0
 sed -i "s/SELINUX=.*/SELINUX=permissive/g" /etc/selinux/config
 
-# Setup repos
-cd /etc/yum.repos.d
+# Get release requested
 if [[ $1 = '--develop' ]]; then
   shift
-  # Setup OCB repo
-  cat > ocb-develop-install.repo <<EOF
-[ocb-develop]
-name=develop repo for opencrowbar rpms
-baseurl=http://opencrowbar.s3-website-us-east-1.amazonaws.com/develop
-enabled=1
-gpgcheck=0
-type=none
-autorefresh=1
-keeppackages=1
-EOF
+  RELEASE="develop"
+  RELPATH="develop"
+elif [[ $1 = '--master' ]]; then
+  shift
+  RELEASE="master"
+  RELPATH="el6"
+elif [[ $1 = '--release' ]]; then
+  shift
+  RELEASE="$1"
+  RELPATH="release/$1"
+  shift
 else
-  # Setup OCB repo
-  cat > ocb-install.repo <<EOF
-[ocb]
-name=repo for opencrowbar rpms
-baseurl=http://opencrowbar.s3-website-us-east-1.amazonaws.com/el6
-enabled=1
-gpgcheck=0
-type=none
-autorefresh=1
-keeppackages=1
-EOF
+  RELEASE="master"
+  RELPATH="el6"
 fi
 
-# Setup OCB Ruby repo
-cat > ocb-ruby.repo <<EOF
-[ocb-ruby]
-name=OCB Ruby for 6
-baseurl=http://opencrowbar.s3-website-us-east-1.amazonaws.com/ruby
+# Setup repo
+cd /etc/yum.repos.d
+# Setup OCB repo
+cat > ocb-$RELEASE-install.repo <<EOF
+[ocb-$RELEASE]
+name=$RELEASE repo for opencrowbar rpms
+baseurl=http://opencrowbar.s3-website-us-east-1.amazonaws.com/$RELPATH
 enabled=1
 gpgcheck=0
 type=none
 autorefresh=1
 keeppackages=1
 EOF
-
 cd -
 
 # Clean up repos

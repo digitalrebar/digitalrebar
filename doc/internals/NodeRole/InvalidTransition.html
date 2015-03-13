@@ -6,7 +6,7 @@
 <title>
   Exception: NodeRole::InvalidTransition
   
-    &mdash; Documentation by YARD 0.8.7.4
+    &mdash; Documentation by YARD 0.8.7.6
   
 </title>
 
@@ -219,13 +219,13 @@
       <pre class="lines">
 
 
-124
-125
-126
-127</pre>
+129
+130
+131
+132</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/node_role.rb', line 124</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/node_role.rb', line 129</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_node_role'>node_role</span><span class='comma'>,</span><span class='id identifier rubyid_from'>from</span><span class='comma'>,</span><span class='id identifier rubyid_to'>to</span><span class='comma'>,</span><span class='id identifier rubyid_str'>str</span><span class='op'>=</span><span class='kw'>nil</span><span class='rparen'>)</span>
   <span class='ivar'>@errstr</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_node_role'>node_role</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>: Invalid state transition from </span><span class='embexpr_beg'>#{</span><span class='const'>NodeRole</span><span class='period'>.</span><span class='id identifier rubyid_state_name'>state_name</span><span class='lparen'>(</span><span class='id identifier rubyid_from'>from</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_content'> to </span><span class='embexpr_beg'>#{</span><span class='const'>NodeRole</span><span class='period'>.</span><span class='id identifier rubyid_state_name'>state_name</span><span class='lparen'>(</span><span class='id identifier rubyid_to'>to</span><span class='rparen'>)</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
@@ -258,12 +258,12 @@
       <pre class="lines">
 
 
-128
-129
-130</pre>
+133
+134
+135</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/node_role.rb', line 128</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/node_role.rb', line 133</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_s'>to_s</span>
   <span class='ivar'>@errstr</span>
@@ -288,12 +288,12 @@
       <pre class="lines">
 
 
-132
-133
-134</pre>
+137
+138
+139</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/node_role.rb', line 132</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/node_role.rb', line 137</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_to_str'>to_str</span>
   <span class='id identifier rubyid_to_s'>to_s</span>
@@ -308,9 +308,9 @@
 </div>
 
     <div id="footer">
-  Generated on Wed Oct 22 14:55:43 2014 by
+  Generated on Fri Mar 13 01:25:14 2015 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.8.7.4 (ruby-2.1.2).
+  0.8.7.6 (ruby-2.1.5).
 </div>
 
   </body>

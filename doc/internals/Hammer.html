@@ -6,7 +6,7 @@
 <title>
   Class: Hammer
   
-    &mdash; Documentation by YARD 0.8.7.4
+    &mdash; Documentation by YARD 0.8.7.6
   
 </title>
 
@@ -244,7 +244,7 @@ include:</p>
         <li class="public ">
   <span class="summary_signature">
     
-      <a href="#as_json-instance_method" title="#as_json (instance method)">- (Object) <strong>as_json</strong> </a>
+      <a href="#as_json-instance_method" title="#as_json (instance method)">- (Object) <strong>as_json</strong>(args) </a>
     
 
     
@@ -334,7 +334,6 @@ include:</p>
       <pre class="lines">
 
 
-56
 57
 58
 59
@@ -349,10 +348,11 @@ include:</p>
 68
 69
 70
-71</pre>
+71
+72</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/hammer.rb', line 56</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/hammer.rb', line 57</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_gather'>gather</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
@@ -390,12 +390,12 @@ include:</p>
       <pre class="lines">
 
 
-52
 53
-54</pre>
+54
+55</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/hammer.rb', line 52</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/hammer.rb', line 53</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_probe'>probe</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span>
   <span class='kw'>false</span>
@@ -426,12 +426,12 @@ include:</p>
       <pre class="lines">
 
 
-48
 49
-50</pre>
+50
+51</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/hammer.rb', line 48</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/hammer.rb', line 49</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_actions'>actions</span>
   <span class='lbrace'>{</span><span class='rbrace'>}</span>
@@ -444,7 +444,7 @@ include:</p>
       <div class="method_details ">
   <h3 class="signature " id="as_json-instance_method">
   
-    - (<tt>Object</tt>) <strong>as_json</strong> 
+    - (<tt>Object</tt>) <strong>as_json</strong>(args) 
   
 
   
@@ -458,13 +458,15 @@ include:</p>
 
 44
 45
-46</pre>
+46
+47</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'rails/app/models/hammer.rb', line 44</span>
 
-<span class='kw'>def</span> <span class='id identifier rubyid_as_json'>as_json</span>
-  <span class='kw'>super</span><span class='lparen'>(</span><span class='label'>methods:</span> <span class='symbol'>:actions</span><span class='rparen'>)</span>
+<span class='kw'>def</span> <span class='id identifier rubyid_as_json'>as_json</span><span class='lparen'>(</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_args'>args</span><span class='lbracket'>[</span><span class='symbol'>:methods</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='symbol'>:actions</span>
+  <span class='kw'>super</span><span class='lparen'>(</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -476,9 +478,9 @@ include:</p>
 </div>
 
     <div id="footer">
-  Generated on Wed Oct 22 14:55:43 2014 by
+  Generated on Fri Mar 13 01:25:13 2015 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.8.7.4 (ruby-2.1.2).
+  0.8.7.6 (ruby-2.1.5).
 </div>
 
   </body>

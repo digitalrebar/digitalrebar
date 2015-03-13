@@ -6,7 +6,7 @@
 <title>
   Class: Deployment
   
-    &mdash; Documentation by YARD 0.8.7.4
+    &mdash; Documentation by YARD 0.8.7.6
   
 </title>
 
@@ -101,30 +101,7 @@
 </dl>
 <div class="clear"></div>
 
-<h2>Overview</h2><div class="docstring">
-  <div class="discussion">
-    
-<p>Copyright 2014, Dell</p>
 
-<p>Licensed under the Apache License, Version 2.0 (the “License”); you may not
-use this file except in compliance with the License. You may obtain a copy
-of the License at</p>
-
-<pre class="code ruby"><code class="ruby"><span class='id identifier rubyid_http'>http</span><span class='symbol'>:/</span><span class='op'>/</span><span class='id identifier rubyid_www'>www</span><span class='period'>.</span><span class='id identifier rubyid_apache'>apache</span><span class='period'>.</span><span class='id identifier rubyid_org'>org</span><span class='op'>/</span><span class='id identifier rubyid_licenses'>licenses</span><span class='op'>/</span><span class='const'>LICENSE</span><span class='op'>-</span><span class='float'>2.0</span></code></pre>
-
-<p>Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an “AS IS” BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.</p>
-
-
-  </div>
-</div>
-<div class="tags">
-  
-
-</div>
   <h2>Constant Summary</h2>
   
     <dl class="constants">
@@ -386,6 +363,30 @@ under the License.</p>
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#node_role_md5-instance_method" title="#node_role_md5 (instance method)">- (Object) <strong>node_role_md5</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'>
+<p>returns a md5 sum of all of the node ids.</p>
+</div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#proposable%3F-instance_method" title="#proposable? (instance method)">- (Boolean) <strong>proposable?</strong> </a>
     
 
@@ -543,6 +544,28 @@ under the License.</p>
 </li>
 
       
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#system_node-instance_method" title="#system_node (instance method)">- (Object) <strong>system_node</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
     </ul>
   
 
@@ -568,13 +591,13 @@ under the License.</p>
       <pre class="lines">
 
 
-40
-41
-42
-43</pre>
+43
+44
+45
+46</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 40</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 43</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_state_name'>state_name</span><span class='lparen'>(</span><span class='id identifier rubyid_s'>s</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_state'>state</span> <span class='op'>||</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>nil</span><span class='tstring_end'>&#39;</span></span><span class='embexpr_end'>}</span><span class='tstring_content'> is not a valid Deployment state!</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_s'>s</span> <span class='kw'>and</span> <span class='const'>STATES</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span> <span class='id identifier rubyid_s'>s</span>
@@ -600,12 +623,12 @@ under the License.</p>
       <pre class="lines">
 
 
-49
-50
-51</pre>
+52
+53
+54</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 49</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 52</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_system'>system</span>
   <span class='const'>Deployment</span><span class='period'>.</span><span class='id identifier rubyid_find_by!'>find_by!</span><span class='lparen'>(</span><span class='label'>system:</span> <span class='kw'>true</span><span class='rparen'>)</span>
@@ -658,13 +681,13 @@ under the License.</p>
       <pre class="lines">
 
 
-66
-67
-68
-69</pre>
+73
+74
+75
+76</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 66</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 73</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_active?'>active?</span>
   <span class='id identifier rubyid_committed?'>committed?</span> <span class='op'>&amp;&amp;</span>
@@ -712,12 +735,12 @@ under the License.</p>
       <pre class="lines">
 
 
-79
-80
-81</pre>
+86
+87
+88</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 79</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 86</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_annealable?'>annealable?</span>
   <span class='id identifier rubyid_committed?'>committed?</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_active?'>active?</span> <span class='op'>&amp;&amp;</span> <span class='op'>!</span><span class='id identifier rubyid_error?'>error?</span>
@@ -742,12 +765,12 @@ under the License.</p>
       <pre class="lines">
 
 
-62
-63
-64</pre>
+69
+70
+71</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 62</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 69</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_available_nodes'>available_nodes</span>
   <span class='id identifier rubyid_nodes'>nodes</span>
@@ -772,12 +795,12 @@ under the License.</p>
       <pre class="lines">
 
 
-58
-59
-60</pre>
+65
+66
+67</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 58</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 65</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_available_roles'>available_roles</span>
   <span class='const'>Role</span><span class='period'>.</span><span class='id identifier rubyid_active'>active</span> <span class='op'>-</span> <span class='id identifier rubyid_roles'>roles</span>
@@ -802,23 +825,25 @@ under the License.</p>
       <pre class="lines">
 
 
-105
-106
-107
-108
-109
-110
-111
-112
-113
-114
-115</pre>
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 105</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 119</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_commit'>commit</span>
   <span class='const'>Deployment</span><span class='period'>.</span><span class='id identifier rubyid_transaction'>transaction</span> <span class='kw'>do</span>
+    <span class='id identifier rubyid_deployment_roles'>deployment_roles</span><span class='period'>.</span><span class='id identifier rubyid_all'>all</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span><span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_dr'>dr</span><span class='op'>|</span><span class='id identifier rubyid_dr'>dr</span><span class='period'>.</span><span class='id identifier rubyid_commit'>commit</span> <span class='kw'>if</span> <span class='id identifier rubyid_dr'>dr</span><span class='period'>.</span><span class='id identifier rubyid_proposed?'>proposed?</span><span class='rbrace'>}</span>
     <span class='id identifier rubyid_node_roles'>node_roles</span><span class='period'>.</span><span class='id identifier rubyid_in_state'>in_state</span><span class='lparen'>(</span><span class='const'>NodeRole</span><span class='op'>::</span><span class='const'>PROPOSED</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_nr'>nr</span><span class='op'>|</span> <span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_commit!'>commit!</span> <span class='rbrace'>}</span>
     <span class='kw'>if</span> <span class='id identifier rubyid_proposed?'>proposed?</span>
       <span class='id identifier rubyid_write_attribute'>write_attribute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>state</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span><span class='const'>COMMITTED</span><span class='rparen'>)</span>
@@ -870,12 +895,12 @@ under the License.</p>
       <pre class="lines">
 
 
-71
-72
-73</pre>
+78
+79
+80</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 71</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 78</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_committed?'>committed?</span>
   <span class='id identifier rubyid_read_attribute'>read_attribute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>state</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='op'>==</span> <span class='const'>COMMITTED</span>
@@ -922,17 +947,62 @@ under the License.</p>
       <pre class="lines">
 
 
-87
-88
-89
-90</pre>
+94
+95
+96
+97</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 87</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 94</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_error?'>error?</span>
   <span class='id identifier rubyid_committed?'>committed?</span> <span class='op'>&amp;&amp;</span>
     <span class='id identifier rubyid_node_roles'>node_roles</span><span class='period'>.</span><span class='id identifier rubyid_in_state'>in_state</span><span class='lparen'>(</span><span class='const'>NodeRole</span><span class='op'>::</span><span class='const'>ERROR</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_count'>count</span> <span class='op'>&gt;</span> <span class='int'>0</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="node_role_md5-instance_method">
+  
+    - (<tt>Object</tt>) <strong>node_role_md5</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>returns a md5 sum of all of the node ids</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+113
+114
+115
+116
+117</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 113</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_node_role_md5'>node_role_md5</span>
+  <span class='kw'>return</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='kw'>if</span> <span class='op'>!</span><span class='id identifier rubyid_node_roles'>node_roles</span> <span class='op'>||</span> <span class='id identifier rubyid_node_roles'>node_roles</span><span class='period'>.</span><span class='id identifier rubyid_count'>count</span> <span class='op'>==</span> <span class='int'>0</span>
+  <span class='id identifier rubyid_data'>data</span> <span class='op'>=</span> <span class='id identifier rubyid_node_roles'>node_roles</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lparen'>(</span><span class='op'>&amp;</span><span class='symbol'>:id</span><span class='rparen'>)</span><span class='op'>*</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>_</span><span class='tstring_end'>&#39;</span></span>
+  <span class='kw'>return</span> <span class='const'>Digest</span><span class='op'>::</span><span class='const'>MD5</span><span class='period'>.</span><span class='id identifier rubyid_hexdigest'>hexdigest</span><span class='lparen'>(</span><span class='id identifier rubyid_data'>data</span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -976,12 +1046,12 @@ under the License.</p>
       <pre class="lines">
 
 
-83
-84
-85</pre>
+90
+91
+92</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 83</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 90</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_proposable?'>proposable?</span>
   <span class='op'>!</span><span class='id identifier rubyid_system?'>system?</span>
@@ -1018,20 +1088,20 @@ its state from COMMITTED to PROPOSED.</p>
       <pre class="lines">
 
 
-119
-120
-121
-122
-123
-124
-125</pre>
+134
+135
+136
+137
+138
+139
+140</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 119</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 134</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_propose'>propose</span>
   <span class='const'>Deployment</span><span class='period'>.</span><span class='id identifier rubyid_transaction'>transaction</span> <span class='kw'>do</span>
-    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Cannot recall a system deployment</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_system?'>system?</span>
+    <span class='id identifier rubyid_raise'>raise</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Cannot propose  a system deployment</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='id identifier rubyid_system?'>system?</span>
     <span class='id identifier rubyid_write_attribute'>write_attribute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>state</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span><span class='const'>PROPOSED</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_save!'>save!</span>
   <span class='kw'>end</span>
@@ -1078,12 +1148,12 @@ its state from COMMITTED to PROPOSED.</p>
       <pre class="lines">
 
 
-75
-76
-77</pre>
+82
+83
+84</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 75</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 82</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_proposed?'>proposed?</span>
   <span class='id identifier rubyid_read_attribute'>read_attribute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>state</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span> <span class='op'>==</span> <span class='const'>PROPOSED</span>
@@ -1108,17 +1178,17 @@ its state from COMMITTED to PROPOSED.</p>
       <pre class="lines">
 
 
-91
-92
-93
-94
-95
-96
-97
-98</pre>
+98
+99
+100
+101
+102
+103
+104
+105</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 91</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 98</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_state'>state</span>
   <span class='kw'>case</span>
@@ -1148,12 +1218,12 @@ its state from COMMITTED to PROPOSED.</p>
       <pre class="lines">
 
 
-45
-46
-47</pre>
+48
+49
+50</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 45</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 48</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_state_name'>state_name</span><span class='lparen'>(</span><span class='id identifier rubyid_s'>s</span><span class='rparen'>)</span>
   <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_state_name'>state_name</span><span class='lparen'>(</span><span class='id identifier rubyid_s'>s</span><span class='rparen'>)</span>
@@ -1189,12 +1259,12 @@ its state from COMMITTED to PROPOSED.</p>
       <pre class="lines">
 
 
-101
-102
-103</pre>
+108
+109
+110</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 101</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 108</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_status'>status</span>
   <span class='id identifier rubyid_node_roles'>node_roles</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_nr'>nr</span><span class='op'>|</span> <span class='id identifier rubyid_s'>s</span><span class='lbracket'>[</span><span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_status'>status</span> <span class='kw'>if</span> <span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_error?'>error?</span>  <span class='rbrace'>}</span>
@@ -1243,15 +1313,45 @@ its state from COMMITTED to PROPOSED.</p>
       <pre class="lines">
 
 
-54
-55
-56</pre>
+57
+58
+59</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 54</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 57</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_system?'>system?</span>
   <span class='id identifier rubyid_read_attribute'>read_attribute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>system</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="system_node-instance_method">
+  
+    - (<tt>Object</tt>) <strong>system_node</strong> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+61
+62
+63</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'rails/app/models/deployment.rb', line 61</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_system_node'>system_node</span>
+  <span class='id identifier rubyid_nodes'>nodes</span><span class='period'>.</span><span class='id identifier rubyid_where'>where</span><span class='lparen'>(</span><span class='symbol'>:system</span> <span class='op'>=&gt;</span> <span class='kw'>true</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_first'>first</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -1263,9 +1363,9 @@ its state from COMMITTED to PROPOSED.</p>
 </div>
 
     <div id="footer">
-  Generated on Wed Oct 22 14:55:43 2014 by
+  Generated on Fri Mar 13 01:25:14 2015 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.8.7.4 (ruby-2.1.2).
+  0.8.7.6 (ruby-2.1.5).
 </div>
 
   </body>

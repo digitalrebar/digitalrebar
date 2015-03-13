@@ -6,7 +6,7 @@
 <title>
   Class: NodesController
   
-    &mdash; Documentation by YARD 0.8.7.4
+    &mdash; Documentation by YARD 0.8.7.6
   
 </title>
 
@@ -306,6 +306,28 @@ under the License.</p>
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#propose-instance_method" title="#propose (instance method)">- (Object) <strong>propose</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#redeploy-instance_method" title="#redeploy (instance method)">- (Object) <strong>redeploy</strong> </a>
     
 
@@ -364,7 +386,9 @@ under the License.</p>
   
 
   
-    <span class="summary_desc"><div class='inline'></div></span>
+    <span class="summary_desc"><div class='inline'>
+<p>API /api/status/nodes(/:id).</p>
+</div></span>
   
 </li>
 
@@ -450,7 +474,7 @@ under the License.</p>
   
   
   <h3 class="inherited">Methods inherited from <span class='object_link'><a href="ApplicationController.html" title="ApplicationController (class)">ApplicationController</a></span></h3>
-  <p class="inherited"><span class='object_link'><a href="ApplicationController.html#add_help-class_method" title="ApplicationController.add_help (method)">add_help</a></span>, <span class='object_link'><a href="ApplicationController.html#api_array-instance_method" title="ApplicationController#api_array (method)">#api_array</a></span>, <span class='object_link'><a href="ApplicationController.html#api_delete-instance_method" title="ApplicationController#api_delete (method)">#api_delete</a></span>, <span class='object_link'><a href="ApplicationController.html#api_index-instance_method" title="ApplicationController#api_index (method)">#api_index</a></span>, <span class='object_link'><a href="ApplicationController.html#api_not_found-instance_method" title="ApplicationController#api_not_found (method)">#api_not_found</a></span>, <span class='object_link'><a href="ApplicationController.html#api_not_supported-instance_method" title="ApplicationController#api_not_supported (method)">#api_not_supported</a></span>, <span class='object_link'><a href="ApplicationController.html#api_show-instance_method" title="ApplicationController#api_show (method)">#api_show</a></span>, <span class='object_link'><a href="ApplicationController.html#cb_content_type-instance_method" title="ApplicationController#cb_content_type (method)">#cb_content_type</a></span>, <span class='object_link'><a href="ApplicationController.html#help-instance_method" title="ApplicationController#help (method)">#help</a></span>, <span class='object_link'><a href="ApplicationController.html#is_ajax%3F-instance_method" title="ApplicationController#is_ajax? (method)">#is_ajax?</a></span>, <span class='object_link'><a href="ApplicationController.html#set_layout-class_method" title="ApplicationController.set_layout (method)">set_layout</a></span>, <span class='object_link'><a href="ApplicationController.html#ui_not_supported-instance_method" title="ApplicationController#ui_not_supported (method)">#ui_not_supported</a></span></p>
+  <p class="inherited"><span class='object_link'><a href="ApplicationController.html#add_help-class_method" title="ApplicationController.add_help (method)">add_help</a></span>, <span class='object_link'><a href="ApplicationController.html#api_array-instance_method" title="ApplicationController#api_array (method)">#api_array</a></span>, <span class='object_link'><a href="ApplicationController.html#api_delete-instance_method" title="ApplicationController#api_delete (method)">#api_delete</a></span>, <span class='object_link'><a href="ApplicationController.html#api_index-instance_method" title="ApplicationController#api_index (method)">#api_index</a></span>, <span class='object_link'><a href="ApplicationController.html#api_not_found-instance_method" title="ApplicationController#api_not_found (method)">#api_not_found</a></span>, <span class='object_link'><a href="ApplicationController.html#api_not_implemented-instance_method" title="ApplicationController#api_not_implemented (method)">#api_not_implemented</a></span>, <span class='object_link'><a href="ApplicationController.html#api_not_supported-instance_method" title="ApplicationController#api_not_supported (method)">#api_not_supported</a></span>, <span class='object_link'><a href="ApplicationController.html#api_result-instance_method" title="ApplicationController#api_result (method)">#api_result</a></span>, <span class='object_link'><a href="ApplicationController.html#api_show-instance_method" title="ApplicationController#api_show (method)">#api_show</a></span>, <span class='object_link'><a href="ApplicationController.html#cb_content_type-instance_method" title="ApplicationController#cb_content_type (method)">#cb_content_type</a></span>, <span class='object_link'><a href="ApplicationController.html#help-instance_method" title="ApplicationController#help (method)">#help</a></span>, <span class='object_link'><a href="ApplicationController.html#is_ajax%3F-instance_method" title="ApplicationController#is_ajax? (method)">#is_ajax?</a></span>, <span class='object_link'><a href="ApplicationController.html#set_layout-class_method" title="ApplicationController.set_layout (method)">set_layout</a></span>, <span class='object_link'><a href="ApplicationController.html#ui_not_supported-instance_method" title="ApplicationController#ui_not_supported (method)">#ui_not_supported</a></span></p>
 
   
 
@@ -484,20 +508,20 @@ under the License.</p>
       <pre class="lines">
 
 
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69</pre>
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 59</span>
+      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 72</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_addresses'>addresses</span>
   <span class='id identifier rubyid_nodename'>nodename</span> <span class='op'>=</span> <span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:node_id</span><span class='rbracket'>]</span>
@@ -530,12 +554,12 @@ under the License.</p>
       <pre class="lines">
 
 
-103
-104
-105</pre>
+129
+130
+131</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 103</span>
+      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 129</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_commit'>commit</span>
   <span class='id identifier rubyid_node_action'>node_action</span> <span class='symbol'>:commit!</span>
@@ -571,34 +595,35 @@ under the License.</p>
       <pre class="lines">
 
 
-108
-109
-110
-111
-112
-113
-114
-115
-116
-117
-118
-119
-120
-121
-122
-123
-124
-125
-126
-127
-128
-129
-130
-131
-132</pre>
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 108</span>
+      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 134</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_create'>create</span>
   <span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:deployment_id</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='const'>Deployment</span><span class='period'>.</span><span class='id identifier rubyid_find_key'>find_key</span><span class='lparen'>(</span><span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:deployment</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span> <span class='kw'>if</span> <span class='id identifier rubyid_params'>params</span><span class='period'>.</span><span class='id identifier rubyid_has_key?'>has_key?</span> <span class='symbol'>:deployment</span>
@@ -613,6 +638,7 @@ under the License.</p>
                                        <span class='symbol'>:deployment_id</span><span class='comma'>,</span>
                                        <span class='symbol'>:allocated</span><span class='comma'>,</span>
                                        <span class='symbol'>:alive</span><span class='comma'>,</span>
+                                       <span class='symbol'>:system</span><span class='comma'>,</span>
                                        <span class='symbol'>:available</span><span class='comma'>,</span>
                                        <span class='symbol'>:bootenv</span><span class='rparen'>)</span><span class='rparen'>)</span>
     <span class='comment'># Keep suport for mac and ip hints in short form around for legacy Sledgehammer purposes
@@ -645,12 +671,12 @@ under the License.</p>
       <pre class="lines">
 
 
-91
-92
-93</pre>
+113
+114
+115</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 91</span>
+      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 113</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_debug'>debug</span>
   <span class='id identifier rubyid_node_action'>node_action</span> <span class='symbol'>:debug</span>
@@ -686,14 +712,14 @@ under the License.</p>
       <pre class="lines">
 
 
-72
-73
-74
-75
-76</pre>
+85
+86
+87
+88
+89</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 72</span>
+      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 85</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_destroy'>destroy</span>
   <span class='ivar'>@node</span> <span class='op'>=</span> <span class='const'>Node</span><span class='period'>.</span><span class='id identifier rubyid_find_key'>find_key</span><span class='lparen'>(</span><span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:id</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:name</span><span class='rbracket'>]</span><span class='rparen'>)</span>
@@ -757,7 +783,7 @@ under the License.</p>
             <span class='const'>Node</span><span class='period'>.</span><span class='id identifier rubyid_all'>all</span>
           <span class='kw'>end</span>
   <span class='id identifier rubyid_respond_to'>respond_to</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_format'>format</span><span class='op'>|</span>
-    <span class='id identifier rubyid_format'>format</span><span class='period'>.</span><span class='id identifier rubyid_html'>html</span> <span class='lbrace'>{</span> <span class='rbrace'>}</span>
+    <span class='id identifier rubyid_format'>format</span><span class='period'>.</span><span class='id identifier rubyid_html'>html</span> <span class='lbrace'>{</span> <span class='ivar'>@list</span><span class='period'>.</span><span class='id identifier rubyid_delete_if'>delete_if</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_n'>n</span><span class='op'>|</span> <span class='id identifier rubyid_n'>n</span><span class='period'>.</span><span class='id identifier rubyid_system'>system</span> <span class='rbrace'>}</span><span class='rbrace'>}</span>
     <span class='id identifier rubyid_format'>format</span><span class='period'>.</span><span class='id identifier rubyid_json'>json</span> <span class='lbrace'>{</span> <span class='id identifier rubyid_render'>render</span> <span class='id identifier rubyid_api_index'>api_index</span> <span class='const'>Node</span><span class='comma'>,</span> <span class='ivar'>@list</span> <span class='rbrace'>}</span>
   <span class='kw'>end</span>
 <span class='kw'>end</span></pre>
@@ -781,33 +807,81 @@ under the License.</p>
       <pre class="lines">
 
 
-78
-79
-80
-81
-82
-83
-84
-85
-86
-87
-88
-89</pre>
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 78</span>
+      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 91</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_power'>power</span>
-  <span class='id identifier rubyid_params'>params</span><span class='period'>.</span><span class='id identifier rubyid_require'>require</span><span class='lparen'>(</span><span class='symbol'>:poweraction</span><span class='rparen'>)</span>
   <span class='ivar'>@node</span> <span class='op'>=</span> <span class='const'>Node</span><span class='period'>.</span><span class='id identifier rubyid_find_key'>find_key</span><span class='lparen'>(</span><span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:id</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:name</span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:node_id</span><span class='rbracket'>]</span><span class='rparen'>)</span>
-  <span class='ivar'>@poweraction</span> <span class='op'>=</span> <span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:poweraction</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span>
-  <span class='id identifier rubyid_render'>render</span> <span class='symbol'>:json</span> <span class='op'>=&gt;</span> <span class='lbrace'>{</span>
-    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>id</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='ivar'>@node</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='comma'>,</span>
-    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>action</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:poweraction</span><span class='rbracket'>]</span><span class='comma'>,</span>
-    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>result</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='ivar'>@node</span><span class='period'>.</span><span class='id identifier rubyid_power'>power</span><span class='period'>.</span><span class='id identifier rubyid_send'>send</span><span class='lparen'>(</span><span class='ivar'>@poweraction</span><span class='rparen'>)</span>
-  <span class='rbrace'>}</span><span class='comma'>,</span>
-  <span class='symbol'>:status</span> <span class='op'>=&gt;</span> <span class='int'>200</span><span class='comma'>,</span>
-  <span class='symbol'>:content_type</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_cb_content_type'>cb_content_type</span><span class='lparen'>(</span><span class='symbol'>:json</span><span class='comma'>,</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>result</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='kw'>if</span> <span class='id identifier rubyid_request'>request</span><span class='period'>.</span><span class='id identifier rubyid_put?'>put?</span>
+    <span class='id identifier rubyid_params'>params</span><span class='period'>.</span><span class='id identifier rubyid_require'>require</span><span class='lparen'>(</span><span class='symbol'>:poweraction</span><span class='rparen'>)</span>
+    <span class='ivar'>@poweraction</span> <span class='op'>=</span> <span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:poweraction</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_to_sym'>to_sym</span>
+    <span class='kw'>if</span> <span class='ivar'>@node</span><span class='period'>.</span><span class='id identifier rubyid_power'>power</span><span class='period'>.</span><span class='id identifier rubyid_include?'>include?</span> <span class='ivar'>@poweraction</span>
+      <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='ivar'>@node</span><span class='period'>.</span><span class='id identifier rubyid_power'>power</span><span class='period'>.</span><span class='id identifier rubyid_send'>send</span><span class='lparen'>(</span><span class='ivar'>@poweraction</span><span class='rparen'>)</span> <span class='kw'>rescue</span> <span class='kw'>nil</span>
+      <span class='comment'># special case for development
+</span>      <span class='kw'>if</span> <span class='id identifier rubyid_result'>result</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span> 
+        <span class='id identifier rubyid_render'>render</span> <span class='id identifier rubyid_api_not_implemented'>api_not_implemented</span><span class='lparen'>(</span><span class='ivar'>@poweraction</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>see logs for internal error</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='const'>Rails</span><span class='period'>.</span><span class='id identifier rubyid_env'>env</span><span class='period'>.</span><span class='id identifier rubyid_development?'>development?</span>
+        <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>development faked</span><span class='tstring_end'>&quot;</span></span>
+      <span class='kw'>end</span>
+      <span class='id identifier rubyid_render'>render</span> <span class='id identifier rubyid_api_result'>api_result</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>id</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='ivar'>@node</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>action</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='ivar'>@poweraction</span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>result</span><span class='tstring_end'>&quot;</span></span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_result'>result</span> <span class='rbrace'>}</span><span class='rparen'>)</span>
+    <span class='kw'>else</span>
+      <span class='id identifier rubyid_render'>render</span> <span class='id identifier rubyid_api_not_implemented'>api_not_implemented</span> <span class='ivar'>@node</span><span class='comma'>,</span> <span class='ivar'>@poweraction</span><span class='comma'>,</span> <span class='ivar'>@node</span><span class='period'>.</span><span class='id identifier rubyid_power'>power</span><span class='period'>.</span><span class='id identifier rubyid_keys'>keys</span>
+    <span class='kw'>end</span>
+  <span class='kw'>elsif</span> <span class='id identifier rubyid_request'>request</span><span class='period'>.</span><span class='id identifier rubyid_get?'>get?</span>
+    <span class='id identifier rubyid_render'>render</span> <span class='id identifier rubyid_api_array'>api_array</span> <span class='ivar'>@node</span><span class='period'>.</span><span class='id identifier rubyid_power'>power</span>
+  <span class='kw'>end</span>
+    
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="propose-instance_method">
+  
+    - (<tt>Object</tt>) <strong>propose</strong> 
+  
+
+  
+
+  
+</h3><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+125
+126
+127</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 125</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_propose'>propose</span>
+  <span class='id identifier rubyid_node_action'>node_action</span> <span class='symbol'>:propose!</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -829,12 +903,12 @@ under the License.</p>
       <pre class="lines">
 
 
-99
-100
-101</pre>
+121
+122
+123</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 99</span>
+      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 121</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_redeploy'>redeploy</span>
   <span class='id identifier rubyid_node_action'>node_action</span> <span class='symbol'>:redeploy!</span>
@@ -859,16 +933,16 @@ under the License.</p>
       <pre class="lines">
 
 
-50
-51
-52
-53
-54
-55
-56</pre>
+63
+64
+65
+66
+67
+68
+69</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 50</span>
+      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 63</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_show'>show</span>
   <span class='ivar'>@node</span> <span class='op'>=</span> <span class='const'>Node</span><span class='period'>.</span><span class='id identifier rubyid_find_key'>find_key</span> <span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:id</span><span class='rbracket'>]</span>
@@ -891,13 +965,23 @@ under the License.</p>
   
 
   
-</h3><table class="source_code">
+</h3><div class="docstring">
+  <div class="discussion">
+    
+<p>API /api/status/nodes(/:id)</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
   <tr>
     <td>
       <pre class="lines">
 
 
-34
 35
 36
 37
@@ -911,19 +995,44 @@ under the License.</p>
 45
 46
 47
-48</pre>
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 34</span>
+      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 35</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_status'>status</span>
-  <span class='id identifier rubyid_nodes'>nodes</span> <span class='op'>=</span> <span class='const'>Node</span><span class='period'>.</span><span class='id identifier rubyid_all'>all</span>
+  <span class='id identifier rubyid_nodes'>nodes</span> <span class='op'>=</span> <span class='kw'>if</span> <span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:id</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_node'>node</span> <span class='op'>=</span> <span class='const'>Node</span><span class='period'>.</span><span class='id identifier rubyid_find_key'>find_key</span> <span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:id</span><span class='rbracket'>]</span>
+    <span class='id identifier rubyid_nodes'>nodes</span> <span class='op'>=</span> <span class='const'>Node</span><span class='period'>.</span><span class='id identifier rubyid_where'>where</span> <span class='symbol'>:id</span><span class='op'>=&gt;</span><span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span>
+  <span class='kw'>else</span>
+    <span class='id identifier rubyid_nodes'>nodes</span> <span class='op'>=</span> <span class='const'>Node</span><span class='period'>.</span><span class='id identifier rubyid_all'>all</span>
+  <span class='kw'>end</span>
   <span class='id identifier rubyid_status'>status</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span>
-  <span class='id identifier rubyid_nodes'>nodes</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_n'>n</span><span class='op'>|</span> 
+  <span class='id identifier rubyid_nodes'>nodes</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_n'>n</span><span class='op'>|</span>
+    <span class='id identifier rubyid_state'>state</span> <span class='op'>=</span> <span class='id identifier rubyid_n'>n</span><span class='period'>.</span><span class='id identifier rubyid_state'>state</span>
+    <span class='id identifier rubyid_str'>str</span> <span class='op'>=</span> <span class='lbracket'>[</span>
+      <span class='id identifier rubyid_t'>t</span><span class='lparen'>(</span><span class='id identifier rubyid_n'>n</span><span class='period'>.</span><span class='id identifier rubyid_alive'>alive</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>common.state.alive</span><span class='tstring_end'>&quot;</span></span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>common.state.dead</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+      <span class='id identifier rubyid_t'>t</span><span class='lparen'>(</span><span class='id identifier rubyid_n'>n</span><span class='period'>.</span><span class='id identifier rubyid_available'>available</span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>common.state.available</span><span class='tstring_end'>&quot;</span></span> <span class='op'>:</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>common.state.reserved</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span><span class='comma'>,</span>
+      <span class='const'>NodeRole</span><span class='period'>.</span><span class='id identifier rubyid_state_name'>state_name</span><span class='lparen'>(</span><span class='id identifier rubyid_state'>state</span><span class='rparen'>)</span>
+    <span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
     <span class='id identifier rubyid_status'>status</span><span class='lbracket'>[</span><span class='id identifier rubyid_n'>n</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='lbrace'>{</span>
       <span class='symbol'>:name</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_n'>n</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span>
-      <span class='symbol'>:state</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_n'>n</span><span class='period'>.</span><span class='id identifier rubyid_state'>state</span><span class='comma'>,</span>
-      <span class='symbol'>:status</span> <span class='op'>=&gt;</span> <span class='const'>NodeRole</span><span class='op'>::</span><span class='const'>STATES</span><span class='lbracket'>[</span><span class='id identifier rubyid_n'>n</span><span class='period'>.</span><span class='id identifier rubyid_state'>state</span><span class='rbracket'>]</span>
+      <span class='symbol'>:state</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_state'>state</span><span class='comma'>,</span>
+      <span class='symbol'>:status</span> <span class='op'>=&gt;</span> <span class='const'>NodeRole</span><span class='op'>::</span><span class='const'>STATES</span><span class='lbracket'>[</span><span class='id identifier rubyid_state'>state</span><span class='rbracket'>]</span><span class='comma'>,</span>
+      <span class='symbol'>:strStatus</span> <span class='op'>=&gt;</span> <span class='id identifier rubyid_str'>str</span>
     <span class='rbrace'>}</span>
   <span class='kw'>end</span>
 
@@ -962,25 +1071,25 @@ under the License.</p>
       <pre class="lines">
 
 
-151
-152
-153
-154
-155
-156
-157
-158
-159
-160
-161
-162
-163
-164
-165
-166</pre>
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 151</span>
+      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 178</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_test_load_data'>test_load_data</span>
 
@@ -1018,12 +1127,12 @@ under the License.</p>
       <pre class="lines">
 
 
-95
-96
-97</pre>
+117
+118
+119</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 95</span>
+      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 117</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_undebug'>undebug</span>
   <span class='id identifier rubyid_node_action'>node_action</span> <span class='symbol'>:undebug</span>
@@ -1048,24 +1157,24 @@ under the License.</p>
       <pre class="lines">
 
 
-134
-135
-136
-137
-138
-139
-140
-141
-142
-143
-144
-145
-146
-147
-148</pre>
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 134</span>
+      <pre class="code"><span class="info file"># File 'rails/app/controllers/nodes_controller.rb', line 161</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_update'>update</span>
   <span class='ivar'>@node</span> <span class='op'>=</span> <span class='const'>Node</span><span class='period'>.</span><span class='id identifier rubyid_find_key'>find_key</span> <span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:id</span><span class='rbracket'>]</span>
@@ -1092,9 +1201,9 @@ under the License.</p>
 </div>
 
     <div id="footer">
-  Generated on Wed Oct 22 14:55:44 2014 by
+  Generated on Fri Mar 13 01:25:14 2015 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.8.7.4 (ruby-2.1.2).
+  0.8.7.6 (ruby-2.1.5).
 </div>
 
   </body>
