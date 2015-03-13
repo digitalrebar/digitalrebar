@@ -123,9 +123,10 @@ The standard install will remove access to root account using password.  Key-les
 
 The crowbar-install.sh script supports three flags given (or not in this
 order):
-   * --develop - Use RPMs built from the develop tree.
-      * When using the --develop flag, the base OS for the admin node must be *CentOS-6.6*.
-      * Without the --develop flag, the base OS for the admin node must be *CentOS-6.5*.
+   * Select release (if not specificed, it is master).  The following options:
+      * --develop - Use RPMs built from the develop tree.
+      * --master - Use RPMs built from the master tree. This is same as not specified.
+      * --release <name> - Use RPMs built from the release <name> tree.
    * --without-hardware - Don't install the hardware RPM
    * --download-os - This will download the Centos-7.0.1406 ISO for
 installation of nodes. By default, this is not done.
@@ -134,11 +135,12 @@ After logging in as root, run the following command (as an example) to
 install hardware support off of the latest master build:
 
 ```
-wget --no-check-certificate -O - https://raw.githubusercontent.com/opencrowbar/core/develop/tools/crowbar-install.sh | source /dev/stdin --develop
+wget --no-check-certificate -O -
+https://raw.githubusercontent.com/opencrowbar/core/develop/tools/crowbar-install.sh | source /dev/stdin
 ```
 
-or if you don't want hardware support (bios, RAID, and IPMI), run the
-following command:
+or if you don't want hardware support (bios, RAID, and IPMI) and the
+develop builds, run the following command:
 
 ```
 wget --no-check-certificate -O -
