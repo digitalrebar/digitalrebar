@@ -6,7 +6,7 @@
 <title>
   Class: SecureShellHammer
   
-    &mdash; Documentation by YARD 0.8.7.4
+    &mdash; Documentation by YARD 0.8.7.6
   
 </title>
 
@@ -426,12 +426,12 @@ change if we start having non-Linux nodes.</p>
       <pre class="lines">
 
 
-34
-35
-36</pre>
+36
+37
+38</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/secure_shell_hammer.rb', line 34</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/secure_shell_hammer.rb', line 36</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_copy_from'>copy_from</span><span class='lparen'>(</span><span class='id identifier rubyid_remote_src'>remote_src</span><span class='comma'>,</span> <span class='id identifier rubyid_local_dest'>local_dest</span><span class='comma'>,</span> <span class='id identifier rubyid_opts'>opts</span><span class='op'>=</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_run_on'>run_on</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>exec scp </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_opts'>opts</span><span class='embexpr_end'>}</span><span class='tstring_content'> root@[</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_address'>address</span><span class='period'>.</span><span class='id identifier rubyid_addr'>addr</span><span class='embexpr_end'>}</span><span class='tstring_content'>]:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_remote_src'>remote_src</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_local_dest'>local_dest</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -456,12 +456,12 @@ change if we start having non-Linux nodes.</p>
       <pre class="lines">
 
 
-38
-39
-40</pre>
+40
+41
+42</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/secure_shell_hammer.rb', line 38</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/secure_shell_hammer.rb', line 40</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_copy_to'>copy_to</span><span class='lparen'>(</span><span class='id identifier rubyid_local_src'>local_src</span><span class='comma'>,</span> <span class='id identifier rubyid_remote_dest'>remote_dest</span><span class='comma'>,</span> <span class='id identifier rubyid_opts'>opts</span><span class='op'>=</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_run_on'>run_on</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>exec scp </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_opts'>opts</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_local_src'>local_src</span><span class='embexpr_end'>}</span><span class='tstring_content'> root@[</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_address'>address</span><span class='period'>.</span><span class='id identifier rubyid_addr'>addr</span><span class='embexpr_end'>}</span><span class='tstring_content'>]:</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_remote_dest'>remote_dest</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -497,13 +497,13 @@ change if we start having non-Linux nodes.</p>
       <pre class="lines">
 
 
-43
-44
 45
-46</pre>
+46
+47
+48</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/secure_shell_hammer.rb', line 43</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/secure_shell_hammer.rb', line 45</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reboot'>reboot</span>
   <span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_update!'>update!</span><span class='lparen'>(</span><span class='label'>alive:</span> <span class='kw'>false</span><span class='rparen'>)</span>
@@ -531,13 +531,17 @@ change if we start having non-Linux nodes.</p>
 
 30
 31
-32</pre>
+32
+33
+34</pre>
     </td>
     <td>
       <pre class="code"><span class="info file"># File 'rails/app/models/secure_shell_hammer.rb', line 30</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_run'>run</span><span class='lparen'>(</span><span class='id identifier rubyid_cmd'>cmd</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_run_on'>run_on</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>. /etc/profile; exec ssh -l </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_username'>username</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_address'>address</span><span class='period'>.</span><span class='id identifier rubyid_addr'>addr</span><span class='embexpr_end'>}</span><span class='tstring_content'> -- </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_cmd'>cmd</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_node_address'>node_address</span> <span class='op'>=</span> <span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_address'>address</span>
+  <span class='id identifier rubyid_throw'>throw</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>ERROR: SecureShellHammer.run cannot find a reachable address for </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>unless</span> <span class='id identifier rubyid_node_address'>node_address</span>
+  <span class='id identifier rubyid_run_on'>run_on</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>. /etc/profile; exec ssh -l </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_username'>username</span><span class='embexpr_end'>}</span><span class='tstring_content'> </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_node_address'>node_address</span><span class='period'>.</span><span class='id identifier rubyid_addr'>addr</span><span class='embexpr_end'>}</span><span class='tstring_content'> -- </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_cmd'>cmd</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>
@@ -559,8 +563,6 @@ change if we start having non-Linux nodes.</p>
       <pre class="lines">
 
 
-48
-49
 50
 51
 52
@@ -570,10 +572,12 @@ change if we start having non-Linux nodes.</p>
 56
 57
 58
-59</pre>
+59
+60
+61</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'rails/app/models/secure_shell_hammer.rb', line 48</span>
+      <pre class="code"><span class="info file"># File 'rails/app/models/secure_shell_hammer.rb', line 50</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_run_on'>run_on</span><span class='lparen'>(</span><span class='id identifier rubyid_cmd'>cmd</span><span class='rparen'>)</span>
   <span class='const'>Rails</span><span class='period'>.</span><span class='id identifier rubyid_logger'>logger</span><span class='period'>.</span><span class='id identifier rubyid_debug'>debug</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Node: </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>: Running </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_cmd'>cmd</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -597,9 +601,9 @@ change if we start having non-Linux nodes.</p>
 </div>
 
     <div id="footer">
-  Generated on Wed Oct 22 14:55:44 2014 by
+  Generated on Fri Mar 13 01:25:14 2015 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.8.7.4 (ruby-2.1.2).
+  0.8.7.6 (ruby-2.1.5).
 </div>
 
   </body>

@@ -6,7 +6,7 @@
 <title>
   Class: NetworkRangesController
   
-    &mdash; Documentation by YARD 0.8.7.4
+    &mdash; Documentation by YARD 0.8.7.6
   
 </title>
 
@@ -242,7 +242,7 @@ under the License.</p>
   
   
   <h3 class="inherited">Methods inherited from <span class='object_link'><a href="ApplicationController.html" title="ApplicationController (class)">ApplicationController</a></span></h3>
-  <p class="inherited"><span class='object_link'><a href="ApplicationController.html#add_help-class_method" title="ApplicationController.add_help (method)">add_help</a></span>, <span class='object_link'><a href="ApplicationController.html#api_array-instance_method" title="ApplicationController#api_array (method)">#api_array</a></span>, <span class='object_link'><a href="ApplicationController.html#api_delete-instance_method" title="ApplicationController#api_delete (method)">#api_delete</a></span>, <span class='object_link'><a href="ApplicationController.html#api_index-instance_method" title="ApplicationController#api_index (method)">#api_index</a></span>, <span class='object_link'><a href="ApplicationController.html#api_not_found-instance_method" title="ApplicationController#api_not_found (method)">#api_not_found</a></span>, <span class='object_link'><a href="ApplicationController.html#api_not_supported-instance_method" title="ApplicationController#api_not_supported (method)">#api_not_supported</a></span>, <span class='object_link'><a href="ApplicationController.html#api_show-instance_method" title="ApplicationController#api_show (method)">#api_show</a></span>, <span class='object_link'><a href="ApplicationController.html#cb_content_type-instance_method" title="ApplicationController#cb_content_type (method)">#cb_content_type</a></span>, <span class='object_link'><a href="ApplicationController.html#help-instance_method" title="ApplicationController#help (method)">#help</a></span>, <span class='object_link'><a href="ApplicationController.html#is_ajax%3F-instance_method" title="ApplicationController#is_ajax? (method)">#is_ajax?</a></span>, <span class='object_link'><a href="ApplicationController.html#set_layout-class_method" title="ApplicationController.set_layout (method)">set_layout</a></span>, <span class='object_link'><a href="ApplicationController.html#ui_not_supported-instance_method" title="ApplicationController#ui_not_supported (method)">#ui_not_supported</a></span></p>
+  <p class="inherited"><span class='object_link'><a href="ApplicationController.html#add_help-class_method" title="ApplicationController.add_help (method)">add_help</a></span>, <span class='object_link'><a href="ApplicationController.html#api_array-instance_method" title="ApplicationController#api_array (method)">#api_array</a></span>, <span class='object_link'><a href="ApplicationController.html#api_delete-instance_method" title="ApplicationController#api_delete (method)">#api_delete</a></span>, <span class='object_link'><a href="ApplicationController.html#api_index-instance_method" title="ApplicationController#api_index (method)">#api_index</a></span>, <span class='object_link'><a href="ApplicationController.html#api_not_found-instance_method" title="ApplicationController#api_not_found (method)">#api_not_found</a></span>, <span class='object_link'><a href="ApplicationController.html#api_not_implemented-instance_method" title="ApplicationController#api_not_implemented (method)">#api_not_implemented</a></span>, <span class='object_link'><a href="ApplicationController.html#api_not_supported-instance_method" title="ApplicationController#api_not_supported (method)">#api_not_supported</a></span>, <span class='object_link'><a href="ApplicationController.html#api_result-instance_method" title="ApplicationController#api_result (method)">#api_result</a></span>, <span class='object_link'><a href="ApplicationController.html#api_show-instance_method" title="ApplicationController#api_show (method)">#api_show</a></span>, <span class='object_link'><a href="ApplicationController.html#cb_content_type-instance_method" title="ApplicationController#cb_content_type (method)">#cb_content_type</a></span>, <span class='object_link'><a href="ApplicationController.html#help-instance_method" title="ApplicationController#help (method)">#help</a></span>, <span class='object_link'><a href="ApplicationController.html#is_ajax%3F-instance_method" title="ApplicationController#is_ajax? (method)">#is_ajax?</a></span>, <span class='object_link'><a href="ApplicationController.html#set_layout-class_method" title="ApplicationController.set_layout (method)">set_layout</a></span>, <span class='object_link'><a href="ApplicationController.html#ui_not_supported-instance_method" title="ApplicationController#ui_not_supported (method)">#ui_not_supported</a></span></p>
 
   
 
@@ -290,8 +290,8 @@ under the License.</p>
   <span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:network_id</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='const'>Network</span><span class='period'>.</span><span class='id identifier rubyid_find_key'>find_key</span><span class='lparen'>(</span><span class='id identifier rubyid_params'>params</span><span class='lbracket'>[</span><span class='symbol'>:network</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span> <span class='kw'>if</span> <span class='id identifier rubyid_params'>params</span><span class='period'>.</span><span class='id identifier rubyid_has_key?'>has_key?</span> <span class='symbol'>:network</span>
   <span class='id identifier rubyid_params'>params</span><span class='period'>.</span><span class='id identifier rubyid_require'>require</span><span class='lparen'>(</span><span class='symbol'>:network_id</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_params'>params</span><span class='period'>.</span><span class='id identifier rubyid_require'>require</span><span class='lparen'>(</span><span class='symbol'>:name</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_params'>params</span><span class='period'>.</span><span class='id identifier rubyid_require'>require</span><span class='lparen'>(</span><span class='symbol'>:new_first</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_params'>params</span><span class='period'>.</span><span class='id identifier rubyid_require'>require</span><span class='lparen'>(</span><span class='symbol'>:new_last</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_params'>params</span><span class='period'>.</span><span class='id identifier rubyid_require'>require</span><span class='lparen'>(</span><span class='symbol'>:first</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_params'>params</span><span class='period'>.</span><span class='id identifier rubyid_require'>require</span><span class='lparen'>(</span><span class='symbol'>:last</span><span class='rparen'>)</span>
   <span class='ivar'>@range</span> <span class='op'>=</span>  <span class='const'>NetworkRange</span><span class='period'>.</span><span class='id identifier rubyid_create!'>create!</span> <span class='id identifier rubyid_params'>params</span><span class='period'>.</span><span class='id identifier rubyid_permit'>permit</span><span class='lparen'>(</span><span class='symbol'>:name</span><span class='comma'>,</span>
                                                <span class='symbol'>:network_id</span><span class='comma'>,</span>
                                                <span class='symbol'>:first</span><span class='comma'>,</span>
@@ -465,9 +465,9 @@ under the License.</p>
 </div>
 
     <div id="footer">
-  Generated on Wed Oct 22 14:55:45 2014 by
+  Generated on Fri Mar 13 01:25:15 2015 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
-  0.8.7.4 (ruby-2.1.2).
+  0.8.7.6 (ruby-2.1.5).
 </div>
 
   </body>
