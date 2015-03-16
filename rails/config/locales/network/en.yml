@@ -54,7 +54,7 @@ en:
       network-public: "Public Network"
       network-private: "Private Network"
       network-storage: "Storage Network"
-      network-bmc: "Managment Network"
+      network-bmc: "BMC Network"
       network-pilot: "Pilot Network"
       network-lldpd: "LLDPD Network Service"
   networks:
