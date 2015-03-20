@@ -55,6 +55,8 @@ barclamps:
     description: "Domain Name Service (DNS)"
   - name: ntp 
     description: "Network Time Protocol (NTP)"
+  - name: rabbitmq
+    description: "Rabbit MQ (AMQP)"
   - name: logging
     description: "Log Centralization and Management"
   - name: puppet

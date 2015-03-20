@@ -106,10 +106,12 @@ class DeploymentRole < ActiveRecord::Base
 
   def role_create_hook
     role.on_deployment_create(self)
+    Publisher.publish_event("deployment_role", "on_create", { :deployment_role => self, :id => self.id })
   end
 
   def role_delete_hook
     role.on_deployment_delete(self)
+    Publisher.publish_event("deployment_role", "on_delete", { :deployment_role => self, :id => self.id })
   end
 
 end
