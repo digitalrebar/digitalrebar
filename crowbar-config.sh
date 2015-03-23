@@ -149,13 +149,13 @@ crowbar roles bind dns-database to "$FQDN"
 # Set the dns forwarder if you have them
 DNS_FORWARDER=""
 #DNS_FORWARDER="YOUR DNS IP HERE"
-ROLE_ID=`crowbar roles show dns-server | grep '"id"'`
-ROLE_ID=${ROLE_ID##*:}
-ROLE_ID=${ROLE_ID%,}
-NODE_ROLE_ID=`crowbar noderoles list | grep -B2 -A2 "\"role_id\":$ROLE_ID" | grep -B3 -A2 '"node_id": 2' | grep \"id\"`
-NODE_ROLE_ID=${NODE_ROLE_ID##*:}
-NODE_ROLE_ID=${NODE_ROLE_ID%,}
 if [ "$DNS_FORWARDER" != "" ] ; then
+    ROLE_ID=`crowbar roles show dns-server | grep '"id"'`
+    ROLE_ID=${ROLE_ID##*:}
+    ROLE_ID=${ROLE_ID%,}
+    NODE_ROLE_ID=`crowbar noderoles list | grep -B2 -A2 "\"role_id\":$ROLE_ID" | grep -B3 -A2 '"node_id": 2' | grep \"id\"`
+    NODE_ROLE_ID=${NODE_ROLE_ID##*:}
+    NODE_ROLE_ID=${NODE_ROLE_ID%,}
     crowbar noderoles set $NODE_ROLE_ID attrib dns-forwarders to "{ \"value\": [ \"$DNS_FORWARDER\" ] }"
 fi
 
