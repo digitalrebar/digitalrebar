@@ -40,7 +40,7 @@ done < <(tac /proc/partitions)
 
 
 while true; do
-    curl -s -f -L -o /tmp/bootstate "$webserver/nodes/$(hostname -f)/bootstate" && \
+    curl -s -f -L -o /tmp/bootstate "$webserver/nodes/$HOSTNAME/bootstate" && \
         [[ -f /tmp/bootstate && $(cat /tmp/bootstate) = *-install ]] && break
     sleep 1
 done

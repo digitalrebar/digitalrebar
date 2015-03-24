@@ -50,9 +50,9 @@ new_clients = {}
   case bootenv
   when "local"
     provisioner_bootfile mnode_name do
-      bootenv "sledgehammer"
+      bootenv "local"
       address v4addr
-      action :remove
+      action :add
     end
   when 'sledgehammer'
     pxe_params = node['crowbar']['provisioner']['server']['sledgehammer_kernel_params'].split(' ')

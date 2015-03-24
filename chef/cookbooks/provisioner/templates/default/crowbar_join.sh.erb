@@ -31,9 +31,6 @@ do
   sleep 1
 done
 
-# Get our hostname
-HOSTNAME=$(hostname -f)
-
 if [[ -f /etc/crowbar.install.key ]]; then
     export CROWBAR_KEY="$(cat /etc/crowbar.install.key)"
 fi
@@ -42,7 +39,7 @@ put_alive() {
     while ! curl -f -u "$CROWBAR_KEY" --digest -L -X PUT \
         -d "bootenv=local" \
         -d "alive=$1" \
-        "http://<%=@admin_ip%>:3000/api/v2/nodes/$HOSTNAME" &>/dev/null; do
+        "http://<%=@admin_ip%>:3000/api/v2/nodes/<%=@name%>" &>/dev/null; do
         sleep 1
     done
 }

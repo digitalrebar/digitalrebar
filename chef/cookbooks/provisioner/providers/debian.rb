@@ -76,7 +76,7 @@ action :add do
     owner "root"
     group "root"
     source "crowbar_join.sh.erb"
-    variables(:admin_ip => provisioner_addr)
+    variables(:admin_ip => provisioner_addr, :name => mnode_name)
   end
 
   provisioner_bootfile mnode_name do

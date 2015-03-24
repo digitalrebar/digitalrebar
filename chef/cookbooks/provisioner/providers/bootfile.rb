@@ -22,11 +22,12 @@ action :add do
   pxecfg_dir="#{discover_dir}/pxelinux.cfg"
   pxefile = "#{pxecfg_dir}/#{nodeaddr}"
   uefifile = "#{uefi_dir}/#{nodeaddr}.conf"
+  extra = (new_resource.bootenv == "local" ? "local." : "")
   template pxefile do
     mode 0644
     owner "root"
     group "root"
-    source "default.erb"
+    source "default.#{extra}erb"
     variables(:append_line => new_resource.kernel_params,
               :install_name => new_resource.bootenv,
               :initrd => new_resource.initrd,
@@ -41,7 +42,7 @@ action :add do
               :install_name => new_resource.bootenv,
               :initrd => new_resource.initrd,
               :kernel => new_resource.kernel)
-  end
+  end if new_resource.bootenv != "local"
 end
 
 action :remove do
