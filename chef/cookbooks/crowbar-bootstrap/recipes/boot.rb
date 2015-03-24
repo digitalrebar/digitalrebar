@@ -54,7 +54,11 @@ extra_files = []
 # Find all the upstream repos and packages we will need.
 
 Dir.glob("/opt/opencrowbar/**/crowbar.yml").each do |prereq_file|
+  Chef::Log.info("inspecting prereqs from '#{prereq_file}'")
   prereqs = YAML.load(File.open(prereq_file))
+  unless prereqs
+    raise "could not parse YAML in #{prereq_file}"
+  end
   if prereqs[os_pkg_type]
     if prereqs[os_pkg_type][os_token]
       repos << prereqs[os_pkg_type][os_token]["repos"]
