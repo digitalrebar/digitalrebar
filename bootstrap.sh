@@ -28,10 +28,13 @@ check_hostname() {
     exit 1
 }
 
-prefix_r=(recipe[barclamp]
-          recipe[ohai]
-          recipe[utils])
+prefix_r=('recipe[barclamp]'
+          'recipe[ohai]'
+          'recipe[utils]')
+
 boot_r=('recipe[crowbar-bootstrap::boot]'
+        'recipe[crowbar-bootstrap::ssh]'
+        'recipe[crowbar-bootstrap::crowbar-user]'
         'recipe[crowbar-bootstrap::wsman]'
         'recipe[crowbar-bootstrap::sledgehammer]'
         'recipe[crowbar-bootstrap::gemstuff]'
@@ -41,6 +44,10 @@ boot_r=('recipe[crowbar-bootstrap::boot]'
         'recipe[crowbar-bootstrap::consul]'
         'recipe[consul::install]'
         'recipe[consul::ui]')
+
+node_r=('recipe[crowbar-bootstrap::ssh]'
+        'recipe[crowbar-bootstrap::crowbar-user]')
+
 database_r=('recipe[crowbar-bootstrap::postgresql]'
             'recipe[crowbar-bootstrap::goiardi]')
 proxy_r=("${prefix_r[@]}"
@@ -57,6 +64,7 @@ boot_recipes="$(make_recipes "${boot_r[@]}")"
 database_recipes="$(make_recipes "${database_r[@]}")"
 proxy_recipes="$(make_recipes "${proxy_r[@]}")"
 consul_recipes="$(make_recipes "${consul_r[@]}")"
+node_recipes="$(make_recipes "${node_r[@]}")"
 
 cd /opt/opencrowbar/core
 # Figure out what we are running on.

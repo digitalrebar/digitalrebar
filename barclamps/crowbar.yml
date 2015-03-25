@@ -138,6 +138,15 @@ roles:
           sequence:
             - type: str
               pattern: /[0-9a-f:.]*/
+  - name: crowbar-joined-node
+    description: "Joined Node Ready Checkpoint"
+    jig: noop
+    flags:
+      - milestone
+      - implicit
+    provides:
+      - crowbar-managed-node
+      - crowbar-installed-node
 
 hammers:
   - name: 'ssh'
