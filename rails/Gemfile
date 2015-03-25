@@ -47,12 +47,13 @@ gem 'diplomat', '>= 0.2.2'
 
 group :development, :test do
   gem 'coveralls'
-  gem "factory_girl", "<3.0"
-  gem "factory_girl_rails", "< 3.0"
-  gem 'rspec-rails', '~> 3.0.0'
-  gem "email_spec", ">= 1.2.1"
-  gem "database_cleaner", ">= 0.7.2"
-  gem "launchy", ">= 2.1.0"
+  gem "factory_girl"
+  gem "factory_girl_rails"
+  gem 'faker'
+  gem 'rspec-rails'
+  gem "email_spec"
+  gem "database_cleaner"
+  gem "launchy"
   gem "simplecov"
 end
 
