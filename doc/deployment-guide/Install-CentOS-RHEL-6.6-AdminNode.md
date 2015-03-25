@@ -161,6 +161,12 @@ updates, see below.
 
 ## OpenCrowbar Configuration
 
+### Services
+
+By default OpenCrowbar will configure DNS, NTP, and DHCP to run on the admin node.  You can choose to change the configuration of these services by modifying /opt/opencrowbar/core/crowbar-config.sh.  These include setting up forwarding DNS servers and upstream stratum servers for NTP.
+
+It is also possable to utilize services that are already installed in the enviornment and choose to have OpenCrowbar not install them on the Admin server.  These configuirations are described [here] (https://github.com/opencrowbar/core/tree/master/doc/deployment-guide/external-services.md)
+
 Execute the following commands:
 
 ```
