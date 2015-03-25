@@ -26,7 +26,7 @@ class Service < Role
       begin
         count += 1
         break if count > 20
-        pieces = Diplomat::Service.get(service_name, :all, options, meta)
+        pieces = ConsulAccess.getService(service_name, :all, options, meta)
         if pieces and pieces.empty?
           Rails.logger.info("#{service_name} not available ... wait 10m or next update")
           runlog << "#{service_name} not available ... wait 10m or next update"
