@@ -55,6 +55,9 @@ NODE_ROLE_ID=${NODE_ROLE_ID##*:}
 NODE_ROLE_ID=${NODE_ROLE_ID%,}
 crowbar --hostname $admin_ip noderoles get $NODE_ROLE_ID attrib provisioner-access_keys | awk -F\" '{ print $4 }' >> /root/.ssh/authorized_keys
 
+IPADDR=`ip addr show | grep "inet " | grep -v " lo" | awk '{ print $2 }'`
+echo "Using $IPADDR for this host"
+
 # Add node to OpenCrowbar
 exists=$(curl -s -o /dev/null -w "%{http_code}" --digest -u "$CROWBAR_KEY" \
   -X GET "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME")
@@ -64,6 +67,7 @@ if [[ $exists == 404 ]]; then
     curl -f -g --digest -u "$CROWBAR_KEY" -X POST \
       -d "name=$HOSTNAME" \
       -d 'admin=true' \
+      -d "hint-unmanaged-v4addr=$IPADDR" \
       -d 'bootenv=local' \
       "$CROWBAR_WEB/api/v2/nodes/" || {
         echo "We could not create a node for ourself!"

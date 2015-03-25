@@ -138,12 +138,20 @@ class Node < ActiveRecord::Base
   end
 
   def addresses
-    net = Network.find_by!(:name => "admin") rescue nil
-    return [] unless net
-    res = network_allocations.where(network_id: net.id).map do |a|
-      a.address
+    res = []
+    ["admin", "unmanaged"].each do |net_name|
+      res2 = []
+      net = Network.find_by!(:name => net_name) rescue nil
+      if net
+        res2 = network_allocations.where(network_id: net.id).map do |a|
+          a.address
+        end
+      end
+      res2.sort
+      res << res2
     end
-    res.sort
+
+    res.flatten
   end
 
   def address

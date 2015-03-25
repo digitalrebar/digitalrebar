@@ -154,6 +154,9 @@ class NodesController < ApplicationController
       if params[:mac]
         @node.attribs.find_by!(name: "hint-admin-macs").set(@node,[params[:mac]])
       end
+      if params["hint-unmanaged-v4addr"]
+        @node.attribs.find_by!(name: "hint-unmanaged-v4addr").set(@node,params["hint-unmanaged-v4addr"])
+      end
     end
     render api_show @node
   end

@@ -45,6 +45,23 @@ crowbar roles set provisioner-os-install \
 
 set -e
 set -x
+
+unmanaged_net='
+{
+  "name": "unmanaged",
+  "deployment": "system",
+  "conduit": "?1g0",
+  "configure": false,
+  "ranges": [
+    {
+      "overlap": true,
+      "name": "host",
+      "first": "0.0.0.1/0",
+      "last": "223.255.255.255/0"
+    }
+  ]
+}'
+
 admin_net='
 {
   "name": "admin",
@@ -160,6 +177,9 @@ if [ -e /root/.ssh/authorized_keys ] ; then
 fi
 
 crowbar nodes commit "system-phantom.internal.local"
+
+# Create the catch all network
+crowbar networks create "$unmanaged_net"
 
 # Create a stupid default admin network
 crowbar networks create "$admin_net"

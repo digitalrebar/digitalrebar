@@ -144,6 +144,8 @@ roles:
     flags:
       - milestone
       - implicit
+    requires:
+      - network-unmanaged
     provides:
       - crowbar-managed-node
       - crowbar-installed-node
