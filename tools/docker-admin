@@ -37,6 +37,12 @@ mountdir="${mountdir%/tools/docker-admin}"
 # This gets us to the parent directory of core, where presumably the rest of our repos are checked out
 mountdir="${mountdir%/*}"
 
+MAP_PORTS=0
+if [ "$1" == "--map-ports" ] ; then
+  MAP_PORTS=1
+  shift
+fi
+
 declare -A image_map
 #image_map["ubuntu"]="ubuntu:precise"
 image_map["ubuntu"]="opencrowbar/ubuntu:12.04-4"
@@ -69,9 +75,11 @@ if [[ -f $HOME/.ssh/id_rsa.pub ]]; then
 else
     docker_args+=(-e "SSH_PUBKEY=")
 fi
-docker_args+=(-p "3000:3000")   # Crowbar Rails web server
-docker_args+=(-p "8500:8500")   # Consul Server
-docker_args+=(-p "443:443")     # Chef Server
+if [ "$MAP_PORTS" == "1" ] ; then
+    docker_args+=(-p "3000:3000")   # Crowbar Rails web server
+    docker_args+=(-p "8500:8500")   # Consul Server
+    docker_args+=(-p "443:443")     # Chef Server
+fi
 bridge="docker0"
 bridge_re='-b=([^ ])'
 bridge_addr_re='inet ([0-9.]+)/'
