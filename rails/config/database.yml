@@ -1,13 +1,31 @@
+<%
+# Silly code to make sure that we have access to libs
+require 'ostruct'
+require "#{`pwd`.strip}/lib/consul_access.rb"
+
+db = ConsulAccess.getService('crowbar-database')
+
+if File.exists?('/etc/crowbar.master.acl')
+  Diplomat.configuration.acl_token = File.read('/etc/crowbar.master.acl').chomp
+end
+username = ConsulAccess.getKey('opencrowbar/private/database/opencrowbar/username')
+password = ConsulAccess.getKey('opencrowbar/private/database/opencrowbar/password')
+database = ConsulAccess.getKey('opencrowbar/private/database/opencrowbar/database')
+%>
+
 base: &default
   adapter: postgresql
-  username: crowbar
+  username: <%= username %>
   pool: 32
   timeout: 5000
   reaping_frequency: 3
+  host:               <%= db.ServiceAddress %>
+  port:               <%= db.ServicePort %>
 
 production:
   <<: *default
-  database: opencrowbar
+  database: <%= database %>
+  password: <%= password %>
 
 development:
   <<: *default
