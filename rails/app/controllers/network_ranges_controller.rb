@@ -42,6 +42,7 @@ class NetworkRangesController < ::ApplicationController
 
   def create
     params[:network_id] = Network.find_key(params[:network]).id if params.has_key? :network
+    params[:overlap] = false unless params.key?(:overlap)
     params.require(:network_id)
     params.require(:name)
     params.require(:first)
@@ -52,6 +53,7 @@ class NetworkRangesController < ::ApplicationController
                                                  :last,
                                                  :conduit,
                                                  :vlan,
+                                                 :overlap,
                                                  :use_vlan,
                                                  :use_bridge,
                                                  :use_team)
@@ -70,6 +72,7 @@ class NetworkRangesController < ::ApplicationController
                                                     :last,
                                                     :conduit,
                                                     :vlan,
+                                                    :overlap,
                                                     :use_vlan,
                                                     :use_bridge,
                                                     :use_team))

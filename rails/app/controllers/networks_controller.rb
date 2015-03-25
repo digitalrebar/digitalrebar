@@ -39,6 +39,7 @@ class NetworksController < ::ApplicationController
     params[:vlan] ||= 0
     params[:use_team] = true if params[:team].to_int > 0 rescue false
     params[:team_mode] ||= 5
+    params[:configure] = true unless params.key?(:configure)
     params[:use_bridge] = true
     params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
     params[:deployment_id] ||= 1
@@ -54,6 +55,7 @@ class NetworksController < ::ApplicationController
                                                :use_vlan,
                                                :use_bridge,
                                                :team_mode,
+                                               :configure,
                                                :use_team,
                                                :v6prefix)
       # make it easier to batch create ranges with a network
@@ -61,6 +63,7 @@ class NetworksController < ::ApplicationController
         ranges = params[:ranges].is_a?(String) ? JSON.parse(params[:ranges]) : params[:ranges]
         ranges.each do |range|
           range[:network_id] = @network.id
+          range[:overlap] = false unless range.key?(:overlap)
           range_params = ActionController::Parameters.new(range)
           range_params.require(:name)
           range_params.require(:network_id)
@@ -72,6 +75,7 @@ class NetworksController < ::ApplicationController
                                                    :last,
                                                    :conduit,
                                                    :vlan,
+                                                   :overlap,
                                                    :use_vlan,
                                                    :use_bridge,
                                                    :use_team)
@@ -118,12 +122,12 @@ class NetworksController < ::ApplicationController
     render :json => network.node_allocations(node).map{|a|a.to_s}, :content_type=>cb_content_type(:allocations, "array")
   end
   
-  add_help(:update,[:id, :conduit,:team_mode, :use_team, :vlan, :use_vlan],[:put])
+  add_help(:update,[:id, :conduit, :team_mode, :use_team, :vlan, :use_vlan, :configure],[:put])
   def update
     @network = Network.find_key(params[:id])
     # Sorry, but no changing of the admin conduit for now.
     params.delete(:conduit) if @network.name == "admin"
-    @network.update_attributes!(params.permit(:description, :vlan, :use_vlan, :use_bridge, :team_mode, :use_team, :conduit, :deployment_id))
+    @network.update_attributes!(params.permit(:description, :vlan, :use_vlan, :use_bridge, :team_mode, :use_team, :conduit, :configure, :deployment_id))
     respond_to do |format|
       format.html { render :action=>:show }
       format.json { render api_show @network }
