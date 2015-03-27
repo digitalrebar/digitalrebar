@@ -18,6 +18,20 @@ class DocsController < ApplicationController
   # no login required for docs!
   skip_before_filter :crowbar_auth
 
+  # render licenses details for login
+  def eula
+    @file = Rails.configuration.crowbar.eula_base || '../doc/licenses/README.md'
+    if File.exist? @file
+      @raw = IO.read(@file)
+      fix_encoding! unless @raw.valid_encoding?
+      @raw.encode!('UTF-8', :invalid=>:replace)
+      @text = Maruku.new(@raw).to_html
+    else
+      @text = "#{I18n.t('.topic_missing', :scope=>'docs.topic')}: #{@file}"
+    end
+    render :show
+  end
+
   def index
     if params.has_key?(:rebuild)
         Doc.delete_all 

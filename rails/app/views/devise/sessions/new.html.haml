@@ -1,6 +1,6 @@
 %p#add_button{:style => 'float:right'}
   - license = t('user.license')
-  = link_to t('user.eula', :default=>license), docs_path(:id=>'framework/licenses'), :class => 'button', :id=>'eula_button'
+  = link_to t('user.eula', :default=>license), eula_path, :class => 'button', :id=>'eula_button'
 %h1= t 'user.sign_in'
 
 %section.box#login
