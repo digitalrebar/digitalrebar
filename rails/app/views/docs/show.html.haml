@@ -21,8 +21,7 @@
     %ol
       - @doc.children.sort.each do |c|
         %li= link_to c.description, doc_path(c.id)
-
-
+        
 - if @doc and current_user and current_user.settings(:ui).debug
   %hr
     %h3= t 'debug'

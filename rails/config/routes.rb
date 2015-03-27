@@ -43,6 +43,7 @@ Crowbar::Application.routes.draw do
     put :recall
 
   end
+  get 'docs/eula' => 'docs#eula', as: :eula
   resources :docs, constraints: {id: /[^\?]*/}
 
   resources :groups

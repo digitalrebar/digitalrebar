@@ -19,6 +19,9 @@ class SupportController < ApplicationController
   skip_before_filter :crowbar_auth, :only => :digest
   before_filter :digest_auth!, :only => :digest
 
+  def eula
+  end
+  
   # used to pass a string into the debug logger to help find specificall calls  
   def marker
     Rails.logger.info "\nMARK >>>>> #{params[:id]} <<<<< KRAM\n"
