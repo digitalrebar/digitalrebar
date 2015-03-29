@@ -1,6 +1,6 @@
 ## OCBTemplate on OpenCrowbar Framework Licenses
 
-OCBTemplate on OpenCrowbar is made available by Dell under the Apache 2 license.
+OCBTemplate on OpenCrowbar is made available by OCBtemplateAuthor under the Apache 2 license.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

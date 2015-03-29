@@ -1,4 +1,4 @@
-# Copyright 2014, Dell
+# Copyright 2015, OCBTemplateAUthor
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-roles:
-  - name: OCBTemplate-base
-    description: "OCBTemplate Base Components"
-    jig: noop
+BarclampOcbTemplate::Engine.routes.draw do
+
+
+end

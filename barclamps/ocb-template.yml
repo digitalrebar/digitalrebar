@@ -1,4 +1,4 @@
-# Copyright 2014, OCBTemplateAuthor
+# Copyright 2015, OCBTemplatAuthor
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,35 +13,24 @@
 # limitations under the License.
 #
 
-version: "2.x"
-source_url: "https://github.com/opencrowbar/ocb-template"
+barclamp:
+	name: ocb-template
+  description: "OCBTemplate Workload"
+  display: "OCBTemplate"
+  license: "Apache 2"
+  copyright: "OCBTemplateAuthor 2015"
 
-os_support:
-  - ubuntu-12.04
-  - centos-6.6
-  - centos-7.0.1406
-#  - redhat-6.5
-#  - redhat-6.6
-#  - centos-6.5
-#  - opensuse-13.1
-#  - fedora-20
-#  - debian-7.8.0
+roles:
+  - name: ocb-template-base
+    description: "OCBTemplate Base"
+    requires:
+      - crowbar-installed-node
+    jig: noop
 
-barclamps:
-  - name: ocb-template
-
-#jigs:
-#  - name: ocb-template
-#    class: NoopJig
-#    description: "OCBTemplate"
-
-extra_files:
-
-debs:
-  pkgs:
-
-rpms:
-  pkgs:
-
-gems:
-  pkgs:
+  - name: ocb-template-ready
+    description: "OCBTemplate Ready"
+    jig: noop
+ 		requires:
+      - ocb-template-base
+    flags:
+      - milestone

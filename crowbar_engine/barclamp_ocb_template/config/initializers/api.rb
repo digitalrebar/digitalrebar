@@ -1,4 +1,5 @@
-# Copyright 2014, Dell
+# Copyright 2015, OCBTemplateAuthor
+#
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-BarclampHardware::Engine.routes.draw do
+#
 
-
-end
+bc = Barclamp.table_exists? ? Barclamp.find_by_name("ocb-template") : nil
+BarclampOcbTemplate::API_VERSION=(bc && bc.api_version || "v1")
+BarclampOcbTemplate::API_VERSION_ACCEPTS=(bc && bc.api_version_accepts || "v1")

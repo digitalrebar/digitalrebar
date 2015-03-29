@@ -1,5 +1,5 @@
-# Copyright 2014, Rob Hirschfeld
-# 
+# Copyright 2015, OCBTemplateAuthor
+#
 # Licensed under the Apache License, Version 2.0 (the "License"); 
 # you may not use this file except in compliance with the License. 
 # You may obtain a copy of the License at 
@@ -11,13 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
 # See the License for the specific language governing permissions and 
 # limitations under the License.  
-#
-# Sample localization file for English. Add more files in this directory for other locales.
-# See http://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
 
-en:
-  common:
-    roles:
-      template-role: 'template sample, replace'
-    attribs:
-      foo: "Bar"
+module BarclampOcbTemplate
+  class Engine < ::Rails::Engine
+    isolate_namespace BarclampOcbTemplate
+  end
+end

@@ -1,4 +1,4 @@
-# Copyright 2014, OCBTemplateAuthor
+# Copyright 2015, OCBTemplateAUthor
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,35 +13,14 @@
 # limitations under the License.
 #
 
-version: "2.x"
-source_url: "https://github.com/opencrowbar/ocb-template"
+require "barclamp_ocb_template/engine"
 
-os_support:
-  - ubuntu-12.04
-  - centos-6.6
-  - centos-7.0.1406
-#  - redhat-6.5
-#  - redhat-6.6
-#  - centos-6.5
-#  - opensuse-13.1
-#  - fedora-20
-#  - debian-7.8.0
+module BarclampOcbTemplate
 
-barclamps:
-  - name: ocb-template
+  TABLE_PREFIX = "bc_ocb_template_"
 
-#jigs:
-#  - name: ocb-template
-#    class: NoopJig
-#    description: "OCBTemplate"
+  def self.table_name_prefix
+    TABLE_PREFIX
+  end
 
-extra_files:
-
-debs:
-  pkgs:
-
-rpms:
-  pkgs:
-
-gems:
-  pkgs:
+end

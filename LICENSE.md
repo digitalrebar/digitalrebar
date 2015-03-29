@@ -1,6 +1,4 @@
-OCBTemplate for OPENCROWBAR LICENSE:
-
-OCBTemplate for OpenCrowbar is made available by Dell under the Apache 2 license.
+OCBTemplate for OpenCrowbar is made available under Apache 2 license.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -18,4 +16,4 @@ Please see /doc/licenses for component license information
 
 ADDITIONAL COMPONENTS:
 
-Extensions to the Crowbar framework (aka "barclamps") may be offered under different licenses.  These licenses should be documented under the components relevenat "/doc/licenses" directory.
+Extensions to the OpenCrowbar framework may be offered under different licenses.  These licenses should be documented under the components relevant "/doc/licenses" directory.
