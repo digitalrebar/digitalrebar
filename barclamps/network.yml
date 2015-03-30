@@ -39,7 +39,6 @@ roles:
   - name: network-lldpd
     jig: chef
     requires:
-      - network-admin
       - provisioner-server
     flags:
       - implicit

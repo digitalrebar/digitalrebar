@@ -279,7 +279,7 @@ def resolve_conduit(conduit)
 end
 
 # If we do not have an admin address allocated yet, do nothing.
-unless node["crowbar"]["network"]["addresses"].values.any?{|v|v["network"] == "admin"}
+unless node["crowbar"]["network"]["addresses"].values.any?{|v|v["category"] == "admin"}
   Chef::Log.info("Network: #{node.fqdn} has not been allocated an address on the admin network.")
   Chef::Log.info("Network: Leaving the configuration alone.")
   return
@@ -409,7 +409,7 @@ node["crowbar"]["network"]["addresses"].keys.sort{|a,b|
     our_iface = br
     net_ifs << our_iface.name
   end
-  if_mapping << [network['network'],network['range'],addr,net_ifs.reverse]
+  if_mapping << [network['network'],network['range'],addr,net_ifs.reverse,network['category']]
   ifs[our_iface.name]["addresses"] ||= Array.new
   ifs[our_iface.name]["addresses"] << IP.coerce(addr)
   # Ditto for our default route

@@ -18,7 +18,6 @@ roles:
     wants-attribs:
       - dns_servers
     requires:
-      - network-admin
       - dns-client
   - name: dhcp-database
     jig: chef

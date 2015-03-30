@@ -36,7 +36,7 @@ class BarclampDns::Database < Role
     to_enqueue = []
     ActiveRecord::Base.connection.execute("select name, cname, address
                                            from dns_database
-                                           where network = 'admin'").each do |row|
+                                           where category = 'admin'").each do |row|
       name, addr, cname = row["name"] + ".", IP.coerce(row["address"]), row["cname"]
       hosts[name] ||= Hash.new
       hosts[name][addr.v4? ? "ip4addr" : "ip6addr"] ||= addr.addr

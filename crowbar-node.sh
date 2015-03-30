@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e -x
 shopt -s extglob
 
 date
@@ -45,6 +44,9 @@ chef-solo -c /opt/opencrowbar/core/bootstrap/chef-solo.rb -o "${node_recipes}"
 export CROWBAR_KEY=`cat /etc/crowbar.install.key`
 export CROWBAR_WEB="http://$1:3000"
 
+# This could error if this is the first time.  Ignore it
+set +e
+
 # Get ssh keys public keys
 ROLE_ID=`crowbar --hostname $admin_ip roles show provisioner-server | grep '"id"'`
 ROLE_ID=${ROLE_ID##*:}
@@ -53,7 +55,11 @@ ROLE_ID=${ROLE_ID%,}
 NODE_ROLE_ID=`crowbar --hostname $admin_ip noderoles list | grep -B2 -A2 "\"role_id\":$ROLE_ID" | grep -B3 -A2 '"node_id": 2' | grep \"id\"`
 NODE_ROLE_ID=${NODE_ROLE_ID##*:}
 NODE_ROLE_ID=${NODE_ROLE_ID%,}
-crowbar --hostname $admin_ip noderoles get $NODE_ROLE_ID attrib provisioner-access_keys | awk -F\" '{ print $4 }' >> /root/.ssh/authorized_keys
+if [ "$NODE_ROLE_ID" != "" ] ; then
+  crowbar --hostname $admin_ip noderoles get $NODE_ROLE_ID attrib provisioner-access_keys | awk -F\" '{ print $4 }' >> /root/.ssh/authorized_keys
+fi
+
+set -e
 
 IPADDR=`ip addr show | grep "inet " | grep -v " lo" | awk '{ print $2 }'`
 echo "Using $IPADDR for this host"
@@ -77,9 +83,9 @@ else
     echo "Node already created, moving on"
 fi
 
-# does the crowbar-managed-role exist?
+# does the crowbar-joined-role exist?
 managed=$(curl -s -o /dev/null -w "%{http_code}" --digest -u "$CROWBAR_KEY" \
-  -X GET "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME/node_roles/crowbar-managed-node")
+  -X GET "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME/node_roles/crowbar-joined-node")
 if [[ $managed == 404 ]]; then
     curl -f -g --digest -u "$CROWBAR_KEY" -X POST \
       -d "node=$HOSTNAME" \

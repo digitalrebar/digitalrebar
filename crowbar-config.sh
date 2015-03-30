@@ -49,6 +49,7 @@ set -x
 unmanaged_net='
 {
   "name": "unmanaged",
+  "category": "unmanaged",
   "deployment": "system",
   "conduit": "?1g0",
   "configure": false,
@@ -64,7 +65,8 @@ unmanaged_net='
 
 admin_net='
 {
-  "name": "admin",
+  "name": "the_admin",
+  "category": "admin",
   "deployment": "system",
   "conduit": "1g0",
   "ranges": [
@@ -92,8 +94,9 @@ admin_net='
 
 bmc_net='
 {
-  "name": "bmc",
+  "name": "the_bmc",
   "deployment": "system",
+  "category": "bmc",
   "conduit": "bmc",
   "ranges": [
     {
@@ -181,14 +184,17 @@ crowbar nodes commit "system-phantom.internal.local"
 # Create the catch all network
 crowbar networks create "$unmanaged_net"
 
-# Create a stupid default admin network
+## Create a stupid default admin network
 crowbar networks create "$admin_net"
 
-# Create the equally stupid BMC network
+## Create the equally stupid BMC network
 crowbar networks create "$bmc_net"
 
-# Create the admin node entry.
-crowbar nodes create "$admin_node"
+# Join the admin node into the rails app and make it manageable
+./crowbar-node.sh 127.0.0.1
+
+## Create the admin node entry.
+#crowbar nodes create "$admin_node"
 
 # Bind the admin role to it, and commit the resulting
 # proposed noderoles.

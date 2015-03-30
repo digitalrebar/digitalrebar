@@ -16,7 +16,6 @@ roles:
   - name: provisioner-server
     jig: chef
     requires:
-      - network-admin
       - dns-client
       - logging-server
       - ntp-client

@@ -21,4 +21,5 @@ attribute :pools, :kind_of => Array
 attribute :pool_options, :kind_of => Hash, :default => { "dhcp" => [ "allow unknown-hosts" ] }
 attribute :options, :kind_of => Array, :default => []
 attribute :admin_ip, :kind_of => IP, :required => true
+attribute :router, :kind_of => String
 

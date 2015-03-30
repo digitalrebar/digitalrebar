@@ -14,8 +14,8 @@
 
 class Network < ActiveRecord::Base
 
-  ADMIN_NET      = "admin"
-  BMC_NET        = "bmc"
+  ADMIN_CATEGORY = "admin"
+  BMC_CATEGORY   = "bmc"
   V6AUTO         = "auto"   # if this changes, update the :v6prefix validator too!
   DEFAULTCONDUIT = '1g1'
   BMCCONDUIT     = 'bmc'
@@ -162,7 +162,7 @@ class Network < ActiveRecord::Base
   # for auto, we add an IPv6 prefix
   def auto_prefix
     # Add our IPv6 prefix.
-    if (name == ADMIN_NET and v6prefix.nil?) || (v6prefix == V6AUTO)
+    if (category == ADMIN_CATEGORY and v6prefix.nil?) || (v6prefix == V6AUTO)
       Role.logger.info("Network: Creating automatic IPv6 prefix for #{name}")
       user = User.admin.first
       # this config code really needs to move to Crowbar base
@@ -197,11 +197,10 @@ class Network < ActiveRecord::Base
                                     library: false,
                                     implicit: true,
                                     milestone: true,    # may need more logic later, this is safest for first pass
-                                    bootstrap: (self.name.eql? ADMIN_NET),
-                                    discovery: (self.name.eql? ADMIN_NET)  )
+                                    bootstrap: false,   # don't bootstrap networks anymore.
+                                    discovery: false  ) # don't discovery networks anymore.
         RoleRequire.create!(:role_id => r.id, :requires => "network-server")
         # The admin net must be bound before any other network can be bound.
-        RoleRequire.create!(:role_id => r.id, :requires => "network-admin") unless name.eql? ADMIN_NET
         RoleRequireAttrib.create!(role_id: r.id, attrib_name: 'network_interface_maps')
         # attributes for jig configuraiton
         Attrib.create!(:role_id => r.id,

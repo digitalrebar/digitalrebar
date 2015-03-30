@@ -26,6 +26,12 @@ describe Network do
     expect(d.errors.messages[:name]).to eq(["Network : No name"])
   end
 
+  it "should have a category of general by default" do
+    d = FactoryGirl.create(:network)
+    expect(d).to be_valid
+    expect(d.category).to eq('general')
+  end
+
   it "is invalid with an empty name" do
     d = FactoryGirl.build(:network, name: "")
     expect(d).not_to be_valid

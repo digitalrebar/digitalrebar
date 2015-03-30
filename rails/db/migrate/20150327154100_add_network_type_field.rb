@@ -1,10 +1,10 @@
-# Copyright 2013, Dell
+# Copyright 2015, RackN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#  http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,21 +13,13 @@
 # limitations under the License.
 #
 
-roles:
-  - name: logging-server
-    jig: chef
-    requires:
-      - dns-client
-    attribs:
-      - name: logging_server
-        description: "The IP addresses of the server that should get all logging output."
-        map: 'crowbar/logging/servers'
-  - name: logging-client
-    jig: chef
-    flags:
-      - implicit
-    requires:
-      - dns-client
-      - logging-server
-    wants-attribs:
-      - logging_server
+class AddNetworkTypeField < ActiveRecord::Migration
+
+  def change
+    change_table :networks do |t|
+      t.string    :category,   null: false, default: "general"
+    end
+  end
+
+end
+

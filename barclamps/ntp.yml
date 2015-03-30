@@ -20,7 +20,6 @@ roles:
       - ntp-client
     requires:
       - dns-client
-      - network-admin
       - consul
     attribs:
       - name: ntp_servers_external
@@ -49,7 +48,6 @@ roles:
     requires:
       - dns-client
       - ntp-service
-      - network-admin
     flags:
       - implicit
     wants-attribs:

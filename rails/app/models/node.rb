@@ -139,10 +139,10 @@ class Node < ActiveRecord::Base
 
   def addresses
     res = []
-    ["admin", "unmanaged"].each do |net_name|
+    ["admin", "unmanaged"].each do |net_cat|
       res2 = []
-      net = Network.find_by!(:name => net_name) rescue nil
-      if net
+      nets = Network.in_category(net_cat)
+      nets.each do |net|
         res2 = network_allocations.where(network_id: net.id).map do |a|
           a.address
         end

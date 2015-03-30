@@ -19,8 +19,6 @@ roles:
     flags:
       - bootstrap
       - implicit
-    requires:
-      - network-admin
     attribs:
       - name: consul-mode
         description: "The mode that Consul is operating in on a specific node"
