@@ -39,7 +39,7 @@ validate(JSON) when is_record(JSON, obj) ->
       bdd_utils:is_a(J, boolnull, use_bridge),
       bdd_utils:is_a(J, integer, team_mode),
       bdd_utils:is_a(J, boolnull, use_team),
-      bdd_utils:is_a(J, bool, overlap),
+      bdd_utils:is_a(J, boolean, overlap),
       crowbar_rest:validate_core(J)],
   bdd_utils:assert(R);
 validate(JSON) -> 
