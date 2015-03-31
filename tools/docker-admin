@@ -37,9 +37,9 @@ mountdir="${mountdir%/tools/docker-admin}"
 # This gets us to the parent directory of core, where presumably the rest of our repos are checked out
 mountdir="${mountdir%/*}"
 
-MAP_PORTS=0
-if [ "$1" == "--map-ports" ] ; then
-  MAP_PORTS=1
+MAP_PORTS=1
+if [ "$1" == "--dont-map-ports" ] ; then
+  MAP_PORTS=0
   shift
 fi
 
