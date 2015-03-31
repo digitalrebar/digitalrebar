@@ -234,6 +234,8 @@ class ApplicationController < ActionController::Base
         format.json { render api_not_found(@error) }
       end
     when @error.is_a?(ActiveRecord::RecordInvalid)
+      Rails.logger.error("Failed: #{@error.message}")
+      Rails.logger.error(@error.backtrace)
       respond_to do |format|
         format.html { render :status => 409 }
         format.json { render :json => {
