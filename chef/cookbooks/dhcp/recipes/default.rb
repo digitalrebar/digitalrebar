@@ -47,8 +47,8 @@ EOH
   not_if "test -f /etc/dhcp3/omapi.key"
 end
 
-intfs = [node.interface.name]
-d_opts = node[:crowbar][:dhcp][:options]
+intfs = [] # [node.interface.name]
+d_opts = node[:crowbar][:dhcp][:options] || []
 
 case node[:platform]
 when "ubuntu","debian"
@@ -136,11 +136,8 @@ when "suse"
 end
 
 domain_name = (node[:crowbar][:dns][:domain] || node[:domain] rescue node[:domain])
-# XXX: This should be done by attribute injection - fix as part of provisioner service work
-admin_ip = node.address("admin",IP::IP4)
-admin_net = node[:crowbar][:network][:admin]
-lease_time = node[:crowbar][:dhcp][:lease_time]
-net_pools = admin_net["ranges"].select{|range|["dhcp","host"].include? range["name"]}
+lease_time = node[:crowbar][:dhcp][:lease_time] || 60
+next_server_ip = node[:crowbar][:provisioner][:server][:v4addr]
 
 pool_opts = {
   "dhcp" => ['allow unknown-clients',
@@ -151,22 +148,69 @@ pool_opts = {
    } else {
       filename = "discovery/pxelinux.0";
    }',
-             "next-server #{admin_ip.addr}" ],
+             "next-server #{next_server_ip}" ],
   "host" => ['deny unknown-clients']
 }
 
-nameservers=node[:crowbar][:dns][:nameservers]
+nameserver = node[:crowbar][:dns][:nameservers]
 
-dhcp_subnet IP.coerce(net_pools[0]["first"]).network do
-  action :add
-  network admin_net
-  pools net_pools
-  pool_options pool_opts
-  admin_ip admin_ip
-  options [ "option domain-name \"#{domain_name}\"",
-            "option domain-name-servers #{nameservers.join(", ")}",
-            "default-lease-time #{lease_time}",
-            "max-lease-time #{lease_time * 3}"]
+# Build a list of local information
+my_nics = ::Nic.nics
+my_addresses = []
+my_nics.each do |nic|
+  next if nic.loopback?
+  nic.addresses.each do |ii|
+    next unless ii.v4?
+    my_addresses << ii
+  end
+end
+
+found = false
+node[:crowbar][:dhcp][:networks].each do |name, net|
+  router = net["router"]["address"]
+  net_pools = net["ranges"].select{|range|["dhcp","host"].include? range["name"]}
+  subnet = IP.coerce(net_pools[0]["first"])
+
+  # Remove the local address if in a subnet
+  remove_me = nil
+  my_addresses.each do |ii|
+    remove_me = ii if ii.network == subnet.network
+  end
+  if remove_me
+    my_addresses.delete(remove_me)
+    found = true
+  end
+
+  dhcp_subnet subnet.network do
+    action :add
+    pools net_pools
+    pool_options pool_opts
+    router router
+    options [ "option domain-name \"#{domain_name}\"",
+              "option domain-name-servers #{nameservers.join(", ")}",
+              "default-lease-time #{lease_time}",
+              "max-lease-time #{lease_time * 3}"]
+  end
+end
+
+if found
+  # Remove non-served local nets we have have added previously
+  my_addresses.each do |ii|
+    dhcp_subnet ii.network do
+      action :remove
+    end
+  end
+else
+  # if no network is local to the dhcp server, we need to add one.
+  my_addresses.each do |ii|
+    dhcp_subnet ii.network do
+      action :add
+      pools []
+      pool_options {}
+      router nil
+      options []
+    end
+  end
 end
 
 service "dhcp3-server" do

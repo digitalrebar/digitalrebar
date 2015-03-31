@@ -1,4 +1,4 @@
-# Copyright 2011, Dell
+# Copyright 2015, RackN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,13 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-actions :add, :remove
+class BarclampDhcp::Server < Role
 
-attribute :subnet, :kind_of => String, :name_attribute => true
-attribute :pools, :kind_of => Array
-attribute :pool_options, :kind_of => Hash, :default => { "dhcp" => [ "allow unknown-hosts" ] }
-attribute :options, :kind_of => Array, :default => []
-attribute :router, :kind_of => String
+  def sysdata(nr)
+    networks = {}
+    Network.find_all_by_category("admin").each do |net|
+      networks[net.name] = net.to_template
+    end
 
+    {
+        "crowbar" => {
+            "dhcp" => { "networks" => networks }
+        }
+    }
+  end
+
+end

@@ -1,9 +1,7 @@
 # File managed by Crowbar
 subnet <%= @addr.addr -%> netmask <%= @addr.netmask %> {
-<% if @network["router"] -%>
-  option routers <%= IP.coerce(@network["router"]["address"]).addr %>;
-<% else -%>
-  option routers <%= @admin_ip.addr %>;
+<% if @router -%>
+  option routers <%= IP.coerce(@router).addr %>;
 <% end -%>
   option subnet-mask <%= @addr.netmask %>;
   option broadcast-address <%= @addr.broadcast.addr %>;

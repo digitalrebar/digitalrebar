@@ -15,10 +15,30 @@
 roles:
   - name: dhcp-server
     jig: chef
+    attribs:
+      - name: dhcp_leasetime
+        description: 'Default lease time for the DHCP server'
+        map: 'crowbar/dhcp/lease_time'
+        schema:
+          type: int
+          required: false
+      - name: dhcp_options
+        description: 'Additional options to send to DHCP clients'
+        map: 'crowbar/dhcp/options'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+      - name: dhcp_networks
+        description: 'Networks to serve DHCP'
+        map: 'crowbar/dhcp/networks'
     wants-attribs:
       - dns_servers
+      - dns-domain
+      - provisioner-v4addr
     requires:
-      - dns-client
+      - dns-service
+      - provisioner-server
   - name: dhcp-database
     jig: chef
     wants-attribs:

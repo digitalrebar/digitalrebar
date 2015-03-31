@@ -27,8 +27,6 @@ action :add do
     source "subnet.conf.erb"
     variables(
               :addr => ::IP.coerce(new_resource.subnet),
-              :admin_ip => new_resource.admin_ip,
-              :network => new_resource.network,
               :options => new_resource.options,
               :router => new_resource.router,
               :pools => new_resource.pools,
