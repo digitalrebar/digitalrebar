@@ -34,6 +34,8 @@ cd /opt/opencrowbar/core
 . ./bootstrap.sh
 
 # install the database
+chef-solo -c /opt/opencrowbar/core/bootstrap/chef-solo.rb -o "${boot_recipes}"
+chef-solo -c /opt/opencrowbar/core/bootstrap/chef-solo.rb -o "${consul_recipes}"
 chef-solo -c /opt/opencrowbar/core/bootstrap/chef-solo.rb -o "${database_recipes}"
 
 . /etc/profile

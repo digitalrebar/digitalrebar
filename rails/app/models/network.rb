@@ -71,44 +71,46 @@ class Network < ActiveRecord::Base
   def self.check_sanity(n)
     res = []
     # First, check the conduit to be sure it is sane.
-    intf_re =  /^bmc|([-+?]?)(\d{1,3}[mg])(\d+)$/
+    intf_re =  /^bmc|^([-+?]?)(\d{1,3}[mg])(\d+)$/
     if n.conduit.nil? || n.conduit.empty?
-      res << "Conduit definition cannot be empty"
-    end
-    intfs = n.conduit.split(",").map{|intf|intf.strip}
-    ok_intfs, failed_intfs = intfs.partition{|intf|intf_re.match(intf)}
-    unless failed_intfs.empty?
-      res << "Invalid abstract interface names in conduit: #{failed_intfs.join(", ")}"
-    end
-    if intfs.length > 1
-      matches = intfs.map{|intf|intf_re.match(intf)}
-      tmpl = matches[0]
-      if ! matches.all?{|i|(i[1] == tmpl[1]) && (i[2] == tmpl[2])}
-        res << "Not all abstract interface names have the same speed and flags: #{n.conduit}"
+      res << [:conduit, "Conduit definition cannot be empty"]
+      intfs = []
+    else
+      intfs = n.conduit.split(",").map{|intf|intf.strip}
+      ok_intfs, failed_intfs = intfs.partition{|intf|intf_re.match(intf)}
+      unless failed_intfs.empty?
+        res << [:conduit, "Invalid abstract interface names in conduit: #{failed_intfs.join(", ")}"]
+      end
+      if ok_intfs.length > 1
+        matches = ok_intfs.map{|intf|intf_re.match(intf)}
+        tmpl = matches[0]
+        if ! matches.all?{|i|(i[1] == tmpl[1]) && (i[2] == tmpl[2])}
+          res << [:conduit, "Not all abstract interface names have the same speed and flags: #{n.conduit}"]
+        end
       end
     end
 
     # Check to see that requested VLAN information makes sense.
-    if n.use_vlan && !(1..4095).member?(n.vlan)
-      res << "VLAN #{n.vlan} not sane"
+    if n.use_vlan && !(1..4094).member?(n.vlan)
+      res << [:vlan, "VLAN #{n.vlan} not sane"]
     end
 
     # Check to see if our requested teaming makes sense.
     if n.use_team
       if intfs.length < 2
-        res << "Want bonding, but requested conduit #{n.conduit} has one member"
+        res << [:conduit, "Want bonding, but requested conduit #{n.conduit} has too few members"]
       elsif intfs.length > 8
-        res << "Want bonding, but requested conduit #{n.conduit} has too many members"
+        res << [:conduit, "Want bonding, but requested conduit #{n.conduit} has too many members"]
       end
-      res << "Invalid bonding mode" unless (0..6).member?(n.team_mode)
-    elsif intfs.length != 1
+      res << [:team_mode, "Invalid bonding mode"] unless (0..6).member?(n.team_mode)
+    elsif intfs.length > 1
       # Conduit can only contain one abstract interface if we don't want bonding.
-      res << "Do not want bonding, but requested conduit #{n.conduit} has multiple members"
+      res << [:conduit, "Do not want bonding, but requested conduit #{n.conduit} has multiple members"]
     end
 
     # Should be obvious, but...
     unless n.name && !n.name.empty?
-      res << "No name"
+      res << [:name, "No name"]
     end
     res
   end
@@ -281,21 +283,20 @@ class Network < ActiveRecord::Base
   def check_network_sanity
 
     Network.check_sanity(self).each do |err|
-      errors.add("Network #{name}: #{err}")
+      errors.add(err[0], "Network #{name}: #{err[1]}")
     end
 
     # Check to see that this network's conduits either overlap perfectly or not at all
     # with conduits on other networks.  Ranges are not considered here.'
     Network.all.each do |net|
-      unless Network.check_conduit_sanity(conduit,net.conduit)
-        errors.add("Network #{name}: Conduit mapping overlaps with network #{net.name}")
+      unless Network.check_conduit_sanity(conduit, net.conduit)
+        errors.add(:conduit, "Network #{name}: Conduit mapping overlaps with network #{net.name}")
       end
-    end
-
+    end if conduit
 
     # We also must have a deployment
     unless deployment
-      errors.add("Network #{name}: Cannot create a network without binding it to a deployment")
+      errors.add(:deployment_id, "Network #{name}: Cannot create a network without binding it to a deployment")
     end
 
   end
