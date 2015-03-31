@@ -43,7 +43,7 @@ gem 'net-ssh'
 gem 'chef', ">= 11.16.4", '< 12.0'
 gem 'open4'
 gem 'structurematch', '~> 0.1.1'
-gem 'diplomat', '>= 0.2.2'
+gem 'diplomat'
 
 group :development, :test do
   gem 'coveralls'
