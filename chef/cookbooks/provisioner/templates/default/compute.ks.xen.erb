@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+ <installation srtype="ext">
+   <primary-disk>sda</primary-disk>
+   <guest-disk>sdb</guest-disk>
+   <guest-disk>sdc</guest-disk>
+   <keymap>us</keymap>
+   <root-password>crowbar</root-password>
+   <source type="url"><%= @source %></source>
+   <post-install-script type="url">
+     <%= @web_path %>/post-install.sh
+   </post-install-script>
+   <admin-interface name="eth0" proto="dhcp" />
+   <timezone>Europe/London</timezone>
+ </installation>
+

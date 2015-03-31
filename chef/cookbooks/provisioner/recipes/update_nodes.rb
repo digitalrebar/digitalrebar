@@ -148,10 +148,42 @@ new_clients = {}
       target mnode_name
       action :add
     end
+  when "coreos-install"
+    provisioner_coreos mnode_name do
+      distro 'coreos'
+      version 'latest'
+      address v4addr
+      target mnode_name
+      action :add
+    end
   when "debian-7.8.0-install"
     provisioner_debian mnode_name do
       distro "debian"
       version "7.8.0"
+      address v4addr
+      target mnode_name
+      action :add
+    end
+  when "xenserver-6.5-install"
+    provisioner_xenserver mnode_name do
+      distro "xenserver"
+      version "6.5"
+      address v4addr
+      target mnode_name
+      action :add
+    end
+  when "esxi-5.5-install"
+    provisioner_esxi mnode_name do
+      distro "esxi"
+      version "5.5"
+      address v4addr
+      target mnode_name
+      action :add
+    end
+  when "fuel-6.0-install"
+    provisioner_fuel mnode_name do
+      distro "fuel"
+      version "6.0"
       address v4addr
       target mnode_name
       action :add

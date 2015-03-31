@@ -13,25 +13,10 @@
 # limitations under the License.
 #
 
-#
-# Install and start lldpd
-#
+actions :add
 
-# This is a little bit of a hack for now.
-return if node[:platform] == "coreos"
-
-package_name = "lldpd"
-service_name = "lldpd"
-
-case node[:platform]
-when "centos"
-  package_name = "lldpad" if node[:platform_version] == "6.5"
-  service_name = "lldpad" if node[:platform_version] == "6.5"
-end
-
-package package_name
-
-service service_name do
-  action [ :enable, :start ]
-end
-
+attribute :name, :kind_of => String, :name_attribute => true
+attribute :target, :kind_of => String, :required => true
+attribute :address, :kind_of => IP, :required => true
+attribute :version, :kind_of => String, :required => true
+attribute :distro,  :kind_of => String, :required => true

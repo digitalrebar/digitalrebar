@@ -136,3 +136,7 @@ roles:
             - centos-7.0.1406
             - redhat-7.0
             - debian-7.8.0
+            - coreos
+            - xenserver-6.5
+            - esxi-5.5
+            - fuel-6.0

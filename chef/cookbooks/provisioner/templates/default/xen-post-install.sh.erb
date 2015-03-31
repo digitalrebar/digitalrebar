@@ -1,0 +1,61 @@
+#!/bin/sh
+# Copyright 2015, Greg Althaus
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+#
+# We are a net install.
+#
+cat > /tmp/root/update_system2.sh <<"EOF"
+#!/bin/bash
+
+set -x
+key_re='crowbar\.install\.key=([^ ]+)'
+if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
+    export CROWBAR_KEY="${BASH_REMATCH[1]}"
+    echo "$CROWBAR_KEY" >/etc/crowbar.install.key
+elif [[ -f /etc/crowbar.install.key ]]; then
+    export CROWBAR_KEY="$(cat /etc/crowbar.install.key)"
+fi
+
+hostname_re='crowbar\.fqdn=([^ ]+)'
+if [[ $(cat /proc/cmdline) =~ $hostname_re ]]; then
+    HOSTNAME=${BASH_REMATCH[1]}
+else
+    echo "Cannot set hostname, we fail."
+    sleep 999
+    reboot -f
+fi
+
+curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
+    "http://<%=@admin_ip%>:3000/api/v2/nodes/$HOSTNAME"
+
+# Wait for the provisioner to catch up
+while true; do
+      curl -s -f -L -o /tmp/bootstate "<%=@provisioner_web%>/nodes/$HOSTNAME/bootstate" && \
+        [[ -f /tmp/bootstate && $(cat /tmp/bootstate) = local ]] && break
+    sleep 1
+done
+EOF
+
+mkdir -p /tmp/root/root/.ssh
+
+cat >/tmp/root/root/.ssh/authorized_keys <<EOF
+<%= @keys %>
+EOF
+
+
+chmod +x /tmp/root/update_system2.sh
+chroot /tmp/root /update_system2.sh
+sync

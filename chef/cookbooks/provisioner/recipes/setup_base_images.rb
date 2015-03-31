@@ -140,11 +140,37 @@ node["crowbar"]["provisioner"]["server"]["supported_oses"].each do |os,params|
   node.normal["crowbar"]["provisioner"]["server"]["available_oses"][os] = true
   node.normal["crowbar"]["provisioner"]["server"]["repositories"][os] = Mash.new
 
-  # Extract the ISO install image.
-  # Do so in such a way the we avoid using loopback mounts and get
-  # proper filenames in the end.
-  bash "Extract #{params["iso_file"]}" do
-    code <<EOC
+  if os =~ /^(esxi)/
+    # Extract esxi iso through rsync - bsdtar messes up the filenames
+    tmpesxi="/tmp/esxi_mnt_pt/"
+    bash "Extract rsync #{params["iso_file"]}" do
+      code <<EOC
+set -e
+[[ -d "#{os_install_dir}.extracting" ]] && rm -rf "#{os_install_dir}.extracting"
+mkdir -p "#{os_install_dir}.extracting"
+
+mkdir -v #{tmpesxi}
+mount -o loop "#{iso_dir}/#{params["iso_file"]}" #{tmpesxi}
+rsync -av #{tmpesxi} "#{os_install_dir}.extracting"
+sync && umount #{tmpesxi} && rmdir -v #{tmpesxi}
+losetup -j "#{iso_dir}/#{params["iso_file"]}" | awk -F: '{ print $1 }' | xargs losetup -d
+
+chmod +w "#{os_install_dir}.extracting"/*
+sed -e "s:/::g" -e "3s:^:prefix=/../#{os}/install/\\n:" -i.bak "#{os_install_dir}.extracting"/boot.cfg
+
+touch "#{os_install_dir}.extracting/.#{params["iso_file"]}.crowbar_canary"
+[[ -d "#{os_install_dir}" ]] && rm -rf "#{os_install_dir}"
+mv "#{os_install_dir}.extracting" "#{os_install_dir}"
+EOC
+      only_if do File.file?("#{iso_dir}/#{params["iso_file"]}") &&
+          !File.file?("#{os_install_dir}/.#{params["iso_file"]}.crowbar_canary") end
+    end
+  else
+    # Extract the ISO install image.
+    # Do so in such a way the we avoid using loopback mounts and get
+    # proper filenames in the end.
+    bash "Extract #{params["iso_file"]}" do
+      code <<EOC
 set -e
 [[ -d "#{os_install_dir}.extracting" ]] && rm -rf "#{os_install_dir}.extracting"
 mkdir -p "#{os_install_dir}.extracting"
@@ -153,8 +179,31 @@ touch "#{os_install_dir}.extracting/.#{params["iso_file"]}.crowbar_canary"
 [[ -d "#{os_install_dir}" ]] && rm -rf "#{os_install_dir}"
 mv "#{os_install_dir}.extracting" "#{os_install_dir}"
 EOC
-    only_if do File.file?("#{iso_dir}/#{params["iso_file"]}") &&
-        !File.file?("#{os_install_dir}/.#{params["iso_file"]}.crowbar_canary") end
+      only_if do File.file?("#{iso_dir}/#{params["iso_file"]}") &&
+          !File.file?("#{os_install_dir}/.#{params["iso_file"]}.crowbar_canary") end
+    end
+  end
+
+  #
+  # TODO:Make generic NFS one day
+  # Make sure we setup an nfs server and export the fuel directory
+  #
+  if os =~ /^(fuel)/
+    package "nfs-utils"
+
+    service "rpcbind" do
+      action [ :enable, :start ]
+    end
+
+    service "nfs" do
+      action [ :enable, :start ]
+    end
+
+    utils_line "#{os_install_dir} *(ro,async,no_subtree_check,no_root_squash,crossmnt)" do
+      action :add
+      file '/etc/exports'
+      notifies :restart, "service[nfs]", :delayed
+    end
   end
 
   # For CentOS and RHEL, we need to rewrite the package metadata
@@ -176,6 +225,7 @@ EOC
   pkgtype = case
             when os =~ /^(ubuntu|debian)/ then "debs"
             when os =~ /^(redhat|centos|suse|fedora)/ then "rpms"
+            when os =~ /^(coreos|fuel|esxi|xenserver)/ then "custom"
             else raise "Unknown OS type #{os}"
             end
   # If we are running in online mode, we need to do a few extra tasks.
@@ -339,6 +389,29 @@ mv elilo-3.16-ia64.efi bootia64.efi
 rm elilo*.efi elilo*.tar.gz || :
 EOC
   not_if "test -f '#{uefi_dir}/bootx64.efi'"
+end
+
+# Build coreos chef code tgz - fix ip issue for ohai and dmidecode
+bash "Build CoreOS chef code" do
+  code <<EOC
+set -e -x
+cp -r /opt/chef /tmp
+cd /tmp/chef
+while read file; do
+  sed -i "s:/sbin/ip:/bin/ip:g" "$file"
+done < <(find . -type f | xargs grep -l "/sbin/ip")
+while read file; do
+  sed -i 's:"dmidecode":"/opt/chef/dmidecode/usr/sbin/dmidecode":g' "$file"
+done < <(find . -type f | xargs grep -l 'shell_out("dmidecode")' | grep -v spec)
+mkdir -p /tmp/chef/dmidecode
+cd /tmp/chef/dmidecode
+bzip2 -d -c #{tftproot}/files/dmidecode-2.10.tbz2 | tar xf -
+cd /tmp
+tar -zcf #{tftproot}/files/coreos-chef.tgz chef
+cd
+rm -rf /tmp/chef
+EOC
+  not_if do File.file?("#{tftproot}/files/coreos-chef.tgz") end
 end
 
 bash "Restore selinux contexts for #{tftproot}" do

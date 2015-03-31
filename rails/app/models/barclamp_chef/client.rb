@@ -25,11 +25,13 @@ class BarclampChef::Client < Role
       raise "No idea how to get the private key!"
     end
     raise "Could not create chef client!" unless private_key && private_key != ""
+    webserver = "http://192.168.124.10:8091"
     nr.with_lock do
       nr.sysdata = { "chefjig" =>
         { "client" => {"key" => private_key, "name" => nr.node.name},
           "server" => {"url" => chefjig.server}
-        }
+        },
+        "crowbar" => { "provisioner" => { "server" => { "webserver" => webserver } } }
       }
       nr.save!
     end

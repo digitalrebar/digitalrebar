@@ -6,6 +6,11 @@
 [[ -f /etc/profile.d/crowbar-key.sh ]] && exit 0
 touch "/tmp/.crowbar_in_bootstrap"
 
+# Add /opt/chef/bin to path for systems that don't have chef-client "normally"
+cat >/etc/profile.d/chef-path.sh <<EOF
+export PATH="\$PATH:/opt/chef/bin"
+EOF
+
 if [[ ! -e /etc/crowbar.install.key ]]; then
     read key rest < <(dd if=/dev/urandom bs=65536 count=1 2>/dev/null |sha512sum - 2>/dev/null)
     echo "Creating machine-install user"

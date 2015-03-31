@@ -28,6 +28,9 @@ os_support:
   - opensuse-13.1
   - fedora-20
   - debian-7.8.0
+  - xenserver-6.5
+  - esxi-5.5
+  - fuel-6.0
 
 barclamps:
   - name: crowbar
@@ -85,6 +88,7 @@ jigs:
 extra_files:
   - http://downloads.sourceforge.net/project/elilo/elilo/elilo-3.16/elilo-3.16-all.tar.gz
   - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
+  - http://storage.core-os.net/coreos/amd64-generic/38.0.0/pkgs/sys-apps/dmidecode-2.10.tbz2
 
 debs:
   ubuntu-12.04:
