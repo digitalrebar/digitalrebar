@@ -24,9 +24,6 @@ roles:
     requires:
       - network-server
       - network-lldpd
-    conflicts:
-      - crowbar-managed-node
-    provides:
       - crowbar-installed-node
   - name: crowbar-managed-node
     description: "Crowbar Node Service Bundle"
@@ -144,11 +141,13 @@ roles:
     flags:
       - milestone
       - implicit
+    conflicts:
+      - crowbar-managed-node
     requires:
       - network-unmanaged
     provides:
-      - crowbar-managed-node
       - crowbar-installed-node
+      - crowbar-managed-node
 
 hammers:
   - name: 'ssh'
