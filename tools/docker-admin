@@ -43,6 +43,14 @@ if [ "$1" == "--dont-map-ports" ] ; then
   shift
 fi
 
+docker_args=(-t -i -w /opt/opencrowbar/core -v "$mountdir:/opt/opencrowbar")
+
+if [ "$1" == "--hostname" ] ; then
+  docker_args+=(-h "$2")
+  shift
+  shift
+fi
+
 declare -A image_map
 #image_map["ubuntu"]="ubuntu:precise"
 image_map["ubuntu"]="opencrowbar/ubuntu:12.04-4"
@@ -66,7 +74,6 @@ shift
 echo "We will mount $mountdir at /opt/opencrowbar"
 mkdir -p "$HOME/.cache/opencrowbar/tftpboot"
 
-docker_args=(-t -i -w /opt/opencrowbar/core -v "$mountdir:/opt/opencrowbar")
 docker_args+=(-v "$HOME/.cache/opencrowbar/tftpboot:$tftproot")
 docker_args+=(-e "OUTER_UID=$(id -u)")
 docker_args+=(-e "OUTER_GID=$(id -g)")
