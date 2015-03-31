@@ -28,7 +28,7 @@ g(Item) ->
 validate(JSON) when is_record(JSON, obj) ->
   J = JSON#obj.data,
   R =[JSON#obj.type == "network_range",
-      bdd_utils:is_a(J, length, 13),
+      bdd_utils:is_a(J, length, 14),
       bdd_utils:is_a(J, string, name),
       bdd_utils:is_a(J, dbid, network_id),
       bdd_utils:is_a(J, str, first),
@@ -39,6 +39,7 @@ validate(JSON) when is_record(JSON, obj) ->
       bdd_utils:is_a(J, boolnull, use_bridge),
       bdd_utils:is_a(J, integer, team_mode),
       bdd_utils:is_a(J, boolnull, use_team),
+      bdd_utils:is_a(J, bool, overlap),
       crowbar_rest:validate_core(J)],
   bdd_utils:assert(R);
 validate(JSON) -> 
