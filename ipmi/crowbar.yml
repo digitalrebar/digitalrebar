@@ -41,8 +41,6 @@ hammers:
 roles:
   - name: ipmi-master
     jig: chef
-    requires:
-      - network-bmc
     flags:
       - bootstrap
   - name: ipmi-discover
