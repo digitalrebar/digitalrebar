@@ -133,7 +133,7 @@ roles:
             - centos-6.5
             - centos-6.6
             - fedora-20
-            - centos-7.0.1406
+            - centos-7.1.1503
             - redhat-7.0
             - debian-7.8.0
             - coreos

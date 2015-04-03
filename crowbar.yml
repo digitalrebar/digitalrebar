@@ -24,7 +24,7 @@ os_support:
   - redhat-6.6
   - centos-6.5
   - centos-6.6
-  - centos-7.0.1406
+  - centos-7.1.1503
   - opensuse-13.1
   - fedora-20
   - debian-7.8.0
@@ -470,7 +470,7 @@ rpms:
       - mod_fcgid
       - mod_ssl
       - ipmitool
-  centos-7.0.1406:
+  centos-7.1.1503:
     raw_pkgs:
       - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
     repos:

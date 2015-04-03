@@ -108,7 +108,7 @@ able to install operating systems on slave nodes.  By default, the
 
  * `ubuntu-14.04`: `ubuntu-14.04.1-server-amd64.iso`
  * `centos-6.6`: `CentOS-6.6-x86_64-bin-DVD1.iso`
- * `centos-7.0.1406`: `CentOS-7.0-1406-x86_64-DVD.iso`
+ * `centos-7.1.1503`: `CentOS-7-x86_64-DVD-1503.iso`
 
 > This list is subject to change!  For the latest list, consult [Provisioner Base Images](https://github.com/opencrowbar/core/blob/master/chef/roles/provisioner-base-images/role-template.json) template file.
 
@@ -150,7 +150,7 @@ This will perform the following actions:
   * Update the `provisioner-server` role template to use the passed-in
   http proxy, if any.
   * Update the `provisioner-os-install` role template to default to
-  `centos-7.0`.
+  `centos-7.1.1503`.
   * Create the admin node record.
   * Extract the addresses that were allocated to the admin node, and
   bind them to eth0.

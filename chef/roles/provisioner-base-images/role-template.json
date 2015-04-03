@@ -74,11 +74,11 @@
                         "iso_file": "rhel-server-7.0-x86_64-dvd.iso",
                         "append": "method=%os_install_site% inst.geoloc=0"
                     },
-                    "centos-7.0.1406": {
+                    "centos-7.1.1503": {
                         "initrd": "images/pxeboot/initrd.img",
                         "kernel": "images/pxeboot/vmlinuz",
                         "append": "method=%os_install_site% inst.geoloc=0",
-                        "iso_file": "CentOS-7.0-1406-x86_64-DVD.iso",
+                        "iso_file": "CentOS-7-x86_64-DVD-1503.iso",
                         "online_mirror": "http://mirrors.kernel.org/centos/7/"
                     },
                     "fedora-20": {

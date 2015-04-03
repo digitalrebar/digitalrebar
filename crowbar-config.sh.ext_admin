@@ -41,7 +41,7 @@ fi
 
 crowbar roles set provisioner-os-install \
     attrib provisioner-target_os \
-    to '{"value": "centos-7.0.1406"}'
+    to '{"value": "centos-7.1.1503"}'
 
 set -e
 set -x
