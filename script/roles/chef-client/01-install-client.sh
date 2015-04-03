@@ -8,6 +8,26 @@ if ! which chef-client; then
     if [[ -f /etc/redhat-release || -f /etc/centos-release ]]; then
         yum -y makecache
         yum install -y chef
+
+        # Fix ohai to work on centos7.1
+        cd /opt/chef/embedded/lib/ruby/gems/1.9.1/gems/ohai-7.4.0/lib/ohai/plugins/linux/
+        yum install -y patch
+        patch <<EOF
+--- platform.rb
++++ platform.rb
+@@ -38,6 +38,9 @@
+       contents = File.read("/etc/enterprise-release").chomp
+       platform "oracle"
+       platform_version get_redhatish_version(contents)
++    elsif File.exists?('/etc/centos-release')
++      platform "centos"
++      platform_version File.read("/etc/centos-release").scan(/(\d+|\.+)/).join
+     elsif File.exists?("/etc/debian_version")
+     # Ubuntu and Debian both have /etc/debian_version
+     # Ubuntu should always have a working lsb, debian does not by default
+EOF
+        cd -
+
     elif [[ -d /etc/apt ]]; then
         apt-get -y update
         apt-get -y --force-yes install chef
@@ -26,7 +46,6 @@ if ! which chef-client; then
         die "Staged on to unknown OS media!"
     fi
 fi
-
 
 mkdir -p "/etc/chef"
 url=$(read_attribute "chefjig/server/url")

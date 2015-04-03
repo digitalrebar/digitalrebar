@@ -11,7 +11,7 @@ As of Dec, 2014, the provisioner knows how to install the following operating sy
  * `ubuntu-12.04`: `ubuntu-12.04.4-server-amd64.iso`
  * `ubuntu-14.04`: `ubuntu-14.04.1-server-amd64.iso`
  * `centos-6.6`: `CentOS-6.6-x86_64-bin-DVD1.iso`
- * `centos-7.0.1406`: `CentOS-7.0-1406-x86_64-DVD.iso`
+ * `centos-7.1.1503`: `CentOS-7-x86_64-DVD-1503.iso`
  * `redhat-6.5`: `RHEL6.5-20131111.0-Server-x86_64-DVD1.iso`
  * `redhat-7.0`: `rhel-server-7.0-x86_64-dvd.iso`
  * `debian-7.8.0`: `debian-7.8.0-mini-amd64.iso`

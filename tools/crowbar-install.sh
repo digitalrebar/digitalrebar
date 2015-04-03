@@ -79,7 +79,7 @@ WITH_DOWNLOAD="NO"
 if [[ $1 = '--download-os' ]]; then
   shift
   WITH_DOWNLOAD="YES"
-  wget http://mirrors.kernel.org/centos/7/isos/x86_64/CentOS-7.0-1406-x86_64-DVD.iso
+  wget http://mirrors.kernel.org/centos/7/isos/x86_64/CentOS-7-x86_64-DVD-1503.iso
 fi
 
 cd -

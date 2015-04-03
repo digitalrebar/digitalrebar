@@ -128,7 +128,7 @@ order):
       * --master - Use RPMs built from the master tree. This is same as not specified.
       * --release <name> - Use RPMs built from the release <name> tree.
    * --without-hardware - Don't install the hardware RPM
-   * --download-os - This will download the Centos-7.0.1406 ISO for
+   * --download-os - This will download the Centos-7.1.1503 ISO for
 installation of nodes. By default, this is not done.
 
 After logging in as root, run the following command (as an example) to

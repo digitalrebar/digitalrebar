@@ -140,10 +140,10 @@ new_clients = {}
       target mnode_name
       action :add
     end
-  when 'centos-7.0.1406-install'
+  when 'centos-7.1.1503-install'
     provisioner_fedora mnode_name do
       distro 'centos'
-      version '7.0.1406'
+      version '7.1.1503'
       address v4addr
       target mnode_name
       action :add
