@@ -88,4 +88,5 @@ extra_files:
   # Utility for configuring BIOS setting on PEC gear.
   - http://poweredgec.com/files/setupbios-2013-10-03.tgz bios/tools
   # Utility for doing various things to the ASPEED BMC and BIOS.
-  - http://upload.aspeedtech.com/SOC/socflash_v10601.zip bios/tools
+  #- http://upload.aspeedtech.com/SOC/socflash_v10601.zip bios/tools
+  - http://opencrowbar.s3-website-us-east-1.amazonaws.com/socflash_v10601.zip bios/tools
