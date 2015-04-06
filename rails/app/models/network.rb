@@ -35,7 +35,24 @@ class Network < ActiveRecord::Base
   alias_attribute :router,      :network_router
   alias_attribute :allocations, :network_allocations
 
+  scope :in_category,   ->(c) { where(:category => c) }
+
   belongs_to :deployment
+
+  def self.lookup_network(ipstring, category = "admin")
+    the_ip_network = IP.coerce(ipstring).network
+    the_network = nil
+    Network.in_category(category).each do |n|
+      n.ranges.each do |r|
+        if (r.first.network == the_ip_network)
+          the_network = n
+          break
+        end
+      end
+      break if the_network
+    end
+    the_network
+  end
 
   def self.address(params)
     raise "Must pass a hash of args" unless params.kind_of?(Hash)

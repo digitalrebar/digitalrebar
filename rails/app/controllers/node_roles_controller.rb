@@ -77,7 +77,7 @@ class NodeRolesController < ApplicationController
       format.html { redirect_to deployment_path(depl.id) }
       format.json { render api_show @node_role }
     end
-    
+
   end
 
   def update
