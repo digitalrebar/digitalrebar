@@ -72,13 +72,38 @@ class NodesController < ApplicationController
   def addresses
     nodename = params[:node_id]
     @node = nodename == "admin" ?  Node.admin.where(:available => true).first : Node.find_key(nodename)
-    params.require(:network)
-    @net = Network.find_key(params[:network])
-    res = {"node" => @node.name,
-      "network" => @net.name,
-      "addresses" => @net.node_allocations(@node).map{|a|a.to_s}
-    }
-    render :json => res, :content_type=>cb_content_type(:addresses, "object")
+    if params[:network]
+      @net = Network.find_key(params[:network])
+      res = {
+        "node" => @node.name,
+        "network" => @net.name,
+        "category" => @net.category,
+        "addresses" => @net.node_allocations(@node).map{|a|a.to_s}
+      }
+      render :json => res, :content_type=>cb_content_type(:addresses, "object")
+    else
+      res = []
+
+      if params[:category]
+        nets = Network.in_category(params[:category])
+      else
+        nets = Network.all
+      end
+
+      nets.each do |n|
+        ips = n.node_allocations(@node)
+        next if ips.empty?
+
+        res << {
+            "node" => @node.name,
+            "network" => n.name,
+            "category" => n.category,
+            "addresses" => ips.map{|a|a.to_s}
+        }
+      end
+
+      render :json => res, :content_type=>cb_content_type(:addresses, "array")
+    end
   end
 
   # RESTful DELETE of the node resource

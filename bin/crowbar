@@ -543,6 +543,12 @@ module OpenCrowbar
       objs.map{|o|NodeRole.new(o)}
     end
 
+    def do_alladdresses(*rest)
+      objs,res = REST.get("#{self.class.path}/#{id}/addresses")
+      maybe_json_die(objs,res)
+      objs
+    end
+
     def do_addresses_on_Network(network,*rest)
       objs,res = REST.get("#{self.class.path}/#{id}/addresses?network=#{network.id}")
       maybe_json_die(objs,res)
