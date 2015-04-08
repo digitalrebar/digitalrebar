@@ -63,6 +63,7 @@ unmanaged_net='
   ]
 }'
 
+admin_net_name='the_admin'
 admin_net='
 {
   "name": "the_admin",
@@ -278,12 +279,14 @@ crowbar roles bind provisioner-database to "$FQDN"
 crowbar roles bind provisioner-repos to "$FQDN"
 crowbar roles bind provisioner-docker-setup to "$FQDN"
 
+# Add the admin node to the admin network for now.
+crowbar roles bind network-the_admin to "$FQDN"
+
 # Add the now mostly empty admin-node
 crowbar roles bind crowbar-admin-node to "$FQDN"
-crowbar nodes commit "$FQDN"
 
 # Figure out what IP addresses we should have, and add them.
-netline=$(crowbar nodes addresses "$FQDN" on admin)
+netline=$(crowbar nodes addresses "$FQDN" on $admin_net_name)
 nets=(${netline//,/ })
 for net in "${nets[@]}"; do
     [[ $net =~ $ip_re ]] || continue
@@ -292,6 +295,8 @@ for net in "${nets[@]}"; do
     ip addr add "$net" dev eth0 || :
     echo "${net%/*} $FQDN" >> /etc/hosts || :
 done
+
+crowbar nodes commit "$FQDN"
 
 # flag allows you to stop before final step
 if ! [[ $* = *--zombie* ]]; then
