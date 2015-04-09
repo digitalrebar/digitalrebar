@@ -15,7 +15,6 @@
 
 action :add do
   os = "#{new_resource.distro}-#{new_resource.version}"
-  proxy = node["crowbar"]["provisioner"]["server"]["proxy"]
   repos = node["crowbar"]["provisioner"]["server"]["repositories"][os]
   params = node["crowbar"]["provisioner"]["server"]["boot_specs"][os]
   online = node["crowbar"]["provisioner"]["server"]["online"]

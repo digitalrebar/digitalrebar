@@ -71,7 +71,7 @@ new_clients = {}
                 :online => node['crowbar']['provisioner']['server']['online'],
                 :domain => domain_name,
                 :provisioner_web => provisioner_web,
-                :proxy => node['crowbar']['provisioner']['server']['proxy'],
+                :proxy => node['crowbar']['proxy']['servers'].first,
                 :keys => (node['crowbar']['provisioner']['server']['access_keys'] rescue Hash.new).values.sort.join($/),
                 :v4_addr => node.address('admin',IP::IP4).addr
                 )

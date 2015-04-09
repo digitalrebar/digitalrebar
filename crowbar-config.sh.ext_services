@@ -34,8 +34,8 @@ fi
 # Update the provisioner server template to use whatever
 # proxy the admin node should be using.
 if [[ $upstream_proxy ]]; then
-    crowbar roles set provisioner-server \
-        attrib provisioner-upstream_proxy \
+    crowbar roles set proxy-server \
+        attrib proxy-upstream_proxy \
         to "{\"value\": \"${upstream_proxy}\"}"
 fi
 
@@ -115,6 +115,7 @@ ip_re='([0-9a-f.:]+/[0-9]+)'
 # Add required or desired services
 crowbar roles bind dns-service to "system-phantom.internal.local"
 crowbar roles bind ntp-service to "system-phantom.internal.local"
+crowbar roles bind proxy-service to "system-phantom.internal.local"
 crowbar roles bind dns-mgmt_service to "system-phantom.internal.local"
 
 # Set the domain name to use to the derived one
@@ -169,6 +170,13 @@ crowbar roles bind ntp-server to "$FQDN"
 # Example external ntp server - use instead of ntp-server above
 #curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "pool.ntp.org", "Service": {"Service": "ntp-service", "Port": 123, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
 
+# Proxy Service configuration
+# Use the admin node as the proxy server for the cluster
+crowbar roles bind proxy-server to "$FQDN"
+
+# Example external ntp server - use instead of ntp-server above
+#curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "fred.clam.shack.com", "Service": {"Service": "proxy-service", "Port": 8123, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
+
 # Setup DHCP Server - this can be optional
 #
 # If not used, the external DHCP server will need
@@ -220,20 +228,6 @@ for net in "${nets[@]}"; do
     ip addr add "$net" dev eth0 || :
     echo "${net%/*} $FQDN" >> /etc/hosts || :
 done
-
-# Now that we have shiny new IP addresses, make sure that Squid has the right
-# addresses in place for always_direct exceptions, and pick up the new proxy
-# environment variables.
-
-(
-    . bootstrap.sh
-    chef-solo -c /opt/opencrowbar/core/bootstrap/chef-solo.rb -o "${proxy_recipes}"
-)
-. /etc/profile
-
-# Make sure that Crowbar is running with the proper environment variables
-service crowbar stop
-service crowbar start
 
 # flag allows you to stop before final step
 if ! [[ $* = *--zombie* ]]; then

@@ -22,7 +22,7 @@ shopt -s extglob
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 cp /usr/share/zoneinfo/GMT /etc/localtime
 
-export http_proxy="http://<%=@proxy%>"
+export http_proxy="<%=@proxy%>"
 export https_proxy="$http_proxy"
 export no_proxy="localhost,127.0.0.1,localaddress,.<%=@domain%>"
 provisioner="<%=@provisioner_web%>"

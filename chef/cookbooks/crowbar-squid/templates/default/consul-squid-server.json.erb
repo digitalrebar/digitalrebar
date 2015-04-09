@@ -1,0 +1,11 @@
+{
+  "service": {
+    "name": "proxy-service",
+    "tags": [ "system" ],
+    "port": <%= @port %>,
+    "check": {
+      "script": "pidof squid",
+      "interval": "10s"
+    }
+  }
+}
