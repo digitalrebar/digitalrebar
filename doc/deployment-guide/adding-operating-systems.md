@@ -6,7 +6,7 @@ When deploying an admin node in production mode, you will want to be able to ins
 
 > If using a Docker container as an admin node and do not want to copy the ISOs into place, you must hard link (not soft link) the ISO files because symlinks are not visible on file system paths mapped inside containers
 
-As of Dec, 2014, the provisioner knows how to install the following operating systems from the following ISO images:
+As of Mar, 2015, the provisioner knows how to install the following operating systems from the following ISO images:
 
  * `ubuntu-12.04`: `ubuntu-12.04.4-server-amd64.iso`
  * `ubuntu-14.04`: `ubuntu-14.04.1-server-amd64.iso`
@@ -16,6 +16,9 @@ As of Dec, 2014, the provisioner knows how to install the following operating sy
  * `redhat-7.0`: `rhel-server-7.0-x86_64-dvd.iso`
  * `debian-7.8.0`: `debian-7.8.0-mini-amd64.iso`
    * *NOTE* This is really the netboot mini.iso renamed.  This can be found [here](http://ftp.nl.debian.org/debian/dists/wheezy/main/installer-amd64/current/images/netboot/mini.iso)
+ * `Mirantis Fuel 6.0`: `MirantisOpenStack-6.0.iso`
+ * `ESXi 5.5`: `VMware-VMvisor-Installer-5.5.0.update02-2068190.x86_64.iso`
+ * `Xen Server 6.5`: `XenServer-6.5.0-xenserver.org-install-cd.iso`
 
 > This list is subject to change!  For the latest list, consult [Provisioner Base Images](https://github.com/opencrowbar/core/blob/master/chef/roles/provisioner-base-images/role-template.json) template file.
 
