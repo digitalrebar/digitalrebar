@@ -174,8 +174,7 @@ Execute the following commands:
   ./production.sh <FQDN of the admin node>
 ```
 
-Once this is complete, the admin node is configured.  Don't worry about
-the failed to converge message, continue on to the next.
+Once this is complete, the admin node is configured.  
 
 ## Start Using OpenCrowbar
 
