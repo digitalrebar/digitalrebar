@@ -174,7 +174,7 @@ crowbar roles bind ntp-server to "$FQDN"
 # Use the admin node as the proxy server for the cluster
 crowbar roles bind proxy-server to "$FQDN"
 
-# Example external ntp server - use instead of proxy-server above
+# Example external proxy server - use instead of proxy-server above
 #curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "fred.clam.shack.com", "Service": {"Service": "proxy-service", "Port": 8123, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
 
 # Setup DHCP Server - this can be optional
