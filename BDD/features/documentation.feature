@@ -41,9 +41,3 @@ Feature: Documentation
     When I go to the "docs/eula" page
     Then I should see heading "OpenCrowbar License"
       And I should see "Apache License, Version 2.0"
-
-  Scenario: EULA Link From Login
-    Given I am on the "users/in/login" page
-    When I click on the "License Details" link
-    Then I should see heading "OpenCrowbar License"
-      And I should see "Apache License, Version 2.0"
