@@ -88,7 +88,7 @@ admin_net='
     }
   ],
   "router": {
-    "address": "192.168.124.10/24",
+    "address": "192.168.124.1/24",
     "pref": "10"
   }
 }'
@@ -285,16 +285,19 @@ crowbar roles bind network-the_admin to "$FQDN"
 # Add the now mostly empty admin-node
 crowbar roles bind crowbar-admin-node to "$FQDN"
 
+# Add the admin node to the admin network for now.
+#crowbar roles bind network-the_admin to "$FQDN"
+
 # Figure out what IP addresses we should have, and add them.
-netline=$(crowbar nodes addresses "$FQDN" on $admin_net_name)
-nets=(${netline//,/ })
-for net in "${nets[@]}"; do
-    [[ $net =~ $ip_re ]] || continue
-    net=${BASH_REMATCH[1]}
-    # Make this more complicated and exact later.
-    ip addr add "$net" dev eth0 || :
-    echo "${net%/*} $FQDN" >> /etc/hosts || :
-done
+#netline=$(crowbar nodes addresses "$FQDN" on $admin_net_name)
+#nets=(${netline//,/ })
+#for net in "${nets[@]}"; do
+#    [[ $net =~ $ip_re ]] || continue
+#    net=${BASH_REMATCH[1]}
+#    # Make this more complicated and exact later.
+#    ip addr add "$net" dev eth0 || :
+#    echo "${net%/*} $FQDN" >> /etc/hosts || :
+#done
 
 crowbar nodes commit "$FQDN"
 
