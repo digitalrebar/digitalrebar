@@ -138,8 +138,8 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
   bdd_utils:alias(user, user_cb),
   bdd_utils:alias(networkrange, range),
   % before we do anything else, we need to create some consul services
-  Services = bdd_utils:config(services, ["dns-service", "ntp-service"]),
-  [true,true] = [consul:reg_serv(S) || S <- Services],
+  Services = bdd_utils:config(services, ["dns-service", "ntp-service", "proxy-service"]),
+  [true,true,true] = [consul:reg_serv(S) || S <- Services],
   bdd_utils:log(info, crowbar, global_setup, "Consul Registered ~p",[Services]),
   % make sure there's a worker
   true = worker(),
@@ -158,13 +158,10 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
       % create admin network
       network:make_admin()
   end,
-  % create node for testing
-  bdd_utils:log(debug, crowbar, global_setup, "Global Setup running (creating node ~p)",[g(node_name)]),
-  node:add_node(g(node_name), "crowbar-admin-node", [{description, Test ++ g(description)}, {order, 100}, {admin, "true"}], g(node_atom)),
   % setup phantom node roles
   bdd_utils:log(debug, crowbar, global_setup, "Adding Service Roles", []),
   Phantom = bdd_utils:config(system_phantom,"system-phantom.internal.local"),
-  PhantomRoles = bdd_utils:config(system_phantom_roles, ["dns-service", "ntp-service","dns-mgmt_service"]),
+  PhantomRoles = bdd_utils:config(system_phantom_roles, ["dns-service", "ntp-service", "proxy-service", "dns-mgmt_service"]),
   ServiceNRs = eurl:path([node:g(path), Phantom, "node_roles"]),
   R = eurl:get_http(ServiceNRs),
   O = bdd_restrat:get_object(R),
@@ -180,6 +177,9 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
           node:alive(Phantom);
     _  -> noop 
   end,
+  % create node for testing
+  bdd_utils:log(debug, crowbar, global_setup, "Global Setup running (creating node ~p)",[g(node_name)]),
+  node:add_node(g(node_name), "crowbar-admin-node", [{description, Test ++ g(description)}, {order, 100}, {admin, "true"}], g(node_atom)),
   true;
 
 % find the node from setup and remove it
