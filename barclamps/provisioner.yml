@@ -21,28 +21,13 @@ roles:
       - logging-server
       - ntp-client
       - proxy-client
+      - crowbar-build-root-key
+      - crowbar-access
     attribs:
-      - name: provisioner-machine_key
-        description: 'The username and password that managed nodes should use to talk to the Crowbar API'
-        map: 'crowbar/provisioner/machine_key'
-      - name: provisioner-access_keys
-        description: 'The SSH public keys that should allow passwordless root access on managed nodes.'
-        map: 'crowbar/provisioner/server/access_keys'
-      - name: provisioner-name
-        description: 'The DNS name of the provisioner server.'
-        map: 'crowbar/provisioner/server/name'
-      - name: provisioner-v4addr
-        description: 'The IPv4 address of the provisioner server'
-        map: 'crowbar/provisioner/server/v4addr'
-      - name: provisioner-v6addr
-        description: 'The IPv6 address of the provisioner server'
-        map: 'crowbar/provisioner/server/v6addr'
-      - name: provisioner-webserver
-        description: 'The URL that managed nodes should use to contact the provisioner webserver.'
-        map: 'crowbar/provisioner/server/webserver'
       - name: provisioner-online
         description: 'Whether or not the provisioner is operating in online mode..'
         map: 'crowbar/provisioner/server/online'
+
   - name: provisioner-base-images
     jig: chef
     attribs:
@@ -55,15 +40,42 @@ roles:
         map: 'crowbar/provisioner/server/available_oses'
         ui_renderer: 'barclamp_provisioner/attribs/available_oses'
     requires:
-      - provisioner-server
+      - provisioner-service
+      - dns-service
     wants-attribs:
       - dns-domain
       - dns_servers
+      - provisioner-webservers
+
+  - name: provisioner-database
+    jig: chef
+    requires:
+      - provisioner-base-images
+      - proxy-client
+    wants-attribs:
+      - dns-domain
+      - proxy-servers
+      - provisioner-webservers
+
+  - name: provisioner-service
+    jig: role-provided
+    flags:
+      - service
+    attribs:
+      - name: provisioner-webservers
+        description: 'The URL that managed nodes should use to contact the provisioner webserver.'
+        map: 'crowbar/provisioner/server/webservers'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/
+
   - name: provisioner-repos
     jig: chef
     requires:
       - network-admin
-      - provisioner-server
+      - provisioner-service
       - provisioner-base-images
       - proxy-client
     flags:
@@ -71,31 +83,23 @@ roles:
     wants-attribs:
       - provisioner-package-repos
       - proxy-servers
-      - provisioner-webserver
-      - provisioner-online
-  - name: provisioner-database
-    jig: chef
-    requires:
-      - provisioner-server
-      - provisioner-base-images
-      - proxy-client
-    wants-attribs:
-      - dns-domain
-      - proxy-servers
+      - provisioner-webservers
+
   - name: provisioner-docker-setup
     jig: chef
     conflicts:
       - crowbar-docker-node
     requires:
       - provisioner-repos
+      - crowbar-access
       - proxy-client
     wants-attribs:
       - dns_servers
       - provisioner-package-repos
       - proxy-servers
-      - provisioner-webserver
-      - provisioner-machine_key
-      - provisioner-access_keys
+      - provisioner-webservers
+      - crowbar-machine_key
+      - crowbar-access_keys
     attribs:
       - name: provisioner-docker-image
         description: 'The default image to use for docker images unless overriden by hints'
@@ -103,6 +107,7 @@ roles:
         schema:
           type: str
           required: false
+
   - name: provisioner-os-install
     jig: script
     requires:
@@ -111,7 +116,7 @@ roles:
       - implicit
       - destructive
     wants-attribs:
-      - provisioner-webserver
+      - provisioner-webservers
     attribs:
       - name: provisioner-target_os
         description: "The operating system to install on a node"

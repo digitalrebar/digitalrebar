@@ -139,8 +139,8 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
   bdd_utils:alias(network_range, range),
   bdd_utils:alias(network_router, router),
   % before we do anything else, we need to create some consul services
-  Services = bdd_utils:config(services, ["dns-service", "ntp-service", "proxy-service"]),
-  [true,true,true] = [consul:reg_serv(S) || S <- Services],
+  Services = bdd_utils:config(services, ["dns-service", "ntp-service", "proxy-service", "provisioner-service"]),
+  [true,true,true,true] = [consul:reg_serv(S) || S <- Services],
   bdd_utils:log(info, crowbar, global_setup, "Consul Registered ~p",[Services]),
   % make sure there's a worker
   true = worker(),
@@ -162,7 +162,7 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
   % setup phantom node roles
   bdd_utils:log(debug, crowbar, global_setup, "Adding Service Roles", []),
   Phantom = bdd_utils:config(system_phantom,"system-phantom.internal.local"),
-  PhantomRoles = bdd_utils:config(system_phantom_roles, ["dns-service", "ntp-service", "proxy-service", "dns-mgmt_service"]),
+  PhantomRoles = bdd_utils:config(system_phantom_roles, ["dns-service", "ntp-service", "proxy-service", "provisioner-service", "dns-mgmt_service"]),
   ServiceNRs = eurl:path([node:g(path), Phantom, "node_roles"]),
   R = eurl:get_http(ServiceNRs),
   O = bdd_restrat:get_object(R),

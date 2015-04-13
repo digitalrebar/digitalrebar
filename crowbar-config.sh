@@ -117,6 +117,8 @@ crowbar roles bind dns-service to "system-phantom.internal.local"
 crowbar roles bind ntp-service to "system-phantom.internal.local"
 crowbar roles bind proxy-service to "system-phantom.internal.local"
 crowbar roles bind dns-mgmt_service to "system-phantom.internal.local"
+crowbar roles bind provisioner-service to "system-phantom.internal.local"
+crowbar roles bind crowbar-access to "system-phantom.internal.local"
 
 # Set the domain name to use to the derived one
 ROLE_ID=`crowbar roles show dns-service | grep '"id"'`
@@ -126,6 +128,34 @@ NODE_ROLE_ID=`crowbar noderoles list | grep -B2 -A2 "\"role_id\":$ROLE_ID" | gre
 NODE_ROLE_ID=${NODE_ROLE_ID##*:}
 NODE_ROLE_ID=${NODE_ROLE_ID%,}
 crowbar noderoles set $NODE_ROLE_ID attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
+
+# Build a map of keys in the /root/.ssh/authorized_keys
+# Record the machine key as well. -- THIS IS NOT GREAT
+if [ -e /root/.ssh/authorized_keys ] ; then
+    count=1
+    rm -f /tmp/key_list
+    echo "{ \"value\": {" > /tmp/key_list
+    COMMA=""
+    cat /root/.ssh/authorized_keys | while read line; do
+        echo "$COMMA \"admin-$count\": \"$line\"" >> /tmp/key_list
+        count=`expr $count + 1`
+        COMMA=","
+    done
+    echo "} }" >> /tmp/key_list
+
+    ROLE_ID=`crowbar roles show crowbar-access | grep '"id"'`
+    ROLE_ID=${ROLE_ID##*:}
+    ROLE_ID=${ROLE_ID%,}
+    NODE_ROLE_ID=`crowbar noderoles list | grep -B2 -A2 "\"role_id\":$ROLE_ID" | grep -B3 -A2 '"node_id": 1' | grep \"id\"`
+    NODE_ROLE_ID=${NODE_ROLE_ID##*:}
+    NODE_ROLE_ID=${NODE_ROLE_ID%,}
+
+    crowbar noderoles set $NODE_ROLE_ID attrib crowbar-access_keys to "`cat /tmp/key_list`"
+
+    crowbar noderoles set $NODE_ROLE_ID attrib crowbar-machine_key to "{ \"value\": \"`cat /etc/crowbar.install.key`\" }"
+
+    rm -rf /tmp/key_list
+fi
 
 crowbar nodes commit "system-phantom.internal.local"
 
@@ -140,6 +170,8 @@ crowbar nodes create "$admin_node"
 
 # Bind the admin role to it, and commit the resulting
 # proposed noderoles.
+
+crowbar roles bind crowbar-build-root-key to "$FQDN"
 
 # TODO: One day do it this way:
 # Setup DNS Server and Mgmt Shim for our own DNS Server
@@ -210,6 +242,7 @@ crowbar roles bind proxy-server to "$FQDN"
 crowbar roles bind dhcp-database to "$FQDN"
 
 # Setup Up provisioner.
+crowbar roles bind provisioner-server to "$FQDN"
 crowbar roles bind provisioner-database to "$FQDN"
 crowbar roles bind provisioner-repos to "$FQDN"
 crowbar roles bind provisioner-docker-setup to "$FQDN"

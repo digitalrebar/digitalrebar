@@ -1,0 +1,11 @@
+{
+  "service": {
+    "name": "provisioner-service",
+    "tags": [ "system" ],
+    "port": <%=@web_port%>,
+    "check": {
+      "script": "pidof sws",
+      "interval": "10s"
+    }
+  }
+}

@@ -72,6 +72,39 @@ roles:
     provides:
       - crowbar-managed-node
       - crowbar-installed-node
+  - name: crowbar-access
+    description: "Crowbar Access Keys"
+    jig: noop
+    flags:
+      - milestone
+      - implicit
+    attribs:
+      - name: crowbar-machine_key
+        description: 'The username and password that managed nodes should use to talk to the Crowbar API'
+        map: 'crowbar/machine_key'
+        schema:
+          type: str
+          required: true
+      - name: crowbar-access_keys
+        description: 'The SSH public keys that should allow password-less root access on managed nodes.'
+        map: 'crowbar/access_keys'
+        schema:
+          type: map
+          mapping:
+            =:
+              type: str
+  - name: crowbar-build-root-key
+    description: "Build or Gather the root public key for this node"
+    jig: chef
+    flags:
+      - implicit
+    attribs:
+      - name: crowbar-root-public-key
+        description: 'The username and password that managed nodes should use to talk to the Crowbar API'
+        map: 'crowbar/root_public_key'
+        schema:
+          type: str
+          required: true
 
 hammers:
   - name: 'ssh'
