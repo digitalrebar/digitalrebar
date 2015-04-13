@@ -118,6 +118,8 @@ crowbar roles bind ntp-service to "system-phantom.internal.local"
 crowbar roles bind proxy-service to "system-phantom.internal.local"
 crowbar roles bind dns-mgmt_service to "system-phantom.internal.local"
 crowbar roles bind provisioner-service to "system-phantom.internal.local"
+crowbar roles bind crowbar-api_service to "system-phantom.internal.local"
+crowbar roles bind crowbar-job_runner_service to "system-phantom.internal.local"
 crowbar roles bind crowbar-access to "system-phantom.internal.local"
 
 # Set the domain name to use to the derived one
@@ -172,6 +174,9 @@ crowbar nodes create "$admin_node"
 # proposed noderoles.
 
 crowbar roles bind crowbar-build-root-key to "$FQDN"
+
+crowbar roles bind crowbar-api_server to "$FQDN"
+crowbar roles bind crowbar-job_runner to "$FQDN"
 
 # TODO: One day do it this way:
 # Setup DNS Server and Mgmt Shim for our own DNS Server

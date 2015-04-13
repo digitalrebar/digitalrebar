@@ -1,0 +1,11 @@
+{
+  "service": {
+    "name": "crowbar-job-runner-service",
+    "tags": [ "system" ],
+    "port": 0,
+    "check": {
+      "script": "pidof delayed_job.0",
+      "interval": "10s"
+    }
+  }
+}

@@ -105,6 +105,42 @@ roles:
         schema:
           type: str
           required: true
+  - name: crowbar-api_server
+    jig: chef
+    requires:
+      - consul
+      - crowbar-access
+  - name: crowbar-api_service
+    jig: role-provided
+    flags:
+      - service
+    attribs:
+      - name: crowbar-api-servers
+        description: "IP:Port pairs of the Crowbar API servers"
+        map: 'crowbar/api/servers'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/
+  - name: crowbar-job_runner
+    jig: chef
+    requires:
+      - crowbar-access
+      - consul
+  - name: crowbar-job_runner_service
+    jig: role-provided
+    flags:
+      - service
+    attribs:
+      - name: crowbar-job-runners
+        description: "Addresses of the Crowbar Job Runners"
+        map: 'crowbar/api/runners'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/
 
 hammers:
   - name: 'ssh'
