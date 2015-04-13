@@ -24,7 +24,6 @@ v4addr=node.address("admin",IP::IP4)
 v6addr=node.address("admin",IP::IP6)
 node.normal["crowbar"]["provisioner"]["server"]["v4addr"]=v4addr.addr if v4addr
 node.normal["crowbar"]["provisioner"]["server"]["v6addr"]=v6addr.addr if v6addr
-node.normal["crowbar"]["provisioner"]["server"]["proxy"]="#{v4addr.addr}:8123"
 web_port = node["crowbar"]["provisioner"]["server"]["web_port"]
 use_local_security = node["crowbar"]["provisioner"]["server"]["use_local_security"]
 provisioner_web="http://#{v4addr.addr}:#{web_port}"

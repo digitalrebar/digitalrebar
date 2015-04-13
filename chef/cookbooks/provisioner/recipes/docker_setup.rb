@@ -15,7 +15,7 @@
 
 provisioner_web=node["crowbar"]["provisioner"]["server"]["webserver"]
 provisioner_addr=node["crowbar"]["provisioner"]["server"]["v6addr"]
-proxy=node["crowbar"]["provisioner"]["server"]["proxy"]
+proxy=node["crowbar"]["proxy"]["servers"].first
 tftproot = node["crowbar"]["provisioner"]["server"]["root"]
 node_dir="#{tftproot}/nodes"
 node.normal["crowbar_wall"] ||= Mash.new
@@ -39,7 +39,7 @@ v4addresses = v4dns.collect{|a|a.addr}
               :image => info["image"],
               :dns_servers => v4addresses,
               :name => name,
-              :proxy => node["crowbar"]["provisioner"]["server"]["proxy"],
+              :proxy => proxy,
               :keys => (node["crowbar"]["provisioner"]["server"]["access_keys"] rescue Hash.new).values.sort.join($/),
               :admin_url => "http://[#{provisioner_addr}]:3000"
               )

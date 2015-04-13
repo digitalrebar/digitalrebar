@@ -15,7 +15,7 @@
 
 action :add do
   os = "#{new_resource.distro}-#{new_resource.version}"
-  proxy = node["crowbar"]["provisioner"]["server"]["proxy"]
+  proxy = node["crowbar"]["proxy"]["servers"].first
   repos = node["crowbar"]["provisioner"]["server"]["repositories"][os]
   params = node["crowbar"]["provisioner"]["server"]["boot_specs"][os]
   online = node["crowbar"]["provisioner"]["server"]["online"]
@@ -47,7 +47,7 @@ action :add do
     group "root"
     variables(:os_install_site => params[:os_install_site],
               :name => mnode_name,
-              :proxy => "http://#{proxy}/",
+              :proxy => proxy,
               :repos => repos,
               :provisioner_web => provisioner_web,
               :admin_ip => provisioner_addr,

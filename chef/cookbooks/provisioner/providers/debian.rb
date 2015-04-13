@@ -15,7 +15,7 @@
 
 action :add do
   os = "#{new_resource.distro}-#{new_resource.version}"
-  proxy = node["crowbar"]["provisioner"]["server"]["proxy"]
+  proxy = node["crowbar"]["proxy"]["servers"].first
   repos = node["crowbar"]["provisioner"]["server"]["repositories"][os]
   params = node["crowbar"]["provisioner"]["server"]["boot_specs"][os]
   online = node["crowbar"]["provisioner"]["server"]["online"]
@@ -52,7 +52,7 @@ action :add do
               :online => online,
               :provisioner_web => provisioner_web,
               :web_path => web_path,
-              :proxy => "http://#{proxy}/")
+              :proxy => proxy)
   end
 
   template "#{node_dir}/post-install.sh" do
@@ -67,7 +67,7 @@ action :add do
               :online => online,
               :keys => keys,
               :provisioner_web => provisioner_web,
-              :proxy => "http://#{proxy}/",
+              :proxy => proxy,
               :web_path => web_path)
   end
 

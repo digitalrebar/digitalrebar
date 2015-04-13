@@ -20,6 +20,7 @@ roles:
       - dns-client
       - logging-server
       - ntp-client
+      - proxy-client
     attribs:
       - name: provisioner-machine_key
         description: 'The username and password that managed nodes should use to talk to the Crowbar API'
@@ -36,22 +37,12 @@ roles:
       - name: provisioner-v6addr
         description: 'The IPv6 address of the provisioner server'
         map: 'crowbar/provisioner/server/v6addr'
-      - name: provisioner-proxy
-        description: 'The caching HTTP proxy that managed nodes should use'
-        map: 'crowbar/provisioner/server/proxy'
       - name: provisioner-webserver
         description: 'The URL that managed nodes should use to contact the provisioner webserver.'
         map: 'crowbar/provisioner/server/webserver'
       - name: provisioner-online
         description: 'Whether or not the provisioner is operating in online mode..'
         map: 'crowbar/provisioner/server/online'
-      - name: provisioner-upstream_proxy
-        description: "The upstream Web proxy that the proxy on the provisioner will use"
-        map: 'crowbar/provisioner/server/upstream_proxy'
-        schema:
-          type: str
-          required: true
-          pattern: '/\Ahttp:\/\/.+\z/'
   - name: provisioner-base-images
     jig: chef
     attribs:
@@ -74,11 +65,12 @@ roles:
       - network-admin
       - provisioner-server
       - provisioner-base-images
+      - proxy-client
     flags:
       - implicit
     wants-attribs:
       - provisioner-package-repos
-      - provisioner-proxy
+      - proxy-servers
       - provisioner-webserver
       - provisioner-online
   - name: provisioner-database
@@ -86,18 +78,21 @@ roles:
     requires:
       - provisioner-server
       - provisioner-base-images
+      - proxy-client
     wants-attribs:
       - dns-domain
+      - proxy-servers
   - name: provisioner-docker-setup
     jig: chef
     conflicts:
       - crowbar-docker-node
     requires:
       - provisioner-repos
+      - proxy-client
     wants-attribs:
       - dns_servers
       - provisioner-package-repos
-      - provisioner-proxy
+      - proxy-servers
       - provisioner-webserver
       - provisioner-machine_key
       - provisioner-access_keys

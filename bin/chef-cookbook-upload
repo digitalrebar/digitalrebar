@@ -3,6 +3,11 @@ if [[ $(whoami) != crowbar ]]; then
     exec su -l -c "$0" crowbar
 fi
 . /etc/profile
+# Chef/Berks uses Faraday which doesn't work right with proxies.
+# Unset them because the chef server is local
+unset http_proxy
+unset https_proxy
+unset no_proxy
 set -e
 IFS=$'\n'
 while read -r -s berksfile; do

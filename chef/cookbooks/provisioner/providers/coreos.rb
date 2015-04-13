@@ -15,7 +15,7 @@
 
 action :add do
   os = "coreos"
-  proxy = node["crowbar"]["provisioner"]["server"]["proxy"]
+  proxy = node["crowbar"]["proxy"]["servers"].first
   params = node["crowbar"]["provisioner"]["server"]["boot_specs"][os]
   tftproot = node["crowbar"]["provisioner"]["server"]["root"]
   provisioner_addr = node["crowbar"]["provisioner"]["server"]["v4addr"]
@@ -45,7 +45,7 @@ action :add do
     variables(:web_path => web_path,
               :admin_ip => provisioner_addr,
               :keys => keys,
-              :proxy => "http://#{proxy}/",
+              :proxy => proxy,
               :provisioner_web => provisioner_web)
   end
 
@@ -58,7 +58,7 @@ action :add do
               :admin_ip => provisioner_addr,
               :keys => keys,
               :provisioner_web => provisioner_web,
-              :proxy => "http://#{proxy}/",
+              :proxy => proxy,
               :web_path => web_path)
   end
 

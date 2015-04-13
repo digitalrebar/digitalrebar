@@ -14,6 +14,7 @@
 
 class Service < Role
 
+  # An option block can be given to format the service for return in the attribute
   def internal_do_transition(nr, data, service_name, service_attribute)
     runlog = []
     addr_arr = []
@@ -52,7 +53,11 @@ class Service < Role
     runlog << "Processing pieces for #{service_name}"
     if pieces
       pieces.each do |p|
-        addr_arr << p.Address
+        if block_given?
+          addr_arr << yield(p)
+        else
+          addr_arr << p.Address
+        end
       end
       runlog << "Setting #{service_name} attribute"
       Attrib.set(service_attribute, nr, addr_arr, :system)

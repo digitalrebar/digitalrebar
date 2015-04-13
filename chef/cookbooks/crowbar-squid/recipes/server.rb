@@ -13,15 +13,6 @@
 #
 # This recipe sets up Squid
 
-if (node[:crowbar_wall][:network] rescue nil)
-  v4addr=node.address("admin",IP::IP4)
-  v6addr=node.address("admin",IP::IP6)
-else
-  v4addr=IP.coerce("127.0.0.1/8")
-  v6addr=IP.coerce("::1/128")
-end
-node.normal["crowbar"]["provisioner"]["server"]["proxy"]="#{v4addr.addr}:8123"
-
 localnets = ["127.0.0.1","localhost","::1"]
 `ip -o addr show`.lines.each do |line|
   next unless /inet6? ([^ ]+)/ =~ line
@@ -29,27 +20,20 @@ localnets = ["127.0.0.1","localhost","::1"]
 end
 localnets.sort!
 
-upstream_proxy = (node["crowbar"]["provisioner"]["server"]["upstream_proxy"] rescue nil)
+proxy_port = (node["crowbar"]["proxy"]["server"]["port"] rescue 8123) || 8123
+
+upstream_proxy = (node["crowbar"]["proxy"]["server"]["upstream_proxy"] rescue nil)
 upstream_proxy ||= ENV["upstream_proxy"]
 upstream_proxy ||= ENV["http_proxy"]
 upstream_proxy_address = nil
 upstream_proxy_port = nil
 
-is_upstream_proxy_me = ((upstream_proxy == "http://#{v4addr.addr}:8123") or (upstream_proxy == "http://127.0.0.1:8123"))
-
-if upstream_proxy && !upstream_proxy.empty? && !is_upstream_proxy_me
+if upstream_proxy && !upstream_proxy.empty?
   matchers = /http:\/\/(?<address>(\[[0-9a-f:]+\])|([^:]+)):(?<port>[0-9]+)/.match(upstream_proxy)
   raise "Could not parse upstream proxy!" unless matchers["address"]
   upstream_proxy_address = matchers["address"]
   upstream_proxy_port = matchers["port"] || 80
 end
-
-# Once the local proxy service is set up, we need to use it.
-proxies = {
-  "http_proxy" => "http://#{node["crowbar"]["provisioner"]["server"]["proxy"]}",
-  "https_proxy" => "http://#{node["crowbar"]["provisioner"]["server"]["proxy"]}",
-  "no_proxy" => localnets.join(",")
-}
 
 package "squid" do
   action :install
@@ -76,7 +60,7 @@ template "/etc/squid/squid.conf" do
   variables(:user => "squid",
             :localname => node.name,
             :localnets => localnets,
-            :port => 8123,
+            :port => proxy_port,
             :cache_dir => proxy_cache_dir,
             :upstream_address => upstream_proxy_address,
             :upstream_port => upstream_proxy_port)
@@ -105,29 +89,15 @@ service "squid" do
   action [:enable, :start]
 end
 
-template "/etc/environment" do
-  source "environment.erb"
-  variables(:values => proxies)
-  action :nothing
-  subscribes :create, "service[squid]"
+bash "reload consul" do
+    code "/usr/local/bin/consul reload"
+      action :nothing
 end
 
-template "/etc/profile.d/proxy.sh" do
-  source "proxy.sh.erb"
-  variables(:values => proxies)
-  action :nothing
-  subscribes :create, "service[squid]"
-end
-
-case node["platform"]
-when "redhat","centos"
-  template "/etc/yum.conf" do
-    source "yum.conf.erb"
-    action :nothing
-    subscribes :create, "service[squid]"
-    variables(
-              :distro => node["platform"],
-              :proxy => proxies["http_proxy"]
-              )
-  end
+template "/etc/consul.d/crowbar-squid.json" do
+  source "consul-squid-server.json.erb"
+  mode 0644
+  owner "root"
+  variables(:port => proxy_port)
+  notifies :run, "bash[reload consul]", :immediately
 end
