@@ -19,8 +19,8 @@
 
 include_recipe "bios::bios-common"
 
-provisioner_server = (node[:crowbar_wall][:provisioner_server] rescue nil)
-return unless provisioner_server
+provisioner_server = node[:crowbar][:provisioner][:server][:webservers].first
+
 bmc="bmc-2013-10-22.tgz"
 setupbios="setupbios-2013-10-03.tgz"
 socflash="socflash_v10601.zip"

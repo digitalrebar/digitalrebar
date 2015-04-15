@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-raid_utils = "#{node[:crowbar][:provisioner][:server][:webserver]}/files/raid"
+raid_utils = "http://#{node[:crowbar][:provisioner][:server][:webservers].first}/files/raid"
 
 %w{unzip rpm2cpio curl}.each do |pkg|
   next if system("which #{pkg}")

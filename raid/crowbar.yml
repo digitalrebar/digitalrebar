@@ -25,6 +25,7 @@ roles:
     jig: chef
     requires:
       - deployer-client
+      - provisioner-service
     flags:
       - implicit
     attribs:
@@ -36,7 +37,7 @@ roles:
         map: 'raid/drivers'
         ui_renderer: 'barclamp_raid/attribs/raid_tools_install'
     wants-attribs:
-      - provisioner-webserver
+      - provisioner-webservers
   - name: raid-discover
     jig: raid
     flags:

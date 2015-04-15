@@ -100,7 +100,7 @@ roles:
       - ipmi-discover
       - ipmi-master
     wants-attribs:
-      - provisioner-webserver
+      - provisioner-webservers
       - provisioner-proxy
       - ipmi-enable
       - ipmi-detected-params
