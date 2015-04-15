@@ -27,7 +27,7 @@ export https_proxy="$http_proxy"
 export no_proxy="localhost,127.0.0.1,localaddress,.<%=@domain%>"
 provisioner="<%=@provisioner_web%>"
 crowbar="http://<%=@provisioner_name%>:3000"
-crowbar_v4="http://<%=@v4_addr%>:3000"
+crowbar_v4="<%=@api_server%>"
 chef_rpm=chef-11.16.4-1.el6.x86_64.rpm
 
 # Set up just enough infrastructure to let the jigs work.
@@ -44,7 +44,7 @@ cat > /etc/gemrc <<EOF
 <% if @online -%>
 - http://rubygems.org/
 <% end -%>
-- ${provisioner}/gemsite/
+- http://${provisioner}/gemsite/
 gem: --no-ri --no-rdoc --bindir /usr/local/bin --http-proxy $http_proxy
 EOF
 

@@ -119,7 +119,7 @@ cat >/etc/gemrc <<EOF
 <% if @online -%>
 - http://rubygems.org/
 <% end -%>
-- <%=@provisioner_web%>/gemsite/
+- http://<%=@provisioner_web%>/gemsite/
 gem: --no-ri --no-rdoc --bindir /usr/local/bin --http-proxy <%=@proxy%>
 EOF
 
@@ -129,7 +129,7 @@ rsyslog_dir="/etc/rsyslog.d"
 mkdir -p "$rsyslog_dir"
 echo '$IncludeConfig /etc/rsyslog.d/*.conf' >>/etc/rsyslog.conf
 if [ ! -f "$rsyslog_dir/10-crowbar-client.conf" ]; then
-    echo "*.* @@$<%= @admin_ip %>" > "$rsyslog_dir/10-crowbar-client.conf"
+    echo "*.* @@$<%= @logging_server %>" > "$rsyslog_dir/10-crowbar-client.conf"
     if ! curl -f -s -o "$rsyslog_dir/00-crowbar-debug.conf" \
         <%= @provisioner_web %>/rsyslog.d/00-crowbar-debug.conf
     then
@@ -172,7 +172,7 @@ systemctl enable crowbar
 chkconfig NetworkManager off || :
 
 curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
-    "http://<%=@admin_ip%>:3000/api/v2/nodes/$HOSTNAME"
+    "<%=@api_server%>/api/v2/nodes/$HOSTNAME"
 
 # Wait for the provisioner to change the bootenv
 while true; do

@@ -49,8 +49,8 @@ rm -f /target/etc/apt/sources.list
 rsyslog_dir="/target/etc/rsyslog.d"
 if [ -d "$rsyslog_dir" ]; then
     if [ ! -f "$rsyslog_dir/10-crowbar-client.conf" ]; then
-        echo "*.* @@<%= @admin_ip %>" > "$rsyslog_dir/10-crowbar-client.conf"
-	if ! wget -O "$rsyslog_dir/00-crowbar-debug.conf" -q http://<%=@provisioner_web%>/rsyslog.d/00-crowbar-debug.conf
+        echo "*.* @@<%= @logging_server %>" > "$rsyslog_dir/10-crowbar-client.conf"
+	if ! wget -O "$rsyslog_dir/00-crowbar-debug.conf" -q <%=@provisioner_web%>/rsyslog.d/00-crowbar-debug.conf
 	then
 	    rm -f "$rsyslog_dir/00-crowbar-debug.conf"
 	fi
@@ -63,7 +63,7 @@ cat >/target/etc/gemrc <<EOF
 <% if @online -%>
 - http://rubygems.org/
 <% end -%>
-- <%=@provisioner_web%>/gemsite/
+- http://<%=@provisioner_web%>/gemsite/
 gem: --no-ri --no-rdoc --bindir /usr/local/bin --http-proxy <%=@proxy%>
 EOF
 
@@ -114,7 +114,7 @@ update-rc.d crowbar_join.sh defaults
 <% end -%>
 
 curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
-    "http://<%=@admin_ip%>:3000/api/v2/nodes/$HOSTNAME"
+    "<%=@api_server%>/api/v2/nodes/$HOSTNAME"
 
 # Wait for the provisioner to catch up
 while true; do

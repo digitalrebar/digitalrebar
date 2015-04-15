@@ -14,6 +14,7 @@
 #
 
 class BarclampProvisioner::BaseImages < Role
+
   def sysdata(nr)
     return {
       "crowbar" => {

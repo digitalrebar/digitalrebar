@@ -33,6 +33,7 @@ class Service < Role
           runlog << "#{service_name} not available ... wait 10m or next update"
           if meta[:index]
             options[:wait] = "10m"
+            count -= 1 if options[:index] and options[:index] < meta[:index] # Don't count an update as a timeout
             options[:index] = meta[:index]
           else
             sleep 10

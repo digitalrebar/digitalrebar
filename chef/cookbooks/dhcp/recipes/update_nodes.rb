@@ -13,8 +13,7 @@
 # limitations under the License.
 #
 
-# GREG: One day we should make this into a service!
-provisioner_addr = node['crowbar']['provisioner']['server']['v4addr']
+provisioner_addr = node['crowbar']['provisioner']['server']['webservers'].first.match(/^(.*):.*$/).captures.first
 node.normal['crowbar_wall'] ||= Mash.new
 node.normal['crowbar_wall']['dhcp'] ||= Mash.new
 node.normal['crowbar_wall']['dhcp']['clients'] ||= Mash.new

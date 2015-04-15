@@ -40,7 +40,7 @@ sudo umount /mnt
 
 HOSTNAME=$(hostname -f)
 
-curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" "http://<%=@admin_ip%>:3000/api/v2/nodes/$HOSTNAME"
+curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" "<%=@api_server%>/api/v2/nodes/$HOSTNAME"
 
 # Wait for the provisioner to catch up
 while true; do

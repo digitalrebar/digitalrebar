@@ -18,11 +18,12 @@ action :add do
   proxy = node["crowbar"]["proxy"]["servers"].first
   params = node["crowbar"]["provisioner"]["server"]["boot_specs"][os]
   tftproot = node["crowbar"]["provisioner"]["server"]["root"]
-  provisioner_addr = node["crowbar"]["provisioner"]["server"]["v4addr"]
-  provisioner_web = node["crowbar"]["provisioner"]["server"]["webserver"]
+  api_server = "http://#{node["crowbar"]["api"]["servers"].first}"
+  ntp_server = "#{node["crowbar"]["ntp"]["servers"].first}"
+  provisioner_web = "http://#{node["crowbar"]["provisioner"]["server"]["webservers"].first}"
   use_local_security = node["crowbar"]["provisioner"]["server"]["use_local_security"]
-  keys = node["crowbar"]["provisioner"]["server"]["access_keys"].values.sort
-  machine_key = node["crowbar"]["provisioner"]["machine_key"]
+  keys = node["crowbar"]["access_keys"].values.sort
+  machine_key = node["crowbar"]["machine_key"]
   os_dir = "#{tftproot}/#{os}"
   mnode_name = new_resource.name
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
@@ -43,7 +44,7 @@ action :add do
     group "root"
     source "coreos-bootstrap-install.sh.erb"
     variables(:web_path => web_path,
-              :admin_ip => provisioner_addr,
+              :api_server => api_server,
               :keys => keys,
               :proxy => proxy,
               :provisioner_web => provisioner_web)
@@ -55,7 +56,7 @@ action :add do
     group "root"
     source "cloud-config.yaml.erb"
     variables(:name => mnode_name,
-              :admin_ip => provisioner_addr,
+              :api_server => api_server,
               :keys => keys,
               :provisioner_web => provisioner_web,
               :proxy => proxy,
@@ -67,7 +68,8 @@ action :add do
     owner "root"
     group "root"
     source "crowbar_join.sh.erb"
-    variables(:admin_ip => provisioner_addr,
+    variables(:api_server => api_server,
+              :ntp_server => ntp_server,
               :provisioner_web => provisioner_web)
   end
 

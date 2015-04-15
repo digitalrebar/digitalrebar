@@ -27,6 +27,9 @@ roles:
       - name: provisioner-online
         description: 'Whether or not the provisioner is operating in online mode..'
         map: 'crowbar/provisioner/server/online'
+      - name: provisioner-root
+        description: 'Root directory of the provisioner'
+        map: 'crowbar/provisioner/server/root'
 
   - name: provisioner-base-images
     jig: chef
@@ -40,22 +43,37 @@ roles:
         map: 'crowbar/provisioner/server/available_oses'
         ui_renderer: 'barclamp_provisioner/attribs/available_oses'
     requires:
+      - provisioner-server
       - provisioner-service
+      - crowbar-api_service
       - dns-service
+      - crowbar-access
     wants-attribs:
       - dns-domain
       - dns_servers
       - provisioner-webservers
+      - crowbar-api-servers
+      - provisioner-root
+      - crowbar-machine_key
+      - crowbar-access_keys
 
   - name: provisioner-database
     jig: chef
     requires:
       - provisioner-base-images
+      - provisioner-server
       - proxy-client
+      - ntp-service
+      - crowbar-access
     wants-attribs:
       - dns-domain
       - proxy-servers
       - provisioner-webservers
+      - crowbar-api-servers
+      - ntp_servers
+      - provisioner-root
+      - crowbar-machine_key
+      - crowbar-access_keys
 
   - name: provisioner-service
     jig: role-provided
@@ -76,6 +94,7 @@ roles:
     requires:
       - network-admin
       - provisioner-service
+      - crowbar-api_service
       - provisioner-base-images
       - proxy-client
     flags:
@@ -84,12 +103,15 @@ roles:
       - provisioner-package-repos
       - proxy-servers
       - provisioner-webservers
+      - crowbar-api-servers
 
   - name: provisioner-docker-setup
     jig: chef
     conflicts:
       - crowbar-docker-node
     requires:
+      - provisioner-service
+      - crowbar-api_service
       - provisioner-repos
       - crowbar-access
       - proxy-client
@@ -100,6 +122,7 @@ roles:
       - provisioner-webservers
       - crowbar-machine_key
       - crowbar-access_keys
+      - crowbar-api-servers
     attribs:
       - name: provisioner-docker-image
         description: 'The default image to use for docker images unless overriden by hints'

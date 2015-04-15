@@ -20,10 +20,10 @@ admin_ip = node.address.addr
 domain_name = node["dns"].nil? ? node["domain"] : (node["dns"]["domain"] || node["domain"])
 Chef::Log.info("Provisioner: raw server data #{ node["crowbar"]["provisioner"]["server"] }")
 
-# GREG: FIX THIS!!
-api_server = "http://192.168.124.10:3000"
 web_server = node["crowbar"]["provisioner"]["server"]["webservers"].first
+api_ipport = node["crowbar"]["api"]["servers"].first
 provisioner_web="http://#{web_server}"
+api_server = "http://#{api_ipport}"
 
 machine_key = node["crowbar"]["machine_key"]
 
@@ -102,7 +102,7 @@ template "#{pxecfg_dir}/default" do
   variables(:append_line => "#{append_line} crowbar.state=discovery crowbar.install.key=#{machine_key}",
             :install_name => "discovery",
             :initrd => "initrd0.img",
-            :machine_key => node["crowbar"]["provisioner"]["machine_key"],
+            :machine_key => machine_key,
             :kernel => "vmlinuz0")
 end
 
@@ -115,7 +115,7 @@ template "#{uefi_dir}/elilo.conf" do
   variables(:append_line => "#{append_line} crowbar.state=discovery",
             :install_name => "discovery",
             :initrd => "initrd0.img",
-            :machine_key => node["crowbar"]["provisioner"]["machine_key"],
+            :machine_key => machine_key,
             :kernel => "vmlinuz0")
 end
 
