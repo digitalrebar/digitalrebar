@@ -54,3 +54,13 @@ subnet 192.168.124.0 netmask 255.255.255.0 {
 ```
 *  Replace the subet, domain-name and pool information to match the enviornment.
 *  Put the IP address of the OpenCrowbar Admin Node in the next-server in place of 192.168.124.10.
+  
+### Proxy Server
+
+By Default OpenCrowbar will install a Proxy server on the Admin server in order to facilitate access to packages on the internet by the target nodes.  After installation OpenCrowbar will install various packages based on the roles that are assigned to these devices.  As OpenCrowbar caches the packages they are downloaded from the internet they are only pulled down once even if many systems will be accessing them.  It is possable for a user to define a different proxy server if one already exists in the enviornment.
+
+*  Edit /opt/opencrowbar/core/crowbar-config.sh
+*  Find the line 'crowbar roles bind proxy-server to "$FQDN"` and comment it out by adding # to the front of the line
+*   Find the line 'curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "192.168.124.9", "Service": {"Service": "proxy-service", "Port": 3128, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
+` uncomment it by removing the # from the front of the line and then change the IP address of the proxy server (192.168.124.9 in this example) as well as the port (3128 in this example) to the IP and port of the proxy server for the enviornment.
+*  Save the file and continue on with the remainder of the installation steps.
