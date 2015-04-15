@@ -16,6 +16,9 @@
 date
 export RAILS_ENV=production
 
+# Hack to clean out docker container for now.
+rm -rf /etc/yum.repos.d/crowbar-open*
+
 cd /opt/opencrowbar/core
 . ./bootstrap.sh
 set -e

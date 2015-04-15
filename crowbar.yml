@@ -250,7 +250,7 @@ rpms:
       - rpm http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-redhat93-9.3-1.noarch.rpm
       - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
       - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/RedHat_RHEL-6/
-      - bare openswman 20 http://download.opensuse.org/repositories/Openwsman/CentOS_CentOS-6/
+      - bare openwsman 20 http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
     build_pkgs:
       - libcurl-devel
       - yum-plugin-downloadonly
@@ -304,7 +304,7 @@ rpms:
       - rpm http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-redhat93-9.3-1.noarch.rpm
       - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
       - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/RedHat_RHEL-6/
-      - bare openswman 20 http://download.opensuse.org/repositories/Openwsman/CentOS_CentOS-6/
+      - bare openwsman 20 http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
     build_pkgs:
       - libcurl-devel
       - yum-plugin-downloadonly
@@ -358,7 +358,7 @@ rpms:
       - rpm http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-redhat93-9.3-1.noarch.rpm
       - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
       - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/CentOS_CentOS-6/
-      - bare openwsman 20 http://download.opensuse.org/repositories/Openwsman/CentOS_CentOS-6/
+      - bare openwsman 20 http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
     build_pkgs:
       - libcurl-devel
       - yum-plugin-downloadonly
@@ -419,7 +419,7 @@ rpms:
       - rpm http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-redhat93-9.3-1.noarch.rpm
       - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
       - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/CentOS_CentOS-6/
-      - bare openwsman 20 http://download.opensuse.org/repositories/Openwsman/CentOS_CentOS-6/
+      - bare openwsman 20 http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
     build_pkgs:
       - libcurl-devel
       - yum-plugin-downloadonly
