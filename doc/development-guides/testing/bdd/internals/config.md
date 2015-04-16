@@ -107,6 +107,13 @@ BDD selects the `default.config` file automatically.  You can choose which confi
     <td>["dns-service", "ntp-service","dns-mgmt_service"]</td>
     <td>Used by Crowbar to set the name of the phantom roles</td>
   </tr>
+  <tr>
+    <td>consul_url</td>
+    <td>no</td>
+    <td>http://127.0.0.1:8500</td>
+    <td>Used by Crowbar to set the consul server location</td>
+  </tr>
+
 </table>
 
 

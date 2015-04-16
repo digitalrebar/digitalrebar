@@ -20,7 +20,7 @@
 
 g(Item) ->
   case Item of
-    server -> "http://127.0.0.1:8500";
+    server -> bdd_utils:config(consul_url,"http://127.0.0.1:8500");
     keypath -> "v1/kv";
     servicepath -> "v1/catalog/service";
     nodepath -> "v1/catalog/node";
