@@ -26,8 +26,7 @@ export http_proxy="<%=@proxy%>"
 export https_proxy="$http_proxy"
 export no_proxy="localhost,127.0.0.1,localaddress,.<%=@domain%>"
 provisioner="<%=@provisioner_web%>"
-crowbar="http://<%=@provisioner_name%>:3000"
-crowbar_v4="<%=@api_server%>"
+api_server="<%=@api_server%>"
 chef_rpm=chef-11.16.4-1.el6.x86_64.rpm
 
 # Set up just enough infrastructure to let the jigs work.
@@ -36,7 +35,7 @@ echo "AcceptEnv http_proxy https_proxy no_proxy" >> /etc/ssh/sshd_config
 service sshd restart
 
 # Synchronize our date
-ntpdate "<%=@provisioner_name%>"
+ntpdate "<%=@ntp_server%>"
 
 # Other gem dependency installs.
 cat > /etc/gemrc <<EOF
@@ -44,7 +43,7 @@ cat > /etc/gemrc <<EOF
 <% if @online -%>
 - http://rubygems.org/
 <% end -%>
-- http://${provisioner}/gemsite/
+- ${provisioner}/gemsite/
 gem: --no-ri --no-rdoc --bindir /usr/local/bin --http-proxy $http_proxy
 EOF
 
@@ -71,7 +70,7 @@ EOF
 # Mark us as alive.
 # Mark the node as alive.
 curl -g --digest -u "$CROWBAR_KEY" \
-    -X PUT "$crowbar_v4/api/v2/nodes/$HOSTNAME" \
+    -X PUT "$api_server/api/v2/nodes/$HOSTNAME" \
     -d 'alive=true'
 
 # We are alive, and we should have a host entry created now.  Wait forever to do something.
