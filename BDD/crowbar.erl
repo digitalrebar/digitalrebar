@@ -139,7 +139,7 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
   bdd_utils:alias(network_range, range),
   bdd_utils:alias(network_router, router),
   % before we do anything else, we need to create some consul services
-  Services = bdd_utils:config(services, ["dns-service", "ntp-service", "proxy-service", "provisioner-service", "crowbar-api-server", "crowbar-job-runner-service"]),
+  Services = bdd_utils:config(services, ["dns-service", "ntp-service", "proxy-service", "provisioner-service", "crowbar-api-service", "crowbar-job-runner-service"]),
   [true,true,true,true,true,true] = [consul:reg_serv(S) || S <- Services],
   bdd_utils:log(info, crowbar, global_setup, "Consul Registered ~p",[Services]),
   % make sure there's a worker
