@@ -18,7 +18,10 @@ localnets = ["127.0.0.1","localhost","::1"]
   next unless /inet6? ([^ ]+)/ =~ line
   localnets << IP.coerce($1).network.to_s
 end
-localnets.sort!
+node["crowbar"]["proxy"]["networks"].each do |r|
+  localnets << r
+end
+localnets = localnets.uniq.sort!
 
 proxy_port = (node["crowbar"]["proxy"]["server"]["port"] rescue 8123) || 8123
 
