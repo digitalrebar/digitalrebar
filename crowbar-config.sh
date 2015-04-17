@@ -279,9 +279,6 @@ crowbar roles bind provisioner-database to "$FQDN"
 crowbar roles bind provisioner-repos to "$FQDN"
 crowbar roles bind provisioner-docker-setup to "$FQDN"
 
-# Add the admin node to the admin network for now.
-crowbar roles bind network-the_admin to "$FQDN"
-
 # Add the now mostly empty admin-node
 crowbar roles bind crowbar-admin-node to "$FQDN"
 
