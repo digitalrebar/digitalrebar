@@ -283,18 +283,19 @@ crowbar roles bind provisioner-docker-setup to "$FQDN"
 crowbar roles bind crowbar-admin-node to "$FQDN"
 
 # Add the admin node to the admin network for now.
-#crowbar roles bind network-the_admin to "$FQDN"
+#crowbar roles bind $admin_net_name to "$FQDN"
 
 # Figure out what IP addresses we should have, and add them.
-#netline=$(crowbar nodes addresses "$FQDN" on $admin_net_name)
-#nets=(${netline//,/ })
-#for net in "${nets[@]}"; do
-#    [[ $net =~ $ip_re ]] || continue
-#    net=${BASH_REMATCH[1]}
-#    # Make this more complicated and exact later.
-#    ip addr add "$net" dev eth0 || :
-#    echo "${net%/*} $FQDN" >> /etc/hosts || :
-#done
+# If the above adds an address, we need to make sure it starts on the node.
+netline=$(crowbar nodes addresses "$FQDN" on $admin_net_name)
+nets=(${netline//,/ })
+for net in "${nets[@]}"; do
+    [[ $net =~ $ip_re ]] || continue
+    net=${BASH_REMATCH[1]}
+    # Make this more complicated and exact later.
+    ip addr add "$net" dev eth0 || :
+    echo "${net%/*} $FQDN" >> /etc/hosts || :
+done
 
 crowbar nodes commit "$FQDN"
 
