@@ -137,7 +137,7 @@ end
 
 domain_name = (node[:crowbar][:dns][:domain] || node[:domain] rescue node[:domain])
 lease_time = node[:crowbar][:dhcp][:lease_time] || 60
-next_server_ip = node[:crowbar][:provisioner][:server][:v4addr]
+next_server_ip = node['crowbar']['provisioner']['server']['webservers'].first.match(/^(.*):.*$/).captures.first
 
 pool_opts = {
   "dhcp" => ['allow unknown-clients',

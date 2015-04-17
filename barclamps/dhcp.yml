@@ -35,10 +35,10 @@ roles:
     wants-attribs:
       - dns_servers
       - dns-domain
-      - provisioner-v4addr
+      - provisioner-webservers
     requires:
       - dns-service
-      - provisioner-server
+      - provisioner-service
   - name: dhcp-database
     jig: chef
     wants-attribs:
