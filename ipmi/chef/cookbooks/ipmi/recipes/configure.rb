@@ -61,7 +61,7 @@ cmd_list << "lan set #{chan} access on" unless node["quirks"].member?("ipmi-cros
 
 ruby_block "Set IPMI credentials and enable LAN channel access" do
   block do
-     cmd_list.each do |cmd|
+    cmd_list.each do |cmd|
       IPMI.tool(node,cmd)
       raise "Failed to run #{cmd}" unless $?.exitstatus == 0
     end
@@ -94,11 +94,10 @@ if node[:ipmi][:use_dhcp]
   end unless lan_current_cfg['ipsrc'] == "dhcp"
 else
   lan_cfg = Mash.new
-  lan_cfg['ipsrc'] = node[:ipmi][:use_dhcp] ? "dhcp" : "static"
+  lan_cfg['ipsrc'] = "static"
 
   address = nil
-  node[:crowbar][:network][:addresses].each do |addr,opts|
-    next unless opts[:conduit] == "bmc"
+  node[:ipmi][:network].each do |addr,opts|
     address = IP.coerce(addr)
     lan_cfg['vlan id'] = opts[:use_vlan] ? opts[:vlan].to_s : "off"
     lan_cfg['ipaddr'] = address.addr

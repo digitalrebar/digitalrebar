@@ -22,10 +22,19 @@ class BarclampIpmi::Discover < Role
       Rails.logger.info("BMC not enabled on #{nr.node.name}")
       return
     end
+
     # If we do not have a BMC network defined, we cannot continue.
-    bmcnet = Network.find_by(name: "bmc")
+    # lookup up a BMC network-based upon the category/group of the admin network.
+    group_name = 'default'
+    NetworkAllocation.node(nr.node).each do |na|
+      if na.network.category == 'admin'
+        group_name = na.network.group
+        break
+      end
+    end
+    bmcnet = Network.find_by(category: "bmc", group: group_name)
     unless bmcnet
-      Rails.logger.info("No BMC network created.")
+      Rails.logger.info("No BMC network created for #{group_name}.")
       return
     end
 

@@ -93,13 +93,9 @@ roles:
   - name: ipmi-configure
     jig: chef
     requires:
-      - network-bmc
-      - provisioner-repos
       - ipmi-discover
       - ipmi-master
     wants-attribs:
-      - provisioner-webservers
-      - provisioner-proxy
       - ipmi-enable
       - ipmi-detected-params
     attribs:
