@@ -68,6 +68,7 @@ admin_net='
 {
   "name": "the_admin",
   "category": "admin",
+  "group": "internal",
   "deployment": "system",
   "conduit": "1g0",
   "ranges": [
@@ -98,6 +99,7 @@ bmc_net='
   "name": "the_bmc",
   "deployment": "system",
   "category": "bmc",
+  "group": "internal",
   "conduit": "bmc",
   "ranges": [
     {

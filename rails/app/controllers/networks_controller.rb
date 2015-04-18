@@ -61,6 +61,7 @@ class NetworksController < ::ApplicationController
                                                :team_mode,
                                                :configure,
                                                :category,
+                                               :group,
                                                :use_team,
                                                :v6prefix)
       # make it easier to batch create ranges with a network
