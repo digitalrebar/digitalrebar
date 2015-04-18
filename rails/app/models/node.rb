@@ -146,11 +146,10 @@ class Node < ActiveRecord::Base
         res2 = network_allocations.where(network_id: net.id).map do |a|
           a.address
         end
+        res2.sort
+        res << res2
       end
-      res2.sort
-      res << res2
     end
-
     res.flatten
   end
 
