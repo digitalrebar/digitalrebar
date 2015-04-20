@@ -39,7 +39,5 @@ Feature: Documentation
 
   Scenario: EULA Works
     When I go to the "docs/eula" page
-     And I debug BDD
-    Then I should see heading "OpenCrowbar License"
-      And I should see "Licensed under the Apache License"
-      And I should see "Version 2.0"
+    Then the page returns {integer:200}
+      And I should see "License"
