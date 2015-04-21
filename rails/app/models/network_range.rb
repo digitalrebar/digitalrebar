@@ -83,6 +83,7 @@ class NetworkRange < ActiveRecord::Base
     begin
       Rails.logger.info("NetworkRange: allocating address from #{fullname} for #{node.name} with suggestion #{suggestion}")
       NetworkAllocation.locked_transaction do
+        # Use suggestion if it fits
         if suggestion
           suggestion = IP.coerce(suggestion)
           if (self === suggestion) &&
@@ -93,6 +94,38 @@ class NetworkRange < ActiveRecord::Base
                                             :address => suggestion)
           end
         end
+        # Use octet aligned suggestion if admin network exists
+        unless res
+          Rails.logger.fatal("GREG: Trying to build host hint");
+          my_na = nil
+          NetworkAllocation.node_cat(node, "admin").each do |na|
+            next unless na.address.class == self.first.class
+            next unless na.network.group == self.network.group
+            my_na = na
+            break
+          end
+
+          Rails.logger.fatal("GREG: host hint will be based upon #{my_na}");
+
+          # If we have an admin network for this group, use its host part as a suggestion
+          if my_na
+            Rails.logger.fatal("GREG: host part #{my_na.address} #{my_na.address.host}");
+            suggestion = self.first.with_host(my_na.address.host)
+            Rails.logger.fatal("GREG: trying suggestion #{suggestion}");
+            Rails.logger.fatal("GREG: first test #{self === suggestion}");
+            if (self === suggestion) &&
+                (NetworkAllocation.where(:address => suggestion.to_s).count == 0)
+            Rails.logger.fatal("GREG: trying to resever #{suggestion}");
+              res = NetworkAllocation.create!(:network_range_id => self.id,
+                                              :network_id => network_id,
+                                              :node_id => node.id,
+                                              :address => suggestion)
+            Rails.logger.fatal("GREG: answer = #{res}");
+            end
+          end
+        end
+
+        # Still no address, try and find an unused one.
         unless res
           addr = nil
           allocated = network_allocations.all.map{|a|a.address}.sort{|a,b| b <=> a}
