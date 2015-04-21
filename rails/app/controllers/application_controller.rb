@@ -97,6 +97,16 @@ class ApplicationController < ActionController::Base
     }
   end
 
+  def api_conflict(object)
+    return {:json => {
+        :message => I18n.t('api.conflict', :item=>object.id),
+        :status => 409
+      },
+      :status => 409,
+      :content_type=>cb_content_type(object, "error")
+    }
+  end
+
   def api_not_supported(verb, object)
     return {:json => {
         :message => I18n.t('api.not_supported', :verb=>verb.upcase, :obj=>object),
