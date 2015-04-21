@@ -32,7 +32,7 @@ validate(JSON) when is_record(JSON, obj) ->
       bdd_utils:is_a(J, length, 6),
       bdd_utils:is_a(J, dbid, network_id),
       bdd_utils:is_a(J, integer, pref),
-      bdd_utils:is_a(J, string, address),
+      bdd_utils:is_a(J, cidr, address),
       crowbar_rest:validate_core(J)],
   bdd_utils:assert(R);
 validate(JSON) -> 

@@ -13,24 +13,21 @@ Feature: Network Routers
   Scenario: REST JSON check
     When REST requests the "api/v2/networks/testrouter/network_routers/any" page
     Then the {object:network_router} is properly formatted
-      And key "address:address" should be "168452865"
-      And key "address:subnet" should be "32"
+      And key "address" should be "10.10.99.1/32"
       And key "pref" should be "42"
   
   Scenario: REST JSON create
     Given I use the Network API to create "router1" with range "bar1" from "10.10.15.100/24" to "10.10.15.200/24"
-    When REST creates the {object:network_router} "10.10.15.1" on network "router1"
-    Then key "address:address" should be "168431361"
-      And key "address:subnet" should be "32"
+    When REST creates the {object:network_router} "10.10.15.1/24" on network "router1"
+    Then key "address" should be "10.10.15.1/24"
       And key "pref" should be "65536"
     Finally REST deletes the {object:network} "router1"
 
   Scenario: REST JSON update
     Given I use the Network API to create "router2" with range "bar2" from "10.10.16.100/24" to "10.10.16.200/24"
-      And REST creates the {object:network_router} "10.10.16.1" on network "router2"
+      And REST creates the {object:network_router} "10.10.16.1/24" on network "router2"
     When REST sets {object:network_router} on "router2" item "pref" to "100"
-    Then key "address:address" should be "168431617"
-      And key "address:subnet" should be "32"
+    Then key "address" should be "10.10.16.1/24"
       And key "pref" should be "100"
       And key "pref" should not be "65536"
     Finally REST deletes the {object:network} "router2"

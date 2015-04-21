@@ -27,6 +27,10 @@ class NetworkRouter < ActiveRecord::Base
     write_attribute("address",IP.coerce(addr).to_s)
   end
 
+  def as_json(options)
+    {id: id, network_id: network_id, address: address.to_s, pref: pref, created_at: created_at, updated_at: updated_at}
+  end
+
   private
 
   def infer_address
