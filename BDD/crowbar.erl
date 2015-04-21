@@ -136,7 +136,8 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
   bdd_utils:log(debug, crowbar, step, "Global Setup alias: ~p",[get({scenario,alias_map})]),
   bdd_utils:alias(group, group_cb),
   bdd_utils:alias(user, user_cb),
-  bdd_utils:alias(networkrange, range),
+  bdd_utils:alias(network_range, range),
+  bdd_utils:alias(network_router, router),
   % before we do anything else, we need to create some consul services
   Services = bdd_utils:config(services, ["dns-service", "ntp-service", "proxy-service"]),
   [true,true,true] = [consul:reg_serv(S) || S <- Services],

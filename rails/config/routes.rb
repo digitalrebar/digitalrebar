@@ -62,6 +62,7 @@ Crowbar::Application.routes.draw do
     # special views
   end
   resources :network_ranges
+  resources :network_routers
   get 'network_map' => "networks#map", :as=> :network_map
 
   # UI only functionality to help w/ visualization
@@ -168,7 +169,7 @@ Crowbar::Application.routes.draw do
 
           resources :networks do
             resources :network_ranges
-            resources :network_routers, :as => :network_routers_api
+            resources :network_routers
             member do
               match 'ip', via: [:get, :delete]
               post 'allocate_ip'
@@ -176,6 +177,7 @@ Crowbar::Application.routes.draw do
             end
           end
           resources :network_ranges
+          resources :network_routers
           resources :interfaces
 
           resources :runs
