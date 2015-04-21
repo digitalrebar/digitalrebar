@@ -57,11 +57,15 @@ class NetworkRoutersController < ::ApplicationController
   end
 
   def update
-    params[:network_id] = Network.find_key(params[:network]).id if params.has_key? :network
-    if params.has_key? :id
-      @network_router = NetworkRouter.find_key params[:id]
+    if params[:network_id] || params[:network] 
+      network = Network.find_key (params[:network_id] || params[:network])
+      if network.router
+        @network_router = network.router
+      else
+        raise "CANNOT UPDATE: no router on network #{params[:network_id]}"
+      end
     else
-      @network_router = NetworkRouter.where(:address=>params[:address], :network_id=>params[:network_id]).first
+      @network_router = NetworkRouter.find_key params[:id]
     end
     @network_router.update_attributes!(params.permit(:address,:pref))
     render api_show @network_router

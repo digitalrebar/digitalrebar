@@ -47,10 +47,20 @@ json(Name, _Description, Order) ->
 step(_Given, {step_given, {Scenario, _N}, ["I use the Network API to create",Network,"with range",Range,"from",First,"to",Last]}) -> 
   network:step(_Given, {step_given, {Scenario, _N}, ["I use the Network API to create",Network,"with range",Range,"from",First,"to",Last]});
 
+step(_Global, {step_given, {Scenario, _N}, ["REST creates the",network_router,Address,"on network",Network]}) -> 
+  step(_Global, {step_when, {Scenario, _N}, ["REST creates the",network_router,Address,"on network",Network]});
+
 step(_Given, {step_when, {Scenario, _N}, ["REST creates the",network_router,Address,"on network",Network]}) -> 
   JSON = crowbar:json([{address, Address}, {network, Network}]),
   bdd_utils:log(debug, router, step, "creating router ~p on network ~p with JSON ~p", [Address, Network, JSON]),
   bdd_restrat:create(g(path), JSON, router, Scenario);
+
+step(_Given, {step_when, {_Scenario, _N}, ["REST sets",network_router,"on",Network,"item",Key,"to",Value]}) -> 
+  JSON = crowbar:json([{Key, Value}]),
+  Path = eurl:path([network:g(path), Network, g(subpath), "any"]),
+  bdd_utils:log(debug, router, step, "updating router on network ~p with JSON ~p at ~p", [Network, JSON, Path]),
+  Result = eurl:put_post(Path, JSON, put),
+  [Result, bdd_restrat:get_object(Result)];
 
 step(_Global, {step_setup, {Scenario, _N}, _}) -> 
   network:step(_Global, {step_given, {Scenario, _N}, ["I use the Network API to create","testrouter","with range","general","from","10.10.99.100/24","to","10.10.99.200/24"]}),
