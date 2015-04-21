@@ -78,7 +78,7 @@
                         "initrd": "images/pxeboot/initrd.img",
                         "kernel": "images/pxeboot/vmlinuz",
                         "append": "method=%os_install_site% inst.geoloc=0",
-                        "iso_file": "CentOS-7-x86_64-DVD-1503.iso",
+                        "iso_file": "CentOS-7-x86_64-Minimal-1503-01.iso",
                         "online_mirror": "http://mirrors.kernel.org/centos/7/"
                     },
                     "fedora-20": {
