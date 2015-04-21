@@ -49,12 +49,10 @@ Feature: Network Routers
     Then there is no {object:network_router} on network "router4"
     Finally REST deletes the {object:network} "router4"
 
-  Scenario: Network UI creates Route
-    Skip Zehicle
-
   Scenario: Network UI shows Route
     When I go to the "networks/testrouter" page
     Then I should see "42"
+      And I should see "10.10.99.200"
 
   Scenario: UI for NetworkRouters
     When I go to the "network_routers" page

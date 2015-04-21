@@ -74,7 +74,7 @@ step(_Result, {step_then, {_Scenario, _N}, ["there is no",network_router,"on net
 
 step(_Global, {step_setup, {Scenario, _N}, _}) -> 
   network:step(_Global, {step_given, {Scenario, _N}, ["I use the Network API to create","testrouter","with range","general","from","10.10.99.100/24","to","10.10.99.200/24"]}),
-  JSON = crowbar:json([{address, "10.10.99.1"}, {pref, 42}, {network, "testrouter"}]),
+  JSON = crowbar:json([{address, "10.10.99.1/32"}, {pref, 42}, {network, "testrouter"}]),
   bdd_restrat:create(g(path), JSON, router, Scenario),
   true;
 
