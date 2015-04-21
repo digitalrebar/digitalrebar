@@ -292,7 +292,7 @@ class Network < ActiveRecord::Base
     role.destroy! if role  # just in case the role was lost, we still want to be able to delete
     # Also destroy the hints
     ["v4addr","v6addr"].each do |n|
-      Attrib.destroy_all(name: "hint-#{name}-v4addr")
+      Attrib.destroy_all(name: "hint-#{name}-#{n}")
     end
   end
 
