@@ -157,7 +157,11 @@ class REST
 
   # Common data and debug handling.
   def self.go(verb,path,data=nil)
-    uri = URI.parse("http://#{$hostname}:#{$port}/#{path}" )
+    if $url
+      uri = URI.parse("#{$url}/#{path}" )
+    else
+      uri = URI.parse("http://#{$hostname}:#{$port}/#{path}" )
+    end
     # We want to give valid JSON to the API, so if we were
     # handed an array or a hash as the data to be messed with,
     # turn it into a blob of JSON.
