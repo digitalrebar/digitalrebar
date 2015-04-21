@@ -62,6 +62,16 @@ step(_Given, {step_when, {_Scenario, _N}, ["REST sets",network_router,"on",Netwo
   Result = eurl:put_post(Path, JSON, put),
   [Result, bdd_restrat:get_object(Result)];
 
+step(_Given, {step_when, {_Scenario, _N}, ["REST deletes",network_router,"on",Network]}) -> 
+  Path = eurl:path([network:g(path), Network, g(subpath), "any"]),
+  bdd_crud:delete(Path);
+
+step(_Result, {step_then, {_Scenario, _N}, ["there is no",network_router,"on network",Network]}) -> 
+  Path = eurl:path([network:g(path), Network, g(subpath)]),
+  O = bdd_crud:read_obj(Path),
+  bdd_utils:log(debug, router, step, "checking ~p", [O]),
+  O#list.data =:= [[]];
+
 step(_Global, {step_setup, {Scenario, _N}, _}) -> 
   network:step(_Global, {step_given, {Scenario, _N}, ["I use the Network API to create","testrouter","with range","general","from","10.10.99.100/24","to","10.10.99.200/24"]}),
   JSON = crowbar:json([{address, "10.10.99.1"}, {pref, 42}, {network, "testrouter"}]),

@@ -43,7 +43,16 @@ class NetworkRoutersController < ::ApplicationController
   end
 
   def destroy
-    @network_router = NetworkRouter.find_key(params[:id])
+    if params[:network_id] || params[:network] 
+      network = Network.find_key (params[:network_id] || params[:network])
+      if network.router
+        @network_router = network.router
+      else
+        raise "CANNOT DELETE: no router on network #{params[:network_id]}"
+      end
+    else
+      @network_router = NetworkRouter.find_key(params[:id])
+    end
     @network_router.destroy
     render api_delete @network_router
   end

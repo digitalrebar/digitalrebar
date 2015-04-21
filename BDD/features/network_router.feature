@@ -36,10 +36,18 @@ Feature: Network Routers
     Finally REST deletes the {object:network} "router2"
 
   Scenario: REST Cannot change Network
-    Skip Zehicle
+    Given I use the Network API to create "router3" with range "bar2" from "10.10.17.100/24" to "10.10.17.200/24"
+      And REST creates the {object:network_router} "10.10.17.1" on network "router3"
+    When REST sets {object:network_router} on "router3" item "network_id" to "1"
+    Then key "network_id" should not be "1"
+    Finally REST deletes the {object:network} "router3"
 
   Scenario: REST JSON delete
-    Skip Zehicle
+    Given I use the Network API to create "router4" with range "bar2" from "10.10.18.100/24" to "10.10.18.200/24"
+      And REST creates the {object:network_router} "10.10.18.1" on network "router4"
+    When REST deletes {object:network_router} on "router4"
+    Then there is no {object:network_router} on network "router4"
+    Finally REST deletes the {object:network} "router4"
 
   Scenario: Network UI creates Route
     Skip Zehicle
