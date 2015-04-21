@@ -152,33 +152,28 @@ pool_opts = {
   "host" => ['deny unknown-clients']
 }
 
-nameserver = node[:crowbar][:dns][:nameservers]
+nameservers = node[:crowbar][:dns][:nameservers]
 
 # Build a list of local information
 my_nics = ::Nic.nics
-my_addresses = []
+my_addresses = {}
 my_nics.each do |nic|
   next if nic.loopback?
   nic.addresses.each do |ii|
     next unless ii.v4?
-    my_addresses << ii
+    my_addresses[ii] = nic
   end
 end
 
-found = false
+found = []
 node[:crowbar][:dhcp][:networks].each do |name, net|
   router = net["router"]["address"]
   net_pools = net["ranges"].select{|range|["dhcp","host"].include? range["name"]}
   subnet = IP.coerce(net_pools[0]["first"])
 
-  # Remove the local address if in a subnet
-  remove_me = nil
-  my_addresses.each do |ii|
-    remove_me = ii if ii.network == subnet.network
-  end
-  if remove_me
-    my_addresses.delete(remove_me)
-    found = true
+  # Mark as found
+  my_addresses.keys.each do |ii|
+    found << ii if ii.network == subnet.network
   end
 
   dhcp_subnet subnet.network do
@@ -193,16 +188,23 @@ node[:crowbar][:dhcp][:networks].each do |name, net|
   end
 end
 
-if found
-  # Remove non-served local nets we have have added previously
-  my_addresses.each do |ii|
+# Remove non-served local nets we have have added previously
+found_nics = []
+found.each do |ii|
+  found_nics << my_addresses[ii]
+  my_addresses.delete(ii)
+end
+
+# For all remaining addresses, check if the nic was use already
+#   If so, then remove a network for this address
+#   Otherwise, create a fake one to listen on.
+my_addresses.keys.each do |ii|
+  if found_nics.include? my_addresses[ii]
     dhcp_subnet ii.network do
       action :remove
     end
-  end
-else
-  # if no network is local to the dhcp server, we need to add one.
-  my_addresses.each do |ii|
+  else
+    found_nics << my_addresses[ii]
     dhcp_subnet ii.network do
       action :add
       pools []
