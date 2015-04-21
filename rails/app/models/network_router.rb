@@ -39,6 +39,7 @@ class NetworkRouter < ActiveRecord::Base
     end
   end
 
+
   def router_is_sane
     # A router is sane when its address is in a subnet covered by one of its ranges
 # TODO this is broken, but needs to be fixed

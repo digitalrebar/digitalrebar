@@ -33,4 +33,37 @@ class BarclampProxy::Server < Role
     }
   end
 
+  # Event triggers for node creation.
+  # roles should override if they want to handle network addition
+  def on_network_create(network)
+    rerun_my_noderoles
+  end
+
+  # Event triggers for network destruction.
+  # roles should override if they want to handle network destruction
+  def on_network_delete(network)
+    rerun_my_noderoles
+  end
+
+  # Event hook that will be called every time a network is saved if any attributes changed.
+  # Roles that are interested in watching networks to see what has changed should
+  # implement this hook.
+  #
+  # This does not include IP allocation/deallocation.
+  def on_network_change(network)
+    rerun_my_noderoles
+  end
+
+  private
+
+  def rerun_my_noderoles
+    to_enqueue = []
+    node_roles.each do |nr|
+      nr.with_lock('FOR NO KEY UPDATE') do
+        to_enqueue << nr
+      end
+    end
+    to_enqueue.each {|nr| Run.enqueue(nr)}
+  end
+
 end

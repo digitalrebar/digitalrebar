@@ -129,6 +129,27 @@ class Role < ActiveRecord::Base
     true
   end
 
+  # Event triggers for node creation.
+  # roles should override if they want to handle network addition
+  def on_network_create(network)
+    true
+  end
+
+  # Event triggers for network destruction.
+  # roles should override if they want to handle network destruction
+  def on_network_delete(network)
+    true
+  end
+
+  # Event hook that will be called every time a network is saved if any attributes changed.
+  # Roles that are interested in watching networks to see what has changed should
+  # implement this hook.
+  #
+  # This does not include IP allocation/deallocation.
+  def on_network_change(network)
+    true
+  end
+
   def noop?
     jig.name.eql? 'noop'
   end

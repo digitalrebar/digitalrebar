@@ -24,6 +24,9 @@ class Network < ActiveRecord::Base
   after_commit    :add_role, on: :create
   after_save      :auto_prefix
   before_destroy  :remove_role
+  after_commit :on_create_hooks, on: :create
+  after_commit :on_change_hooks, on: :update
+  after_commit :on_destroy_hooks, on: :destroy
 
   validates_format_of :v6prefix, :with=>/auto|([a-f0-9]){1,4}:([a-f0-9]){1,4}:([a-f0-9]){1,4}:([a-f0-9]){1,4}/, :message => I18n.t("db.v6prefix", :default=>"Invalid IPv6 prefix."), :allow_nil=>true
 
@@ -316,4 +319,44 @@ class Network < ActiveRecord::Base
     end
 
   end
+
+  # Call the on_network_delete hooks.
+  def on_destroy_hooks
+    # do the low cohorts last
+    Rails.logger.info("Network: calling all role on_network_delete hooks for #{name}")
+    Role.all_cohorts_desc.each do |r|
+      begin
+        Rails.logger.info("Network: Calling #{r.name} on_network_delete for #{self.name}")
+        r.on_network_delete(self)
+      rescue Exception => e
+        Rails.logger.error "Network #{name} attempting to cleanup role #{r.name} failed with #{e.message}"
+      end
+    end
+  end
+
+  # Call the on_network_change hooks.
+  def on_change_hooks
+    # do the low cohorts last
+    Rails.logger.info("Network: calling all role on_network_change hooks for #{name}")
+    Role.all_cohorts_desc.each do |r|
+      begin
+        Rails.logger.info("Network: Calling #{r.name} on_network_change for #{self.name}")
+        r.on_network_change(self)
+      rescue Exception => e
+        Rails.logger.error "Network #{name} attempting to change role #{r.name} failed with #{e.message}"
+      end
+    end
+  end
+
+  def on_create_hooks
+    # Call all role on_network_create hooks with self.
+    # These should happen synchronously.
+    # do the low cohorts first
+    Rails.logger.info("Network: calling all role on_network_create hooks for #{name}")
+    Role.all_cohorts.each do |r|
+      Rails.logger.info("Network: Calling #{r.name} on_network_create for #{self.name}")
+      r.on_node_create(self)
+    end
+  end
+
 end
