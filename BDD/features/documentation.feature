@@ -36,3 +36,8 @@ Feature: Documentation
     Then I should see "Crowbar User Guide"
       And I should see a link to "&lt; Go Back"
       And there should be no translation errors
+
+  Scenario: EULA Works
+    When I go to the "docs/eula" page
+    Then the page returns {integer:200}
+      And I should see "License"
