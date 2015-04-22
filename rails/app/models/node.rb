@@ -494,6 +494,7 @@ class Node < ActiveRecord::Base
           node_roles.order("cohort ASC").each do |nr|
             nr.deactivate
           end
+          runs.delete_all
         end
       end
     end
