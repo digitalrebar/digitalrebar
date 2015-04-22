@@ -22,6 +22,7 @@ rm -rf /etc/yum.repos.d/crowbar-open*
 cd /opt/opencrowbar/core
 . ./bootstrap.sh
 set -e
+set -o pipefail
 if [[ $http_proxy && !$upstream_proxy ]] && ! pidof squid; then
     export upstream_proxy=$http_proxy
 fi
@@ -63,10 +64,7 @@ echo "${FQDN#*.}" > /etc/domainname
 
 export FQDN
 
-rm -rf install-*.log
-./crowbar-boot.sh 2>&1 | tee -a install-boot.log
-./crowbar-consul.sh 2>&1 | tee -a install-consul.log
-./crowbar-database.sh 2>&1 | tee -a install-database.log
-./crowbar-core.sh 2>&1 | tee -a install-core.log
-./crowbar-config.sh 2>&1 | tee -a install-config.log
-
+mkdir -p /var/log/crowbar
+for stage in boot consul database core config; do
+    "./crowbar-${stage}.sh" 2>&1 |tee "/var/log/crowbar/install-${stage}.log"
+done
