@@ -25,7 +25,6 @@ describe "admin create" do
     rr = Role.find_by_name('crowbar-admin-node')
     rr.add_to_node(subject)
     subject.commit!
-    expect( subject.node_roles.any?{ |e| e.role.bootstrap } ).to be_truthy
     expect( subject.node_roles.any?{ |e| e.role.implicit } ).to be_truthy
   end
 
