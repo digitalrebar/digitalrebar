@@ -91,6 +91,7 @@ en:
     not_supported: "Requested action %{verb} is not supported on %{obj}"
 
   api:
+    conflict: "Cannot create object %{item} because one already exists"
     wrong_version: "Requested API version (%{version}) is not supported."
     not_found: "Could not find %{type} with id %{id}."
     not_supported: "Requested action %{verb} is not supported on %{obj}"

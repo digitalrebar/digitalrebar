@@ -664,6 +664,26 @@ module OpenCrowbar
     def self.path
       "api/v2/networks"
     end
+
+    def do_router_Json(data)
+      obj, res = REST.post("#{self.class.path}/#{id}/network_routers",data)
+      obj, res = REST.put("#{self.class.path}/#{id}/network_routers/any",data) if res == 409
+      maybe_json_die(obj,res)
+      obj
+    end
+
+    def do_routershow
+      obj, res = REST.get("#{self.class.path}/#{id}/network_routers/any")
+      maybe_json_die(obj,res)
+      obj
+    end
+
+    def do_routerdestroy()
+      obj, res = REST.delete("#{self.class.path}/#{id}/network_routers/any")
+      maybe_json_die(obj,res)
+      obj
+    end
+
   end
 end
 

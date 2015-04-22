@@ -58,11 +58,17 @@ class NetworkRoutersController < ::ApplicationController
   end
 
   def create
-    params[:network_id] = Network.find_key(params[:network]).id if params.has_key? :network
+    network = Network.find_key(params[:network] || params[:network_id])
+    params[:network_id] = network.id
     params.require(:network_id)
     params.require(:address)
-    @router =  NetworkRouter.create! params.permit(:network_id,:address,:pref)
-    render api_show @router
+    # cannot create if existing 
+    if network.router 
+      render api_conflict network.router
+    else
+      @router =  NetworkRouter.create! params.permit(:network_id,:address,:pref)
+      render api_show @router
+    end
   end
 
   def update
