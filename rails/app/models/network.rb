@@ -355,7 +355,7 @@ class Network < ActiveRecord::Base
     Rails.logger.info("Network: calling all role on_network_create hooks for #{name}")
     Role.all_cohorts.each do |r|
       Rails.logger.info("Network: Calling #{r.name} on_network_create for #{self.name}")
-      r.on_node_create(self)
+      r.on_network_create(self)
     end
   end
 

@@ -14,6 +14,8 @@
 
 class NetworkRange < ActiveRecord::Base
 
+  after_commit :on_change_hooks
+
   validate :sanity_check_range
 
   belongs_to  :network
@@ -96,7 +98,6 @@ class NetworkRange < ActiveRecord::Base
         end
         # Use octet aligned suggestion if admin network exists
         unless res
-          Rails.logger.fatal("GREG: Trying to build host hint");
           my_na = nil
           NetworkAllocation.node_cat(node, "admin").each do |na|
             next unless na.address.class == self.first.class
@@ -105,22 +106,15 @@ class NetworkRange < ActiveRecord::Base
             break
           end
 
-          Rails.logger.fatal("GREG: host hint will be based upon #{my_na}");
-
           # If we have an admin network for this group, use its host part as a suggestion
           if my_na
-            Rails.logger.fatal("GREG: host part #{my_na.address} #{my_na.address.host}");
             suggestion = self.first.with_host(my_na.address.host)
-            Rails.logger.fatal("GREG: trying suggestion #{suggestion}");
-            Rails.logger.fatal("GREG: first test #{self === suggestion}");
             if (self === suggestion) &&
                 (NetworkAllocation.where(:address => suggestion.to_s).count == 0)
-            Rails.logger.fatal("GREG: trying to resever #{suggestion}");
               res = NetworkAllocation.create!(:network_range_id => self.id,
                                               :network_id => network_id,
                                               :node_id => node.id,
                                               :address => suggestion)
-            Rails.logger.fatal("GREG: answer = #{res}");
             end
           end
         end
@@ -205,5 +199,20 @@ class NetworkRange < ActiveRecord::Base
       end
     end
   end
+
+  # Call the on_network_change hooks.
+  def on_change_hooks
+    # do the low cohorts last
+    Rails.logger.info("NetworkRange: calling all role on_network_change hooks for #{network.name}")
+    Role.all_cohorts_desc.each do |r|
+      begin
+        Rails.logger.info("NetworkRange: Calling #{r.name} on_network_change for #{self.network.name}")
+        r.on_network_change(self.network)
+      rescue Exception => e
+        Rails.logger.error "NetworkRange #{self.name} attempting to change role #{r.name} failed with #{e.message}"
+      end
+    end
+  end
+
 
 end

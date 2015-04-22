@@ -16,6 +16,7 @@ class NetworkRouter < ActiveRecord::Base
 
   validate    :router_is_sane
   before_save :infer_address
+  after_commit :on_change_hooks
   
   belongs_to     :network
 
@@ -36,6 +37,20 @@ class NetworkRouter < ActiveRecord::Base
   def infer_address
     if read_attribute("address").nil?
       write_attribute("address", network.network_ranges.first.first)
+    end
+  end
+
+  # Call the on_network_change hooks.
+  def on_change_hooks
+    # do the low cohorts last
+    Rails.logger.info("NetworkRouter: calling all role on_network_change hooks for #{network.name}")
+    Role.all_cohorts_desc.each do |r|
+      begin
+        Rails.logger.info("NetworkRouter: Calling #{r.name} on_network_change for #{self.network.name}")
+        r.on_network_change(self.network)
+      rescue Exception => e
+        Rails.logger.error "NetworkRouter #{self.name} attempting to change role #{r.name} failed with #{e.message}"
+      end
     end
   end
 
