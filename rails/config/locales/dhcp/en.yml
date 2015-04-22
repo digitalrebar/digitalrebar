@@ -1,4 +1,4 @@
-# Copyright 2013, Dell
+# Copyright 2015, RackN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,13 +14,7 @@
 #
 
 en:
-  barclamp_ntp:
-    node_roles:
-      ntp-server:
-        external_servers: "External Servers"
   common:
     roles:
-      ntp-server: "NTP Server"
-      ntp-client: "NTP Client"
-      ntp-service: "NTP Service"
-    attribs:
+      dhcp-service: "DHCP Service"
+      dhcp-server: "DHCP Server"

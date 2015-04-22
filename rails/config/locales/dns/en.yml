@@ -16,6 +16,7 @@
 en:
   common:
     roles:
+      dns-service: "DNS Service"
       dns-server: "DNS Server"
       dns-client: "DNS Client"
       dns-database: "DNS A Records"
