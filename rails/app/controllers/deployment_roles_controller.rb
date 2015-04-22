@@ -30,15 +30,15 @@ class DeploymentRolesController < ApplicationController
   end
 
   def show
+    # allow lookup by name
+    if params.has_key? :deployment
+      deployment = Deployment.find_key params[:deployment] || 'system'
+      role = Role.find_key params[:id]
+      @deployment_role = DeploymentRole.where(deployment_id: deployment.id, role_id: role.id).first
+    else
+      @deployment_role = DeploymentRole.find_key params[:id]
+    end
     respond_to do |format|
-      # allow lookup by name
-      if params.has_key? :deployment
-        deployment = Deployment.find_key params[:deployment] || 'system'
-        role = Role.find_key params[:id]
-        @deployment_role = DeploymentRole.where(deployment_id: deployment.id, role_id: role.id).first
-      else
-        @deployment_role = DeploymentRole.find_key params[:id]
-      end
       format.html {  }
       format.json { render api_show @deployment_role }
     end
