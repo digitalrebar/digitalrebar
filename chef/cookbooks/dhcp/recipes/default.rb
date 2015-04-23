@@ -155,7 +155,7 @@ pool_opts = {
   "host" => ['deny unknown-clients']
 }
 
-nameserver=node[:crowbar][:dns][:nameservers].map{|a|IP.coerce(a)}.reject{|a|a.v6?}.map{|a|a.addr}.sort.first
+nameservers=node[:crowbar][:dns][:nameservers]
 
 dhcp_subnet IP.coerce(net_pools[0]["first"]).network do
   action :add
@@ -164,7 +164,7 @@ dhcp_subnet IP.coerce(net_pools[0]["first"]).network do
   pool_options pool_opts
   admin_ip admin_ip
   options [ "option domain-name \"#{domain_name}\"",
-            "option domain-name-servers #{nameserver}",
+            "option domain-name-servers #{nameservers.join(", ")}",
             "default-lease-time #{lease_time}",
             "max-lease-time #{lease_time * 3}"]
 end
