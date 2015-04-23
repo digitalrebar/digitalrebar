@@ -73,7 +73,7 @@ if [[ $exists == 404 ]]; then
     curl -f -g --digest -u "$CROWBAR_KEY" -X POST \
       -d "name=$HOSTNAME" \
       -d 'admin=true' \
-      -d "hint-unmanaged-v4addr=$IPADDR" \
+      -d "ip=$IPADDR" \
       -d 'bootenv=local' \
       "$CROWBAR_WEB/api/v2/nodes/" || {
         echo "We could not create a node for ourself!"

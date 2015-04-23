@@ -177,6 +177,7 @@ class NodesController < ApplicationController
       if params[:ip]
         # If we find a network with that hint, then add that role (bound search to admin networks)
         the_net = Network.lookup_network(params[:ip])
+        the_net = Network.find_by_name("unmanaged") unless the_net
         if the_net
           NodeRole.safe_create!(role_id: the_net.role.id, node_id: @node.id, deployment_id: @node.deployment.id)
           @node.attribs.find_by!(name: "hint-#{the_net.name}-v4addr").set(@node,params[:ip])
@@ -185,15 +186,6 @@ class NodesController < ApplicationController
 
       if params[:mac]
         @node.attribs.find_by!(name: "hint-admin-macs").set(@node,[params[:mac]])
-      end
-
-      # If unmanaged is specified, add that role if the network exists.
-      if params["hint-unmanaged-v4addr"]
-        the_net = Network.find_by_name("unmanaged")
-        if the_net
-          NodeRole.safe_create!(role_id: the_net.role.id, node_id: @node.id, deployment_id: @node.deployment.id)
-          @node.attribs.find_by!(name: "hint-unmanaged-v4addr").set(@node,params["hint-unmanaged-v4addr"])
-        end
       end
     end
     render api_show @node

@@ -143,8 +143,6 @@ roles:
       - implicit
     conflicts:
       - crowbar-managed-node
-    requires:
-      - network-unmanaged
     provides:
       - crowbar-installed-node
       - crowbar-managed-node
