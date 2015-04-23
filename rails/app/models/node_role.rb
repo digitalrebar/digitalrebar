@@ -245,7 +245,8 @@ class NodeRole < ActiveRecord::Base
   end
 
   def runnable?
-    node.available && node.alive && jig.active && committed_data && deployment.committed?
+    node.available && node.alive && jig.active && committed_data &&
+      deployment.committed? && !self.proposed? && !self.error?
   end
 
   # convenience methods
