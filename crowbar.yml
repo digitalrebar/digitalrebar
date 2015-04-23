@@ -477,6 +477,7 @@ rpms:
       - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
     repos:
       - rpm http://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-1.noarch.rpm
+      - rpm http://mirrors.kernel.org/fedora-epel/7/x86_64/e/epel-release-7-5.noarch.rpm
       - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/CentOS_7/
     build_pkgs:
       - libcurl-devel
