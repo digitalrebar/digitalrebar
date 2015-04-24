@@ -28,4 +28,4 @@ To enable the provisioner to install from those images, place them in `$HOME/.ca
 
 If you add a new OS after the initial annealing, Crowbar must be told to rediscover available operating systems.  You must reapply (retry) the `provisioner-base-images` role (aka _Available O/S_) on the Admin server in the  System deployment.
 
-> you can generally navigate directly to this NodeRole using `/nodes/1/node_roles/provisioner-base-images` or using the name of your admin server instead of the #1.
+> you can generally navigate directly to this NodeRole using `/nodes/2/node_roles/provisioner-base-images` or using the name of your admin server instead of the #2.
