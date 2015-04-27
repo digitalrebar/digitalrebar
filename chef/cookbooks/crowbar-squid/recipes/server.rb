@@ -23,8 +23,6 @@ localnets.sort!
 proxy_port = (node["crowbar"]["proxy"]["server"]["port"] rescue 8123) || 8123
 
 upstream_proxy = (node["crowbar"]["proxy"]["server"]["upstream_proxy"] rescue nil)
-upstream_proxy ||= ENV["upstream_proxy"]
-upstream_proxy ||= ENV["http_proxy"]
 upstream_proxy_address = nil
 upstream_proxy_port = nil
 
