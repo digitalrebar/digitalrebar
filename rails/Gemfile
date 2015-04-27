@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-source 'http://rubygems.org'
+source 'https://rubygems.org'
 
-gem 'rails', '~> 4.0.10'
+gem 'rails', '~> 4.0.13'
 gem 'pg'
 gem 'haml'
 # Pinned until we fix our stypesheets for sass ~> 3.3.0

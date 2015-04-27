@@ -6,12 +6,12 @@ When deploying an admin node in production mode, you will want to be able to ins
 
 > If using a Docker container as an admin node and do not want to copy the ISOs into place, you must hard link (not soft link) the ISO files because symlinks are not visible on file system paths mapped inside containers
 
-As of Mar, 2015, the provisioner knows how to install the following operating systems from the following ISO images:
+As of April 2015, the provisioner knows how to install the following operating systems from the following ISO images:
 
  * `ubuntu-12.04`: `ubuntu-12.04.4-server-amd64.iso`
  * `ubuntu-14.04`: `ubuntu-14.04.1-server-amd64.iso`
  * `centos-6.6`: `CentOS-6.6-x86_64-bin-DVD1.iso`
- * `centos-7.1.1503`: `CentOS-7-x86_64-DVD-1503.iso`
+ * `centos-7.1.1503`: `CentOS-7-x86_64-Minimal-1503-01.iso`
  * `redhat-6.5`: `RHEL6.5-20131111.0-Server-x86_64-DVD1.iso`
  * `redhat-7.0`: `rhel-server-7.0-x86_64-dvd.iso`
  * `debian-7.8.0`: `debian-7.8.0-mini-amd64.iso`

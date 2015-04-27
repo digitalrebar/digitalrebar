@@ -33,17 +33,13 @@ reboot
 
 %packages
 @core
-vim-enhanced
-keyutils
 trousers
 fipscheck
 device-mapper-multipath
 openssh
 curl.x86_64
-tcpdump
 efibootmgr
 tar
-psmisc
 %end
 
 %post
@@ -170,6 +166,10 @@ WantedBy=multi-user.target
 EOF
 
 systemctl enable crowbar
+
+# The network barclamp is in charge of doing horrible things
+# to the network, not NetworkManager
+chkconfig NetworkManager off || :
 
 curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
     "http://<%=@admin_ip%>:3000/api/v2/nodes/$HOSTNAME"

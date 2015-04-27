@@ -6,6 +6,7 @@ rm -rf /var/cache/crowbar \
     /usr/lib/ruby/gems/* \
     /var/lib/gems/*/gems \
     /opt/opencrowbar/core/rails/Gemfile.lock
+
 touch /tmp/install_pkgs
 cd /opt/opencrowbar/core
 ./bootstrap.sh

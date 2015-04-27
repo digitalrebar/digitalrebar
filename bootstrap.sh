@@ -2,6 +2,19 @@
 set -e
 # If we have an http_proxy variable, make sure we have a semi-cromulent
 # no_proxy variable as well.
+
+if [[ ! $OCB_CLEANED ]]; then
+
+    if which yum &>/dev/null; then
+        yum clean all
+    fi
+
+    if which rpm &>/dev/null; then
+        rpm --rebuilddb
+    fi
+    export OCB_CLEANED=true
+fi
+
 . /etc/profile
 if [[ $http_proxy && !$no_proxy ]] ; then
     export no_proxy="127.0.0.1,localhost,::1"

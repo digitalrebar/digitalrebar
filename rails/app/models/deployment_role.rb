@@ -36,12 +36,14 @@ class DeploymentRole < ActiveRecord::Base
   end
 
   def data
-    deployment.proposed? ? proposed_data : committed_data
+    proposed_data || committed_data
   end
 
   def data=(val)
     DeploymentRole.transaction do
-      raise "Cannot edit deployment_role data when deployment is not proposed!" unless deployment.proposed?
+      # We can always update the data, as it will just kick the
+      # deplotment_role back to Proposed.  Ongoing operations will
+      # continue to use the previously committed data.
       update!(proposed_data: val)
     end
   end
@@ -58,14 +60,14 @@ class DeploymentRole < ActiveRecord::Base
     return if committed?
     DeploymentRole.transaction do
       if committed_data != proposed_data
-        committed_data = proposed_data
-        # Have any runnable noderoles that use this deployment role rerun.
-        deployment.node_roles.where(role_id: role.id).each do |nr|
-          nr.todo! if nr.runnable?
-        end
+        update!(committed_data: proposed_data)
+        update!(proposed_data: nil)
+        save!
       end
-      self[:proposed_data] = nil
-      save!
+    end
+    # Have any runnable noderoles that use this deployment role rerun.
+    deployment.node_roles.where(role_id: role.id).each do |nr|
+      nr.todo! if nr.runnable?
     end
   end
 
@@ -80,7 +82,7 @@ class DeploymentRole < ActiveRecord::Base
 
   def data_update(val)
     DeploymentRole.transaction do
-      update!(proposed_data: proposed_data.deep_merge(val))
+      update!(proposed_data: data.deep_merge(val))
     end
   end
 

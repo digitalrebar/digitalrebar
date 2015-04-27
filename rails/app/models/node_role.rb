@@ -245,7 +245,8 @@ class NodeRole < ActiveRecord::Base
   end
 
   def runnable?
-    node.available && node.alive && jig.active && committed_data && deployment.committed?
+    node.available && node.alive && jig.active && committed_data &&
+      deployment.committed? && !self.proposed? && !self.error?
   end
 
   # convenience methods
@@ -392,21 +393,51 @@ class NodeRole < ActiveRecord::Base
     res.deep_merge(all_my_data)
   end
 
+ # Gather all of the attribute data needed for a single noderole run.
+  # It should be run to create whatever information will be needed
+  # for the actual run before doing the actual run in a delayed job.
+  # RETURNS the attribute data needed for a single noderole run.
   def all_transition_data
-    dres = {}
-    sysres = {}
-    userres = {}
-    NodeRole.transaction(read_only: true) do
-      all_parents.include(:deployment_roles, :roles).each do |rent|
-        dres.deep_merge!(rent.deployment_data)
-        sysres.deep_merge!(rent.sysdata)
-        userres.deep_merge!(rent.committed_data)
+    res = {}
+    # Figure out which attribs will be satisfied from node data vs.
+    # which will be satisfied from noderoles.
+    NodeRole.transaction do
+      node_req_attrs = role.role_require_attribs.select do |rrr|
+        attr = rrr.attrib
+        raise("RoleRequiresAttrib: Cannot find required attrib #{rrr.attrib_name}") if attr.nil?
+        attr.role_id.nil?
       end
-      dres.deep_merge!(deployment_data)
-      dres.deep_merge!(sysdata)
-      dres.deep_merge!(committed_data)
+      # For all the node attrs, resolve them.  Prefer hints.
+      # Start with the node data.
+      node_req_attrs.each do |req_attr|
+        Rails.logger.info("Jig: Adding node attribute #{req_attr.attrib_name} to attribute blob for #{name} run")
+        res.deep_merge!(req_attr.get(node))
+      end
+      # Next, do the same for the attribs we want from a noderole.
+      parent_attrib_links.each do |al|
+        res.deep_merge!(al.attrib.extract(al.parent.all_committed_data))
+      end
+      # And all the noderole data from the parent noderoles on this node.
+      # This needs to eventaully go away once I figure ot the best way to pull
+      # attrib data that hsould always be present on a node.
+      all_parents.where(node_id: node.id).each do |pnr|
+        res.deep_merge!(pnr.all_committed_data)
+      end
+      # Add this noderole's attrib data.
+      Rails.logger.info("Jig: Merging attribute data from #{name} for jig run.")
+      res.deep_merge!(all_committed_data)
+      # Add information about the resource reservations this node has in place
+      unless node.discovery["reservations"]
+      res["crowbar_wall"] ||= Hash.new
+        res["crowbar_wall"]["reservations"] = node.discovery["reservations"]
+      end
+      # Add any hints.
+      res["hints"] = node.hint
+      # Add quirks
+      res["quirks"] = node.quirks
+      # And we are done.
     end
-    dres.deep_merge(sysres).deep_merge(userres)
+    res
   end
 
   def rerun
