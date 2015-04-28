@@ -549,6 +549,9 @@ class NodeRole < ActiveRecord::Base
       unless proposed?
         raise InvalidTransition.new(self,state,TODO,"Cannot commit! unless proposed")
       end
+      if deployment_role.proposed?
+        raise InvalidTransition.new(self,state,PROPOSED,"Cannot commit! unless deployment_role committed!")
+      end
       return unless proposed? || blocked?
       update!(committed_data: proposed_data)
       block_or_todo
