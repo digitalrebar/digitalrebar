@@ -89,11 +89,12 @@ admin_net='
     }
   ],
   "router": {
-    "address": "192.168.124.1/24",
+    "address": "192.168.124.10/24",
     "pref": "10"
   }
 }'
 
+bmc_net_name='the_bmc'
 bmc_net='
 {
   "name": "the_bmc",
@@ -196,6 +197,12 @@ crowbar networks create "$bmc_net"
 # Join the admin node into the rails app and make it manageable
 ./crowbar-node.sh 127.0.0.1
 
+# Add the admin node to the admin network for now.
+crowbar roles bind "network-$admin_net_name" to "$FQDN"
+
+# Add the admin node to the bmc network for now.
+crowbar roles bind "network-$bmc_net_name" to "$FQDN"
+
 # Bind the admin role to it, and commit the resulting
 # proposed noderoles.
 
@@ -280,9 +287,6 @@ crowbar roles bind provisioner-docker-setup to "$FQDN"
 
 # Add the now mostly empty admin-node
 crowbar roles bind crowbar-admin-node to "$FQDN"
-
-# Add the admin node to the admin network for now.
-crowbar roles bind "network-$admin_net_name" to "$FQDN"
 
 # Figure out what IP addresses we should have, and add them.
 # If the above adds an address, we need to make sure it starts on the node.
