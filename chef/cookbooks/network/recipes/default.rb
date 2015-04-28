@@ -477,7 +477,11 @@ Nic.nics.each do |nic|
     end
   end
   nic.up
-  nic.flush if nic.dhcp_pid
+  if nic.dhcp_pid
+    Chef::Log.info("#{nic.name}: Taking over from dhcp")
+    nic.flush
+  end
+    
   Chef::Log.info("#{nic.name}: current addresses: #{nic.addresses.map{|a|a.to_s}.sort.inspect}") unless nic.addresses.empty?
   Chef::Log.info("#{nic.name}: required addresses: #{iface["addresses"].map{|a|a.to_s}.sort.inspect}") unless iface["addresses"].empty?
   # Ditch old addresses, add new ones.
