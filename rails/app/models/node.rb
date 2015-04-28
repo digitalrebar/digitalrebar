@@ -54,7 +54,7 @@ class Node < ActiveRecord::Base
   has_many    :network_allocations,:dependent => :destroy
   has_many    :hammers,            :dependent => :destroy
   belongs_to  :deployment
-  belongs_to  :target_role,        :class_name => "Role", :foreign_key => "target_role_id"
+  belongs_to  :target_role,        :class_name => "Role", :foreign_key => "target_role_id"  # used to troubleshoot problem nodes (see API doc)
 
   alias_attribute :ips,            :network_allocations
 
