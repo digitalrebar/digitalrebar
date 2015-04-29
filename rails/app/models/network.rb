@@ -168,11 +168,7 @@ class Network < ActiveRecord::Base
       # do we have an existing NR?
       nr = NodeRole.where(:node_id => node.id, :role_id => role.id).first
       # if not, we have to create one
-      if nr.nil?
-        # we need to find a reasonable deployemnt - use the current system head
-        snap = Deployment.system
-        nr = role.add_to_node_in_deployment(node,snap)
-      end
+      nr ||= role.add_to_node(node)
     end
     nr
   end
