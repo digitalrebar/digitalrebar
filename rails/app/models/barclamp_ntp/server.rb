@@ -1,4 +1,5 @@
-# Copyright 2013, Dell 
+# Copyright 2013, Dell
+# Copyright 2015, RackN
 # 
 # Licensed under the Apache License, Version 2.0 (the "License"); 
 # you may not use this file except in compliance with the License. 
@@ -15,12 +16,17 @@
 
 require 'json'
 class BarclampNtp::Server < Role
-  
 
   # used generically by the update_template
   # must match the name of the key
   def external_servers(value)
     { :"crowbar"=> { :"ntp" => { :"external_servers" => value } }}
+  end
+
+  def sysdata(nr)
+    my_addr = nr.node.addresses(:v4_only).first
+    raise "No address found for NTP server" unless my_addr
+    { 'ntp' => { 'service_address' => my_addr.to_s } }
   end
 
 end

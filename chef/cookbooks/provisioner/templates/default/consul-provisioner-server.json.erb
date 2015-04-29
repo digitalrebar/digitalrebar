@@ -2,6 +2,9 @@
   "service": {
     "name": "provisioner-service",
     "tags": [ "system" ],
+    <% if @ip_addr -%>
+    "address": "<%=@ip_addr%>",
+    <% end -%>
     "port": <%=@web_port%>,
     "check": {
       "script": "pidof sws",

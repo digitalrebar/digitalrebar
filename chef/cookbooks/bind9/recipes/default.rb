@@ -91,10 +91,13 @@ bash "reload consul" do
   action :nothing
 end
 
+ip_addr = (IP.coerce(node["dns"]["service_address"]).addr rescue nil)
+
 template "/etc/consul.d/crowbar-dns.json" do
   source "consul-dns-server.json.erb"
   mode 0644
   owner "root"
+  variables(:ip_addr => ip_addr)
   notifies :run, "bash[reload consul]", :immediately
 end
 

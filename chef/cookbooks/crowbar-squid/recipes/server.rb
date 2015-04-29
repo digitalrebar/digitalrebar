@@ -95,10 +95,12 @@ bash "reload consul" do
       action :nothing
 end
 
+ip_addr = (IP.coerce(node["proxy"]["service_address"]).addr rescue nil)
+
 template "/etc/consul.d/crowbar-squid.json" do
   source "consul-squid-server.json.erb"
   mode 0644
   owner "root"
-  variables(:port => proxy_port)
+  variables(:port => proxy_port, :ip_addr => ip_addr)
   notifies :run, "bash[reload consul]", :immediately
 end

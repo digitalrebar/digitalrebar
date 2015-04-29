@@ -1,4 +1,4 @@
-# Copyright 2013, Dell
+# Copyright 2015, RackN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,5 +14,11 @@
 #
 
 class BarclampProvisioner::Server < Role
+
+  def sysdata(nr)
+    my_addr = nr.node.addresses(:v4_only).first
+    raise "No address for the Provisioner Server" unless my_addr
+    { 'provisioner' => { 'service_address' => my_addr.to_s } }
+  end
 
 end

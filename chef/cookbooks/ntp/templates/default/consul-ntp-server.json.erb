@@ -2,6 +2,9 @@
   "service": {
     "name": "ntp-service",
     "tags": [ "system" ],
+    <% if @ip_addr -%>
+    "address": "<%= @ip_addr %>",
+    <% end -%>
     "port": 123,
     "check": {
       "script": "ntpdate -q 127.0.0.1 2>&1 >/dev/null",

@@ -20,10 +20,13 @@ bash "reload consul runner server" do
   action :nothing
 end
 
+ip_addr = (IP.coerce(node["crowbar"]["job_runner"]["service_address"]).addr rescue nil)
+
 template "/etc/consul.d/crowbar-job-runner.json" do
   source "consul-job-runner.json.erb"
   mode 0644
   owner "root"
+  variables(:ip_addr => ip_addr)
   notifies :run, "bash[reload consul runner server]", :immediately
 end
 

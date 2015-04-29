@@ -24,7 +24,11 @@ class BarclampProxy::Server < Role
       ranges << r.first.network.to_s
     end
 
+    my_addr = nr.node.addresses(:v4_only).first
+    raise "No address found for Proxy server" unless my_addr
+
     {
+      "proxy" => { "service_address" => my_addr.to_s },
       "crowbar" => {
         "proxy" => {
           "networks" => ranges

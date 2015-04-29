@@ -137,17 +137,24 @@ class Node < ActiveRecord::Base
     IP.coerce("#{net.v6prefix}:#{v6_hostpart}/64")
   end
 
-  def addresses
+  def addresses(filter = :all)
     res = []
     ["admin", "unmanaged"].each do |net_cat|
-      res2 = []
       nets = Network.in_category(net_cat)
       nets.each do |net|
-        res2 = network_allocations.where(network_id: net.id).map do |a|
+        res2 = network_allocations.where(network_id: net.id).select do |a|
+          answer = true
+          answer = false if filter == :v4_only and !a.address.v4?
+          answer = false if filter == :v6_only and !a.address.v6?
+          answer
+        end.map do |a|
           a.address
         end
-        res2.sort
-        res << res2
+
+        if res2
+          res2 = res2.sort
+          res << res2
+        end
       end
     end
     res.flatten
@@ -156,7 +163,7 @@ class Node < ActiveRecord::Base
   def address
     res = addresses.detect{|a|a.reachable?}
     Rails.logger.warn("Node #{name} did not have any reachable addresses in #{addresses.map{ |a| a.addr }.join(",")}") unless res
-    res 
+    res
   end
 
   def url_address

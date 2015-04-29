@@ -1,4 +1,4 @@
-# Copyright 2015, Greg Althaus
+# Copyright 2015, RackN
 # 
 # Licensed under the Apache License, Version 2.0 (the "License"); 
 # you may not use this file except in compliance with the License. 
@@ -13,10 +13,14 @@
 # limitations under the License. 
 # 
 
-class BarclampCrowbar::JobRunnerService < Service
+require 'json'
 
-  def do_transition(nr, data)
-    internal_do_transition(nr, data, "crowbar-job-runner-service", "crowbar-job-runners")
+class BarclampCrowbar::JobRunner < Role
+
+  def sysdata(nr)
+    my_addr = nr.node.addresses(:v4_only).first
+    raise "No address found for Job Runner" unless my_addr
+    { 'crowbar' => { 'job_runner' => { 'service_address' => my_addr.to_s } } }
   end
 
 end
