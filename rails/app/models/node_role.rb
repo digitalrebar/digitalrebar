@@ -268,11 +268,11 @@ class NodeRole < ActiveRecord::Base
   end
 
   def deployment_data
-    res = {}
-    dr = deployment_role
-    res.deep_merge!(dr.all_data)
-    res.deep_merge!(dr.wall)
-    res
+    if self.proposed?
+      deployment_role.all_data
+    else
+      deployment_role.all_committed_data
+    end
   end
 
   def available
@@ -391,7 +391,11 @@ class NodeRole < ActiveRecord::Base
     res = {}
     all_parents.each do |parent|
       next unless parent.node_id == node_id || parent.role.server
-      res.deep_merge!(parent.all_my_data) end
+      if self.proposed?
+        res.deep_merge!(parent.all_my_data)
+      else
+        res.deep_merge!(parent.all_committed_data)
+      end
     res
   end
 
