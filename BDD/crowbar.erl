@@ -246,6 +246,8 @@ step(_Global, {step_given, {_Scenario, _N}, ["test loads the",File,"data into",n
 
 % ============================  WHEN STEPS =========================================
 
+step(Given, {step_given, {Scenario, N}, ["I add",node, Node,"to",deployment, Deployment,"in",role,Role]}) -> 
+  step(Given, {step_when, {Scenario, N}, ["I add",node, Node,"to",deployment, Deployment,"in",role,Role]});
 step(_Given, {step_when, {_Scenario, _N}, ["I add",node, Node,"to",deployment, Deployment,"in",role,Role]}) -> 
   node_role:bind(Node, Role, Deployment);
 

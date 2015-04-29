@@ -51,9 +51,18 @@ provide IDs when creating a new NodeRole.  You can pass:
 |Runlog|String|??||
 |Order|Integer|??||
 |State|Integer|??||
+|Node_Error|Boolean|No|Calculated|
 |Node_Id|Integer|Yes||
 |Status|??|??||
 |Run_count|Integer|No||
 |Deployment_Id|Integer|??||
 |Role_Id|Integer|Yes||
 |Id|Internal Ref|??|Actually an Int|
+
+## Field Notes
+
+### Node_Error
+
+_Calculated_
+
+True if any of the NodeRoles on the associated Node are in an error state.  This allows API users to monitor the status of a target role and know if there was an error that will block progress without having to inspect other NodeRoles.  Instead of looking at all parents (which could span nodes), Node provides a more limited scope

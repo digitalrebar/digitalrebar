@@ -35,3 +35,21 @@ Feature: NodeRole
     When I click on the "crowbar-admin-node" link
     Then I should see a heading "crowbar-admin-node"
       And there are no localization errors
+
+  Scenario: Node_Error false
+    Given REST creates the {object:node} "node.error.false"
+      And I add {object:node} "node.error.false" to {object:deployment} "system" in {object:role} "test-client"
+      And I add {object:node} "node.error.false" to {object:deployment} "system" in {object:role} "test-library"
+      And {object:node} "node.error.false" is committed
+    When REST requests the "api/v2/nodes/node.error.false/node_roles/test-client" page
+    Then key "node_error" should be "false"
+    Finally REST removes the {object:node} ""node.error.false"
+
+  Scenario: Node_Error true
+    Given REST creates the {object:node} "node.error.true"
+      And I add {object:node} "node.error.true" to {object:deployment} "system" in {object:role} "test-client"
+      And I add {object:node} "node.error.true" to {object:deployment} "system" in {object:role} "test-fails"
+      And {object:node} "node.error.true" is committed
+    When REST requests the "api/v2/nodes/node.error.true/node_roles/test-client" page
+    Then key "node_error" should be "true"
+    Finally REST removes the {object:node} ""node.error.true"

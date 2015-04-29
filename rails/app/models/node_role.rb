@@ -164,6 +164,14 @@ class NodeRole < ActiveRecord::Base
     I18n.t(STATES[state], :scope=>'node_role.state')
   end
 
+  def as_json(options = nil)
+    super({ methods: :node_error}.merge(options || {}))
+  end
+
+  def node_error
+    return node.state == NodeRole::ERROR
+  end
+
   def self.find_needed_parents(target_role,target_node,target_dep)
     NodeRole.transaction do
       res = []
