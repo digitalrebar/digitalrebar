@@ -102,12 +102,12 @@ class SupportController < ApplicationController
       deployment = Deployment.system
       Network.transaction do
         # admin network
-        net = Network.create :name=>'admin', :description=>I18n.t('support.bootstrap.admin_net', :default=>""),  :deployment_id=>deployment.id, :conduit=>Network::DEFAULTCONDUIT, :v6prefix => Network::V6AUTO
+        net = Network.create :name=>'admin', :description=>I18n.t('support.bootstrap.admin_net', :default=>""),  :deployment_id=>deployment.id, :conduit=>Network::DEFAULTCONDUIT, :v6prefix => Network::V6AUTO, :category => "admin"
         NetworkRange.create :name=>'admin', :network_id=>net.id, :first=>"192.168.124.10/24", :last=>"192.168.124.11/24"
         NetworkRange.create :name=>'dhcp', :network_id=>net.id, :first=>"192.168.124.21/24", :last=>"192.168.124.80/24"
         NetworkRange.create :name=>'host', :network_id=>net.id, :first=>"192.168.124.81/24", :last=>"192.168.124.254/24"
         # bmc network
-        bmc = Network.create :name=>'bmc', :description=>I18n.t('support.bootstrap.bmc_net', :default=>""),  :deployment_id=>deployment.id, :conduit=>Network::BMCCONDUIT, :v6prefix => Network::V6AUTO
+        bmc = Network.create :name=>'bmc', :description=>I18n.t('support.bootstrap.bmc_net', :default=>""),  :deployment_id=>deployment.id, :conduit=>Network::BMCCONDUIT, :v6prefix => Network::V6AUTO, :category => "bmc"
         NetworkRange.create :name=>'admin', :network_id=>bmc.id, :first=>"192.168.128.10/24", :last=>"192.168.128.20/24"
         NetworkRange.create :name=>'host', :network_id=>bmc.id, :first=>"192.168.128.21/24", :last=>"192.168.128.254/24"
 

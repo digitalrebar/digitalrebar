@@ -180,7 +180,7 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
   end,
   % create node for testing
   bdd_utils:log(debug, crowbar, global_setup, "Global Setup running (creating node ~p)",[g(node_name)]),
-  node:add_node(g(node_name), "crowbar-admin-node", [{description, Test ++ g(description)}, {order, 100}, {admin, "true"}], g(node_atom)),
+  node:add_node(g(node_name), "crowbar-admin-node", [{description, Test ++ g(description)}, {order, 100}, {admin, "true"}, {ip, "192.168.124.10/24"}], g(node_atom)),
   true;
 
 % find the node from setup and remove it
