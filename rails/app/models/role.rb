@@ -74,7 +74,6 @@ class Role < ActiveRecord::Base
   end
 
   # State Transistion Overrides
-
   def on_error(node_role, *args)
     Rails.logger.debug "No override for #{self.class.to_s}.on_error event: #{node_role.role.name} on #{node_role.node.name}"
   end
@@ -147,6 +146,12 @@ class Role < ActiveRecord::Base
   #
   # This does not include IP allocation/deallocation.
   def on_network_change(network)
+
+  # Event hook that is called whenever a noderole or a deployment role for this role is
+  # committed.  It is called inline and synchronously with the actual commit, so it must be fast.
+  # If it throws an exception, the commit will fail and the transaction around the commit
+  # will be rolled back.
+  def on_commit(obj)
     true
   end
 

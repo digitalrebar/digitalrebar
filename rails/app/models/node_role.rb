@@ -374,7 +374,7 @@ class NodeRole < ActiveRecord::Base
   end
 
   def all_committed_data
-    res = deployment_data
+    res = deployment_role.all_committed_data
     res.deep_merge!(wall)
     res.deep_merge!(sysdata)
     res.deep_merge!(committed_data)
@@ -552,7 +552,7 @@ class NodeRole < ActiveRecord::Base
       if deployment_role.proposed?
         raise InvalidTransition.new(self,state,PROPOSED,"Cannot commit! unless deployment_role committed!")
       end
-      return unless proposed? || blocked?
+      role.on_commit(self)
       update!(committed_data: proposed_data)
       block_or_todo
       if !node.alive && node.power[:on]

@@ -76,8 +76,14 @@ class DeploymentRole < ActiveRecord::Base
     save!
   end
 
-  def all_data
+  def all_committed_data
     role.template.deep_merge(self.committed_data).deep_merge(self.wall)
+  end
+
+  def all_data
+    res = all_committed_data
+    res.deep_merge(all_proposed_data) if proposed_data
+    res
   end
 
   def data_update(val)

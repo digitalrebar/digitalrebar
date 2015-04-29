@@ -165,3 +165,11 @@ updated, or deleted.  The role does not have to be included in a
 deployment or used in anyway for this hook to be called.  If a role
 exists and implements this hook then it will get called when a network is
 created, destroyed, or changed.
+
+There is one hook that gets called whenever a noderole is committed:
+
+* `on_commit`
+
+It is called just before the data in the noderole is committed, and can be
+used to keep a noderole being committed by throwing an exception.
+
