@@ -16,12 +16,11 @@
 require 'json'
 
 class NodeRole < ActiveRecord::Base
-
+  after_create :bind_needed_parents
+  after_commit :create_deployment_role, on: [:create]
   after_commit :bind_cluster_children, on: [:create]
   after_commit :run_hooks, on: [:update, :create]
-  after_commit :create_deployment_role, on: [:create]
   after_commit :poke_attr_dependent_noderoles, on: [:update]
-  after_create :bind_needed_parents
   validate :role_is_bindable, on: :create
   validate :noderole_has_all_parents, on: :create
   validate :validate_conflicts, on: :create
@@ -54,7 +53,7 @@ class NodeRole < ActiveRecord::Base
   scope           :peers_by_node,     ->(ss,node)  { in_deployment(ss).on_node(node) }
   scope           :peers_by_node_and_role,  ->(n,r) { on_node(n).with_role(r) }
   scope           :deployment_node_role,    ->(s,n,r) { where(['deployment_id=? AND node_id=? AND role_id=?', s.id, n.id, r.id]) }
-
+  
   # make sure that new node-roles have require upstreams
   # validate        :deployable,        :if => :deployable?
   # node_role_pcms maps parent noderoles to child noderoles.
@@ -396,6 +395,7 @@ class NodeRole < ActiveRecord::Base
       else
         res.deep_merge!(parent.all_committed_data)
       end
+    end
     res
   end
 
@@ -735,7 +735,7 @@ class NodeRole < ActiveRecord::Base
       rebind_attrib_parents
     end
   end
-
+  
   def bind_cluster_children
     NodeRole.transaction do
       if self.role.cluster?
@@ -750,4 +750,3 @@ class NodeRole < ActiveRecord::Base
     end
   end
 end
-
