@@ -69,5 +69,5 @@ Alive, Bootenv, Name
 
 ### Target Role ID
 
-TargetRole is used to troubleshoot problem nodes by putting them into a state _hopefully_ known working state allows you to put the node back into sledgehammer so you can take the installed OS out of the picture..  To do this, set the target role to TargetRole to "crowbar managed node" and BootEnv to "sleddgehammer" then reboot.
+TargetRole is used to troubleshoot problem nodes by putting them into a state _hopefully_ known working state allows you to put the node back into sledgehammer so you can take the installed OS out of the picture..  To do this, set the target role to TargetRole to "crowbar managed node" and BootEnv to "sledgehammer" then reboot.
 
