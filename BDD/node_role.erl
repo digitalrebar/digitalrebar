@@ -34,7 +34,7 @@ g(Item) ->
 validate(JSON) when is_record(JSON, obj) ->
   J = JSON#obj.data,
   R =[JSON#obj.type == "node_role",
-      bdd_utils:is_a(J, length, 17),
+      bdd_utils:is_a(J, length, 18),
       bdd_utils:is_a(J, dbid, node_id),
       bdd_utils:is_a(J, dbid, role_id),
       bdd_utils:is_a(J, dbid, deployment_id),
@@ -48,6 +48,7 @@ validate(JSON) when is_record(JSON, obj) ->
       bdd_utils:is_a(J, string, sysdata),
       bdd_utils:is_a(J, string, wall),
       bdd_utils:is_a(J, boolean, available),
+      bdd_utils:is_a(J, boolean, node_error),
       crowbar_rest:validate_core(J)],
   bdd_utils:assert(R).
 
