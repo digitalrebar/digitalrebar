@@ -44,7 +44,7 @@ class Service < Role
           runlog << "#{service_name} not found ... wait 10s"
           sleep 10
         end
-      rescue Exception => e
+      rescue StandardError => e
         runlog << "Failed to talk to consul: #{e.message}"
         Rails.logger.info("Failed to talk to consul: #{e.message}")
         sleep 10

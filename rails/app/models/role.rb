@@ -14,13 +14,13 @@
 
 class Role < ActiveRecord::Base
 
-  class Role::MISSING_DEP < Exception
+  class Role::MISSING_DEP < StandardError
   end
 
-  class Role::MISSING_JIG < Exception
+  class Role::MISSING_JIG < StandardError
   end
 
-  class Role::CONFLICTS < Exception
+  class Role::CONFLICTS < StandardError
   end
 
   validates_uniqueness_of   :name,  :scope => :barclamp_id
@@ -146,6 +146,8 @@ class Role < ActiveRecord::Base
   #
   # This does not include IP allocation/deallocation.
   def on_network_change(network)
+    true
+  end
 
   # Event hook that is called whenever a noderole or a deployment role for this role is
   # committed.  It is called inline and synchronously with the actual commit, so it must be fast.
@@ -194,6 +196,7 @@ class Role < ActiveRecord::Base
   # Make sure there is a deployment role for ourself in the deployment.
   def add_to_deployment(dep)
     DeploymentRole.unsafe_locked_transaction do
+      Rails.logger.info("Role: Creating deployment_role for #{self.name} in #{dep.name}")
       DeploymentRole.find_or_create_by!(role_id: self.id, deployment_id: dep.id)
     end
   end

@@ -51,7 +51,7 @@ SimpleNavigation::Configuration.run do |navigation|
               end 
             end
           end
-        rescue Exception => e
+        rescue StandardError => e
           primary.item :menu_error, "#{t 'nav.error'}: #{item.item}", '', {:title=>e.inspect}
           Rails.logger.error "navigation: #{e.inspect}" 
         end

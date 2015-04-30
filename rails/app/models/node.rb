@@ -547,7 +547,7 @@ class Node < ActiveRecord::Base
       begin
         Rails.logger.info("Node: Calling #{r.name} on_node_delete for #{self.name}")
         r.on_node_delete(self)
-      rescue Exception => e
+      rescue StandardError => e
         Rails.logger.error "node #{name} attempting to cleanup role #{r.name} failed with #{e.message}"
       end
     end

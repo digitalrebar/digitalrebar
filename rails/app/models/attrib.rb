@@ -25,7 +25,7 @@ class Attrib < ActiveRecord::Base
   serialize :schema
 
   # Will be thrown unless the attribute is writable.
-  class AttribReadOnly < Exception
+  class AttribReadOnly < StandardError
     def initialize(attr)
       @errstr = "Attrib #{attr.name} is read-only"
     end
@@ -84,7 +84,7 @@ class Attrib < ActiveRecord::Base
   def self.get(name, from, source=:all)
     begin
       (name.is_a?(Attrib) ? name : Attrib.find_key(name)).get(from, source)       
-    rescue Exception => e
+    rescue StandardError => e
       Rails.logger.warn "Warn, did not get #{name} from #{from.name} with error #{e.message}"
       nil      
     end
@@ -160,11 +160,11 @@ class Attrib < ActiveRecord::Base
     __set(to,value,type)
   end
 
-  def self.set(name, to, value, type)
+  def self.set(name, to, value, type=:system)
     Attrib.find_key(name).set(to,value,type)
   end
 
-  class AttribValidationFailed < Exception
+  class AttribValidationFailed < StandardError
     def initialize(attr,data,errors)
       @errstr = "Attrib #{attr.name}: New requested data #{data.to_json} failed schema validation\n"
       errors.each do |e|
