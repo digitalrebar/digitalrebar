@@ -141,6 +141,12 @@ end
 # Returns false if we need to try again or on failure.
 #
 def wsman_update(product)
+  # XXX: I don't think works on multiple levels.
+  #
+  # Provisioner information - is retreived differently
+  # Other info - is not available.
+  #
+
   # Get the provisioner IP.
   require 'wsman'
   provisioners = search(:node, "roles:provisioner-server")

@@ -36,6 +36,7 @@ roles:
       - discovery
     requires:
       - deployer-client
+      - provisioner-service
     attribs:
       - name: set-mapping
         map: 'bios/set_mapping'
@@ -46,6 +47,8 @@ roles:
       - name: bios-config-sets
         map: 'bios/config_sets'
         description: 'The permitted BIOS configurations for this node.'
+    wants-attribs:
+      - provisioner-webservers
   - name: bios-dell-rseries-configure
     jig: role-provided
     requires:
