@@ -1,3 +1,4 @@
+
 ### Network API
 
 The network API is used to manage networks.
@@ -28,7 +29,9 @@ Sample:
       "use_vlan":   true or false,
       "team_mode":  teaming mode,
       "use_team":   true or false,
-      "use_bridge": true or false
+      "use_bridge": true or false,
+      "category":   "String to indicate type: admin,bmc,general,...",
+      "group":      "String to indicate groups of networks",
       "conduit":    "1g0,1g1", // or whatever you want to use as a conduit for this network
       "ranges": [
          { "name": "name", "first": "192.168.124.10/24", "last": "192.168.124.245/24" }

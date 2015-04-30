@@ -19,6 +19,7 @@ provisioner_re='provisioner\.web=([^ ]+)'
 crowbar_re='crowbar\.web=([^ ]+)'
 domain_re='crowbar\.dns\.domain=([^ ]+)'
 dns_server_re='crowbar\.dns\.servers=([^ ]+)'
+netname_re='"network":"([^ ]+)"'
 
 # Grab the boot parameters we should always be passed
 
@@ -128,13 +129,26 @@ curl -f -g --digest -u "$CROWBAR_KEY" \
     -d 'bootenv=sledgehammer'
 echo "Set node not alive - will be set in control.sh!"
 
+
+# Figure out the admin network name
+the_netname=""
+netnameline=$(curl -f -g --digest -u "$CROWBAR_KEY" \
+    -X GET "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME/addresses?category=admin")
+netnames=(${netnameline//,/ })
+for netname in "${netnames[@]}"; do
+    [[ $netname =~ $netname_re ]] || continue
+    the_netname=${BASH_REMATCH[1]}
+    break
+done
+echo "Using network name: $the_netname"
+
 # Figure out what IP addresses we should have.
 netline=$(curl -f -g --digest -u "$CROWBAR_KEY" \
-    -X GET "$CROWBAR_WEB/api/v2/networks/admin/allocations" \
+    -X GET "$CROWBAR_WEB/api/v2/networks/${the_netname}/allocations" \
     -d "node=$HOSTNAME")
 
 routerline=$(curl -f -g --digest -u "$CROWBAR_KEY" \
-    -X GET "$CROWBAR_WEB/api/v2/networks/admin/network_routers/1" \
+    -X GET "$CROWBAR_WEB/api/v2/networks/${the_netname}/network_routers/1" \
     -d "node=$HOSTNAME")
 
 # Bye bye to DHCP.

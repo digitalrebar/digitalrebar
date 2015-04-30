@@ -34,6 +34,7 @@ erl_crash.dump
 # Rails chaff (especially from dev mode)
 /rails/tmp/
 /rails/log/
+/rails/delayed_job.log
 /rails/coverage
 /rails/db/schema.rb
 /rails/db/structure.sql

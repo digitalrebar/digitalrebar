@@ -2,6 +2,9 @@
   "service": {
     "name": "crowbar-api-service",
     "tags": [ "system" ],
+    <% if @ip_addr -%>
+    "address": "<%= @ip_addr %>",
+    <% end -%>
     "port": 3000,
     "check": {
       "script": "curl 127.0.0.1:3000",

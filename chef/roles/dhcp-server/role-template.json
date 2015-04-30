@@ -1,8 +1,2 @@
 {
-    "crowbar": {
-        "dhcp": {
-            "lease_time": 60,
-            "options": []
-        }
-    }
 }

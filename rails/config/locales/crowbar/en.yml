@@ -85,6 +85,10 @@ en:
       crowbar-docker-node: "Docker Container"
       crowbar-admin-node: 'Crowbar Admin'
       crowbar-hardware-configured: "Hardware Configured"
+      crowbar-api_service: 'API Service'
+      crowbar-api_server: 'API Server'
+      crowbar-job_runner_service: 'Job Runner Service'
+      crowbar-job_runner_server: 'Job Runner Server'
     attribs:
       asset_tag: "Asset Tag"
   # Layout

@@ -27,7 +27,7 @@ $TTL <%= @zone[:ttl] %>
 <% end if @zone[:mail_exchangers]-%>
 
 ; Per-host records
-<% @zone[:hosts].keys.sort.each do |host|
+<% (@zone[:hosts].keys || [] rescue []).sort.each do |host|
    record=@zone[:hosts][host]
    record.keys.sort.each do |k|
    next unless zone_map[k]

@@ -39,9 +39,6 @@ if [[ $1 ]]; then
             FQDN="$(hostname -s).${1#*.}"
         else
             FQDN="$1"
-            # Fix up the localhost address mapping.
-            sed -i -e "s/\(127\.0\.0\.1.*\)/127.0.0.1 $FQDN $HOSTNAME localhost.localdomain localhost/" /etc/hosts
-            sed -i -e "s/\(127\.0\.1\.1.*\)/127.0.1.1 $FQDN $HOSTNAME localhost.localdomain localhost/" /etc/hosts
             # Fix Ubuntu/Debian Hostname
             echo "$FQDN" > /etc/hostname
         fi
@@ -53,7 +50,13 @@ elif ! [[ $FQDN =~ $hostname_re ]]; then
     echo "Please pass one as the first parameter to this script so we can set it."
     exit 1
 fi
- 
+
+# Fix up the localhost address mapping.
+if [[ ! -f /.dockerenv ]]; then
+    sed -i -e "s/\(127\.0\.0\.1.*\)/127.0.0.1 $FQDN $HOSTNAME localhost.localdomain localhost/" /etc/hosts
+    sed -i -e "s/\(127\.0\.1\.1.*\)/127.0.1.1 $FQDN $HOSTNAME localhost.localdomain localhost/" /etc/hosts
+fi
+
 # Fix CentOs/RedHat Hostname
 if [ -f /etc/sysconfig/network ] ; then
   sed -i -e "s/HOSTNAME=.*/HOSTNAME=$FQDN/" /etc/sysconfig/network

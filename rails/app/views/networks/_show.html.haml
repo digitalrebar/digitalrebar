@@ -11,6 +11,12 @@
         %td= t '.description'
         %td= text_field_tag :description, network.description, :size=>30
       %tr{:class => cycle(:odd,:even)}
+        %td= t '.category'
+        %td= text_field_tag :category, network.category, :size=>30
+      %tr{:class => cycle(:odd,:even)}
+        %td= t '.group'
+        %td= text_field_tag :group, network.group, :size=>30
+      %tr{:class => cycle(:odd,:even)}
         %td= t '.deployment'
         %td= select_tag :deployment_id, options_from_collection_for_select(Deployment.all, :id, :name, :selected=>network.deployment.id)
       %tr{:class => cycle(:odd,:even)}

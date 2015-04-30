@@ -22,4 +22,5 @@ en:
     roles:
       ntp-server: "NTP Server"
       ntp-client: "NTP Client"
+      ntp-service: "NTP Service"
     attribs:

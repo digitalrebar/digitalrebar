@@ -24,9 +24,6 @@ roles:
     requires:
       - network-server
       - network-lldpd
-    conflicts:
-      - crowbar-managed-node
-    provides:
       - crowbar-installed-node
   - name: crowbar-managed-node
     description: "Crowbar Node Service Bundle"
@@ -138,6 +135,17 @@ roles:
           sequence:
             - type: str
               pattern: /[0-9a-f:.]*/
+  - name: crowbar-joined-node
+    description: "Joined Node Ready Checkpoint"
+    jig: noop
+    flags:
+      - milestone
+      - implicit
+    conflicts:
+      - crowbar-managed-node
+    provides:
+      - crowbar-installed-node
+      - crowbar-managed-node
 
 hammers:
   - name: 'ssh'

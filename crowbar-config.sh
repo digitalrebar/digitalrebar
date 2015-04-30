@@ -45,9 +45,30 @@ crowbar roles set provisioner-os-install \
 
 set -e
 set -x
+
+unmanaged_net='
+{
+  "name": "unmanaged",
+  "category": "unmanaged",
+  "deployment": "system",
+  "conduit": "?1g0",
+  "configure": false,
+  "ranges": [
+    {
+      "overlap": true,
+      "name": "host",
+      "first": "0.0.0.1/0",
+      "last": "223.255.255.255/0"
+    }
+  ]
+}'
+
+admin_net_name='the_admin'
 admin_net='
 {
-  "name": "admin",
+  "name": "the_admin",
+  "category": "admin",
+  "group": "internal",
   "deployment": "system",
   "conduit": "1g0",
   "ranges": [
@@ -73,10 +94,13 @@ admin_net='
   }
 }'
 
+bmc_net_name='the_bmc'
 bmc_net='
 {
-  "name": "bmc",
+  "name": "the_bmc",
   "deployment": "system",
+  "category": "bmc",
+  "group": "internal",
   "conduit": "bmc",
   "ranges": [
     {
@@ -161,14 +185,23 @@ fi
 
 crowbar nodes commit "system-phantom.internal.local"
 
-# Create a stupid default admin network
+# Create the catch all network
+crowbar networks create "$unmanaged_net"
+
+## Create a stupid default admin network
 crowbar networks create "$admin_net"
 
-# Create the equally stupid BMC network
+## Create the equally stupid BMC network
 crowbar networks create "$bmc_net"
 
-# Create the admin node entry.
-crowbar nodes create "$admin_node"
+# Join the admin node into the rails app and make it manageable
+./crowbar-node.sh 127.0.0.1
+
+# Add the admin node to the admin network for now.
+crowbar roles bind "network-$admin_net_name" to "$FQDN"
+
+# Add the admin node to the bmc network for now.
+crowbar roles bind "network-$bmc_net_name" to "$FQDN"
 
 # Bind the admin role to it, and commit the resulting
 # proposed noderoles.
@@ -254,10 +287,10 @@ crowbar roles bind provisioner-docker-setup to "$FQDN"
 
 # Add the now mostly empty admin-node
 crowbar roles bind crowbar-admin-node to "$FQDN"
-crowbar nodes commit "$FQDN"
 
 # Figure out what IP addresses we should have, and add them.
-netline=$(crowbar nodes addresses "$FQDN" on admin)
+# If the above adds an address, we need to make sure it starts on the node.
+netline=$(crowbar nodes addresses "$FQDN" on $admin_net_name)
 nets=(${netline//,/ })
 for net in "${nets[@]}"; do
     [[ $net =~ $ip_re ]] || continue
@@ -266,6 +299,8 @@ for net in "${nets[@]}"; do
     ip addr add "$net" dev eth0 || :
     echo "${net%/*} $FQDN" >> /etc/hosts || :
 done
+
+crowbar nodes commit "$FQDN"
 
 # flag allows you to stop before final step
 if ! [[ $* = *--zombie* ]]; then

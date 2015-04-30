@@ -57,10 +57,13 @@ if node["roles"].include?("ntp-server")
     action :nothing
   end
 
+ ip_addr = IP.coerce(node["ntp"]["service_address"]).addr
+
   template "/etc/consul.d/crowbar-ntp.json" do
     source "consul-ntp-server.json.erb"
     mode 0644
     owner "root"
+    variables(:ip_addr => ip_addr)
     notifies :run, "bash[reload consul ntp]", :immediately
   end
 end

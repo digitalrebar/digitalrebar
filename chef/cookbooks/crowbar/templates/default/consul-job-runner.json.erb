@@ -2,6 +2,9 @@
   "service": {
     "name": "crowbar-job-runner-service",
     "tags": [ "system" ],
+    <% if @ip_addr -%>
+    "address": "<%= @ip_addr %>",
+    <% end -%>
     "port": 3000,
     "check": {
       "script": "pidof delayed_job.0",

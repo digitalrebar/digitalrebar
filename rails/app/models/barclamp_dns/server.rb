@@ -32,7 +32,10 @@ class BarclampDns::Server < Role
   end
 
   def sysdata(nr)
-    {"crowbar" => {
+    my_addr = nr.node.addresses(:v4_only).first
+    raise "No address for the DNS Server" unless my_addr
+    { "dns" => { "service_address" => my_addr.to_s },
+      "crowbar" => {
         "dns" => {
           "nameservers" => nr.node.addresses.flatten.sort.map{|a|a.addr}
         }

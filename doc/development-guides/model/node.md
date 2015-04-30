@@ -20,7 +20,7 @@ Hints are settable on a Node to make node-specific user preferences
 available to Roles before a noderole that would otherwise convey that
 information has been bound to the node.  For example, a user may wish
 a node to have a specific IP address.  This advice is communicated
-to the network role(s) by giving the hint-admin-v4addr attrib on the
+to the network role(s) by giving the hint-the_admin-v4addr attrib on the
 role the preferred IP address.
 
 #### Hint Shortcut
@@ -28,7 +28,8 @@ role the preferred IP address.
 Some hints are so common that there are parameter short-cuts during
 node creation.  This makes it easier to set these special values.
 
-* =ip= maps to =hint-admin-v4addr=
+* =ip= maps to =hint-???-v4addr= where ??? the name of the network that the IP matches.
+If no match is found, the unmanaged network is used.
 * =mac= maps to =hint-admin-macs=
 
 ### Aliveness and availability:
@@ -63,7 +64,7 @@ operations on it.
 
 > Defaults: Alive defaults to false and Available default to false.
 
-### Node Creation
+[[###]] Node Creation
 
 In order for a node to be useable by the Crowbar process, it has to be
 created and populated with its initial noderole bindings and

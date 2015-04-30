@@ -2,6 +2,9 @@
   "service": {
     "name": "proxy-service",
     "tags": [ "system" ],
+    <% if @ip_addr -%>
+    "address": "<%= @ip_addr %>",
+    <% end -%>
     "port": <%= @port %>,
     "check": {
       "script": "pidof squid",

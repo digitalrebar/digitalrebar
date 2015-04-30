@@ -30,7 +30,7 @@ g(Item) ->
 validate(JSON) when is_record(JSON, obj) ->
   J = JSON#obj.data,
   R =[JSON#obj.type == "network",
-      bdd_utils:is_a(J, length, 15),
+      bdd_utils:is_a(J, length, 17),
       bdd_utils:is_a(J, int, vlan),
       bdd_utils:is_a(J, boolean, use_vlan),
       bdd_utils:is_a(J, boolean, use_bridge),
@@ -38,6 +38,8 @@ validate(JSON) when is_record(JSON, obj) ->
       bdd_utils:is_a(J, boolean, use_team),
       bdd_utils:is_a(J, boolean, configure),
       bdd_utils:is_a(J, string, conduit),
+      bdd_utils:is_a(J, string, category),
+      bdd_utils:is_a(J, string, group),
       bdd_utils:is_a(J, "null|([a-f0-9]){1,4}:([a-f0-9]){1,4}:([a-f0-9]){1,4}:([a-f0-9]){1,4}", v6prefix),
       crowbar_rest:validate(J)],
   bdd_utils:assert(R);

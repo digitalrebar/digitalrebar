@@ -18,4 +18,5 @@ class BarclampCrowbar::JobRunnerService < Service
   def do_transition(nr, data)
     internal_do_transition(nr, data, "crowbar-job-runner-service", "crowbar-job-runners")
   end
+
 end

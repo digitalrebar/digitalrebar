@@ -44,7 +44,7 @@ pop(ConfigRaw)  ->
   end,
 
   % admin node
-  Admin = node:add_node(g(node_name), "crowbar-admin-node", [{description, "dev" ++ g(description)}, {order, 100}, {admin, "true"}], g(node_atom)),
+  Admin = node:add_node(g(node_name), "crowbar-admin-node", [{description, "dev" ++ g(description)}, {order, 100}, {admin, "true"}, {ip, "192.168.124.10/24"}], g(node_atom)),
 
   % admin node has to complete
   bdd_utils:log(info, dev, pop, "Admin (~p: ~p) exists, waiting for annealer to catch-up...", [Admin#obj.id, g(node_name)]),

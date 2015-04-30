@@ -72,13 +72,38 @@ class NodesController < ApplicationController
   def addresses
     nodename = params[:node_id]
     @node = nodename == "admin" ?  Node.admin.where(:available => true).first : Node.find_key(nodename)
-    params.require(:network)
-    @net = Network.find_key(params[:network])
-    res = {"node" => @node.name,
-      "network" => @net.name,
-      "addresses" => @net.node_allocations(@node).map{|a|a.to_s}
-    }
-    render :json => res, :content_type=>cb_content_type(:addresses, "object")
+    if params[:network]
+      @net = Network.find_key(params[:network])
+      res = {
+        "node" => @node.name,
+        "network" => @net.name,
+        "category" => @net.category,
+        "addresses" => @net.node_allocations(@node).map{|a|a.to_s}
+      }
+      render :json => res, :content_type=>cb_content_type(:addresses, "object")
+    else
+      res = []
+
+      if params[:category]
+        nets = Network.in_category(params[:category])
+      else
+        nets = Network.all
+      end
+
+      nets.each do |n|
+        ips = n.node_allocations(@node)
+        next if ips.empty?
+
+        res << {
+            "node" => @node.name,
+            "network" => n.name,
+            "category" => n.category,
+            "addresses" => ips.map{|a|a.to_s}
+        }
+      end
+
+      render :json => res, :content_type=>cb_content_type(:addresses, "array")
+    end
   end
 
   # RESTful DELETE of the node resource
@@ -147,10 +172,18 @@ class NodesController < ApplicationController
                                          :system,
                                          :available,
                                          :bootenv))
+
       # Keep suport for mac and ip hints in short form around for legacy Sledgehammer purposes
       if params[:ip]
-        @node.attribs.find_by!(name: "hint-admin-v4addr").set(@node,params[:ip])
+        # If we find a network with that hint, then add that role (bound search to admin networks)
+        the_net = Network.lookup_network(params[:ip])
+        the_net = Network.find_by_name("unmanaged") unless the_net
+        if the_net
+          NodeRole.safe_create!(role_id: the_net.role.id, node_id: @node.id, deployment_id: @node.deployment.id)
+          @node.attribs.find_by!(name: "hint-#{the_net.name}-v4addr").set(@node,params[:ip])
+        end
       end
+
       if params[:mac]
         @node.attribs.find_by!(name: "hint-admin-macs").set(@node,[params[:mac]])
       end
@@ -164,6 +197,7 @@ class NodesController < ApplicationController
     params[:node_deployment].each { |k,v| params[k] = v } if params.has_key? :node_deployment
     params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
     @node.update_attributes!(params.permit(:alias,
+                                             :name,
                                              :description,
                                              :target_role_id,
                                              :deployment_id,

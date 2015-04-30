@@ -1,10 +1,16 @@
 ## External Services Configuration
 
-The OpenCrowbar System can be configured to utilize external (not installed or managed by OpenCrowbar) services.  These configurations are made in the following file /opt/opencrowbar/core/crowbar-config.sh and must be made *PROR* to running production.sh to install the system.  Users can configure any combination of of these services.
+The OpenCrowbar System can be configured to utilize external (not installed or managed by OpenCrowbar) services.  
+These configurations are made in the following file /opt/opencrowbar/core/crowbar-config.sh and must be made *PROR* to 
+running production.sh to install the system.  Users can configure any combination of of these services.
 
 ### DNS (Domain Name Server)
 
-By default OpenCrowbar will utilize Bind (named) on the Admin Node when you install OpenCrowbar.  All clients will be configured to use this system when they are installed.  DNS entries are automatically updated as new nodes are configured or removed from OpenCrowbar.  OpenCrowbar can be configured to use an already existing DNS however it becomes the responsability of the user to ensure that entries are created or removed as OpenCrowbar will not function correctly if the name and IP Address are not configured with the ones assigned by OpenCrowbar (Typically MAC address of the primary interface)
+By default OpenCrowbar will utilize Bind (named) on the Admin Node when you install OpenCrowbar.  All clients will be 
+configured to use this system when they are installed.  DNS entries are automatically updated as new nodes are configured
+or removed from OpenCrowbar.  OpenCrowbar can be configured to use an already existing DNS however it becomes the 
+responsability of the user to ensure that entries are created or removed as OpenCrowbar will not function correctly if 
+the name and IP Address are not configured with the ones assigned by OpenCrowbar (Typically MAC address of the primary interface)
 
 *  Edit /opt/opencrowbar/core/crowbar-config.sh
 *  Find the line 'crowbar roles bind dns-database to "$FQDN"' and comment it out by adding # to the front of the line.
@@ -52,6 +58,7 @@ subnet 192.168.124.0 netmask 255.255.255.0 {
   }   
 }
 ```
+
 *  Replace the subet, domain-name and pool information to match the enviornment.
 *  Put the IP address of the OpenCrowbar Admin Node in the next-server in place of 192.168.124.10.
   

@@ -145,6 +145,14 @@ class IP
     self.class.new(@address & subnet_to_mask(), @subnet)
   end
 
+  def with_host(host_part)
+    self.class.new((@address & subnet_to_mask()) + host_part, @subnet)
+  end
+
+  def host
+    @address & ((1 << (self.class::BITS - @subnet)) - 1)
+  end
+
   # Get the broadcast address for this address
   def broadcast
     self.network + ((1 << (self.class::BITS - @subnet)) - 1)

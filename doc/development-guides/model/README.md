@@ -106,15 +106,25 @@ all of its child noderoles have had their state updated accordingly.
 
 ### Node Events: ###
 
-You can provide event hooks on your roles that work with nodes at 2
+You can provide event hooks on your roles that work with nodes at 3
 points in their lifecycle for now:
 
 * on\_node\_create will be called after the node is created and the
 default set of noderoles has been bound to it.
 * on\_node\_delete will be called just before the node is destroyed.
+* on\_node\_change will be called after a node change is persisted.
 
-Additionally, there is an on\_node\_change event that gets called just
-after Rails saves any changes to a node object.
+### Network Events: ###
+
+You can provide event hooks on your roles that work with networks at 3
+points in their lifecycle for now:
+
+* on\_network\_create will be called after the network is created.
+* on\_network\_delete will be called just before the network is destroyed.
+* on\_network\_change will be called after a network change is persisted.
+
+**Note this does NOT include IP allocation or deallocation**
+
 
 ### Role Flags: ###
 
@@ -307,7 +317,7 @@ Migrating to delayed_jobs for all our background processing made it
 immediatly obvious that sqlite is not at all suited to handling real
 concurrency once we started doing multiple jig runs on different nodes
 at a time. Postgresql is more than capable of handling our forseeable
-concurrency and HA use cases, and gives us lots of scope for future
+[[concurrency]] and HA use cases, and gives us lots of scope for future
 optimizations and scalability.
 
 ### Deployment tree: ###

@@ -44,6 +44,8 @@ en:
     network: "Network"
     pref: "Pref"
     conduit: "Conduit(s)"
+    group: "Group"
+    category: "Category"
     ranges: "Range(s)"
     first: "First IP"
     last: "Last IP"

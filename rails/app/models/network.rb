@@ -14,8 +14,8 @@
 
 class Network < ActiveRecord::Base
 
-  ADMIN_NET      = "admin"
-  BMC_NET        = "bmc"
+  ADMIN_CATEGORY = "admin"
+  BMC_CATEGORY   = "bmc"
   V6AUTO         = "auto"   # if this changes, update the :v6prefix validator too!
   DEFAULTCONDUIT = '1g1'
   BMCCONDUIT     = 'bmc'
@@ -24,6 +24,9 @@ class Network < ActiveRecord::Base
   after_commit    :add_role, on: :create
   after_save      :auto_prefix
   before_destroy  :remove_role
+  after_commit :on_create_hooks, on: :create
+  after_commit :on_change_hooks, on: :update
+  after_commit :on_destroy_hooks, on: :destroy
 
   validates_format_of :v6prefix, :with=>/auto|([a-f0-9]){1,4}:([a-f0-9]){1,4}:([a-f0-9]){1,4}:([a-f0-9]){1,4}/, :message => I18n.t("db.v6prefix", :default=>"Invalid IPv6 prefix."), :allow_nil=>true
 
@@ -35,7 +38,24 @@ class Network < ActiveRecord::Base
   alias_attribute :router,      :network_router
   alias_attribute :allocations, :network_allocations
 
+  scope :in_category,   ->(c) { where(:category => c) }
+
   belongs_to :deployment
+
+  def self.lookup_network(ipstring, category = "admin")
+    the_ip_network = IP.coerce(ipstring).network
+    the_network = nil
+    Network.in_category(category).each do |n|
+      n.ranges.each do |r|
+        if (r.first.network == the_ip_network)
+          the_network = n
+          break
+        end
+      end
+      break if the_network
+    end
+    the_network
+  end
 
   def self.address(params)
     raise "Must pass a hash of args" unless params.kind_of?(Hash)
@@ -162,7 +182,7 @@ class Network < ActiveRecord::Base
   # for auto, we add an IPv6 prefix
   def auto_prefix
     # Add our IPv6 prefix.
-    if (name == ADMIN_NET and v6prefix.nil?) || (v6prefix == V6AUTO)
+    if (category == ADMIN_CATEGORY and v6prefix.nil?) || (v6prefix == V6AUTO)
       Role.logger.info("Network: Creating automatic IPv6 prefix for #{name}")
       user = User.admin.first
       # this config code really needs to move to Crowbar base
@@ -197,11 +217,10 @@ class Network < ActiveRecord::Base
                                     library: false,
                                     implicit: true,
                                     milestone: true,    # may need more logic later, this is safest for first pass
-                                    bootstrap: (self.name.eql? ADMIN_NET),
-                                    discovery: (self.name.eql? ADMIN_NET)  )
+                                    bootstrap: false,   # don't bootstrap networks anymore.
+                                    discovery: false  ) # don't discovery networks anymore.
         RoleRequire.create!(:role_id => r.id, :requires => "network-server")
         # The admin net must be bound before any other network can be bound.
-        RoleRequire.create!(:role_id => r.id, :requires => "network-admin") unless name.eql? ADMIN_NET
         RoleRequireAttrib.create!(role_id: r.id, attrib_name: 'network_interface_maps')
         # attributes for jig configuraiton
         Attrib.create!(:role_id => r.id,
@@ -276,7 +295,7 @@ class Network < ActiveRecord::Base
     role.destroy! if role  # just in case the role was lost, we still want to be able to delete
     # Also destroy the hints
     ["v4addr","v6addr"].each do |n|
-      Attrib.destroy_all(name: "hint-#{name}-v4addr")
+      Attrib.destroy_all(name: "hint-#{name}-#{n}")
     end
   end
 
@@ -300,4 +319,44 @@ class Network < ActiveRecord::Base
     end
 
   end
+
+  # Call the on_network_delete hooks.
+  def on_destroy_hooks
+    # do the low cohorts last
+    Rails.logger.info("Network: calling all role on_network_delete hooks for #{name}")
+    Role.all_cohorts_desc.each do |r|
+      begin
+        Rails.logger.info("Network: Calling #{r.name} on_network_delete for #{self.name}")
+        r.on_network_delete(self)
+      rescue Exception => e
+        Rails.logger.error "Network #{name} attempting to cleanup role #{r.name} failed with #{e.message}"
+      end
+    end
+  end
+
+  # Call the on_network_change hooks.
+  def on_change_hooks
+    # do the low cohorts last
+    Rails.logger.info("Network: calling all role on_network_change hooks for #{name}")
+    Role.all_cohorts_desc.each do |r|
+      begin
+        Rails.logger.info("Network: Calling #{r.name} on_network_change for #{self.name}")
+        r.on_network_change(self)
+      rescue Exception => e
+        Rails.logger.error "Network #{name} attempting to change role #{r.name} failed with #{e.message}"
+      end
+    end
+  end
+
+  def on_create_hooks
+    # Call all role on_network_create hooks with self.
+    # These should happen synchronously.
+    # do the low cohorts first
+    Rails.logger.info("Network: calling all role on_network_create hooks for #{name}")
+    Role.all_cohorts.each do |r|
+      Rails.logger.info("Network: Calling #{r.name} on_network_create for #{self.name}")
+      r.on_network_create(self)
+    end
+  end
+
 end

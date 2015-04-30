@@ -53,7 +53,8 @@ end
 # Arrange for reverse lookup zones to be created.
 # Since there is no elegant method for doing this that takes into account
 # CIDR or IPv6, do it the excessively ugly way and create one zone per IP.
-zone[:hosts].keys.sort.each do |hostname|
+hosts = (zone[:hosts].keys || [] rescue [])
+hosts.sort.each do |hostname|
   host=zone[:hosts][hostname]
   [:ip4addr, :ip6addr].each do |addr|
     next unless host[addr]

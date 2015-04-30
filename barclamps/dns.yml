@@ -17,7 +17,6 @@ roles:
   - name: dns-server
     jig: chef
     requires:
-      - network-admin
       - consul
     attribs:
       - name: dns-forwarders
@@ -57,7 +56,6 @@ roles:
       - implicit
     requires:
       - dns-service
-      - network-admin
     wants-attribs:
       - dns_servers
       - dns-domain
