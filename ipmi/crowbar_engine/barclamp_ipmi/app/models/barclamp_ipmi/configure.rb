@@ -15,10 +15,31 @@
 
 class BarclampIpmi::Configure < Role
 
+  def sysdata(nr)
+    na = NetworkAllocation.node_cat(nr.node, "bmc").first
+    endpoint = na.address.to_s
+    router = na.network.network_router ? na.network.network_router.address.to_s : "0.0.0.0/0"
+    r = na.network_range
+    {
+        'ipmi' => {
+            'network' => {
+                endpoint => {
+                    'use_vlan' => r.use_vlan,
+                    'vlan' => r.vlan,
+                    'router' => {
+                        'address' => router
+                    }
+                }
+            }
+        }
+    }
+  end
+
   def on_active(nr)
     username = Attrib.get('ipmi-username',nr.node)
     authenticator = Attrib.get('ipmi-password',nr.node)
-    endpoint = Network.address(node: nr.node, network: "bmc", range: "host").address.addr
+    endpoint = NetworkAllocation.node_cat(nr.node, "bmc").first.address.addr
+
     unless nr.node.hammers.find_by(type: "BarclampIpmi::IpmiHammer")
       # We must have a configured IPMI controller to operate.
       Hammer.bind(manager_name: "ipmi",
