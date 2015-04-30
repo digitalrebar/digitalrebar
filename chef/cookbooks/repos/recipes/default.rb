@@ -23,7 +23,7 @@ repositories = (node[:crowbar][:provisioner][:server][:repositories][os_token] |
 
 online = node[:crowbar][:provisioner][:server][:online] rescue nil
 proxy = node[:crowbar][:proxy][:servers].first
-webserver = node[:crowbar][:provisioner][:server][:webserver]
+webserver = "http://#{node[:crowbar][:provisioner][:server][:webservers].first}"
 
 # Once the local proxy service is set up, we need to use it.
 proxies = {

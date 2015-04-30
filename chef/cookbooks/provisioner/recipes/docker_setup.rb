@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-provisioner_web=node["crowbar"]["provisioner"]["server"]["webserver"]
+# GREG: FIX THIS!!
 provisioner_addr=node["crowbar"]["provisioner"]["server"]["v6addr"]
 proxy=node["crowbar"]["proxy"]["servers"].first
 tftproot = node["crowbar"]["provisioner"]["server"]["root"]
@@ -40,7 +40,7 @@ v4addresses = v4dns.collect{|a|a.addr}
               :dns_servers => v4addresses,
               :name => name,
               :proxy => proxy,
-              :keys => (node["crowbar"]["provisioner"]["server"]["access_keys"] rescue Hash.new).values.sort.join($/),
+              :keys => (node["crowbar"]["access_keys"] rescue Hash.new).values.sort.join($/),
               :admin_url => "http://[#{provisioner_addr}]:3000"
               )
   end

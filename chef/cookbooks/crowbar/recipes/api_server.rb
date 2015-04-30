@@ -1,4 +1,4 @@
-# Copyright 2014, Victor Lowther
+# Copyright 2015, RackN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +13,17 @@
 # limitations under the License.
 #
 
-class BarclampProvisioner::BaseImages < Role
+# GREG: Add code to setup rails app and start it here.
 
-  def sysdata(nr)
-    return {
-      "crowbar" => {
-        "provisioner" => {
-          "barclamps" => Barclamp.all.map{|bc|bc.cfg_data}
-        }
-      }
-    }
-  end
-
+bash "reload consul api server" do
+  code "/usr/local/bin/consul reload"
+  action :nothing
 end
+
+template "/etc/consul.d/crowbar-api-server.json" do
+  source "consul-api-server.json.erb"
+  mode 0644
+  owner "root"
+  notifies :run, "bash[reload consul api server]", :immediately
+end
+

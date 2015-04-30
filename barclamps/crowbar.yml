@@ -72,6 +72,72 @@ roles:
     provides:
       - crowbar-managed-node
       - crowbar-installed-node
+  - name: crowbar-access
+    description: "Crowbar Access Keys"
+    jig: role-provided
+    attribs:
+      - name: crowbar-machine_key
+        description: 'The username and password that managed nodes should use to talk to the Crowbar API'
+        map: 'crowbar/machine_key'
+        schema:
+          type: str
+          required: true
+      - name: crowbar-access_keys
+        description: 'The SSH public keys that should allow password-less root access on managed nodes.'
+        map: 'crowbar/access_keys'
+        schema:
+          type: map
+          mapping:
+            =:
+              type: str
+  - name: crowbar-build-root-key
+    description: "Build or Gather the root public key for this node"
+    jig: chef
+    flags:
+      - implicit
+    attribs:
+      - name: crowbar-root-public-key
+        description: 'The username and password that managed nodes should use to talk to the Crowbar API'
+        map: 'crowbar/root_public_key'
+        schema:
+          type: str
+          required: true
+  - name: crowbar-api_server
+    jig: chef
+    requires:
+      - consul
+      - crowbar-access
+  - name: crowbar-api_service
+    jig: role-provided
+    flags:
+      - service
+    attribs:
+      - name: crowbar-api-servers
+        description: "IP:Port pairs of the Crowbar API servers"
+        map: 'crowbar/api/servers'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/
+  - name: crowbar-job_runner
+    jig: chef
+    requires:
+      - crowbar-access
+      - consul
+  - name: crowbar-job_runner_service
+    jig: role-provided
+    flags:
+      - service
+    attribs:
+      - name: crowbar-job-runners
+        description: "Addresses of the Crowbar Job Runners"
+        map: 'crowbar/api/runners'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/
 
 hammers:
   - name: 'ssh'

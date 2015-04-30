@@ -34,10 +34,12 @@ EOF
     elif [[ -f /etc/SuSE-release ]]; then
         zypper install -y -l chef
     elif [[ "x$NAME" == "xCoreOS" ]]; then
-        webserver=$(read_attribute "crowbar/provisioner/server/webserver")
+        webserver=$(read_attribute "crowbar/provisioner/server/webservers")
+        webserver=${webserver##\[\"}
+        webserver=${webserver%%\"*\]}
         mkdir -p /opt
         cd /opt
-        wget --quiet "$webserver/files/coreos-chef.tgz"
+        wget --quiet "http://$webserver/files/coreos-chef.tgz"
         tar -zxf coreos-chef.tgz
         cd -
         mkdir -p /etc/profile.d

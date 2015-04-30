@@ -17,6 +17,9 @@
 # Install and start lldpd
 #
 
+return
+
+
 # This is a little bit of a hack for now.
 return if node[:platform] == "coreos"
 

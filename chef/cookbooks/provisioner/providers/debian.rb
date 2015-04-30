@@ -20,12 +20,13 @@ action :add do
   params = node["crowbar"]["provisioner"]["server"]["boot_specs"][os]
   online = node["crowbar"]["provisioner"]["server"]["online"]
   tftproot = node["crowbar"]["provisioner"]["server"]["root"]
-  provisioner_addr = node["crowbar"]["provisioner"]["server"]["v4addr"]
-  provisioner_web = node["crowbar"]["provisioner"]["server"]["webserver"]
+  provisioner_web = "http://#{node["crowbar"]["provisioner"]["server"]["webservers"].first}"
+  api_server = "http://#{node["crowbar"]["api"]["servers"].first}"
+  ntp_server = "#{node["crowbar"]["ntp"]["servers"].first}"
   use_local_security = node["crowbar"]["provisioner"]["server"]["use_local_security"]
   os_codename = node["crowbar"]["provisioner"]["server"]["supported_oses"][os]["codename"]
-  keys = node["crowbar"]["provisioner"]["server"]["access_keys"].values.sort.join($/)
-  machine_key = node["crowbar"]["provisioner"]["machine_key"]
+  keys = node["crowbar"]["access_keys"].values.sort.join($/)
+  machine_key = node["crowbar"]["machine_key"]
   os_dir = "#{tftproot}/#{os}"
   mnode_name = new_resource.name
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
@@ -63,10 +64,11 @@ action :add do
     variables(:install_name => os,
               :os_codename => os_codename,
               :repos => repos,
-              :admin_ip => provisioner_addr,
+              :api_server => api_server,
               :online => online,
               :keys => keys,
               :provisioner_web => provisioner_web,
+              :logging_server => api_server, # XXX: FIX this with logging service.
               :proxy => proxy,
               :web_path => web_path)
   end
@@ -76,7 +78,7 @@ action :add do
     owner "root"
     group "root"
     source "crowbar_join.sh.erb"
-    variables(:admin_ip => provisioner_addr, :name => mnode_name)
+    variables(:api_server => api_server, :ntp_server => ntp_server, :name => mnode_name)
   end
 
   provisioner_bootfile mnode_name do

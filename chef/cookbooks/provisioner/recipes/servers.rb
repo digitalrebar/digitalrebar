@@ -15,15 +15,7 @@
 #
 # This recipe sets up Apache and TFTP servers.
 
-node.normal["crowbar"]["provisioner"]["server"]["name"]=node.name
-v4addr=node.address("admin",IP::IP4)
-v6addr=node.address("admin",IP::IP6)
-node.normal["crowbar"]["provisioner"]["server"]["v4addr"]=v4addr.addr if v4addr
-node.normal["crowbar"]["provisioner"]["server"]["v6addr"]=v6addr.addr if v6addr
 web_port = node["crowbar"]["provisioner"]["server"]["web_port"]
-provisioner_web="http://#{v4addr.addr}:#{web_port}"
-node.normal["crowbar"]["provisioner"]["server"]["webserver"]=provisioner_web
-localnets = ["127.0.0.1","::1","fe80::/10"] + node.all_addresses.map{|a|a.network.to_s}.sort
 
 template "/etc/init.d/sws" do
   mode "0755"
@@ -54,7 +46,7 @@ when File.directory?("/usr/lib/systemd/system")
     variables tftproot: node["crowbar"]["provisioner"]["server"]["root"]
     notifies :restart, "service[tftp]"
   end
-  
+
   service "tftp" do
     enabled true
     provider Chef::Provider::Service::Systemd
@@ -101,3 +93,15 @@ else
   raise "Cannot set up TFTP on #{node[platform]}"
 end
 
+bash "reload consul provisioner" do
+  code "/usr/local/bin/consul reload"
+  action :nothing
+end
+
+template "/etc/consul.d/crowbar-provisioner.json" do
+  source "consul-provisioner-server.json.erb"
+  mode 0644
+  owner "root"
+  variables(:web_port => web_port)
+  notifies :run, "bash[reload consul provisioner]", :immediately
+end

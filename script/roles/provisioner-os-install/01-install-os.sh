@@ -5,7 +5,9 @@
     -x /usr/sbin/crowbar ]] && exit 0
 
 set -x
-webserver=$(read_attribute "crowbar/provisioner/server/webserver")
+webserver=$(read_attribute "crowbar/provisioner/server/webservers")
+webserver=${webserver##\[\"}
+webserver=${webserver%%\"*\]}
 
 # Nuke it all.
 declare vg pv maj min blocks name

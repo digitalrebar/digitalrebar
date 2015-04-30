@@ -1,4 +1,4 @@
-# Copyright 2014, Victor Lowther
+# Copyright 2015, RackN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +13,17 @@
 # limitations under the License.
 #
 
-class BarclampProvisioner::BaseImages < Role
+# GREG: Add the code to configure and start the runner here
 
-  def sysdata(nr)
-    return {
-      "crowbar" => {
-        "provisioner" => {
-          "barclamps" => Barclamp.all.map{|bc|bc.cfg_data}
-        }
-      }
-    }
-  end
-
+bash "reload consul runner server" do
+  code "/usr/local/bin/consul reload"
+  action :nothing
 end
+
+template "/etc/consul.d/crowbar-job-runner.json" do
+  source "consul-job-runner.json.erb"
+  mode 0644
+  owner "root"
+  notifies :run, "bash[reload consul runner server]", :immediately
+end
+

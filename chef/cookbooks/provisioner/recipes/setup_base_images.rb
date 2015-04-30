@@ -18,17 +18,16 @@
 
 admin_ip = node.address.addr
 domain_name = node["dns"].nil? ? node["domain"] : (node["dns"]["domain"] || node["domain"])
-Chef::Log.info("Provisioner: raw server data #{ node["crowbar"]["provisioner"]["server"]}")
-node.normal["crowbar"]["provisioner"]["server"]["name"]=node.name
-v4addr=node.address("admin",IP::IP4)
-v6addr=node.address("admin",IP::IP6)
-node.normal["crowbar"]["provisioner"]["server"]["v4addr"]=v4addr.addr if v4addr
-node.normal["crowbar"]["provisioner"]["server"]["v6addr"]=v6addr.addr if v6addr
-web_port = node["crowbar"]["provisioner"]["server"]["web_port"]
+Chef::Log.info("Provisioner: raw server data #{ node["crowbar"]["provisioner"]["server"] }")
+
+web_server = node["crowbar"]["provisioner"]["server"]["webservers"].first
+api_ipport = node["crowbar"]["api"]["servers"].first
+provisioner_web="http://#{web_server}"
+api_server = "http://#{api_ipport}"
+
+machine_key = node["crowbar"]["machine_key"]
+
 use_local_security = node["crowbar"]["provisioner"]["server"]["use_local_security"]
-provisioner_web="http://#{v4addr.addr}:#{web_port}"
-node.normal["crowbar"]["provisioner"]["server"]["webserver"]=provisioner_web
-machine_key = node["crowbar"]["provisioner"]["machine_key"]
 os_token="#{node["platform"]}-#{node["platform_version"]}"
 tftproot =  node["crowbar"]["provisioner"]["server"]["root"]
 discover_dir="#{tftproot}/discovery"
@@ -50,9 +49,8 @@ sledge_args << "rd_NO_DM"
 if node["crowbar"]["provisioner"]["server"]["use_serial_console"]
   sledge_args << "console=tty0 console=ttyS1,115200n8"
 end
-sledge_args << "provisioner.web=http://#{v4addr.addr}:#{web_port}"
-# This should not be hardcoded!
-sledge_args << "crowbar.web=http://#{v4addr.addr}:3000"
+sledge_args << "provisioner.web=#{provisioner_web}"
+sledge_args << "crowbar.web=#{api_server}"
 sledge_args << "crowbar.dns.domain=#{node["crowbar"]["dns"]["domain"]}"
 sledge_args << "crowbar.dns.servers=#{node["crowbar"]["dns"]["nameservers"].join(',')}"
 
@@ -104,7 +102,7 @@ template "#{pxecfg_dir}/default" do
   variables(:append_line => "#{append_line} crowbar.state=discovery crowbar.install.key=#{machine_key}",
             :install_name => "discovery",
             :initrd => "initrd0.img",
-            :machine_key => node["crowbar"]["provisioner"]["machine_key"],
+            :machine_key => machine_key,
             :kernel => "vmlinuz0")
 end
 
@@ -117,7 +115,7 @@ template "#{uefi_dir}/elilo.conf" do
   variables(:append_line => "#{append_line} crowbar.state=discovery",
             :install_name => "discovery",
             :initrd => "initrd0.img",
-            :machine_key => node["crowbar"]["provisioner"]["machine_key"],
+            :machine_key => machine_key,
             :kernel => "vmlinuz0")
 end
 

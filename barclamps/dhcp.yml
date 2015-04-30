@@ -24,9 +24,10 @@ roles:
     jig: chef
     wants-attribs:
       - dns_servers
+      - provisioner-webservers
     requires:
       - dhcp-server
-      - provisioner-server
+      - provisioner-service
   - name: dhcp-service
     jig: role-provided
     flags:

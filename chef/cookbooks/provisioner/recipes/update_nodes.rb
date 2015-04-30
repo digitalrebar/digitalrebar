@@ -14,9 +14,11 @@
 #
 
 domain_name = node['crowbar']['dns']['domain']
-provisioner_web=node['crowbar']['provisioner']['server']['webserver']
+provisioner_web="http://#{node['crowbar']['provisioner']['server']['webservers'].first}"
+api_server="http://#{node['crowbar']['api']['servers'].first}"
+ntp_server="#{node['crowbar']['ntp']['servers'].first}"
 tftproot = node['crowbar']['provisioner']['server']['root']
-machine_key = node["crowbar"]["provisioner"]["machine_key"]
+machine_key = node["crowbar"]["machine_key"]
 node_dir="#{tftproot}/nodes"
 discover_dir="#{tftproot}/discovery"
 pxecfg_dir="#{discover_dir}/pxelinux.cfg"
@@ -71,9 +73,10 @@ new_clients = {}
                 :online => node['crowbar']['provisioner']['server']['online'],
                 :domain => domain_name,
                 :provisioner_web => provisioner_web,
+                :ntp_server => ntp_server,
                 :proxy => node['crowbar']['proxy']['servers'].first,
-                :keys => (node['crowbar']['provisioner']['server']['access_keys'] rescue Hash.new).values.sort.join($/),
-                :v4_addr => node.address('admin',IP::IP4).addr
+                :keys => (node['crowbar']['access_keys'] rescue Hash.new).values.sort.join($/),
+                :api_server => api_server
                 )
     end
   when "ubuntu-12.04-install"
