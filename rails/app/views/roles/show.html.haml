@@ -58,3 +58,22 @@
           %td= link_to a.name, attrib_path(a.id)
           %td= a.description
           %td= a.map
+
+%h3= "Wanted Attributes"
+
+- if @role.wanted_attribs.count == 0
+  =t 'no_items'
+- else
+  %table.data.box
+    %thead
+      %tr.node{ :class => cycle(:odd, :even) }
+        %th= t '.attrib'
+        %th= t '.description'
+        %th= "Provided By"
+    %tbdoy
+      - @role.wanted_attribs.each do |a|
+        %tr
+          %td= link_to a.name, attrib_path(a.id)
+          %td= a.description
+          %td= link_to a.role.name, role_path(a.role.name)
+
