@@ -16,8 +16,7 @@
 require 'json'
 
 class NodeRole < ActiveRecord::Base
-  after_create :bind_needed_parents
-  after_commit :create_deployment_role, on: [:create]
+  after_commit :bind_needed_parents, on: [:create]
   after_commit :bind_cluster_children, on: [:create]
   after_commit :run_hooks, on: [:update, :create]
   after_commit :poke_attr_dependent_noderoles, on: [:update]
@@ -124,7 +123,7 @@ class NodeRole < ActiveRecord::Base
     PROPOSED => 'proposed'
   }
 
-  class InvalidTransition < Exception
+  class InvalidTransition < StandardError
     def initialize(node_role,from,to,str=nil)
       @errstr = "#{node_role.name}: Invalid state transition from #{NodeRole.state_name(from)} to #{NodeRole.state_name(to)}"
       @errstr += ": #{str}" if str
@@ -138,10 +137,10 @@ class NodeRole < ActiveRecord::Base
     end
   end
 
-  class InvalidState < Exception
+  class InvalidState < StandardError
   end
 
-  class MissingJig < Exception
+  class MissingJig < StandardError
     def initalize(nr)
       @errstr = "NodeRole #{nr.name}: Missing jig #{nr.role.jig_name}"
     end
@@ -219,6 +218,11 @@ class NodeRole < ActiveRecord::Base
     n = Node.find_by!(id: args[:node_id])
     d = Deployment.find_by!(id: args[:deployment_id])
     parent_list = find_needed_parents(r,n,d)
+    parent_list.flatten.each do |p|
+      next if p.has_key?(:node_role_id)
+      Role.find(p[:role_id]).add_to_deployment(d)
+    end
+    r.add_to_deployment(d)
     bind_needed_parents(parent_list)
     find_or_create_by!(args)
   end
@@ -612,7 +616,7 @@ class NodeRole < ActiveRecord::Base
       Rails.logger.debug("NodeRole #{name}: Calling #{meth} hook.")
       role.send(meth,self)
     end
-    if todo? && runnable? && !Run.exists?(node_id: self.node_id, running: true)
+    if todo? && runnable?
       Rails.logger.info("NodeRole #{name} is runnable, kicking the annealer.")
       Run.run!
     end
@@ -626,6 +630,7 @@ class NodeRole < ActiveRecord::Base
           c.todo!
         end
       end
+      Run.run!
     end
   end
 
@@ -709,10 +714,6 @@ class NodeRole < ActiveRecord::Base
       next if overlapping.empty?
       errors.add(:role, "#{role.name} cannot be bound because it and #{nr.role.name} both provide #{overlapping.inspect}")
     end
-  end
-
-  def create_deployment_role
-    self.role.add_to_deployment(self.deployment)
   end
 
   def maybe_rebind_attrib_links
