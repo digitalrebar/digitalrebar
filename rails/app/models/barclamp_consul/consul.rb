@@ -24,7 +24,8 @@ class BarclampConsul::Consul < Role
       # Otherwise, it is a client.
       sd["consul"]["service_mode"] = nr.role.node_roles.count == 1 ? "bootstrap" : "client"
       # We will have Consul talk over IPv6
-      sd["consul"]["bind_addr"] = Network.address(network: "admin", range: "host-v6", node: nr.node.id).address.addr
+      address = nr.node.addresses(:v6_only).first
+      sd["consul"]["bind_addr"] = (address ? address.addr : nil)
       nr.sysdata = sd
     end
   end
