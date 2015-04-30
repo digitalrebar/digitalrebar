@@ -23,6 +23,7 @@ class NetworkAllocation < ActiveRecord::Base
   alias_attribute :range,       :network_range
 
   scope  :node,     -> (n)   { where(:node_id => n.id) }
+  scope  :cat,      -> (c)   { joins(:network).where('networks.category' => c) }
   scope  :node_cat, -> (n,c) { joins(:network).where(:node_id => n.id, 'networks.category' => c) }
   scope  :network,  -> (net) { joins(:network_range).where('network_ranges.network_id' => net.id) }
 
