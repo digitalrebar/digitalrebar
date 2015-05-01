@@ -71,7 +71,7 @@ roles:
       - crowbar-installed-node
   - name: crowbar-access
     description: "Crowbar Access Keys"
-    jig: role-provided
+    jig: noop
     attribs:
       - name: crowbar-machine_key
         description: 'The username and password that managed nodes should use to talk to the Crowbar API'
