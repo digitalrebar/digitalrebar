@@ -147,13 +147,7 @@ crowbar roles bind crowbar-job_runner_service to "system-phantom.internal.local"
 crowbar roles bind crowbar-access to "system-phantom.internal.local"
 
 # Set the domain name to use to the derived one
-ROLE_ID=`crowbar roles show dns-service | grep '"id"'`
-ROLE_ID=${ROLE_ID##*:}
-ROLE_ID=${ROLE_ID%,}
-NODE_ROLE_ID=`crowbar noderoles list | grep -B2 -A2 "\"role_id\":$ROLE_ID" | grep -B3 -A2 '"node_id": 1' | grep \"id\"`
-NODE_ROLE_ID=${NODE_ROLE_ID##*:}
-NODE_ROLE_ID=${NODE_ROLE_ID%,}
-crowbar noderoles set $NODE_ROLE_ID attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
+crowbar nodes set "system-phantom.internal.local" attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
 
 # Build a map of keys in the /root/.ssh/authorized_keys
 # Record the machine key as well. -- THIS IS NOT GREAT
@@ -169,16 +163,9 @@ if [ -e /root/.ssh/authorized_keys ] ; then
     done
     echo "} }" >> /tmp/key_list
 
-    ROLE_ID=`crowbar roles show crowbar-access | grep '"id"'`
-    ROLE_ID=${ROLE_ID##*:}
-    ROLE_ID=${ROLE_ID%,}
-    NODE_ROLE_ID=`crowbar noderoles list | grep -B2 -A2 "\"role_id\":$ROLE_ID" | grep -B3 -A2 '"node_id": 1' | grep \"id\"`
-    NODE_ROLE_ID=${NODE_ROLE_ID##*:}
-    NODE_ROLE_ID=${NODE_ROLE_ID%,}
+    crowbar nodes set "system-phantom.internal.local" attrib crowbar-access_keys to "`cat /tmp/key_list`"
 
-    crowbar noderoles set $NODE_ROLE_ID attrib crowbar-access_keys to "`cat /tmp/key_list`"
-
-    crowbar noderoles set $NODE_ROLE_ID attrib crowbar-machine_key to "{ \"value\": \"`cat /etc/crowbar.install.key`\" }"
+    crowbar nodes set "system-phantom.internal.local" attrib crowbar-machine_key to "{ \"value\": \"`cat /etc/crowbar.install.key`\" }"
 
     rm -rf /tmp/key_list
 fi
@@ -221,13 +208,7 @@ crowbar roles bind dns-database to "$FQDN"
 DNS_FORWARDER=""
 #DNS_FORWARDER="YOUR DNS IP HERE"
 if [ "$DNS_FORWARDER" != "" ] ; then
-    ROLE_ID=`crowbar roles show dns-server | grep '"id"'`
-    ROLE_ID=${ROLE_ID##*:}
-    ROLE_ID=${ROLE_ID%,}
-    NODE_ROLE_ID=`crowbar noderoles list | grep -B2 -A2 "\"role_id\":$ROLE_ID" | grep -B3 -A2 '"node_id": 2' | grep \"id\"`
-    NODE_ROLE_ID=${NODE_ROLE_ID##*:}
-    NODE_ROLE_ID=${NODE_ROLE_ID%,}
-    crowbar noderoles set $NODE_ROLE_ID attrib dns-forwarders to "{ \"value\": [ \"$DNS_FORWARDER\" ] }"
+    crowbar nodes set "$FQDN" attrib dns-forwarders to "{ \"value\": [ \"$DNS_FORWARDER\" ] }"
 fi
 
 # Example external dns server - use instead of dns-database above
