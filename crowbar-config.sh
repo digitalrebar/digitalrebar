@@ -145,8 +145,7 @@ crowbar roles bind provisioner-service to "system-phantom.internal.local"
 crowbar roles bind crowbar-api_service to "system-phantom.internal.local"
 crowbar roles bind crowbar-job_runner_service to "system-phantom.internal.local"
 
-# Set the domain name to use to the derived one
-crowbar nodes set "system-phantom.internal.local" attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
+crowbar nodes set "system-phantom.internal.local"  attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
 
 crowbar nodes commit "system-phantom.internal.local"
 
@@ -162,9 +161,7 @@ crowbar networks create "$bmc_net"
 # Join the admin node into the rails app and make it manageable
 ./crowbar-node.sh 127.0.0.1
 
-# Add access keys to something
 crowbar roles bind crowbar-access to "$FQDN"
-
 # Build a map of keys in the /root/.ssh/authorized_keys
 # Record the machine key as well. -- THIS IS NOT GREAT
 if [ -e /root/.ssh/authorized_keys ] ; then
@@ -178,11 +175,8 @@ if [ -e /root/.ssh/authorized_keys ] ; then
         COMMA=","
     done
     echo "} }" >> /tmp/key_list
-
     crowbar nodes set "$FQDN" attrib crowbar-access_keys to "`cat /tmp/key_list`"
-
     crowbar nodes set "$FQDN" attrib crowbar-machine_key to "{ \"value\": \"`cat /etc/crowbar.install.key`\" }"
-
     rm -rf /tmp/key_list
 fi
 
