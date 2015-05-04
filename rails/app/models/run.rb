@@ -63,7 +63,15 @@ class Run < ActiveRecord::Base
   def self.run!(maxjobs=10)
     jobs = {}
     Run.locked_transaction do
-      Rails.logger.debug("Run: Queue: (start) #{Run.all.map{|j|"Job: #{j.id}: running:#{j.running}: #{j.node_role.name}: state #{j.node_role.state}"}}")
+      # Error out any running jobs that do not have a delayed_job backing them.
+      Run.running.each do |r|
+        next if Delayed::Job.find(r.delayed_job_id)
+        r.node_role.runlog = "Run: delayed_job #{r.delayed_job_id} for run #{r.id} of noderole #{r.node_role.id} vanished!"
+        r.node_role.error!
+        r.delete
+      end
+      queue = Run.all.map{|j|"Job: #{j.id}: running:#{j.running}: #{j.node_role.name}: state #{j.node_role.state} "}
+      Rails.logger.debug("Run: Queue: (start) #{queue}")
       running = Run.running.count
       # Look for enqueued runs and schedule at most one per node to go.
       Run.runnable.each do |j|
@@ -92,17 +100,18 @@ class Run < ActiveRecord::Base
 
                                        run_data: {"data" => nr.jig.stage_run(nr)})
       end
-    end
-    return if jobs.length == 0
-    # Now that we have things that are runnable, loop through them to see
-    # what we can actually run.
-    jobs.values.each do |j|
-      Rails.logger.info("Run: Sending job #{j.id}: #{j.node_role.name} to delayed_jobs")
-      # dev mode not starting queued jobs, we need to skip queuing for now
-      if Rails.env.development?
-        j.node_role.jig.run_job(j)
-      else
-        j.node_role.jig.delay(:queue => "NodeRoleRunner").run_job(j)
+      return if jobs.length == 0
+      # Now that we have things that are runnable, loop through them to see
+      # what we can actually run.
+      jobs.values.each do |j|
+        Rails.logger.info("Run: Sending job #{j.id}: #{j.node_role.name} to delayed_jobs")
+        # dev mode not starting queued jobs, we need to skip queuing for now
+        if Rails.env.development?
+          j.node_role.jig.run_job(j)
+        else
+          j.delayed_job_id = j.node_role.jig.delay(:queue => "NodeRoleRunner").run_job(j).id
+          j.save!
+        end
       end
     end
     Rails.logger.info("Run: #{jobs.length} handled this pass, #{Run.running.count} in delayed_jobs")

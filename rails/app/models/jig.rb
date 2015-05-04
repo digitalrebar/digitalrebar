@@ -133,13 +133,13 @@ class Jig < ActiveRecord::Base
       Run.locked_transaction do
         Rails.logger.debug("Run: Deleting finished job #{job.id} for #{nr.name}")
         job.delete
-      end
-      if to_error
-        nr.error!
-      else
-        # Only go to active if the node is still alive -- the jig may
-        # have marked it as not alive.
-        nr.active! if nr.node.alive? && nr.node.available? && mark_active
+        if to_error
+          nr.error!
+        else
+          # Only go to active if the node is still alive -- the jig may
+          # have marked it as not alive.
+          nr.active! if nr.node.alive? && nr.node.available? && mark_active
+        end
       end
     end
   end

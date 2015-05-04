@@ -1,4 +1,4 @@
-# Copyright 2013, Dell
+# Copyright 2015, RackN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,12 @@
 # limitations under the License.
 #
 
-class Scaffolds::RunsController < ApplicationController
-  active_scaffold :run do |conf|
+class MakeRunsRefDelayedJobs < ActiveRecord::Migration
+
+  def change
+    change_table :runs do |t|
+      t.integer   :delayed_job_id
+    end
   end
-end 
+
+end
