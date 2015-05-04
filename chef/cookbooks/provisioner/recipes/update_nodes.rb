@@ -15,7 +15,7 @@
 
 domain_name = node['crowbar']['dns']['domain']
 provisioner_web=node['crowbar']['provisioner']['server']['webservers'].first["url"]
-api_server="http://#{node['crowbar']['api']['servers'].first}"
+api_server=node['crowbar']['api']['servers'].first["url"]
 ntp_server="#{node['crowbar']['ntp']['servers'].first}"
 tftproot = node['crowbar']['provisioner']['server']['root']
 machine_key = node["crowbar"]["machine_key"]
@@ -74,7 +74,7 @@ new_clients = {}
                 :domain => domain_name,
                 :provisioner_web => provisioner_web,
                 :ntp_server => ntp_server,
-                :proxy => node['crowbar']['proxy']['servers'].first,
+                :proxy => node['crowbar']['proxy']['servers'].first['url'],
                 :keys => (node['crowbar']['access_keys'] rescue Hash.new).values.sort.join($/),
                 :api_server => api_server
                 )

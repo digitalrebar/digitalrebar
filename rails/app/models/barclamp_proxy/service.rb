@@ -17,7 +17,19 @@ class BarclampProxy::Service < Service
 
   def do_transition(nr, data)
     internal_do_transition(nr, data, "proxy-service", "proxy-servers") do |s|
-      "http://#{s.Address}:#{s.ServicePort}"
+      Rails.logger.debug("ProxyService: #{s.inspect} #{s.ServiceAddress}")
+      addr = IP.coerce(s.ServiceAddress)
+      Rails.logger.debug("ProxyService: #{addr.inspect}")
+      url = "http://"
+      if addr.v6?
+        url << "[#{addr.addr}]"
+      else
+        url << addr.addr
+      end
+      url << ":#{s.ServicePort}"
+      { "address" => s.ServiceAddress,
+        "port" => "#{s.ServicePort}",
+        "url" => url}
     end
   end
 

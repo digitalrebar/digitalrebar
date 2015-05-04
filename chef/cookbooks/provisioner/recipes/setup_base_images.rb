@@ -21,8 +21,7 @@ domain_name = node["dns"].nil? ? node["domain"] : (node["dns"]["domain"] || node
 Chef::Log.info("Provisioner: raw server data #{ node["crowbar"]["provisioner"]["server"] }")
 
 provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
-api_ipport = node["crowbar"]["api"]["servers"].first
-api_server = "http://#{api_ipport}"
+api_server=node['crowbar']['api']['servers'].first["url"]
 
 machine_key = node["crowbar"]["machine_key"]
 
