@@ -22,7 +22,7 @@ end
 repositories = (node[:crowbar][:provisioner][:server][:repositories][os_token] || Hash.new rescue Hash.new)
 
 online = node[:crowbar][:provisioner][:server][:online]
-proxy = node[:crowbar][:proxy][:servers].first
+proxy = node[:crowbar][:proxy][:servers].first[:url]
 webserver = node[:crowbar][:provisioner][:server][:webservers].first[:url]
 
 # Once the local proxy service is set up, we need to use it.

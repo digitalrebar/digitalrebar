@@ -14,7 +14,7 @@
 #
 # This recipe sets up Squid clients
 
-proxy_str=node["crowbar"]["proxy"]["servers"].first
+proxy_str=node["crowbar"]["proxy"]["servers"].first["url"]
 
 localnets = ["127.0.0.1","localhost","::1"]
 `ip -o addr show`.lines.each do |line|

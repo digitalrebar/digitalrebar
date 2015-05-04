@@ -20,7 +20,7 @@ action :add do
   online = node["crowbar"]["provisioner"]["server"]["online"]
   tftproot = node["crowbar"]["provisioner"]["server"]["root"]
   provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
-  api_server = "http://#{node["crowbar"]["api"]["servers"].first}"
+  api_server=node['crowbar']['api']['servers'].first["url"]
   ntp_server = "#{node["crowbar"]["ntp"]["servers"].first}"
   use_local_security = node["crowbar"]["provisioner"]["server"]["use_local_security"]
   install_url=node["crowbar"]["provisioner"][""]

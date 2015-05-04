@@ -15,10 +15,10 @@
 
 action :add do
   os = "coreos"
-  proxy = node["crowbar"]["proxy"]["servers"].first
+  proxy = node["crowbar"]["proxy"]["servers"].first["url"]
   params = node["crowbar"]["provisioner"]["server"]["boot_specs"][os]
   tftproot = node["crowbar"]["provisioner"]["server"]["root"]
-  api_server = "http://#{node["crowbar"]["api"]["servers"].first}"
+  api_server=node['crowbar']['api']['servers'].first["url"]
   ntp_server = "#{node["crowbar"]["ntp"]["servers"].first}"
   provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
   use_local_security = node["crowbar"]["provisioner"]["server"]["use_local_security"]
