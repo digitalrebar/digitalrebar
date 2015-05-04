@@ -15,7 +15,7 @@
 
 include_recipe "bios::bios-common"
 
-provisioner_server = node[:crowbar][:provisioner][:server][:webservers].first
+provisioner_server = node[:crowbar][:provisioner][:server][:webservers].first[:url]
 
 include_recipe "bios::bios-tools"
 
@@ -31,7 +31,7 @@ product.strip!
     end
   end
   remote_file "/tmp/#{f}" do
-    source "http://#{provisioner_server}/files/bios/#{f}"
+    source "#{provisioner_server}/files/bios/#{f}"
     mode '0755'
     action :create_if_missing
   end
