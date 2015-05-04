@@ -20,7 +20,7 @@ bash "reload consul api server" do
   action :nothing
 end
 
-ip_addr = (IP.coerce(node["crowbar"]["api"]["service_address"]).address rescue nil)
+ip_addr = (IP.coerce(node["crowbar"]["api"]["service_address"]).addr rescue nil)
 
 template "/etc/consul.d/crowbar-api-server.json" do
   source "consul-api-server.json.erb"
