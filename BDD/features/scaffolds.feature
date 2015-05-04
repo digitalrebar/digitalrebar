@@ -85,14 +85,6 @@ Scenario: Available Hammers
     And I should see "Priority"
     And there should be no translation errors   
 
-  Scenario: Runs
-    When I go to the "utils/scaffolds/runs?limit=1" page
-    Then I should see heading "Runs"
-      And I should see "Running"
-      And I should see "Node"
-      And I should see "Node role"
-      And there should be no translation errors   
-
   Scenario: Navs
     When I go to the "utils/scaffolds/navs?limit=1" page
     Then I should see heading "Navs"
