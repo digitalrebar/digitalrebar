@@ -14,7 +14,7 @@
 #
 
 domain_name = node['crowbar']['dns']['domain']
-provisioner_web="http://#{node['crowbar']['provisioner']['server']['webservers'].first}"
+provisioner_web=node['crowbar']['provisioner']['server']['webservers'].first["url"]
 api_server="http://#{node['crowbar']['api']['servers'].first}"
 ntp_server="#{node['crowbar']['ntp']['servers'].first}"
 tftproot = node['crowbar']['provisioner']['server']['root']

@@ -20,9 +20,8 @@ admin_ip = node.address.addr
 domain_name = node["dns"].nil? ? node["domain"] : (node["dns"]["domain"] || node["domain"])
 Chef::Log.info("Provisioner: raw server data #{ node["crowbar"]["provisioner"]["server"] }")
 
-web_server = node["crowbar"]["provisioner"]["server"]["webservers"].first
+provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
 api_ipport = node["crowbar"]["api"]["servers"].first
-provisioner_web="http://#{web_server}"
 api_server = "http://#{api_ipport}"
 
 machine_key = node["crowbar"]["machine_key"]
