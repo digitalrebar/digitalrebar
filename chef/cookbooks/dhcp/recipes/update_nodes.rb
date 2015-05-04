@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-provisioner_addr = node['crowbar']['provisioner']['server']['webservers'].first.match(/^(.*):.*$/).captures.first
+provisioner_addr = node['crowbar']['provisioner']['server']['webservers'].first["address"]
 node.normal['crowbar_wall'] ||= Mash.new
 node.normal['crowbar_wall']['dhcp'] ||= Mash.new
 node.normal['crowbar_wall']['dhcp']['clients'] ||= Mash.new

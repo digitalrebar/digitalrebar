@@ -14,13 +14,13 @@
 
 class Role < ActiveRecord::Base
 
-  class Role::MISSING_DEP < Exception
+  class Role::MISSING_DEP < StandardError
   end
 
-  class Role::MISSING_JIG < Exception
+  class Role::MISSING_JIG < StandardError
   end
 
-  class Role::CONFLICTS < Exception
+  class Role::CONFLICTS < StandardError
   end
 
   validates_uniqueness_of   :name,  :scope => :barclamp_id
@@ -74,7 +74,6 @@ class Role < ActiveRecord::Base
   end
 
   # State Transistion Overrides
-
   def on_error(node_role, *args)
     Rails.logger.debug "No override for #{self.class.to_s}.on_error event: #{node_role.role.name} on #{node_role.node.name}"
   end
@@ -150,6 +149,14 @@ class Role < ActiveRecord::Base
     true
   end
 
+  # Event hook that is called whenever a noderole or a deployment role for this role is
+  # committed.  It is called inline and synchronously with the actual commit, so it must be fast.
+  # If it throws an exception, the commit will fail and the transaction around the commit
+  # will be rolled back.
+  def on_commit(obj)
+    true
+  end
+
   def noop?
     jig.name.eql? 'noop'
   end
@@ -189,6 +196,7 @@ class Role < ActiveRecord::Base
   # Make sure there is a deployment role for ourself in the deployment.
   def add_to_deployment(dep)
     DeploymentRole.unsafe_locked_transaction do
+      Rails.logger.info("Role: Creating deployment_role for #{self.name} in #{dep.name}")
       DeploymentRole.find_or_create_by!(role_id: self.id, deployment_id: dep.id)
     end
   end

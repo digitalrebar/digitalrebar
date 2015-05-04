@@ -77,7 +77,7 @@ class DashboardController < ApplicationController
         begin
           node.update_attributes! values
           succeeded << node.alias
-        rescue Exception=>e
+        rescue StandardError=>e
           Rails.logger.info "user attempted dashboard.list put for node #{node.name} raised error #{e.message}"
           failed << node.alias
         end

@@ -47,7 +47,5 @@ roles:
     jig: chef
     flags:
       - implicit
-    requires:
-      - proxy-service
     wants-attribs:
       - proxy-servers

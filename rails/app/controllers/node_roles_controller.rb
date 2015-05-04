@@ -64,7 +64,7 @@ class NodeRolesController < ApplicationController
       @node_role = NodeRole.safe_create!(role_id: role.id,
                                          node_id: node.id,
                                          deployment_id: depl.id)
-    rescue Exception => e
+    rescue StandardError => e
       Rails.logger.fatal("Exception on safe_create!: #{e.message}")
       Rails.logger.fatal(e.backtrace)
       raise e

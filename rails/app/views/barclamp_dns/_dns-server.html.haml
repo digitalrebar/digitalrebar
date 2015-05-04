@@ -5,6 +5,6 @@
     %dd= d["domain"]
     %dt= t ".forwarders"
     %dd= (d["forwarders"].length==0 ? t('not_set') : d["forwarders"].join(","))
-- rescue Exception => e
+- rescue StandardError => e
   = e.message
   = template.inspect

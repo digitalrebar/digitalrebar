@@ -20,7 +20,7 @@ action :add do
   tftproot = node["crowbar"]["provisioner"]["server"]["root"]
   api_server = "http://#{node["crowbar"]["api"]["servers"].first}"
   ntp_server = "#{node["crowbar"]["ntp"]["servers"].first}"
-  provisioner_web = "http://#{node["crowbar"]["provisioner"]["server"]["webservers"].first}"
+  provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
   use_local_security = node["crowbar"]["provisioner"]["server"]["use_local_security"]
   keys = node["crowbar"]["access_keys"].values.sort
   machine_key = node["crowbar"]["machine_key"]

@@ -193,7 +193,7 @@ class ApplicationController < ActionController::Base
   set_layout
 
   unless Rails.application.config.consider_all_requests_local
-    rescue_from Exception, :with => :render_error
+    rescue_from StandardError, :with => :render_error
   end
 
   private

@@ -25,7 +25,7 @@ class Attrib < ActiveRecord::Base
   serialize :schema
 
   # Will be thrown unless the attribute is writable.
-  class AttribReadOnly < Exception
+  class AttribReadOnly < StandardError
     def initialize(attr)
       @errstr = "Attrib #{attr.name} is read-only"
     end
@@ -83,10 +83,10 @@ class Attrib < ActiveRecord::Base
 
   def self.get(name, from, source=:all)
     begin
-      (name.is_a?(Attrib) ? name : Attrib.find_key(name)).get(from, source)       
-    rescue Exception => e
+      (name.is_a?(Attrib) ? name : Attrib.find_key(name)).get(from, source)
+    rescue StandardError => e
       Rails.logger.warn "Warn, did not get #{name} from #{from.name} with error #{e.message}"
-      nil      
+      nil
     end
   end
 
@@ -95,37 +95,42 @@ class Attrib < ActiveRecord::Base
   # the Attrib class, and failing hard if we were passed something that
   # we do not know how to handle.
   def get(from_orig,source=:all)
-    from = __resolve(from_orig)
-    d = case
-        when from.is_a?(Hash) then from
-        when from.is_a?(Node)
-          case source
-          when :all then from.discovery.deep_merge(from.hint)
-          when :hint,:user then from.hint
-          else from.discovery
+    d = nil
+    Attrib.transaction do
+      from = __resolve(from_orig)
+      d = case
+          when from.is_a?(Hash) then from
+          when from.is_a?(Node)
+            case source
+            when :all then from.discovery.deep_merge(from.hint)
+            when :hint,:user then from.hint
+            else from.discovery
+            end
+          when from.is_a?(DeploymentRole)
+            case source
+            when :all then from.wall.deep_merge(from.all_data)
+            when :hint, :user then from.all_data
+            when :wall then from.wall
+            else from.data
+            end
+          when from.is_a?(NodeRole)
+            case source
+            when :all then from.attrib_data
+            when :wall then from.wall
+            when :system then from.sysdata
+            when :user,:hint then from.data
+            else raise("#{from} is not a valid source to read noderole data from!")
+            end
+          when from.is_a?(Role) then from.template
+          else raise("Cannot extract attribute data from #{from.class.to_s}")
           end
-        when from.is_a?(DeploymentRole)
-          case source
-          when :all then from.wall.deep_merge(from.all_data)
-          when :hint, :user then from.all_data
-          when :wall then from.wall
-          else from.data
-          end
-        when from.is_a?(NodeRole)
-          case source
-          when :all then from.attrib_data
-          when :wall then from.wall
-          when :system then from.sysdata
-          when :user,:hint then from.data
-          else raise("#{from} is not a valid source to read noderole data from!")
-          end
-        when from.is_a?(Role) then from.template
-        else raise("Cannot extract attribute data from #{from.class.to_s}")
-        end
+    end
     begin
       map.split('/').each{|s|d = d[s]}
+      Rails.logger.debug("Attrib: Got #{self.name}: #{d.inspect}")
       return d
     rescue
+      Rails.logger.debug("Attrib: Got #{self.name}: nil")
       nil
     end
   end
@@ -160,11 +165,11 @@ class Attrib < ActiveRecord::Base
     __set(to,value,type)
   end
 
-  def self.set(name, to, value, type)
+  def self.set(name, to, value, type=:system)
     Attrib.find_key(name).set(to,value,type)
   end
 
-  class AttribValidationFailed < Exception
+  class AttribValidationFailed < StandardError
     def initialize(attr,data,errors)
       @errstr = "Attrib #{attr.name}: New requested data #{data.to_json} failed schema validation\n"
       errors.each do |e|
@@ -220,24 +225,27 @@ class Attrib < ActiveRecord::Base
     to_merge = template(value)
     to = __resolve(to_orig)
     Rails.logger.debug("Attrib: Attempting to update #{name} on #{to.class.name}:#{to.name} to #{value} with #{to_merge.inspect}")
-    case
-    when to.is_a?(Hash) then to.deep_merge(to_merge)
-    when to.is_a?(Node)
-      case target
-      when :discovery then to.discovery_update(to_merge)
-      else to.hint_update(to_merge)
+    Attrib.transaction do
+      case
+      when to.is_a?(Hash) then to.deep_merge(to_merge)
+      when to.is_a?(Node)
+        case target
+        when :discovery then to.discovery_update(to_merge)
+        else to.hint_update(to_merge)
+        end
+      when to.is_a?(Role) then to.template_update(to_merge)
+      when to.is_a?(DeploymentRole)
+        target == :system ? to.wall_update(to_merge) : to.data_update(to_merge)
+      when to.is_a?(NodeRole)
+        case target
+        when :system then to.sysdata_update(to_merge)
+        when :user,:hint then to.data_update(to_merge)
+        when :wall then to.wall_update(to_merge)
+        else raise("#{target} is not a valid target to write noderole data to!")
+        end
+      else raise("Cannot write attribute data to #{to.class.to_s}")
       end
-    when to.is_a?(Role) then to.template_update(to_merge)
-    when to.is_a?(DeploymentRole)
-      target == :system ? to.wall_update(to_merge) : to.data_update(to_merge)
-    when to.is_a?(NodeRole)
-      case target
-      when :system then to.sysdata_update(to_merge)
-      when :user,:hint then to.data_update(to_merge)
-      when :wall then to.wall_update(to_merge)
-      else raise("#{target} is not a valid target to write noderole data to!")
-      end
-    else raise("Cannot write attribute data to #{to.class.to_s}")
+      to.save! unless to.is_a?(Hash)
     end
   end
 

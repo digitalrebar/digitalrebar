@@ -16,14 +16,10 @@
 require 'json'
 
 class NodeRole < ActiveRecord::Base
-
   after_commit :bind_cluster_children, on: [:create]
   after_commit :run_hooks, on: [:update, :create]
-  after_commit :create_deployment_role, on: [:create]
   after_commit :poke_attr_dependent_noderoles, on: [:update]
-  after_create :bind_needed_parents
   validate :role_is_bindable, on: :create
-  validate :noderole_has_all_parents, on: :create
   validate :validate_conflicts, on: :create
 
 
@@ -125,7 +121,7 @@ class NodeRole < ActiveRecord::Base
     PROPOSED => 'proposed'
   }
 
-  class InvalidTransition < Exception
+  class InvalidTransition < StandardError
     def initialize(node_role,from,to,str=nil)
       @errstr = "#{node_role.name}: Invalid state transition from #{NodeRole.state_name(from)} to #{NodeRole.state_name(to)}"
       @errstr += ": #{str}" if str
@@ -139,10 +135,10 @@ class NodeRole < ActiveRecord::Base
     end
   end
 
-  class InvalidState < Exception
+  class InvalidState < StandardError
   end
 
-  class MissingJig < Exception
+  class MissingJig < StandardError
     def initalize(nr)
       @errstr = "NodeRole #{nr.name}: Missing jig #{nr.role.jig_name}"
     end
@@ -172,15 +168,25 @@ class NodeRole < ActiveRecord::Base
     return node.state == NodeRole::ERROR
   end
 
-  def self.find_needed_parents(target_role,target_node,target_dep)
+  def self.bind_needed_parents(target_role,target_node,target_dep)
+    res = []
+    wanted_parents = []
     NodeRole.transaction do
-      res = []
-      target_role.parents.each do |parent|
+      target_role.parents.each do |tp|
+        wanted_parents << tp
+      end
+      target_role.wanted_attribs.each do |wa|
+        wanted_parents << wa.role
+      end
+    end
+    wanted_parents.uniq.each do |parent|
+      tenative_parent = nil
+      NodeRole.transaction do
         tenative_parent = NodeRole.find_by(role_id: parent.id, node_id: target_node.id) ||
-          NodeRole.find_by("node_id = ? AND role_id in
+                          NodeRole.find_by("node_id = ? AND role_id in
                                             (select id from roles where ? = ANY(provides))",
-                           target_node.id,
-                           parent.name)
+                                           target_node.id,
+                                           parent.name)
         unless parent.implicit?
           cdep = target_dep
           until tenative_parent || cdep.nil?
@@ -192,36 +198,35 @@ class NodeRole < ActiveRecord::Base
             cdep = (cdep.parent rescue nil)
           end
         end
-        if tenative_parent
-          res << {node_role_id: tenative_parent.id}
-        else
-          res << find_needed_parents(parent,target_node,target_dep)
-          res << {node_id: target_node.id, role_id: parent.id, deployment_id: target_dep.id}
-        end
       end
-      return res
-    end
-  end
-
-  def self.bind_needed_parents(parents)
-    parents.each do |parent|
-      case
-      when parent.is_a?(Hash) && parent.has_key?(:node_role_id) then next
-      when parent.is_a?(Array) then bind_needed_parents(parent)
-      when parent.is_a?(Hash) && parent.has_key?(:role_id) then NodeRole.find_or_create_by!(parent)
+      if tenative_parent
+        Rails.logger.info("NodeRole safe_create: Found parent noderole #{tenative_parent.name}")
+        res << tenative_parent
       else
-        raise "Cannot happen in bind_needed_parents!"
+        r = safe_create!(node_id: target_node.id, role_id: parent.id, deployment_id: target_dep.id)
+        Rails.logger.info("NodeRole safe_create: Created parent noderole #{r.name}")
+        res << r
       end
     end
+    return res
   end
 
   def self.safe_create!(args)
     r = Role.find_by!(id: args[:role_id])
     n = Node.find_by!(id: args[:node_id])
     d = Deployment.find_by!(id: args[:deployment_id])
-    parent_list = find_needed_parents(r,n,d)
-    bind_needed_parents(parent_list)
-    find_or_create_by!(args)
+    Rails.logger.info("NodeRole safe_create: Determining parents needed to bind role #{r.name} to node #{n.name} in deployment #{d.name}")
+    rents = bind_needed_parents(r,n,d)
+    Rails.logger.info("NodeRole safe_create: Binding role #{r.name} to deployment #{d.name}")
+    r.add_to_deployment(d)
+    Rails.logger.info("NodeRole safe_create: Binding role #{r.name} to node #{n.name} in deployment #{d.name}")
+    res = find_or_create_by!(args)
+    rents.each do |rent|
+      Rails.logger.info("NodeRole safe_create: Setting #{rent.name} as parent for #{res.name}")
+      rent._add_child(res)
+    end
+    res.rebind_attrib_parents
+    res
   end
 
   def error?
@@ -268,11 +273,11 @@ class NodeRole < ActiveRecord::Base
   end
 
   def deployment_data
-    res = {}
-    dr = deployment_role
-    res.deep_merge!(dr.all_data)
-    res.deep_merge!(dr.wall)
-    res
+    if self.proposed?
+      deployment_role.all_data
+    else
+      deployment_role.all_committed_data
+    end
   end
 
   def available
@@ -298,7 +303,8 @@ class NodeRole < ActiveRecord::Base
     end
   end
 
-  def add_child(new_child, cluster_recurse=true)
+  # This must only be called directly by safe_create!
+  def _add_child(new_child, cluster_recurse=true)
     NodeRole.transaction do
       if new_child.is_a?(String)
         new_child = self.node.node_roles.find_by!(role_id: Role.find_by!(name: new_child))
@@ -311,9 +317,16 @@ class NodeRole < ActiveRecord::Base
       if self.role.cluster? && cluster_recurse
         NodeRole.peers_by_role(deployment,role).each do |peer|
           next if peer.id == self.id
-          peer.add_child(new_child,false)
+          peer._add_child(new_child,false)
         end
       end
+    end
+    return new_child
+  end
+
+  def add_child(new_child, cluster_recurse=true)
+    NodeRole.transaction do
+      _add_child(new_child,cluster_recurse).rebind_attrib_parents
     end
   end
 
@@ -374,7 +387,7 @@ class NodeRole < ActiveRecord::Base
   end
 
   def all_committed_data
-    res = deployment_data
+    res = deployment_role.all_committed_data
     res.deep_merge!(wall)
     res.deep_merge!(sysdata)
     res.deep_merge!(committed_data)
@@ -391,7 +404,12 @@ class NodeRole < ActiveRecord::Base
     res = {}
     all_parents.each do |parent|
       next unless parent.node_id == node_id || parent.role.server
-      res.deep_merge!(parent.all_my_data) end
+      if self.proposed?
+        res.deep_merge!(parent.all_my_data)
+      else
+        res.deep_merge!(parent.all_committed_data)
+      end
+    end
     res
   end
 
@@ -418,11 +436,12 @@ class NodeRole < ActiveRecord::Base
       # For all the node attrs, resolve them.  Prefer hints.
       # Start with the node data.
       node_req_attrs.each do |req_attr|
-        Rails.logger.info("Jig: Adding node attribute #{req_attr.attrib_name} to attribute blob for #{name} run")
+        Rails.logger.info("NodeRole all_transition_data: Adding node attribute #{req_attr.attrib_name} to attribute blob for #{name} run")
         res.deep_merge!(req_attr.get(node))
       end
       # Next, do the same for the attribs we want from a noderole.
       parent_attrib_links.each do |al|
+        Rails.logger.info("NodeRole all_transition_data: Adding role attribute #{al.attrib.name} from #{al.parent.name}")
         res.deep_merge!(al.attrib.extract(al.parent.all_committed_data))
       end
       # And all the noderole data from the parent noderoles on this node.
@@ -549,7 +568,10 @@ class NodeRole < ActiveRecord::Base
       unless proposed?
         raise InvalidTransition.new(self,state,TODO,"Cannot commit! unless proposed")
       end
-      return unless proposed? || blocked?
+      if deployment_role.proposed?
+        raise InvalidTransition.new(self,state,PROPOSED,"Cannot commit! unless deployment_role committed!")
+      end
+      role.on_commit(self)
       update!(committed_data: proposed_data)
       block_or_todo
       if !node.alive && node.power[:on]
@@ -572,11 +594,13 @@ class NodeRole < ActiveRecord::Base
     NodeRole.transaction do
       role.wanted_attribs.each do |a|
         next unless a.role_id
-        target = all_parents.where(role_id: a.role_id).first!
+        target = all_parents.find_by!(role_id: a.role_id)
         nra = parent_attrib_links.find_by(attrib: a)
         if nra.nil?
+          Rails.logger.info("NodeRole rebind_attrib_parents: attrib: #{a.name} Creating parent attrib link for #{self.name} to #{target.name}")
           NodeRoleAttribLink.find_or_create_by!(parent: target, child: self, attrib: a)
         elsif nra.parent != target
+          Rails.logger.info("NodeRole rebind_attrib_parents: attrib: #{a.name} Updating parent attrib link for #{self.name} to #{target.name}")
           nra.update!(parent: target)
         end
       end
@@ -605,7 +629,7 @@ class NodeRole < ActiveRecord::Base
       Rails.logger.debug("NodeRole #{name}: Calling #{meth} hook.")
       role.send(meth,self)
     end
-    if todo? && runnable? && !Run.exists?(node_id: self.node_id, running: true)
+    if todo? && runnable?
       Rails.logger.info("NodeRole #{name} is runnable, kicking the annealer.")
       Run.run!
     end
@@ -619,6 +643,7 @@ class NodeRole < ActiveRecord::Base
           c.todo!
         end
       end
+      Run.run!
     end
   end
 
@@ -668,20 +693,6 @@ class NodeRole < ActiveRecord::Base
     # Now that we have validated the role side of things, validate the noderole side of things
   end
 
-  def noderole_has_all_parents
-    NodeRole.find_needed_parents(role,
-                                 Node.find(node_id),
-                                 Deployment.find(deployment_id)).each do |e|
-      next if e.is_a?(Hash) && e.has_key?(:node_role_id)
-      if e.is_a?(Array) && !e.empty?
-        errors[:base] << "Next tenative parent also missing prerequisites: #{e.inspect}"
-      end
-      if e.is_a?(Hash)
-        errors[:base] << "Tenative parent noderole #{e.inspect} is not bound!"
-      end
-    end
-  end
-
   def validate_conflicts
     role = Role.find(role_id)
     Node.find(node_id).node_roles.each do |nr|
@@ -704,29 +715,8 @@ class NodeRole < ActiveRecord::Base
     end
   end
 
-  def create_deployment_role
-    self.role.add_to_deployment(self.deployment)
-  end
-
   def maybe_rebind_attrib_links
     rebind_attrib_parents if deployment_id_changed?
-  end
-
-  def bind_needed_parents
-    NodeRole.transaction do
-      NodeRole.find_needed_parents(role,
-                                   Node.find(node_id),
-                                   deployment).each do |np|
-        unless np.is_a?(Hash) && np.has_key?(:node_role_id)
-          myname = self.name
-          self.destroy!
-          raise "NodeRole: #{myname} missing prequisite #{np.inspect}, despite passing validation!"
-        end
-        parent = NodeRole.find_by!(id: np[:node_role_id])
-        parent.add_child(self)
-      end
-      rebind_attrib_parents
-    end
   end
 
   def bind_cluster_children
@@ -743,4 +733,3 @@ class NodeRole < ActiveRecord::Base
     end
   end
 end
-

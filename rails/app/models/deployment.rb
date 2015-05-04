@@ -149,7 +149,7 @@ class Deployment < ActiveRecord::Base
                    alive: true,
                    deployment_id: self.id,
                    bootenv: "local")
-    rescue Exception => e
+    rescue StandardError => e
       puts "failed to add node: #{e.message}"
       Rails.logger.fatal("Failed to add node: #{e.message}")
     end

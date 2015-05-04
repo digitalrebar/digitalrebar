@@ -48,6 +48,10 @@ class DeploymentRole < ActiveRecord::Base
     end
   end
 
+  def noderoles
+    NodeRole.with_role(role).in_deployment(deployment)
+  end
+
   def committed?
     proposed_data.nil?
   end
@@ -76,8 +80,14 @@ class DeploymentRole < ActiveRecord::Base
     save!
   end
 
-  def all_data
+  def all_committed_data
     role.template.deep_merge(self.committed_data).deep_merge(self.wall)
+  end
+
+  def all_data
+    res = all_committed_data
+    res.deep_merge(all_proposed_data) if proposed_data
+    res
   end
 
   def data_update(val)
