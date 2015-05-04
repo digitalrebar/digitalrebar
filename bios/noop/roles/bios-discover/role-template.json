@@ -7,7 +7,7 @@
 		    "system_product": {
 			"__sm_leaf": true,
 			"op": "regex",
-			"match": "^PowerEdge (R.|T[34])20"
+			"match": "^PowerEdge (R.|T[34])[23]0"
 		    }
 		},
 		"role": "bios-dell-rseries-configure",
