@@ -30,7 +30,7 @@ class NodesController < ApplicationController
       format.json { render api_index Node, @list }
     end
   end
-  
+
   # API /api/status/nodes(/:id)
   def status
     nodes = if params[:id]
@@ -121,7 +121,7 @@ class NodesController < ApplicationController
       if @node.power.include? @poweraction
         result = @node.power.send(@poweraction) rescue nil
         # special case for development
-        if result.nil? 
+        if result.nil?
           render api_not_implemented(@poweraction, "see logs for internal error") unless Rails.env.development?
           result = "development faked"
         end
@@ -132,7 +132,7 @@ class NodesController < ApplicationController
     elsif request.get?
       render api_array @node.power
     end
-      
+
   end
 
   def debug
@@ -150,7 +150,7 @@ class NodesController < ApplicationController
   def propose
     node_action :propose!
   end
-  
+
   def commit
     node_action :commit!
   end
@@ -161,6 +161,7 @@ class NodesController < ApplicationController
     params[:deployment_id] ||= Deployment.system
     params.require(:name)
     params.require(:deployment_id)
+    default_net = nil
     Node.transaction do
       @node = Node.create!(params.permit(:name,
                                          :alias,
@@ -172,22 +173,15 @@ class NodesController < ApplicationController
                                          :system,
                                          :available,
                                          :bootenv))
-
       # Keep suport for mac and ip hints in short form around for legacy Sledgehammer purposes
       if params[:ip]
-        # If we find a network with that hint, then add that role (bound search to admin networks)
-        the_net = Network.lookup_network(params[:ip])
-        the_net = Network.find_by_name("unmanaged") unless the_net
-        if the_net
-          NodeRole.safe_create!(role_id: the_net.role.id, node_id: @node.id, deployment_id: @node.deployment.id)
-          @node.attribs.find_by!(name: "hint-#{the_net.name}-v4addr").set(@node,params[:ip])
-        end
-      end
-
-      if params[:mac]
-        @node.attribs.find_by!(name: "hint-admin-macs").set(@node,[params[:mac]])
+        default_net = Network.lookup_network(params[:ip]) ||
+                      Network.find_by_name("unmanaged")
+        Attrib.set("hint-#{default_net.name}-v4addr",@node,params[:ip]) if default_net
+        Attrib.set("hint-admin-macs", @node, [params[:mac]]) if params[:mac]
       end
     end
+    default_net.make_node_role(@node) if default_net
     render api_show @node
   end
 
