@@ -34,6 +34,21 @@ class Run < ActiveRecord::Base
     end
   end
 
+  def self._run(j)
+    if Run.running.find_by(queue: j.queue, node_id: j.node_id).nil?
+      Rails.logger.info("Run: Sending job #{j.id}: #{j.node_role.name} to delayed_jobs queue #{j.queue}")
+      # dev mode not starting queued jobs, we need to skip queuing for now
+      j.running = true
+      j.save!
+      if Rails.env.development?
+        j.node_role.jig.run_job(j)
+      else
+        j.delayed_job_id = j.node_role.jig.delay(queue: j.queue).run_job(j).id
+        j.save!
+      end
+    end
+  end
+
   # Queue up a job to run.
   # Run.enqueue should only be called when you want to enqueue a noderole
   # that is in a state other than TODO, as those will be picked up by Run.run!
@@ -54,6 +69,7 @@ class Run < ActiveRecord::Base
       Rails.logger.info("Run: Enqueing Run for #{nr.name}")
       Run.create!(node_id: nr.node_id,
                   node_role_id: nr.id,
+                  queue: "HighPriorityRunner",
                   run_data: {"data" =>  nr.jig.stage_run(nr)})
     end
     run!
@@ -75,12 +91,7 @@ class Run < ActiveRecord::Base
       running = Run.running.count
       # Look for enqueued runs and schedule at most one per node to go.
       Run.runnable.each do |j|
-        break if jobs.length + running >= maxjobs
-        next if jobs[j.node_id]
-        Rails.logger.info("Run: Setting enqueued run #{j.id} for #{j.node_role.name} to running")
-        j.running = true
-        j.save!
-        jobs[j.node_id] = j
+        Run._run(j)
       end
 
       # Find any runnable noderoles and see if they can be enqueued.
@@ -92,7 +103,7 @@ class Run < ActiveRecord::Base
         Rails.logger.info("Run: Creating new Run for #{nr.name}")
         jobs[nr.node_id] = Run.create!(node_id: nr.node_id,
                                        node_role_id: nr.id,
-                                       running: true,
+                                       queue: "NodeRoleRunner",
                                        # Take a snapshot of the data we want to hand to the jig's run method.
                                        # We do this so that the jig gets fed data that is consistent for this point
                                        # in time, as opposed to picking up whatever is lying around when delayed_jobs
@@ -104,14 +115,7 @@ class Run < ActiveRecord::Base
       # Now that we have things that are runnable, loop through them to see
       # what we can actually run.
       jobs.values.each do |j|
-        Rails.logger.info("Run: Sending job #{j.id}: #{j.node_role.name} to delayed_jobs")
-        # dev mode not starting queued jobs, we need to skip queuing for now
-        if Rails.env.development?
-          j.node_role.jig.run_job(j)
-        else
-          j.delayed_job_id = j.node_role.jig.delay(:queue => "NodeRoleRunner").run_job(j).id
-          j.save!
-        end
+        Run._run(j)
       end
     end
     Rails.logger.info("Run: #{jobs.length} handled this pass, #{Run.running.count} in delayed_jobs")
