@@ -1,5 +1,6 @@
 {
   "layers":["jigs","core","network","nodes","os","clients","services","apps", "hide"],
+  "amqp-service":"services",
   "bmc-nat-client":"nodes",
   "bmc-nat-router":"core",
   "chef-server":"jigs",
@@ -55,6 +56,7 @@
   "proxy-client":"clients",
   "proxy-server":"core",
   "puppet-sa":"clients",
+  "rabbitmq-server":"core",
   "ipmi-master":"nodes",
   "ipmi-discover":"hide",
   "raid-tools-install":"nodes",

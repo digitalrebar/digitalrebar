@@ -153,6 +153,7 @@ class Deployment < ActiveRecord::Base
       puts "failed to add node: #{e.message}"
       Rails.logger.fatal("Failed to add node: #{e.message}")
     end
+    Publisher.publish_event("deployment", "on_create", { :deployment => self, :id => self.id })
   end
 
   def run_if_any_runnable
@@ -161,6 +162,7 @@ class Deployment < ActiveRecord::Base
       Rails.logger.info("Deployment: #{name} is committed, kicking the annealer.")
       Run.run!
     end
+    Publisher.publish_event("deployment", "on_change", { :deployment => self, :id => self.id })
   end
 
   # if we delete a deployment, then reset the nodes to be from the system deployment
@@ -180,6 +182,7 @@ class Deployment < ActiveRecord::Base
         return true
       end
     end
+    Publisher.publish_event("deployment", "on_delete", { :deployment => self, :id => self.id })
   end
 
 end

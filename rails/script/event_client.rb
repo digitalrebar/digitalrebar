@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 # encoding: utf-8
 # Copyright 2012, Dell
 #
@@ -14,42 +15,63 @@
 # limitations under the License.
 #
 
-require "rubygems"
-gem "amqp"
-require "amqp"
-require "json"
+require 'bunny'
+require 'json'
+require 'diplomat'
+require '/opt/opencrowbar/core/rails/lib/consul_access'
+require '/opt/opencrowbar/core/rails/lib/ip'
 
-t = Thread.new { EventMachine.run }
-sleep(0.5)
-
-
-connection = AMQP.connect
-channel = AMQP::Channel.new(connection, :auto_recovery => true)
-channel.on_error do |ch, channel_close|
-  raise "Channel-level exception: #{channel_close.reply_text}"
+if ARGV.empty?
+  abort "Usage: #{$0} [binding key]"
 end
 
-channel.prefetch(1)
+# Lookup amqp service and build url for bunny
+s = ConsulAccess.getService('amqp-service')
+if s == nil or s.ServiceAddress == nil
+  puts "AMQP Service not available, retry later"
+  exit 1
+end
 
-channel.queue("", :durable => false, :auto_delete => true).bind("amqpgem.patterns.events").subscribe do |metadata, payload|
-  begin
-    body = JSON.parse(payload)
+addr = IP.coerce(s.ServiceAddress)
+hash = {}
+hash[:user] = 'crowbar'
+hash[:pass] = 'crowbar'
+if addr.v6?
+  hash[:host] = "[#{addr.addr}]"
+else
+  hash[:host] = addr.addr
+end
+hash[:vhost] = '/opencrowbar'
+hash[:port] = s.ServicePort.to_i
 
-    case metadata.type
-    when "warmup" then
-      puts "WARMUP: #{body["msg"]}"
-    when "web_event" then
-      puts "web_event: #{body["msg"]}"
-    when "job_event" then
-      puts "job_event: #{body["msg"]}"
+conn = Bunny.new(hash)
+conn.start
+
+ch  = conn.create_channel
+x   = ch.topic("opencrowbar")
+q   = ch.queue("")
+
+ARGV.each do |severity|
+  q.bind(x, :routing_key => severity)
+end
+
+puts " [*] Waiting for logs. To exit press CTRL+C"
+
+begin
+  q.subscribe(:block => true) do |delivery_info, properties, body|
+    body = JSON.parse(body)
+    if delivery_info.routing_key =~ /^node_role./
+      puts " [x] #{delivery_info.routing_key}:#{body["id"]}"
+    elsif delivery_info.routing_key =~ /^node./
+      puts " [x] #{delivery_info.routing_key}:#{body["name"]}"
+    elsif delivery_info.routing_key =~ /^role./
+      puts " [x] #{delivery_info.routing_key}:#{body["id"]}"
     else
-      puts "[warn] Do not know how to handle event of type #{metadata.type}"
+      puts " [x] #{delivery_info.routing_key}:#{body}"
     end
-  rescue Exception => e
-    puts "[error] Could not handle event of type #{metadata.type}: #{e.inspect}"
   end
+rescue Interrupt => _
+  ch.close
+  conn.close
 end
 
-puts "[boot] Ready"
-Signal.trap("INT") { connection.close { EventMachine.stop } }
-t.join

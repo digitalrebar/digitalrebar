@@ -498,6 +498,7 @@ class Node < ActiveRecord::Base
       Rails.logger.debug("Node: Calling #{r.name} on_node_change for #{self.name}")
       r.on_node_change(self)
     end if available?
+    Publisher.publish_event("node", "on_change", { :node => self, :name => self.name, :id => self.id }) if available?
     if (previous_changes[:alive] || previous_changes[:available])
       if alive && available && node_roles.runnable.count > 0
         Rails.logger.info("Node: #{name} is alive and available, kicking the annealer.")
@@ -551,6 +552,7 @@ class Node < ActiveRecord::Base
         Rails.logger.error "node #{name} attempting to cleanup role #{r.name} failed with #{e.message}"
       end
     end
+    Publisher.publish_event("node", "on_delete", { :node => self, :name => self.name, :id => self.id })
   end
 
   def on_create_hooks
@@ -569,6 +571,7 @@ class Node < ActiveRecord::Base
         r.add_to_node(self)
       end
     end
+    Publisher.publish_event("node", "on_create", { :node => self, :name => self.name, :id => self.id })
   end
 
 end
