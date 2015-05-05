@@ -23,8 +23,25 @@ class Publisher
     return @@channel if @@channel
 
     unless @@connection
-      # XXX: Use diplomat here
-      @@connection = Bunny.new
+      # Lookup amqp service and build url for bunny
+      s = ConsulAccess.getService('amqp-service')
+      if s == nil || s.ServiceAddress == nil
+        raise "AMQP Service not available"
+      end
+      addr = IP.coerce(s.ServiceAddress)
+      hash = {}
+      hash[:user] = 'crowbar'
+      hash[:pass] = 'crowbar'
+      if addr.v6?
+        hash[:host] = "[#{addr.addr}]"
+      else
+        hash[:host] = addr.addr
+      end
+      hash[:vhost] = '/opencrowbar'
+      hash[:port] = s.ServicePort.to_i
+
+      Rails.logger.debug("Attempting to connection to AMQP service: #{hash}")
+      @@connection = Bunny.new(hash)
       @@connection.start
     end
     @@channel = @@connection.create_channel

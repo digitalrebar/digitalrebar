@@ -17,12 +17,34 @@
 
 require 'bunny'
 require 'json'
+require 'diplomat'
+require '/opt/opencrowbar/core/rails/lib/consul_access'
+require '/opt/opencrowbar/core/rails/lib/ip'
 
 if ARGV.empty?
   abort "Usage: #{$0} [binding key]"
 end
 
-conn = Bunny.new
+# Lookup amqp service and build url for bunny
+s = ConsulAccess.getService('amqp-service')
+if s == nil or s.ServiceAddress == nil
+  puts "AMQP Service not available, retry later"
+  exit 1
+end
+
+addr = IP.coerce(s.ServiceAddress)
+hash = {}
+hash[:user] = 'crowbar'
+hash[:pass] = 'crowbar'
+if addr.v6?
+  hash[:host] = "[#{addr.addr}]"
+else
+  hash[:host] = addr.addr
+end
+hash[:vhost] = '/opencrowbar'
+hash[:port] = s.ServicePort.to_i
+
+conn = Bunny.new(hash)
 conn.start
 
 ch  = conn.create_channel
