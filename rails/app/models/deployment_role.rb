@@ -69,6 +69,7 @@ class DeploymentRole < ActiveRecord::Base
         save!
       end
     end
+    Publisher.publish_event("deployment_role", "on_change", { :deployment_role => self, :id => self.id })
     # Have any runnable noderoles that use this deployment role rerun.
     deployment.node_roles.where(role_id: role.id).each do |nr|
       nr.todo! if nr.runnable?
