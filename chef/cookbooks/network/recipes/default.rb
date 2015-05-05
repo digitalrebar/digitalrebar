@@ -278,13 +278,6 @@ def resolve_conduit(conduit)
   raise "Cannot resolve conduit #{conduit} with known interfaces #{known_ifs}"
 end
 
-# If we do not have an admin address allocated yet, do nothing.
-unless node["crowbar"]["network"]["addresses"].values.any?{|v|v["category"] == "admin"}
-  Chef::Log.info("Network: #{node.fqdn} has not been allocated an address on the admin network.")
-  Chef::Log.info("Network: Leaving the configuration alone.")
-  return
-end
-
 # Dynamically create our new local interfaces.
 node["crowbar"]["network"]["addresses"].keys.sort{|a,b|
   net_weight(node["crowbar"]["network"]["addresses"][a]) <=> net_weight(node["crowbar"]["network"]["addresses"][b])
@@ -292,6 +285,7 @@ node["crowbar"]["network"]["addresses"].keys.sort{|a,b|
   network = node["crowbar"]["network"]["addresses"][addr]
   # Skip BMC conduits.
   next if network["conduit"] == "bmc"
+  next if network["network"] == "unmanaged"
   # This will wind up being the interfaces that the address will be bound to.
   net_ifs = Array.new
   # This is the basic interfaces that the conduit definition implies we should use.
