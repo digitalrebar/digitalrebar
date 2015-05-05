@@ -383,6 +383,7 @@ en:
       switch_no_link: "No Active Uplinks"
       uptime: Uptime
       memory: Memory
+      operating_system: Operating System
       cpu: CPU
       number_of_drives: Disk Drives
       description: Description
