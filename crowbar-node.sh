@@ -37,6 +37,8 @@ if [ "$1" == "" ] ; then
 fi
 admin_ip="$1"
 
+ip_re='([0-9a-f.:]+/[0-9]+)'
+
 # install the database
 chef-solo -c /opt/opencrowbar/core/bootstrap/chef-solo.rb -o "${node_recipes}"
 
@@ -60,8 +62,11 @@ if [ "$NODE_ROLE_ID" != "" ] ; then
 fi
 
 set -e
-
-IPADDR=`ip addr show | grep "inet " | grep -v " lo" | awk '{ print $2 }'`
+if ! [[ $(ip -4 -o addr show |grep 'scope global' |grep -v ' lo' |grep -v ' dynamic') =~ $ip_re ]]; then
+    echo "Cannot find IP address for the admin node!"
+    exit 1
+fi
+IPADDR="${BASH_REMATCH[1]%/*}"
 echo "Using $IPADDR for this host"
 
 # Add node to OpenCrowbar
