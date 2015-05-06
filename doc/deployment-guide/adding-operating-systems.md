@@ -4,8 +4,6 @@ This process ensures that the Admin node can deploy operating systems to slaves.
 
 When deploying an admin node in production mode, you will want to be able to install operating systems on slave nodes.  By default, the `provisioner-base-images` role will look for OS install ISO images in `/tftpboot/isos`.  
 
-> If using a Docker container as an admin node and do not want to copy the ISOs into place, you must hard link (not soft link) the ISO files because symlinks are not visible on file system paths mapped inside containers
-
 As of April 2015, the provisioner knows how to install the following operating systems from the following ISO images:
 
  * `ubuntu-12.04`: `ubuntu-12.04.4-server-amd64.iso`
@@ -22,7 +20,9 @@ As of April 2015, the provisioner knows how to install the following operating s
 
 > This list is subject to change!  For the latest list, consult [Provisioner Base Images](https://github.com/opencrowbar/core/blob/master/chef/roles/provisioner-base-images/role-template.json) template file.
 
-To enable the provisioner to install from those images, place them in `$HOME/.cache/opencrowbar/tftpboot/isos`, either directly or via a hard link.  These images will then be available inside the Docker container at `/tftpboot/isos`, and the provisioner will be able to use them to install operating systems on slave nodes.
+## For Docker Installs only
+
+To enable the provisioner to install from those images, place them in `$HOME/.cache/opencrowbar/tftpboot/isos`, either directly or via a hard link.  These images will then be available inside the Docker container at `/tftpboot/isos`, and the provisioner will be able to use them to install operating systems on slave nodes or if you do not want to copy the ISOs into place, you must hard link (not soft link) the ISO files because symlinks are not visible on file system paths mapped inside containers
 
 ## Add a new OS after initial annealing
 
