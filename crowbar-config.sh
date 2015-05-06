@@ -58,7 +58,13 @@ unmanaged_net='
       "overlap": true,
       "name": "host",
       "first": "0.0.0.1/0",
-      "last": "223.255.255.255/0"
+      "last": "223.255.255.254/0"
+    },
+    {
+      "overlap": true,
+      "name": "host-v6",
+      "first": "::1/0",
+      "last": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:fffe/0"
     }
   ]
 }'
