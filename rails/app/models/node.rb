@@ -137,9 +137,9 @@ class Node < ActiveRecord::Base
     IP.coerce("#{net.v6prefix}:#{v6_hostpart}/64")
   end
 
-  def addresses(filter = :all)
+  def addresses(filter = :all, networks = ["admin","unmanaged"])
     res = []
-    ["admin", "unmanaged"].each do |net_cat|
+    networks.each do |net_cat|
       nets = Network.in_category(net_cat)
       nets.each do |net|
         res2 = network_allocations.where(network_id: net.id).select do |a|
@@ -160,9 +160,9 @@ class Node < ActiveRecord::Base
     res.flatten
   end
 
-  def address
-    res = addresses.detect{|a|a.reachable?}
-    Rails.logger.warn("Node #{name} did not have any reachable addresses in #{addresses.map{ |a| a.addr }.join(",")}") unless res
+  def address(filter = :all, networks = ["admin","unmanaged"])
+    res = addresses(filter,networks).detect{|a|a.reachable?}
+    Rails.logger.warn("Node #{name} did not have any reachable addresses in networks #{networks.inspect}") unless res
     res
   end
 
