@@ -10,7 +10,7 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-# limitations under the License.  
+# limitations under the License.
 
 class Role < ActiveRecord::Base
 
@@ -74,28 +74,30 @@ class Role < ActiveRecord::Base
   end
 
   # State Transistion Overrides
+  # These are called after the relavent noderole has been saved to the
+  # database, so they SHOULD NOT be used for anything that can fail.
   def on_error(node_role, *args)
-    Rails.logger.debug "No override for #{self.class.to_s}.on_error event: #{node_role.role.name} on #{node_role.node.name}"
+    true
   end
 
   def on_active(node_role, *args)
-    Rails.logger.debug "No override for #{self.class.to_s}.on_active event: #{node_role.role.name} on #{node_role.node.name}"
+    true
   end
 
   def on_todo(node_role, *args)
-    Rails.logger.debug "No override for #{self.class.to_s}.on_todo event: #{node_role.role.name} on #{node_role.node.name}"
+    true
   end
 
   def on_transition(node_role, *args)
-    Rails.logger.debug "No override for #{self.class.to_s}.on_transition event: #{node_role.role.name} on #{node_role.node.name}"
+    true
   end
 
   def on_blocked(node_role, *args)
-    Rails.logger.debug "No override for #{self.class.to_s}.on_blocked event: #{node_role.role.name} on #{node_role.node.name}"
+    true
   end
 
   def on_proposed(node_role, *args)
-    Rails.logger.debug "No override for #{self.class.to_s}.on_proposed event: #{node_role.role.name} on #{node_role.node.name}"
+    true
   end
 
   # Event triggers for node creation and destruction.
@@ -157,6 +159,13 @@ class Role < ActiveRecord::Base
     true
   end
 
+  # Event hook that is called after a noderole is created, but before it is
+  # committed.  This can be used to block the creation of a noderole by
+  # throwing an exception.
+  def on_node_bind(nr)
+    true
+  end
+
   def noop?
     jig.name.eql? 'noop'
   end
@@ -171,7 +180,7 @@ class Role < ActiveRecord::Base
 
   def github
     baseurl = barclamp.source_url
-    baseurl ||= barclamp.parent.source_url    
+    baseurl ||= barclamp.parent.source_url
     return I18n.t('unknown') unless baseurl
     "#{baseurl}\/tree\/master\/#{jig.name}\/roles\/#{name}"
 
