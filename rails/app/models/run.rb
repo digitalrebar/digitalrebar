@@ -34,12 +34,15 @@ class Run < ActiveRecord::Base
     end
   end
 
-  def self._run(j)
-    if Run.running.find_by(queue: j.queue, node_id: j.node_id).nil?
-      Rails.logger.info("Run: Sending job #{j.id}: #{j.node_role.name} to delayed_jobs queue #{j.queue}")
-      # dev mode not starting queued jobs, we need to skip queuing for now
-      j.running = true
-      j.save!
+  def self.run_runnable
+    Run.runnable.each do |j|
+      Run.locked_transaction do
+        next if Run.running.find_by(queue: j.queue, node_id: j.node_id)
+        Rails.logger.info("Run: Sending job #{j.id}: #{j.node_role.name} to delayed_jobs queue #{j.queue}")
+        # dev mode not starting queued jobs, we need to skip queuing for now
+        j.running = true
+        j.save!
+      end
       if Rails.env.development?
         j.node_role.jig.run_job(j)
       else
@@ -75,25 +78,49 @@ class Run < ActiveRecord::Base
     run!
   end
 
+  def self.queue(arg)
+    r = "Run: queue(#{arg}) "
+    Run.all.map do |j|
+      r << " Run: #{j.id}: running:#{j.running}: #{j.node_role.name}: state #{j.node_role.state}"
+      if j.running
+        r << "Delayed_job: #{Delayed::Job.find(j.delayed_job_id).inspect}"
+      end
+    end
+    r
+  end
+
   # Run up to maxjobs jobs, enqueuing runnable noderoles in TODO as it goes.
   def self.run!(maxjobs=10)
     jobs = {}
     Run.locked_transaction do
       # Error out any running jobs that do not have a delayed_job backing them.
-      Run.running.each do |r|
-        next if Delayed::Job.find(r.delayed_job_id)
-        r.node_role.runlog = "Run: delayed_job #{r.delayed_job_id} for run #{r.id} of noderole #{r.node_role.id} vanished!"
-        r.node_role.error!
+      Run.all.each do |r|
+        kill_run = false
+        if r.node.nil?
+          Rails.logger.error("Run #{r.id} is present for a nonexistent node.")
+          kill_run = true
+        end
+        if r.node_role.nil?
+          Rails.logger.error("Run #{r.id} os present a missing noderole.")
+          kill_run = true
+        end
+        if r.running && Delayed::Job.find(r.delayed_job_id).nil?
+          Rails.logger.error("Run #{r.id} is running, but missing delayed_job #{r.delayed_job_id}")
+          kill_run = true
+        end
+        next unless kill_run
+        if r.node_role
+          r.node_role.runlog = "Run #{r.inspect} is invalid.  Deleting it."
+          r.node_role.error!
+        end
         r.delete
       end
-      queue = Run.all.map{|j|"Job: #{j.id}: running:#{j.running}: #{j.node_role.name}: state #{j.node_role.state} "}
-      Rails.logger.debug("Run: Queue: (start) #{queue}")
+    end
+    # Look for enqueued runs and handle them first.
+    Run.run_runnable
+    Run.locked_transaction do
+      Rails.logger.debug(Run.queue("start"))
       running = Run.running.count
-      # Look for enqueued runs and schedule at most one per node to go.
-      Run.runnable.each do |j|
-        Run._run(j)
-      end
-
       # Find any runnable noderoles and see if they can be enqueued.
       # The logic here will only enqueue a noderole of the node does not
       # already have a noderole enqueued.
@@ -101,31 +128,22 @@ class Run < ActiveRecord::Base
         break if jobs.length + running >= maxjobs
         next if jobs[nr.node_id] || Run.exists?(node_id: nr.node_id)
         Rails.logger.info("Run: Creating new Run for #{nr.name}")
+        # Take a snapshot of the data we want to hand to the jig's run
+        # method.  We do this so that the jig gets fed data that is
+        # consistent for this point in time, as opposed to picking up
+        # whatever is lying around when delayed_jobs gets around to
+        # actually doing its thing, which may not be what we expect.
         jobs[nr.node_id] = Run.create!(node_id: nr.node_id,
                                        node_role_id: nr.id,
                                        queue: "NodeRoleRunner",
-                                       # Take a snapshot of the data we want to hand to the jig's run method.
-                                       # We do this so that the jig gets fed data that is consistent for this point
-                                       # in time, as opposed to picking up whatever is lying around when delayed_jobs
-                                       # gets around to actually doing its thing, which may not be what we expect.
-
                                        run_data: {"data" => nr.jig.stage_run(nr)})
       end
-      return if jobs.length == 0
-      # Now that we have things that are runnable, loop through them to see
-      # what we can actually run.
-      jobs.values.each do |j|
-        Run._run(j)
-      end
     end
+    # Second pass through runnable jobs, poking freshly-created ones this time.
+    Run.run_runnable
     Rails.logger.info("Run: #{jobs.length} handled this pass, #{Run.running.count} in delayed_jobs")
-    begin
-      # log queue state
-      Rails.logger.debug("Run: Queue: (end) #{Run.all.map{|j|"Job: #{j.id}: running:#{j.running}: #{j.node_role.name}: state #{j.node_role.state}"}}")
-    rescue
-      # catch node_role is nil (exposed in simulator runs)
-      Run.all.each { |j| raise "you cannot run job #{j.id} with missing node #{j.node_id} and node_role #{j.node_role_id} information.  This is likely a garbage collection issue!" if j.node_role.nil? }
-    end
+    # log queue state
+    Rails.logger.debug(Run.queue("end"))
     return jobs.length
   end
 end
