@@ -212,6 +212,7 @@ class NodeRole < ActiveRecord::Base
   end
 
   def self.safe_create!(args)
+    res = nil
     r = Role.find_by!(id: args[:role_id])
     n = Node.find_by!(id: args[:node_id])
     d = Deployment.find_by!(id: args[:deployment_id])
@@ -220,12 +221,15 @@ class NodeRole < ActiveRecord::Base
     Rails.logger.info("NodeRole safe_create: Binding role #{r.name} to deployment #{d.name}")
     r.add_to_deployment(d)
     Rails.logger.info("NodeRole safe_create: Binding role #{r.name} to node #{n.name} in deployment #{d.name}")
-    res = find_or_create_by!(args)
-    rents.each do |rent|
-      Rails.logger.info("NodeRole safe_create: Setting #{rent.name} as parent for #{res.name}")
-      rent._add_child(res)
+    NodeRole.transaction do
+      res = find_or_create_by!(args)
+      rents.each do |rent|
+        Rails.logger.info("NodeRole safe_create: Setting #{rent.name} as parent for #{res.name}")
+        rent._add_child(res)
+      end
+      res.rebind_attrib_parents
+      r.on_node_bind(res)
     end
-    res.rebind_attrib_parents
     res
   end
 
