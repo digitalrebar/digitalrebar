@@ -201,10 +201,12 @@ class Network < ActiveRecord::Base
       Rails.logger.info("Network: Adding role and attribs for #{role_name}")
       bc = Barclamp.find_key "network"
       Role.transaction do
-        NetworkRange.create!(name: "host-v6",
-                             first: "#{v6prefix}::1/64",
-                             last:  ((IP.coerce("#{v6prefix}::/64").broadcast) - 1).to_s,
-                             network_id: id) if v6prefix
+        if v6prefix && !NetworkRange.find_by(name: "host-v6", network_id: id)
+          NetworkRange.create!(name: "host-v6",
+                               first: "#{v6prefix}::1/64",
+                               last:  ((IP.coerce("#{v6prefix}::/64").broadcast) - 1).to_s,
+                               network_id: id)
+        end
         r = Role.find_or_create_by!(name: role_name,
                                     type: "BarclampNetwork::Role",   # force
                                     jig_name: Rails.env.production? ? "chef" : "test",
