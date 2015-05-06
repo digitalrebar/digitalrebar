@@ -21,6 +21,7 @@ class Attrib < ActiveRecord::Base
   UI_RENDERER = "attribs/default"
 
   validate :schema_is_valid
+  after_create :make_writable_if_schema
 
   serialize :schema
 
@@ -203,6 +204,11 @@ class Attrib < ActiveRecord::Base
     validate_schema(schema).each do |e|
       errors.add(:schema,"[#{e.path}]: #{e.message}")
     end
+  end
+
+  def make_writable_if_schema
+    return if schema.nil? || schema == ""
+    update(writable: true)
   end
 
   # If we were asked to do something with an attribute on a node,

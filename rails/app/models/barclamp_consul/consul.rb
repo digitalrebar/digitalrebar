@@ -17,7 +17,7 @@ require 'resolv'
 
 class BarclampConsul::Consul < Role
 
-  def on_proposed(nr)
+  def on_node_bind(nr)
     NodeRole.transaction do
       # If this is our first Consul node, have it operate in bootstrap mode.
       # Otherwise, it is a client.
