@@ -62,7 +62,11 @@ class NetworksController < ::ApplicationController
                                                :category,
                                                :group,
                                                :use_team,
-                                               :v6prefix)
+                                               :v6prefix,
+                                               :update_dns,
+                                               :dns_domain,
+                                               :hostname_template,
+                                               :dns_svc_name)
       # make it easier to batch create ranges with a network
       if params.key? :ranges
         ranges = params[:ranges].is_a?(String) ? JSON.parse(params[:ranges]) : params[:ranges]
@@ -84,7 +88,11 @@ class NetworksController < ::ApplicationController
                                                    :overlap,
                                                    :use_vlan,
                                                    :use_bridge,
-                                                   :use_team)
+                                                   :use_team,
+                                                   :update_dns,
+                                                   :dns_domain,
+                                                   :hostname_template,
+                                                   :dns_svc_name)
         end
         params.delete :ranges
       end
@@ -133,7 +141,9 @@ class NetworksController < ::ApplicationController
     @network = Network.find_key(params[:id])
     # Sorry, but no changing of the admin conduit for now.
     params.delete(:conduit) if @network.name == "admin"
-    @network.update_attributes!(params.permit(:description, :vlan, :use_vlan, :use_bridge, :team_mode, :use_team, :conduit, :configure, :category, :group, :deployment_id))
+    @network.update_attributes!(params.permit(:description, :vlan, :use_vlan, :use_bridge, :team_mode, :use_team,
+                                              :conduit, :configure, :category, :group, :deployment_id,
+                                              :update_dns, :dns_dmain, :hostname_template, :dns_svc_name))
     respond_to do |format|
       format.html { render :action=>:show }
       format.json { render api_show @network }
@@ -173,7 +183,7 @@ class NetworksController < ::ApplicationController
   def deallocate_ip
     raise ArgumentError.new("Cannot deallocate addresses for now")
     node = Node.find_key(params[:node_id])
-    allocation = Allocation.where(:address => params[:cidr], :node_id => node.id)
+    allocation = NetworkAllocation.where(:address => params[:cidr], :node_id => node.id)
     allocation.destroy
   end
 

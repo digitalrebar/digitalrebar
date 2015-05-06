@@ -24,7 +24,7 @@ barclamp:
   license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
 
 roles:
-  - name: dns-server
+  - name: dns-bind_server
     jig: chef
     requires:
       - consul
@@ -37,10 +37,15 @@ roles:
           sequence:
             - type: str
               pattern: /[0-9a-f:.]*/
-  - name: dns-database
+      - name: dns-svc-name
+        description: 'The name of this service'
+        map: 'crowbar/dns/service_name'
+        schema:
+          type: str
+  - name: dns-bind_database
     jig: chef
     requires:
-      - dns-server
+      - dns-bind_server
   - name: dns-service
     jig: role-provided
     flags:
@@ -69,21 +74,62 @@ roles:
     wants-attribs:
       - dns_servers
       - dns-domain
+  - name: dns-mgmt_server
+    jig: chef
+    requires:
+      - consul
+      - dns-service
+    wants-attribs:
+      - dns_servers
+      - consul-acl-master-token
+    attribs:
+      - name: dns-management-name
+        description: 'DNS management server name'
+        map: 'dns-mgmt/server_name'
+        schema:
+          type: int
+      - name: dns-management-port
+        description: 'DNS management server port'
+        map: 'dns-mgmt/server_port'
+        schema:
+          type: int
+          required: true
+        default: 6754
+      - name: dns-access-name
+        description: 'DNS management access name'
+        map: 'dns-mgmt/access_name'
+        schema:
+          type: str
+          required: true
+        default: 'admin'
+      - name: dns-https-cert
+        description: 'DNS management https cert'
+        map: 'dns-mgmt/https_cert'
+        schema:
+          type: str
+      - name: dns-https-key
+        description: 'DNS management https key'
+        map: 'dns-mgmt/https_key'
+        schema:
+          type: str
+        default: 'admin'
+      - name: dns-access-password
+        description: 'DNS management access password'
+        map: 'dns-mgmt/access_password'
+        schema:
+          type: str
+          required: true
+        default: 'admin'
   - name: dns-mgmt_service
     jig: role-provided
     flags:
       - service
     attribs:
-      - name: dns_shm_servers
-        description: 'DNS Shim servers that all Crowbar admins should use'
-        map: 'crowbar/dns/shimservers'
-  - name: dns-mgmt_shim_provider
-    jig: noop
-  - name: dns-mgmt_shim_crowbar_dns
-    jig: chef
-    provides:
-      - dns-mgmt_shim_provider
-  - name: dns-mgmt_shim_power_dns
-    jig: script
-    provides:
-      - dns-mgmt_shim_provider
+      - name: dns-management-servers
+        description: 'DNS Management servers that all Crowbar admins should use'
+        map: 'crowbar/dns/management_servers'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/

@@ -95,5 +95,6 @@ module Crowbar
     Que.worker_count = 0
     Que.mode = :off
 
+    RestClient.log = Rails.logger
   end
 end

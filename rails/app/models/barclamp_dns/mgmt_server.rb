@@ -1,4 +1,4 @@
-# Copyright 2015, RackN
+# Copyright 2013, Dell 
 # 
 # Licensed under the Apache License, Version 2.0 (the "License"); 
 # you may not use this file except in compliance with the License. 
@@ -14,15 +14,22 @@
 # 
 
 require 'json'
+class BarclampDns::MgmtServer < Role
 
-class BarclampCrowbar::ApiServer < Role
+  def on_node_bind(nr)
+    # if not set, set the name to the deployment name.
+    NodeRole.transaction do
+      name = Attrib.get("dns-management-name",nr)
+      unless name
+        Attrib.set("dns-management-name",nr,nr.node.deployment.name)
+      end
+    end
+  end
 
   def sysdata(nr)
     my_addr = nr.node.addresses(:v4_only).first
-    raise "No address found for API server" unless my_addr
-    { 'crowbar' => { 'api' => { 'service_address' => my_addr.to_s } } }
+    raise "No address for the DNS Management Server" unless my_addr
+    { 'dns-mgmt' => { 'server_address' => my_addr.to_s } }
   end
-
-
 
 end

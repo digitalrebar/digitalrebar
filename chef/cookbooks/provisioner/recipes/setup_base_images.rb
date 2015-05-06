@@ -46,7 +46,9 @@ end
 sledge_args << "provisioner.web=#{provisioner_web}"
 sledge_args << "crowbar.web=#{api_server}"
 sledge_args << "crowbar.dns.domain=#{node["crowbar"]["dns"]["domain"]}"
-sledge_args << "crowbar.dns.servers=#{node["crowbar"]["dns"]["nameservers"].join(',')}"
+na = node[:crowbar][:dns][:nameservers].collect { |x| x['address'] }
+sledge_args << "crowbar.dns.servers=#{na.join(',')}"
+
 
 node.normal["crowbar"]["provisioner"]["server"]["sledgehammer_kernel_params"] = sledge_args.join(" ")
 append_line = node["crowbar"]["provisioner"]["server"]["sledgehammer_kernel_params"]

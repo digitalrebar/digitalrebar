@@ -45,6 +45,7 @@ gem 'open4'
 gem 'structurematch', '~> 0.1.1'
 gem 'diplomat'
 gem 'httpclient'
+gem 'rest-client'
 
 group :development, :test do
   gem 'coveralls'

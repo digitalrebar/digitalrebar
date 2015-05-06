@@ -90,6 +90,10 @@ admin_net='
   "group": "internal",
   "deployment": "system",
   "conduit": "1g0",
+  "dns_domain": "neode.com",
+  "update_dns": true,
+  "hostname_template": "{{node.name}}.admin",
+  "dns_svc_name": "system",
   "ranges": [
     {
       "name": "admin",
@@ -121,6 +125,10 @@ bmc_net='
   "category": "bmc",
   "group": "internal",
   "conduit": "bmc",
+  "dns_domain": "neode.com",
+  "update_dns": true,
+  "hostname_template": "{{node.name}}.bmc",
+  "dns_svc_name": "system",
   "ranges": [
     {
       "conduit": "1g0",
@@ -212,11 +220,10 @@ crowbar nodes bind "$FQDN" to crowbar-job_runner
 
 crowbar nodes bind "$FQDN" to rabbitmq-server
 
-# TODO: One day do it this way:
-# Setup DNS Server and Mgmt Shim for our own DNS Server
-# crowbar nodes bind "$FQDN" to dns-server
-# crowbar nodes bind "$FQDN" to dns-mgmt_shim_crowbar_dns
-crowbar nodes bind "$FQDN" to dns-database
+# Setup DNS Server and Mgmt Server for our own DNS Server
+crowbar nodes bind "$FQDN" to dns-bind_server
+crowbar nodes bind "$FQDN" to dns-mgmt_server
+crowbar nodes bind "$FQDN" to dns-bind_database
 
 # Set the dns forwarder if you have them
 DNS_FORWARDER=""

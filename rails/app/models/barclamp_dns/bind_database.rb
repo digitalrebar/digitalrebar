@@ -13,7 +13,7 @@
 # limitations under the License. 
 # 
 
-class BarclampDns::MgmtShimCrowbarDns < Role
+class BarclampDns::BindDatabase < Role
 
 
   def on_node_create(n)
@@ -36,7 +36,8 @@ class BarclampDns::MgmtShimCrowbarDns < Role
     to_enqueue = []
     ActiveRecord::Base.connection.execute("select name, address
                                            from dns_database
-                                           where network = 'admin'").each do |row|
+                                           where category = 'admin' or
+                                                 category = 'unmanaged'").each do |row|
       name, addr = row["name"] + ".", IP.coerce(row["address"])
       hosts[name] ||= Hash.new
       hosts[name][addr.v4? ? "ip4addr" : "ip6addr"] ||= addr.addr

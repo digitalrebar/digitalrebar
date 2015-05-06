@@ -1,0 +1,19 @@
+; The port
+[network]
+port = <%= @web_port %>
+username = <%= @access_name %>
+password = <%= @access_password %>
+
+<% @services.each do |s| -%>
+<% if s['type'] == 'BIND' -%>
+[dns]
+type = BIND
+<% else -%>
+[dns]
+type = POWERDNS
+hostname = <%= s['address'] %>
+port = <%= s['mgmt_port'] %>
+password = <%= s['mgmt_token'] %>
+server = <%= s['mgmt_name'] %>
+<% end -%>
+<% end -%>
