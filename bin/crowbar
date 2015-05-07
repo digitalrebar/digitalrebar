@@ -562,6 +562,13 @@ module OpenCrowbar
     def do_move_to_Deployment(deploy,*rest)
       do_update_Json({"deployment_id" => deploy.id})
     end
+
+    def do_bind_to_Role(role, *rest)
+      obj,res = REST.post(NodeRole.path,JSON.generate({:node_id => id, :role_id => role.id}))
+      maybe_json_die(obj,res)
+      NodeRole.new(obj)
+    end
+
   end
 
   class Deployment < ProxyWithAttribs
@@ -580,6 +587,13 @@ module OpenCrowbar
       objs,res = REST.get("#{self.class.path}/#{id}/nodes")
       maybe_json_die(objs,res)
       objs.map{|o|Node.new(o)}
+    end
+
+    def do_bind_to_Role(role, *rest)
+      new_dr = JSON.generate({:deployment_id => id, :role_id => role.id})
+      obj,res = REST.post(DeploymentRole.path, new_dr)
+      maybe_json_die(obj,res)
+      DeploymentRole.new(obj)
     end
 
   end
@@ -646,7 +660,7 @@ module OpenCrowbar
   end
 
   class Barclamp < CrowbarProxy; end
-  
+
   class User < ProxyWithAttribs
 
     def self.path
@@ -665,10 +679,26 @@ module OpenCrowbar
     end
 
   end
-  
+
   class Attrib < CrowbarProxy; end
 
   class Jig < CrowbarProxy; end
+
+  class NetworkRange < CrowbarProxy
+
+    def self.path
+      "api/v2/network_ranges"
+    end
+
+  end
+
+  class NetworkAllocation < CrowbarProxy
+
+    def self.path
+      "api/v2/network_allocations"
+    end
+
+  end
 
   class Network < CrowbarProxy
     def self.path
@@ -690,6 +720,27 @@ module OpenCrowbar
 
     def do_routerdestroy()
       obj, res = REST.delete("#{self.class.path}/#{id}/network_routers/any")
+      maybe_json_die(obj,res)
+      obj
+    end
+
+    def do_add_to_Node(node)
+      data = {:node_id => node.id}
+      obj, res = REST.post("#{self.class.path}/#{id}/ip",data)
+      maybe_json_die(obj,res)
+      obj
+    end
+
+    def do_alloc_on_Node_from_String(node,range)
+      data = {:node_id => node.id, :range => range}
+      obj, res = REST.post("#{self.class.path}/#{id}/ip",data)
+      maybe_json_die(obj,res)
+      obj
+    end
+
+    def do_dealloc_from_Node_address_String(node,cidr)
+      data = {:node_id => node.id, :cidr => cidr}
+      obj, res = REST.delete("#{self.class.path}/#{id}/ip",data)
       maybe_json_die(obj,res)
       obj
     end
