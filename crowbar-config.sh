@@ -168,7 +168,6 @@ crowbar networks create "$bmc_net"
 # Join the admin node into the rails app and make it manageable
 ./crowbar-node.sh 127.0.0.1
 
-crowbar roles bind crowbar-access to "$FQDN"
 # Build a map of keys in the /root/.ssh/authorized_keys
 # Record the machine key as well. -- THIS IS NOT GREAT
 if [ -e /root/.ssh/authorized_keys ] ; then
@@ -182,8 +181,9 @@ if [ -e /root/.ssh/authorized_keys ] ; then
         COMMA=","
     done
     echo "} }" >> /tmp/key_list
-    crowbar nodes set "$FQDN" attrib crowbar-access_keys to "`cat /tmp/key_list`"
-    crowbar nodes set "$FQDN" attrib crowbar-machine_key to "{ \"value\": \"`cat /etc/crowbar.install.key`\" }"
+    crowbar deploymentroles set crowbar-access attrib crowbar-access_keys to "`cat /tmp/key_list`"
+    crowbar deploymentroles set crowbar-access attrib crowbar-machine_key to "{ \"value\": \"`cat /etc/crowbar.install.key`\" }"
+    crowbar deploymentroles commit crowbar-access
     rm -rf /tmp/key_list
 fi
 

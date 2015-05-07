@@ -22,6 +22,7 @@ roles:
       - milestone
       - implicit
     requires:
+      - crowbar-access
       - network-server
       - network-lldpd
       - crowbar-installed-node
@@ -33,6 +34,7 @@ roles:
       - implicit
       - powersave
     requires:
+      - crowbar-access
       - deployer-client
       - dns-client
       - logging-client
@@ -66,12 +68,15 @@ roles:
     requires:
       - provisioner-repos
       - provisioner-docker-setup
+      - crowbar-access
     provides:
       - crowbar-managed-node
       - crowbar-installed-node
   - name: crowbar-access
     description: "Crowbar Access Keys"
-    jig: noop
+    flags:
+      - implicit
+    jig: script
     attribs:
       - name: crowbar-machine_key
         description: 'The username and password that managed nodes should use to talk to the Crowbar API'
@@ -103,7 +108,6 @@ roles:
     jig: chef
     requires:
       - consul
-      - crowbar-access
   - name: crowbar-api_service
     jig: role-provided
     flags:
@@ -120,7 +124,6 @@ roles:
   - name: crowbar-job_runner
     jig: chef
     requires:
-      - crowbar-access
       - consul
   - name: crowbar-job_runner_service
     jig: role-provided
@@ -141,6 +144,8 @@ roles:
     flags:
       - milestone
       - implicit
+    requires:
+      - crowbar-access
     conflicts:
       - crowbar-managed-node
     provides:
