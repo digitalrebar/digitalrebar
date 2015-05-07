@@ -29,38 +29,6 @@ class DeploymentRole < ActiveRecord::Base
 
   # convenience methods
 
-  def self.find_key(key)
-    col,key = case
-                when db_id?(key) then [:id, key.to_i]
-                when key.is_a?(ActiveRecord::Base) then [:id, key.id]
-                when self.respond_to?(:name_column) then [name_column, key]
-                when key == "admin" then [:id,Node.find_by!(admin: true).id]
-                else [:name, key]
-              end
-
-    # Name is a made-up column, but search it anyway.
-    if col == :name
-      answer = self.by_name(key)
-      if !answer or answer.empty?
-        e = ActiveRecord::RecordNotFound.new
-        e.crowbar_model = self
-        e.crowbar_column = col
-        e.crowbar_key = key
-        raise e
-      end
-      return answer.first
-    end
-
-    begin
-      find_by!(col => key)
-    rescue ActiveRecord::RecordNotFound => e
-      e.crowbar_model = self
-      e.crowbar_column = col
-      e.crowbar_key = key
-      raise e
-    end
-  end
-
   def name
     role.name
   end

@@ -181,9 +181,9 @@ if [ -e /root/.ssh/authorized_keys ] ; then
         COMMA=","
     done
     echo "} }" >> /tmp/key_list
-    crowbar deploymentroles set crowbar-access attrib crowbar-access_keys to "`cat /tmp/key_list`"
-    crowbar deploymentroles set crowbar-access attrib crowbar-machine_key to "{ \"value\": \"`cat /etc/crowbar.install.key`\" }"
-    crowbar deploymentroles commit crowbar-access
+    crowbar deployments set system attrib crowbar-access_keys to "`cat /tmp/key_list`"
+    crowbar deployments set system attrib crowbar-machine_key to "{ \"value\": \"`cat /etc/crowbar.install.key`\" }"
+    crowbar deployments commit system
     rm -rf /tmp/key_list
 fi
 
