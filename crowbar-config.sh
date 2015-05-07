@@ -143,16 +143,12 @@ admin_node="
 ip_re='([0-9a-f.:]+/[0-9]+)'
 
 # Add required or desired services
-crowbar roles bind dns-service to "system-phantom.internal.local"
-crowbar roles bind ntp-service to "system-phantom.internal.local"
-crowbar roles bind proxy-service to "system-phantom.internal.local"
-crowbar roles bind dns-mgmt_service to "system-phantom.internal.local"
-crowbar roles bind provisioner-service to "system-phantom.internal.local"
-crowbar roles bind crowbar-api_service to "system-phantom.internal.local"
-crowbar roles bind crowbar-job_runner_service to "system-phantom.internal.local"
-crowbar roles bind amqp-service to "system-phantom.internal.local"
-
-crowbar nodes set "system-phantom.internal.local"  attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
+services=(dns-service ntp-service proxy-service dns-mgmt_service provisioner-service
+          crowbar-api_service crowbar-job_runner_service amqp-service)
+for role in "${services[@]}"; do
+    crowbar nodes bind "system-phantom.internal.local" to "$role"
+done
+crowbar nodes set "system-phantom.internal.local" attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
 
 crowbar nodes commit "system-phantom.internal.local"
 
@@ -188,26 +184,26 @@ if [ -e /root/.ssh/authorized_keys ] ; then
 fi
 
 # Add the admin node to the admin network for now.
-crowbar roles bind "network-$admin_net_name" to "$FQDN"
+crowbar networks add $admin_net_name to "$FQDN"
 
 # Add the admin node to the bmc network for now.
-crowbar roles bind "network-$bmc_net_name" to "$FQDN"
+crowbar networks add $bmc_net_name to "$FQDN"
 
 # Bind the admin role to it, and commit the resulting
 # proposed noderoles.
 
-crowbar roles bind crowbar-build-root-key to "$FQDN"
+crowbar nodes bind "$FQDN" to crowbar-build-root-key
 
-crowbar roles bind crowbar-api_server to "$FQDN"
-crowbar roles bind crowbar-job_runner to "$FQDN"
+crowbar nodes bind "$FQDN" to crowbar-api_server
+crowbar nodes bind "$FQDN" to crowbar-job_runner
 
-crowbar roles bind rabbitmq-server to "$FQDN"
+crowbar nodes bind "$FQDN" to rabbitmq-server
 
 # TODO: One day do it this way:
 # Setup DNS Server and Mgmt Shim for our own DNS Server
-# crowbar roles bind dns-server to "$FQDN"
-# crowbar roles bind dns-mgmt_shim_crowbar_dns to "$FQDN"
-crowbar roles bind dns-database to "$FQDN"
+# crowbar nodes bind "$FQDN" to dns-server
+# crowbar nodes bind "$FQDN" to dns-mgmt_shim_crowbar_dns
+crowbar nodes bind "$FQDN" to dns-database
 
 # Set the dns forwarder if you have them
 DNS_FORWARDER=""
@@ -221,14 +217,14 @@ fi
 
 # Ntp Service configuration
 # Use the admin node as the ntp server for the cluster
-crowbar roles bind ntp-server to "$FQDN"
+crowbar nodes bind "$FQDN" to ntp-server
 
 # Example external ntp server - use instead of ntp-server above
 #curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "pool.ntp.org", "Service": {"Service": "ntp-service", "Port": 123, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
 
 # Proxy Service configuration
 # Use the admin node as the proxy server for the cluster
-crowbar roles bind proxy-server to "$FQDN"
+crowbar nodes bind "$FQDN" to proxy-server
 
 # Example external proxy server - use instead of proxy-server above
 #curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "fred.clam.shack.com", "Service": {"Service": "proxy-service", "Port": 8123, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
@@ -263,16 +259,16 @@ crowbar roles bind proxy-server to "$FQDN"
 # ++++++++
 #
 # Comment out this line if using your own DHCP server
-crowbar roles bind dhcp-database to "$FQDN"
+crowbar nodes bind "$FQDN" to dhcp-database
 
 # Setup Up provisioner.
-crowbar roles bind provisioner-server to "$FQDN"
-crowbar roles bind provisioner-database to "$FQDN"
-crowbar roles bind provisioner-repos to "$FQDN"
-crowbar roles bind provisioner-docker-setup to "$FQDN"
+crowbar nodes bind "$FQDN" to provisioner-server
+crowbar nodes bind "$FQDN" to provisioner-database
+crowbar nodes bind "$FQDN" to provisioner-repos
+crowbar nodes bind "$FQDN" to provisioner-docker-setup
 
 # Add the now mostly empty admin-node
-crowbar roles bind crowbar-admin-node to "$FQDN"
+crowbar nodes bind "$FQDN" to crowbar-admin-node
 
 # Figure out what IP addresses we should have, and add them.
 # If the above adds an address, we need to make sure it starts on the node.
