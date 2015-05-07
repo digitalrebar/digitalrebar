@@ -38,7 +38,6 @@ roles:
     description: 'Provides a chef client.'
     requires:
       - chef-server
-      - crowbar-access
     flags:
       - implicit
     attribs:
