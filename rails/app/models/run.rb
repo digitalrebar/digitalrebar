@@ -35,17 +35,21 @@ class Run < ActiveRecord::Base
   end
 
   def self.run_runnable
-    Run.runnable.each do |j|
-      Run.locked_transaction do
-        next if Run.running.find_by(queue: j.queue, node_id: j.node_id)
-        Rails.logger.info("Run: Sending job #{j.id}: #{j.node_role.name} to delayed_jobs queue #{j.queue}")
-        # dev mode not starting queued jobs, we need to skip queuing for now
+    to_delay = []
+    Run.locked_transaction do
+      Run.runnable.each do |j|
+        next if Run.running.find_by(node_id: j.node_id)
         j.running = true
         j.save!
+        to_delay << j
       end
+    end
+    to_delay.each do |j|
       if Rails.env.development?
+        # dev mode not starting queued jobs, we need to skip queuing for now
         j.node_role.jig.run_job(j)
       else
+        Rails.logger.info("Run: Sending job #{j.id}: #{j.node_role.name} to delayed_jobs queue #{j.queue}")
         j.delayed_job_id = j.node_role.jig.delay(queue: j.queue).run_job(j).id
         j.save!
       end
