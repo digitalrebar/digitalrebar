@@ -80,8 +80,18 @@ class NetworkRange < ActiveRecord::Base
   end
 
   def allocate(node, suggestion = nil)
-    res = NetworkAllocation.where(:node_id => node.id, :network_range_id => self.id).first
+    res = NetworkAllocation.find_by(:node_id => node.id, :network_range_id => self.id)
     return res if res
+    unless suggestion
+      attr_name = "hint-#{network.name}-"
+      if first.v4?
+        attr_name << "v4addr"
+      else
+        attr_name << "v6addr"
+      end
+      suggestion = Attrib.get(attr_name,node)
+    end
+    suggestion ||= node.auto_v6_address(network) if first.v6?
     begin
       Rails.logger.info("NetworkRange: allocating address from #{fullname} for #{node.name} with suggestion #{suggestion}")
       NetworkAllocation.locked_transaction do

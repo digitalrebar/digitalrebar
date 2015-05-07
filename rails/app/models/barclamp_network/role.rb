@@ -40,7 +40,7 @@ class BarclampNetwork::Role < Role
     nnr = network.network_router
     addrs = {}
     nr.node.network_allocations.where(network_id: network.id).each do |addr|
-      
+
       router = nil
       if nnr and IP.coerce(addr.address).v4? == IP.coerce(nnr.address).v4?
         router = { "pref" => nnr.pref, "address" => nnr.address.to_s }
@@ -82,26 +82,6 @@ class BarclampNetwork::Role < Role
       Rails.logger.debug("#{nr.node}: Network #{network.name} already has allocated addresses.")
       return
     end
-
-    # v4 automatic address allocation handling
-    addr_range = if node.is_admin? && network.ranges.exists?(name: "admin")
-                   network.ranges.find_by(name: "admin")
-                 else
-                   network.ranges.find_by(name: "host")
-                 end
-    if addr_range
-      # get the suggested ip address (if any) - nil = automatically assign
-      suggestion = node.attribs.find_by!(name: "hint-#{network.name}-v4addr").get(node)
-      Rails.logger.debug("#{node.name}: Allocating address for #{network.name} in #{addr_range.name}")
-      addr_range.allocate(nr.node, suggestion)
-    end
-    # v6 automatic address handling
-    addr_range = network.ranges.find_by(name: "host-v6")
-    if addr_range
-      Rails.logger.debug("#{node.name}: Allocating address for #{network.name} in #{addr_range.name}")
-      suggestion = node.attribs.find_by!(name: "hint-#{network.name}-v6addr").get(node) ||
-        node.auto_v6_address(network)
-      addr_range.allocate(nr.node, suggestion)
-    end
+    network.auto_allocate(node)
   end
 end
