@@ -153,6 +153,23 @@ class Network < ActiveRecord::Base
     res
   end
 
+  def auto_ranges(node)
+    res = []
+    if node.is_admin? && ranges.exists?(name: "admin")
+      res << ranges.find_by(name: "admin")
+    else
+      res << ranges.find_by(name: "host")
+    end
+    res << ranges.find_by(name: "host-v6")
+    res.compact
+  end
+
+  def auto_allocate(node)
+    auto_ranges(node).map do |range|
+      range.allocate(node)
+    end
+  end
+  
   def role
     bc = Barclamp.where(name: "network").first
     bc.roles.where(name: "network-#{name}").first

@@ -20,6 +20,9 @@ date
 # setup & load env info
 . ./bootstrap.sh
 
+set -e
+set -x
+
 # Make sure that hostname is there
 check_hostname
 HOSTNAME=$(hostname)

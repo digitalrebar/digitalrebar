@@ -171,8 +171,9 @@ Crowbar::Application.routes.draw do
             resources :network_ranges
             resources :network_routers
             member do
-              match 'ip', via: [:get, :delete]
+              match 'ip', via: [:get, :post, :delete]
               post 'allocate_ip'
+              delete 'deallocate_ip'
               get 'allocations'
             end
           end

@@ -148,7 +148,9 @@ class NetworksController < ::ApplicationController
   end
 
   def ip
-    if request.post?
+    if request.get?
+      allocations
+    elsif request.post?
       allocate_ip
     elsif request.delete?
       deallocate_ip
@@ -158,10 +160,13 @@ class NetworksController < ::ApplicationController
   def allocate_ip
     network = Network.find_key(params[:id])
     node = Node.find_key(params[:node_id])
-    range = network.ranges.where(:name => params[:range]).first
-    suggestion = params[:suggestion]
-
-    ret = range.allocate(node,suggestion)
+    if ! params[:range]
+      ret = network.auto_allocate(node)
+    else
+      range = network.ranges.where(:name => params[:range]).first
+      suggestion = params[:suggestion]
+      ret = range.allocate(node,suggestion)
+    end
     render :json => ret
   end
 
