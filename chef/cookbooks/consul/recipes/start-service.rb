@@ -95,9 +95,12 @@ end
 # Check if we are running and our bind address changed.
 bind_addr=%x{consul members | grep `hostname` | awk '{ print $2 }'}
 if bind_addr && bind_addr != ""
-  if bind_addr =~ /^#{node[:consul][:bind_addr]}/
-    # We match the current bind address - don't leave cluster
-  else
+  # bind_addr is ip:port where ip is either v4:port or [ipv6]:port
+  # We need to chop off the port and the [] if there.
+  bind_addr = bind_addr[0..(bind_addr.rindex(':')-1)]
+  bind_addr = bind_addr[1..-2] if bind_addr[0] == '['
+
+  if bind_addr != node[:consul][:bind_addr]
     bash 'leave cluster to rebind' do
       code "#{node[:consul][:install_dir]}/consul leave"
       only_if "#{node[:consul][:install_dir]}/consul info"
