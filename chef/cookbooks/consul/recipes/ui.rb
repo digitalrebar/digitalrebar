@@ -30,4 +30,5 @@ unzip "#{install_version}.zip"
 mv dist/* .
 rm -rf dist
 EOC
+  not_if { ::File.exists?("#{node[:consul][:ui_dir]}/static") }
 end
