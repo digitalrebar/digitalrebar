@@ -58,7 +58,7 @@ class Service < Role
           if block_given?
             addr_arr << yield(p)
           else
-            addr_arr << p.Address
+            addr_arr << p.ServiceAddress
           end
         end
         runlog << "Setting #{service_name} attribute"
