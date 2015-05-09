@@ -28,6 +28,8 @@ class Deployment < ActiveRecord::Base
     ERROR => "error"
   }
 
+  audited
+
   after_commit :run_if_any_runnable, on: :update
   after_commit :add_phantom_node, on: :create
   before_destroy :release_nodes    # also prevent deleting if deployment is a system deployment
@@ -104,7 +106,7 @@ class Deployment < ActiveRecord::Base
     end
   end
 
-  # returns a hash with all the deployment error status information 
+  # returns a hash with all the deployment error status information
   def status
     node_roles.each { |nr| s[nr.id] = nr.status if nr.error?  }
   end
@@ -153,7 +155,6 @@ class Deployment < ActiveRecord::Base
       puts "failed to add node: #{e.message}"
       Rails.logger.fatal("Failed to add node: #{e.message}")
     end
-    Publisher.publish_event("deployment", "on_create", { :deployment => self, :id => self.id })
   end
 
   def run_if_any_runnable
@@ -162,7 +163,6 @@ class Deployment < ActiveRecord::Base
       Rails.logger.info("Deployment: #{name} is committed, kicking the annealer.")
       Run.run!
     end
-    Publisher.publish_event("deployment", "on_change", { :deployment => self, :id => self.id })
   end
 
   # if we delete a deployment, then reset the nodes to be from the system deployment
@@ -182,7 +182,6 @@ class Deployment < ActiveRecord::Base
         return true
       end
     end
-    Publisher.publish_event("deployment", "on_delete", { :deployment => self, :id => self.id })
   end
 
 end

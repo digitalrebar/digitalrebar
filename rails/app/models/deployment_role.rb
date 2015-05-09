@@ -17,6 +17,8 @@ require 'json'
 
 class DeploymentRole < ActiveRecord::Base
 
+  audited
+
   after_create :role_create_hook
   before_destroy  :role_delete_hook
 
@@ -71,7 +73,7 @@ class DeploymentRole < ActiveRecord::Base
         save!
       end
     end
-    Publisher.publish_event("deployment_role", "on_change", { :deployment_role => self, :id => self.id })
+
     # Have any runnable noderoles that use this deployment role rerun.
     deployment.node_roles.where(role_id: role.id).each do |nr|
       nr.todo! if nr.runnable?
@@ -109,12 +111,10 @@ class DeploymentRole < ActiveRecord::Base
 
   def role_create_hook
     role.on_deployment_create(self)
-    Publisher.publish_event("deployment_role", "on_create", { :deployment_role => self, :id => self.id })
   end
 
   def role_delete_hook
     role.on_deployment_delete(self)
-    Publisher.publish_event("deployment_role", "on_delete", { :deployment_role => self, :id => self.id })
   end
 
 end

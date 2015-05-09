@@ -15,6 +15,8 @@
 
 class Barclamp < ActiveRecord::Base
 
+  audited
+
   #
   # Validate the name should unique
   # and that it starts with an alph and only contains alpha,digits,underscore
@@ -103,7 +105,7 @@ class Barclamp < ActiveRecord::Base
                                :active => jig_active,
                                :description => jig_desc,
                                :client_role_name => jig_client_role)
- 
+
         # temporary until jigs have a barlcamp import support method
         if jig_type.start_with?("BarclampChef")
           Rails.logger.info("Import: #{jig_name} is a chef-type jig. Using Berkshelf.")

@@ -16,6 +16,7 @@
 require 'yaml'
 require 'kwalify'
 class Attrib < ActiveRecord::Base
+  audited
 
   # determines default view for editing attributes in UI
   UI_RENDERER = "attribs/default"

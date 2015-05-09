@@ -20,6 +20,8 @@ class Network < ActiveRecord::Base
   DEFAULTCONDUIT = '1g1'
   BMCCONDUIT     = 'bmc'
 
+  audited
+
   validate        :check_network_sanity
   after_commit    :add_role, on: :create
   after_save      :auto_prefix
@@ -169,7 +171,7 @@ class Network < ActiveRecord::Base
       range.allocate(node)
     end
   end
-  
+
   def role
     bc = Barclamp.where(name: "network").first
     bc.roles.where(name: "network-#{name}").first
@@ -347,7 +349,6 @@ class Network < ActiveRecord::Base
         Rails.logger.error "Network #{name} attempting to cleanup role #{r.name} failed with #{e.message}"
       end
     end
-    Publisher.publish_event("network", "on_destroy", { :network => self, :id => self.id })
   end
 
   # Call the on_network_change hooks.
@@ -362,7 +363,6 @@ class Network < ActiveRecord::Base
         Rails.logger.error "Network #{name} attempting to change role #{r.name} failed with #{e.message}"
       end
     end
-    Publisher.publish_event("network", "on_change", { :network => self, :id => self.id })
   end
 
   def on_create_hooks
@@ -374,7 +374,6 @@ class Network < ActiveRecord::Base
       Rails.logger.info("Network: Calling #{r.name} on_network_create for #{self.name}")
       r.on_network_create(self)
     end
-    Publisher.publish_event("network", "on_create", { :network => self, :id => self.id })
   end
 
 end

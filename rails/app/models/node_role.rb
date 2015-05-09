@@ -16,6 +16,9 @@
 require 'json'
 
 class NodeRole < ActiveRecord::Base
+
+  audited
+
   after_commit :bind_cluster_children, on: [:create]
   after_commit :run_hooks, on: [:update, :create]
   after_commit :poke_attr_dependent_noderoles, on: [:update]
@@ -625,7 +628,6 @@ class NodeRole < ActiveRecord::Base
       # on_proposed only runs on initial noderole creation.
       Rails.logger.debug("NodeRole #{name}: Calling #{meth} hook.")
       role.send(meth,self)
-      Publisher.publish_event("node_role", meth, { :node_role => self, :id => self.id })
       return
     end
     return unless previous_changes["state"]
@@ -633,7 +635,6 @@ class NodeRole < ActiveRecord::Base
         ((!role.destructive) || (run_count == self.active? ? 1 : 0))
       Rails.logger.debug("NodeRole #{name}: Calling #{meth} hook.")
       role.send(meth,self)
-      Publisher.publish_event("node_role", meth, { :node_role => self, :id => self.id })
     end
     if todo? && runnable?
       Rails.logger.info("NodeRole #{name} is runnable, kicking the annealer.")

@@ -14,6 +14,8 @@
 
 class NetworkAllocation < ActiveRecord::Base
 
+  audited
+
   validate :sanity_check_address
   
   belongs_to :network_range
