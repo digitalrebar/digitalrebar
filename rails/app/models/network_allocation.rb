@@ -17,7 +17,7 @@ class NetworkAllocation < ActiveRecord::Base
   audited
 
   validate :sanity_check_address
-  
+
   belongs_to :network_range
   belongs_to :network
   belongs_to :node
@@ -28,6 +28,10 @@ class NetworkAllocation < ActiveRecord::Base
   scope  :cat,      -> (c)   { joins(:network).where('networks.category' => c) }
   scope  :node_cat, -> (n,c) { joins(:network).where(:node_id => n.id, 'networks.category' => c) }
   scope  :network,  -> (net) { joins(:network_range).where('network_ranges.network_id' => net.id) }
+
+  def as_json(*args)
+    super(*args).merge({"address" => address.to_s})
+  end
 
   def address
     IP.coerce(read_attribute("address"))
@@ -44,5 +48,5 @@ class NetworkAllocation < ActiveRecord::Base
       errors.add("Allocation #{network.name}.#{network_range.name}.{address.to_s} not in parent range!")
     end
   end
-  
+
 end

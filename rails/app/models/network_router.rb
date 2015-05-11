@@ -22,6 +22,10 @@ class NetworkRouter < ActiveRecord::Base
   
   belongs_to     :network
 
+  def as_json(*args)
+    super(*args).merge({"address" => address.to_s})
+  end
+
   def address
     IP.coerce(read_attribute("address"))
   end

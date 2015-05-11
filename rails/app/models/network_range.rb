@@ -26,6 +26,10 @@ class NetworkRange < ActiveRecord::Base
 
   alias_attribute :allocations,       :network_allocations
 
+  def as_json(*args)
+    super(*args).merge({"first" => first.to_s, "last" =>  last.to_s})
+  end
+
   def first
     IP.coerce(read_attribute("first"))
   end
