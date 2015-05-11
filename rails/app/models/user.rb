@@ -21,7 +21,7 @@ class User < ActiveRecord::Base
   # :recoverable, :registerable, :rememberable, :timeoutable, :token_authenticatable, 
   # :trackable, :validatable
 
-  audited
+  audited except: [:password, :encrypted_password]
 
   devise :database_authenticatable, :registerable,
          :rememberable, :trackable, :validatable, :recoverable,
