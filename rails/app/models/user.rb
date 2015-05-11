@@ -20,6 +20,9 @@ class User < ActiveRecord::Base
   # :authenticatable, :confirmable, :database_authenticatable, :lockable, :omniauthable, 
   # :recoverable, :registerable, :rememberable, :timeoutable, :token_authenticatable, 
   # :trackable, :validatable
+
+  audited except: [:password, :encrypted_password]
+
   devise :database_authenticatable, :registerable,
          :rememberable, :trackable, :validatable, :recoverable,
          :lockable, :timeoutable, :authentication_keys => [:username]

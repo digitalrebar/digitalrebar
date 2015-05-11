@@ -15,6 +15,8 @@
 
 class RoleRequire < ActiveRecord::Base
 
+  audited
+
   belongs_to      :role
   belongs_to      :parent, class_name: Role, foreign_key: "required_role_id"
   alias_attribute :upstream, :parent

@@ -15,6 +15,8 @@
 
 class NodeRoleAttribLink < ActiveRecord::Base
 
+  audited
+
   belongs_to  :parent, class_name: "NodeRole"
   belongs_to  :child,  class_name: "NodeRole"
   belongs_to  :attrib

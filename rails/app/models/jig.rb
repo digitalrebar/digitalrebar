@@ -19,15 +19,17 @@
    - locate the appropriate Jig instance and call the instance method on them
    - call the respective instance method on all jig's
 
-  The exact pattern depends on the operation - some operations are 'broadcast' in nature, 
+  The exact pattern depends on the operation - some operations are 'broadcast' in nature,
   while some should only target a particular jig instance.
 =end
 
 
 class Jig < ActiveRecord::Base
 
-  # 
-  # Validate the name should unique 
+  audited
+
+  #
+  # Validate the name should unique
   # and that it starts with an alpha and only contains alpha,digits,hyphen,underscore
   #
   validates_uniqueness_of :name, :case_sensitive => false, :message => I18n.t("db.notunique", :default=>"Name item must be unique")
