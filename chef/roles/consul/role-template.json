@@ -1,8 +1,18 @@
-{   "crowbar": {
-        "consul": {
-            "data_dir": "/var/lib/consul",
-            "service_mode": "client",
-            "config_dir": "/etc/consul.d"
-        }
+{
+    "consul": {
+        "service_mode": "client",
+        "config_dir": "/etc/consul.d",
+        "data_dir": "/var/lib/consul",
+        "install_dir": "/usr/local/bin",
+        "ui_dir": "/var/lib/consul/ui",
+        "encrypt": "change_me",
+        "disable_remote_exec": true,
+        "serve_ui": true,
+        "client_addr": "0.0.0.0",
+        "datacenter": "opencrowbar",
+        "acl_datacenter": "opencrowbar",
+        "acl_master_token": "change_me",
+        "acl_default_policy": "allow",
+        "acl_down_policy": "deny"
     }
 }

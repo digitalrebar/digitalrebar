@@ -82,11 +82,29 @@ if node[:consul][:serve_ui]
 end
 
 copy_params = [
-  :bind_addr, :datacenter, :domain, :log_level, :node_name, :advertise_addr
+  :bind_addr, :datacenter, :domain, :log_level, :node_name, :advertise_addr,
+  :acl_datacenter, :acl_master_token, :acl_default_policy, :acl_down_policy,
+  :encrypt, :disable_remote_exec
 ]
 copy_params.each do |key|
   if node[:consul][key]
     service_config[key] = node[:consul][key]
+  end
+end
+
+# Check if we are running and our bind address changed.
+bind_addr=%x{consul members | grep `hostname` | awk '{ print $2 }'}
+if bind_addr && bind_addr != ""
+  # bind_addr is ip:port where ip is either v4:port or [ipv6]:port
+  # We need to chop off the port and the [] if there.
+  bind_addr = bind_addr[0..(bind_addr.rindex(':')-1)]
+  bind_addr = bind_addr[1..-2] if bind_addr[0] == '['
+
+  if bind_addr != node[:consul][:bind_addr]
+    bash 'leave cluster to rebind' do
+      code "#{node[:consul][:install_dir]}/consul leave"
+      only_if "#{node[:consul][:install_dir]}/consul info"
+    end
   end
 end
 
