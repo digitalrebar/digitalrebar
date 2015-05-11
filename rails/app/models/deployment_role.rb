@@ -114,6 +114,7 @@ class DeploymentRole < ActiveRecord::Base
   end
 
   def role_delete_hook
+    return false unless noderoles.count == 0
     role.on_deployment_delete(self)
   end
 

@@ -72,7 +72,7 @@ class DeploymentRolesController < ApplicationController
     render api_delete @deployment_role
   end
 
-   def propose
+  def propose
     @deployment_role = DeploymentRole.find_key params[:deployment_role_id]
     @deployment_role.propose
     respond_to do |format|
