@@ -179,6 +179,7 @@ Crowbar::Application.routes.draw do
           end
           resources :network_ranges
           resources :network_routers
+          resources :network_allocations
           resources :interfaces
 
           resources :runs

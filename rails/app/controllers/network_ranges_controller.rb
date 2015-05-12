@@ -29,8 +29,12 @@ class NetworkRangesController < ::ApplicationController
   end
 
   def show
-    network = Network.find_key params[:network_id]
-    @range = network.network_ranges.find_key(params[:id]) rescue nil
+    if params[:network_id]
+      network = Network.find_key params[:network_id]
+      @range = network.network_ranges.find_key(params[:id])
+    else
+      @range = NetworkRange.find_key(params[:id])
+    end
     respond_to do |format|
       format.html {
                     @list = [@range]
