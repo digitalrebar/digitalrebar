@@ -1,6 +1,6 @@
 #!/bin/bash
 if [[ $(whoami) != crowbar ]]; then
-    su -l -c "$0" crowbar
+    su -l -c "$0 $*" crowbar
     exit $?
 fi
 . /etc/profile
