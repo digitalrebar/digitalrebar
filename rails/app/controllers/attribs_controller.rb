@@ -18,6 +18,11 @@ class AttribsController < ApplicationController
   def index
     target = find_target
     @list = target.nil? ? Attrib.all : target.attribs
+    @list = @list.map do |i|
+      e = i.as_json
+      e["value"] = i.get(target)
+      e
+    end if target
     respond_to do |format|
       format.html { }
       format.json { render api_index :attrib, @list }
