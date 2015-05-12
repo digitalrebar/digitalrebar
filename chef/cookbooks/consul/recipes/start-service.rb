@@ -137,6 +137,12 @@ ruby_block "wait for consul leader" do
   block do
     answer = ""
     count = 0
+    # We need consul to converge on a leader.
+    # This can take a little time, so we ask for
+    # leader status.  The leader status returns
+    # nothing, a string that says no leader, or
+    # the leader IP:port pair.  The default port
+    # is 8300 for server communication.
     while !(answer =~ /:8300/) and count < 30
       sleep 1
       count += 1
