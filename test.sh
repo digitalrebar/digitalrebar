@@ -48,10 +48,14 @@ chef-solo -c /opt/opencrowbar/core/bootstrap/chef-solo.rb -o "${database_recipes
 # Talk about tests
 echo
 echo "To run tests:"
+echo "yum -y install erlang"
 echo "su - crowbar"
 echo "cd rails"
 echo "bundle exec rake test"
 echo "bundle exec rspec"
+echo "cd ../BDD"
+echo "./linux_compile.sh"
+echo "./linux_test.sh"
 echo
 
 /bin/bash -i
