@@ -41,5 +41,10 @@ class ConsulAccess
     Diplomat::Service.new(my_faraday_connection).get(service_name, scope, options, meta)
   end
 
+  # Wrap the Diplomat access to set common config/values
+  def self.getKey(key)
+    Diplomat::Kv.new(my_faraday_connection).get(key)
+  end
+
 end
 

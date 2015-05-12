@@ -15,6 +15,13 @@
 
 # GREG: Add the code to configure and start the runner here
 
+template "/etc/crowbar.master.acl" do
+  source "acl-master-token.erb"
+  mode 0600
+  owner "crowbar"
+  variables(:token => node['consul']['acl_master_token'])
+end
+
 bash "reload consul runner server" do
   code "/usr/local/bin/consul reload"
   action :nothing

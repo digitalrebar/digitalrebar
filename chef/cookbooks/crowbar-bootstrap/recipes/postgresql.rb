@@ -72,14 +72,27 @@ template  "#{pg_conf_dir}/pg_hba.conf" do
   notifies :restart, "service[postgresql]",:immediately
 end
 
-bash "create crowbar user for postgres" do
-  code "sudo -H -u postgres createuser -d -S -R -w crowbar"
+# Don't allow = in the password
+crowbar_password=SecureRandom.base64.gsub('=','3')
+crowbar_user='crowbar'
+crowbar_database='opencrowbar'
+
+bash "Add keys to consul" do
+  code <<EOC
+curl -X PUT -d '#{crowbar_database}' http://127.0.0.1:8500/v1/kv/opencrowbar/private/database/opencrowbar/database
+curl -X PUT -d '#{crowbar_user}' http://127.0.0.1:8500/v1/kv/opencrowbar/private/database/opencrowbar/username
+curl -X PUT -d '#{crowbar_password}' http://127.0.0.1:8500/v1/kv/opencrowbar/private/database/opencrowbar/password
+EOC
   not_if "sudo -H -u postgres -- psql postgres -tAc \"SELECT 1 FROM pg_roles WHERE rolname='crowbar'\" |grep -q 1"
 end
 
-# XXX: One day change this to listen on a non-unix domain socket.
-# XXX: One day store the username/password into the consul key/value store.
-# XXX: One day use encrypted keys to store the username and password
+bash "create crowbar user for postgres" do
+  code <<EOC
+sudo -H -u postgres createuser -d -E -S -R -w #{crowbar_user}
+sudo -H -u postgres psql -c "ALTER USER #{crowbar_user} WITH ENCRYPTED PASSWORD '#{crowbar_password}';"
+EOC
+  not_if "sudo -H -u postgres -- psql postgres -tAc \"SELECT 1 FROM pg_roles WHERE rolname='#{crowbar_user}'\" |grep -q 1"
+end
 
 bash "consul reload" do
   code "consul reload"
@@ -90,4 +103,5 @@ template "/etc/consul.d/crowbar-database.json" do
   source "crowbar-database.json.erb"
   notifies :run, "bash[consul reload]", :immediately
 end
+
 
