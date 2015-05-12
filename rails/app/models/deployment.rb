@@ -31,7 +31,7 @@ class Deployment < ActiveRecord::Base
   audited
 
   after_commit :run_if_any_runnable, on: :update
-  after_commit :add_phantom_node, on: :create
+  after_create :add_phantom_node
   before_destroy :release_nodes    # also prevent deleting if deployment is a system deployment
 
   has_many        :deployment_roles,  :dependent => :destroy
@@ -144,17 +144,12 @@ class Deployment < ActiveRecord::Base
   private
 
   def add_phantom_node
-    begin
-      Node.create!(name: "#{name}-phantom.internal.local",
-                   admin: false,
-                   system: true,
-                   alive: true,
-                   deployment_id: self.id,
-                   bootenv: "local")
-    rescue StandardError => e
-      puts "failed to add node: #{e.message}"
-      Rails.logger.fatal("Failed to add node: #{e.message}")
-    end
+    Node.create!(name: "#{name}-phantom.internal.local",
+                 admin: false,
+                 system: true,
+                 alive: true,
+                 deployment_id: self.id,
+                 bootenv: "local")
   end
 
   def run_if_any_runnable
@@ -167,21 +162,22 @@ class Deployment < ActiveRecord::Base
 
   # if we delete a deployment, then reset the nodes to be from the system deployment
   def release_nodes
-    if system
-      # cannot delete a system deployment
-      return false
-    else
-      # else release all the nodes in the deployment (assign to the system deployment)
-      Node.transaction do
-        sysid = Deployment.system.id
-        nodes.update_all(deployment_id: sysid)
-        nodes.each do |n|
-          n.deployment_id = system.id
-          n.save!
-        end
-        return true
+    Deployment.transaction do
+      # Cannot delete a system deployment or a deployment that has children.
+      return false if system || Deployment.find_by(parent_id: id)
+      # Delete all the noderoles bound in this deployment
+      node_roles.order("cohort DESC").each do |nr|
+        nr.destroy
       end
+      # Delete all the deployment_roles in this deployment
+      deployment_roles.destroy_all
+      # Destroy the phantom node for this deployment
+      Node.destroy_all(name: "#{self.name}-phantom.internal.local")
+      # Move the rest of the nodes to the parent deployment.
+      nodes.each do |n|
+        n.update!(deployment_id: parent_id)
+      end
+      return true
     end
   end
-
 end

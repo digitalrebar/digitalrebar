@@ -109,11 +109,9 @@ class NodeRolesController < ApplicationController
   end
 
   def destroy
-    unless Rails.env.development?
-      render  api_not_supported("delete", "node_role")
-    else
-      render api_delete NodeRole
-    end
+    @node_role = NodeRole.find_key (params[:id] || params[:node_role_id])
+    @node_role.destroy
+    render api_delete @node_role
   end
 
   def propose

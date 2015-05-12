@@ -22,6 +22,7 @@ class NodeRole < ActiveRecord::Base
   after_commit :bind_cluster_children, on: [:create]
   after_commit :run_hooks, on: [:update, :create]
   after_commit :poke_attr_dependent_noderoles, on: [:update]
+  before_destroy :test_if_destroyable
   validate :role_is_bindable, on: :create
   validate :validate_conflicts, on: :create
 
@@ -615,6 +616,32 @@ class NodeRole < ActiveRecord::Base
   end
 
   private
+
+  def test_if_destroyable
+    NodeRole.transaction do
+      # If we are a leaf node, we can be destroyed.
+      deletable = false
+      if children.count == 0
+        Rails.logger.info("NodeRole: #{name} has no children, we can delete it.")
+        return true
+      end
+      # If, we have no children not on the same node, or
+      # all our children are PROPOSED and have never been run, we can be deleted.
+      if all_children.where.not(node_id: node_id).count == 0
+        Rails.logger.info("NodeRole: #{name} only has children on the same node, it is deletable")
+        deletable = true
+      end
+      if all_children.where.not(state: PROPOSED, run_count: 0).count == 0
+        Rails.logger.info("NodeRole: #{name} only has children that are PROPOSED and have never run, it is deletable")
+        deletable = true
+      end
+      return false unless deletable
+      all_children.order("cohort DESC").each do |c|
+        c.destroy
+      end
+      return true
+    end
+  end
 
   def block_or_todo
     NodeRole.transaction do
