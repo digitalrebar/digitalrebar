@@ -14,7 +14,7 @@
 % 
 % 
 -module(crowbar).
--export([step/2, g/1, state/1, i18n/1, i18n/2, i18n/3, i18n/4, i18n/5, i18n/6, json/1, json/3, parse_object/1, worker/0]).
+-export([step/2, g/1, state/1, i18n/1, i18n/2, i18n/3, i18n/4, i18n/5, i18n/6, json/1, json/3, parse_object/1]).
 -export([json_build/1]).
 -include("bdd.hrl").
 
@@ -122,14 +122,6 @@ wait_for(URL, MatchCode, MatchData, Times, Sleep) ->
                   wait_for(URL, MatchCode, MatchData, Times-1, Sleep)
   end.
 
-worker() ->
-  URL = eurl:uri(g(queue_status)),
-  R = eurl:get_http(URL),
-  case R#http.code of
-    200 -> J = json:parse(R#http.data), list_to_integer(json:value(J,"workers")) > 0;
-    _ -> false
-  end.
-
 % global setup
 step(_Global, {step_setup, {_Scenario, _N}, Test}) -> 
   % setup the groups object override
@@ -142,14 +134,12 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
   Services = bdd_utils:config(services, ["dns-service", "ntp-service", "proxy-service", "provisioner-service", "crowbar-api-service", "crowbar-job-runner-service"]),
   [true,true,true,true,true,true] = [consul:reg_serv(S) || S <- Services],
   bdd_utils:log(info, crowbar, global_setup, "Consul Registered ~p",[Services]),
-  % make sure there's a worker
-  true = worker(),
   % skip some activity if we're logging at debug level
   case lists:member(debug,get(log)) of
     true -> bdd_utils:log(debug, crowbar, global_setup, "Skipping Setup Queue Empty, Make Admin Net & Test Attribs",[]);
     _ ->
       % make sure that the delayed job queues are running
-      crowbar:step([], {foo, {0,0}, ["process", "delayed","returns", "delayed_job.([0..9])"]}),
+      %crowbar:step([], {foo, {0,0}, ["process", "delayed","returns", "delayed_job.([0..9])"]}),
       % turn off the delays in the test jig
       %role:step(Global, {step_given, {Scenario, _N}, ["I set the",role, "test-admin", "property", "test", "to", "false"]}), 
       %role:step(Global, {step_given, {Scenario, _N}, ["I set the",role, "test-server", "property", "test", "to", "false"]}), 
@@ -185,7 +175,6 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
 
 % find the node from setup and remove it
 step(_Global, {step_teardown, {_Scenario, _N}, _}) -> 
-  worker(),
   bdd_utils:log(debug, crowbar, step, "Global Teardown running",[]),
   % skip some activity if we're logging at debug level
   case lists:member(debug,get(log)) of
@@ -308,12 +297,6 @@ step(_Result, {step_then, {_Scenario, _N}, [node, Node, "should be in state", St
   Status =:= State;
 
 % ============================  CLEANUP =============================================
-
-step(_, {_Any, {_Scenario, _N}, ["process", PS, "returns", Test]}) ->
-  case worker() of
-    true -> true;
-    _ -> bdd_clirat:step([], {_Any, {_Scenario, _N}, ["process", PS,"returns", Test]}), false
-  end;
 
 step(_, {_, {_Scenario, _N}, ["there are no pending Crowbar runs for",node,Node]}) -> 
   timer:sleep(250),   % we want a little pause to allow for settling

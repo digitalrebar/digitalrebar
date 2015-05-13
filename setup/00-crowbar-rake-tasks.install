@@ -11,9 +11,6 @@ tasks=("rake db:create"
     "rake assets:precompile"
     "rake railties:install:migrations"
     "rake db:migrate"
-    "rails generate delayed_job:active_record"
-    "rails generate rails_settings:migration"
-    "rake db:migrate"
     "rake db:seed")
 
 for task in "${tasks[@]}"; do

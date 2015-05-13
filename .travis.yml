@@ -34,7 +34,8 @@ script:
   - pwd
   - bundle exec rake db:migrate
   - bundle exec rake db:seed
-  - bundle exec script/delayed_job --queue=NodeRoleRunner -n 2 start
+  - QUE_WORKER_COUNT=2 QUE_QUEUE=HighPriorityRunner bundle exec rake que:work &
+  - QUE_WORKER_COUNT=10 QUE_QUEUE=NodeRoleRunner bundle exec rake que:work &
   - bundle exec rails server -d
   - curl -I --fail http://127.0.0.1:3000/docs?id=framework%2Flicenses 
   - cd ../BDD 
@@ -42,7 +43,7 @@ script:
   - erl -s bdd test travis -s init stop -noshell
   - cd ../rails
   - kill `cat tmp/pids/server.pid`
-  - bundle exec script/delayed_job stop
+  - pkill -f que:work
   - RAILS_ENV=test bundle exec rake db:migrate
   - RAILS_ENV=test bundle exec rake db:seed
   - RAILS_ENV=test bundle exec rake test
