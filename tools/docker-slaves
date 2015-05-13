@@ -47,7 +47,7 @@ for ((n=1;n<=$1;n++)); do
         echo "$node already created!"
         tmux new-window -d -n "$SESSION:$node" "$tools/docker-slave $node"
     else
-        if crowbar nodes create "\"{\\\"name\\\": \\\"$node\\\"}\"" && \
+        if crowbar nodes create "\"{\\\"name\\\": \\\"$node\\\", \\\"ip\\\": \\\"192.168.124.21/24\\\"}\"" && \
             crowbar roles bind crowbar-docker-node to "$node" && \
             crowbar nodes commit "$node"; then
             echo "Created $node"

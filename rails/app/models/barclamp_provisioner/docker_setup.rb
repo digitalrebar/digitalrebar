@@ -43,7 +43,7 @@ class BarclampProvisioner::DockerSetup < Role
     node_roles.each do |nr|
       # Fix up the image for default
       nr_image = (Attrib.get("provisioner-docker-image", nr) rescue nil)
-      nr_image ||= "opencrowbar/ubuntu-slave"
+      nr_image ||= "ubuntu:14.04"
       hosts.keys.each do |name|
           if hosts[name]["image_name"] == "default"
             hosts[name]["image"] = nr_image

@@ -13,8 +13,8 @@
 # limitations under the License.
 #
 
-api_server = node['crowbar']['api']['servers'].first['url'],
-proxy = node['crowbar']['proxy']['servers'].first['url'],
+api_server = node['crowbar']['api']['servers'].first['url']
+proxy = node['crowbar']['proxy']['servers'].first['url']
 tftproot = node["crowbar"]["provisioner"]["server"]["root"]
 node_dir="#{tftproot}/nodes"
 node.normal["crowbar_wall"] ||= Mash.new
@@ -40,6 +40,7 @@ v4addresses = v4dns.collect{|a|a.addr}
               :name => name,
               :proxy => proxy,
               :keys => (node["crowbar"]["access_keys"] rescue Hash.new).values.sort.join($/),
+              :machine_key => node["crowbar"]["machine_key"],
               :admin_url => api_server
               )
   end

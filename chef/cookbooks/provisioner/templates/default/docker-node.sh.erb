@@ -39,9 +39,9 @@ if [[ ! -x /crowbar-init ]]; then
     exit $?
 fi
 set -x
-export http_proxy='http://<%=@proxy%>'
+export http_proxy='<%=@proxy%>'
 export https_proxy="$http_proxy"
-export CROWBAR_KEY="<%=node["crowbar"]["provisioner"]["machine_key"]%>"
+export CROWBAR_KEY="<%=@machine_key%>"
 printf '%s' "$CROWBAR_KEY" >/etc/crowbar.install.key
 export CROWBAR_URL="<%=@admin_url%>"
 <% @addresses.each do |addr| -%>
@@ -117,7 +117,6 @@ mkdir -p /var/run/sshd
 pkill -9 sshd
 $(which sshd)
 
-which chef-solo &>/dev/null || curl -L https://www.opscode.com/chef/install.sh | bash
 curl -g -f -u "$CROWBAR_KEY" --digest -L -X PUT -d 'alive=false' '<%=@admin_url%>/api/v2/nodes/<%=@name%>'
 curl -g -f -u "$CROWBAR_KEY" --digest -L -X PUT -d 'alive=true' '<%=@admin_url%>/api/v2/nodes/<%=@name%>'
 
