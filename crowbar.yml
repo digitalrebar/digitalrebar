@@ -63,6 +63,8 @@ barclamps:
     description: "Puppet Deployment Services"
   - name: consul
     description: "Consul Service Monitoring and Management"
+  - name: sysdig
+    description: "Sysdig evaluation tools"
 
 jigs:
   - name: script
@@ -111,6 +113,7 @@ debs:
       - deb-src http://security.ubuntu.com/ubuntu precise-security main restricted universe multiverse
       - deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main
       - deb http://ppa.launchpad.net/saltstack/salt/ubuntu precise main
+      - deb http://download.draios.com/stable/deb stable-amd64/
     pkgs:
       - rpcbind
   ubuntu-14.04:
@@ -130,6 +133,7 @@ debs:
       - deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main
       - deb http://get.docker.io/ubuntu docker main
       - deb http://ppa.launchpad.net/saltstack/salt/ubuntu trusty main
+      - deb http://download.draios.com/stable/deb stable-amd64/
     pkgs:
       - rpcbind
   debian-7.8.0:
@@ -144,6 +148,7 @@ debs:
       - deb-src http://ftp.us.debian.org/debian wheezy-updates main contrib non-free
       - deb http://ftp.us.debian.org/debian wheezy-backports main contrib non-free
       - deb-src http://ftp.us.debian.org/debian wheezy-backports main contrib non-free
+      - deb http://download.draios.com/stable/deb stable-amd64/
     pkgs:
       - rpcbind
   required_pkgs:
@@ -253,6 +258,7 @@ rpms:
       - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
       - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/RedHat_RHEL-6/
       - bare openwsman 20 http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
+      - bare draios 20 http://download.draios.com/stable/rpm/x86_64
     build_pkgs:
       - libcurl-devel
       - yum-plugin-downloadonly
@@ -307,6 +313,7 @@ rpms:
       - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
       - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/RedHat_RHEL-6/
       - bare openwsman 20 http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
+      - bare draios 20 http://download.draios.com/stable/rpm/x86_64
     build_pkgs:
       - libcurl-devel
       - yum-plugin-downloadonly
@@ -361,6 +368,7 @@ rpms:
       - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
       - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/CentOS_CentOS-6/
       - bare openwsman 20 http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
+      - bare draios 20 http://download.draios.com/stable/rpm/x86_64
     build_pkgs:
       - libcurl-devel
       - yum-plugin-downloadonly
@@ -422,6 +430,7 @@ rpms:
       - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
       - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/CentOS_CentOS-6/
       - bare openwsman 20 http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
+      - bare draios 20 http://download.draios.com/stable/rpm/x86_64
     build_pkgs:
       - libcurl-devel
       - yum-plugin-downloadonly
@@ -481,6 +490,7 @@ rpms:
       - rpm http://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-1.noarch.rpm
       - rpm http://mirrors.kernel.org/fedora-epel/7/x86_64/e/epel-release-7-5.noarch.rpm
       - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/CentOS_7/
+      - bare draios 20 http://download.draios.com/stable/rpm/x86_64
     build_pkgs:
       - libcurl-devel
       - yum-plugin-downloadonly
@@ -529,6 +539,7 @@ rpms:
   fedora-20:
     repos:
       - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/Fedora_20/
+      - bare draios 20 http://download.draios.com/stable/rpm/x86_64
     raw_pkgs:
       - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
     required_pkgs:
