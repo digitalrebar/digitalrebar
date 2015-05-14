@@ -19,7 +19,7 @@ Before we begin, let's review what you'll need (or end up with after following t
   * Crowbar relies on a few private networks - they can all be on the same NIC, bridges, or whatever.
 * Recommended: a local caching proxy server - we download a lot.
 
-# OK, let's get started setting up the development environemnt:
+# OK, let's get started setting up the development environment:
 
 ## Step 1: What's your platform?
 
