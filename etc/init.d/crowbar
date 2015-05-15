@@ -48,6 +48,29 @@ as_crowbar() (
     su -l -c "cd /opt/opencrowbar/core/rails; RAILS_ENV=$RAILS_ENV $*" crowbar
 )
 
+que_worker() {
+    queue="$1"
+    shift
+    workers="$1"
+    shift
+    cmd="QUE_WORKER_COUNT=$workers QUE_QUEUE=$queue bundle exec rake que:work"
+    as_crowbar "$cmd" </dev/zero &>> "/var/log/crowbar/$queue.log" &
+}
+
+start_workers() {
+    que_worker NodeRoleRunner 10
+    que_worker HighPriorityRunner 2
+    disown -a
+}
+
+stop_workers() {
+    pkill -f que:work
+}
+
+status_workers() {
+    pgrep -l -f que:work
+}
+
 start(){
     if status; then
         echo "Crowbar is already running"
@@ -62,29 +85,20 @@ start(){
         as_crowbar bundle install --local --quiet
     fi
     as_crowbar bundle exec puma -d -C $PUMA_CFG
-    echo "Starting delayed_job NodeRoleRunner queue (10 workers)"
-    as_crowbar bundle exec script/delayed_job --queue=NodeRoleRunner -n 10 start
-    as_crowbar bundle exec script/delayed_job --queue=HighPriorityRunner start
-    as_crowbar bundle exec script/dj_reaper start
+    start_workers
 }
 
 stop() {
     as_crowbar bundle exec pumactl -F $PUMA_CFG stop
-    as_crowbar bundle exec script/delayed_job -n 10 stop
-    as_crowbar bundle exec script/delayed_job stop
-    as_crowbar bundle exec script/dj_reaper stop
+    stop_workers
 }
 
 restart() {
-    as_crowbar bundle exec pumactl -F $PUMA_CFG restart
-    as_crowbar bundle exec script/delayed_job -n 10 restart
-    as_crowbar bundle exec script/delayed_job restart
-    as_crowbar bundle exec script/dj_reaper restart
+    stop; start
 }
 
 status() {
-    as_crowbar bundle exec pumactl -F $PUMA_CFG status && \
-        pgrep -f delayed_job
+    as_crowbar bundle exec pumactl -F $PUMA_CFG status && status_workers
 }
 
 mkdir -p /var/run/crowbar && chown crowbar:crowbar /var/run/crowbar

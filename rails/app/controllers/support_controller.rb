@@ -162,8 +162,7 @@ class SupportController < ApplicationController
 
   # return the queue status
   def queue
-    workers = %x[ps axe | grep delayed_job].split("delayed_job").length
-    j = { :workers => workers, :jobs => Delayed::Job.all }
+    j = { }
     render :json=>j
   end
 

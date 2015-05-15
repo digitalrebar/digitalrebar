@@ -33,9 +33,6 @@ pop(ConfigRaw)  ->
   bdd_utils:config_set(global_setup, dev),
   bdd_utils:config_set(inspect, false),
 
-  % make sure background progress
-  true = crowbar:worker(),
-
   % safety setup 
   bdd_crud:delete(node:g(path), crowbar:g(node_name)),
   Build = case file:consult(bdd_utils:config(simulator, "dev.config")) of

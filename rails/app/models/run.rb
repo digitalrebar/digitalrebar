@@ -13,12 +13,106 @@
 # limitations under the License.
 #
 
+class QueJob < ActiveRecord::Base
+
+  def pid
+   # Short version: Jobs in Que are locked by taking an advisory lock
+   # using their ID as the lock token. The fact that this lock was
+   # granted along with the postgres backend worker who holds it is
+   # recorded in the pg_locks view along with the pg_stat_activity
+   # view.
+    rows = ActiveRecord::Base.connection.select_all("
+select l.pid
+from (
+    select
+    (l.classid::bigint << 32) + l.objid::bigint AS job_id,
+    pg.pid AS pid
+    from pg_locks l
+    inner join pg_stat_activity pg
+    using (pid)
+    where l.locktype = 'advisory'
+) l
+inner join que_jobs j
+using (job_id)
+where job_id = #{job_id}")
+    return nil if rows.empty?
+    return rows[0]["pid"]
+  end
+
+  def locked?
+    !!pid
+  end
+end
+
+class NodeRoleRun < Que::Job
+
+  def run(run_id)
+    Rails.logger.info("Run: Starting queued job #{run_id}")
+    job = Run.find(run_id) rescue nil
+    unless job
+      Rails.logger.error("Run: Queued job #{run_id} vanished from the database!")
+      destroy
+      return
+    end
+    nr = job.node_role
+    Rails.logger.info("Run: Queued job #{run_id} for #{nr.name} found.")
+    to_error = false
+    # allows jigs to skip the active state as an exit condition
+    # (allows for async jigs)
+    mark_active = true
+    begin
+      nr.transition!
+      unless nr.role.destructive && (nr.run_count > 0)
+        Rails.logger.info("Run: Queued job #{job.id} for #{nr.name} running!")
+        run_return = nr.jig.run(nr,job.run_data["data"])
+        # mark the run as active unless it returns the :async symbol
+        # when a jig returns this flag, then it needs to retry the node role for it to continue
+        mark_active = run_return != :async
+        Rails.logger.info("Run: Queued job #{job.id} for #{nr.name} finished, no exceptions raised.")
+      else
+        Rails.logger.info("Run: Queued job #{job.id} for #{nr.name} skipped due to destructiveness")
+      end
+    rescue StandardError => e
+      to_error = true
+      NodeRole.transaction do
+        nr.update!(runlog: "#{e.class.name}: #{e.message}\nBacktrace:\n#{e.backtrace.join("\n")}")
+      end
+      Rails.logger.info("Run: Queued job #{job.id} for #{nr.name} failed, exceptions raised.")
+      Rails.logger.error("#{e.class.name}: #{e.message}\nBacktrace:\n#{e.backtrace.join("\n")}")
+    ensure
+      NodeRole.transaction do
+        nr.save!
+        # Handle updating our global idea about reservations if our wall has any.
+        if (nr.wall["crowbar_wall"]["reservations"] rescue nil)
+          res = Hash.new
+          nr.node.node_roles.each do |this_nr|
+            next unless (this_nr.wall["crowbar_wall"]["reservations"] rescue nil)
+            res.deep_merge!(this_nr.wall["crowbar_wall"]["reservations"])
+          end
+          nr.node.discovery.merge({"reservations" => res})
+        end
+      end
+      Rails.logger.info("Run: Deleting finished job #{job.id}")
+      job.delete
+      if to_error
+        nr.error!
+      else
+        # Only go to active if the node is still alive -- the jig may
+        # have marked it as not alive.
+        nr.active! if nr.node.alive? && nr.node.available? && mark_active
+      end
+      destroy
+    end
+  end
+end
+
 class Run < ActiveRecord::Base
 
   audited
 
   belongs_to :node
   belongs_to :node_role
+  belongs_to :que_job, foreign_key: 'job_id', primary_key: 'job_id'
 
   serialize :run_data
 
@@ -42,35 +136,21 @@ class Run < ActiveRecord::Base
     # Nothing is allowed to touch the Runs table while we are moving runs from
     # runnable to running.
     Run.locked_transaction do
-      Run.runnable.each do |j|
-        next if Run.running.find_by(node_id: j.node_id)
-        j.update!(running: true)
+      Run.runnable.each do |r|
+        next if Run.running.find_by(node_id: r.node_id)
+        r.update!(running: true)
+      end
+      Run.running.where(job_id: nil).order("id ASC").lock.each do |r|
+        next if Run.running.find_by(["node_id = ? AND job_id IS NOT NULL", r.node_id])
+        job = NodeRoleRun.enqueue(r.id, queue: r.queue)
+        r.update!(job_id: job.attrs["job_id"])
       end
     end
-
-    if Rails.env.development?
-      Run.running.where(delayed_job_id: nil).order("id ASC").each do |j|
-        # If we are in dev mode, just run the run directly.
-        # This happens outside a transaction because run_job expects that
-        # it starts running outside a transaction, and it will break
-        # otherwise.
-        j.node_role.jig.run_job(j)
-      end
-      return
+    Que.job_stats.each do |j|
+      Rails.logger.info("Run: Queue #{j["queue"]}: #{j["count"]} jobs, #{j["count_working"]} running.")
     end
-    # Grab all the runs marked as running that do not have a
-    # delayed_job assigned to them, get a row lock on the individual
-    # rows, and feed them into delayed_jobs.  The row locks should
-    # prevent concurrent access to the same rows across different
-    # transactions.  Note that we look at all the runs that are marked
-    # as running, not just the ones we marked as running above.  This
-    # should prevent the case where we marked a run as running, and
-    # then crashed.
-    Run.transaction do
-      Run.running.where(delayed_job_id: nil).order("id ASC").lock(true).each do |j|
-        Rails.logger.info("Run: Sending run #{j.id}: #{j.node_role.name} to delayed_jobs queue #{j.queue}")
-        j.update!(delayed_job_id: j.node_role.jig.delay(queue: j.queue).run_job(j).id)
-      end
+    Que.worker_states.each do |w|
+      Rails.logger.info("Run: Que worker for run #{w["args"][0]} in queue #{w["queue"]} running against database backend #{w["pg_backend_pid"]}")
     end
   end
 
@@ -100,26 +180,25 @@ class Run < ActiveRecord::Base
     run!
   end
 
-  def self.queue(arg)
-    r = "Run: queue(#{arg}) "
-    Run.all.order("id ASC").map do |j|
-      r << " Run: #{j.id}: running:#{j.running}: #{j.node_role.name}: state #{j.node_role.state}"
-      if j.running
-        dj = Delayed::Job.find(j.delayed_job_id)
-        r << " Delayed_job: #{dj.id} queue #{dj.queue} backend #{dj.locked_by || "None"}"
+  def self.queue_status(arg)
+    res = "Run: queue(#{arg}) \n"
+    Run.all.order("id ASC").map do |r|
+      res << " Run: #{r.id}: running:#{r.running}: #{r.node_role.name}: state #{r.node_role.state}"
+      if r.running && r.job_id
+        j = r.que_job
+        res << " Job:  #{j.job_id} queue #{j.queue} running on pid #{j.pid || "None"}"
       end
-      r << "\n"
+      res << "\n"
     end
-    r
+    res
   end
 
   # Run up to maxruns runs, enqueuing runnable noderoles in TODO as it goes.
-  def self.run!(maxruns=10)
+  def self.run!
     runs = {}
     # Before we do anything else, perform some preventative maintenance on the
     # run queue to make sure we don't lose runs.
     Run.locked_transaction do
-      dj_backends = Hash.new
       Run.all.each do |r|
         kill_run = false
         if r.node.nil?
@@ -136,20 +215,13 @@ class Run < ActiveRecord::Base
           Rails.logger.error("Run: #{r.id} is present for a missing noderole.")
           kill_run = true
         end
-        if r.running && r.delayed_job_id
-          dj = Delayed::Job.find(r.delayed_job_id)
+        if r.running && r.job_id
+          dj = r.que_job
           if dj.nil?
             # The run thinks it should be running, the delayed_job backing it
             # has gone away.
-            Rails.logger.error("Run: #{r.id} is running, but missing delayed_job #{r.delayed_job_id}")
+            Rails.logger.error("Run: #{r.id} is running, but missing job #{r.job_id}")
             kill_run = true
-          elsif dj.locked_by
-            if dj_backends[dj.locked_by]
-              Rails.logger.fatal("Run: More than one running run assigned to a backend! Email victor.")
-              Rails.logger.fatal(Run.queue("deadlocked"))
-              raise "Unrecoverable error in Run.run! Email Victor, and save the logs."
-            end
-            dj_backends[dj.locked_by] = true
           end
         end
         next unless kill_run
@@ -166,14 +238,12 @@ class Run < ActiveRecord::Base
     # if there is not already something running or runnable on the
     # node for the noderole.
     Run.locked_transaction do
-      Rails.logger.debug(Run.queue("start"))
-      running = Run.running.count
+      Rails.logger.debug(Run.queue_status("start"))
       # Find any runnable noderoles and see if they can be enqueued.
       # The logic here will only enqueue a noderole of the node does not
       # already have a noderole enqueued.
       NodeRole.runnable.order("cohort ASC, id ASC").each do |nr|
-        break if runs.length + running >= maxruns
-        next if runs[nr.node_id] || Run.exists?(node_id: nr.node_id)
+        next if Run.exists?(node_id: nr.node_id)
         Rails.logger.info("Run: Creating new Run for #{nr.name}")
         # Take a snapshot of the data we want to hand to the jig's run
         # method.  We do this so that the jig gets fed data that is
@@ -190,7 +260,7 @@ class Run < ActiveRecord::Base
     Run.run_runnable
     Rails.logger.info("Run: #{runs.length} handled this pass, #{Run.running.count} in delayed_jobs")
     # log queue state
-    Rails.logger.debug(Run.queue("end"))
+    Rails.logger.debug(Run.queue_status("end"))
     return runs.length
   end
 end
