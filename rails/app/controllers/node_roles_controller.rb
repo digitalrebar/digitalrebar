@@ -111,7 +111,10 @@ class NodeRolesController < ApplicationController
   def destroy
     @node_role = NodeRole.find_key (params[:id] || params[:node_role_id])
     @node_role.destroy
-    render api_delete @node_role
+    respond_to do |format|
+      format.html { redirect_to deployment_path(@node_role.deployment_id) }
+      format.json { render api_delete @node_role }
+    end
   end
 
   def propose

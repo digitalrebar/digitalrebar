@@ -60,13 +60,19 @@ class DeploymentsController < ApplicationController
   def update
     @deployment = Deployment.find_key params[:id]
     @deployment.update_attributes!(params.permit(:name,:description))
-    render api_show @deployment
+    respond_to do |format|
+      format.html { redirect_to deployment_path(@deployment.id) }
+      format.json { render api_show @deployment }
+    end
   end
 
   def destroy
     @deployment = Deployment.find_key params[:id]
     @deployment.destroy
-    render api_delete @deployment
+    respond_to do |format|
+      format.html { redirect_to deployment_path(@deployment.parent_id) }
+      format.json { render api_delete @deployment }
+    end
   end
 
   def status 

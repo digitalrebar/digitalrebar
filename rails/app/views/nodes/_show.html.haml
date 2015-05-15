@@ -39,5 +39,5 @@
     - if Rails.env.development? and Jig.active('test')
       %dt= t '.bdd_marker'
       %dd= @node.attrib_bdd_marker || t('ignore')
-
+    = link_to "Destroy", node_path(@node.id, :version=>2), :class => 'button', :method => :delete, data: { confirm: "Are you certain you want to destroy #{@node.name}?" }
 .clear
