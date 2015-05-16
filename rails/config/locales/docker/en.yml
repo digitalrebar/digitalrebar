@@ -1,4 +1,4 @@
-# Copyright 2013, Dell
+# Copyright 2015, RackN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,13 +16,6 @@
 en:
   common:
     roles:
-      provisioner-service: "Provisioner Service"
-      provisioner-server: "Provisioner Server (PXE)"
-      provisioner-base-images: "Available O/S"
-      provisioner-dhcp-server: "DHCP Server"
-      provisioner-repos: "O/S Repo Cache"
-      provisioner-dhcp-database: "DHCP Boot Records"
-      provisioner-os-install: "Install OS"
-      provisioner-docker-setup: "Docker Provisioner"
+      docker-prep: "Docker Prerequisites"
+      docker-ready: "Docker Environment"
     attribs:
-      provisioner-target_os: "Target OS"

@@ -65,6 +65,8 @@ barclamps:
     description: "Consul Service Monitoring and Management"
   - name: sysdig
     description: "Sysdig evaluation tools"
+  - name: docker
+    description: "Docker Host Extensions"
 
 jigs:
   - name: script
