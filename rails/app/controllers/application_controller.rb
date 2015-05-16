@@ -283,18 +283,20 @@ class ApplicationController < ActionController::Base
   end
 
   def digest_auth!
-    authenticate_or_request_with_http_digest(User::DIGEST_REALM) do |username|
+    u = nil
+    authed = authenticate_or_request_with_http_digest(User::DIGEST_REALM) do |username|
       u = User.find_by_username(username)
       session[:digest_user] = u.username
       u.encrypted_password
     end
-    warden.custom_failure! if performed?
+    @current_user = u if authed
+    authed
   end
 
   def do_auth!
     respond_to do |format|
-      format.html { authenticate_user!  }
-      format.json { digest_auth!  }
+      format.html { authenticate_user! }
+      format.json { digest_auth! }
     end
   end
 
@@ -307,7 +309,7 @@ class ApplicationController < ActionController::Base
           (/^::ffff:127\.0\.0\.1$/ =~ request.remote_ip)) &&
         File.exists?("/tmp/.crowbar_in_bootstrap") &&
         (File.stat("/tmp/.crowbar_in_bootstrap").uid == 0)
-      current_user = User.find_by_id_or_username("crowbar")
+      @current_user = User.find_by(username: "crowbar")
       true
     else
       do_auth!
