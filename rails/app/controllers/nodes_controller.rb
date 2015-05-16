@@ -110,7 +110,10 @@ class NodesController < ApplicationController
   def destroy
     @node = Node.find_key(params[:id] || params[:name])
     @node.destroy
-    render api_delete @node
+    respond_to do |format|
+      format.html { redirect_to deployment_path(@node.deployment_id) }
+      format.json { render api_delete @node }
+    end
   end
 
   def power

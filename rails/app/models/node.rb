@@ -21,6 +21,7 @@ class Node < ActiveRecord::Base
   audited
 
   before_validation :default_population
+  before_destroy :before_destroy_handler
   after_update :bootenv_change_handler
   after_update :deployment_change_handler
   after_commit :on_create_hooks, on: :create
@@ -573,4 +574,15 @@ class Node < ActiveRecord::Base
     end
   end
 
+  def before_destroy_handler
+    Node.transaction do
+      return false if self.admin && Node.admin.count == 1
+      # Delete all the noderoles bound in this deployment
+      node_roles.order("cohort DESC").each do |nr|
+        return false unless nr.destroy
+      end
+      return true
+    end
+  end
+  
 end

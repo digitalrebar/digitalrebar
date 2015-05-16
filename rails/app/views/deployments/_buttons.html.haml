@@ -1,3 +1,4 @@
+= link_to "Destroy", deployment_path(deployment.id, :version=>2), :class => 'button', :method => :delete, data: { confirm: "Are you certain you want to destroy deployment #{deployment.name}?" }
 - case
   - when deployment.proposed?
     = link_to t('.commit'), deployment_commit_path(deployment.id, :version=>2), :class => 'button', :method=>:put

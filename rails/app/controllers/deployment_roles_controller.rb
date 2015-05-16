@@ -69,6 +69,11 @@ class DeploymentRolesController < ApplicationController
   def destroy
     @deployment_role = DeploymentRole.find_key(params[:id])
     @deployment_role.destroy
+    respond_to do |format|
+      format.html { redirect_to deployment_path(@deployment_role.deployment_id) }
+      format.json { render api_delete @deployment_role }
+    end
+
     render api_delete @deployment_role
   end
 
