@@ -461,6 +461,10 @@ class NodeRole < ActiveRecord::Base
       # Add this noderole's attrib data.
       Rails.logger.info("Jig: Merging attribute data from #{name} for jig run.")
       res.deep_merge!(all_committed_data)
+      # Make sure we capture default attrib values
+      attribs.each do |attr|
+        res.deep_merge!(attr.extract(res))
+      end
       # Add information about the resource reservations this node has in place
       unless node.discovery["reservations"]
       res["crowbar_wall"] ||= Hash.new

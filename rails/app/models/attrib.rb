@@ -129,12 +129,15 @@ class Attrib < ActiveRecord::Base
     end
     begin
       map.split('/').each{|s|d = d[s]}
-      Rails.logger.debug("Attrib: Got #{self.name}: #{d.inspect}")
-      return d
+      Rails.logger.debug("Attrib: Got #{self.name}: #{d.inspect}") if d
     rescue
-      Rails.logger.debug("Attrib: Got #{self.name}: nil")
-      nil
+      d = nil
     end
+    if d.nil?
+      d = self.default["value"]
+      Rails.logger.debug("Attrib: Got #{self.name}: default #{d.inspect}")
+    end
+    return d
   end
 
   # Gets the requested value from the passed data, but returns it wrapped in template()
