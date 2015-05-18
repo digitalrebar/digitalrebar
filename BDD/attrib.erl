@@ -34,13 +34,13 @@ g(Item) ->
 validate(JSON) when is_record(JSON, obj) ->
   J = JSON#obj.data,
   R =[JSON#obj.type == "attrib",
-      bdd_utils:is_a(J, string, map), 
+      bdd_utils:is_a(J, string, map),
       bdd_utils:is_a(J, dbid, role_id), 
       bdd_utils:is_a(J, dbid, barclamp_id), 
       bdd_utils:is_a(J, boolean, writable), 
       bdd_utils:is_a(J, string, schema), 
       bdd_utils:is_a(J, string, ui_renderer), 
-      bdd_utils:is_a(J, length, 12),
+      bdd_utils:is_a(J, length, 13),
       crowbar_rest:validate(J)],
   bdd_utils:assert(R).
  

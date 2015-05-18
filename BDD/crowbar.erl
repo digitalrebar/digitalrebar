@@ -158,11 +158,7 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
   O = bdd_restrat:get_object(R),
   bdd_utils:log(debug, crowbar, global_setup, "Checking for Phantom Node Roles ~p",[O#list.count]),
   case O#list.count of
-    1 -> Attribs = ["chef-server_port", "chef-server_protocol"],
-          JSON = [crowbar:json([{name, A}, {description, g(description)}, {barclamp, 'test'}, {order, g(order)}, {writable, true}]) || A <- Attribs],
-          bdd_utils:log(info, crowbar, global_setup, "Creating Attribs ~p",[Attribs]),
-          [bdd_restrat:create(attrib:g(path), J, attrib, 0) || J <- JSON],
-          [node:bind(Phantom,PR) || PR <- PhantomRoles],
+    1 ->  [node:bind(Phantom,PR) || PR <- PhantomRoles],
           bdd_utils:log(info, crowbar, global_setup, "Bound Roles ~p to Phantom ~p",[PhantomRoles, Phantom]),
           node:commit(Phantom),
           node:alive(Phantom);
