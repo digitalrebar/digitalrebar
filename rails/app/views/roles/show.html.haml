@@ -51,12 +51,14 @@
       %tr.node{ :class => cycle(:odd, :even) }
         %th= t '.attrib'
         %th= t '.description'
+        %th= 'Default'
         %th= t '.map'
     %tbdoy
       - @role.attribs.each do |a|
         %tr
           %td= link_to a.name, attrib_path(a.id)
           %td= a.description
+          %td= a.default["value"] 
           %td= a.map
 
 %h3= "Wanted Attributes"

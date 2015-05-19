@@ -197,8 +197,9 @@ class Barclamp < ActiveRecord::Base
         role['attribs'].each do |attrib|
           Rails.logger.info("Importing attrib #{attrib['name']} for role #{role['name']} in barclamp #{barclamp.name}")
           attrib_type_candidates = []
+          attrib_type_candidates << attrib['type'] if attrib['type']
           attrib_type_candidates << "#{r.jig.type}Attrib"
-          attrib_type_candidates << "#{bc_namespace}::Attrib::#{attrib["name"].camelize}"
+          attrib_type_candidates << "#{bc_namespace}::Attrib::#{attrib["name"].gsub("-","_").camelize}"
           attrib_type_candidates << "Attrib"
           attrib_type = attrib_type_candidates.detect{|at| (at.constantize ? true : false) rescue false}.constantize
           attrib_name = attrib["name"]
@@ -221,7 +222,8 @@ class Barclamp < ActiveRecord::Base
       bc['attribs'].each do |attrib|
         Rails.logger.info("Importing attrib #{attrib['name']} for barclamp #{barclamp.name}")
         attrib_type_candidates = []
-        attrib_type_candidates << "#{bc_namespace}::Attrib::#{attrib["name"].camelize}"
+        attrib_type_candidates << attrib['type'] if attrib['type']
+        attrib_type_candidates << "#{bc_namespace}::Attrib::#{attrib["name"].gsub("-","_").camelize}"
         attrib_type_candidates << "Attrib"
         attrib_type = attrib_type_candidates.detect{|at| (at.constantize ? true : false) rescue false}.constantize
         attrib_name = attrib["name"]

@@ -11,6 +11,7 @@
         %th= t '.value'
       %th= t '.description'
       %th= t '.map'
+      %th= 'Default'
   %tbody
     - @list.each do |a|
       %tr    
@@ -19,6 +20,7 @@
           %td= @node.get_attrib(a) || t('not_set') rescue t('.unresolved')
         %td= a.description
         %td= a.map
+        %td= a.default["value"]
 
 - if Rails.env.development?
   %h2 Discovery Debug Info (dev only)

@@ -10,5 +10,6 @@
     = dl_item t('.name'), @attrib.name
     = dl_item t('.description'), @attrib.description
     = dl_item t('.barclamp'), link_to(@attrib.barclamp.name, barclamp_path(@attrib.barclamp.id), :title=>@attrib.barclamp.description)
+    = dl_item 'Default', @attrib.default["value"]
     = dl_item t('.map'), @attrib.map
     = dl_item t('.ui_renderer'), @attrib.ui_renderer
