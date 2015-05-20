@@ -1,26 +1,17 @@
 # ocb-dns-mgmt
 
+This is a micro-service that provides an API for OpenCrowbar to use to
+configure DNS systems.  Currently, PowerDNS HTTP API is supported
+(roughly).
 
 # Build
 
-* Clone the tree
-* Set up Go PATH
-```
-export GOPATH=`pwd`
-```
-* Go dependencies
-```
-go get github.com/ant0ine/go-json-rest/rest
-go get code.google.com/p/gcfg
-```
-* Build and Install the code
-```
-go build 
-```
+go get -u github.com/galthaus/ocb-dns-mgmt
+go install github.com/galthaus/ocb-dns-mgmt
 
 # Running
 
-* Change to the root of the source tree
+* Copy config.gcfg from src tree to local dir
 * You will need a https-cert.pem and https-key.pem.
 ```
 openssl req -nodes -sha256 -x509 -newkey rsa:2048 \
@@ -30,6 +21,6 @@ openssl req -nodes -sha256 -x509 -newkey rsa:2048 \
 * Edit the config.gcfg file to point to your PowerDNS install (needs to be 3.4.1 and up)
 * Run:
 ```
-./ocb-dns-mgmt
+$GOPATH/bin/ocb-dns-mgmt
 ```
 
