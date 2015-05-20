@@ -13,8 +13,14 @@ export GOPATH=`pwd`
 go get github.com/ant0ine/go-json-rest/rest
 go get code.google.com/p/gcfg
 ```
-* cd src/github.com/galthaus/ocb-dns-mgmt
-* go build ; go install ; rm ocb-dns-mgmt
+* Change to source directory
+```
+cd src/github.com/galthaus/ocb-dns-mgmt
+```
+* Build and Install the code
+```
+go build ; go install ; rm ocb-dns-mgmt
+```
 
 # Running
 
