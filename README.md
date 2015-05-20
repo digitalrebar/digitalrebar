@@ -25,7 +25,12 @@ go build ; go install ; rm ocb-dns-mgmt
 # Running
 
 * Change to the root of the source tree
-* You will need a cert.pem and key.pem.  Use the generate_cert.go to build those.
+* You will need a https-cert.pem and https-key.pem.
+```
+openssl req -nodes -sha256 -x509 -newkey rsa:2048 \
+   -keyout https-key.pem -out https-cert.pem -days 1001 \
+   -subj "/C=US/ST=Denial/L=Anytown/O=Dis/CN=admin"
+```
 * Edit the config.gcfg file to point to your PowerDNS install (needs to be 3.4.1 and up)
 * Run:
 ```

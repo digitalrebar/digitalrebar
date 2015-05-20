@@ -75,5 +75,5 @@ func main() {
 
 	connStr := fmt.Sprintf(":%d", cfg.Network.Port)
 	log.Println("Using", connStr)
-	log.Fatal(http.ListenAndServeTLS(connStr, "cert.pem", "key.pem", api.MakeHandler()))
+	log.Fatal(http.ListenAndServeTLS(connStr, "https-cert.pem", "https-key.pem", api.MakeHandler()))
 }
