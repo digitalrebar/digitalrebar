@@ -24,6 +24,7 @@ go build ; go install ; rm ocb-dns-mgmt
 
 # Running
 
+* Change to the root of the source tree
 * You will need a cert.pem and key.pem.  Use the generate_cert.go to build those.
 * Edit the config.gcfg file to point to your PowerDNS install (needs to be 3.4.1 and up)
 * Run:
