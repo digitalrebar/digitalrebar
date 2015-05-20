@@ -13,13 +13,9 @@ export GOPATH=`pwd`
 go get github.com/ant0ine/go-json-rest/rest
 go get code.google.com/p/gcfg
 ```
-* Change to source directory
-```
-cd src/github.com/galthaus/ocb-dns-mgmt
-```
 * Build and Install the code
 ```
-go build ; go install ; rm ocb-dns-mgmt
+go build 
 ```
 
 # Running
@@ -34,6 +30,6 @@ openssl req -nodes -sha256 -x509 -newkey rsa:2048 \
 * Edit the config.gcfg file to point to your PowerDNS install (needs to be 3.4.1 and up)
 * Run:
 ```
-./bin/ocb-dns-mgmt
+./ocb-dns-mgmt
 ```
 
