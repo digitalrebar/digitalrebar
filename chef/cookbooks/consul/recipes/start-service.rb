@@ -108,6 +108,21 @@ if bind_addr && bind_addr != ""
   end
 end
 
+if node[:consul][:acl_master_token]
+  #
+  # Add this file so that we can handle
+  # a restart of the crowbar service between
+  # the consul node role and the crowbar-api
+  # server node role on the same singleon system.
+  #
+  template "/etc/crowbar.master.acl" do
+    source "acl-master-token.erb"
+    mode 0600
+    owner "crowbar"
+    variables(:token => node['consul']['acl_master_token'])
+  end
+end
+
 file node[:consul][:config_dir] + '/default.json' do
   user consul_user
   group consul_group
