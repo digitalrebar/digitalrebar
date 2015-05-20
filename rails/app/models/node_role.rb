@@ -358,12 +358,14 @@ class NodeRole < ActiveRecord::Base
   end
 
   def sysdata
-    return role.sysdata(self) if role.respond_to?(:sysdata)
-    read_attribute("sysdata")
+    res = read_attribute("sysdata")
+    if role.respond_to?(:sysdata)
+      res = role.sysdata(self).deep_merge(res)
+    end
+    res
   end
 
   def sysdata=(arg)
-    raise("#{role.name} dynamically overwrites sysdata, cannot write to it!") if role.respond_to?(:sysdata)
     NodeRole.transaction do
       update_column("sysdata", arg)
     end
@@ -390,8 +392,8 @@ class NodeRole < ActiveRecord::Base
     res
   end
 
-  def attrib_data
-    deployment_data.deep_merge(all_my_data)
+  def attrib_data(only_committed=false)
+    deployment_role.all_data(only_committed).deep_merge(only_committed ? all_committed_data : all_my_data)
   end
 
   def all_committed_data
@@ -445,12 +447,13 @@ class NodeRole < ActiveRecord::Base
       # Start with the node data.
       node_req_attrs.each do |req_attr|
         Rails.logger.info("NodeRole all_transition_data: Adding node attribute #{req_attr.attrib_name} to attribute blob for #{name} run")
-        res.deep_merge!(req_attr.get(node))
+        res.deep_merge!(req_attr.get(node,:all,true))
       end
       # Next, do the same for the attribs we want from a noderole.
       parent_attrib_links.each do |al|
         Rails.logger.info("NodeRole all_transition_data: Adding role attribute #{al.attrib.name} from #{al.parent.name}")
-        res.deep_merge!(al.attrib.extract(al.parent.all_committed_data))
+        res.deep_merge!(al.attrib.extract(al.parent.deployment_role,:all,true))
+        res.deep_merge!(al.attrib.extract(al.parent,:all,true))
       end
       # And all the noderole data from the parent noderoles on this node.
       # This needs to eventaully go away once I figure ot the best way to pull
@@ -463,7 +466,7 @@ class NodeRole < ActiveRecord::Base
       res.deep_merge!(all_committed_data)
       # Make sure we capture default attrib values
       attribs.each do |attr|
-        res.deep_merge!(attr.extract(res))
+        res.deep_merge!(attr.extract(self,:all,true))
       end
       # Add information about the resource reservations this node has in place
       unless node.discovery["reservations"]

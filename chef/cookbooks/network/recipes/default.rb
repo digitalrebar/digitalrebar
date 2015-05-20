@@ -564,6 +564,11 @@ ifs.each {|k,v|
 }
 Chef::Log.info("Saving interfaces to crowbar_wall: #{saved_ifs.inspect}")
 
+
+Chef::Log.info("Final nic configuration:")
+Chef::Log.info(%x{ip addr show})
+Chef::Log.info(%x{ip -6 addr show})
+Chef::Log.info(%x{ip link show})
 node.set["crowbar_wall"]["network"]["interfaces"] = saved_ifs
 node.set["crowbar_wall"]["network"]["nets"] = if_mapping
 

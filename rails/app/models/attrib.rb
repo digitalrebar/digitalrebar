@@ -83,20 +83,15 @@ class Attrib < ActiveRecord::Base
     res
   end
 
-  def self.get(name, from, source=:all)
-    begin
-      (name.is_a?(Attrib) ? name : Attrib.find_key(name)).get(from, source)
-    rescue StandardError => e
-      Rails.logger.warn "Warn, did not get #{name} from #{from.name} with error #{e.message}"
-      nil
-    end
+  def self.get(name, from, source=:all, committed=false)
+    (name.is_a?(Attrib) ? name : Attrib.find_key(name)).get(from, source,committed)
   end
 
   # Get the attribute value from the passed object.
   # For now, we are encoding information about the objects we can use directly in to
   # the Attrib class, and failing hard if we were passed something that
   # we do not know how to handle.
-  def get(from_orig,source=:all)
+  def get(from_orig,source=:all, committed=false)
     d = nil
     Attrib.transaction do
       from = __resolve(from_orig)
@@ -110,29 +105,28 @@ class Attrib < ActiveRecord::Base
             end
           when from.is_a?(DeploymentRole)
             case source
-            when :all then from.wall.deep_merge(from.all_data)
-            when :hint, :user then from.all_data
+            when :all then from.wall.deep_merge(from.all_data(committed))
+            when :hint, :user then from.all_data(committed)
             when :wall then from.wall
             else from.data
             end
           when from.is_a?(NodeRole)
             case source
-            when :all then from.attrib_data
+            when :all then from.attrib_data(committed)
             when :wall then from.wall
             when :system then from.sysdata
-            when :user,:hint then from.data
+            when :user,:hint then committed ? from.committed_data : from.data
             else raise("#{from} is not a valid source to read noderole data from!")
             end
           when from.is_a?(Role) then from.template
           else raise("Cannot extract attribute data from #{from.class.to_s}")
           end
     end
-    begin
-      map.split('/').each{|s|d = d[s]}
-      Rails.logger.debug("Attrib: Got #{self.name}: #{d.inspect}") if d
-    rescue
-      d = nil
-    end
+    map.split('/').each{|s|
+      break if d.nil?
+      d = d[s]
+    }
+    Rails.logger.debug("Attrib: Got #{self.name}: #{d.inspect}") if d
     if d.nil?
       d = self.default["value"]
       Rails.logger.debug("Attrib: Got #{self.name}: default #{d.inspect}")
@@ -142,8 +136,8 @@ class Attrib < ActiveRecord::Base
 
   # Gets the requested value from the passed data, but returns it wrapped in template()
   # unless this attribute is not in the passed blob, in which case it returns nil.
-  def extract(from,hint=:all)
-    template(get(from,hint))
+  def extract(from,hint=:all,committed=false)
+    template(get(from,hint,committed))
   end
 
   def hint_set(to,value)
@@ -215,18 +209,6 @@ class Attrib < ActiveRecord::Base
     update(writable: true)
   end
 
-  # If we were asked to do something with an attribute on a node,
-  # but that attribute is part of a node role bound to that node,
-  # use the node role instead.
-  def __resolve(to)
-    case
-    when (to.is_a?(Node) && self.role_id) then to.node_roles.find_by!(:role_id => self.role_id)
-    when to.is_a?(Deployment) then to.deployment_roles.find_by!(:role_id => self.role_id)
-    when [Node,Role,DeploymentRole,NodeRole,Hash].any?{|klass|to.is_a?(klass)} then to
-    else raise "#{to.class.name} is not something that we can use Attribs with!"
-    end
-  end
-
   # Set a new value for this attribute onto the passed object.
   # The last parameter is what area the new attribute should be placed on
   def __set(to_orig,value,target=:system)
@@ -256,6 +238,20 @@ class Attrib < ActiveRecord::Base
       else raise("Cannot write attribute data to #{to.class.to_s}")
       end
       to.save! unless to.is_a?(Hash)
+    end
+  end
+
+  protected
+
+  # If we were asked to do something with an attribute on a node,
+  # but that attribute is part of a node role bound to that node,
+  # use the node role instead.
+  def __resolve(to)
+    case
+    when (to.is_a?(Node) && self.role_id) then to.node_roles.find_by!(:role_id => self.role_id)
+    when to.is_a?(Deployment) then to.deployment_roles.find_by!(:role_id => self.role_id)
+    when [Node,Role,DeploymentRole,NodeRole,Hash].any?{|klass|to.is_a?(klass)} then to
+    else raise "#{to.class.name} is not something that we can use Attribs with!"
     end
   end
 

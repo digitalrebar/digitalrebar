@@ -159,10 +159,10 @@ class ::Nic
   # This kills all IP addresses and routes set to go through a nic.
   # Use with caution.
   def flush
-    self.dhcp_pid && kill_dhcp
+    self.dhcp_pid && kill_dhcp && sleep(3)
     run_ip("-4 route flush dev #{@nic}")
     run_ip("-6 route flush dev #{@nic}")
-    run_ip("addr flush dev #{@nic}")
+    run_ip("addr flush dev #{@nic} scope global")
     @addresses = ::Array.new
     self
   end
