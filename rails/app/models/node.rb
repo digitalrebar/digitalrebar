@@ -515,24 +515,6 @@ class Node < ActiveRecord::Base
         end
       end
     end
-    # Find noderoles bound to this node that want an attrib that would be directly provided
-    # by this node, and poke that noderole if the attrib it wants has changed.
-    if available? && alive? && (previous_changes[:hint] || previous_changes[:discovery])
-      NodeRole.transaction do
-        current_info = {}
-        old_info = {}
-        [:hint,:discovery].each do |key|
-          current_info.deep_merge!(self[key])
-          old_info.deep_merge!(previous_changes[key] ? previous_changes[key][0] : self[key])
-        end
-        node_roles.each do |nr|
-          next unless nr.role.wanted_attribs.count > 0 &&
-            nr.role.wanted_attribs.where('"attribs"."role_id" IS NULL').any?{|a|a.get(current_info) == a.get(old_info)}
-          next unless nr.runnable? && (nr.transition? || nr.active?)
-          nr.send(:block_or_todo)
-        end
-      end
-    end
   end
 
   # make sure some safe values are set for the node

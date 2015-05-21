@@ -68,15 +68,16 @@ class DeploymentRole < ActiveRecord::Base
     return if committed?
     DeploymentRole.transaction do
       if committed_data != proposed_data
+        attribs.each do |attr|
+          next if attr.get(proposed_data) == attr.get(committed_data)
+          noderoles.each do |nr|
+            attr.poke(nr)
+          end
+        end
         update!(committed_data: proposed_data)
-        update!(proposed_data: nil)
-        save!
       end
-    end
-
-    # Have any runnable noderoles that use this deployment role rerun.
-    deployment.node_roles.where(role_id: role.id).each do |nr|
-      nr.todo! if nr.runnable?
+      update!(proposed_data: nil)
+      save!
     end
   end
 
@@ -91,7 +92,7 @@ class DeploymentRole < ActiveRecord::Base
 
   def all_data(only_committed = false)
     res = all_committed_data
-    res.deep_merge(all_proposed_data) if proposed_data && !only_committed
+    res.deep_merge(proposed_data) if proposed_data && !only_committed
     res
   end
 

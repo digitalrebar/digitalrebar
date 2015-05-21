@@ -21,7 +21,6 @@ class NodeRole < ActiveRecord::Base
 
   after_commit :bind_cluster_children, on: [:create]
   after_commit :run_hooks, on: [:update, :create]
-  after_commit :poke_attr_dependent_noderoles, on: [:update]
   before_destroy :test_if_destroyable
   validate :role_is_bindable, on: :create
   validate :validate_conflicts, on: :create
@@ -180,7 +179,7 @@ class NodeRole < ActiveRecord::Base
         wanted_parents << tp
       end
       target_role.wanted_attribs.each do |wa|
-        wanted_parents << wa.role
+        wanted_parents << wa.role unless wa.role_id.nil?
       end
     end
     wanted_parents.uniq.each do |parent|
@@ -447,7 +446,8 @@ class NodeRole < ActiveRecord::Base
       # Start with the node data.
       node_req_attrs.each do |req_attr|
         Rails.logger.info("NodeRole all_transition_data: Adding node attribute #{req_attr.attrib_name} to attribute blob for #{name} run")
-        res.deep_merge!(req_attr.get(node,:all,true))
+        v = req_attr.attrib.get(node,:all,true)
+        res.deep_merge!(v) unless v.nil?
       end
       # Next, do the same for the attribs we want from a noderole.
       parent_attrib_links.each do |al|
@@ -685,28 +685,6 @@ class NodeRole < ActiveRecord::Base
         end
       end
       Run.run!
-    end
-  end
-
-  def poke_attr_dependent_noderoles
-    NodeRole.transaction do
-      current_data = {}
-      previous_data = {}
-      [:wall,:sysdata,:committed_data].each do |key|
-        current_data.deep_merge!(self.send(key))
-        previous_data.deep_merge!(previous_changes[key] ? previous_changes[key][0] : self.send(key))
-      end
-      # The data we were providing changed, poke any downstream noderoles
-      # that get specific data from us.
-      if current_data != previous_data
-        child_attrib_links.each do |al|
-          cnr = al.child
-          next unless cnr.runnable? && (cnr.transition? || cnr.active?)
-          attr = al.attrib
-          next if attr.extract(current_data) == attr.extract(previous_data)
-          cnr.send(:block_or_todo)
-        end
-      end
     end
   end
 
