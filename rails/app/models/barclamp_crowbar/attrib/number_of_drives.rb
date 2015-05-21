@@ -16,11 +16,11 @@
 class BarclampCrowbar::Attrib::NumberOfDrives < Attrib
 
   # number_of_drives has to calculate info from the data, not just look it up
-  def get(data,source=:all)
+  def get(data,source=:all, committed=false)
 
     # we want to leverage the map for the data in general
     # just we only want to sd* drives
-    sd = super(data,source).select { |k, v| k =~ /sd([a-z])/ } rescue {}
+    sd = super.select { |k, v| k =~ /sd([a-z])/ } rescue {}
     # now that we have the list, return the fount
     return sd.length rescue -1
 

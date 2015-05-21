@@ -16,9 +16,9 @@
 class BarclampNetwork::Attrib::Switches < Attrib
 
   # switches has to calculate info from the data, not just look it up
-  def data(data)
+  def data(data,from=:all, committed=false)
 
-    raw = super(data)
+    raw = super
     switches = {}
     if raw and raw.length > 0
       begin 
