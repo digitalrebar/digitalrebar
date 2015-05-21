@@ -239,6 +239,8 @@ class Network < ActiveRecord::Base
         RoleRequire.create!(:role_id => r.id, :requires => "network-server")
         # The admin net must be bound before any other network can be bound.
         RoleRequireAttrib.create!(role_id: r.id, attrib_name: 'network_interface_maps')
+        RoleRequireAttrib.create!(role_id: r.id, attrib_name: 'network-current-config')
+        RoleRequireAttrib.create!(role_id: r.id, attrib_name: 'network-wanted-config')
         # attributes for jig configuraiton
         Attrib.create!(:role_id => r.id,
                          :barclamp_id => bc.id,
