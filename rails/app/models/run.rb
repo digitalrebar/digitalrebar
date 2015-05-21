@@ -85,7 +85,7 @@ class NodeRoleRun < Que::Job
           next unless (this_nr.wall["crowbar_wall"]["reservations"] rescue nil)
           res.deep_merge!(this_nr.wall["crowbar_wall"]["reservations"])
           end
-        nr.node.discovery.merge({"reservations" => res})
+        nr.node.hint_update({"reservations" => res})
       end
     rescue StandardError => e
       to_error = true

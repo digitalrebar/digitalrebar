@@ -227,3 +227,6 @@ attribs:
       sequence:
         - type: str
           pattern: '/([0-9a-fA-F]{2}:){5}[0-9a-fA-F]/'
+  - name: 'disks'
+    description: 'The disks present in the system'
+    map: 'reservations/disks'

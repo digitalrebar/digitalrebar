@@ -469,7 +469,7 @@ class NodeRole < ActiveRecord::Base
         res.deep_merge!(attr.extract(self,:all,true))
       end
       # Add information about the resource reservations this node has in place
-      unless node.discovery["reservations"]
+      if node.discovery["reservations"]
       res["crowbar_wall"] ||= Hash.new
         res["crowbar_wall"]["reservations"] = node.discovery["reservations"]
       end
