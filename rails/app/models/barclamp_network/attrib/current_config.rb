@@ -1,4 +1,4 @@
-# Copyright 2013, Dell
+# Copyright 2015, RackN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,17 +13,9 @@
 # limitations under the License.
 #
 
-class BarclampCrowbar::Attrib::NumberOfDrives < Attrib
+class ::BarclampNetwork::Attrib::CurrentConfig < Attrib
 
-  # number_of_drives has to calculate info from the data, not just look it up
-  def get(data,source=:all, committed=false)
-
-    # we want to leverage the map for the data in general
-    # just we only want to sd* drives
-    sd = super.select { |k, v| k =~ /sd([a-z])/ } rescue {}
-    # now that we have the list, return the fount
-    return sd.length rescue -1
-
+  def poke(n)
+    true
   end
-
 end

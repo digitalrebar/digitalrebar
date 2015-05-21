@@ -72,6 +72,21 @@ class NodeRoleRun < Que::Job
       else
         Rails.logger.info("Run: Queued job #{job.id} for #{nr.name} skipped due to destructiveness")
       end
+      # Extract any new desired node attribs from the returned wall info
+      nr.barclamp.attribs.where(role_id: nil).each do |a|
+        val = a.get(nr)
+        next if val.nil?
+        a.set(nr.node,val)
+      end
+      # Handle updating our global idea about reservations if our wall has any.
+      if (nr.wall["crowbar_wall"]["reservations"] rescue nil)
+        res = Hash.new
+        nr.node.node_roles.each do |this_nr|
+          next unless (this_nr.wall["crowbar_wall"]["reservations"] rescue nil)
+          res.deep_merge!(this_nr.wall["crowbar_wall"]["reservations"])
+          end
+        nr.node.discovery.merge({"reservations" => res})
+      end
     rescue StandardError => e
       to_error = true
       NodeRole.transaction do
@@ -82,26 +97,17 @@ class NodeRoleRun < Que::Job
     ensure
       NodeRole.transaction do
         nr.save!
-        # Handle updating our global idea about reservations if our wall has any.
-        if (nr.wall["crowbar_wall"]["reservations"] rescue nil)
-          res = Hash.new
-          nr.node.node_roles.each do |this_nr|
-            next unless (this_nr.wall["crowbar_wall"]["reservations"] rescue nil)
-            res.deep_merge!(this_nr.wall["crowbar_wall"]["reservations"])
-          end
-          nr.node.discovery.merge({"reservations" => res})
+        Rails.logger.info("Run: Deleting finished job #{job.id}")
+        job.delete
+        if to_error
+          nr.error!
+        else
+          # Only go to active if the node is still alive -- the jig may
+          # have marked it as not alive.
+          nr.active! if nr.node.alive? && nr.node.available? && mark_active
         end
+        destroy
       end
-      Rails.logger.info("Run: Deleting finished job #{job.id}")
-      job.delete
-      if to_error
-        nr.error!
-      else
-        # Only go to active if the node is still alive -- the jig may
-        # have marked it as not alive.
-        nr.active! if nr.node.alive? && nr.node.available? && mark_active
-      end
-      destroy
     end
   end
 end

@@ -195,6 +195,15 @@ class Attrib < ActiveRecord::Base
     raise AttribValidationFailed.new(self,value,errors)
   end
 
+  # Poke a noderole to make it rerun because an attrib it wants has changed.
+  #
+  def poke(nr)
+    if nr.runnable? && (nr.transition? || nr.active?)
+      Rails.logger.info("Attrib: #{self.name} poking NodeRole #{nr.name}")
+      nr.send(:block_or_todo)
+    end
+  end
+
   private
 
   def schema_is_valid
@@ -216,8 +225,9 @@ class Attrib < ActiveRecord::Base
     kwalify_validate(value) if target == :user
     to_merge = template(value)
     to = __resolve(to_orig)
-    Rails.logger.debug("Attrib: Attempting to update #{name} on #{to.class.name}:#{to.name} to #{value} with #{to_merge.inspect}")
     Attrib.transaction do
+      return if self.get(to,target) == value
+      Rails.logger.debug("Attrib: Attempting to update #{name} on #{to.class.name}:#{to.name} to #{value} with #{to_merge.inspect}")
       case
       when to.is_a?(Hash) then to.deep_merge(to_merge)
       when to.is_a?(Node)
@@ -225,14 +235,37 @@ class Attrib < ActiveRecord::Base
         when :discovery then to.discovery_update(to_merge)
         else to.hint_update(to_merge)
         end
-      when to.is_a?(Role) then to.template_update(to_merge)
+        # Poke any noderoles bound to this node that depend on this attribute.
+        to.node_roles.order("cohort ASC").each do |nr|
+          next unless RoleRequireAttrib.find_by(role_id: nr.role_id, attrib_name: self.name)
+          poke(nr)
+        end
+      when to.is_a?(Role)
+        to.template_update(to_merge)
+        # Poke all the noderoles that are bound to this role.
+        to.node_roles.order("cohort ASC").each do |nr|
+          poke(nr)
+        end
       when to.is_a?(DeploymentRole)
-        target == :system ? to.wall_update(to_merge) : to.data_update(to_merge)
+        val = self.get(to,:all,true)
+        if target == :system
+          to.wall_update(to_merge)
+          # Poke all the noderoles in this deployment that get data from this deployment role.
+          to.noderoles.order("cohort ASC").each do |nr|
+            poke(nr)
+          end unless self.get(to,:all,true) == val
+        else
+          to.data_update(to_merge)
+        end
       when to.is_a?(NodeRole)
+        val = self.get(to,:all,true)
         case target
-        when :system then to.sysdata_update(to_merge)
+        when :system
+          to.sysdata_update(to_merge)
+          poke(to) unless val == self.get(to,:all,true)
         when :user,:hint then to.data_update(to_merge)
-        when :wall then to.wall_update(to_merge)
+        when :wall
+          to.wall_update(to_merge)
         else raise("#{target} is not a valid target to write noderole data to!")
         end
       else raise("Cannot write attribute data to #{to.class.to_s}")

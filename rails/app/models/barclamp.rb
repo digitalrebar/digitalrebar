@@ -28,6 +28,7 @@ class Barclamp < ActiveRecord::Base
 
   # Deployment
   has_many          :roles,     :dependent => :destroy
+  has_many          :attribs,   :dependent => :destroy
   belongs_to        :barclamp,  :dependent => :destroy
   alias_attribute   :parent,    :barclamp
   serialize         :cfg_data

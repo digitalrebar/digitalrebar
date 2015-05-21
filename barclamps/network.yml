@@ -42,7 +42,6 @@ roles:
       - provisioner-server
     flags:
       - implicit
-
   # there are more roles BUT they are dynamically created
 
 attribs:
@@ -52,3 +51,11 @@ attribs:
   - name: 'switches'
     description: 'Connected Networking Switches'
     map: 'ohai/crowbar_ohai/switch_config'
+  - name: network-current-config
+    description: 'The current networking configuration Crowbar has on the node.'
+    map: 'crowbar_wall/network'
+    type: 'BarclampNetwork::Attrib::CurrentConfig'
+  - name: network-wanted-config
+    description: 'The entire desired network config for this node'
+    map: 'crowbar/network'
+    type: 'BarclampNetwork::Attrib::AllConfig'
