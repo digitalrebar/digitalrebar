@@ -18,14 +18,14 @@ rootpw --iscrypted <%= node[:crowbar][:provisioner][:server][:default_password_h
 firewall --disabled
 authconfig --enableshadow --enablemd5
 selinux --disabled
-bootloader --location=mbr --driveorder=sda --append="rhgb quiet"
+bootloader --location=mbr --driveorder=<%= @rootdev %> --append="rhgb quiet"
 zerombr
-ignoredisk --only-use=sda
-clearpart --all --drives=sda
-part /boot --fstype ext4 --size=512 --ondisk=sda
-part /boot/efi --fstype vfat --size=512 --ondisk=sda
+ignoredisk --only-use=<%= @rootdev %>
+clearpart --all --drives=<%= @rootdev %>
+part /boot --fstype ext4 --size=512 --ondisk=<%= @rootdev %>
+part /boot/efi --fstype vfat --size=512 --ondisk=<%= @rootdev %>
 part swap --recommended
-part pv.6 --size=1 --grow --ondisk=sda
+part pv.6 --size=1 --grow --ondisk=<%= @rootdev %>
 volgroup <%=@name.split('.')[0]%> --pesize=32768 pv.6
 logvol / --fstype ext4 --name=lv_root --vgname=<%=@name.split('.')[0]%> --size=1 --grow
 text
@@ -170,6 +170,7 @@ systemctl enable crowbar
 # The network barclamp is in charge of doing horrible things
 # to the network, not NetworkManager
 chkconfig NetworkManager off || :
+chkconfig network on || :
 
 curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
     "<%=@api_server%>/api/v2/nodes/$HOSTNAME"
