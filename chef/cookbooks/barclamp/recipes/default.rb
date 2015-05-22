@@ -16,3 +16,5 @@
 class Chef::Recipe
   include ::BarclampLibrary
 end
+
+Disk.update(node)
