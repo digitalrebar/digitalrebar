@@ -23,7 +23,8 @@ node_dir="#{tftproot}/nodes"
 discover_dir="#{tftproot}/discovery"
 pxecfg_dir="#{discover_dir}/pxelinux.cfg"
 uefi_dir=discover_dir
-pxecfg_default="#{pxecfg_dir}/default"
+root="sda"
+
 node.normal['crowbar_wall'] ||= Mash.new
 node.normal['crowbar_wall']['provisioner'] ||= Mash.new
 node.normal['crowbar_wall']['provisioner']['clients'] ||= Mash.new
@@ -85,6 +86,7 @@ new_clients = {}
       version "12.04"
       address v4addr
       target mnode_name
+      rootdev root
       action :add
     end
   when 'ubuntu-14.04-install'
@@ -93,6 +95,7 @@ new_clients = {}
       version '14.04'
       address v4addr
       target mnode_name
+      rootdev root
       action :add
     end
   when 'centos-6.5-install'
@@ -101,6 +104,7 @@ new_clients = {}
       version '6.5'
       address v4addr
       target mnode_name
+      rootdev root
       action :add
     end
   when 'centos-6.6-install'
@@ -109,6 +113,7 @@ new_clients = {}
       version '6.6'
       address v4addr
       target mnode_name
+      rootdev root
       action :add
     end
   when 'redhat-6.5-install'
@@ -117,6 +122,7 @@ new_clients = {}
       version '6.5'
       address v4addr
       target mnode_name
+      rootdev root
       action :add
     end
   when 'redhat-6.6-install'
@@ -125,6 +131,7 @@ new_clients = {}
       version '6.6'
       address v4addr
       target mnode_name
+      rootdev root
       action :add
     end
   when 'fedora-20-install'
@@ -133,6 +140,7 @@ new_clients = {}
       version '20'
       address v4addr
       target mnode_name
+      rootdev root
       action :add
     end
   when 'redhat-7.0-install'
@@ -141,6 +149,7 @@ new_clients = {}
       version '7.0'
       address v4addr
       target mnode_name
+      rootdev root
       action :add
     end
   when 'centos-7.1.1503-install'
@@ -149,6 +158,7 @@ new_clients = {}
       version '7.1.1503'
       address v4addr
       target mnode_name
+      rootdev root
       action :add
     end
   when "coreos-install"
@@ -157,6 +167,7 @@ new_clients = {}
       version 'latest'
       address v4addr
       target mnode_name
+      rootdev root
       action :add
     end
   when "debian-7.8.0-install"
@@ -165,6 +176,7 @@ new_clients = {}
       version "7.8.0"
       address v4addr
       target mnode_name
+      rootdev root
       action :add
     end
   when "xenserver-6.5-install"
@@ -173,6 +185,7 @@ new_clients = {}
       version "6.5"
       address v4addr
       target mnode_name
+      rootdev root
       action :add
     end
   when "esxi-5.5-install"
@@ -181,6 +194,7 @@ new_clients = {}
       version "5.5"
       address v4addr
       target mnode_name
+      rootdev root
       action :add
     end
   when "fuel-6.0-install"
@@ -189,6 +203,7 @@ new_clients = {}
       version "6.0"
       address v4addr
       target mnode_name
+      rootdev root
       action :add
     end
   else

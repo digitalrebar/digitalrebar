@@ -23,16 +23,12 @@ action :add do
   provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
   api_server=node['crowbar']['api']['servers'].first["url"]
   ntp_server = "#{node["crowbar"]["ntp"]["servers"].first}"
-  use_local_security = node["crowbar"]["provisioner"]["server"]["use_local_security"]
-  install_url=node["crowbar"]["provisioner"][""]
   keys = node["crowbar"]["access_keys"].values.sort.join($/)
   machine_key = node["crowbar"]["machine_key"]
-  os_dir = "#{tftproot}/#{os}"
   mnode_name = new_resource.name
+  mnode_rootdev = new_resource.rootdev
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
   web_path = "#{provisioner_web}/nodes/#{mnode_name}"
-  crowbar_repo_web="#{web_path}/crowbar-extra"
-  admin_web="#{web_path}/install"
   append = "ksdevice=bootif ks=#{web_path}/compute.ks #{params["kernel_params"]} crowbar.fqdn=#{mnode_name} crowbar.install.key=#{machine_key}"
   v4addr = new_resource.address
 
@@ -48,6 +44,7 @@ action :add do
     group "root"
     variables(:os_install_site => params[:os_install_site],
               :name => mnode_name,
+              :rootdev => mnode_rootdev,
               :proxy => proxy,
               :repos => repos,
               :provisioner_web => provisioner_web,

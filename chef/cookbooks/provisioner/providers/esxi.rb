@@ -14,25 +14,19 @@
 #
 
 action :add do
+  raise "ESXi broken until it os ported to use the new disk reservation code"
   os = "#{new_resource.distro}-#{new_resource.version}"
-  repos = node["crowbar"]["provisioner"]["server"]["repositories"][os]
   params = node["crowbar"]["provisioner"]["server"]["boot_specs"][os]
-  online = node["crowbar"]["provisioner"]["server"]["online"]
   tftproot = node["crowbar"]["provisioner"]["server"]["root"]
   provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
   api_server=node['crowbar']['api']['servers'].first["url"]
   ntp_server = "#{node["crowbar"]["ntp"]["servers"].first}"
-  use_local_security = node["crowbar"]["provisioner"]["server"]["use_local_security"]
-  install_url=node["crowbar"]["provisioner"][""]
   machine_key = node["crowbar"]["machine_key"]
   keys = node["crowbar"]["access_keys"].values.sort.join($/)
-  os_dir = "#{tftproot}/#{os}"
-  install_dir = "#{os_dir}/install"
   mnode_name = new_resource.name
+  mnode_rootdev = new_resource.rootdev
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
   web_path = "#{provisioner_web}/nodes/#{mnode_name}"
-  crowbar_repo_web="#{web_path}/crowbar-extra"
-  admin_web="#{web_path}/install"
 
   append = "-c ../#{os}/install/boot.cfg #{params["kernel_params"]} ks=#{web_path}/compute.ks crowbar.install.key=#{machine_key}"
   mac_list = new_resource.address
@@ -49,7 +43,8 @@ action :add do
     group "root"
     variables(:provisioner_web => provisioner_web,
               :api_server => api_server,
-              :keys => keys)
+              :keys => keys,
+              :rootdev => mnode_rootdev)
   end
 
   template "#{node_dir}/crowbar_join.sh" do

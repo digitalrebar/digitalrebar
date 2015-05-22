@@ -1,9 +1,9 @@
 #!/bin/bash
 
 curl -O <%=@web_path%>/cloud-config.yaml
-sudo http_proxy="<%=@proxy%>" coreos-install -d /dev/sda -c cloud-config.yaml
+sudo http_proxy="<%=@proxy%>" coreos-install -d /dev/<%= @rootdev %> -c cloud-config.yaml
 
-sudo mount -o subvol=root /dev/sda9 /mnt/
+sudo mount -o subvol=root /dev/<%= @rootdev %>-part9 /mnt/
 
 key_re='crowbar\.install\.key=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $key_re ]]; then

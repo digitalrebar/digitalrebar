@@ -14,6 +14,7 @@
 #
 
 action :add do
+  raise "Xen broken until it is ported to use the new disk reservation code"
   os = "#{new_resource.distro}-#{new_resource.version}"
   proxy = node["crowbar"]["proxy"]["servers"].first["url"]
   repos = node["crowbar"]["provisioner"]["server"]["repositories"][os]
@@ -22,17 +23,12 @@ action :add do
   tftproot = node["crowbar"]["provisioner"]["server"]["root"]
   provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
   api_server=node['crowbar']['api']['servers'].first["url"]
-  ntp_server = "#{node["crowbar"]["ntp"]["servers"].first}"
-  use_local_security = node["crowbar"]["provisioner"]["server"]["use_local_security"]
-  install_url=node["crowbar"]["provisioner"][""]
   machine_key = node["crowbar"]["machine_key"]
   keys = node["crowbar"]["access_keys"].values.sort.join($/)
-  os_dir = "#{tftproot}/#{os}"
   mnode_name = new_resource.name
+  mnode_rootdev = new_resource.rootdev
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
   web_path = "#{provisioner_web}/nodes/#{mnode_name}"
-  crowbar_repo_web="#{web_path}/crowbar-extra"
-  admin_web="#{web_path}/install"
 
   append = "\
        ../#{os}/install/boot/xen.gz dom0_max_vcpus=1-2 dom0_mem=752M,max:752M com1=115200,8n1 \
@@ -55,6 +51,7 @@ action :add do
     group "root"
     variables(:os_install_site => params[:os_install_site],
               :name => mnode_name,
+              :rootdev => mnode_rootdev,
               :proxy => proxy,
               :repos => repos,
               :provisioner_web => provisioner_web,
