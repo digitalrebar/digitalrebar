@@ -10,6 +10,7 @@ package main
 
 import (
 	"code.google.com/p/gcfg"
+	"flag"
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
 	"log"
@@ -35,10 +36,19 @@ type DnsInstance struct {
 	AccessToken string
 }
 
+var config_path, key_pem, cert_pem string
+
+func init() {
+	flag.StringVar(&config_path, "config_path", "/etc/dns-mgmt.conf", "Path to config file")
+	flag.StringVar(&key_pem, "key_pem", "/etc/dns-mgmt-https-key.pem", "Path to config file")
+	flag.StringVar(&cert_pem, "cert_pem", "/etc/dns-mgmt-https-cert.pem", "Path to config file")
+}
+
 func main() {
+	flag.Parse()
 
 	var cfg Config
-	cerr := gcfg.ReadFileInto(&cfg, "config.gcfg")
+	cerr := gcfg.ReadFileInto(&cfg, config_path)
 	if cerr != nil {
 		log.Fatal(cerr)
 	}
@@ -75,5 +85,5 @@ func main() {
 
 	connStr := fmt.Sprintf(":%d", cfg.Network.Port)
 	log.Println("Using", connStr)
-	log.Fatal(http.ListenAndServeTLS(connStr, "https-cert.pem", "https-key.pem", api.MakeHandler()))
+	log.Fatal(http.ListenAndServeTLS(connStr, cert_pem, key_pem, api.MakeHandler()))
 }
