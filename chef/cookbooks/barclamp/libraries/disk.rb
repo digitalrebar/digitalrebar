@@ -114,7 +114,7 @@ class Disk
   end
   
   def held
-    !Dir.glob("#{@basepath}/holders").empty?
+    !Dir.glob("#{@basepath}/holders/*").empty?
   end
 
   def formatted
