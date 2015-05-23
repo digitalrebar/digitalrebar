@@ -50,6 +50,24 @@ class BarclampProvisioner::Database < Role
       hosts[name]["mac_addresses"] = mac_list.map{|m|m.upcase}.sort.uniq
       hosts[name]["v4addr"] = v4addr
       hosts[name]["bootenv"] = bootenv
+      if /-install/.match(bootenv)
+        # If we have an OS bootenv, we might need to reserve a disk for the OS instal.
+        n = Node.find_by!(name: name)
+        n.with_lock('FOR NO KEY UPDATE') do
+          disks = Attrib.get('disks',n) || []
+          claims = Attrib.get('claimed-disks',n) || {}
+          unless claims.values.any?{|v|v == "operating system"}
+            preferred_target = Attrib.get('operating-system-disk',n)
+            idx = disks.index{|d|d["unique_name"] == preferred_target}
+            idx ||= disks.index{|d|!d["removable"]}
+            target = disks[idx]
+            Attrib.set('operating-system-disk',n,target["unique_name"]) unless preferred_target
+            claims[target["unique_name"]] = "operating system"
+            Attrib.set('claimed-disks',n,claims)
+          end
+          hosts[name]["rootdev"] = target["unique_name"]
+        end
+      end
     end
     node_roles.each do |nr|
       nr.with_lock('FOR NO KEY UPDATE') do

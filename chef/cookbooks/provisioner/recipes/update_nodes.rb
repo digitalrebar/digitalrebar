@@ -23,7 +23,6 @@ node_dir="#{tftproot}/nodes"
 discover_dir="#{tftproot}/discovery"
 pxecfg_dir="#{discover_dir}/pxelinux.cfg"
 uefi_dir=discover_dir
-root="sda"
 
 node.normal['crowbar_wall'] ||= Mash.new
 node.normal['crowbar_wall']['provisioner'] ||= Mash.new
@@ -37,6 +36,7 @@ new_clients = {}
   bootenv = provisioner_info["bootenv"]
   pxefile = "#{pxecfg_dir}/#{nodeaddr}"
   uefifile = "#{uefi_dir}/#{nodeaddr}.conf"
+  root = provisioner_info["rootdev"].sub("/dev/","") if /-install$/.match(bootenv)
   new_clients[mnode_name] = {
     "v4addr" => provisioner_info["v4addr"],
     "nodeaddr" => nodeaddr,
