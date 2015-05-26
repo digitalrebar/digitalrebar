@@ -14,36 +14,25 @@
 #
 
 action :add do
+  raise "Fuel Broken for now until it is ported to use the new disk reservation code!"
   os = "#{new_resource.distro}-#{new_resource.version}"
-  repos = node["crowbar"]["provisioner"]["server"]["repositories"][os]
   params = node["crowbar"]["provisioner"]["server"]["boot_specs"][os]
-  online = node["crowbar"]["provisioner"]["server"]["online"]
   tftproot = node["crowbar"]["provisioner"]["server"]["root"]
   provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
-  api_server=node['crowbar']['api']['servers'].first["url"]
   ntp_server = "#{node["crowbar"]["ntp"]["servers"].first}"
-  use_local_security = node["crowbar"]["provisioner"]["server"]["use_local_security"]
-  install_url=node["crowbar"]["provisioner"][""]
   machine_key = node["crowbar"]["machine_key"]
   keys = node["crowbar"]["access_keys"].values.sort.join($/)
   os_dir = "#{tftproot}/#{os}"
   install_dir = "#{os_dir}/install"
   mnode_name = new_resource.name
+  mnode_rootdev = new_resource.rootdev
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
   web_path = "#{provisioner_web}/nodes/#{mnode_name}"
-  crowbar_repo_web="#{web_path}/crowbar-extra"
-  admin_web="#{web_path}/install"
-
-  my_ip="10.20.0.2"
-  my_netmask="255.255.255.0"
-  my_gateway="10.20.0.1"
-  my_dns="10.20.0.1"
-  my_hostname=mnode_name
   my_intf="eth1"
   #
   # GREG: Fill in ip params
   #
-  append = "ksdevice=#{my_intf} forceformat=yes installdrive=sda repo=nfs:#{provisioner_addr}:#{install_dir} ks=#{web_path}/compute.ks hostname=#{my_hostname} #{params["kernel_params"]} crowbar.install.key=#{machine_key} crowbar.fqdn=#{mnode_name}"
+  append = "ksdevice=#{my_intf} forceformat=yes installdrive=sda repo=nfs:#{provisioner_addr}:#{install_dir} ks=#{web_path}/compute.ks hostname=#{mnode_name} #{params["kernel_params"]} crowbar.install.key=#{machine_key} crowbar.fqdn=#{mnode_name}"
   mac_list = new_resource.address
 
   directory node_dir do
@@ -58,7 +47,8 @@ action :add do
     group "root"
     variables(:provisioner_web => provisioner_web,
               :api_server => provisioner_addr,
-              :keys => keys)
+              :keys => keys,
+              :rootdev => mnode_rootdev)
   end
 
   template "#{node_dir}/crowbar_join.sh" do

@@ -2,10 +2,10 @@ class Disk
 
   @@syspath = "/sys/block"
   @@by_id = "/dev/disk/by-id"
-  @@id_sort_keys = [ /\/scsi-[a-zA-Z]/,
+  @@id_sort_keys = [ /\/ata-/,
+                     /\/scsi-[a-zA-Z]/,
                      /\/scsi-[^1]/,
                      /\/scsi-/,
-                     /\/ata-/,
                      /\/cciss-/,
                      /\/wwn-/,
                      /\/usb-/ ]

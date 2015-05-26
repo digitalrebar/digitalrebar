@@ -27,12 +27,10 @@ action :add do
   os_codename = node["crowbar"]["provisioner"]["server"]["supported_oses"][os]["codename"]
   keys = node["crowbar"]["access_keys"].values.sort.join($/)
   machine_key = node["crowbar"]["machine_key"]
-  os_dir = "#{tftproot}/#{os}"
   mnode_name = new_resource.name
+  mnode_rootdev = new_resource.rootdev
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
   web_path = "#{provisioner_web}/nodes/#{mnode_name}"
-  crowbar_repo_web="#{web_path}/crowbar-extra"
-  admin_web="#{web_path}/install"
   append = "url=#{web_path}/seed netcfg/get_hostname=#{mnode_name} #{params["kernel_params"]} crowbar.fqdn=#{mnode_name} crowbar.install.key=#{machine_key}"
   v4addr = new_resource.address
 
@@ -53,7 +51,8 @@ action :add do
               :online => online,
               :provisioner_web => provisioner_web,
               :web_path => web_path,
-              :proxy => proxy)
+              :proxy => proxy,
+              :rootdev => mnode_rootdev)
   end
 
   template "#{node_dir}/post-install.sh" do

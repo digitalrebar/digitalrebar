@@ -225,9 +225,11 @@ class Attrib < ActiveRecord::Base
     kwalify_validate(value) if target == :user
     to_merge = template(value)
     to = __resolve(to_orig)
+    current = self.get(to,target)
+    Rails.logger.debug("Attrib: Attempting to update #{name} on #{to.class.name}:#{to.name} from #{current.inspect} to #{value.inspect} with #{to_merge.inspect}")
     Attrib.transaction do
       return if self.get(to,target) == value
-      Rails.logger.debug("Attrib: Attempting to update #{name} on #{to.class.name}:#{to.name} to #{value} with #{to_merge.inspect}")
+      Rails.logger.debug("Attrib: updating #{name} on #{to.class.name}:#{to.name} to #{value}")
       case
       when to.is_a?(Hash) then to.deep_merge(to_merge)
       when to.is_a?(Node)

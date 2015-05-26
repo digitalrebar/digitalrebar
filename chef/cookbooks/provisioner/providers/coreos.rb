@@ -21,15 +21,12 @@ action :add do
   api_server=node['crowbar']['api']['servers'].first["url"]
   ntp_server = "#{node["crowbar"]["ntp"]["servers"].first}"
   provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
-  use_local_security = node["crowbar"]["provisioner"]["server"]["use_local_security"]
   keys = node["crowbar"]["access_keys"].values.sort
   machine_key = node["crowbar"]["machine_key"]
-  os_dir = "#{tftproot}/#{os}"
   mnode_name = new_resource.name
+  mnode_rootdev = new_resource.rootdev
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
   web_path = "#{provisioner_web}/nodes/#{mnode_name}"
-  crowbar_repo_web="#{web_path}/crowbar-extra"
-  admin_web="#{web_path}/install"
   append = "cloud-config-url=#{web_path}/coreos-bootstrap-install.sh crowbar.install.key=#{machine_key}"
   v4addr = new_resource.address
 
@@ -47,6 +44,7 @@ action :add do
               :api_server => api_server,
               :keys => keys,
               :proxy => proxy,
+              :rootdev => mnode_rootdev,
               :provisioner_web => provisioner_web)
   end
 

@@ -230,3 +230,18 @@ attribs:
   - name: 'disks'
     description: 'The disks present in the system'
     map: 'reservations/disks'
+  - name: 'claimed-disks'
+    description: 'The disks that have been claimed by roles on a node'
+    map: 'reservations/claimed_disks'
+    schema:
+      type: map
+      required: true
+      mapping:
+        =:
+          type: str
+  - name: operating-system-disk
+    description: 'The unique name of the disk that the operating system is installed on'
+    map: 'crowbar/operating_system_disk'
+    schema:
+      type: str
+      required: false
