@@ -12,11 +12,7 @@ class Disk
   def self.update(node)
     node.set[:crowbar_wall] = {} unless node[:crowbar_wall]
     node.set[:crowbar_wall][:reservations] = {} unless node[:crowbar_wall][:reservations]
-    present_disks = Dir.glob("/sys/block/*").map do |ent|
-      new(ent)
-    end.reject do |ent|
-      ent.virtual || ent.readonly
-    end.sort.map do |ent|
+    present_disks = all.sort.map do |ent|
       ent.to_hash
     end
     Chef::Log.info("Current disks: #{present_disks.inspect}")
@@ -48,6 +44,14 @@ class Disk
       end
     end
     node.set[:crowbar_wall][:reservations][:disks] = new_disks
+  end
+
+  def self.all
+    Dir.glob("/sys/block/*").map do |ent|
+      new(ent)
+    end.reject do |ent|
+      ent.virtual || ent.readonly
+    end
   end
 
   def initialize(dev)
@@ -109,10 +113,18 @@ class Disk
     path.split("/").any?{|ent|ent =="virtual"}
   end
 
-  def partitioned
-    !Dir.glob("#{@basepath}/#{@dev}[1-9]").empty?
+  def partitions
+    Dir.glob("#{@basepath}/#{@dev}[1-9]*")
   end
-  
+
+  def partitioned
+    !partitions.empty?
+  end
+
+  def mkgpt
+    system("parted -a optimal #{unique_name} mklabel gpt") unless partitioned
+  end
+
   def held
     !Dir.glob("#{@basepath}/holders/*").empty?
   end
@@ -136,6 +148,26 @@ class Disk
       "formatted" => formatted,
       "used" => held || partitioned || formatted
     }
+  end
+
+  def owner(node)
+    (node[:crowbar_wall][:reservations][:claimed_disks][unique_name] || nil) rescue nil
+  end
+
+  def own(node,claimant)
+    node.set[:crowbar_wall] = {} unless node[:crowbar_wall]
+    node.set[:crowbar_wall][:reservations] = {} unless node[:crowbar_wall][:reservations]
+    node.set[:crowbar_wall][:reservations][:claimed_disks] = {} unless node[:crowbar_wall][:reservations][:claimed_disks]
+    node.set[:crowbar_wall][:reservations][:claimed_disks][unique_name] = claimant
+  end
+
+  def disown(node)
+    node.set[:crowbar_wall] = {} unless node[:crowbar_wall]
+    node.set[:crowbar_wall][:reservations] = {} unless node[:crowbar_wall][:reservations]
+    node.set[:crowbar_wall][:reservations][:claimed_disks] = {} unless node[:crowbar_wall][:reservations][:claimed_disks]
+    disks = node[:crowbar_wall][:reservations][:claimed_disks]
+    disks.reject!{|k,v| k == unique_name}
+    node[:crowbar_wall][:reservations][:claimed_disks] = disks
   end
 
   protected
