@@ -16,6 +16,7 @@ qemu-img create -f raw "$VM_DIR/$VMID.disk" 10G &>/dev/null
 qemu-img create -f qcow2 "$VM_DIR/$VMID-01.disk" 20G &>/dev/null
 qemu-img create -f qcow2 "$VM_DIR/$VMID-02.disk" 20G &>/dev/null
 qemu-img create -f qcow2 "$VM_DIR/$VMID-03.disk" 20G &>/dev/null
+qemu-img create -f qcow2 "$VM_DIR/$VMID-04.disk" 20G &>/dev/null
 makenics
 trap 'cleanup' 0 INT QUIT TERM
 

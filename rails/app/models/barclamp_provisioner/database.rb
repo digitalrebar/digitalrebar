@@ -56,16 +56,16 @@ class BarclampProvisioner::Database < Role
         n.with_lock('FOR NO KEY UPDATE') do
           disks = Attrib.get('disks',n) || []
           claims = Attrib.get('claimed-disks',n) || {}
-          unless claims.values.any?{|v|v == "operating system"}
-            preferred_target = Attrib.get('operating-system-disk',n)
-            idx = disks.index{|d|d["unique_name"] == preferred_target}
+          target_id = Attrib.get('operating-system-disk',n)
+          if target_id.nil?
             idx ||= disks.index{|d|!d["removable"]}
             target = disks[idx]
-            Attrib.set('operating-system-disk',n,target["unique_name"]) unless preferred_target
+            Attrib.set('operating-system-disk',n,target["unique_name"])
             claims[target["unique_name"]] = "operating system"
             Attrib.set('claimed-disks',n,claims)
+            target_id = target["unique_name"]
           end
-          hosts[name]["rootdev"] = target["unique_name"]
+          hosts[name]["rootdev"] = target_id
         end
       end
     end
