@@ -150,6 +150,7 @@ roles:
           enum:
             - ubuntu-12.04
             - ubuntu-14.04
+            - ubuntu-15.04
             - redhat-6.5
             - redhat-6.6
             - centos-6.5
