@@ -20,6 +20,8 @@ license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/READ
 
 os_support:
   - ubuntu-12.04
+  - ubuntu-14.04
+  - ubuntu-15.04
   - redhat-6.5
   - redhat-6.6
   - centos-6.5
@@ -135,6 +137,26 @@ debs:
       - deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main
       - deb http://get.docker.io/ubuntu docker main
       - deb http://ppa.launchpad.net/saltstack/salt/ubuntu trusty main
+      - deb http://download.draios.com/stable/deb stable-amd64/
+    pkgs:
+      - rpcbind
+  ubuntu-15.04:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef_11.14.2-1_amd64.deb
+    repos:
+      - deb http://us.archive.ubuntu.com/ubuntu/ vivid main restricted universe multiverse
+      - deb-src http://us.archive.ubuntu.com/ubuntu/ vivid main restricted universe multiverse
+      - deb http://us.archive.ubuntu.com/ubuntu/ vivid-updates main restricted universe multiverse
+      - deb-src http://us.archive.ubuntu.com/ubuntu/ vivid-updates main restricted universe multiverse
+      - deb http://archive.canonical.com/ubuntu vivid partner
+      - deb-src http://archive.canonical.com/ubuntu vivid partner
+      #- deb http://extras.ubuntu.com/ubuntu vivid main
+      #- deb-src http://extras.ubuntu.com/ubuntu vivid main
+      - deb http://security.ubuntu.com/ubuntu vivid-security main restricted universe multiverse
+      - deb-src http://security.ubuntu.com/ubuntu vivid-security main restricted universe multiverse
+      #- deb http://apt.postgresql.org/pub/repos/apt/ vivid-pgdg main
+      - deb http://get.docker.io/ubuntu docker main
+      - deb http://ppa.launchpad.net/saltstack/salt/ubuntu vivid main
       - deb http://download.draios.com/stable/deb stable-amd64/
     pkgs:
       - rpcbind

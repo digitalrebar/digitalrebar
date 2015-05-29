@@ -32,6 +32,14 @@
                         "iso_file": "ubuntu-12.04.5-server-amd64.iso",
                         "codename": "precise"
                     },
+                    "ubuntu-15.04": {
+                        "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz",
+                        "kernel": "install/netboot/ubuntu-installer/amd64/linux",
+                        "append": "debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --",
+                        "online_mirror": "http://us.archive.ubuntu.com/ubuntu/",
+                        "iso_file": "ubuntu-15.04-server-amd64.iso",
+                        "codename": "vivid"
+                    },
                     "ubuntu-14.04": {
                         "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz",
                         "kernel": "install/netboot/ubuntu-installer/amd64/linux",
