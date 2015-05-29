@@ -40,7 +40,7 @@ gem 'que'
 gem 'ledermann-rails-settings', :require => 'rails-settings'
 gem 'jquery-rails'
 gem 'net-ssh'
-gem 'chef', ">= 11.16.4", '< 12.0'
+gem 'chef', "~> 12.3"
 gem 'open4'
 gem 'structurematch', '~> 0.1.1'
 gem 'diplomat'
