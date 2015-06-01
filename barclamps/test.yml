@@ -24,6 +24,7 @@ roles:
         map: 'test/delay'
         description: 'UI Simulated Delay'
         ui_renderer: 'barclamp_test/attribs/delay'
+        default: 1
   - name: test-async
     jig: role-provided
     requires:
@@ -71,6 +72,8 @@ attribs:
   - name: random
     map: 'test/random'
     description: 'Random # created by Test Jig instrumentation'
+    default: 0000
   - name: marker
     map: 'test/marker'
     description: 'Last touched by information created by Test Jig instrumentation'
+    default: "MARK"

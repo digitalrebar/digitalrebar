@@ -124,7 +124,12 @@ class Attrib < ActiveRecord::Base
     end
     map.split('/').each{|s|
       break if d.nil?
-      d = d[s]
+      begin 
+        d = d[s]
+      rescue 
+        Rails.logger.warn("Attrib: Cannot drill into attrib data. unexpected default/value pattern.  Source: #{from_orig.inspect}, Value: #{d.inspect}")     
+        d = d
+      end
     }
     Rails.logger.debug("Attrib: Got #{self.name}: #{d.inspect}") if d
     if d.nil?
