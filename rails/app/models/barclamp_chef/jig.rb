@@ -21,6 +21,7 @@ require 'thread'
 
 class BarclampChef::Jig < Jig
   @@load_role_mutex ||= Mutex.new
+  @@reload_mutex ||= Mutex.new
 
   def make_run_list(nr)
     runlist = Array.new
@@ -134,8 +135,11 @@ class BarclampChef::Jig < Jig
   end
 
   def chef_node_and_role(node)
-    prep_chef_auth
-    [Chef::Node.load(node.name),Chef::Role.load(node_role_name(node))]
+    @@reload_mutex.synchronize do
+      Rails.logger.info("ChefJig: Reloading chef node and role info for #{node.name}")
+      prep_chef_auth
+      [Chef::Node.load(node.name),Chef::Role.load(node_role_name(node))]
+    end
   end
 
   def prep_chef_auth
