@@ -80,6 +80,12 @@ type PowerDnsError struct {
 	Error string `json:"error"`
 }
 
+type PowerDnsInstance struct {
+	UrlBase     string
+	AccessToken string
+	dns_endpoint
+}
+
 func (di *PowerDnsInstance) makeZoneUrl(id *string) string {
 	if id != nil {
 		return fmt.Sprintf("%s/%s/%s", di.UrlBase, "zones", *id)
