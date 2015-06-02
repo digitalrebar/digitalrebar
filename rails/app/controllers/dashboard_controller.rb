@@ -52,7 +52,7 @@ class DashboardController < ApplicationController
         node.group=group
       end
       node.save
-      Rails.logger.info "node #{node.name} (#{node.alias}) changed its group to be #{node.group.empty? ? 'automatic' : group}."
+      Rails.logger.info "node #{node.name} changed its group to be #{node.group.empty? ? 'automatic' : group}."
       render :inline => "SUCCESS: added #{node.name} to #{group}.", :cache => false 
     end
   end
@@ -77,10 +77,10 @@ class DashboardController < ApplicationController
         node = Node.find_key node_name
         begin
           node.update_attributes! values
-          succeeded << node.alias
+          succeeded << node.name
         rescue StandardError=>e
           Rails.logger.info "user attempted dashboard.list put for node #{node.name} raised error #{e.message}"
-          failed << node.alias
+          failed << node.name
         end
       end
       if failed.length>0
@@ -102,7 +102,7 @@ class DashboardController < ApplicationController
     Node.all.each do |n|
       f = n.family.to_s  
       @families[f] = {:names=>[], :family=>n.family} unless @families.has_key? f
-      @families[f][:names] << {:alias=>n.alias, :description=>n.description, :handle=>n.name}
+      @families[f][:names] << {:name=>n.name, :description=>n.description, :handle=>n.name}
     end
   end
 

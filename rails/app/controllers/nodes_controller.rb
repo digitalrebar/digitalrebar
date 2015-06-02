@@ -167,7 +167,6 @@ class NodesController < ApplicationController
     default_net = nil
     Node.transaction do
       @node = Node.create!(params.permit(:name,
-                                         :alias,
                                          :description,
                                          :admin,
                                          :deployment_id,
@@ -193,8 +192,7 @@ class NodesController < ApplicationController
     # sometimes we pass in a nested set of parameters
     params[:node_deployment].each { |k,v| params[k] = v } if params.has_key? :node_deployment
     params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
-    @node.update_attributes!(params.permit(:alias,
-                                             :name,
+    @node.update_attributes!(params.permit(:name,
                                              :description,
                                              :target_role_id,
                                              :deployment_id,

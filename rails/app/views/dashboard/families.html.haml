@@ -17,7 +17,7 @@
         %td
           %ul.plain
             - f[:names].each do |node|
-              %li= link_to node[:alias], node_path(node[:handle]), :title=> node[:description]
+              %li= link_to node[:name], node_path(node[:handle]), :title=> node[:description]
         %td= f[:names].length
         %td= format_memory(f[:family][:ram])
         %td= f[:family][:nics]

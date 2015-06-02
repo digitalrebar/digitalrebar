@@ -13,7 +13,7 @@
     - @nodes.each do |node|
       - allocations = NetworkAllocation.node(node)
       %tr.node{ :class => cycle(:odd, :even) }
-        %td= link_to node.alias, main_app.node_path(node.id), :title=>node.description
+        %td= link_to node.name, main_app.node_path(node.id), :title=>node.description
         - @networks.each do |net|
           - nr = NodeRole.peers_by_node_and_role(node, net.role).first rescue nil
           %td

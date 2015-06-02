@@ -98,6 +98,6 @@ end
 
 # Just 2 dummy nodes
 shared_context "2 dummy nodes" do
-  let(:node1) { Node.create! :name=>"unit1.test.com", :alias=>"unit1", :admin=>true }
-  let(:node2) { Node.create! :name=>"unit2.test.com", :alias=>"unit2" }
+  let(:node1) { Node.create! :name=>"unit1.test.com", :admin=>true }
+  let(:node2) { Node.create! :name=>"unit2.test.com" }
 end

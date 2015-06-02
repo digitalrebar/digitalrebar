@@ -60,7 +60,7 @@
                   .led{:class => node.status, :title=>t(node.status, :scope=>'status', :default=>node.status)}
                 %td.name
                   %a{:href => node_path(node.id), :draggable=>'true', :title=> (node.description.nil? ? t(:not_set) : node.description), :class => 'node_details', :id => node.id}
-                    = truncate(node.alias, :length => 25)
+                    = truncate(node.name, :length => 25)
 
 .clear
 

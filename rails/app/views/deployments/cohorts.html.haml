@@ -15,7 +15,7 @@
       - @nodes.each do |node|
         %tr.node{:id => node.id}
           %td.nodename
-            = link_to node.alias, node_path(node.id), :title=>node.description
+            = link_to node.name, node_path(node.id), :title=>node.description
           - @roles.each do |dr|
             - nr = node.node_roles.where(:role_id => dr.role_id, :deployment_id => dr.deployment_id).first
             %td.noderole{:id=>(nr ? nr.id : -1), :dr=>dr.id}

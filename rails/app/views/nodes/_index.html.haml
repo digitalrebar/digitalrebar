@@ -3,7 +3,6 @@
     %tr
       %th
       %th= t '.name'
-      %th= t '.alias'
       %th= t '.status'
       %th= t '.admin'
       %th= t '.description'
@@ -20,7 +19,6 @@
         %td.status{ :width=>'10px'}
           .led{:class => led, :title=>t(".#{led}"), :raw => s}
         %td= link_to n.name, node_path(n.id)
-        %td= n.alias
         %td.strStatus
           = t (n.alive ? ".alive" : ".dead")
           = t (n.available ? ".available" : ".reserved")

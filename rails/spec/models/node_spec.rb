@@ -17,7 +17,7 @@ require 'spec_helper'
 describe "admin create" do
 
   include_context "crowbar test deployment"
-  subject { Node.create! :name=>'rspec-admin.crowbar.com', :alias=>'rspec-admin', :admin => true, :deployment => deployment }
+  subject { Node.create! :name=>'rspec-admin.crowbar.com', :admin => true, :deployment => deployment }
 
   it {should be_is_admin} 
 
@@ -33,7 +33,7 @@ end
 describe "node create" do
 
   include_context "crowbar test deployment"
-  subject { Node.create! :name=>'rspec-node.crowbar.com', :alias=>'rspec-node', :admin => false, :deployment => deployment }
+  subject { Node.create! :name=>'rspec-node.crowbar.com', :admin => false, :deployment => deployment }
 
 
   it "must have implicit roles" do

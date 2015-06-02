@@ -15,7 +15,7 @@
       .led{:valign=>'center', :class => led, :title=>t(".#{led}")}
     %td
       %h1
-        = @node.alias || @node.name
+        = @node.name
         = t '.admin' if @node.is_admin?
         = t '.system' if @node.is_system?
 

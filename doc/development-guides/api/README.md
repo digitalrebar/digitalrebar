@@ -161,7 +161,6 @@ The following table should be populated for all API calls:
       "description":"example",
       "order":100,
       "admin":true,
-      "alias":"sim",
       "alive":true,
       "allocated":false,
       "available":true,
@@ -198,7 +197,6 @@ operating system installed.
 This will return:
     {
     "admin":false,
-    "alias":"newtest",
     "alive":false,
     "allocated":false,
     "available":false,
@@ -311,7 +309,6 @@ Returns:
 Returns:
 
     {
-      "alias": "d52-54-05-3f-00-00",
       "description": null,
       "target_role_id": null,
       "deployment_id": 2,
