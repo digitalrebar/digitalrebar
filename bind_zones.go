@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -14,22 +13,30 @@ type BindDnsInstance struct {
 	dns_endpoint
 }
 
-func (di *BindDnsInstance) parseZone(name string) Zone {
+func (di *BindDnsInstance) parseZone(name string) *Zone {
 	zone := Zone{
-		Id:   name,
-		Name: name,
+		Id:     name,
+		Name:   name,
+		Kind:   "Native",
+		Dnssec: false,
 	}
 
-	return zone
+	filename := fmt.Sprintf("/etc/bind/db.%s", name)
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil
+	}
+	defer file.Close()
+
+	// GREG: parse the template.
+
+	return &zone
 }
 
-// List function
-func (di *BindDnsInstance) GetAllZones(w rest.ResponseWriter, r *rest.Request) {
-
+func (di *BindDnsInstance) findZones(id *string) []Zone {
 	file, err := os.Open("/etc/bind/named.conf.crowbar")
 	if err != nil {
-		// GREG: write an error back the caller
-		log.Fatal(err)
+		return nil
 	}
 	defer file.Close()
 
@@ -41,11 +48,25 @@ func (di *BindDnsInstance) GetAllZones(w rest.ResponseWriter, r *rest.Request) {
 		if strings.HasPrefix(s, "include \"") {
 			ss := strings.Split(s, "\"")
 			zone := di.parseZone(strings.TrimPrefix(ss[1], "zone."))
-			zones = append(zones, zone)
+			if zone != nil {
+				zones = append(zones, *zone)
+			}
 		}
 	}
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+	}
+
+	return zones
+}
+
+// List function
+func (di *BindDnsInstance) GetAllZones(w rest.ResponseWriter, r *rest.Request) {
+
+	zones := di.findZones(nil)
+	if zones == nil {
+		rest.Error(w, "File not available", 500)
+		return
 	}
 
 	w.WriteJson(zones)
@@ -55,9 +76,13 @@ func (di *BindDnsInstance) GetAllZones(w rest.ResponseWriter, r *rest.Request) {
 func (di *BindDnsInstance) GetZone(w rest.ResponseWriter, r *rest.Request) {
 	id := r.PathParam("id")
 
-	zone := di.parseZone(id)
+	zones := di.findZones(&id)
+	if zones == nil || len(zones) == 0 {
+		rest.Error(w, "Not Found", 404)
+		return
+	}
 
-	w.WriteJson(zone)
+	w.WriteJson(zones[0])
 }
 
 // Create function
