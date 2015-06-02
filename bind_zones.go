@@ -10,8 +10,17 @@ import (
 	"strings"
 )
 
+type BindDnsInstance struct {
+	dns_endpoint
+}
+
 func (di *BindDnsInstance) parseZone(name string) Zone {
-	return Zone{}
+	zone := Zone{
+		Id:   name,
+		Name: name,
+	}
+
+	return zone
 }
 
 // List function

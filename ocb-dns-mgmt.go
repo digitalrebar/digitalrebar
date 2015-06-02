@@ -32,16 +32,6 @@ type Config struct {
 	}
 }
 
-type PowerDnsInstance struct {
-	UrlBase     string
-	AccessToken string
-	dns_endpoint
-}
-
-type BindDnsInstance struct {
-	dns_endpoint
-}
-
 var config_path, key_pem, cert_pem string
 
 func init() {
@@ -99,5 +89,6 @@ func main() {
 
 	connStr := fmt.Sprintf(":%d", cfg.Network.Port)
 	log.Println("Using", connStr)
+
 	log.Fatal(http.ListenAndServeTLS(connStr, cert_pem, key_pem, api.MakeHandler()))
 }
