@@ -27,14 +27,15 @@ class DashboardController < ApplicationController
       if nr.state == NodeRole::ERROR
         @status[layer] = 'alert'
       elsif (nr.state == NodeRole::PROPOSED)
-        @status[layer] = 'user'
+        @status[layer] = 'user' unless @status[layer] == 'alert'
       elsif nr.state != NodeRole::ACTIVE
-        @status[layer] = 'system'
+        @status[layer] = 'system' unless @status[layer] == 'alert'
       end
     end
 
     respond_to do |format|
       format.html { }
+      format.json { render :json => @status.to_json } # also respond to json for layercake ajax updating
     end
   end    
 
