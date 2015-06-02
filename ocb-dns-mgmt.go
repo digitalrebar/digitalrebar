@@ -18,7 +18,8 @@ import (
 )
 
 type Config struct {
-	PowerDNS struct {
+	Dns struct {
+		Type     string
 		Password string
 		Hostname string
 		Port     int
@@ -31,9 +32,14 @@ type Config struct {
 	}
 }
 
-type DnsInstance struct {
+type PowerDnsInstance struct {
 	UrlBase     string
 	AccessToken string
+	dns_endpoint
+}
+
+type BindDnsInstance struct {
+	dns_endpoint
 }
 
 var config_path, key_pem, cert_pem string
@@ -53,10 +59,18 @@ func main() {
 		log.Fatal(cerr)
 	}
 
-	base := fmt.Sprintf("http://%s:%d/servers/%s", cfg.PowerDNS.Hostname, cfg.PowerDNS.Port, cfg.PowerDNS.Server)
-	di := DnsInstance{
-		UrlBase:     base,
-		AccessToken: cfg.PowerDNS.Password,
+	var de dns_endpoint
+
+	if cfg.Dns.Type == "BIND" {
+		de = &BindDnsInstance{}
+	} else if cfg.Dns.Type == "POWERDNS" {
+		base := fmt.Sprintf("http://%s:%d/servers/%s", cfg.Dns.Hostname, cfg.Dns.Port, cfg.Dns.Server)
+		de = &PowerDnsInstance{
+			UrlBase:     base,
+			AccessToken: cfg.Dns.Password,
+		}
+	} else {
+		log.Fatal("Failed to find type")
 	}
 
 	api := rest.NewApi()
@@ -71,12 +85,12 @@ func main() {
 	})
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
-		rest.Get("/zones", di.GetAllZones),
-		rest.Post("/zones", di.PostZone),
-		rest.Get("/zones/#id", di.GetZone),
-		rest.Put("/zones/#id", di.PutZone),
-		rest.Delete("/zones/#id", di.DeleteZone),
-		&rest.Route{"PATCH", "/zones/#id", di.PatchZone},
+		rest.Get("/zones", de.GetAllZones),
+		rest.Post("/zones", de.PostZone),
+		rest.Get("/zones/#id", de.GetZone),
+		rest.Put("/zones/#id", de.PutZone),
+		rest.Delete("/zones/#id", de.DeleteZone),
+		&rest.Route{"PATCH", "/zones/#id", de.PatchZone},
 	)
 	if err != nil {
 		log.Fatal(err)
