@@ -40,7 +40,7 @@ func (di *BindDnsInstance) GetAllZones(w rest.ResponseWriter, r *rest.Request) {
 
 		if strings.HasPrefix(s, "include \"") {
 			ss := strings.Split(s, "\"")
-			zone := di.parseZone(ss[1])
+			zone := di.parseZone(strings.TrimPrefix(ss[1], "zone."))
 			zones = append(zones, zone)
 		}
 	}
