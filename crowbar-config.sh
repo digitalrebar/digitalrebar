@@ -143,7 +143,7 @@ admin_node="
 ip_re='([0-9a-f.:]+/[0-9]+)'
 
 # Add required or desired services
-services=(dns-service ntp-service proxy-service dns-mgmt_service provisioner-service
+services=(proxy-service dns-service ntp-service dns-mgmt_service provisioner-service
           crowbar-api_service crowbar-job_runner_service amqp-service)
 for role in "${services[@]}"; do
     crowbar nodes bind "system-phantom.internal.local" to "$role"
@@ -281,6 +281,26 @@ for net in "${nets[@]}"; do
     ip addr add "$net" dev eth0 || :
     echo "${net%/*} $FQDN" >> /etc/hosts || :
 done
+
+# If we have an http_proxy set, then we should make sure
+# we have no-proxy setup correctly and use it.
+if [[ $http_proxy ]] ; then
+    # Now that we have shiny new IP addresses, make sure that Squid has the right
+    # addresses in place for always_direct exceptions, and pick up the new proxy
+    # environment variables.
+    (
+        . bootstrap.sh
+        chef-solo -c /opt/opencrowbar/core/bootstrap/chef-solo.rb -o "${proxy_recipes}"
+    )
+    . /etc/profile
+
+    # Make sure that Crowbar is running with the proper environment variables
+    service crowbar stop
+    service crowbar start
+    while ! /opt/opencrowbar/core/bin/crowbar -U crowbar -P crowbar users list; do
+        sleep 1
+    done
+fi
 
 crowbar nodes commit "$FQDN"
 

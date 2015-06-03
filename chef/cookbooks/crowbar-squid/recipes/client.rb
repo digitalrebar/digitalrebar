@@ -14,14 +14,24 @@
 #
 # This recipe sets up Squid clients
 
-proxy_str=node["crowbar"]["proxy"]["servers"].first["url"]
+proxy_str=(node["crowbar"]["proxy"]["servers"].first["url"] rescue nil)
 
 localnets = ["127.0.0.1","localhost","::1"]
+localnets << node['proxy']['admin_addrs'] if node['proxy'] and node['proxy']['admin_addrs']
 `ip -o addr show`.lines.each do |line|
   next unless /inet6? ([^ ]+)/ =~ line
-  localnets << IP.coerce($1).network.to_s
+  localnets << IP.coerce($1).addr
 end
-localnets.sort!
+localnets=localnets.flatten
+localnets=localnets.sort
+localnets=localnets.uniq
+
+# if we don't have a proxy string, check the env
+unless proxy_str
+  return if ENV['http_proxy'].nil? or ENV['http_proxy'].empty?
+  Chef::Log.info("Using http_proxy='#{ENV['http_proxy']}'")
+  proxy_str = ENV['http_proxy'].strip
+end
 
 # Once the local proxy service is set up, we need to use it.
 proxies = {
