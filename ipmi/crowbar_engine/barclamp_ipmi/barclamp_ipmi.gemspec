@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.add_dependency "rails"
   if !(File.exists?("/etc/redhat-release") &&
        IO.read("/etc/redhat-release").match(/ 7\.0/))
-    s.add_dependency "openwsman"
+    s.add_dependency "openwsman", '=2.4.14'
   end
 
   # s.add_dependency "jquery-rails"
