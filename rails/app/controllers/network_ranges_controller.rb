@@ -61,11 +61,7 @@ class NetworkRangesController < ::ApplicationController
                                                  :overlap,
                                                  :use_vlan,
                                                  :use_bridge,
-                                                 :use_team,
-                                                 :update_dns,
-                                                 :dns_domain,
-                                                 :hostname_template,
-                                                 :dns_svc_name)
+                                                 :use_team)
     render api_show @range
   end
 
@@ -85,11 +81,7 @@ class NetworkRangesController < ::ApplicationController
                                                     :overlap,
                                                     :use_vlan,
                                                     :use_bridge,
-                                                    :use_team,
-                                                    :update_dns,
-                                                    :dns_domain,
-                                                    :hostname_template,
-                                                    :dns_svc_name))
+                                                    :use_team))
     render api_show @network_range
   end
 

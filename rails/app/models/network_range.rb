@@ -80,44 +80,12 @@ class NetworkRange < ActiveRecord::Base
     res
   end
 
-  def update_dns
-    res = read_attribute("update_dns")
-    res = network.update_dns if res.nil?
-    res
-  end
-
-  def dns_domain
-    res = read_attribute("dns_domain")
-    res = network.dns_domain if res.nil?
-    res
-  end
-
-  def hostname_template
-    res = read_attribute("hostname_template")
-    res = network.hostname_template if res.nil?
-    res
-  end
-
-  def dns_svc_name
-    res = read_attribute("dns_svc_name")
-    res = network.dns_svc_name if res.nil?
-    res
-  end
-
   def === (other)
     addr = IP.coerce(other)
     (first <= addr) && (addr <= last)
   end
 
-  def get_name(node)
-    name = node.name.split('.')[0]
-    return name unless hostname_template
-
-    hostname_template.gsub('{{node.name}}', name)
-  end
-
   def allocate(node, suggestion = nil)
-    # GREG: Fix this to check for a node and allocation.
     # Fixing the node role if allocation is present by node role is not.
     res = NetworkAllocation.find_by(:node_id => node.id, :network_range_id => self.id)
     return res if res
@@ -189,10 +157,8 @@ class NetworkRange < ActiveRecord::Base
         end
       end
     end
-
     Rails.logger.info("NetworkRange: #{node.name} allocated #{res.address} from #{fullname}")
     network.make_node_role(node)
-
     res
   end
 

@@ -90,10 +90,6 @@ admin_net='
   "group": "internal",
   "deployment": "system",
   "conduit": "1g0",
-  "dns_domain": "neode.com",
-  "update_dns": true,
-  "hostname_template": "{{node.name}}.admin",
-  "dns_svc_name": "system",
   "ranges": [
     {
       "name": "admin",
@@ -125,10 +121,6 @@ bmc_net='
   "category": "bmc",
   "group": "internal",
   "conduit": "bmc",
-  "dns_domain": "neode.com",
-  "update_dns": true,
-  "hostname_template": "{{node.name}}.bmc",
-  "dns_svc_name": "system",
   "ranges": [
     {
       "conduit": "1g0",

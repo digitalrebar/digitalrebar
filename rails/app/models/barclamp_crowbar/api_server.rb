@@ -23,6 +23,4 @@ class BarclampCrowbar::ApiServer < Role
     { 'crowbar' => { 'api' => { 'service_address' => my_addr.to_s } } }
   end
 
-
-
 end

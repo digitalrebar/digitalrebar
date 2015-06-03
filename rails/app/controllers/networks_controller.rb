@@ -62,11 +62,7 @@ class NetworksController < ::ApplicationController
                                                :category,
                                                :group,
                                                :use_team,
-                                               :v6prefix,
-                                               :update_dns,
-                                               :dns_domain,
-                                               :hostname_template,
-                                               :dns_svc_name)
+                                               :v6prefix)
       # make it easier to batch create ranges with a network
       if params.key? :ranges
         ranges = params[:ranges].is_a?(String) ? JSON.parse(params[:ranges]) : params[:ranges]
@@ -88,11 +84,7 @@ class NetworksController < ::ApplicationController
                                                    :overlap,
                                                    :use_vlan,
                                                    :use_bridge,
-                                                   :use_team,
-                                                   :update_dns,
-                                                   :dns_domain,
-                                                   :hostname_template,
-                                                   :dns_svc_name)
+                                                   :use_team)
         end
         params.delete :ranges
       end
@@ -135,15 +127,13 @@ class NetworksController < ::ApplicationController
     end
     render :json => network.node_allocations(node).map{|a|a.to_s}, :content_type=>cb_content_type(:allocations, "array")
   end
-  
+
   add_help(:update,[:id, :conduit, :team_mode, :use_team, :vlan, :use_vlan, :configure],[:put])
   def update
     @network = Network.find_key(params[:id])
     # Sorry, but no changing of the admin conduit for now.
     params.delete(:conduit) if @network.name == "admin"
-    @network.update_attributes!(params.permit(:description, :vlan, :use_vlan, :use_bridge, :team_mode, :use_team,
-                                              :conduit, :configure, :category, :group, :deployment_id,
-                                              :update_dns, :dns_dmain, :hostname_template, :dns_svc_name))
+    @network.update_attributes!(params.permit(:description, :vlan, :use_vlan, :use_bridge, :team_mode, :use_team, :conduit, :configure, :category, :group, :deployment_id))
     respond_to do |format|
       format.html { render :action=>:show }
       format.json { render api_show @network }
@@ -166,7 +156,7 @@ class NetworksController < ::ApplicationController
       deallocate_ip
     end
   end
-      
+
   def allocate_ip
     network = Network.find_key(params[:id])
     node = Node.find_key(params[:node_id])
@@ -189,7 +179,7 @@ class NetworksController < ::ApplicationController
 
   def enable_interface
     raise ArgumentError.new("Cannot enable interfaces without IP address allocation for now.")
-    
+
     deployment_id = params[:deployment_id]
     deployment_id = nil if deployment_id == "-1"
     network_id = params[:id]

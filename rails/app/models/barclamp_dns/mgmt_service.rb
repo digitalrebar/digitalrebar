@@ -90,7 +90,7 @@ class BarclampDns::MgmtService < Service
       addrs[sname].each do |na|
         rrtype = (na.address.v4? ? 'A' : 'AAAA')
         Rails.logger.fatal("GREG: #{sname} #{rrtype}")
-        replace_dns_record(service, na.network_range.dns_domain, rrtype, na.network_range.get_name(na.node), na.address.addr, true)
+        replace_dns_record(service, na.network_range.dns_domain, rrtype, get_name(na.node), na.address.addr, true)
       end
     end
 
@@ -122,7 +122,7 @@ class BarclampDns::MgmtService < Service
     return unless service
 
     rrtype = (address.v4? ? 'A' : 'AAAA')
-    remove_dns_record(service, range.dns_domain, rrtype, range.get_name(node), true)
+    remove_dns_record(service, range.dns_domain, rrtype, get_name(node), true)
   end
 
   def update_mapping(node, range, address)
@@ -133,7 +133,14 @@ class BarclampDns::MgmtService < Service
     return unless service
 
     rrtype = (address.v4? ? 'A' : 'AAAA')
-    replace_dns_record(service, range.dns_domain, rrtype, range.get_name(node), address.addr, true)
+    replace_dns_record(service, range.dns_domain, rrtype, get_name(node), address.addr, true)
+  end
+
+  # GREG: This is busted - hostname_template needs to live somewhere
+  def get_name(node)
+    name = node.name.split('.')[0]
+    return name unless hostname_template
+    hostname_template.gsub('{{node.name}}', name)
   end
 
   def get_service(service_name)
