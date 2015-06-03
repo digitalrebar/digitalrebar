@@ -5,9 +5,6 @@ require "#{`pwd`.strip}/lib/consul_access.rb"
 
 db = ConsulAccess.getService('crowbar-database')
 
-if File.exists?('/etc/crowbar.master.acl')
-  Diplomat.configuration.acl_token = File.read('/etc/crowbar.master.acl').chomp
-end
 username = ConsulAccess.getKey('opencrowbar/private/database/opencrowbar/username')
 password = ConsulAccess.getKey('opencrowbar/private/database/opencrowbar/password')
 database = ConsulAccess.getKey('opencrowbar/private/database/opencrowbar/database')
