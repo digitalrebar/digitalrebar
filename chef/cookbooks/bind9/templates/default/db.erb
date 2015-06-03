@@ -1,6 +1,5 @@
 <% zone_map={ "ip4addr" => "A",
    "ip6addr" => "AAAA",
-   "alias" => "CNAME",
    "pointer" => "PTR"
    } -%>
 ; Managed by Crowbar
@@ -30,11 +29,7 @@ $TTL <%= @zone[:ttl] %>
 <% (@zone[:hosts].keys || [] rescue []).sort.each do |host|
    record=@zone[:hosts][host]
    record.keys.sort.each do |k|
-   next unless zone_map[k]
-   if k == "alias" -%>
-<%= record[k] -%> IN <%= zone_map[k] -%> <%= host %>
-<% else -%>
+     next unless zone_map[k] -%>
 <%= host -%> IN <%= zone_map[k] -%> <%= record[k] %>
-<% end -%>
 <% end -%>
 <% end -%>

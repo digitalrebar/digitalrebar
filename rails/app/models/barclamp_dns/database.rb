@@ -34,14 +34,13 @@ class BarclampDns::Database < Role
   def rerun_my_noderoles
     hosts = {}
     to_enqueue = []
-    ActiveRecord::Base.connection.execute("select name, cname, address
+    ActiveRecord::Base.connection.execute("select name, address
                                            from dns_database
                                            where category = 'admin' or
                                                  category = 'unmanaged'").each do |row|
-      name, addr, cname = row["name"] + ".", IP.coerce(row["address"]), row["cname"]
+      name, addr = row["name"] + ".", IP.coerce(row["address"])
       hosts[name] ||= Hash.new
       hosts[name][addr.v4? ? "ip4addr" : "ip6addr"] ||= addr.addr
-      hosts[name][cname] ||= cname if cname && !name.index(cname)
     end
     node_roles.each do |nr|
       nr.with_lock('FOR NO KEY UPDATE') do
