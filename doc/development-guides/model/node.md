@@ -82,7 +82,6 @@ creation process:
 This will return:
     {
     "admin":false,
-    "alias":"newtest",
     "alive":false,
     "allocated":false,
     "available":false,

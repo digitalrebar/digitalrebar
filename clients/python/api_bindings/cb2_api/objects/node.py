@@ -44,7 +44,6 @@ class Node(ApiObject):
     Node object
     // Create required attribute
     admin           : true/false
-    alias           : alias for the node
     alive           : true/false
     allocated       : true/false
     available       : true/false
@@ -73,7 +72,6 @@ class Node(ApiObject):
         self.alive = None
         self.id = None
         self.target_role_id = None
-        self.alias = None
         self.allocated = None
         self.order = None
         self.bootenv = None

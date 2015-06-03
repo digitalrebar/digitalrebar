@@ -43,11 +43,6 @@ class Node < ActiveRecord::Base
   validates_format_of     :name, :with=>FQDN_RE, :message => I18n.t("db.fqdn", :default=>"Name must be a fully qualified domain name.")
   validates_length_of     :name, :maximum => 255
 
-  # TODO: 'alias' will move to DNS BARCLAMP someday, but will prob hang around here a while
-  validates_uniqueness_of :alias, :case_sensitive => false, :message => I18n.t("db.notunique", :default=>"Name item must be unique")
-  validates_format_of :alias, :with=>/\A[a-zA-Z0-9_\-]{1,63}\z/, :message => I18n.t("db.alias", :default=>"Alias is not valid.")
-  validates_length_of :alias, :maximum => 100
-
   has_and_belongs_to_many :groups, :join_table => "node_groups", :foreign_key => "node_id"
 
   has_many    :node_roles,         :dependent => :destroy
@@ -520,7 +515,6 @@ class Node < ActiveRecord::Base
   # make sure some safe values are set for the node
   def default_population
     self.name = self.name.downcase
-    self.alias ||= self.name.split(".")[0]
     self.deployment ||= Deployment.system
   end
 

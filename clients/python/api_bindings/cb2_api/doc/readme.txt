@@ -56,7 +56,6 @@ The following are the generic session methods available to get/list/create/updat
 
         node = Node()
         node.name = 'newShinyNode'
-        node.alias = 'thisIsMe'
         node.alive = Enums_Node.Alive.alive
         node.bootenv = Enums_Node.BootEnv.local
         node = session.create(node)
@@ -75,11 +74,9 @@ The following are the generic session methods available to get/list/create/updat
 
         node = Node()
         node.name = 'myName'
-        node.alias = 'MyNewAlias'
         session.update(node)
         .
         node = session.get(Node({"name":"newnode3.test.org"}))
-        node.alias = “newAlias”
         session.update(node)
         .
 The above methods are available to most object, with some exceptions

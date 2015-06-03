@@ -36,9 +36,7 @@ Feature: Node List
 
   Scenario: Update Node Information via UI Put
     Given REST creates a {object:node} "bdd-bulk-edit.cr0wbar.com"
-      And I put "/dashboard/list?node:bdd-bulk-edit.cr0wbar.com:alias=bdd-bdd-bdd&node:bdd-bulk-edit.cr0wbar.com:description=foobar"
+      And I put "/dashboard/list?node:bdd-bulk-edit.cr0wbar.com:description=foobar"
     When REST gets the {object:node} "bdd-bulk-edit.cr0wbar.com"
-    Then key "alias" should be "bdd-bdd-bdd"
-      And key "alias" should not be "bdd-bulk-edit.cr0wbar.com"
-      And key "description" should be "foobar"
+    Then key "description" should be "foobar"
     Finally REST removes the {object:node} "bdd-bulk-edit.cr0wbar.com"

@@ -233,7 +233,6 @@ en:
     list:
       title: "Bulk Edit Nodes"
       name: "Node Name"
-      alias: "Alias"
       description: "Description"
       deployment: "Deployment"
       failed: "Edit failed for %{list}"
@@ -349,7 +348,6 @@ en:
     index:
       title: "Nodes"
       admin: "Admin?"
-      alias: "Alias"
       no_nodes: "No Nodes Registered.  Suggested action: configure Crowbar."
       <<: *deployment_common
       <<: *node_role_states

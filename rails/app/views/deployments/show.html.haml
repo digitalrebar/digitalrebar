@@ -74,7 +74,7 @@
             - unless working
               = image_tag "icons/led/#{node_led}.png", {title: t(node_led, scope: "common.state")}
           %td.nodename
-            = link_to node.alias, node_path(node.id), :title=>node.description
+            = link_to node.name, node_path(node.id), :title=>node.description
             - unless node.deployment_id == @deployment.id
               = "("
               = link_to node.deployment.name, deployment_path(node.deployment_id), :title=>node.deployment.description
