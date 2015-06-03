@@ -36,13 +36,22 @@ class ConsulAccess
     conn
   end
 
+  # TODO: One day, we should update Diplomat to take token as an option.
+  # This will allow for running as non-master token and do lookups per token.
+
   # Wrap the Diplomat access to set common config/values
   def self.getService(service_name, scope = :first, options = {}, meta = {})
+    if Diplomat.configuration.acl_token.nil? and File.exists?('/etc/crowbar.master.acl')
+      Diplomat.configuration.acl_token = File.read('/etc/crowbar.master.acl').chomp
+    end
     Diplomat::Service.new(my_faraday_connection).get(service_name, scope, options, meta)
   end
 
   # Wrap the Diplomat access to set common config/values
   def self.getKey(key)
+    if Diplomat.configuration.acl_token.nil? and File.exists?('/etc/crowbar.master.acl')
+      Diplomat.configuration.acl_token = File.read('/etc/crowbar.master.acl').chomp
+    end
     Diplomat::Kv.new(my_faraday_connection).get(key)
   end
 
