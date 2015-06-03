@@ -25,13 +25,6 @@ online = node[:crowbar][:provisioner][:server][:online]
 proxy = node[:crowbar][:proxy][:servers].first[:url]
 webserver = node[:crowbar][:provisioner][:server][:webservers].first[:url]
 
-# Once the local proxy service is set up, we need to use it.
-proxies = {
-  "http_proxy" => "#{proxy}",
-  "https_proxy" => "#{proxy}",
-  "no_proxy" => (["127.0.0.1","::1"] + node.all_addresses.map{|a|a.network.to_s}.sort).join(",")
-}
-
 ["/etc/gemrc","/root/.gemrc"].each do |rcfile|
   template rcfile do
     source "gemrc.erb"
@@ -39,17 +32,6 @@ proxies = {
               :webserver => webserver,
               :proxy => proxy)
   end
-end
-
-# Set up proper environments and stuff
-template "/etc/environment" do
-  source "environment.erb"
-  variables(:values => proxies)
-end
-
-template "/etc/profile.d/proxy.sh" do
-  source "proxy.sh.erb"
-  variables(:values => proxies)
 end
 
 case node["platform"]
