@@ -44,47 +44,55 @@ class Barclamp < ActiveRecord::Base
   end
 
   def self.import(bc_name="core", bc=nil, source_path=nil, parent_id=nil)
-    Barclamp.transaction do
-      source_path ||= File.expand_path(File.join(Rails.root, '..'))
-      bc_file = File.expand_path(File.join(source_path, bc_name)) + '.yml'
+    raise "Barclamp.import is deprecated!"
+  end
 
-      # load JSON
-      if bc.nil?
-        raise "Barclamp metadata #{bc_file} for #{bc_name} not found" unless File.exists?(bc_file)
-        bc = YAML.load_file bc_file
+  def self.import_or_update(bc)
+    Barclamp.transaction do
+      raise "Barclamp metadata malformed!" unless bc['barclamp'] &&
+                                                  bc['barclamp']['name'] &&
+                                                  bc['barclamp']['source_path']
+      bc_name = bc['barclamp']['name']
+      barclamp = Barclamp.find_by(name: bc_name)
+      if barclamp
+        unless bc['barclamp']['name'] == barclamp.name
+          raise "Cannot change the name of a barclamp via update!"
+        end
+      else
+        barclamp = Barclamp.create!(name: bc_name, cfg_data: bc)
       end
-      barclamp = Barclamp.find_by(name: bc_name) || Barclamp.create!(name: bc_name, cfg_data: bc)
+      if bc['barclamp']['parent']
+        parent = Barclamp.find_by!(name: bc['barclamp']['parent'])
+        barclamp.update!(barclamp_id: parent.id)
+      else
+        barclamp.update!(barclamp_id: barclamp.id)
+      end
       bc_namespace = "Barclamp#{bc_name.camelize}"
 
-      Rails.logger.info "Importing Barclamp #{bc_name} from #{source_path}"
-
-      # verson tracking (use Git if we don't get it from the RPM)
-      gitinfo = %x[cd '#{source_path}' && git log -n 1].split("\n") rescue ['unknown']*3
-      gitcommit = gitinfo[0] || "unknown" rescue "unknown"
-      gitdate = gitinfo[2] || "unknown" rescue "unknown"
+      Rails.logger.info "Importing Barclamp #{bc_name}"
       if bc['git']
-        gitcommit = bc['git']['commit'] || gitcommit
-        gitdate = bc['git']['date'] || gitdate
+        gitcommit = bc['git']['commit'] || "unknown"
+        gitdate = bc['git']['date'] || "unknown"
       end
-      version = bc["version"] || '0.0'
-      build_version = bc["build_version"] || '0.0'
+      version = bc['barclamp']["version"] || '0.0'
+      build_version = bc['barclamp']["build_version"] || '0.0'
 
-      source_url = bc["source_url"]
-      barclamp.update_attributes!(:description   => bc['description'] || bc_name.humanize,
-                                  :version       => version,
-                                  :build_version => build_version,
-                                  :source_path   => source_path,
-                                  :source_url    => source_url,
-                                  :build_on      => gitdate,
-                                  :barclamp_id   => parent_id || barclamp.id,
-                                  :commit        => gitcommit,
-                                  :cfg_data      => bc)
+      source_url = bc['barclamp']["source_url"]
+      barclamp.update_attributes!(
+        :description   => bc['barclamp']['description'] || bc_name.humanize,
+        :version       => version,
+        :build_version => build_version,
+        :source_url    => source_url,
+        :source_path   => bc['barclamp']['source_path'],
+        :build_on      => gitdate,
+        :commit        => gitcommit,
+        :cfg_data      => bc)
 
       # Load node maanger information, if any.
       bc['hammers'].each do |nm|
         AvailableHammer.find_or_create_by!(name: nm['name'],
-                                                klass: nm['type'],
-                                                priority: nm['priority'])
+                                           klass: nm['type'],
+                                           priority: nm['priority'])
       end if bc['hammers']
 
       # load the jig information.
@@ -106,37 +114,7 @@ class Barclamp < ActiveRecord::Base
                                :active => jig_active,
                                :description => jig_desc,
                                :client_role_name => jig_client_role)
-
-        # temporary until jigs have a barlcamp import support method
-        if jig_type.start_with?("BarclampChef")
-          Rails.logger.info("Import: #{jig_name} is a chef-type jig. Using Berkshelf.")
-          cookbook_path = File.expand_path(File.join(source_path, 'chef/cookbooks/'))
-          berksfile = cookbook_path + '/Berksfile'
-          raise "Import: No Berksfile found for #{bc_name} in #{berksfile}" unless File.exists?(berksfile)
-          if Rails.env.eql? "production"
-            result = berks(cookbook_path,"install")
-            raise "Import: Unable to berks install #{berksfile}: #{result}" unless $?.exitstatus == 0
-            Rails.logger.info("Import: berks install: #{result}\n")
-            if jig_type.end_with?("SoloJig")
-              Rails.logger.info("Import: #{jig_name} is a chef-solo-type jig. Using Berkshelf packaging.")
-              result = berks(cookbook_path,"package /var/cache/crowbar/cookbooks/package.tar.gz")
-              raise "Import: Unable to berks package #{berksfile}: #{result}" unless $?.exitstatus == 0
-              Rails.logger.info("Import: berks package: #{result}\n")
-            end
-          else
-            Rails.logger.info("Skipping Berks import (only needed for production environment)")
-          end
-        end
       end if bc["jigs"]
-
-      # load the barclamps submodules information.
-      bc['barclamps'].each do |sub_details|
-        name = sub_details['name']
-        subm_file = File.join(source_path,"barclamps","#{name}.yml")
-        next unless File.exists?(subm_file)
-        Barclamp.import name, YAML.load_file(subm_file), source_path, barclamp.id
-
-      end if bc["barclamps"]
 
       # iterate over the roles in the yml file and load them all.
       # Jigs are now late-bound, so we just load everything.
@@ -151,26 +129,22 @@ class Barclamp < ActiveRecord::Base
         role_type_candidates << "Role"
         role_type = role_type_candidates.detect{|rt| (rt.constantize ? true : false) rescue false}.constantize
         prerequisites = role['requires'] || []
+        if role_jig.client_role_name
+          prerequisites << role_jig.client_role_name
+        end
+        attaches = role['attaches'] || []
         wanted_attribs = role['wants-attribs'] || []
         flags = role['flags'] || []
         description = role['description'] || role_name.gsub("-"," ").titleize
         role_provides = role['provides'] || []
         role_conflicts = role['conflicts'] || []
-        template = File.join source_path, role_jig.on_disk_name || "none", 'roles', role_name, 'role-template.json'
-        template = if File.file?(template)
-                     Rails.logger.info("Import: Loading role #{role_name} template from #{template}")
-                     JSON.parse(IO.read(template))
-                   else
-                     Rails.logger.info("Import: Loading role #{role_name} using blank template")
-                     {}
-                   end
         # roles data import
         r = role_type.find_or_create_by!(:name=>role_name,
                                          :jig_name => role_jig.name,
                                          :barclamp_id=>barclamp.id)
         r.update_attributes!(:description=>description,
                              :barclamp_id=>barclamp.id,
-                             :template=>template,
+                             :template=>{},
                              :provides=>role_provides,
                              :conflicts=>role_conflicts,
                              :milestone=>flags.include?('milestone'),
@@ -183,14 +157,20 @@ class Barclamp < ActiveRecord::Base
                              :service=>flags.include?('service'),
                              :cluster=>flags.include?('cluster'),
                              :powersave=>flags.include?('powersave'))
-        RoleRequire.where(:role_id=>r.id).delete_all
-        RoleRequireAttrib.where(:role_id => r.id).delete_all
-        prerequisites.each do |req|
-          RoleRequire.create! :role_id => r.id, :requires => req
+        prerequisites.each do |rr|
+          Rails.logger.info("Making #{r.name} depend on #{rr}")
+          RoleRequire.find_or_create_by!(:role_id => r.id, :requires => rr)
         end
+        attaches.each do |ar_name|
+          ar = Role.find_by!(name: ar_name)
+          Rails.logger.info("Making #{r.name} depend on #{ar.name}")
+          RoleRequire.find_or_create_by!(role_id: ar.id, requires: r.name)
+        end
+        RoleRequireAttrib.where(:role_id => r.id).delete_all
         wanted_attribs.each do  |attr|
           attr_name = attr.is_a?(Hash) ? attr["name"] : attr
           attr_at = attr.is_a?(Hash) ? attr["at"] : nil
+          Rails.logger.info("Making role #{r.name} want attribute #{attr_name}")
           RoleRequireAttrib.create!(:role_id => r.id,
                                     :attrib_name => attr_name,
                                     :attrib_at => attr_at)
@@ -248,13 +228,6 @@ class Barclamp < ActiveRecord::Base
 
   def api_version_accepts
     'v2'
-  end
-
-  private
-  def self.berks(dir,args)
-    Dir.chdir(dir) do
-      %x{unset GEM_HOME BUNDLE_BIN_PATH BUNDLE_GEMFILE RUBYOPT RUBYLIB GEM_PATH; berks #{args} 2>&1}
-    end
   end
 
 end
