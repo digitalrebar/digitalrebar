@@ -13,6 +13,15 @@
 # limitations under the License.
 #
 
+barclamp:
+  name: "test"
+  parent: "core"
+  display: "Test"
+  description: "Test Barclamp Integrations"
+  version: "2.Drill"
+  source_url: "https://github.com/opencrowbar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
 
 roles:
   - name: test-admin
@@ -20,23 +29,43 @@ roles:
     flags:
       - bootstrap
     attribs:
-      - name: delay
-        map: 'test/delay'
-        description: 'UI Simulated Delay'
-        ui_renderer: 'barclamp_test/attribs/delay'
+      - name: test-admin-delay
+        map: 'delay'
+        description: 'A test attrib'
         default: 1
+      - name: test-admin-marker
+        map: 'marker'
+        description: 'A test attrib'
+        default: "admin"
+      - name: test-admin-test
+        map: 'test'
+        description: 'A test attrib'
+        default: true
   - name: test-async
     jig: role-provided
     requires:
       - test-client
     attribs:
-      - name: async-result 
+      - name: test-async-result 
         description: "track return info from async action"
         map: 'async/result'
   - name: test-server
     jig: test
     requires:
       - test-admin
+    attribs:
+      - name: test-server-delay
+        map: 'delay'
+        description: 'A test attrib'
+        default: 4
+      - name: test-server-marker
+        map: 'marker'
+        description: 'A test attrib'
+        default: "server"
+      - name: test-server-test
+        map: 'test'
+        description: 'A test attrib'
+        default: true
   - name: test-client
     jig: test
     flags:
@@ -45,10 +74,36 @@ roles:
     requires:
       - test-server
       - test-library
+    attribs:
+      - name: test-client-delay
+        map: 'delay'
+        description: 'A test attrib'
+        default: 6
+      - name: test-client-marker
+        map: 'marker'
+        description: 'A test attrib'
+        default: "client"
+      - name: test-client-test
+        map: 'test'
+        description: 'A test attrib'
+        default: true
   - name: test-client-client
     jig: test
     requires:
       - test-client
+    attribs:
+      - name: test-client-client-delay
+        map: 'delay'
+        description: 'A test attrib'
+        default: 6
+      - name: test-client-client-marker
+        map: 'marker'
+        description: 'A test attrib'
+        default: "client-client"
+      - name: test-client-client-test
+        map: 'test'
+        description: 'A test attrib'
+        default: true
   - name: test-discovery
     jig: test
     flags:
@@ -56,6 +111,20 @@ roles:
       - bootstrap
     requires:
       - test-admin
+    attribs:
+      - name: test-discovery-delay
+        map: 'delay'
+        description: 'A test attrib'
+        default: 3
+      - name: test-discovery-marker
+        map: 'marker'
+        description: 'A test attrib'
+        default: "discovery"
+      - name: test-discovery-delay
+        map: 'test'
+        description: 'A test attrib'
+        default: true
+
   - name: test-library
     jig: test
     flags:
@@ -63,17 +132,30 @@ roles:
       - implicit
     requires:
       - test-admin
+    attribs:
+      - name: test-library-delay
+        map: 'delay'
+        description: 'A test attrib'
+        default: 5
+      - name: test-library-marker
+        map: 'marker'
+        description: 'A test attrib'
+        default: "library"
+      - name: test-library-test
+        map: 'test'
+        description: 'A test attrib'
+        default: true
   - name: test-fails
     jig: test
   - name: test-event
     jig: test
 
 attribs:
-  - name: random
+  - name: test-random
     map: 'test/random'
     description: 'Random # created by Test Jig instrumentation'
     default: 0000
-  - name: marker
+  - name: test-marker
     map: 'test/marker'
     description: 'Last touched by information created by Test Jig instrumentation'
     default: "MARK"
