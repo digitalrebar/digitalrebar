@@ -1,7 +1,0 @@
-{
-    "crowbar": {
-        "ntp": {
-            "external_servers": [ ]
-        }
-    }
-}
