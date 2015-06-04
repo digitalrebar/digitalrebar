@@ -16,26 +16,6 @@
 
 class ConsulAccess
 
-  # We assume that consul is running locally.
-  # The proxy configuration may get in the way and prevent access.
-  # Force the rails app to not use a proxy to talk to the local
-  # consul agent or any agent really
-  def self.my_faraday_connection
-    conn = Faraday.new(:url => Diplomat.configuration.url, :proxy => {
-                                                             :uri      => '',
-                                                             :user     => '',
-                                                             :password => ''
-                                                         }) do |faraday|
-      faraday.request  :url_encoded
-      Diplomat.configuration.middleware.each do |middleware|
-        faraday.use middleware
-      end
-      faraday.adapter  Faraday.default_adapter
-      faraday.use      Faraday::Response::RaiseError
-    end
-    conn
-  end
-
   # TODO: One day, we should update Diplomat to take token as an option.
   # This will allow for running as non-master token and do lookups per token.
 
@@ -44,7 +24,7 @@ class ConsulAccess
     if Diplomat.configuration.acl_token.nil? and File.exists?('/etc/crowbar.master.acl')
       Diplomat.configuration.acl_token = File.read('/etc/crowbar.master.acl').chomp
     end
-    Diplomat::Service.new(my_faraday_connection).get(service_name, scope, options, meta)
+    Diplomat::Service.get(service_name, scope, options, meta)
   end
 
   # Wrap the Diplomat access to set common config/values
@@ -52,7 +32,7 @@ class ConsulAccess
     if Diplomat.configuration.acl_token.nil? and File.exists?('/etc/crowbar.master.acl')
       Diplomat.configuration.acl_token = File.read('/etc/crowbar.master.acl').chomp
     end
-    Diplomat::Kv.new(my_faraday_connection).get(key)
+    Diplomat::Kv.get(key)
   end
 
 end
