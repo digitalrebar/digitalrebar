@@ -95,6 +95,7 @@ new_clients = {}
       version '15.04'
       address v4addr
       target mnode_name
+      rootdev root
       action :add
     end
   when 'ubuntu-14.04-install'
