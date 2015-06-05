@@ -2,6 +2,8 @@
 # Silly code to make sure that we have access to libs
 require 'ostruct'
 require "#{`pwd`.strip}/lib/consul_access.rb"
+require 'httpclient'
+Faraday.default_adapter = :httpclient
 
 db = ConsulAccess.getService('crowbar-database')
 

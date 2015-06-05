@@ -69,7 +69,7 @@ if ! [[ $(ip -4 -o addr show |grep 'scope global' |grep -v ' lo' |grep -v ' dyna
     echo "Cannot find IP address for the admin node!"
     exit 1
 fi
-IPADDR="${BASH_REMATCH[1]%/*}"
+IPADDR="${BASH_REMATCH[1]}"
 echo "Using $IPADDR for this host"
 
 # Add node to OpenCrowbar
