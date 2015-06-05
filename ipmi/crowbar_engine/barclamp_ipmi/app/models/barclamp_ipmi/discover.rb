@@ -43,7 +43,7 @@ class BarclampIpmi::Discover < Role
     quirklist = []
     score = 0
     quirkset = "default"
-    nr.all_deployment_data["ipmi"]["quirks"].each do |k,v|
+    Attrib.get("ipmi-quirklist",nr).each do |k,v|
       quirk_score = StructureMatch.new(v["match"]).score(nr.wall["crowbar_wall"]["ipmi"])
       next unless quirk_score > score
       score = quirk_score
