@@ -1,7 +1,0 @@
-{
-    "ipmi": {
-        "bmc_user": "root",
-        "bmc_password": "cr0wBar!",
-        "use_dhcp": false
-    }
-}

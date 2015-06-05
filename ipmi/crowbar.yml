@@ -41,10 +41,14 @@ hammers:
 roles:
   - name: ipmi-master
     jig: chef
+    attaches:
+      - crowbar-admin-node
     flags:
       - bootstrap
   - name: ipmi-discover
     jig: chef
+    attaches:
+      - crowbar-managed-node
     requires:
       - deployer-client
     flags:
@@ -52,8 +56,11 @@ roles:
       - discovery
     attribs:
       - name: ipmi-enable
-        description: "Says whether IPMI can be enabled for a specific node"
+        description: "Says whether to try and enable IPMI for this node"
         map: 'ipmi/bmc_enable'
+        default: true
+        schema:
+          type: bool
       - name: ipmi-detected-params
         description: "The firmware and network settings that IPMI is configured with."
         map: 'crowbar_wall/ipmi'
@@ -90,6 +97,146 @@ roles:
       - name: ipmi-macaddr
         description: "The MAC address of this IPMI controller"
         map: 'crowbar_wall/ipmi/laninfo/macaddr'
+      - name: ipmi-quirklist
+        description: 'List of interesting quirks to use when talking to IPMI controllers'
+        map: 'ipmi/quirks'
+        default:
+          "dell-rseries":
+            "quirklist": ["ipmi-nodelay","ipmi-dell-dedicated-nic"]
+            "match":
+              "bmcinfo":
+                "device_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "32"
+                "mfgr_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "674"
+                  "score": 5
+                "product_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "256 (0x0100)"
+                  "score": 3
+            "hp-19-11-bmc":
+              "quirklist": ["ipmi-crossed-access-channels"]
+              "match":
+                "bmcinfo":
+                  "device_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "19"
+                  "mfgr_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "11"
+                    "score": 5
+            "intel-33-343-bmc":
+              "quirklist": ["ipmi-immutable-rootname"]
+              "match":
+                "bmcinfo":
+                  "device_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "33"
+                  "mfgr_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "343"
+                    "score": 5
+            "ibm-2-220-bmc":
+              "quirklist": ["ipmi-immutable-root"]
+              "match":
+                "bmcinfo":
+                  "device_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "32"
+                  "mfgr_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "2"
+                    "score": 5
+                  "product_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "220 (0x00dc)"
+                    "score": 3
+            "ibm-2-291-bmc":
+              "quirklist": ["ipmi-immutable-root"]
+              "match":
+                "bmcinfo":
+                  "device_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "32"
+                  "mfgr_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "2"
+                    "score": 5
+                  "product_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "291 (0x0123)"
+                    "score": 3
+            "ibm-2-other-bmc":
+              "quirklist": ["ipmi-immutable-root"]
+              "match":
+                "bmcinfo":
+                  "device_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "32"
+                  "mfgr_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "2"
+                    "score": 6
+            "super-micro-bmc":
+              "quirklist": ["ipmi-immutable-root"]
+              "match":
+                "bmcinfo":
+                  "device_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "32"
+                  "mfgr_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "47488"
+                    "score": 5
+            "ibm-20301-bmc":
+              "quirklist": ["ipmi-immutable-root"]
+              "match":
+                "bmcinfo":
+                  "device_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "32"
+                    "mfgr_id":
+                      "__sm_leaf": true
+                      "op": "=="
+                      "match": "20301"
+                      "score": 5
+        schema:
+          type: map
+          mapping:
+            =:
+              type: map
+              mapping:
+                "match": { type: any, required: true }
+                "quirklist":
+                  type: seq
+                  sequence:
+                    - type: str
+                      enum:
+                        - ipmi-nodelay
+                        - ipmi-dell-dedicated-nic
+                        - ipmi-crossed-access-channels
+                        - ipmi-immutable-rootname
+                        - ipmi-immutable-root
   - name: ipmi-configure
     jig: chef
     requires:
@@ -102,15 +249,30 @@ roles:
       - name: ipmi-username
         description: "The username that will be used to access the IPMI controller remotely."
         map: 'ipmi/bmc_user'
+        default: "root"
+        schema:
+          type: str
+          required: true
       - name: ipmi-password
         description: "The password for the IPMI user."
         map: 'ipmi/bmc_password'
+        default: 'cr0wBar!'
+        schema:
+          type: str
+          required: true
       - name: ipmi-use-dhcp
         description: "Whether the IPMI controller should get its address via DHCP"
         map: 'ipmi/use_dhcp'
+        default: false
+        schema:
+          type: bool
       - name: ipmi-configured
         description: "Whether the username and password has been configured for this IPMI controller"
         map: 'ipmi/configured'
+      - name: ipmi-messages
+        description: 'Messages from configuring IPMI on the system'
+        map: 'crowbar_wall/status/ipmi/messages'
+        default: []
     flags:
       - implicit
 
