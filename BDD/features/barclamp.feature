@@ -27,7 +27,8 @@ Feature: Barclamp UI
     When REST deletes the {object:barclamp} "crowbar"
     Then I get a {integer:405} error
   
-  Scenario: REST Cannot Update
+  Scenario: REST Can Update
+    Skip Write a scratch barclamp to load
     When REST updates the {object:barclamp} "crowbar"
     Then I get a {integer:405} error
 
@@ -35,6 +36,7 @@ Feature: Barclamp UI
     When REST gets the {object:barclamp} "thisdoesnotexist"
     Then I get a {integer:404} error
     
-  Scenario: REST Cannot Create
+  Scenario: REST Can Create
+    Skip write a scratch barclamp to load
     When REST creates the {object:barclamp} "foo"
     Then I get a {integer:405} error
