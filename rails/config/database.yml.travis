@@ -1,3 +1,8 @@
+<%
+# Silly code to make sure that we have access to libs
+require 'httpclient'
+Faraday.default_adapter = :httpclient
+%>
 base: &default
   adapter: postgresql
   username: postgres
