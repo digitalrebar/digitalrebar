@@ -106,6 +106,7 @@ roles:
       - name: consul-domain
         description: "The domain that Consul assume it owns for DNS lookups"
         map: 'consul/domain'
+        default: "consul"
         schema:
           type: str
           required: false

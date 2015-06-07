@@ -17,6 +17,21 @@
 # limitations under the License.
 #
 
-node.default[:consul] ||= {}
-node.default[:consul][:serve_ui] = true
+require "securerandom"
 
+if File.exists?("/etc/consul.d/default.json")
+  Chef::Log.info("Read consul config from /etc/consul.d/default.json")
+  node.normal[:consul] = JSON.parse(File.read("/etc/consul.d/default.json"))
+else
+  Chef::Log.info("Creating new Consul config")
+  node.normal[:consul] = { :serve_ui => true,
+                        :datacenter => "opencrowbar",
+                        :acl_datacenter => "opencrowbar",
+                        :acl_master_token => SecureRandom.uuid,
+                        :encrypt => SecureRandom.base64,
+                        :disable_remote_exec => true,
+                        :acl_default_policy => "allow",
+                        :acl_down_policy => "allow"
+                      }
+end
+Chef::Log.info("Consul config: #{node[:consul].inspect}")

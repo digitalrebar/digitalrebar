@@ -19,10 +19,12 @@ class BarclampConsul::Consul < Role
 
   def on_deployment_create(dr)
     DeploymentRole.transaction do
-      Attrib.set("consul-encrypt",dr,SecureRandom.base64)
-      Attrib.set("consul-acl-master-token",dr,SecureRandom.uuid)
-      Attrib.set("consul-acl-datacenter",dr,'opencrowbar')
-      Attrib.set("consul-datacenter",dr,'opencrowbar')
+      if Attrib.get("consul-encrypt",dr) == "change_me"
+        Attrib.set("consul-encrypt",dr,SecureRandom.base64)
+      end
+      if Attrib.get("consul-acl-master-token",dr) == "change_me"
+        Attrib.set("consul-acl-master-token",dr,SecureRandom.uuid)
+      end
     end
   end
 

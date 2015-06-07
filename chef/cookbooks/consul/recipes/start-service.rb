@@ -108,19 +108,10 @@ if bind_addr && bind_addr != ""
   end
 end
 
-if node[:consul][:acl_master_token]
-  #
-  # Add this file so that we can handle
-  # a restart of the crowbar service between
-  # the consul node role and the crowbar-api
-  # server node role on the same singleon system.
-  #
-  template "/etc/crowbar.master.acl" do
-    source "acl-master-token.erb"
-    mode 0600
-    owner "crowbar"
-    variables(:token => node['consul']['acl_master_token'])
-  end
+execute "Set access rights on default.json" do
+  command "setfacl -m crowbar:r #{node[:consul][:config_dir] + '/default.json'}"
+  action :nothing
+  subscribes :run, "file[#{node[:consul][:config_dir] + '/default.json'}]"
 end
 
 file node[:consul][:config_dir] + '/default.json' do
@@ -168,11 +159,10 @@ ruby_block "wait for consul leader" do
   action :run
 end
 
-if node[:consul][:acl_master_token]
-  # Update anonymous user to prevent access the private space
-  # One day we may want to require tokens for all, but ..
-  bash "Update anonymous ACL" do
-    code <<EOC
+# Update anonymous user to prevent access the private space
+# One day we may want to require tokens for all, but ..
+bash "Update anonymous ACL" do
+  code <<EOC
 echo '{
   "ID": "anonymous",
   "Type": "client",
@@ -182,56 +172,5 @@ EOF
 curl -X PUT -d @/tmp/tmp_cred.json http://localhost:8500/v1/acl/update?token=#{node[:consul][:acl_master_token]}
 rm -f /tmp/tmp_cred.json
 EOC
-  end
-
-  # Update anonymous user to prevent access the private space
-  # One day we may want to require tokens for all, but ..
-  ruby_block "check for database acl" do
-    block do
-      listStr = %x{curl http://localhost:8500/v1/acl/list?token=#{node[:consul][:acl_master_token]}}
-      list = JSON.parse(listStr)
-      found = false
-      list.each do |elem|
-        if elem['Name'] == 'OpenCrowbar Database ACL'
-          node.normal['consul']['tokens'] ||= {}
-          node.normal['consul']['tokens']['opencrowbar_database'] = elem['ID']
-          break
-        end
-      end
-    end
-    action :run
-  end
-
-  bash "Create database ACL" do
-    code <<EOC
-echo '{
-  "Name": "OpenCrowbar Database ACL",
-  "Type": "client",
-  "Rules": "key \\"opencrowbar/private\\" { policy = \\"deny\\" }\\nkey \\"opencrowbar/private/database/opencrowbar\\" { policy = \\"write\\" }"
-}' > /tmp/tmp_cred.json
-curl -X PUT -d @/tmp/tmp_cred.json http://localhost:8500/v1/acl/create?token=#{node[:consul][:acl_master_token]}
-rm -f /tmp/tmp_cred.json
-EOC
-    only_if do
-      ((node.normal['consul']['tokens']['opencrowbar_database'] == nil or
-        node.normal['consul']['tokens']['opencrowbar_database'] == {}) rescue true)
-    end
-  end
-
-  ruby_block "record the database acl" do
-    block do
-      listStr = %x{curl http://localhost:8500/v1/acl/list?token=#{node[:consul][:acl_master_token]}}
-      list = JSON.parse(listStr)
-      found = false
-      list.each do |elem|
-        if elem['Name'] == 'OpenCrowbar Database ACL'
-          node.normal['consul']['tokens'] ||= {}
-          node.normal['consul']['tokens']['opencrowbar_database'] = elem['ID']
-          break
-        end
-      end
-    end
-    action :run
-  end
-
+  not_if { node[:consul][:acl_master_token].nil? || node[:consul][:acl_master_token].empty? }
 end
