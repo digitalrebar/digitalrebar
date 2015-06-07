@@ -15,7 +15,7 @@
 
 class BarclampRaid::Discover < Role
 
-  def on_proposed(nr)
+  def on_node_bind(nr)
     nr.add_child('crowbar-managed-node')
   end
 

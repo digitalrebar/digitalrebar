@@ -34,8 +34,7 @@ class BarclampBios::Discover < Role
         matchhash[a.name] = a.get(nr.node)
       end
       # Get our matchers, score them, 
-      cfg_data = nr.deployment_data.deep_merge(nr.committed_data)
-      matched = cfg_data["bios"]["set_mapping"].map do |a|
+      matched = Attrib.get("bios-set-mapping",nr).map do |a|
         runlog << "Scoring #{a.inspect}"
         a["score"] = StructureMatch.new(a["match"]).score(matchhash)
         runlog << "match #{a["match"]} scored #{a["score"]}"

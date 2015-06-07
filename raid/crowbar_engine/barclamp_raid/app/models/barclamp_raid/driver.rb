@@ -507,7 +507,7 @@ module BarclampRaid
     # "raid_level":: string containing the desired raid level.
     # "name":: The name of the volume.  If omitted, one that is
     #           unique-ish will be created.
-    # "vol_size":: The desired size of the volume.  This can be:
+    # "size":: The desired size of the volume.  This can be:
     #              "min":: Make a RAID volume out of the smallest disks
     #                      available (if creating an exclusive volume),
     #                      or create a RAID volume out of the smallest
