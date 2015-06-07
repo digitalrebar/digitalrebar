@@ -657,34 +657,40 @@ class NodeRole < ActiveRecord::Base
   end
 
   def run_hooks
-    meth = "on_#{STATES[state]}".to_sym
-    if proposed?
-      # on_proposed only runs on initial noderole creation.
-      Rails.logger.debug("NodeRole #{name}: Calling #{meth} hook.")
-      role.send(meth,self)
-      return
-    end
-    return unless previous_changes["state"]
-    if deployment.committed? && available &&
-        ((!role.destructive) || (run_count == self.active? ? 1 : 0))
-      Rails.logger.debug("NodeRole #{name}: Calling #{meth} hook.")
-      role.send(meth,self)
-    end
-    if todo? && runnable?
-      Rails.logger.info("NodeRole #{name} is runnable, kicking the annealer.")
-      Run.run!
-    end
-    if active?
-      node.halt_if_bored(self) if role.powersave
-      NodeRole.transaction do
-        # Immediate children of an ACTIVE node go to TODO
-        children.where(state: BLOCKED).each do |c|
-          Rails.logger.debug("NodeRole #{name}: testing to see if #{c.name} is runnable")
-          next unless c.activatable?
-          c.todo!
-        end
+    begin
+      meth = "on_#{STATES[state]}".to_sym
+      if proposed?
+        # on_proposed only runs on initial noderole creation.
+        Rails.logger.debug("NodeRole #{name}: Calling #{meth} hook.")
+        role.send(meth,self)
+        return
       end
-      Run.run!
+      return unless previous_changes["state"]
+      if deployment.committed? && available &&
+         ((!role.destructive) || (run_count == self.active? ? 1 : 0))
+        Rails.logger.debug("NodeRole #{name}: Calling #{meth} hook.")
+        role.send(meth,self)
+      end
+      if todo? && runnable?
+        Rails.logger.info("NodeRole #{name} is runnable, kicking the annealer.")
+        Run.run!
+      end
+      if active?
+        node.halt_if_bored(self) if role.powersave
+        NodeRole.transaction do
+          # Immediate children of an ACTIVE node go to TODO
+          children.where(state: BLOCKED).each do |c|
+            Rails.logger.debug("NodeRole #{name}: testing to see if #{c.name} is runnable")
+            next unless c.activatable?
+            c.todo!
+          end
+        end
+        Run.run!
+      end
+    rescue Exception => e
+      Rails.logger.fatal("Error #{e.inspect} in NodeRole run hooks!")
+      Rails.logger.fatal("Backtrace:\n\t#{e.backtrace.join("\n\t")}")
+      raise e
     end
   end
 

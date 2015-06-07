@@ -13,10 +13,17 @@
 # limitations under the License.
 #
 
-version: "2.Drill"
-source_url: "https://github.com/opencrowbar/core"
-license: "Apache 2"
-license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
+barclamp:
+  name: "core"
+  description: "Core OpenCrowbar functionality"
+  display: "Core"
+  version: "2.Drill"
+  source_url: "https://github.com/opencrowbar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
+
+crowbar:
+  layout: 2.0
 
 os_support:
   - ubuntu-12.04
@@ -32,43 +39,7 @@ os_support:
   - debian-7.8.0
   - xenserver-6.5
   - esxi-5.5
-  - fuel-6.0
-
-barclamps:
-  - name: crowbar
-    description: "Foundational Roles"
-  - name: test
-    description: "Test Barclamp Integrations"
-  - name: network
-    description: "Network Configuration"
-  - name: chef
-    description: "Chef CMDB & DevOps Framework"
-  - name: saltstack
-    description: "SaltStack CMDB & DevOps Framework"
-  - name: deployer
-    description: "Discover and Inventory Systems (aka Sledgehammer)"
-  - name: dhcp
-    description: "Dynamic Host Configuration Protocol (DHCP)"
-  - name: proxy
-    description: "Caching Web Proxy"
-  - name: provisioner
-    description: "Install Persistent Operating System"
-  - name: dns 
-    description: "Domain Name Service (DNS)"
-  - name: ntp 
-    description: "Network Time Protocol (NTP)"
-  - name: rabbitmq
-    description: "Rabbit MQ (AMQP)"
-  - name: logging
-    description: "Log Centralization and Management"
-  - name: puppet
-    description: "Puppet Deployment Services"
-  - name: consul
-    description: "Consul Service Monitoring and Management"
-  - name: sysdig
-    description: "Sysdig evaluation tools"
-  - name: docker
-    description: "Docker Host Extensions"
+  - fuel-6.0    
 
 jigs:
   - name: script

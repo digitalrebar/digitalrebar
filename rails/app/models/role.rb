@@ -249,10 +249,10 @@ class Role < ActiveRecord::Base
     # Find all of the RoleRequires that refer to us,
     # and resolve them.  This will also update the cohorts if needed.
     Role.transaction do
-      role_requires_children.where(required_role_id: nil).each do |rr|
+      RoleRequire.where(requires: name, required_role_id: nil).each do |rr|
         rr.resolve!
       end
-      return true unless jig && jig.client_role &&
+      return true unless jig && jig.client_role_name &&
         !RoleRequire.exists?(role_id: id,
                              requires: jig.client_role_name)
       # If our jig has already been loaded and it has a client role,

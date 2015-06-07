@@ -39,6 +39,15 @@ RSpec.configure do |config|
     DatabaseCleaner.strategy = :transaction
     DatabaseCleaner.clean_with(:truncation)
     Rails.application.load_seed # loading seeds
+    source_path = File.realpath(File.join(Rails.root,".."))
+    data = YAML.load_file(File.join(source_path,"crowbar.yml"))
+    data['barclamp']['source_path'] = source_path
+    Barclamp.import_or_update(data)
+    Dir.glob(File.join(source_path,"barclamps","*.yml")).each do |yml|
+      data = YAML.load_file(yml)
+      data['barclamp']['source_path'] = source_path
+      Barclamp.import_or_update(data)
+    end
   end
 
   # If true, the base class of anonymous controllers will be inferred

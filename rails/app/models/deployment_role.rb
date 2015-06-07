@@ -87,7 +87,7 @@ class DeploymentRole < ActiveRecord::Base
   end
 
   def all_committed_data
-    role.template.deep_merge(self.committed_data).deep_merge(self.wall)
+    role.template.deep_merge(self.wall).deep_merge(self.committed_data)
   end
 
   def all_data(only_committed = false)

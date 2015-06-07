@@ -16,8 +16,6 @@
 # This recipe sets up the general environmnet needed to PXE boot
 # other servers.
 
-admin_ip = node.address.addr
-domain_name = node["dns"].nil? ? node["domain"] : (node["dns"]["domain"] || node["domain"])
 Chef::Log.info("Provisioner: raw server data #{ node["crowbar"]["provisioner"]["server"] }")
 
 provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
@@ -25,13 +23,11 @@ api_server=node['crowbar']['api']['servers'].first["url"]
 
 machine_key = node["crowbar"]["machine_key"]
 
-use_local_security = node["crowbar"]["provisioner"]["server"]["use_local_security"]
 os_token="#{node["platform"]}-#{node["platform_version"]}"
 tftproot =  node["crowbar"]["provisioner"]["server"]["root"]
 discover_dir="#{tftproot}/discovery"
 pxecfg_dir="#{discover_dir}/pxelinux.cfg"
 uefi_dir=discover_dir
-pxecfg_default="#{pxecfg_dir}/default"
 
 # Build base sledgehammer kernel args
 sledge_args = Array.new
@@ -119,13 +115,10 @@ end
 
 node["crowbar"]["provisioner"]["server"]["supported_oses"].each do |os,params|
   web_path = "#{provisioner_web}/#{os}"
-  admin_web = os_install_site = "#{web_path}/install"
-  crowbar_repo_web="#{web_path}/crowbar-extra"
+  os_install_site = "#{web_path}/install"
   os_dir="#{tftproot}/#{os}"
   os_install_dir = "#{os_dir}/install"
   iso_dir="#{tftproot}/isos"
-  os_codename=node["lsb"]["codename"]
-  role="#{os}_install"
   initrd = params["initrd"]
   kernel = params["kernel"]
 

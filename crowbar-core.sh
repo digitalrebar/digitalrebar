@@ -41,3 +41,12 @@ check_hostname
     exit 1
 }
 
+# Load the initial barclamp
+echo "Loading the core barclamp metadata"
+crowbar barclamps install /opt/opencrowbar/core
+
+# Load the rest of the barclamps
+while read bc; do
+    echo "Loading barclamp metadata from $bc"
+    crowbar barclamps install "$bc"
+done < <(find /opt/opencrowbar -name crowbar.yml |grep -v '/core/')

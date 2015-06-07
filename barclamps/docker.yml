@@ -13,6 +13,18 @@
 # limitations under the License.
 #
 
+barclamp:
+  name: "docker"
+  parent: "core"
+  display: "Docker"
+  description: "Docker Host Extensions"
+  version: "2.Drill"
+  source_url: "https://github.com/opencrowbar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
+
+
+
 roles:
   - name: docker-prep
     description: "Docker Prereqs"

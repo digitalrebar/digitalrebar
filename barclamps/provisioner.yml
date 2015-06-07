@@ -12,6 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+barclamp:
+  name: "provisioner"
+  parent: "core"
+  display: "Provisioner"
+  description: "Install Persistent Operating System"
+  version: "2.Drill"
+  source_url: "https://github.com/opencrowbar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
+
 roles:
   - name: provisioner-server
     jig: chef
@@ -26,21 +36,51 @@ roles:
       - name: provisioner-online
         description: 'Whether or not the provisioner is operating in online mode..'
         map: 'crowbar/provisioner/server/online'
+        default: true
+        schema:
+          type: bool
       - name: provisioner-root
         description: 'Root directory of the provisioner'
         map: 'crowbar/provisioner/server/root'
-
+        default: '/tftpboot'
+        schema:
+          type: str
+      - name: provisioner-upstream_proxy
+        description: "The upstream proxy the provisioner should use"
+        map: 'crowbar/provisioner/server/upstream_proxy'
+        schema:
+          type: str
+      - name: provisioner-default-user
+        description: "The name of the user Crowbar will create by default on deployed nodes"
+        map: 'crowbar/provisioner/server/default_user'
+        default: 'crowbar'
+        schema:
+          type: str
+      - name: provisioner-default-password-hash
+        description: "The default password hash for the default user"
+        map: 'crowbar/provisioner/server/default_password_hash'
+        default: '$1$BDC3UwFr$/VqOWN1Wi6oM0jiMOjaPb.'
+        schema:
+          type: str
+      - name: provisioner-server-http-port
+        description: 'The port that the provisioner Web server will listen on'
+        map: 'crowbar/provisioner/server/web_port'
+        default: 8091
+        schema:
+          type: int
+      - name: provisioner-use-local-security
+        description: 'Something that no longer has meaning as far as I know'
+        map: 'crowbar/provisioner/server/use_local_security'
+        default: true
+      - name: provisioner-use-serial-console
+        description: 'Whether the provisioner should configure installed nodes to use a serial console as their default console.'
+        map: 'crowbar/provisioner/server/use_security_console'
+        default: false
+        schema:
+          type: bool
+        
   - name: provisioner-base-images
     jig: chef
-    attribs:
-      - name: provisioner-package-repos
-        description: 'The packages repositories that managed nodes should use to install packages.'
-        map: 'crowbar/provisioner/server/repositories'
-        ui_renderer: 'barclamp_provisioner/attribs/package_repos'
-      - name: provisioner-available-oses
-        description: 'The operating systems that the provisioner knows how to install'
-        map: 'crowbar/provisioner/server/available_oses'
-        ui_renderer: 'barclamp_provisioner/attribs/available_oses'
     requires:
       - provisioner-server
       - provisioner-service
@@ -50,11 +90,141 @@ roles:
     wants-attribs:
       - dns-domain
       - dns_servers
+      - provisioner-online
       - provisioner-webservers
-      - crowbar-api-servers
       - provisioner-root
+      - provisioner-use-serial-console
+      - provisioner-use-local-security
+      - crowbar-api-servers
       - crowbar-machine_key
       - crowbar-access_keys
+
+    attribs:
+      - name: provisioner-sledgehammer-kernel-params
+        description: 'The kernel parameters passed to Sledgehammer.'
+        map: 'crowbar/provisioner/server/sledgehammer_kernel_params'
+      - name: provisioner-package-repos
+        description: 'The packages repositories that managed nodes should use to install packages.'
+        map: 'crowbar/provisioner/server/repositories'
+        ui_renderer: 'barclamp_provisioner/attribs/package_repos'
+      - name: provisioner-default-os
+        description: 'The default operating system the provisioner will deploy'
+        map: 'crowbar/provisioner/server/default_os'
+        default: 'centos-7.1.1503'
+        schema:
+          type: str
+      - name: provisioner-available-oses
+        description: 'The operating systems that are installable by this provisioner node.'
+        map: 'crowbar/provisioner/server/available_oses'
+      - name: provisioner-supported-oses
+        description: 'The operating systems that the provisioner knows how to install'
+        map: 'crowbar/provisioner/server/supported_oses'
+        ui_renderer: 'barclamp_provisioner/attribs/supported_oses'
+        schema:
+          type: map
+          mapping:
+            =:
+              type: map
+              mapping:
+                "initrd": { type: str, required: true }
+                "kernel": { type: str, required: true }
+                "iso_file":  { type: str, required: true }
+                "append": { type: str, required: false }
+                "online_mirror": { type: str, required: false }
+                "codename": { type: str, required: false }
+        default:
+          "xenserver-6.5":
+            "initrd": ""
+            "kernel": "boot/pxelinux/mboot.c32"
+            "iso_file": "XenServer-6.5.0-xenserver.org-install-cd.iso"
+            "codename": "xenserver"
+          "esxi-5.5":
+            "initrd": ""
+            "kernel": "mboot.c32"
+            "iso_file": "VMware-VMvisor-Installer-5.5.0.update02-2068190.x86_64.iso"
+            "codename": "esxi"
+          "fuel-6.0":
+            "initrd": "isolinux/initrd.img"
+            "kernel": "isolinux/vmlinuz"
+            "iso_file": "MirantisOpenStack-6.0.iso"
+            "append": "biosdevname=0 showmenu=no"
+            "example_holder": "biosdevname=0 ks=nfs:10.20.0.1:/var/lib/tftpboot/fuel/ks.cfg repo=nfs:10.20.0.1:/var/lib/tftpboot/fuel ip=10.20.0.2 netmask=255.255.255.0 gw=10.20.0.1 dns1=10.20.0.1 hostname=fuel.mirantis.com showmenu=no"
+            "codename": "fuel"
+          "ubuntu-12.04":
+            "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz"
+            "kernel": "install/netboot/ubuntu-installer/amd64/linux"
+            "append": "debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --"
+            "online_mirror": "http://us.archive.ubuntu.com/ubuntu/"
+            "iso_file": "ubuntu-12.04.5-server-amd64.iso"
+            "codename": "precise"
+          "ubuntu-15.04":
+            "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz"
+            "kernel": "install/netboot/ubuntu-installer/amd64/linux"
+            "append": "debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --"
+            "online_mirror": "http://us.archive.ubuntu.com/ubuntu/"
+            "iso_file": "ubuntu-15.04-server-amd64.iso"
+            "codename": "vivid"
+          "ubuntu-14.04":
+            "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz"
+            "kernel": "install/netboot/ubuntu-installer/amd64/linux"
+            "append": "debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --"
+            "online_mirror": "http://us.archive.ubuntu.com/ubuntu/"
+            "iso_file": "ubuntu-14.04.2-server-amd64.iso"
+            "codename": "trusty"
+          "debian-7.8.0":
+            "initrd": "initrd.gz"
+            "kernel": "linux"
+            "append": "priority=critical console-tools/archs=at console-setup/charmap=UTF-8 console-keymaps-at/keymap=us popularity-contest/participate=false passwd/root-login=false keyboard-configuration/xkb-keymap=us netcfg/get_domain=unassigned-domain console-setup/ask_detect=false debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --"
+            "online_mirror": "http://ftp.us.debian.org/debian/"
+            "iso_file": "debian-7.8.0-mini-amd64.iso"
+            "codename": "wheezy"
+          "redhat-6.5":
+            "initrd": "images/pxeboot/initrd.img"
+            "kernel": "images/pxeboot/vmlinuz"
+            "iso_file": "RHEL6.5-20131111.0-Server-x86_64-DVD1.iso"
+            "append": "method=%os_install_site%"
+          "centos-6.5":
+            "initrd": "images/pxeboot/initrd.img"
+            "kernel": "images/pxeboot/vmlinuz"
+            "append": "method=%os_install_site%"
+            "iso_file": "CentOS-6.5-x86_64-bin-DVD1.iso"
+            "online_mirror": "http://mirrors.kernel.org/centos/6/"
+          "centos-6.6":
+            "initrd": "images/pxeboot/initrd.img"
+            "kernel": "images/pxeboot/vmlinuz"
+            "append": "method=%os_install_site%"
+            "iso_file": "CentOS-6.6-x86_64-bin-DVD1.iso"
+            "online_mirror": "http://mirrors.kernel.org/centos/6/"
+          "redhat-7.0":
+            "initrd": "images/pxeboot/initrd.img"
+            "kernel": "images/pxeboot/vmlinuz"
+            "iso_file": "rhel-server-7.0-x86_64-dvd.iso"
+            "append": "method=%os_install_site% inst.geoloc=0"
+          "centos-7.1.1503":
+            "initrd": "images/pxeboot/initrd.img"
+            "kernel": "images/pxeboot/vmlinuz"
+            "append": "method=%os_install_site% inst.geoloc=0"
+            "iso_file": "CentOS-7-x86_64-Minimal-1503-01.iso"
+            "online_mirror": "http://mirrors.kernel.org/centos/7/"
+          "fedora-20":
+            "initrd": "images/pxeboot/initrd.img"
+            "kernel": "images/pxeboot/vmlinuz"
+            "iso_file": "Fedora-20-x86_64-DVD.iso"
+            "append": "method=%os_install_site% inst.geoloc=0"
+            "online_mirror": "http://mirrors.kernel.org/fedora/releases/20/Fedora/x86_64/os/"
+          "suse-11.2":
+            "initrd": "boot/x86_64/loader/initrd"
+            "kernel": "boot/x86_64/loader/linux"
+            "append": "install=%os_install_site%"
+          "suse-12.2":
+            "initrd": "boot/x86_64/loader/initrd"
+            "kernel": "boot/x86_64/loader/linux"
+            "append": "install=%os_install_site%"
+          "coreos":
+            "initrd": "coreos/cpio.gz"
+            "kernel": "coreos/vmlinuz"
+            "iso_file": "coreos_production_iso_image.iso"
+
 
   - name: provisioner-database
     jig: chef
@@ -67,13 +237,22 @@ roles:
     wants-attribs:
       - dns-domain
       - proxy-servers
+      - provisioner-online
       - provisioner-webservers
       - crowbar-api-servers
       - ntp_servers
       - provisioner-root
       - crowbar-machine_key
       - crowbar-access_keys
-
+      - provisioner-sledgehammer-kernel-params
+      - provisioner-default-password-hash
+    attribs:
+      - name: provisioner-clients
+        description: 'The systems that this provisioner will manage boot states for'
+        map: 'crowbar/provisioner/clients'
+      - name: provisioner-managed-clients
+        description: 'The systems that this provisioner has configured boot states for'
+        map: 'crowbar_wall/provisioner/clients'
   - name: provisioner-service
     jig: role-provided
     flags:
@@ -119,6 +298,7 @@ roles:
       - provisioner-package-repos
       - proxy-servers
       - provisioner-webservers
+      - provisioner-root
       - crowbar-machine_key
       - crowbar-access_keys
       - crowbar-api-servers
@@ -144,6 +324,7 @@ roles:
         description: "The operating system to install on a node"
         map: 'crowbar/target_os'
         ui_renderer: 'barclamp_provisioner/attribs/target_os'
+        default: "ubuntu-12.04"
         schema:
           type: str
           required: true

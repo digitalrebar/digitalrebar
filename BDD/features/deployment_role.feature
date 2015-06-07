@@ -25,6 +25,7 @@ Feature: DeploymentRole
       And there are no localization errors
 
   Scenario: Deployment Role 1 page renders
+    Skip there is no guarantee that deployment role 1 is for crowbar-admin-node
     Given I am on the "deployment_roles/1?deployment=system" page
     Then I should see a heading {bdd:crowbar.i18n.deployment_roles.show.attribs} 
       And I should see {bdd:crowbar.i18n.common.roles.crowbar-admin-node}

@@ -13,6 +13,16 @@
 # limitations under the License.
 #
 
+barclamp:
+  name: "rabbitmq"
+  parent: "core"
+  display: "RabbitMQ"
+  description: "Rabbit MQ (AMQP)"
+  version: "2.Drill"
+  source_url: "https://github.com/opencrowbar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
+
 roles:
   - name: rabbitmq-server
     jig: chef
@@ -61,9 +71,26 @@ roles:
                           type: str
                         "read":
                           type: str
+        default:
+          - "name": "guest"
+            "password": "guest"
+            "rights":
+              - "vhost": null
+                "conf" : ".*"
+                "write": ".*"
+                "read" : ".*"
+          - "name": "crowbar"
+            "password": "crowbar"
+            "tag": "administrator"
+            "rights":
+              - "vhost": "/opencrowbar"
+                "conf" : ".*"
+                "write": ".*"
+                "read" : ".*"
       - name: rabbitmq-virtualhosts
         description: "RabbitMQ VirtualHosts to Enable"
         map: 'rabbitmq/virtualhosts'
+        default: [ "/opencrowbar" ]
         schema:
           type: seq
           sequence:

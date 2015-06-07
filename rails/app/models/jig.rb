@@ -60,14 +60,13 @@ class Jig < ActiveRecord::Base
   end
 
   def client_role
-    crn = client_role_name
-    return nil if crn.nil?
-    res = Role.find_by(name: crn)
+    return nil unless client_role_name
+    res = Role.find_by!(name: client_role_name)
     # Jig client roles must be implicit roles.
-    raise "#{crn} is not an implicit role!" unless res.implicit
+    raise "#{client_role_name} is not an implicit role!" unless res.implicit
     # Jig client roles cannot be implemented by the jig they implement
     # client-side functionality for.
-    raise "#{crn} is implemented by and requires #{name}!" if res.jig_name == name
+    raise "#{client_role_name} is implemented by and requires #{name}!" if res.jig_name == name
     res
   end
 

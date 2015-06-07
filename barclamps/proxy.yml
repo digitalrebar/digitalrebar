@@ -12,6 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+barclamp:
+  name: "proxy"
+  parent: "core"
+  display: "Proxy"
+  description: "Caching Web Proxy"
+  version: "2.Drill"
+  source_url: "https://github.com/opencrowbar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
+
 roles:
   - name: proxy-server
     jig: chef

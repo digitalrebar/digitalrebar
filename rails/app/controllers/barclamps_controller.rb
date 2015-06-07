@@ -34,7 +34,12 @@ class BarclampsController < ApplicationController
   end
 
   def update
-    render api_not_supported("delete", "barclamp")
+    params.require(:value)
+    @barclamp = Barclamp.import_or_update(params[:value])
+    respond_to do |format|
+      format.html {  }
+      format.json { render api_show @barclamp }
+    end
   end
 
   def destroy
@@ -42,7 +47,12 @@ class BarclampsController < ApplicationController
   end
 
   def create
-    render api_not_supported 'post', 'barclamp'
+    params.require(:value)
+    @barclamp = Barclamp.import_or_update(params[:value])
+    respond_to do |format|
+      format.html {  }
+      format.json { render api_show @barclamp }
+    end
   end
 
   #

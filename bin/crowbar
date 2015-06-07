@@ -19,6 +19,7 @@ require 'net/http'
 require 'net/http/digest_auth'
 require 'uri'
 require 'json'
+require 'yaml'
 require 'getoptlong'
 
 # Whether or not we will spit out debugging information.
@@ -659,7 +660,45 @@ module OpenCrowbar
     end
   end
 
-  class Barclamp < CrowbarProxy; end
+  class Barclamp < CrowbarProxy
+
+    def self.install_String(path)
+      if path.split("/")[-1] == "crowbar.yml"
+        yml = path
+        path = File.join(*path.split("/")[0..-2])
+      else
+        yml = File.join(path,"crowbar.yml")
+      end
+      raise "No crowbar.yml at #{path}" unless File.exists?(yml)
+      settings = YAML.load_file(yml)
+      settings['barclamp']['source_path'] = path
+      return {} if settings['barclamp']['parent']
+      bc, res = REST.get("#{self.path}/#{settings['barclamp']['name']}")
+      if res >= 400
+        bc = create_Json({'value' => settings})
+      else
+        Barclamp.new(bc).do_update_Json({'value' => settings})
+      end
+      # Load child barclamps
+      Dir.glob(File.join(path,"barclamps","*.yml")).each do |child_yml|
+        settings = YAML.load_file(child_yml)
+        settings['barclamp']['source_path'] = path
+        child, res = REST.get("#{self.path}/#{settings['barclamp']['name']}")
+        if res >= 400
+          create_Json({'value' => settings})
+        else
+          Barclamp.new(child).do_update_Json({'value' => settings})
+        end
+      end
+      bc
+    end
+
+    def self.commands
+      res = super
+      res << Command.new(self.method(:install_String),self)
+    end
+  end
+
 
   class User < ProxyWithAttribs
 
