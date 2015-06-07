@@ -16,21 +16,25 @@
 
 class ConsulAccess
 
+  def self.__cb_consul_config
+    JSON.parse(File.read("/etc/consul.d/default.json"))
+  end
+
   # TODO: One day, we should update Diplomat to take token as an option.
   # This will allow for running as non-master token and do lookups per token.
 
   # Wrap the Diplomat access to set common config/values
   def self.getService(service_name, scope = :first, options = {}, meta = {})
-    if Diplomat.configuration.acl_token.nil? and File.exists?('/etc/crowbar.master.acl')
-      Diplomat.configuration.acl_token = File.read('/etc/crowbar.master.acl').chomp
+    if Diplomat.configuration.acl_token.nil?
+      Diplomat.configuration.acl_token = __cb_consul_config["acl_master_token"]
     end
     Diplomat::Service.get(service_name, scope, options, meta)
   end
 
   # Wrap the Diplomat access to set common config/values
   def self.getKey(key)
-    if Diplomat.configuration.acl_token.nil? and File.exists?('/etc/crowbar.master.acl')
-      Diplomat.configuration.acl_token = File.read('/etc/crowbar.master.acl').chomp
+    if Diplomat.configuration.acl_token.nil?
+      Diplomat.configuration.acl_token = __cb_consul_config["acl_master_token"]
     end
     Diplomat::Kv.get(key)
   end

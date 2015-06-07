@@ -15,13 +15,6 @@
 
 # GREG: Add code to setup rails app and start it here.
 
-template "/etc/crowbar.master.acl" do
-  source "acl-master-token.erb"
-  mode 0600
-  owner "crowbar"
-  variables(:token => node['consul']['acl_master_token'])
-end
-
 bash "reload consul api server" do
   code "/usr/local/bin/consul reload"
   action :nothing

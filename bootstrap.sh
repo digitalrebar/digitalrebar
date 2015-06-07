@@ -48,11 +48,13 @@ boot_r=('recipe[crowbar-bootstrap::boot]'
 node_r=('recipe[crowbar-bootstrap::ssh]'
         'recipe[crowbar-bootstrap::crowbar-user]')
 
-database_r=('recipe[crowbar-bootstrap::postgresql]'
+database_r=('recipe[crowbar-bootstrap::consul]'
+            'recipe[crowbar-bootstrap::postgresql]'
             'recipe[crowbar-bootstrap::goiardi]')
 proxy_r=("${prefix_r[@]}"
          'recipe[crowbar-squid::client]')
-consul_r=('recipe[consul::start-service]')
+consul_r=('recipe[crowbar-bootstrap::consul]'
+          'recipe[consul::start-service]')
 
 make_recipes() {
     local res="$(printf "%s," "$@")"

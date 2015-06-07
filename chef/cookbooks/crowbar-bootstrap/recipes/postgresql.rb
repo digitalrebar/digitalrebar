@@ -77,13 +77,65 @@ crowbar_password=SecureRandom.base64.gsub('=','3')
 crowbar_user='crowbar'
 crowbar_database='opencrowbar'
 
-bash "Add keys to consul" do
-  code <<EOC
-curl -X PUT -d '#{crowbar_database}' http://127.0.0.1:8500/v1/kv/opencrowbar/private/database/opencrowbar/database
-curl -X PUT -d '#{crowbar_user}' http://127.0.0.1:8500/v1/kv/opencrowbar/private/database/opencrowbar/username
-curl -X PUT -d '#{crowbar_password}' http://127.0.0.1:8500/v1/kv/opencrowbar/private/database/opencrowbar/password
+if node[:consul][:acl_master_token] && !node[:consul][:acl_master_token].empty?
+  # We do not actually use the database token for anything, as the
+  # web app and the runners just use the master ACL.  If we change that, then this
+  # code should be reenabled.
+  if false
+    bash "Create database ACL" do
+      code <<EOC
+echo '{
+  "Name": "OpenCrowbar Database ACL",
+  "Type": "client",
+  "Rules": "key \\"opencrowbar/private\\" { policy = \\"deny\\" }\\nkey \\"opencrowbar/private/database/opencrowbar\\" { policy = \\"write\\" }"
+}' > /tmp/tmp_cred.json
+curl -X PUT -d @/tmp/tmp_cred.json http://localhost:8500/v1/acl/create?token=#{node[:consul][:acl_master_token]}
+rm -f /tmp/tmp_cred.json
 EOC
-  not_if "sudo -H -u postgres -- psql postgres -tAc \"SELECT 1 FROM pg_roles WHERE rolname='crowbar'\" |grep -q 1"
+    end
+
+    ruby_block "record the database acl" do
+      block do
+        listStr = %x{curl http://localhost:8500/v1/acl/list?token=#{node[:consul][:acl_master_token]}}
+        list = JSON.parse(listStr)
+        list.each do |elem|
+          if elem['Name'] == 'OpenCrowbar Database ACL'
+            IO.open("/etc/crowbar.database.acl",'w') do |f|
+              f.write(elem['ID'])
+            end
+            break
+          end
+        end
+      end
+    end
+  end
+
+end
+
+ruby_block "Add keys to consul" do
+  block do
+    baseurl = "http://127.0.0.1:8500/v1/kv/opencrowbar/private/database/opencrowbar"
+    token = nil
+    if node[:consul][:acl_master_token] && !node[:consul][:acl_master_token].empty?
+      token = "?token=#{node[:consul][:acl_master_token]}"
+    end
+    http = Net::HTTP.new("127.0.0.1",8500)
+    { "database" => crowbar_database,
+      "username" => crowbar_user,
+      "password" => crowbar_password }.each do |k,v|
+      Chef::Log.info("Adding #{k} to Consul for the OpenCrowbar database")
+      url="#{baseurl}/#{k}"
+      url << token if token
+      Chef::Log.info("PUTing to #{url}")
+      req = Net::HTTP::Put.new(url)
+      req.body = v
+      response = http.request(req)
+      Chef::Log.info("Response code: #{response.code}: #{response.message}")
+      Chef::Log.info("Response body: #{response.body}")
+      response.value
+    end
+  end
+  not_if "sudo -H -u postgres -- psql postgres -tAc \"SELECT 1 FROM pg_roles WHERE rolname='#{crowbar_user}'\" |grep -q 1"
 end
 
 bash "create crowbar user for postgres" do

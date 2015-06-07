@@ -663,12 +663,14 @@ rpms:
       - apache2
       - apache2-devel
   required_pkgs:
+    - acl
     - cmake
     - curl
     - efibootmgr
     - gcc
     - gcc-c++
     - git
+    - jq
     - libc-devel
     - libcurl-devel
     - libxml2-devel
