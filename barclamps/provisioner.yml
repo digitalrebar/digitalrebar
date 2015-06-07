@@ -212,18 +212,18 @@ roles:
             "iso_file": "Fedora-20-x86_64-DVD.iso"
             "append": "method=%os_install_site% inst.geoloc=0"
             "online_mirror": "http://mirrors.kernel.org/fedora/releases/20/Fedora/x86_64/os/"
-            "suse-11.2":
-              "initrd": "boot/x86_64/loader/initrd"
-              "kernel": "boot/x86_64/loader/linux"
-              "append": "install=%os_install_site%"
-            "suse-12.2":
-              "initrd": "boot/x86_64/loader/initrd"
-              "kernel": "boot/x86_64/loader/linux"
-              "append": "install=%os_install_site%"
-            "coreos":
-              "initrd": "coreos/cpio.gz"
-              "kernel": "coreos/vmlinuz"
-              "iso_file": "coreos_production_iso_image.iso"
+          "suse-11.2":
+            "initrd": "boot/x86_64/loader/initrd"
+            "kernel": "boot/x86_64/loader/linux"
+            "append": "install=%os_install_site%"
+          "suse-12.2":
+            "initrd": "boot/x86_64/loader/initrd"
+            "kernel": "boot/x86_64/loader/linux"
+            "append": "install=%os_install_site%"
+          "coreos":
+            "initrd": "coreos/cpio.gz"
+            "kernel": "coreos/vmlinuz"
+            "iso_file": "coreos_production_iso_image.iso"
 
 
   - name: provisioner-database
