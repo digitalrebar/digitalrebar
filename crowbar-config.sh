@@ -36,7 +36,7 @@ fi
 crowbar deployments bind system to consul
 
 for k in acl_master_token encrypt datacenter domain acl_datacenter \
-                          acl_default_policy acl_down_policy; do
+                          acl_default_policy acl_down_policy config_dir; do
     v="$(jq ".${k}" </etc/consul.d/default.json)"
     [[ $v = null ]] && continue
     crowbar deployments set system attrib "consul-${k//_/-}" to "{\"value\": $v}"

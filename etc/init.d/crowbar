@@ -84,6 +84,7 @@ start(){
         rm -f $GEMFILE_LOCK
         as_crowbar bundle install --local --quiet
     fi
+    setfacl -m crowbar:r /etc/consul.d/default.json
     as_crowbar bundle exec puma -d -C $PUMA_CFG
     start_workers
 }

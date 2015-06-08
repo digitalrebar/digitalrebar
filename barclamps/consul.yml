@@ -50,7 +50,6 @@ roles:
           type: str
           required: true
           enum:
-            - bootstrap
             - server
             - client
       - name: consul-config-dir
@@ -91,12 +90,13 @@ roles:
       - name: consul-servers
         description: "The addresses of the Consul server nodes"
         map: 'consul/servers'
+        default: []
         schema:
           type: seq
           required: false
           sequence:
             - type: str
-              pattern: /[0-9a-f:.]*/
+              pattern: /\[?[0-9a-f:.]*\]?:?[0-9]*/
       - name: consul-address
         description: "The address that Consul should use for inter-cluster communications."
         map: 'consul/bind_addr'
@@ -151,5 +151,11 @@ roles:
           enum:
             - allow
             - deny
+      - name: consul-bootstrap-expect
+        description: "The number of servers we expect to have in the datacenter"
+        map: 'consul/bootstrap_expect'
+        default: 1
+        schema:
+          type: int
 
 

@@ -25,13 +25,16 @@ if File.exists?("/etc/consul.d/default.json")
 else
   Chef::Log.info("Creating new Consul config")
   node.normal[:consul] = { :serve_ui => true,
-                        :datacenter => "opencrowbar",
-                        :acl_datacenter => "opencrowbar",
-                        :acl_master_token => SecureRandom.uuid,
-                        :encrypt => SecureRandom.base64,
-                        :disable_remote_exec => true,
-                        :acl_default_policy => "allow",
-                        :acl_down_policy => "allow"
+                           :datacenter => "opencrowbar",
+                           :acl_datacenter => "opencrowbar",
+                           :acl_master_token => SecureRandom.uuid,
+                           :encrypt => SecureRandom.base64,
+                           :disable_remote_exec => true,
+                           :acl_default_policy => "allow",
+                           :acl_down_policy => "allow",
+                           :bootstrap_expect => 1,
+                           :service_mode => "server",
+                           :config_dir => "/etc/consul.d"
                       }
 end
 Chef::Log.info("Consul config: #{node[:consul].inspect}")
