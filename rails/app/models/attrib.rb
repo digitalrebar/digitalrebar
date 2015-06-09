@@ -233,7 +233,6 @@ class Attrib < ActiveRecord::Base
     current = self.get(to,target)
     Rails.logger.debug("Attrib: Attempting to update #{name} on #{to.class.name}:#{to.name} from #{current.inspect} to #{value.inspect} with #{to_merge.inspect}")
     Attrib.transaction do
-      return if self.get(to,target) == value
       Rails.logger.debug("Attrib: updating #{name} on #{to.class.name}:#{to.name} to #{value}")
       case
       when to.is_a?(Hash) then to.deep_merge(to_merge)
@@ -255,7 +254,8 @@ class Attrib < ActiveRecord::Base
         end
       when to.is_a?(DeploymentRole)
         val = self.get(to,:all,true)
-        if target == :system
+        case target
+        when :system, :wall
           to.wall_update(to_merge)
           # Poke all the noderoles in this deployment that get data from this deployment role.
           to.noderoles.order("cohort ASC").each do |nr|

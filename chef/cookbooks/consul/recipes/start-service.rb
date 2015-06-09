@@ -63,17 +63,21 @@ end
 service_config = {}
 service_config['data_dir'] = node[:consul][:data_dir]
 
+copy_params = [
+  :bind_addr, :datacenter, :domain, :log_level, :node_name, :advertise_addr,
+  :acl_datacenter, :acl_master_token, :acl_default_policy, :acl_down_policy,
+  :encrypt, :disable_remote_exec
+]
+
 case node[:consul][:service_mode]
-when 'bootstrap'
-  service_config['server'] = true
-  service_config['bootstrap'] = true
 when 'server'
+  copy_params << :bootstrap_expect
   service_config['server'] = true
-  service_config['start_join'] = node[:consul][:servers]
+  service_config['retry_join'] = node[:consul][:servers]
 when 'client'
-  service_config['start_join'] = node[:consul][:servers]
+  service_config['retry_join'] = node[:consul][:servers]
 else
-  Chef::Application.fatal! 'node[:consul][:service_mode] must be "bootstrap", "server", or "client"'
+  Chef::Application.fatal! 'node[:consul][:service_mode] must be "server" or "client"'
 end
 
 if node[:consul][:serve_ui]
@@ -81,11 +85,7 @@ if node[:consul][:serve_ui]
   service_config[:client_addr] = node[:consul][:client_addr]
 end
 
-copy_params = [
-  :bind_addr, :datacenter, :domain, :log_level, :node_name, :advertise_addr,
-  :acl_datacenter, :acl_master_token, :acl_default_policy, :acl_down_policy,
-  :encrypt, :disable_remote_exec
-]
+
 copy_params.each do |key|
   if node[:consul][key]
     service_config[key] = node[:consul][key]
@@ -108,16 +108,10 @@ if bind_addr && bind_addr != ""
   end
 end
 
-execute "Set access rights on default.json" do
-  command "setfacl -m crowbar:r #{node[:consul][:config_dir] + '/default.json'}"
-  action :nothing
-  subscribes :run, "file[#{node[:consul][:config_dir] + '/default.json'}]"
-end
-
 file node[:consul][:config_dir] + '/default.json' do
   user consul_user
   group consul_group
-  mode 0600
+  mode 0640
   action :create
   content JSON.pretty_generate(service_config, quirks_mode: true)
 end
@@ -135,7 +129,7 @@ end
 service 'consul' do
   supports status: true, restart: true, reload: true
   action [:enable, :start]
-  subscribes :restart, "file[#{node[:consul][:config_dir]}/default.json]", :delayed
+  subscribes :restart, "file[#{node[:consul][:config_dir]}/default.json]"
 end
 
 # Wait for consul leader to emerge.
@@ -157,20 +151,4 @@ ruby_block "wait for consul leader" do
     (count >= 30 ? false : true)
   end
   action :run
-end
-
-# Update anonymous user to prevent access the private space
-# One day we may want to require tokens for all, but ..
-bash "Update anonymous ACL" do
-  code <<EOC
-echo '{
-  "ID": "anonymous",
-  "Type": "client",
-  "Rules": "key \\"opencrowbar/private\\" { policy = \\"deny\\" }"
-}' > /tmp/tmp_cred.json
-EOF
-curl -X PUT -d @/tmp/tmp_cred.json http://localhost:8500/v1/acl/update?token=#{node[:consul][:acl_master_token]}
-rm -f /tmp/tmp_cred.json
-EOC
-  not_if { node[:consul][:acl_master_token].nil? || node[:consul][:acl_master_token].empty? }
 end
