@@ -29,6 +29,7 @@ roles:
     flags:
       - bootstrap
       - implicit
+      - cluster
     attribs:
       - name: consul-disable-remote-exec
         description: 'Whether Consul is allowed to remotel execute programs'
