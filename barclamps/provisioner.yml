@@ -246,6 +246,7 @@ roles:
       - crowbar-access_keys
       - provisioner-sledgehammer-kernel-params
       - provisioner-default-password-hash
+      - provisioner-default-user
       - provisioner-supported-oses
     attribs:
       - name: provisioner-clients
