@@ -185,6 +185,7 @@ node[:crowbar][:dhcp][:networks].each do |name, net|
     options [ "option domain-name \"#{domain_name}\"",
               "option domain-name-servers #{nameservers.join(", ")}",
               "default-lease-time #{lease_time}",
+              "ignore-client-uids true",
               "max-lease-time #{lease_time * 3}"]
   end
 end
