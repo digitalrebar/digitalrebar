@@ -671,7 +671,7 @@ module OpenCrowbar
       end
       raise "No crowbar.yml at #{path}" unless File.exists?(yml)
       settings = YAML.load_file(yml)
-      settings['barclamp']['source_path'] = path
+      settings['barclamp']['source_path'] = File.realpath(path)
       return {} if settings['barclamp']['parent']
       bc, res = REST.get("#{self.path}/#{settings['barclamp']['name']}")
       if res >= 400
