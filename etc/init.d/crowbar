@@ -65,6 +65,16 @@ start_workers() {
 
 stop_workers() {
     pkill -f que:work
+    COUNT=0
+    while pgrep -l -f que:work 2>&1 >/dev/null ;
+    do
+        sleep 1
+        COUNT=`expr $COUNT + 1`
+        if [[ $COUNT -gt 30 ]] ;
+        then
+            pkill -9 -f que:work
+        fi
+    done
 }
 
 status_workers() {
