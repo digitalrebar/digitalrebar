@@ -32,7 +32,7 @@ new_clients = {}
 (node['crowbar']['provisioner']['clients'] || {} rescue {}).each do |mnode_name,provisioner_info|
   # Build PXE and ELILO config files for each system
   v4addr = IP.coerce(provisioner_info["v4addr"])
-  nodeaddr = sprintf("%X",v4addr.address)
+  nodeaddr = sprintf("%08X",v4addr.address)
   bootenv = provisioner_info["bootenv"]
   pxefile = "#{pxecfg_dir}/#{nodeaddr}"
   uefifile = "#{uefi_dir}/#{nodeaddr}.conf"
