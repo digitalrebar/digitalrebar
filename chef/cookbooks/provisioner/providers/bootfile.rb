@@ -46,7 +46,7 @@ action :add do
 end
 
 action :remove do
-  nodeaddr = sprintf("%X",new_resource.address.address)
+  nodeaddr = sprintf("%08X",new_resource.address.address)
   tftproot = node["crowbar"]["provisioner"]["server"]["root"]
   discover_dir="#{tftproot}/discovery"
   uefi_dir=discover_dir
