@@ -27,26 +27,26 @@ class BarclampBios::Discover < Role
   def on_active(nr)
     # Start by making a hash of all our attribs for matching purposes
     runlog = []
-    NodeRole.transaction do
-      matched = Attrib.get("bios-config-sets",nr,:wall)
-      unless matched
-        matchhash = {}
-        nr.node.attribs.each do |a|
-          matchhash[a.name] = a.get(nr.node)
-        end
-        # Get our matchers, score them, 
-        matched = Attrib.get("bios-set-mapping",nr).map do |a|
-          runlog << "Scoring #{a.inspect}"
-          a["score"] = StructureMatch.new(a["match"]).score(matchhash)
-          runlog << "match #{a["match"]} scored #{a["score"]}"
-          a
-        end.max{|a,b|a["score"] <=> b["score"]}
-        # If our score is less than zero, then nothing matched.
-        if matched["score"] <= 0
-          runlog << "Cannot find a BIOS config set for #{nr.node.name}"
-          nr.runlog = runlog.join("\n")
-          return
-        end
+    matched = Attrib.get("bios-config-sets",nr,:wall)
+    unless matched
+      matchhash = {}
+      nr.node.attribs.each do |a|
+        matchhash[a.name] = a.get(nr.node)
+      end
+      # Get our matchers, score them, 
+      matched = Attrib.get("bios-set-mapping",nr).map do |a|
+        runlog << "Scoring #{a.inspect}"
+        a["score"] = StructureMatch.new(a["match"]).score(matchhash)
+        runlog << "match #{a["match"]} scored #{a["score"]}"
+        a
+      end.max{|a,b|a["score"] <=> b["score"]}
+      # If our score is less than zero, then nothing matched.
+      if matched["score"] <= 0
+        runlog << "Cannot find a BIOS config set for #{nr.node.name}"
+        nr.runlog = runlog.join("\n")
+        return
+      end
+      NodeRole.transaction do
         # OK, we need to set our config set and bind the appropriate
         # bios configuration role.
         Attrib.set('bios-config-sets',nr,matched["configs"],:wall)
