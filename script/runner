@@ -55,6 +55,6 @@ mkdir -p "$TMPDIR/attrs"
 mkdir -p "$TMPDIR/logs"
 
 for script in "$TMPDIR/$ROLE/"*.sh; do
-    (. "$script" 2>&1 |tee  "$TMPDIR/logs/${script##*/}.log") || exit $?
+    (set -e; . "$script" 2>&1 |tee  "$TMPDIR/logs/${script##*/}.log") || exit $?
 done
 exit 0
