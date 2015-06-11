@@ -54,7 +54,8 @@ database_r=('recipe[crowbar-bootstrap::consul]'
 proxy_r=("${prefix_r[@]}"
          'recipe[crowbar-squid::client]')
 consul_r=('recipe[crowbar-bootstrap::consul]'
-          'recipe[consul::start-service]')
+          'recipe[consul::start-service]'
+          'recipe[crowbar-bootstrap::consul-post]')
 
 make_recipes() {
     local res="$(printf "%s," "$@")"

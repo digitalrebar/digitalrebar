@@ -79,29 +79,6 @@ crowbar_database='opencrowbar'
 
 if node[:consul][:acl_master_token] && !node[:consul][:acl_master_token].empty?
 
-  # This is needed to let the Crowbar API and UI read the default.json to get the
-  # master ACL token.
-  execute "Set access rights on default.json" do
-    command "setfacl -m crowbar:r /etc/consul.d/default.json"
-  end
-
-  # Create an opencrowbar private keyspace under opencrowbar/private
-  # One day we may want to require tokens for all, but ..
-  bash "Update anonymous ACL" do
-    code <<EOC
-echo '{
-  "ID": "anonymous",
-  "Type": "client",
-  "Rules": "key \\"opencrowbar/private\\" { policy = \\"deny\\" }"
-}' > /tmp/tmp_cred.json
-EOF
-curl -X PUT -d @/tmp/tmp_cred.json http://localhost:8500/v1/acl/update?token=#{node[:consul][:acl_master_token]}
-rm -f /tmp/tmp_cred.json
-EOC
-    not_if { node[:consul][:acl_master_token].nil? || node[:consul][:acl_master_token].empty? }
-  end
-
-
   # We do not actually use the database token for anything, as the
   # web app and the runners just use the master ACL.  If we change that, then this
   # code should be reenabled.
