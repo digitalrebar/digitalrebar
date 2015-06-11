@@ -43,6 +43,8 @@ Crowbar::Application.routes.draw do
     put :recall
 
   end
+
+  get "monitor(/:id)" => "deployments#monitor", :as => :deployments_monitor, constraints: {id: /\d+/}
   get 'docs/eula' => 'docs#eula', as: :eula
   resources :docs, constraints: {id: /[^\?]*/}
 

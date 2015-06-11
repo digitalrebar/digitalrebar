@@ -1,0 +1,106 @@
+- state = @deployment.state rescue Deployment::ERROR
+- system_roles = @deployment.system_node.node_roles.count
+
+%h2
+  - if @deployment.parent
+    = link_to @deployment.parent.name, deployment_path(@deployment.parent.id), :title => @deployment.parent.description
+    = "/"
+  = link_to @deployment.name, deployment_path(@deployment.id), :title => @deployment.description
+  %span.led{:class => Deployment::STATES[state], :title=>Deployment.state_name(state), :style => "display: inline-block;"}
+
+%table#nodelist
+  %tr
+    %th
+    %th Nodes
+    %th Roles
+
+.clear
+
+:javascript
+
+  var refreshRate = #{current_user.settings(:ui).fast_refresh};
+  var hasLoaded = false;
+  var roles = [];
+  var nodes = {};
+  var services = {};
+  var tristateData = {
+    type: "tristate",
+    colorMap: {
+      '-1': "#f00",
+      "1": "#777",
+      "2": "#0f0",
+      "3": "#ccc",
+      "5": "#000",
+      "0": "#aae",
+    },
+    tooltipFormat: '<strong>{{value:name}}</strong><br/>{{offset:role}}',
+    tooltipSkipNull: true,
+    tooltipValueLookups: {
+      'role' : {
+
+      },
+      'name': {
+        '-1': "Error",
+        "0": " - ",
+        "1": "Todo",
+        "2": "Ready",
+        "3": "Blocked",
+        "5": "Active",
+      }
+    },
+    tooltipPrefix: "cats",
+    barWidth: 10,
+    barSpacing: 3,
+  };
+
+  function update() {
+    $.getJSON("/monitor/#{@deployment.id}", function(data, err) {
+      if(!hasLoaded) {
+        hasLoaded = true;
+        roles = data.roles;
+        for(var i = 0; i < roles.length; i++) 
+          tristateData.tooltipValueLookups['role'][""+i] = roles[i].name;
+        console.log(roles.length)
+      }
+
+      for(var i in data.nodes) {
+        var node = data.nodes[i];
+        //console.log(node.name+", "+Object.keys(node.roles));
+        if(!nodes[node.id]) {
+          $('#nodelist').append($('<tr id="li'+node.id+'"><td><span class="'+node.led+' led"></span></td><td class="nodename">'+node.name+'</td><td id="node'+node.id+'"></span></td>'));
+        }
+        var graph = $('#node'+node.id);
+        var items = [];
+        for(var j in roles) {
+          var role = roles[j];
+          var name = role.name;
+          var id = role.id;
+          var value = 0;
+          if(node.roles[id]) {
+            value = node.roles[id].state;
+            if(value == 0)
+              value = 5;
+          }
+          items.push([value]);
+        }
+        graph.sparkline(items, tristateData);
+        var click = function(ev) {
+          var sparkline = ev.sparklines[0]
+          var region = sparkline.getCurrentRegionFields();
+          var role = node.roles[roles[region.offset].id];
+          if(role)
+            location.href = role.path;
+        }
+        click.node = node;
+
+        graph.bind('sparklineClick', click);
+        nodes[node.id] = node;
+      }
+
+    });
+    setTimeout(update, 1000);
+  }
+
+  $(document).ready(function() {
+    update();
+  });
