@@ -65,7 +65,7 @@ class Deployment < ActiveRecord::Base
   end
 
   def available_roles
-    Role.active - roles
+    (Role.active - roles).sort{|a,b|a.name <=> b.name}
   end
 
   def available_nodes

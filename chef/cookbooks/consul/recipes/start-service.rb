@@ -17,48 +17,6 @@
 
 require 'json'
 
-# Configure directories
-consul_directories = []
-consul_directories << node[:consul][:config_dir]
-consul_directories << '/var/lib/consul'
-
-# Select service user & group
-case node[:consul][:init_style]
-when 'runit'
-  consul_user = node[:consul][:service_user]
-  consul_group = node[:consul][:service_group]
-  consul_directories << '/var/log/consul'
-else
-  consul_user = 'root'
-  consul_group = 'root'
-end
-
-# Create service user
-user "consul service user: #{consul_user}" do
-  not_if { consul_user == 'root' }
-  username consul_user
-  home '/dev/null'
-  shell '/bin/false'
-  comment 'consul service user'
-end
-
-# Create service group
-group "consul service group: #{consul_group}" do
-  not_if { consul_group == 'root' }
-  group_name consul_group
-  members consul_user
-  append true
-end
-
-# Create service directories
-consul_directories.each do |dirname|
-  directory dirname do
-    owner consul_user
-    group consul_group
-    mode 0755
-  end
-end
-
 # Determine service params
 service_config = {}
 service_config['data_dir'] = node[:consul][:data_dir]
@@ -85,7 +43,6 @@ if node[:consul][:serve_ui]
   service_config[:client_addr] = node[:consul][:client_addr]
 end
 
-
 copy_params.each do |key|
   if node[:consul][key]
     service_config[key] = node[:consul][key]
@@ -109,8 +66,6 @@ if bind_addr && bind_addr != ""
 end
 
 file node[:consul][:config_dir] + '/default.json' do
-  user consul_user
-  group consul_group
   mode 0640
   action :create
   content JSON.pretty_generate(service_config, quirks_mode: true)
