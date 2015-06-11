@@ -285,6 +285,7 @@ fi
 if [[ $ephemeral_admin = true ]]; then
     admin_args+=(-snapshot -reboot)
 fi
+installed=false
 while [[ ! -f $VM_DIR/$VMID.killed ]]; do
     update_vm_status "Booting node to disk"
     if run_kvm "${admin_args[@]}" -daemonif "ping -q -c 1 -t 5 192.168.124.10"; then
@@ -294,9 +295,10 @@ while [[ ! -f $VM_DIR/$VMID.killed ]]; do
         ssh -f root@192.168.124.10 -- screen -d -m -S ocb-install -t 'Shell'
         ssh -f root@192.168.124.10 -- "screen -X caption always '%{-b ..}%-w%{+b ..}[[%n%f*%t]]%{-}%+w'"
         ssh -f root@192.168.124.10 -- screen -S ocb-install -X zombie kr
-        if [[ $autoinstall = true ]]; then
+        if [[ $autoinstall = true && $installed = false ]]; then
             ssh root@192.168.124.10 -- screen -S ocb-install -X \
                 screen -t 'Install' "/opt/opencrowbar/core/production.sh $ADMIN_HOSTNAME"
+            installed=true
         fi
         ssh -t root@192.168.124.10 -- screen -r -S ocb-install
         kill_vm exited
