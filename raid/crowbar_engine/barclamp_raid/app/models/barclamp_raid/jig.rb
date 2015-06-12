@@ -21,21 +21,27 @@ class BarclampRaid::Jig < Jig
   # If it is a raid-configure noderole, it will try to converge the desired raid
   # configuration and the current raid configuration.
   def run(nr,data)
-    case nr.role.name
-    when "raid-discover"
-      config = nr.node.actions[:raid].detect(nr)
-      Attrib.set('raid-detected-controllers',nr,config,:wall)
-    when "raid-configure"
-      enabled = Attrib.get('raid-enable',nr)
-      unless enabled
-        Rails.logger.info("raid-configure not enabled, skipping raid config")
-        return
+    begin
+      case nr.role.name
+      when "raid-discover"
+        config = nr.node.actions[:raid].detect(nr).map{|c|c.to_hash}
+        Attrib.set('raid-detected-controllers',nr,config,:wall)
+      when "raid-configure"
+        enabled = Attrib.get('raid-enable',nr)
+        unless enabled
+          Rails.logger.info("raid-configure not enabled, skipping raid config")
+          return
+        end
+        config = nr.node.actions[:raid].converge(nr).map{|c|c.to_hash}
+        Attrib.set('raid-configured-volumes',nr,config,:wall)
+      else
+        raise "Raid jig does not know how to handle #{nr.role.name}"
       end
-      config = nr.node.actions[:raid].converge(nr)
-      Attrib.set('raid-configured-volumes',nr,config,:wall)
-    else
-      raise "Raid jig does not know how to handle #{nr.role.name}"
     end
+  rescue Exception => e
+    Rails.logger.fatal("Raid Jig: Exception: #{e.inspect}")
+    Rails.logger.fatal("Backtrace: #{e.backtrace.join("\n\t")}")
+    raise e
   end
 
 end
