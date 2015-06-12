@@ -44,7 +44,6 @@ class NetworksController < ::ApplicationController
     params[:use_team] = true if params[:team_mode].to_int > 0 rescue false
     params[:team_mode] ||= 5
     params[:configure] = true unless params.key?(:configure)
-    params[:use_bridge] = true
     params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
     params[:deployment_id] ||= 1
     params[:v6prefix] ||= Network::V6AUTO
