@@ -69,7 +69,7 @@ class DeploymentRole < ActiveRecord::Base
     DeploymentRole.transaction do
       if committed_data != proposed_data
         attribs.each do |attr|
-          next if attr.get(proposed_data) == attr.get(committed_data)
+          next if attr.get(self,:all,false) == attr.get(self,:all, true)
           noderoles.each do |nr|
             attr.poke(nr)
           end

@@ -5,6 +5,7 @@
     -x /usr/sbin/crowbar ]] && exit 0
 
 set -x
+set +e
 webserver_re='"url"=>"([^"]+)"'
 if ! [[ $(read_attribute "crowbar/provisioner/server/webservers") =~ $webserver_re ]]; then
     echo "Cannot figure out the URL to poll to see if we are ready to reboot!"

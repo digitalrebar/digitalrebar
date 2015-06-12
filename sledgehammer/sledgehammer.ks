@@ -67,6 +67,7 @@ syslinux
 tar
 tcpdump
 unzip
+vconfig
 vim-enhanced
 wget
 which
