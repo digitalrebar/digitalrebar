@@ -41,7 +41,7 @@ class NetworksController < ::ApplicationController
     # cleanup inputs
     params[:use_vlan] = true if params[:vlan].to_int > 0 rescue false
     params[:vlan] ||= 0
-    params[:use_team] = true if params[:team].to_int > 0 rescue false
+    params[:use_team] = true if params[:team_mode].to_int > 0 rescue false
     params[:team_mode] ||= 5
     params[:configure] = true unless params.key?(:configure)
     params[:use_bridge] = true
@@ -81,6 +81,7 @@ class NetworksController < ::ApplicationController
                                                    :last,
                                                    :conduit,
                                                    :vlan,
+                                                   :team_mode,
                                                    :overlap,
                                                    :use_vlan,
                                                    :use_bridge,
