@@ -18,11 +18,11 @@ class NetworkRangeConduit < ActiveRecord::Migration
   def change
     change_table :network_ranges do |t|
       t.string       :conduit,    null: true
-      t.integer      :vlan,       null: true, default: 0
-      t.boolean      :use_vlan,   null: true, default: false
-      t.boolean      :use_bridge, null: true, default: false
-      t.integer      :team_mode,  null: true, default: 5
-      t.boolean      :use_team,   null: true, default: false
+      t.integer      :vlan,       null: true
+      t.boolean      :use_vlan,   null: true
+      t.boolean      :use_bridge, null: true
+      t.integer      :team_mode,  null: true
+      t.boolean      :use_team,   null: true
     end
   end
 
