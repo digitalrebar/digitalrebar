@@ -61,7 +61,7 @@ class BarclampProvisioner::Database < Role
                  claims[target_id] == 'operating system' &&
                  disks.any?{|d|d['unique_name'] == target_id}
             target_id = nil
-            claims.delete_if{|k,v|k == 'operating system'}
+            claims.delete_if{|k,v|v == 'operating system'}
             # Grab the first unclaimed nonremovable disk for the OS.
             target = disks.detect{|d|!d["removable"] && !claims[d['unique_name']]}
             Attrib.set('operating-system-disk',n,target["unique_name"])
