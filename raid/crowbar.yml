@@ -154,6 +154,12 @@ roles:
       - name: raid-configured-volumes
         description: "The current RAID volumes on this node"
         map: 'raid/volumes/configured'
+  - name: raid-post-configure
+    jig: chef
+    requires:
+      - raid-configure
+    flags:
+      - implicit
 hammers:
   - name: raid-hammer
     type: 'BarclampRaid::RaidHammer'
