@@ -32,7 +32,7 @@ crowbar:
 
 hammers:
   - name: ipmi
-    priority: 1
+    priority: 6
     type: 'BarclampIpmi::IpmiHammer'
   - name: wsman
     priority: 2
