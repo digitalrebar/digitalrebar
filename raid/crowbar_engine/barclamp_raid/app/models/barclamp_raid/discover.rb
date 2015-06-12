@@ -29,12 +29,12 @@ class BarclampRaid::Discover < Role
 
     # Since we have detected controllers we can manage, go ahead and bind the
     # raid-configure and crowbar-hardware-configured roles to this node.
-    rcr_role = Role.find_by!(name: 'raid-configure')
+    rpc_role = Role.find_by!(name: 'raid-post-configure')
     chc_role = Role.find_by!(name: 'crowbar-hardware-configured')
     NodeRole.transaction do
-      rcr_noderole = rcr_role.add_to_node(nr.node)
+      rpc_noderole = rpc_role.add_to_node(nr.node)
       chc_noderole = chc_role.add_to_node(nr.node)
-      rcr_noderole.add_child(chc_noderole)
+      rpc_noderole.add_child(chc_noderole)
     end
   end
 end
