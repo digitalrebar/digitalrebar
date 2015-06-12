@@ -11,7 +11,7 @@ subnet <%= @addr.addr -%> netmask <%= @addr.netmask %> {
 <% @pools.each do |pool| -%>
    pool {
      range <%=IP.coerce(pool["first"]).addr%> <%=IP.coerce(pool["last"]).addr%>;
-     <% @pool_options[pool["name"]].each do |opt| -%>
+     <% @pool_options[@pools.length == 1 ? 'dhcp' : pool["name"]].each do |opt| -%>
      <%=opt%><%=if opt[-1,1] != '}' then ';' else '' end%>
      <% end if @pool_options[pool["name"]] -%>
    }
