@@ -44,6 +44,9 @@ class Disk
       end
     end
     node.set[:crowbar_wall][:reservations][:disks] = new_disks
+    claims = node[:crowbar_wall][:reservations][:claimed_disks]
+    claims.delete_if{|k,v|!new_disks.any?{|d|d['unique_name'] == k}}
+    node.set[:crowbar_wall][:reservations][:claimed_disks]
   end
 
   def self.all
