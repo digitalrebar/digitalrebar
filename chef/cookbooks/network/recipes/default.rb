@@ -384,7 +384,7 @@ node["crowbar"]["network"]["addresses"].keys.sort{|a,b|
     bridge = if our_iface.kind_of?(Nic::Vlan)
                "br#{our_iface.vlan}"
              else
-               "br-#{name}"
+               "br-#{our_iface.name}"
              end
     br = if Nic.exists?(bridge)
            Chef::Log.info("Using bridge #{bridge} for #{netname}")
@@ -461,7 +461,8 @@ Nic.nics.each do |nic|
       }
       ifs[nic.name]["addresses"] = []
       default_route[:nic] = master.name if default_route[:nic] == nic.name
-      if_mapping.each { |k,v|
+      if_mapping.each { |a|
+        v = a[3]
         v << master.name if v.last == nic.name
       }
     else
