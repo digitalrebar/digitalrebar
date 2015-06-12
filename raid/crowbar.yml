@@ -144,6 +144,7 @@ roles:
                     - disk
                   required: false
                 "exclusive": { type: bool, required: false }
+                "boot": { type: bool, required: false }
                 "protocol":
                   type: str
                   enum:
