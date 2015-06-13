@@ -53,8 +53,10 @@ que_worker() {
     shift
     workers="$1"
     shift
-    cmd="QUE_WORKER_COUNT=$workers QUE_QUEUE=$queue bundle exec rake que:work"
-    as_crowbar "$cmd" </dev/zero &>> "/var/log/crowbar/$queue.log" &
+    for ((i=0; i < workers; i++)) ; do
+        cmd="QUE_WORKER_COUNT=1 QUE_QUEUE=$queue bundle exec rake que:work"
+        as_crowbar "$cmd" </dev/zero &>> "/var/log/crowbar/$queue.$i.log" &
+    done
 }
 
 start_workers() {
