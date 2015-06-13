@@ -51,26 +51,9 @@ class BarclampProvisioner::Database < Role
       hosts[name]["v4addr"] = v4addr
       hosts[name]["bootenv"] = bootenv
       if /-install/.match(bootenv)
-        # If we have an OS bootenv, we might need to reserve a disk for the OS instal.
-        n = Node.find_by!(name: name)
-        n.with_lock('FOR NO KEY UPDATE') do
-          disks = Attrib.get('disks',n) || []
-          claims = Attrib.get('claimed-disks',n) || {}
-          target_id = Attrib.get('operating-system-disk',n)
-          unless target_id &&
-                 claims[target_id] == 'operating system' &&
-                 disks.any?{|d|d['unique_name'] == target_id}
-            target_id = nil
-            claims.delete_if{|k,v|v == 'operating system'}
-            # Grab the first unclaimed nonremovable disk for the OS.
-            target = disks.detect{|d|!d["removable"] && !claims[d['unique_name']]}
-            Attrib.set('operating-system-disk',n,target["unique_name"])
-            claims[target["unique_name"]] = "operating system"
-            Attrib.set('claimed-disks',n,claims)
-            target_id = target["unique_name"]
-          end
-          hosts[name]["rootdev"] = target_id
-        end
+        # Assume this is correct because it got set by
+        # provisioner-os-install's on_todo hook.
+        hosts[name]["rootdev"] = Attrib.get('operating-system-disk',Node.find_by!(name: name))
       end
     end
     node_roles.each do |nr|

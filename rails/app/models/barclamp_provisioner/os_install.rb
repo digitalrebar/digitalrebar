@@ -16,12 +16,26 @@
 class BarclampProvisioner::OsInstall < Role
 
   def on_todo(nr)
-    NodeRole.transaction do
-      node = nr.node
-      return if (["local"].member? node.bootenv) || (nr.run_count > 0)
-      target = Attrib.get("provisioner-target_os",nr)
-      Rails.logger.info("provisioner-install: Trying to install #{target} on #{node.name} (bootenv: #{node.bootenv})")
-      node.bootenv = "#{target}-install"
+    node = nr.node
+    return if (["local"].member? node.bootenv) || (nr.run_count > 0)
+    node.with_lock('FOR NO KEY UPDATE') do
+      disks = Attrib.get('disks',node) || []
+      claims = Attrib.get('claimed-disks',node) || {}
+      target_disk = Attrib.get('operating-system-disk',node) 
+      unless target_disk &&
+             claims[target_disk] == 'operating system' &&
+             disks.any?{|d|d['unique_name'] == target_disk}
+        target_disk = nil
+        claims.delete_if{|k,v|v == 'operating system'}
+        # Grab the first unclaimed nonremovable disk for the OS.
+        target_disk = disks.detect{|d|!d["removable"] && !claims[d['unique_name']]}
+        Attrib.set('operating-system-disk',node,target_disk["unique_name"])
+        claims[target_disk["unique_name"]] = "operating system"
+        Attrib.set('claimed-disks',node,claims)
+      end
+      target_os = Attrib.get("provisioner-target_os",nr)
+      Rails.logger.info("provisioner-install: Trying to install #{target_os} on #{node.name} (bootenv: #{node.bootenv})")
+      node.bootenv = "#{target_os}-install"
       node.save!
     end
   end
