@@ -1,4 +1,4 @@
-# Copyright 2013, Dell
+# Copyright 2015, RackN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+require 'faker'
 
-require 'spec_helper'
-
-describe "jig proposal manipulation" do
-
+FactoryGirl.define do
+  factory :network_allocation do |f|
+    f.address '1.2.1.16/24'
+  end
 end
-
