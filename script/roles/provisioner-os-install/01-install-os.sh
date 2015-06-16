@@ -1,6 +1,7 @@
 #!/bin/bash
 
 [[ -x /etc/init.d/crowbar_join.sh || \
+    -x /etc/init.d/crowbar_join || \
     -x /etc/init.d/crowbar || \
     -x /usr/sbin/crowbar ]] && exit 0
 
