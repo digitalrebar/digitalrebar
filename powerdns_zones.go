@@ -12,7 +12,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/ant0ine/go-json-rest/rest"
 	"io"
 	"io/ioutil"
 	"log"
@@ -83,7 +82,7 @@ type PowerDnsError struct {
 type PowerDnsInstance struct {
 	UrlBase     string
 	AccessToken string
-	dns_endpoint
+	dns_backend_point
 }
 
 func (di *PowerDnsInstance) makeZoneUrl(id *string) string {
@@ -93,23 +92,10 @@ func (di *PowerDnsInstance) makeZoneUrl(id *string) string {
 	return fmt.Sprintf("%s/%s", di.UrlBase, "zones")
 }
 
-type doURLError struct {
-	s           string
-	status_code int
-}
-
-func (e *doURLError) Error() string {
-	return e.s
-}
-
-func (e *doURLError) StatusCode() int {
-	return e.status_code
-}
-
-func (di *PowerDnsInstance) doURL(action, url string, data io.Reader) ([]byte, *doURLError) {
+func (di *PowerDnsInstance) doURL(action, url string, data io.Reader) ([]byte, *backendError) {
 	req, err := http.NewRequest(action, url, data)
 	if err != nil {
-		return nil, &doURLError{err.Error(), 500}
+		return nil, &backendError{err.Error(), 500}
 	}
 	req.Header.Set("X-API-Key", di.AccessToken)
 	req.Header.Set("Content-Type", "application/json")
@@ -117,7 +103,7 @@ func (di *PowerDnsInstance) doURL(action, url string, data io.Reader) ([]byte, *
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, &doURLError{err.Error(), 500}
+		return nil, &backendError{err.Error(), 500}
 	}
 	defer resp.Body.Close()
 
@@ -128,22 +114,21 @@ func (di *PowerDnsInstance) doURL(action, url string, data io.Reader) ([]byte, *
 		var data PowerDnsError
 		jerr := json.Unmarshal(body, &data)
 		if jerr != nil {
-			return body, &doURLError{string(body), resp.StatusCode}
+			return body, &backendError{string(body), resp.StatusCode}
 		}
 
-		return body, &doURLError{data.Error, resp.StatusCode}
+		return body, &backendError{data.Error, resp.StatusCode}
 	}
 
 	return body, nil
 }
 
 // List function
-func (di *PowerDnsInstance) GetAllZones(w rest.ResponseWriter, r *rest.Request) {
+func (di *PowerDnsInstance) GetAllZones() ([]Zone, *backendError) {
 	url := di.makeZoneUrl(nil)
 	body, err := di.doURL("GET", url, nil)
 	if err != nil {
-		rest.Error(w, err.Error(), err.StatusCode())
-		return
+		return nil, err
 	}
 
 	var pzs []PowerDnsZone
@@ -152,19 +137,15 @@ func (di *PowerDnsInstance) GetAllZones(w rest.ResponseWriter, r *rest.Request) 
 		log.Panic(jerr)
 	}
 
-	data := marshalPowerDnsZonesToZones(pzs)
-
-	w.WriteJson(data)
+	return marshalPowerDnsZonesToZones(pzs), nil
 }
 
 // Get function
-func (di *PowerDnsInstance) GetZone(w rest.ResponseWriter, r *rest.Request) {
-	id := r.PathParam("id")
+func (di *PowerDnsInstance) GetZone(id string) (Zone, *backendError) {
 	url := di.makeZoneUrl(&id)
 	body, err := di.doURL("GET", url, nil)
 	if err != nil {
-		rest.Error(w, err.Error(), err.StatusCode())
-		return
+		return Zone{}, err
 	}
 
 	var pdz PowerDnsZone
@@ -175,17 +156,11 @@ func (di *PowerDnsInstance) GetZone(w rest.ResponseWriter, r *rest.Request) {
 
 	data := marshalPowerDnsZoneToZone(pdz)
 
-	w.WriteJson(data)
+	return data, nil
 }
 
 // Create function
-func (di *PowerDnsInstance) PostZone(w rest.ResponseWriter, r *rest.Request) {
-	zone := Zone{}
-	err := r.DecodeJsonPayload(&zone)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+func (di *PowerDnsInstance) PostZone(zone Zone) (Zone, *backendError) {
 
 	pdzi := marshalZoneToPowerDnsZone(zone)
 
@@ -196,33 +171,24 @@ func (di *PowerDnsInstance) PostZone(w rest.ResponseWriter, r *rest.Request) {
 	}
 	body, derr := di.doURL("POST", url, bytes.NewReader(b))
 	if derr != nil {
-		rest.Error(w, derr.Error(), derr.StatusCode())
-		return
+		return Zone{}, derr
 	}
 
 	var pdz PowerDnsZone
-	err = json.Unmarshal(body, &pdz)
+	err := json.Unmarshal(body, &pdz)
 	if err != nil {
 		log.Panic(err)
 	}
 
 	data := marshalPowerDnsZoneToZone(pdz)
-
-	w.WriteJson(data)
+	return data, nil
 }
 
 // Update function
-func (di *PowerDnsInstance) PutZone(w rest.ResponseWriter, r *rest.Request) {
-	zone := Zone{}
-	err := r.DecodeJsonPayload(&zone)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+func (di *PowerDnsInstance) PutZone(id string, zone Zone) (Zone, *backendError) {
 
 	pdzi := marshalZoneToPowerDnsZone(zone)
 
-	id := r.PathParam("id")
 	url := di.makeZoneUrl(&id)
 	b, berr := json.Marshal(pdzi)
 	if berr != nil {
@@ -230,43 +196,31 @@ func (di *PowerDnsInstance) PutZone(w rest.ResponseWriter, r *rest.Request) {
 	}
 	body, derr := di.doURL("PUT", url, bytes.NewReader(b))
 	if derr != nil {
-		rest.Error(w, derr.Error(), derr.StatusCode())
-		return
+		return Zone{}, derr
 	}
 
 	var pdz PowerDnsZone
-	err = json.Unmarshal(body, &pdz)
+	err := json.Unmarshal(body, &pdz)
 	if err != nil {
 		log.Panic(err)
 	}
 
 	data := marshalPowerDnsZoneToZone(pdz)
 
-	w.WriteJson(data)
+	return data, nil
 }
 
 // Delete function
-func (di *PowerDnsInstance) DeleteZone(w rest.ResponseWriter, r *rest.Request) {
-	id := r.PathParam("id")
+func (di *PowerDnsInstance) DeleteZone(id string) *backendError {
 	url := di.makeZoneUrl(&id)
 	_, err := di.doURL("DELETE", url, nil)
-	if err != nil {
-		rest.Error(w, err.Error(), err.StatusCode())
-	}
+	return err
 }
 
 // Patch function
-func (di *PowerDnsInstance) PatchZone(w rest.ResponseWriter, r *rest.Request) {
-	rrsets := RRSets{}
-	err := r.DecodeJsonPayload(&rrsets)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
+func (di *PowerDnsInstance) PatchZone(id string, rrsets RRSets) (Zone, *backendError) {
 	prrsets := marshalRRSetsToPowerDnsRRSets(rrsets)
 
-	id := r.PathParam("id")
 	url := di.makeZoneUrl(&id)
 	b, berr := json.Marshal(prrsets)
 	if berr != nil {
@@ -274,17 +228,16 @@ func (di *PowerDnsInstance) PatchZone(w rest.ResponseWriter, r *rest.Request) {
 	}
 	body, derr := di.doURL("PATCH", url, bytes.NewReader(b))
 	if derr != nil {
-		rest.Error(w, derr.Error(), derr.StatusCode())
-		return
+		return Zone{}, derr
 	}
 
 	var pdz PowerDnsZone
-	err = json.Unmarshal(body, &pdz)
+	err := json.Unmarshal(body, &pdz)
 	if err != nil {
 		log.Panic(err)
 	}
 
 	data := marshalPowerDnsZoneToZone(pdz)
 
-	w.WriteJson(data)
+	return data, nil
 }

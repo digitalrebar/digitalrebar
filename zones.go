@@ -3,6 +3,14 @@ package main
 /*
  * Managment API Structures
  *
+ * These are the front end api structures.
+ * They are similar to the PowerDNS structures, but
+ * are different.  The RRSet semantic in PowerDNS
+ * is replace/delete.  The management layer is just
+ * add/or delete.  The set math is done in this application
+ * to figure out the actual resulting set of data to
+ * write to the backend for the key (name).
+ *
  * These match the json objects that are needed to
  * update/create and get zone information and records
  */

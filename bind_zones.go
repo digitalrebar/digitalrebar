@@ -3,14 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/ant0ine/go-json-rest/rest"
-	"net/http"
 	"os"
 	"strings"
 )
 
 type BindDnsInstance struct {
-	dns_endpoint
+	dns_backend_point
 }
 
 func (di *BindDnsInstance) parseZone(name string) *Zone {
@@ -61,74 +59,45 @@ func (di *BindDnsInstance) findZones(id *string) []Zone {
 }
 
 // List function
-func (di *BindDnsInstance) GetAllZones(w rest.ResponseWriter, r *rest.Request) {
+func (di *BindDnsInstance) GetAllZones() ([]Zone, *backendError) {
 
 	zones := di.findZones(nil)
 	if zones == nil {
-		rest.Error(w, "File not available", 500)
-		return
+		return nil, &backendError{"File not available", 500}
 	}
-
-	w.WriteJson(zones)
+	return zones, nil
 }
 
 // Get function
-func (di *BindDnsInstance) GetZone(w rest.ResponseWriter, r *rest.Request) {
-	id := r.PathParam("id")
-
+func (di *BindDnsInstance) GetZone(id string) (Zone, *backendError) {
 	zones := di.findZones(&id)
 	if zones == nil || len(zones) == 0 {
-		rest.Error(w, "Not Found", 404)
-		return
+		return Zone{}, &backendError{"Not Found", 404}
 	}
-
-	w.WriteJson(zones[0])
+	return zones[0], nil
 }
 
 // Create function
-func (di *BindDnsInstance) PostZone(w rest.ResponseWriter, r *rest.Request) {
-	zone := Zone{}
-	err := r.DecodeJsonPayload(&zone)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
+func (di *BindDnsInstance) PostZone(zone Zone) (Zone, *backendError) {
 	// GREG: Create zone
-
-	w.WriteJson(zone)
+	return zone, nil
 }
 
 // Update function
-func (di *BindDnsInstance) PutZone(w rest.ResponseWriter, r *rest.Request) {
-	zone := Zone{}
-	err := r.DecodeJsonPayload(&zone)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
+func (di *BindDnsInstance) PutZone(id string, zone Zone) (Zone, *backendError) {
 	// GREG: update zone
-
-	w.WriteJson(zone)
+	return zone, nil
 }
 
 // Delete function
-func (di *BindDnsInstance) DeleteZone(w rest.ResponseWriter, r *rest.Request) {
-	id := r.PathParam("id")
-	zone := di.parseZone(id)
+func (di *BindDnsInstance) DeleteZone(id string) *backendError {
+	// zone := di.parseZone(id)
 	// GREG: remove zonze
-	w.WriteJson(zone)
+	return nil
 }
 
 // Patch function
-func (di *BindDnsInstance) PatchZone(w rest.ResponseWriter, r *rest.Request) {
-	rrsets := RRSets{}
-	err := r.DecodeJsonPayload(&rrsets)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+func (di *BindDnsInstance) PatchZone(id string, rrsets RRSets) (Zone, *backendError) {
 
 	// GREG: Update zone info
 
@@ -136,5 +105,5 @@ func (di *BindDnsInstance) PatchZone(w rest.ResponseWriter, r *rest.Request) {
 
 	var data Zone
 
-	w.WriteJson(data)
+	return data, nil
 }
