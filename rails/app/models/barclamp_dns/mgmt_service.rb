@@ -19,21 +19,22 @@ class BarclampDns::MgmtService < Service
 
   def template
     # this is a workable solution for now, we use the admin node to determine domain (except when non-exists!)
-    domain = Node.admin.first.name.split(".",2)[1] rescue I18n.t('not_set')
-    {"crowbar" => {     "dns" => {
-        "domain" => domain,
-        "contact" => "support@localhost.localdomain",
-        "forwarders" =>  [],
-        "static" => {},
-        "ttl" => "1h",
-        "slave_refresh" => "1d",
-        "slave_retry" => "2h",
-        "slave_expire" => "4w",
-        "negative_cache" => 300}}}
+    domain = Node.admin.first.name.split('.',2)[1] rescue I18n.t('not_set')
+    {'crowbar' => {     'dns' => {
+        'domain' => domain,
+        'contact' => 'support@localhost.localdomain',
+        'forwarders' =>  [],
+        'static' => {},
+        'ttl' => '1h',
+        'slave_refresh' => '1d',
+        'slave_retry' => '2h',
+        'slave_expire' => '4w',
+        'negative_cache' => 300}}}
   end
 
+
   def do_transition(nr,data)
-    internal_do_transition(nr, data, "dns-mgmt-service", "dns-management-servers") do |s|
+    internal_do_transition(nr, data, 'dns-mgmt-service', 'dns-management-servers') do |s|
       Rails.logger.debug("DnsMgmtServer: #{s.inspect} #{s.ServiceAddress}")
       addr = IP.coerce(s.ServiceAddress)
       Rails.logger.debug("DnsMgmtServer: #{addr.inspect}")
@@ -51,13 +52,13 @@ class BarclampDns::MgmtService < Service
       end
       url << ":#{s.ServicePort}"
 
-      { "address" => s.ServiceAddress,
-        "port" => "#{s.ServicePort}",
-        "name" => server_name,
-        "cert" => cert_pem,
-        "access_name" => access_name,
-        "access_password" => access_password,
-        "url" => url}
+      { 'address' => s.ServiceAddress,
+        'port' => "#{s.ServicePort}",
+        'name' => server_name,
+        'cert' => cert_pem,
+        'access_name' => access_name,
+        'access_password' => access_password,
+        'url' => url}
     end
   end
 
@@ -75,75 +76,31 @@ class BarclampDns::MgmtService < Service
       addrs[svc] = []
     end
 
+    Rails.logger.fatal("GREG: Start claiming")
+
     NetworkAllocation.all.each do |na|
-      Rails.logger.fatal("GREG: na = #{na}")
-      svc = na.network_range.dns_svc_name
-      Rails.logger.fatal("GREG: testing #{na.address} for #{svc} in #{slist}")
-      Rails.logger.fatal("GREG: testing #{na.network_range.update_dns}")
-      addrs[svc] << na if !svc.nil? and slist.include?(svc) and na.network_range.update_dns
+      DnsNameFilter.claim_by_any(na)
     end
 
-    Rails.logger.fatal("GREG: setting initial values")
-
-    shash.each do |sname, service|
-      Rails.logger.fatal("GREG: #{sname} is being updated")
-      addrs[sname].each do |na|
-        rrtype = (na.address.v4? ? 'A' : 'AAAA')
-        Rails.logger.fatal("GREG: #{sname} #{rrtype}")
-        replace_dns_record(service, na.network_range.dns_domain, rrtype, get_name(na.node), na.address.addr, true)
-      end
-    end
-
-    Rails.logger.fatal("GREG: Done updating")
+    Rails.logger.fatal("GREG: Done claiming")
   end
 
   def on_node_change(n)
-    if n.previous_changes[:name]
-      Rails.logger.fatal("GREG: name of node changed, #{n.name} update dns A/AAAA records")
-      NetworkAllocation.node(n).each do |na|
-        update_mapping(n, na.network_range, na.address)
-      end
+    NetworkAllocation.node(n).each do |na|
+     DnsNameFilter.claim_by_any(na)
     end
   end
 
   def on_network_allocation_create(na)
-    update_mapping(na.node, na.network_range, na.address)
+    DnsNameFilter.claim_by_any(na)
   end
 
   def on_network_allocation_delete(na)
-    delete_mapping(na.node, na.network_range, na.address)
+    dne = DnsNameEntry.for_network_allocation(na).first
+    dne.release if dne
   end
 
-  def delete_mapping(node, range, address)
-    Rails.logger.fatal("GREG: #{node.name} #{address} is being removed.")
-
-    return unless range.update_dns
-    service = get_service(range.dns_svc_name)
-    return unless service
-
-    rrtype = (address.v4? ? 'A' : 'AAAA')
-    remove_dns_record(service, range.dns_domain, rrtype, get_name(node), true)
-  end
-
-  def update_mapping(node, range, address)
-    Rails.logger.fatal("GREG: #{node.name} #{address} is being added.")
-
-    return unless range.update_dns
-    service = get_service(range.dns_svc_name)
-    return unless service
-
-    rrtype = (address.v4? ? 'A' : 'AAAA')
-    replace_dns_record(service, range.dns_domain, rrtype, get_name(node), address.addr, true)
-  end
-
-  # GREG: This is busted - hostname_template needs to live somewhere
-  def get_name(node)
-    name = node.name.split('.')[0]
-    return name unless hostname_template
-    hostname_template.gsub('{{node.name}}', name)
-  end
-
-  def get_service(service_name)
+  def self.get_service(service_name)
     service = nil
     # This is not cool, but should be small in most environments.
     BarclampDns::MgmtService.all.each do |role|
@@ -157,6 +114,24 @@ class BarclampDns::MgmtService < Service
       end
     end
     nil
+  end
+
+  def self.remove_ip_address(dne)
+    service = get_service(dne.dns_name_filter.service)
+    return unless service
+
+    address = dne.network_allocation.address
+    name, domain = dne.name.split('.')
+    remove_dns_record(service, domain, dne.rrtype, name, address.addr, true)
+  end
+
+  def self.add_ip_address(dne)
+    service = get_service(dne.dns_name_filter.service)
+    return unless service
+
+    address = dne.network_allocation.address
+    name, domain = dne.name.split('.')
+    replace_dns_record(service, domain, dne.rrtype, name, address.addr, true)
   end
 
   def send_request(url, data, ca_string)
