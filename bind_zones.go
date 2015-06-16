@@ -45,7 +45,12 @@ func (di *BindDnsInstance) findZones(id *string) []Zone {
 
 		if strings.HasPrefix(s, "include \"") {
 			ss := strings.Split(s, "\"")
-			zone := di.parseZone(strings.TrimPrefix(ss[1], "zone."))
+
+			zoneName := strings.TrimPrefix(ss[1], "zone.")
+			if id != nil && zoneName != *id {
+				continue
+			}
+			zone := di.parseZone(zoneName)
 			if zone != nil {
 				zones = append(zones, *zone)
 			}
