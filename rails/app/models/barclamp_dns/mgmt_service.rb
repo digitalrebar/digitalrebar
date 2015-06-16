@@ -122,7 +122,7 @@ class BarclampDns::MgmtService < Service
 
     address = dne.network_allocation.address
     name, domain = dne.name.split('.')
-    remove_dns_record(service, domain, dne.rrtype, name, address.addr, true)
+    self.remove_dns_record(service, domain, dne.rr_type, name, address.addr, true)
   end
 
   def self.add_ip_address(dne)
@@ -131,10 +131,10 @@ class BarclampDns::MgmtService < Service
 
     address = dne.network_allocation.address
     name, domain = dne.name.split('.')
-    replace_dns_record(service, domain, dne.rrtype, name, address.addr, true)
+    self.replace_dns_record(service, domain, dne.rr_type, name, address.addr, true)
   end
 
-  def send_request(url, data, ca_string)
+  def self.send_request(url, data, ca_string)
     store = OpenSSL::X509::Store.new
     store.add_cert(OpenSSL::X509::Certificate.new(ca_string))
     
@@ -145,8 +145,8 @@ class BarclampDns::MgmtService < Service
     ).patch data.to_json, :content_type => :json, :accept => :json
   end
 
-  def replace_dns_record(service, zone, rrtype, name, value, setptr)
-    Rails.logger.fatal("GREG: replace_dns_record: #{service['name']} #{zone} #{rrtype} #{name} #{value} #{setptr}")
+  def self.replace_dns_record(service, zone, rr_type, name, value, setptr)
+    Rails.logger.fatal("GREG: replace_dns_record: #{service['name']} #{zone} #{rr_type} #{name} #{value} #{setptr}")
 
     url = "#{service['url']}/zones/#{zone}"
 
@@ -154,7 +154,7 @@ class BarclampDns::MgmtService < Service
         'rrsets' => [
             {
                 'name' => name,
-                'type' => rrtype,
+                'type' => rr_type,
                 'changetype' => 'REPLACE',
                 'records' => [
                     {
@@ -162,7 +162,7 @@ class BarclampDns::MgmtService < Service
                         'disabled' => false,
                         'name' => name,
                         'ttl' => 3600,
-                        'type' => rrtype,
+                        'type' => rr_type,
                         'setptr' => setptr,
                         'priority' => 0
                     }
@@ -176,15 +176,15 @@ class BarclampDns::MgmtService < Service
     send_request(url, data, service['cert'])
   end
 
-  def remove_dns_record(service, zone, rrtype, name, setptr)
-    Rails.logger.fatal("GREG: remove_dns_record: #{service['name']} #{zone} #{rrtype} #{name} #{setptr}")
+  def self.remove_dns_record(service, zone, rr_type, name, value, setptr)
+    Rails.logger.fatal("GREG: remove_dns_record: #{service['name']} #{zone} #{rr_type} #{name} #{setptr}")
 
     url = "#{service['url']}/zones/#{zone}"
     data = {
         'rrsets' => [
             {
                 'name' => name,
-                'type' => rrtype,
+                'type' => rr_type,
                 'changetype' => 'DELETE',
                 'records' => [ ]
             }
