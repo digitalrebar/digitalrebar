@@ -72,6 +72,8 @@ ActiveRecord::Base.transaction do
   Nav.find_or_create_by(item: 'networks_child', parent_item: 'networks', name: 'nav.networks', description: 'nav.networks_description', path: "networks_path", order: 1000)
   Nav.find_or_create_by(item: 'network_map', parent_item: 'networks', name: 'nav.network_map', description: 'nav.network_map_description', path: "network_map_path", order: 5000)
   Nav.find_or_create_by(item: 'interfaces', parent_item: 'networks', name: 'nav.interfaces', description: 'nav.interfaces_description', path: "interfaces_path", order: 5000)
+  Nav.find_or_create_by(item: 'filters', parent_item: 'networks', name: 'nav.filters', description: 'nav.dns_name_filters_description', path: "dns_name_filters_path", order: 2000)
+  Nav.find_or_create_by(item: 'names', parent_item: 'networks', name: 'nav.names', description: 'nav.dns_name_entries_description', path: "dns_name_entries_path", order: 2500)
 
   # scaffolds
   Nav.find_or_create_by(item: 'scaffold', name: 'nav.scaffold.top', path: "main_app.scaffolds_deployments_path", description: 'nav.scaffold.top_description', order: 7000, development: true)
@@ -86,6 +88,8 @@ ActiveRecord::Base.transaction do
   Nav.find_or_create_by(item: 'scaffold_docs', parent_item: 'scaffold', name: 'nav.scaffold.docs', path: "main_app.scaffolds_docs_path", order: 5500, development: true)
   Nav.find_or_create_by(item: 'scaffold_networks',  parent_item: 'scaffold', name: 'nav.scaffold.networks',  path: "scaffolds_networks_path", order: 2000, development: true)
   Nav.find_or_create_by(item: 'scaffold_allocations',  parent_item: 'scaffold', name: 'nav.scaffold.allocations',  path: "scaffolds_network_allocations_path", order: 2040, development: true)
+  Nav.find_or_create_by(item: 'scaffold_dns_name_filters',  parent_item: 'scaffold', name: 'nav.scaffold.dns_name_filters',  path: "scaffolds_dns_name_filters_path", order: 2080, development: true)
+  Nav.find_or_create_by(item: 'scaffold_dns_name_entries',  parent_item: 'scaffold', name: 'nav.scaffold.dns_name_entries',  path: "scaffolds_dns_name_entries_path", order: 2090, development: true)
 end
 
 Dir.glob("/opt/opencrowbar/**/crowbar_engine/barclamp_*/db/seeds.rb") do |seedfile|

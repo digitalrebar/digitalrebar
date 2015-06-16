@@ -64,6 +64,8 @@ Crowbar::Application.routes.draw do
   resources :network_ranges
   resources :network_routers
   get 'network_map' => "networks#map", :as=> :network_map
+  resources :dns_name_filters
+  resources :dns_name_entries
 
   # UI only functionality to help w/ visualization
   scope 'dashboard' do
@@ -101,6 +103,8 @@ Crowbar::Application.routes.draw do
       resources :network_ranges do as_routes end
       resources :network_routers do as_routes end
       resources :networks do as_routes end
+      resources :dns_name_filters do as_routes end
+      resources :dns_name_entries do as_routes end
       resources :nodes do as_routes end
       resources :hammers do as_routes end
       resources :node_roles do as_routes end
@@ -180,6 +184,8 @@ Crowbar::Application.routes.draw do
           resources :network_ranges
           resources :network_routers
           resources :network_allocations
+          resources :dns_name_filters
+          resources :dns_name_entries
           resources :interfaces
 
           resources :runs

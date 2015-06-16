@@ -1,0 +1,21 @@
+= form_for :filter, :'data-remote' => true, :url => dns_name_filter_path(filter.id), :html => { :method=>:put, :'data-type' => 'html',  :class => "formtastic" } do |f|
+  %table.data.box
+    %thead
+      %th= t '.name'
+      %th= t '.name'
+    %tbody
+      %tr{:class => cycle(:odd,:even)}
+        %td= t '.priority'
+        %td= text_field_tag :priority, filter.priority, :size=>10
+      %tr{:class => cycle(:odd,:even)}
+        %td= t '.matcher'
+        %td= text_field_tag :matcher, filter.matcher, :size=>30
+      %tr{:class => cycle(:odd,:even)}
+        %td= t '.template'
+        %td= text_field_tag :template, filter.template, :size=>30
+      %tr{:class => cycle(:odd,:even)}
+        %td= t '.service'
+        %td= text_field_tag :service, filter.service, :size=>20
+
+  %input.button{:type => "submit", :value => t('update')}
+

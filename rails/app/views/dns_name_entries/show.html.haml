@@ -1,0 +1,3 @@
+%h1= "Entry for #{@entry.network_allocation.node.name}"
+
+= render :partial => 'dns_name_entries/show', :locals  => { :entry => @entry }

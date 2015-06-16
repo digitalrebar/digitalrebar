@@ -1,0 +1,15 @@
+%table.data.box
+  %thead
+    %th= t '.node'
+    %th= @entry.network_allocation.node.name
+  %tbody
+    %tr{:class => cycle(:odd,:even)}
+      %td= t '.name'
+      %td= @entry.name
+    %tr{:class => cycle(:odd,:even)}
+      %td= t '.address'
+      %td= @entry.network_allocation.address
+    %tr{:class => cycle(:odd,:even)}
+      %td= t '.filter'
+      %td= @entry.dns_name_filter.name
+

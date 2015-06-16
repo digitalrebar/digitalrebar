@@ -16,8 +16,9 @@ class DnsNameFilter < ActiveRecord::Migration
 
   def self.up
     create_table "dns_name_filters" do |t|
-      t.string      :matcher
-      t.integer     :priority,    default: 50
+      t.string      :name,        default: 'default'
+      t.string      :matcher,     default: 'net.category == "admin"'
+      t.integer     :priority,    default: 50, index: { unique: true }
       t.string      :service,     default: 'system'
       t.string      :template,    default: '{{node.name}}'
       t.timestamps

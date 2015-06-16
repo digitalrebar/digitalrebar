@@ -641,6 +641,18 @@ module OpenCrowbar
 
   end
 
+  class DnsNameFilter < CrowbarProxy
+    def self.path
+      "api/v2/dns_name_filters"
+    end
+  end
+
+  class DnsNameEntry < CrowbarProxy
+    def self.path
+      "api/v2/dns_name_entries"
+    end
+  end
+
   class Hammer < CrowbarProxy
     def self.path
       "api/v2/hammers"

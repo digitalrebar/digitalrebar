@@ -1,0 +1,31 @@
+%h1= t '.title'
+
+%table.data.box
+  %thead
+    %tr
+      %th= t '.name'
+      %th= t '.priority'
+      %th= t '.matcher'
+      %th= t '.template'
+      %th= t '.service'
+      %th
+  %tbody
+    - @filters.each do |dnf|
+      %tr.node{ :class => cycle(:odd, :even) }
+        %td= link_to dnf.name, dns_name_filter_path(dnf.id)
+        %td= dnf.priority
+        %td= dnf.matcher
+        %td= dnf.template
+        %td= dnf.service
+        %td
+  %tfoot
+    = form_for :dns_name_filter, :'data-remote' => true, :url => dns_name_filters_path(), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
+      %tr
+        %td= text_field_tag :name, 'default', :size=>10
+        %td= text_field_tag :priority, 50, :size=>6
+        %td= text_field_tag :matcher, 'net.category == "admin"', :size=>30
+        %td= text_field_tag :template, '{{node.name}}.your.domain', :size=>30
+        %td= text_field_tag :service, 'system', :size=>10
+        %td
+          %input.button{:type => "submit", :value => t('.add')}
+
