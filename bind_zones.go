@@ -11,15 +11,16 @@ func buildZone(name string, zoneData *ZoneData) Zone {
 	records := make([]Record, 0, 100)
 
 	if zoneData != nil {
-		for entry, items := range zoneData.Entries {
-			for _, item := range items {
-				record := Record{
-					Name:    entry,
-					Content: item.Content,
-					Type:    item.Type,
-					TTL:     item.TTL,
+		for name, entry := range zoneData.Entries {
+			for t, contents := range entry.Types {
+				for _, content := range contents {
+					record := Record{
+						Name:    name,
+						Content: content.Content,
+						Type:    t,
+					}
+					records = append(records, record)
 				}
-				records = append(records, record)
 			}
 		}
 	}
