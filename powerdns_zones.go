@@ -124,7 +124,7 @@ func (di *PowerDnsInstance) doURL(action, url string, data io.Reader) ([]byte, *
 }
 
 // List function
-func (di *PowerDnsInstance) GetAllZones(zones *ZoneTrackers) ([]Zone, *backendError) {
+func (di *PowerDnsInstance) GetAllZones(zones *ZoneTracker) ([]Zone, *backendError) {
 	url := di.makeZoneUrl(nil)
 	body, err := di.doURL("GET", url, nil)
 	if err != nil {
@@ -141,7 +141,7 @@ func (di *PowerDnsInstance) GetAllZones(zones *ZoneTrackers) ([]Zone, *backendEr
 }
 
 // Get function
-func (di *PowerDnsInstance) GetZone(zones *ZoneTrackers, id string) (Zone, *backendError) {
+func (di *PowerDnsInstance) GetZone(zones *ZoneTracker, id string) (Zone, *backendError) {
 	url := di.makeZoneUrl(&id)
 	body, err := di.doURL("GET", url, nil)
 	if err != nil {
@@ -160,7 +160,7 @@ func (di *PowerDnsInstance) GetZone(zones *ZoneTrackers, id string) (Zone, *back
 }
 
 // Patch function
-func (di *PowerDnsInstance) PatchZone(zoneName string, name string, zoneData *ZoneData) (Zone, *backendError) {
+func (di *PowerDnsInstance) PatchZone(zones *ZoneTracker, zoneName string, rec Record) (Zone, *backendError) {
 
 	// GREG: Build replace/remove call
 
@@ -199,7 +199,7 @@ func (di *PowerDnsInstance) PatchZone(zoneName string, name string, zoneData *Zo
 	*/
 
 	url := di.makeZoneUrl(&zoneName)
-	b, berr := json.Marshal(zoneData)
+	b, berr := json.Marshal(zones.Zones[zoneName])
 	if berr != nil {
 		log.Panic(berr)
 	}

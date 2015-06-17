@@ -64,10 +64,7 @@ func main() {
 		log.Fatal("Failed to find type")
 	}
 
-	fe := Frontend{
-		Backend:  &be,
-		data_dir: data_dir,
-	}
+	fe := NewFrontend(&be, data_dir)
 
 	fe.load_data()
 

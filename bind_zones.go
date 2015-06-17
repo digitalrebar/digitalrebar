@@ -11,7 +11,7 @@ func buildZone(name string, zoneData *ZoneData) Zone {
 	records := make([]Record, 0, 100)
 
 	if zoneData != nil {
-		for entry, items := range *zoneData {
+		for entry, items := range zoneData.Entries {
 			for _, item := range items {
 				record := Record{
 					Name:    entry,
@@ -33,9 +33,9 @@ func buildZone(name string, zoneData *ZoneData) Zone {
 }
 
 // List function
-func (di *BindDnsInstance) GetAllZones(zones *ZoneTrackers) ([]Zone, *backendError) {
+func (di *BindDnsInstance) GetAllZones(zones *ZoneTracker) ([]Zone, *backendError) {
 	answer := make([]Zone, 0, 10)
-	for k, v := range *zones {
+	for k, v := range zones.Zones {
 		answer = append(answer, buildZone(k, v))
 	}
 
@@ -43,8 +43,8 @@ func (di *BindDnsInstance) GetAllZones(zones *ZoneTrackers) ([]Zone, *backendErr
 }
 
 // Get function
-func (di *BindDnsInstance) GetZone(zones *ZoneTrackers, id string) (Zone, *backendError) {
-	zdata := (*zones)[id]
+func (di *BindDnsInstance) GetZone(zones *ZoneTracker, id string) (Zone, *backendError) {
+	zdata := zones.Zones[id]
 	if zdata == nil {
 		return Zone{}, &backendError{"Not Found", 404}
 	}
@@ -53,7 +53,7 @@ func (di *BindDnsInstance) GetZone(zones *ZoneTrackers, id string) (Zone, *backe
 }
 
 // Patch function
-func (di *BindDnsInstance) PatchZone(zoneName string, name string, zoneData *ZoneData) (Zone, *backendError) {
+func (di *BindDnsInstance) PatchZone(zones *ZoneTracker, zoneName string, rec Record) (Zone, *backendError) {
 
 	// Mutex
 	// Rebuild zone files.
@@ -61,5 +61,5 @@ func (di *BindDnsInstance) PatchZone(zoneName string, name string, zoneData *Zon
 	// Restart bind
 	// unMutex
 
-	return buildZone(zoneName, zoneData), nil
+	return buildZone(zoneName, zones.Zones[zoneName]), nil
 }
