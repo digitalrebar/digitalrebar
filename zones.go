@@ -32,7 +32,6 @@ type Record struct {
 	ChangeType string `json:"changetype"` // ADD or REMOVE
 	Content    string `json:"content"`
 	Name       string `json:"name"`
-	TTL        int    `json:"ttl"`
 	Type       string `json:"type"`
 }
 
@@ -42,18 +41,26 @@ type Record struct {
  * Bind needs this to build the complete bind zone files.
  * PDNS needs this to build aggregate requests
  */
-type ZoneEntry struct {
+type ZoneContent struct {
 	Content string // IPv4, IPv6, name
-	Type    string // A,    AAAA, CNAME
-	TTL     int
 }
+type ZoneEntry struct {
+	Types map[string][]ZoneContent // type -> [{}, {}, {}]
+}
+
+func NewZoneEntry() *ZoneEntry {
+	return &ZoneEntry{
+		Types: make(map[string][]ZoneContent),
+	}
+}
+
 type ZoneData struct {
-	Entries map[string][]ZoneEntry // name -> [{}, {}, {}]
+	Entries map[string]*ZoneEntry // name -> entry
 }
 
 func NewZoneData() *ZoneData {
 	return &ZoneData{
-		Entries: make(map[string][]ZoneEntry),
+		Entries: make(map[string]*ZoneEntry),
 	}
 }
 
@@ -148,53 +155,69 @@ func (fe *Frontend) PatchZone(w rest.ResponseWriter, r *rest.Request) {
 	fe.ZoneInfo.Lock.Lock()
 	zone := fe.ZoneInfo.Zones[zoneName]
 	if record.ChangeType == "ADD" {
+		// If no zone, create zone
 		if zone == nil {
 			zone = NewZoneData()
 			fe.ZoneInfo.Zones[zoneName] = zone
 		}
 
+		// If no entry, create entry
 		zes := zone.Entries[record.Name]
 		// Make holder for name if not there
 		if zes == nil {
-			zone.Entries[record.Name] = make([]ZoneEntry, 0, 10)
+			zone.Entries[record.Name] = NewZoneEntry()
 			zes = zone.Entries[record.Name]
 		}
 
-		// Check if data already exists, return if so
-		for _, ze := range zes {
-			if ze.Content == record.Content && ze.Type == record.Type {
+		// Check if type exists, if not create it
+		zt := zes.Types[record.Type]
+		if zt == nil {
+			zt = make([]ZoneContent, 0, 2)
+			zes.Types[record.Type] = zt
+		}
+
+		// Check the list for content
+		for _, ze := range zt {
+			if ze.Content == record.Content {
 				// Already have data. Just return
 				goto output
 			}
 		}
 
 		// Add new entry
-		nze := ZoneEntry{
+		nze := ZoneContent{
 			Content: record.Content,
-			Type:    record.Type,
-			TTL:     record.TTL,
 		}
-		zone.Entries[record.Name] = append(zes, nze)
+		zes.Types[record.Type] = append(zt, nze)
 		fe.save_data()
 	} else if record.ChangeType == "REMOVE" {
 		if zone == nil {
 			goto output
 		}
 		zes := zone.Entries[record.Name]
-		if zes != nil {
-			for i, ze := range zes {
-				// Remove the entry from the slice
-				if ze.Content == record.Content && ze.Type == record.Type {
-					zes[i], zone.Entries[record.Name] = zes[len(zes)-1], zes[:len(zes)-1]
-					if len(zone.Entries[record.Name]) == 0 {
-						delete(zone.Entries, record.Name)
-					}
-					if len(zone.Entries) == 0 {
-						delete(fe.ZoneInfo.Zones, zoneName)
-					}
-					fe.save_data()
-					break
+		if zes == nil {
+			goto output
+		}
+		zt := zes.Types[record.Type]
+		if zt == nil {
+			goto output
+		}
+
+		for i, zc := range zt {
+			// Remove the entry from the slice
+			if zc.Content == record.Content {
+				zt[i], zes.Types[record.Type] = zt[len(zt)-1], zt[:len(zt)-1]
+				if len(zes.Types[record.Type]) == 0 {
+					delete(zes.Types, record.Type)
 				}
+				if len(zes.Types) == 0 {
+					delete(zone.Entries, record.Name)
+				}
+				if len(zone.Entries) == 0 {
+					delete(fe.ZoneInfo.Zones, zoneName)
+				}
+				fe.save_data()
+				break
 			}
 		}
 	} else {
