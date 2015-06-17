@@ -17,11 +17,13 @@ import (
 	"net/http"
 )
 
+// For PDNS, Dns.Server to access (localhost)
+// For BIND, Dns.Server name (FQDN of DNS server)
 type Config struct {
 	Dns struct {
 		Type     string
-		Password string
 		Hostname string
+		Password string
 		Port     int
 		Server   string
 	}
@@ -53,7 +55,7 @@ func main() {
 	var be dns_backend_point
 
 	if cfg.Dns.Type == "BIND" {
-		be = &BindDnsInstance{}
+		be = NewBindDnsInstance(cfg.Dns.Server)
 	} else if cfg.Dns.Type == "POWERDNS" {
 		base := fmt.Sprintf("http://%s:%d/servers/%s", cfg.Dns.Hostname, cfg.Dns.Port, cfg.Dns.Server)
 		be = &PowerDnsInstance{
