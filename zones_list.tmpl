@@ -1,0 +1,5 @@
+// This file includes all the Crowbar managed zones.
+// Managed by Crowbar.
+// Do not edit.
+{{range $k, $v := .Zones}}include "{{$k}}/zone.{{$k}}";
+{{end}}
