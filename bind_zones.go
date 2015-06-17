@@ -45,7 +45,7 @@ func buildZone(name string, zoneData *ZoneData) Zone {
 
 func NewBindDnsInstance(serverName string) *BindDnsInstance {
 	return &BindDnsInstance{
-		Templates:  template.Must(template.ParseGlob("/etc/dns_mgmt.d/*.tmpl")),
+		Templates:  template.Must(template.ParseGlob("/etc/dns-mgmt.d/*.tmpl")),
 		ServerName: serverName,
 	}
 }
