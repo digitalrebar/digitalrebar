@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sync"
 )
 
 /*
@@ -46,8 +47,26 @@ type ZoneEntry struct {
 	Type    string // A,    AAAA, CNAME
 	TTL     int
 }
-type ZoneData map[string][]ZoneEntry   // name -> [{}, {}, {}]
-type ZoneTrackers map[string]*ZoneData // zone name -> ZoneData
+type ZoneData struct {
+	Entries map[string][]ZoneEntry // name -> [{}, {}, {}]
+}
+
+func NewZoneData() *ZoneData {
+	return &ZoneData{
+		Entries: make(map[string][]ZoneEntry),
+	}
+}
+
+type ZoneTracker struct {
+	Zones map[string]*ZoneData // zone name -> ZoneData
+	Lock  sync.Mutex           `json:"-"`
+}
+
+func NewZoneTracker() *ZoneTracker {
+	return &ZoneTracker{
+		Zones: make(map[string]*ZoneData),
+	}
+}
 
 /*
  * Structure for the front end with a pointer to the backend
@@ -55,8 +74,16 @@ type ZoneTrackers map[string]*ZoneData // zone name -> ZoneData
 type Frontend struct {
 	dns_frontend_point
 	Backend  *dns_backend_point
-	Zones    *ZoneTrackers
+	ZoneInfo *ZoneTracker
 	data_dir string
+}
+
+func NewFrontend(backend *dns_backend_point, data_dir string) *Frontend {
+	return &Frontend{
+		Backend:  backend,
+		ZoneInfo: NewZoneTracker(),
+		data_dir: data_dir,
+	}
 }
 
 /*
@@ -68,14 +95,14 @@ func (fe *Frontend) load_data() {
 		log.Panic("failed to read file", err.Error())
 	}
 
-	err = json.Unmarshal(bytes, &fe.Zones)
+	err = json.Unmarshal(bytes, &fe.ZoneInfo)
 	if err != nil {
 		log.Panic("failed to parse file", err.Error())
 	}
 }
 
 func (fe *Frontend) save_data() {
-	jdata, err := json.Marshal(fe.Zones)
+	jdata, err := json.Marshal(fe.ZoneInfo)
 	if err != nil {
 		log.Panic("Failed to marshal data", err.Error())
 	}
@@ -87,7 +114,7 @@ func (fe *Frontend) save_data() {
 
 // List function
 func (fe *Frontend) GetAllZones(w rest.ResponseWriter, r *rest.Request) {
-	data, err := (*fe.Backend).GetAllZones(fe.Zones)
+	data, err := (*fe.Backend).GetAllZones(fe.ZoneInfo)
 	if err != nil {
 		rest.Error(w, err.Error(), err.StatusCode())
 		return
@@ -97,9 +124,9 @@ func (fe *Frontend) GetAllZones(w rest.ResponseWriter, r *rest.Request) {
 
 // Get function
 func (fe *Frontend) GetZone(w rest.ResponseWriter, r *rest.Request) {
-	id := r.PathParam("id")
+	zoneName := r.PathParam("id")
 
-	data, err := (*fe.Backend).GetZone(fe.Zones, id)
+	data, err := (*fe.Backend).GetZone(fe.ZoneInfo, zoneName)
 	if err != nil {
 		rest.Error(w, err.Error(), err.StatusCode())
 		return
@@ -116,27 +143,26 @@ func (fe *Frontend) PatchZone(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	id := r.PathParam("id")
+	zoneName := r.PathParam("id")
 
-	// GREG: Mutex Start by name
-	zone := (*fe.Zones)[id]
-	if zone == nil {
-		zone = &ZoneData{}
-		(*fe.Zones)[id] = zone
-	}
-
+	fe.ZoneInfo.Lock.Lock()
+	zone := fe.ZoneInfo.Zones[zoneName]
 	if record.ChangeType == "ADD" {
-		zes := (*zone)[record.Name]
+		if zone == nil {
+			zone = NewZoneData()
+			fe.ZoneInfo.Zones[zoneName] = zone
+		}
+
+		zes := zone.Entries[record.Name]
 		// Make holder for name if not there
 		if zes == nil {
-			(*zone)[record.Name] = make([]ZoneEntry, 0, 10)
-			zes = (*zone)[record.Name]
+			zone.Entries[record.Name] = make([]ZoneEntry, 0, 10)
+			zes = zone.Entries[record.Name]
 		}
 
 		// Check if data already exists, return if so
 		for _, ze := range zes {
 			if ze.Content == record.Content && ze.Type == record.Type {
-				// GREG: Return something
 				// Already have data. Just return
 				goto output
 			}
@@ -148,31 +174,39 @@ func (fe *Frontend) PatchZone(w rest.ResponseWriter, r *rest.Request) {
 			Type:    record.Type,
 			TTL:     record.TTL,
 		}
-		(*zone)[record.Name] = append((*zone)[record.Name], nze)
+		zone.Entries[record.Name] = append(zes, nze)
 		fe.save_data()
 	} else if record.ChangeType == "REMOVE" {
-		zes := (*zone)[record.Name]
+		if zone == nil {
+			goto output
+		}
+		zes := zone.Entries[record.Name]
 		if zes != nil {
 			for i, ze := range zes {
 				// Remove the entry from the slice
 				if ze.Content == record.Content && ze.Type == record.Type {
-					zes[i], (*zone)[record.Name] = zes[len(zes)-1], zes[:len(zes)-1]
+					zes[i], zone.Entries[record.Name] = zes[len(zes)-1], zes[:len(zes)-1]
+					if len(zone.Entries[record.Name]) == 0 {
+						delete(zone.Entries, record.Name)
+					}
+					if len(zone.Entries) == 0 {
+						delete(fe.ZoneInfo.Zones, zoneName)
+					}
 					fe.save_data()
 					break
 				}
 			}
 		}
 	} else {
-		// GREG: Invalid data
-		// GREG: Mutex Stop by name or validate before starting.
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		fe.ZoneInfo.Lock.Unlock()
+		rest.Error(w, "Invalid action type", 400)
 		return
 	}
 
 output:
-	// GREG: Mutex Stop by name
+	fe.ZoneInfo.Lock.Unlock()
 
-	data, derr := (*fe.Backend).PatchZone(id, record.Name, zone)
+	data, derr := (*fe.Backend).PatchZone(fe.ZoneInfo, zoneName, record)
 	if derr != nil {
 		rest.Error(w, derr.Error(), derr.StatusCode())
 		return

@@ -18,9 +18,9 @@ func (e *backendError) StatusCode() int {
 }
 
 type dns_backend_point interface {
-	GetAllZones(*ZoneTrackers) ([]Zone, *backendError)
-	GetZone(*ZoneTrackers, string) (Zone, *backendError)
-	PatchZone(string, string, *ZoneData) (Zone, *backendError)
+	GetAllZones(*ZoneTracker) ([]Zone, *backendError)
+	GetZone(*ZoneTracker, string) (Zone, *backendError)
+	PatchZone(*ZoneTracker, string, Record) (Zone, *backendError)
 }
 
 type dns_frontend_point interface {
