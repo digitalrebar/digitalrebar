@@ -18,19 +18,13 @@ func (e *backendError) StatusCode() int {
 }
 
 type dns_backend_point interface {
-	GetAllZones() ([]Zone, *backendError)
-	PostZone(Zone) (Zone, *backendError)
-	GetZone(string) (Zone, *backendError)
-	PutZone(string, Zone) (Zone, *backendError)
-	DeleteZone(string) *backendError
-	PatchZone(string, RRSets) (Zone, *backendError)
+	GetAllZones(*ZoneTrackers) ([]Zone, *backendError)
+	GetZone(*ZoneTrackers, string) (Zone, *backendError)
+	PatchZone(string, string, *ZoneData) (Zone, *backendError)
 }
 
 type dns_frontend_point interface {
 	GetAllZones(rest.ResponseWriter, *rest.Request)
-	PostZone(rest.ResponseWriter, *rest.Request)
 	GetZone(rest.ResponseWriter, *rest.Request)
-	PutZone(rest.ResponseWriter, *rest.Request)
-	DeleteZone(rest.ResponseWriter, *rest.Request)
 	PatchZone(rest.ResponseWriter, *rest.Request)
 }

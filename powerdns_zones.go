@@ -124,7 +124,7 @@ func (di *PowerDnsInstance) doURL(action, url string, data io.Reader) ([]byte, *
 }
 
 // List function
-func (di *PowerDnsInstance) GetAllZones() ([]Zone, *backendError) {
+func (di *PowerDnsInstance) GetAllZones(zones *ZoneTrackers) ([]Zone, *backendError) {
 	url := di.makeZoneUrl(nil)
 	body, err := di.doURL("GET", url, nil)
 	if err != nil {
@@ -141,7 +141,7 @@ func (di *PowerDnsInstance) GetAllZones() ([]Zone, *backendError) {
 }
 
 // Get function
-func (di *PowerDnsInstance) GetZone(id string) (Zone, *backendError) {
+func (di *PowerDnsInstance) GetZone(zones *ZoneTrackers, id string) (Zone, *backendError) {
 	url := di.makeZoneUrl(&id)
 	body, err := di.doURL("GET", url, nil)
 	if err != nil {
@@ -159,70 +159,47 @@ func (di *PowerDnsInstance) GetZone(id string) (Zone, *backendError) {
 	return data, nil
 }
 
-// Create function
-func (di *PowerDnsInstance) PostZone(zone Zone) (Zone, *backendError) {
-
-	pdzi := marshalZoneToPowerDnsZone(zone)
-
-	url := di.makeZoneUrl(nil)
-	b, berr := json.Marshal(pdzi)
-	if berr != nil {
-		log.Panic(berr)
-	}
-	body, derr := di.doURL("POST", url, bytes.NewReader(b))
-	if derr != nil {
-		return Zone{}, derr
-	}
-
-	var pdz PowerDnsZone
-	err := json.Unmarshal(body, &pdz)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	data := marshalPowerDnsZoneToZone(pdz)
-	return data, nil
-}
-
-// Update function
-func (di *PowerDnsInstance) PutZone(id string, zone Zone) (Zone, *backendError) {
-
-	pdzi := marshalZoneToPowerDnsZone(zone)
-
-	url := di.makeZoneUrl(&id)
-	b, berr := json.Marshal(pdzi)
-	if berr != nil {
-		log.Panic(berr)
-	}
-	body, derr := di.doURL("PUT", url, bytes.NewReader(b))
-	if derr != nil {
-		return Zone{}, derr
-	}
-
-	var pdz PowerDnsZone
-	err := json.Unmarshal(body, &pdz)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	data := marshalPowerDnsZoneToZone(pdz)
-
-	return data, nil
-}
-
-// Delete function
-func (di *PowerDnsInstance) DeleteZone(id string) *backendError {
-	url := di.makeZoneUrl(&id)
-	_, err := di.doURL("DELETE", url, nil)
-	return err
-}
-
 // Patch function
-func (di *PowerDnsInstance) PatchZone(id string, rrsets RRSets) (Zone, *backendError) {
-	prrsets := marshalRRSetsToPowerDnsRRSets(rrsets)
+func (di *PowerDnsInstance) PatchZone(zoneName string, name string, zoneData *ZoneData) (Zone, *backendError) {
 
-	url := di.makeZoneUrl(&id)
-	b, berr := json.Marshal(prrsets)
+	// GREG: Build replace/remove call
+
+	/* Like this:
+			data = {
+				'rrsets' => [
+						{
+								'name' => name,
+								'type' => rr_type,
+								'changetype' => 'REPLACE',
+								'records' => [
+										{
+												'content' => value,
+												'disabled' => false,
+												'name' => name,
+												'ttl' => 3600,
+												'type' => rr_type,
+												'setptr' => setptr,
+												'priority' => 0
+										}
+								]
+						}
+				]
+	  	}
+
+			data = {
+					'rrsets' => [
+							{
+									'name' => name,
+									'type' => rr_type,
+									'changetype' => 'DELETE',
+									'records' => [ ]
+							}
+					]
+			}
+	*/
+
+	url := di.makeZoneUrl(&zoneName)
+	b, berr := json.Marshal(zoneData)
 	if berr != nil {
 		log.Panic(berr)
 	}
@@ -240,4 +217,16 @@ func (di *PowerDnsInstance) PatchZone(id string, rrsets RRSets) (Zone, *backendE
 	data := marshalPowerDnsZoneToZone(pdz)
 
 	return data, nil
+}
+
+func marshalPowerDnsZonesToZones(pz []PowerDnsZone) []Zone {
+	z := []Zone{}
+	//GREG: Fix this
+	return z
+}
+
+func marshalPowerDnsZoneToZone(pz PowerDnsZone) Zone {
+	z := Zone{}
+	//GREG: Fix this
+	return z
 }

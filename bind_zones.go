@@ -1,114 +1,65 @@
 package main
 
-import (
-	"bufio"
-	"fmt"
-	"os"
-	"strings"
-)
+import ()
 
 type BindDnsInstance struct {
 	dns_backend_point
 }
 
-func (di *BindDnsInstance) parseZone(name string) *Zone {
-	zone := Zone{
-		Id:     name,
-		Name:   name,
-		Kind:   "Native",
-		Dnssec: false,
-	}
+func buildZone(name string, zoneData *ZoneData) Zone {
 
-	filename := fmt.Sprintf("/etc/bind/db.%s", name)
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil
-	}
-	defer file.Close()
+	records := make([]Record, 0, 100)
 
-	// GREG: parse the template.
-
-	return &zone
-}
-
-func (di *BindDnsInstance) findZones(id *string) []Zone {
-	file, err := os.Open("/etc/bind/named.conf.crowbar")
-	if err != nil {
-		return nil
-	}
-	defer file.Close()
-
-	zones := make([]Zone, 0, 10)
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		s := scanner.Text()
-
-		if strings.HasPrefix(s, "include \"") {
-			ss := strings.Split(s, "\"")
-
-			zoneName := strings.TrimPrefix(ss[1], "zone.")
-			if id != nil && zoneName != *id {
-				continue
-			}
-			zone := di.parseZone(zoneName)
-			if zone != nil {
-				zones = append(zones, *zone)
+	if zoneData != nil {
+		for entry, items := range *zoneData {
+			for _, item := range items {
+				record := Record{
+					Name:    entry,
+					Content: item.Content,
+					Type:    item.Type,
+					TTL:     item.TTL,
+				}
+				records = append(records, record)
 			}
 		}
 	}
-	if err := scanner.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+
+	zone := Zone{
+		Name:    name,
+		Records: records,
 	}
 
-	return zones
+	return zone
 }
 
 // List function
-func (di *BindDnsInstance) GetAllZones() ([]Zone, *backendError) {
-
-	zones := di.findZones(nil)
-	if zones == nil {
-		return nil, &backendError{"File not available", 500}
+func (di *BindDnsInstance) GetAllZones(zones *ZoneTrackers) ([]Zone, *backendError) {
+	answer := make([]Zone, 0, 10)
+	for k, v := range *zones {
+		answer = append(answer, buildZone(k, v))
 	}
-	return zones, nil
+
+	return answer, nil
 }
 
 // Get function
-func (di *BindDnsInstance) GetZone(id string) (Zone, *backendError) {
-	zones := di.findZones(&id)
-	if zones == nil || len(zones) == 0 {
+func (di *BindDnsInstance) GetZone(zones *ZoneTrackers, id string) (Zone, *backendError) {
+	zdata := (*zones)[id]
+	if zdata == nil {
 		return Zone{}, &backendError{"Not Found", 404}
 	}
-	return zones[0], nil
-}
 
-// Create function
-func (di *BindDnsInstance) PostZone(zone Zone) (Zone, *backendError) {
-	// GREG: Create zone
-	return zone, nil
-}
-
-// Update function
-func (di *BindDnsInstance) PutZone(id string, zone Zone) (Zone, *backendError) {
-	// GREG: update zone
-	return zone, nil
-}
-
-// Delete function
-func (di *BindDnsInstance) DeleteZone(id string) *backendError {
-	// zone := di.parseZone(id)
-	// GREG: remove zonze
-	return nil
+	return buildZone(id, zdata), nil
 }
 
 // Patch function
-func (di *BindDnsInstance) PatchZone(id string, rrsets RRSets) (Zone, *backendError) {
+func (di *BindDnsInstance) PatchZone(zoneName string, name string, zoneData *ZoneData) (Zone, *backendError) {
 
-	// GREG: Update zone info
+	// Mutex
+	// Rebuild zone files.
+	// Update index
+	// Restart bind
+	// unMutex
 
-	// GREG: reade in zone data
-
-	var data Zone
-
-	return data, nil
+	return buildZone(zoneName, zoneData), nil
 }

@@ -64,10 +64,12 @@ func main() {
 		log.Fatal("Failed to find type")
 	}
 
-	fe := Frontend{}
-	fe.Backend = &be
+	fe := Frontend{
+		Backend:  &be,
+		data_dir: data_dir,
+	}
 
-	fe.load_data(data_dir)
+	fe.load_data()
 
 	api := rest.NewApi()
 	api.Use(&rest.AuthBasicMiddleware{
@@ -82,10 +84,7 @@ func main() {
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		rest.Get("/zones", fe.GetAllZones),
-		rest.Post("/zones", fe.PostZone),
 		rest.Get("/zones/#id", fe.GetZone),
-		rest.Put("/zones/#id", fe.PutZone),
-		rest.Delete("/zones/#id", fe.DeleteZone),
 		&rest.Route{"PATCH", "/zones/#id", fe.PatchZone},
 	)
 	if err != nil {
