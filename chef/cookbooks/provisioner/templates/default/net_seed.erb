@@ -340,6 +340,12 @@ d-i grub-installer/only_debian boolean true
 #d-i grub-installer/password-again password r00tme
 # or encrypted using an MD5 hash, see grub-md5-crypt(8).
 #d-i grub-installer/password-crypted password [MD5 hash]
+<% if @install_name !~ /^debian-[1-7]/ -%>
+# Have grub auto install to rootdev.
+d-i grub-installer/choose_bootdev select /dev/<%= @rootdev %>
+d-i grub-installer/bootdev string /dev/<%= @rootdev %>
+<% end -%>
+
 
 ### Finishing up the installation
 # During installations from serial console, the regular virtual consoles

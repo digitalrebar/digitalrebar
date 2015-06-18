@@ -29,8 +29,10 @@ EOF
         cd -
 
     elif [[ -d /etc/apt ]]; then
-        apt-get -y update
-        apt-get -y --force-yes install chef
+        cd /tmp
+        # Stick with 11.x for now.
+        curl -O http://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/10.04/x86_64/chef_11.18.12-1_amd64.deb
+        dpkg -i chef_11.18.12-1_amd64.deb
     elif [[ -f /etc/SuSE-release ]]; then
         zypper install -y -l chef
     elif [[ "x$NAME" == "xCoreOS" ]]; then

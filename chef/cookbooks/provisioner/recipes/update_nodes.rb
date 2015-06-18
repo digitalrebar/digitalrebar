@@ -188,6 +188,15 @@ new_clients = {}
       rootdev root
       action :add
     end
+  when "debian-8.1.0-install"
+    provisioner_debian mnode_name do
+      distro "debian"
+      version "8.1.0"
+      address v4addr
+      target mnode_name
+      rootdev root
+      action :add
+    end
   when "xenserver-6.5-install"
     provisioner_xenserver mnode_name do
       distro "xenserver"

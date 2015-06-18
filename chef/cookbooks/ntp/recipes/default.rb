@@ -49,6 +49,10 @@ service "ntp" do
   running true
   enabled true
   action [ :enable, :start ]
+  # Sigh, ubuntu 15.04 and its 'not really systemd' use of systemd
+  ignore_failure true if node[:platform] == "ubuntu" &&
+                         File.directory?("/etc/systemd/system") &&
+                         !File.exists?("/usr/lib/systemd/system/ntpd.service")
 end
 
 if node["roles"].include?("ntp-server")

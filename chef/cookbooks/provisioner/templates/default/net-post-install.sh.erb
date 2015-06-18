@@ -29,6 +29,7 @@
 set -x
 exec 2>&1
 exec >>/target/root/post-install.log
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 echo "Acquire::http::Proxy \"<%=@proxy%>\";" >/target/etc/apt/apt.conf.d/00-proxy
 
 <% @repos.keys.sort.each do |repo|
@@ -69,7 +70,15 @@ EOF
 
 cp /etc/gemrc /root/.gemrc
 
-wget -q <%=@web_path%>/crowbar_join.sh -O- > /target/etc/init.d/crowbar_join.sh
+wget -q <%=@web_path%>/crowbar_join.sh -O- > /target/etc/init.d/crowbar_join
+
+mkdir -p /target/root/.ssh
+
+cat >/target/root/.ssh/authorized_keys <<EOF
+<%= @keys %>
+EOF
+
+mount /proc /target/proc
 
 cat > /target/update_system2.sh <<"EOF"
 #!/bin/bash
@@ -109,9 +118,7 @@ echo "PermitRootLogin without-password" >> /etc/ssh/sshd_config
 # Allow client to pass http proxy environment variables
 echo "AcceptEnv http_proxy https_proxy no_proxy" >> /etc/ssh/sshd_config
 
-<% if @install_name =~ /^debian-/ -%>
-update-rc.d crowbar_join.sh defaults
-<% end -%>
+update-rc.d crowbar_join defaults
 
 curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
     "<%=@api_server%>/api/v2/nodes/$HOSTNAME"
@@ -124,20 +131,7 @@ while true; do
 done
 EOF
 
-mkdir -p /target/root/.ssh
-
-cat >/target/root/.ssh/authorized_keys <<EOF
-<%= @keys %>
-EOF
-
-
-mount /proc /target/proc
-chmod +x /target/etc/init.d/crowbar_join.sh
-chmod +x /target/update_system2.sh
-<% if @install_name !~ /^debian-/ -%>
-chroot /target ln -s /etc/init.d/crowbar_join.sh /etc/rc3.d/S80crowbar
-chroot /target ln -s /etc/init.d/crowbar_join.sh /etc/rc5.d/S80crowbar
-chroot /target ln -s /etc/init.d/crowbar_join.sh /etc/rc2.d/S80crowbar
-<% end -%>
+chmod +x /target/etc/init.d/crowbar_join
+chmod +x /target/update_system2.sh    
 chroot /target /update_system2.sh
 sync

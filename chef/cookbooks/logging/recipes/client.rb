@@ -39,7 +39,7 @@ case node[:platform]
 end
 
 service "rsyslog" do
-  provider Chef::Provider::Service::Upstart if node[:platform] == "ubuntu"
+  provider Chef::Provider::Service::Upstart if node[:platform] == "ubuntu" && !File.executable?("/bin/systemctl")
   service_name "syslog" if node[:platform] == "suse"
   supports :restart => true, :status => true, :reload => true
   running true

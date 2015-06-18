@@ -37,6 +37,7 @@ os_support:
   - opensuse-13.1
   - fedora-20
   - debian-7.8.0
+  - debian-8.1.0
   - xenserver-6.5
   - esxi-5.5
   - fuel-6.0    
@@ -143,6 +144,21 @@ debs:
       - deb-src http://ftp.us.debian.org/debian wheezy-updates main contrib non-free
       - deb http://ftp.us.debian.org/debian wheezy-backports main contrib non-free
       - deb-src http://ftp.us.debian.org/debian wheezy-backports main contrib non-free
+      - deb http://download.draios.com/stable/deb stable-amd64/
+    pkgs:
+      - rpcbind
+  debian-8.1.0:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/debian/6/x86_64/chef_11.14.2-1_amd64.deb
+    repos:
+      - deb http://ftp.us.debian.org/debian jessie main contrib non-free
+      - deb-src http://ftp.us.debian.org/debian jessie main contrib non-free
+      - deb http://security.debian.org/ jessie/updates main contrib non-free
+      - deb-src http://security.debian.org/ jessie/updates main contrib non-free
+      - deb http://ftp.us.debian.org/debian jessie-updates main contrib non-free
+      - deb-src http://ftp.us.debian.org/debian jessie-updates main contrib non-free
+      - deb http://ftp.us.debian.org/debian jessie-backports main contrib non-free
+      - deb-src http://ftp.us.debian.org/debian jessie-backports main contrib non-free
       - deb http://download.draios.com/stable/deb stable-amd64/
     pkgs:
       - rpcbind
