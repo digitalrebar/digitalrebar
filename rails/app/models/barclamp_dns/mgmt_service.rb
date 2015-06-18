@@ -17,22 +17,6 @@ require 'rest-client'
 
 class BarclampDns::MgmtService < Service
 
-  def template
-    # this is a workable solution for now, we use the admin node to determine domain (except when non-exists!)
-    domain = Node.admin.first.name.split('.',2)[1] rescue I18n.t('not_set')
-    {'crowbar' => {     'dns' => {
-        'domain' => domain,
-        'contact' => 'support@localhost.localdomain',
-        'forwarders' =>  [],
-        'static' => {},
-        'ttl' => '1h',
-        'slave_refresh' => '1d',
-        'slave_retry' => '2h',
-        'slave_expire' => '4w',
-        'negative_cache' => 300}}}
-  end
-
-
   def do_transition(nr,data)
     internal_do_transition(nr, data, 'dns-mgmt-service', 'dns-management-servers') do |s|
       Rails.logger.debug("DnsMgmtServer: #{s.inspect} #{s.ServiceAddress}")
@@ -64,18 +48,6 @@ class BarclampDns::MgmtService < Service
 
   def on_active(nr)
     # Preset all the pre-existing allocations.
-
-    services = Attrib.get('dns-management-servers', nr)
-    slist = []
-    shash = {}
-    addrs = {}
-    services.each do |s|
-      svc = s['name']
-      slist << svc
-      shash[svc] = s
-      addrs[svc] = []
-    end
-
     NetworkAllocation.all.each do |na|
       DnsNameFilter.claim_by_any(na)
     end
