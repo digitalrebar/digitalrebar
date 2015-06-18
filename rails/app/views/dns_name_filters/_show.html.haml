@@ -2,7 +2,7 @@
   %table.data.box
     %thead
       %th= t '.name'
-      %th= t '.name'
+      %th= text_field_tag :name, filter.name, :size=>10
     %tbody
       %tr{:class => cycle(:odd,:even)}
         %td= t '.priority'

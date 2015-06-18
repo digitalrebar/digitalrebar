@@ -31,18 +31,14 @@ class DnsNameFiltersController < ::ApplicationController
     end
   end
 
-
-#t.string      :matcher
-#t.integer     :priority,    default: 50
-#t.string      :service,     default: 'system'
-#t.string      :template,    default: '{{node.name}}'
   def create
     params.require(:matcher)
     params.require(:priority)
     params.require(:service)
     params.require(:template)
+    params.require(:name)
     DnsNameFilter.transaction do
-      @filter = DnsNameFilter.create! params.permit(:matcher, :priority, :service, :template)
+      @filter = DnsNameFilter.create! params.permit(:name, :matcher, :priority, :service, :template)
     end
 
     respond_to do |format|
@@ -55,7 +51,7 @@ class DnsNameFiltersController < ::ApplicationController
   def update
     @filter = DnsNameFilter.find_key(params[:id])
 
-    @filter.update_attributes!(params.permit(:matcher, :priority, :service, :template))
+    @filter.update_attributes!(params.permit(:name, :matcher, :priority, :service, :template))
     respond_to do |format|
       format.html { render :action=>:show }
       format.json { render api_show @filter }
