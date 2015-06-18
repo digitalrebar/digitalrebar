@@ -8,6 +8,7 @@ password = <%= @access_password %>
 <% if s['type'] == 'BIND' -%>
 [dns]
 type = BIND
+server = <%= node[:fqdn] %>
 <% else -%>
 [dns]
 type = POWERDNS

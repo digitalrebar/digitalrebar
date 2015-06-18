@@ -105,6 +105,7 @@ class BarclampDns::MgmtService < Service
     # This is not cool, but should be small in most environments.
     BarclampDns::MgmtService.all.each do |role|
       role.node_roles.each do |nr|
+        next unless nr.active?
         services = Attrib.get('dns-management-servers', nr)
         next unless services
         services.each do |s|
@@ -117,21 +118,20 @@ class BarclampDns::MgmtService < Service
   end
 
   def self.remove_ip_address(dne)
-    service = get_service(dne.dns_name_filter.service)
-    return unless service
-
-    address = dne.network_allocation.address
-    name, domain = dne.name.split('.')
-    self.remove_dns_record(service, domain, dne.rr_type, name, address.addr, true)
+    self.update_ip_address(dne, 'REMOVE')
   end
 
   def self.add_ip_address(dne)
+    update_ip_address(dne, 'ADD')
+  end
+
+  def self.update_ip_address(dne, action)
     service = get_service(dne.dns_name_filter.service)
     return unless service
 
     address = dne.network_allocation.address
-    name, domain = dne.name.split('.')
-    self.replace_dns_record(service, domain, dne.rr_type, name, address.addr, true)
+    name, domain = dne.name.split('.', 2)
+    self.update_dns_record(service, domain, dne.rr_type, name, address.addr, action)
   end
 
   def self.send_request(url, data, ca_string)
@@ -145,51 +145,19 @@ class BarclampDns::MgmtService < Service
     ).patch data.to_json, :content_type => :json, :accept => :json
   end
 
-  def self.replace_dns_record(service, zone, rr_type, name, value, setptr)
-    Rails.logger.fatal("GREG: replace_dns_record: #{service['name']} #{zone} #{rr_type} #{name} #{value} #{setptr}")
+  def self.update_dns_record(service, zone, rr_type, name, value, action)
+    Rails.logger.fatal("GREG: update_dns_record: #{service['name']} #{zone} #{action} #{rr_type} #{name} #{value}")
 
     url = "#{service['url']}/zones/#{zone}"
 
     data = {
-        'rrsets' => [
-            {
-                'name' => name,
-                'type' => rr_type,
-                'changetype' => 'REPLACE',
-                'records' => [
-                    {
-                        'content' => value,
-                        'disabled' => false,
-                        'name' => name,
-                        'ttl' => 3600,
-                        'type' => rr_type,
-                        'setptr' => setptr,
-                        'priority' => 0
-                    }
-                ]
-            }
-        ]
+        'changetype' => action,
+        'name' => name,
+        'content' => value,
+        'type' => rr_type
     }
 
     Rails.logger.fatal("GREG: replace dns record: #{url}")
-
-    send_request(url, data, service['cert'])
-  end
-
-  def self.remove_dns_record(service, zone, rr_type, name, value, setptr)
-    Rails.logger.fatal("GREG: remove_dns_record: #{service['name']} #{zone} #{rr_type} #{name} #{setptr}")
-
-    url = "#{service['url']}/zones/#{zone}"
-    data = {
-        'rrsets' => [
-            {
-                'name' => name,
-                'type' => rr_type,
-                'changetype' => 'DELETE',
-                'records' => [ ]
-            }
-        ]
-    }
 
     send_request(url, data, service['cert'])
   end

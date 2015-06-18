@@ -215,7 +215,8 @@ crowbar nodes bind "$FQDN" to rabbitmq-server
 # Setup DNS Server and Mgmt Server for our own DNS Server
 crowbar nodes bind "$FQDN" to dns-bind_server
 crowbar nodes bind "$FQDN" to dns-mgmt_server
-crowbar nodes bind "$FQDN" to dns-bind_database
+
+crowbar dnsnamefilters create "{ \"priority\": 50, \"template\": \"{{node.name}}.$DOMAINNAME\", \"matcher\": \"net.category == \\\"admin\\\"\", \"name\": \"default\", \"service\": \"system\" }"
 
 # Set the dns forwarder if you have them
 DNS_FORWARDER=""
@@ -224,7 +225,7 @@ if [ "$DNS_FORWARDER" != "" ] ; then
     crowbar nodes set "$FQDN" attrib dns-forwarders to "{ \"value\": [ \"$DNS_FORWARDER\" ] }"
 fi
 
-# Example external dns server - use instead of dns-database above
+# Example external dns server - use instead of dns-bind_server above
 #curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "209.18.47.61", "Service": {"Service": "dns-service", "Port": 43, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
 
 # Ntp Service configuration

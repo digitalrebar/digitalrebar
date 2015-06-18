@@ -55,7 +55,7 @@ class DnsNameFilter < ActiveRecord::Base
   end
 
   def make_name(n)
-    mac = Attrib.get('hint-admin-macs', n) rescue ''
+    mac = Attrib.get('hint-admin-macs', n).first rescue ''
     patterns = {
         '{{node.name}}' => (n.name ? n.name.split('.')[0] : ''),
         '{{node.id}}' => n.id.to_s,
@@ -69,6 +69,9 @@ class DnsNameFilter < ActiveRecord::Base
   end
 
   def claim_and_update(na)
+    # Only if we have an active service should we claim things.
+    return false unless BarclampDns::MgmtService.get_service(service)
+
     dne = DnsNameEntry.for_network_allocation(na).first
 
     if (claims(na))
@@ -91,7 +94,7 @@ class DnsNameFilter < ActiveRecord::Base
 
         dne.release
       end
-
+      Rails.logger.fatal("GREG: in claim_and_update: creating entry for #{na.inspect}")
       DnsNameEntry.create!(dns_name_filter: self, network_allocation: na, name: make_name(na.node), rr_type: (na.address.v4? ? 'A' : 'AAAA'))
       return true
     end

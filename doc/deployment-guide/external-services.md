@@ -13,7 +13,7 @@ responsability of the user to ensure that entries are created or removed as Open
 the name and IP Address are not configured with the ones assigned by OpenCrowbar (Typically MAC address of the primary interface)
 
 *  Edit /opt/opencrowbar/core/crowbar-config.sh
-*  Find the line 'crowbar roles bind dns-database to "$FQDN"' and comment it out by adding # to the front of the line.
+*  Find the line 'crowbar roles bind dns-bind_server to "$FQDN"' and comment it out by adding # to the front of the line.
 *  Find the line '#curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "192.168.124.11", "Service": {"Service": "dns-service", "Port": 43, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register' uncomment it by removing the # from the front of the line and then change the IP address of the DNS server (192.168.124.11 in this example) to the IP of the system which will be serving DNS for the enviornment
 *  Save the file and continue on with the remainder of the installation steps.
 

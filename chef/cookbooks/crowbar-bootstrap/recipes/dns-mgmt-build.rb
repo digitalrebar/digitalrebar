@@ -21,11 +21,13 @@
 ENV["GOPATH"]=node["bootstrap"]["gopath"]
 dnsmgmtrepo=node["bootstrap"]["dnsmgmt"]
 
-bash "Build DNS mgmt server" do
+bash "Build and Install DNS mgmt server" do
   code <<EOC
 /usr/local/go/bin/go get -u #{dnsmgmtrepo}
 /usr/local/go/bin/go install #{dnsmgmtrepo}
 mv ${GOPATH}/bin/ocb-dns-mgmt /usr/local/bin
+mkdir -p /etc/dns-mgmt.d
+cp -r ${GOPATH}/src/#{dnsmgmtrepo}/*.tmpl /etc/dns-mgmt.d
 EOC
   not_if "which ocb-dns-mgmt"
 end

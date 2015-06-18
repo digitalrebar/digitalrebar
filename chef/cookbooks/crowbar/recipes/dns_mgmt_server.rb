@@ -91,6 +91,22 @@ template '/etc/init.d/dns-mgmt' do
   notifies :restart, 'service[dns-mgmt]'
 end
 
+directory '/var/cache/ocb-dns-mgmt' do
+  recursive true
+  owner 'root'
+  group 'root'
+  mode 0700
+  action :create
+end
+
+file '/var/cache/ocb-dns-mgmt/database.json' do
+  owner 'root'
+  group 'root'
+  mode 0644
+  content '{}'
+  action :create_if_missing
+end
+
 service 'dns-mgmt' do
   action [ :enable, :start ]
 end

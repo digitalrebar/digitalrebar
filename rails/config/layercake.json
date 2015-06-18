@@ -25,7 +25,6 @@
   "dhcp-server":"core",
   "dhcp-database":"hide",
   "dns-bind_server":"core",
-  "dns-bind_database":"hide",
   "dns-powerdns_server":"core",
   "dns-service":"services",
   "dns-mgmt_server":"core",

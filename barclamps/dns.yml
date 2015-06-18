@@ -42,10 +42,6 @@ roles:
         map: 'crowbar/dns/service_name'
         schema:
           type: str
-  - name: dns-bind_database
-    jig: chef
-    requires:
-      - dns-bind_server
   - name: dns-service
     jig: role-provided
     flags:

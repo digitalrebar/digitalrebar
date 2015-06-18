@@ -17,7 +17,6 @@ en:
   common:
     roles:
       dns-bind_server: "BIND DNS Server"
-      dns-bind_database: "BIND DNS A Records"
       dns-client: "DNS Client"
       dns-service: "DNS Service"
     attribs:
