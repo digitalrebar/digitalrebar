@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"text/template"
+	"time"
 )
 
 type BindDnsInstance struct {
@@ -73,6 +74,7 @@ func (di *BindDnsInstance) GetZone(zones *ZoneTracker, id string) (Zone, *backen
 type bindZoneData struct {
 	Domain           string
 	ServerName       string
+	Serial           string
 	Data             *ZoneData
 	ReverseZoneNames []string
 }
@@ -80,6 +82,7 @@ type bindZoneData struct {
 type bindRZoneData struct {
 	Domain     string
 	ServerName string
+	Serial     string
 	Name       string
 }
 
@@ -114,6 +117,10 @@ func makeRevName(t string, address string) string {
 	return buffer.String()
 }
 
+func make_serial() string {
+	return time.Now().Format("20060102030405")
+}
+
 // Patch function
 func (di *BindDnsInstance) PatchZone(zones *ZoneTracker, zoneName string, rec Record) (Zone, *backendError) {
 
@@ -142,6 +149,8 @@ func (di *BindDnsInstance) PatchZone(zones *ZoneTracker, zoneName string, rec Re
 			return Zone{}, &backendError{err.Error(), http.StatusInternalServerError}
 		}
 
+		serial := make_serial()
+
 		// Build reverse maps
 		for name, entry := range zone.Entries {
 			for t, contents := range entry.Types {
@@ -151,6 +160,7 @@ func (di *BindDnsInstance) PatchZone(zones *ZoneTracker, zoneName string, rec Re
 
 					rdata := bindRZoneData{
 						Domain:     rvName,
+						Serial:     serial,
 						ServerName: di.ServerName,
 						Name:       name + "." + zoneName,
 					}
@@ -172,6 +182,7 @@ func (di *BindDnsInstance) PatchZone(zones *ZoneTracker, zoneName string, rec Re
 		// Make a database file.
 		zdata := bindZoneData{
 			Domain:           zoneName,
+			Serial:           serial,
 			ServerName:       di.ServerName,
 			Data:             zone,
 			ReverseZoneNames: revz,
