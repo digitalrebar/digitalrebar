@@ -26,7 +26,6 @@ class DnsNameEntry < ActiveRecord::Base
   scope :for_network_allocation, ->(na) { where(:network_allocation_id => na.id) }
 
   def on_destroy_hooks
-    Rails.logger.fatal("GREG: DNE - destroy hook: #{self.network_allocation.inspect}")
     BarclampDns::MgmtService.remove_ip_address(self)
     DnsNameFilter.claim_by_any(self.network_allocation.reload) if self.network_allocation
   end

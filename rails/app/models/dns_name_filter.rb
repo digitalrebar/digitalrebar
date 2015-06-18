@@ -75,7 +75,6 @@ class DnsNameFilter < ActiveRecord::Base
     dne = DnsNameEntry.for_network_allocation(na).first
 
     if (claims(na))
-      Rails.logger.fatal("GREG: in claim_and_update: #{dne.inspect}")
       if (dne)
         # if already claimed, make sure we have latest name
         if (dne.dns_name_filter == self)
@@ -94,7 +93,6 @@ class DnsNameFilter < ActiveRecord::Base
 
         dne.release
       end
-      Rails.logger.fatal("GREG: in claim_and_update: creating entry for #{na.inspect}")
       DnsNameEntry.create!(dns_name_filter: self, network_allocation: na, name: make_name(na.node), rr_type: (na.address.v4? ? 'A' : 'AAAA'))
       return true
     end
@@ -107,21 +105,18 @@ class DnsNameFilter < ActiveRecord::Base
 
   def self.claim_by_any(na)
     DnsNameFilter.order("priority ASC").each do |dnf|
-      Rails.logger.fatal("GREG: dnf = #{dnf.id}")
       return true if dnf.claim_and_update(na)
     end
     false
   end
 
   def on_change_hooks
-    Rails.logger.fatal("GREG: running on_change_hooks")
     NetworkAllocation.all.each do |na|
       DnsNameFilter.claim_by_any(na)
     end
   end
 
   def on_create_hooks
-    Rails.logger.fatal("GREG: running on_create_hooks")
     NetworkAllocation.all.each do |na|
       claim_and_update(na)
     end

@@ -76,13 +76,9 @@ class BarclampDns::MgmtService < Service
       addrs[svc] = []
     end
 
-    Rails.logger.fatal("GREG: Start claiming")
-
     NetworkAllocation.all.each do |na|
       DnsNameFilter.claim_by_any(na)
     end
-
-    Rails.logger.fatal("GREG: Done claiming")
   end
 
   def on_node_change(n)
@@ -146,8 +142,6 @@ class BarclampDns::MgmtService < Service
   end
 
   def self.update_dns_record(service, zone, rr_type, name, value, action)
-    Rails.logger.fatal("GREG: update_dns_record: #{service['name']} #{zone} #{action} #{rr_type} #{name} #{value}")
-
     url = "#{service['url']}/zones/#{zone}"
 
     data = {
@@ -156,8 +150,6 @@ class BarclampDns::MgmtService < Service
         'content' => value,
         'type' => rr_type
     }
-
-    Rails.logger.fatal("GREG: replace dns record: #{url}")
 
     send_request(url, data, service['cert'])
   end
