@@ -162,44 +162,48 @@ func (di *PowerDnsInstance) GetZone(zones *ZoneTracker, id string) (Zone, *backe
 // Patch function
 func (di *PowerDnsInstance) PatchZone(zones *ZoneTracker, zoneName string, rec Record) (Zone, *backendError) {
 
-	// GREG: Build replace/remove call
+	rrs := make([]PowerDnsRRSet, 0, 2)
+	recs := make([]PowerDnsRecord, 0, 2)
 
-	/* Like this:
-			data = {
-				'rrsets' => [
-						{
-								'name' => name,
-								'type' => rr_type,
-								'changetype' => 'REPLACE',
-								'records' => [
-										{
-												'content' => value,
-												'disabled' => false,
-												'name' => name,
-												'ttl' => 3600,
-												'type' => rr_type,
-												'setptr' => setptr,
-												'priority' => 0
-										}
-								]
-						}
-				]
-	  	}
+	if zones.Zones[zoneName] != nil &&
+		zones.Zones[zoneName].Entries[rec.Name] != nil &&
+		zones.Zones[zoneName].Entries[rec.Name].Types[rec.Type] != nil {
 
-			data = {
-					'rrsets' => [
-							{
-									'name' => name,
-									'type' => rr_type,
-									'changetype' => 'DELETE',
-									'records' => [ ]
-							}
-					]
+		for _, zz := range zones.Zones[zoneName].Entries[rec.Name].Types[rec.Type] {
+			// If delete skip this part
+			record := PowerDnsRecord{
+				Content:  zz.Content,
+				Name:     rec.Name,
+				Type:     rec.Type,
+				Disabled: false,
+				TTL:      3600,
+				Priority: 0,
+				SetPtr:   true,
 			}
-	*/
+			recs = append(recs, record)
+		}
+	}
+
+	// If we don't records, we are deleting
+	action := "REPLACE"
+	if len(recs) == 0 {
+		action = "DELETE"
+	}
+
+	rrset := PowerDnsRRSet{
+		Name:            rec.Name,
+		Type:            rec.Type,
+		ChangeType:      action,
+		PowerDnsRecords: recs,
+	}
+	rrs = append(rrs, rrset)
+
+	rrsets := PowerDnsRRSets{
+		PowerDnsRRSets: rrs,
+	}
 
 	url := di.makeZoneUrl(&zoneName)
-	b, berr := json.Marshal(zones.Zones[zoneName])
+	b, berr := json.Marshal(rrsets)
 	if berr != nil {
 		log.Panic(berr)
 	}
@@ -219,14 +223,31 @@ func (di *PowerDnsInstance) PatchZone(zones *ZoneTracker, zoneName string, rec R
 	return data, nil
 }
 
-func marshalPowerDnsZonesToZones(pz []PowerDnsZone) []Zone {
-	z := []Zone{}
-	//GREG: Fix this
+func marshalPowerDnsZonesToZones(pzs []PowerDnsZone) []Zone {
+	z := make([]Zone, 0, 100)
+
+	for _, pz := range pzs {
+		zone := marshalPowerDnsZoneToZone(pz)
+		z = append(z, zone)
+	}
+
 	return z
 }
 
 func marshalPowerDnsZoneToZone(pz PowerDnsZone) Zone {
-	z := Zone{}
-	//GREG: Fix this
-	return z
+	zone := Zone{}
+	zone.Name = pz.Name
+	r := make([]Record, 0, 100)
+
+	for _, pzr := range pz.PowerDnsRecords {
+		rec := Record{
+			Content: pzr.Content,
+			Type:    pzr.Type,
+			Name:    pzr.Name,
+		}
+
+		r = append(r, rec)
+	}
+	zone.Records = r
+	return zone
 }

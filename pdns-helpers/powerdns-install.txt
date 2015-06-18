@@ -1,6 +1,6 @@
 
 # Install pdns 
-yum -y install pdns pdns-backend-postgresql
+yum -y install pdns-server pdns-backend-postgresql
 yum -y install pdns-recursor
 
 su postgres
