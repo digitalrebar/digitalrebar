@@ -29,7 +29,7 @@ class BarclampDns::Service < Service
               "name" => server_name,
               "type" => server_type }
 
-      if server_type == 'PowerDNS'
+      if server_type == 'POWERDNS'
         res['mgmt_port'] = ConsulAccess.getKey("opencrowbar/private/dns/#{server_name}/mgmt_port")
         res['mgmt_token'] = ConsulAccess.getKey("opencrowbar/private/dns/#{server_name}/mgmt_token")
         res['mgmt_name'] = (ConsulAccess.getKey("opencrowbar/private/dns/#{server_name}/mgmt_name") rescue 'localhost')

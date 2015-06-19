@@ -212,11 +212,8 @@ crowbar nodes bind "$FQDN" to crowbar-job_runner
 
 crowbar nodes bind "$FQDN" to rabbitmq-server
 
-# Setup DNS Server and Mgmt Server for our own DNS Server
+# Setup DNS Server our own DNS Server
 crowbar nodes bind "$FQDN" to dns-bind_server
-crowbar nodes bind "$FQDN" to dns-mgmt_server
-
-crowbar dnsnamefilters create "{ \"priority\": 50, \"template\": \"{{node.name}}.$DOMAINNAME\", \"matcher\": \"net.category == \\\"admin\\\"\", \"name\": \"default\", \"service\": \"system\" }"
 
 # Set the dns forwarder if you have them
 DNS_FORWARDER=""
@@ -225,22 +222,45 @@ if [ "$DNS_FORWARDER" != "" ] ; then
     crowbar nodes set "$FQDN" attrib dns-forwarders to "{ \"value\": [ \"$DNS_FORWARDER\" ] }"
 fi
 
+#
 # Example external dns server - use instead of dns-bind_server above
-#curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "209.18.47.61", "Service": {"Service": "dns-service", "Port": 43, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
+# The "system" in the tags field is the name of this service
+#
+#CONSUL_MACL=$(jq .acl_master_token </etc/consul.d/default.json | awk -F\" '{ print $2 }')
+#curl -X PUT -d '{"Datacenter": "opencrowbar", "Node": "external", "Address": "192.168.124.200", "Service": {"Service": "dns-service", "Address": "192.168.124.200", "Port": 43, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
+# Add key/values for the dns server
+# Set Type: POWERDNS or BIND
+#curl -X PUT -d 'POWERDNS' http://127.0.0.1:8500/v1/kv/opencrowbar/private/dns/system/type?token=$CONSUL_MACL
+# POWERDNS needs additional keys
+#   - mgmt_port = 8081 - the POWERDNS web port
+#   - mgmt_name = localhost - the POWERDNS server name in the api since
+#   - mgmt_token = joerules - the POWERDNS server access token
+#curl -X PUT -d '8081' http://127.0.0.1:8500/v1/kv/opencrowbar/private/dns/system/mgmt_port?token=$CONSUL_MACL
+#curl -X PUT -d 'localhost' http://127.0.0.1:8500/v1/kv/opencrowbar/private/dns/system/mgmt_name?token=$CONSUL_MACL
+#curl -X PUT -d 'joerules' http://127.0.0.1:8500/v1/kv/opencrowbar/private/dns/system/mgmt_token?token=$CONSUL_MACL
+#
+
+# Create a DNS management server
+DMS_NAME="system"
+crowbar nodes bind "$FQDN" to dns-mgmt_server
+crowbar nodes set "$FQDN" attrib dns-management-name to "{ \"value\": \"$DMS_NAME\" }"
+
+# Setup up initial DNS filters for mamangement
+crowbar dnsnamefilters create "{ \"priority\": 50, \"template\": \"{{node.name}}.$DOMAINNAME\", \"matcher\": \"net.category == \\\"admin\\\"\", \"name\": \"default\", \"service\": \"$DMS_NAME\" }"
 
 # Ntp Service configuration
 # Use the admin node as the ntp server for the cluster
 crowbar nodes bind "$FQDN" to ntp-server
 
 # Example external ntp server - use instead of ntp-server above
-#curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "pool.ntp.org", "Service": {"Service": "ntp-service", "Port": 123, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
+#curl -X PUT -d '{"Datacenter": "opencrowbar", "Node": "external", "Address": "pool.ntp.org", "Service": {"Service": "ntp-service", "Address": "pool.ntp.org", "Port": 123, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
 
 # Proxy Service configuration
 # Use the admin node as the proxy server for the cluster
 crowbar nodes bind "$FQDN" to proxy-server
 
 # Example external proxy server - use instead of proxy-server above
-#curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "fred.clam.shack.com", "Service": {"Service": "proxy-service", "Port": 8123, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
+#curl -X PUT -d '{"Datacenter": "opencrowbar", "Node": "external", "Address": "fred.clam.shack.com", "Service": {"Service": "proxy-service", "Address": "fred.clam.shack.com", "Port": 8123, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
 
 # Setup DHCP Server - this can be optional
 #
@@ -322,9 +342,6 @@ if ! [[ $* = *--zombie* ]]; then
 
   # Mark the node as alive.
   crowbar nodes update "$FQDN" '{"alive": true}'
-  #curl -s -f --digest -u $(cat /etc/crowbar.install.key) \
-  #    -X PUT "http://localhost:3000/api/v2/nodes/$FQDN" \
-  #    -d 'alive=true'
   echo "Configuration Complete, you can watch annealing from the UI.  \`su - crowbar\` to begin managing the system."
   # Converge the admin node.
   crowbar converge && date

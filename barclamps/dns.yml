@@ -83,7 +83,7 @@ roles:
         description: 'DNS management server name'
         map: 'dns-mgmt/server_name'
         schema:
-          type: int
+          type: str
       - name: dns-management-port
         description: 'DNS management server port'
         map: 'dns-mgmt/server_port'
