@@ -14,6 +14,7 @@ Ports
   * 3000 - Crowbar API & UI
   * 4646 - Chef Server
   * 5432 - Postgresql Database
+  * 6754 - DNS Mgmt Server
   * 8091 - TFTP Server (provides PXE images)
   * 8123 - Squid Proxy
   * 8300 - Consul
