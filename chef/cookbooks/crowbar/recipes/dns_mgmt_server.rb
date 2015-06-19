@@ -23,8 +23,6 @@ cert_pem = node['dns-mgmt']['https-cert']
 
 dns_servers = node['crowbar']['dns']['nameservers']
 
-my_ips = %x{ip addr | grep inet | awk '{ print $2 }' | awk -F/ '{ print $1}'}.split("\n")
-
 if !key_pem or !cert_pem
   my_ips = %x{ip addr | grep inet | awk '{ print $2 }' | awk -F/ '{ print $1}'}.split("\n")
 

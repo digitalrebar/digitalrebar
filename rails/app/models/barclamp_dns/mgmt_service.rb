@@ -14,6 +14,7 @@
 # 
 
 require 'rest-client'
+require 'uri'
 
 class BarclampDns::MgmtService < Service
 
@@ -28,13 +29,12 @@ class BarclampDns::MgmtService < Service
       access_name = ConsulAccess.getKey("opencrowbar/private/dns-mgmt/#{server_name}/access_name")
       access_password = ConsulAccess.getKey("opencrowbar/private/dns-mgmt/#{server_name}/access_password")
 
-      url = "https://#{access_name}:#{access_password}@"
       if addr.v6?
-        url << "[#{addr.addr}]"
+        saddr = "[#{addr.addr}]"
       else
-        url << addr.addr
+        saddr = addr.addr
       end
-      url << ":#{s.ServicePort}"
+      url = URI::HTTPS.build(host: saddr, port: s.ServicePort, userinfo: "#{access_name}:#{access_password}")
 
       { 'address' => s.ServiceAddress,
         'port' => "#{s.ServicePort}",
@@ -42,7 +42,7 @@ class BarclampDns::MgmtService < Service
         'cert' => cert_pem,
         'access_name' => access_name,
         'access_password' => access_password,
-        'url' => url}
+        'url' => url.to_s }
     end
   end
 
