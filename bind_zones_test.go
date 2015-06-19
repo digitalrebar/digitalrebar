@@ -13,3 +13,10 @@ func TestMakeRevName(t *testing.T) {
 		t.Error("Expected 0.1.2.3.4.5.6.7.8.9.a.b.c.d.e.0.f.e.d.c.b.a.9.8.7.6.5.4.3.2.1.0.ip6.arpa, but got " + answer)
 	}
 }
+
+func TestMakeSerial(t *testing.T) {
+	answer := make_serial()
+	if answer < "20150101010101" {
+		t.Error("Should be older than 2015/1/1 answer = " + answer)
+	}
+}

@@ -173,7 +173,7 @@ func (di *PowerDnsInstance) PatchZone(zones *ZoneTracker, zoneName string, rec R
 			// If delete skip this part
 			record := PowerDnsRecord{
 				Content:  zz.Content,
-				Name:     rec.Name,
+				Name:     rec.Name + "." + zoneName,
 				Type:     rec.Type,
 				Disabled: false,
 				TTL:      3600,
@@ -191,7 +191,7 @@ func (di *PowerDnsInstance) PatchZone(zones *ZoneTracker, zoneName string, rec R
 	}
 
 	rrset := PowerDnsRRSet{
-		Name:            rec.Name,
+		Name:            rec.Name + "." + zoneName,
 		Type:            rec.Type,
 		ChangeType:      action,
 		PowerDnsRecords: recs,

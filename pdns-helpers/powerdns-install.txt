@@ -1,8 +1,28 @@
 
-# Install pdns 
-yum -y install pdns-server pdns-backend-postgresql
+# Install pdns (with repo from K...)
+yum -y install pdns-server pdns-backend-postgresql pdns-backend-sqlite3
 yum -y install pdns-recursor
 
+# Ubuntu/Debian
+wget https://downloads.powerdns.com/releases/deb/pdns-static_3.4.5-1_amd64.deb
+dpkg -i pdns-static_3.4.5-1_amd64.deb
+
+# SQLite eaxmple
+# create db
+sqlite3 /etc/powerdns/db.sql3 < sql3.sql
+
+edit /etc/pdns/pdns.conf or /etc/powerdns/pdns.conf (Ubuntu)
+Add:
+launch=gsqlite3
+gsqlite3-database=/etc/powerdns/db.sql3
+
+experimental-json-interface=yes
+experimental-api-key=joerules
+webserver=yes
+webserver-allow-from=0.0.0.0/0
+webserver-address=0.0.0.0
+
+#Postgres Example
 su postgres
 
 createuser -S -D -R -E -P powerdns
@@ -108,7 +128,7 @@ CREATE UNIQUE INDEX namealgoindex ON tsigkeys(name, algorithm);
 Exit psql (\q) 
 
 
-edit /etc/pdns/pdns.conf
+edit /etc/pdns/pdns.conf or /etc/powerdns/pdns.conf (Ubuntu)
 Add:
 launch=gpgsql
 gpgsql-host=127.0.0.1
