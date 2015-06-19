@@ -154,12 +154,16 @@ describe 'dns_name_filter' do
   end
 
   it 'must return false if can not claim_and_update' do
+    allow(BarclampDns::MgmtService).to receive(:get_service).and_return({something: 'testing'})
+
     dnf = FactoryGirl.create(:dns_name_filter, matcher: 'deployment.name == "fred"')
     na = make_network_allocation('public', 'squeaky', 'rangy')
     expect(dnf.claim_and_update(na)).to be_falsey
   end
 
   it 'must return true and create a new DNE when one does not exist' do
+    allow(BarclampDns::MgmtService).to receive(:get_service).and_return({something: 'testing'})
+
     dnf = FactoryGirl.create(:dns_name_filter, matcher: 'deployment.name == "system"')
     na = make_network_allocation('public', 'squeaky', 'rangy')
 
@@ -172,6 +176,8 @@ describe 'dns_name_filter' do
   end
 
   it 'must claim a network_allocation when a matching item is created' do
+    allow(BarclampDns::MgmtService).to receive(:get_service).and_return({something: 'testing'})
+
     na = make_network_allocation('public', 'squeaky', 'rangy')
     dnf = FactoryGirl.create(:dns_name_filter, matcher: 'deployment.name == "system"')
 
@@ -182,12 +188,16 @@ describe 'dns_name_filter' do
   end
 
   it 'must return false if can not claim_and_update' do
+    allow(BarclampDns::MgmtService).to receive(:get_service).and_return({something: 'testing'})
+
     dnf = FactoryGirl.create(:dns_name_filter, matcher: 'deployment.name == "fred"')
     na = make_network_allocation('public', 'squeaky', 'rangy')
     expect(DnsNameFilter.claim_by_any(na)).to be_falsey
   end
 
   it 'must return true and create a new DNE when one does not exist' do
+    allow(BarclampDns::MgmtService).to receive(:get_service).and_return({something: 'testing'})
+
     dnf = FactoryGirl.create(:dns_name_filter, matcher: 'deployment.name == "system"')
     na = make_network_allocation('public', 'squeaky', 'rangy')
 
@@ -201,6 +211,8 @@ describe 'dns_name_filter' do
 
 
   it 'must release na when changed and no longer matches' do
+    allow(BarclampDns::MgmtService).to receive(:get_service).and_return({something: 'testing'})
+
     na = make_network_allocation('public', 'squeaky', 'rangy')
     dnf = FactoryGirl.create(:dns_name_filter, matcher: 'deployment.name == "system"')
 
@@ -217,6 +229,10 @@ describe 'dns_name_filter' do
   end
 
   it 'must change name when changing template' do
+    allow(BarclampDns::MgmtService).to receive(:get_service).and_return({something: 'testing'})
+    allow(BarclampDns::MgmtService).to receive(:remove_ip_address).and_return(true)
+    allow(BarclampDns::MgmtService).to receive(:add_ip_address).and_return(true)
+
     na = make_network_allocation('public', 'squeaky', 'rangy')
     dnf = FactoryGirl.create(:dns_name_filter, matcher: 'deployment.name == "system"')
 
@@ -237,6 +253,8 @@ describe 'dns_name_filter' do
   end
 
   it 'must release na when deleted' do
+    allow(BarclampDns::MgmtService).to receive(:get_service).and_return({something: 'testing'})
+
     na = make_network_allocation('public', 'squeaky', 'rangy')
     dnf = FactoryGirl.create(:dns_name_filter, matcher: 'deployment.name == "system"')
 
@@ -252,6 +270,10 @@ describe 'dns_name_filter' do
   end
 
   it 'must release na when deleted and get picked up' do
+    allow(BarclampDns::MgmtService).to receive(:get_service).and_return({something: 'testing'})
+    allow(BarclampDns::MgmtService).to receive(:remove_ip_address).and_return(true)
+    allow(BarclampDns::MgmtService).to receive(:add_ip_address).and_return(true)
+
     na = make_network_allocation('public', 'squeaky', 'rangy')
     dnf = FactoryGirl.create(:dns_name_filter, matcher: 'deployment.name == "system"', priority: 1)
 
@@ -277,6 +299,10 @@ describe 'dns_name_filter' do
 
 
   it 'must release na when deleted and get picked up (order)' do
+    allow(BarclampDns::MgmtService).to receive(:get_service).and_return({something: 'testing'})
+    allow(BarclampDns::MgmtService).to receive(:remove_ip_address).and_return(true)
+    allow(BarclampDns::MgmtService).to receive(:add_ip_address).and_return(true)
+
     na = make_network_allocation('public', 'squeaky', 'rangy')
     dnf = FactoryGirl.create(:dns_name_filter, matcher: 'deployment.name == "system"', priority: 2)
 
@@ -298,6 +324,14 @@ describe 'dns_name_filter' do
     expect(dnes.length).to be(1)
     expect(dnes[0].network_allocation).to eq(na)
     expect(dnes[0].dns_name_filter).to eq(dnf2)
+  end
+
+  it 'must not claim if service is not found' do
+    na = make_network_allocation('public', 'squeaky', 'rangy')
+    dnf = FactoryGirl.create(:dns_name_filter, matcher: 'deployment.name == "system"', priority: 2)
+
+    dnes = DnsNameEntry.all
+    expect(dnes.length).to be(0)
   end
 
 end
