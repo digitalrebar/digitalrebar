@@ -5,7 +5,8 @@ port = 8080
 username = admin
 password = admin
 
-[powerdns]
+[dns]
+type = POWERDNS
 hostname = 192.168.124.10
 port = 8081
 password = joerules
