@@ -104,8 +104,10 @@ class DnsNameFilter < ActiveRecord::Base
   end
 
   def self.claim_by_any(na)
-    DnsNameFilter.order("priority ASC").each do |dnf|
-      return true if dnf.claim_and_update(na)
+    DnsNameFilter.transaction do
+      DnsNameFilter.order("priority ASC").each do |dnf|
+        return true if dnf.claim_and_update(na)
+      end
     end
     false
   end
@@ -118,7 +120,9 @@ class DnsNameFilter < ActiveRecord::Base
 
   def on_create_hooks
     NetworkAllocation.all.each do |na|
-      claim_and_update(na)
+      DnsNameFilter.transaction do
+        claim_and_update(na)
+      end
     end
   end
 
