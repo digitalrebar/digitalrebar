@@ -18,8 +18,9 @@
 require 'bunny'
 require 'json'
 require 'diplomat'
-require '/opt/opencrowbar/core/rails/lib/consul_access'
-require '/opt/opencrowbar/core/rails/lib/ip'
+
+require File.expand_path('../../lib/consul_access',  __FILE__)
+require File.expand_path('../../lib/ip',  __FILE__)
 
 if ARGV.empty?
   abort "Usage: #{$0} [binding key]"
