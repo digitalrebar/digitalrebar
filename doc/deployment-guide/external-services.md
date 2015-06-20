@@ -71,3 +71,25 @@ By Default OpenCrowbar will install a Proxy server on the Admin server in order 
 *   Find the line 'curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "192.168.124.9", "Service": {"Service": "proxy-service", "Port": 3128, "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
 ` uncomment it by removing the # from the front of the line and then change the IP address of the proxy server (192.168.124.9 in this example) as well as the port (3128 in this example) to the IP and port of the proxy server for the enviornment.
 *  Save the file and continue on with the remainder of the installation steps.
+
+### AMQP Server and Service
+
+Optionally, OpenCrowbar can be configured to send events to an AMQP server through the AMQP service.  To do this, either OpenCrowbar
+should run its own RabbitMQ server or a AMQP service can be injected into OpenCrowbar.  The system currently assumes a user of *crowbar*,
+a password of *crowbar*, and a virtual host of */opencrowbar*.  
+
+To run a RabbitMQ service, uncomment the rabbitmq-server line in crowbar-config.sh.
+
+To inject an AMQP service instead, uncomment the curl line for consul.  It is next to the rabbitmq-server line.  
+
+In either case, the amqp-service needs to be enabled.  Uncomment the amqp-service crowbar bind command.
+
+Once the system is operational and the services configured, you will need to start the audit-to-event program.  To do this,
+you will need to run the following command as *crowbar* from the */opt/opencrowbar/core/rails* directory:
+RAILS_ENV=production bundle exec rake audits.to_amqp &
+
+To see events as they happen, a sample client can be run as *crowbar* from the */opt/opencrowbar/core/rails* directory:
+RAILS_ENV=production bundle exec scripts/event_client.rb \#
+
+The command line arguments are filters.  \# means all.  Node.create will return events when nodes are created.  Other options 
+are available.
