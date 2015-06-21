@@ -33,18 +33,26 @@
       "5": "#000",
       "0": "#aae",
     },
-    tooltipFormat: '<strong>{{value:name}}</strong><br/>{{offset:role}}',
+    tooltipFormat: '<strong>{{offset:role}}</strong><br/><span class="led {{value:led}}" style="display:inline-block;"></span>{{value:name}}',
     tooltipSkipNull: true,
     tooltipValueLookups: {
       'role' : {
 
       },
+      'led': {
+        '-1': "error",
+        "0": "",
+        "-1": "todo",
+        "2": "ready",
+        "-3": "blocked",
+        "5": "active",
+      },
       'name': {
         '-1': "Error",
         "0": " - ",
-        "1": "Todo",
+        "-1": "Todo",
         "2": "Ready",
-        "3": "Blocked",
+        "-3": "Blocked",
         "5": "Active",
       }
     },
@@ -67,7 +75,8 @@
         var node = data.nodes[i];
         //console.log(node.name+", "+Object.keys(node.roles));
         if(!nodes[node.id]) {
-          $('#nodelist').append($('<tr id="li'+node.id+'"><td><span class="'+node.led+' led"></span></td><td class="nodename">'+node.name+'</td><td id="node'+node.id+'"></span></td>'));
+          $('#nodelist').append(
+            $('<tr id="li'+node.id+'"><td><span class="'+node.led+' led"></span></td><td class="nodename"><a href="'+node.path+'" title="'+node.description+'">'+node.name+'</a></td><td id="node'+node.id+'"></span></td>'));
         }
         var graph = $('#node'+node.id);
         var items = [];
@@ -80,6 +89,8 @@
             value = node.roles[id].state;
             if(value == 0)
               value = 5;
+            if(value == 3 || value == 5)
+              value *= -1;
           }
           items.push([value]);
         }

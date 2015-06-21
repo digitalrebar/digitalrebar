@@ -155,10 +155,13 @@ class DeploymentsController < ApplicationController
     end
     
     out[:nodes] = nodes.map do |node|
-      n = {}
-      n[:name] = node.name
-      n[:id] = node.id
-      n[:roles] = {}
+      n = {
+        name: node.name,
+        id: node.id,
+        roles: {},
+        description: node.description,
+        path: node_path(node.id)
+      }
       n[:led] = if !node.available
         node.alive ? 'reserved' : 'idle'
       elsif !node.alive
