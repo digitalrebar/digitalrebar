@@ -42,7 +42,7 @@
       'led': {
         '-1': "error",
         "0": "",
-        "-1": "todo",
+        "-6": "todo",
         "2": "ready",
         "-3": "blocked",
         "5": "active",
@@ -50,7 +50,7 @@
       'name': {
         '-1': "Error",
         "0": " - ",
-        "-1": "Todo",
+        "-6": "Todo",
         "2": "Ready",
         "-3": "Blocked",
         "5": "Active",
@@ -87,10 +87,13 @@
           var value = 0;
           if(node.roles[id]) {
             value = node.roles[id].state;
-            if(value == 0)
-              value = 5;
-            if(value == 3 || value == 5)
-              value *= -1;
+            swap = {
+              0: 5, //active can't be zero
+              3: -3, //blocked points down
+              1: -6 //todo is pointing down and -1 is taken by error
+            };
+            if(swap[value])
+              value = swap[value]
           }
           items.push([value]);
         }
