@@ -12,3 +12,12 @@ task :travis => ["db:drop", "railties:install:migrations", "db:migrate", "db:fix
 
 end
 
+namespace :audits do
+  task :to_amqp => :environment do
+    AuditActions.to_amqp
+  end
+
+  task :purge => :environment do
+    AuditActions.purge
+  end
+end

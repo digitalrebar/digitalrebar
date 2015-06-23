@@ -157,10 +157,14 @@ ip_re='([0-9a-f.:]+/[0-9]+)'
 
 # Add required or desired services
 services=(proxy-service dns-service ntp-service dns-mgmt_service provisioner-service
-          crowbar-api_service crowbar-job_runner_service amqp-service)
+          crowbar-api_service crowbar-job_runner_service)
 for role in "${services[@]}"; do
     crowbar nodes bind "system-phantom.internal.local" to "$role"
 done
+
+# Add this if you are going to have events sent to an AMQP service
+#crowbar nodes bind "system-phantom.internal.local" to "amqp-service"
+
 crowbar nodes set "system-phantom.internal.local" attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
 
 crowbar nodes commit "system-phantom.internal.local"
@@ -210,7 +214,15 @@ crowbar nodes bind "$FQDN" to crowbar-build-root-key
 crowbar nodes bind "$FQDN" to crowbar-api_server
 crowbar nodes bind "$FQDN" to crowbar-job_runner
 
-crowbar nodes bind "$FQDN" to rabbitmq-server
+#
+# Add if you wish to have an AMQP server running
+#
+#crowbar nodes bind "$FQDN" to rabbitmq-server
+#
+# Or to inject a service
+#
+#curl -X PUT -d '{"Datacenter": "dc1", "Node": "external", "Address": "209.18.47.61", "Service": {"Service": "amqp-service", "Port": 5672, "Address": "209.18.47.61", "Tags": [ "system" ]} }' http://127.0.0.1:8500/v1/catalog/register
+#
 
 # Setup DNS Server our own DNS Server
 crowbar nodes bind "$FQDN" to dns-bind_server
