@@ -16,24 +16,6 @@
 require 'spec_helper'
 
 describe "jig proposal manipulation" do
-  # make sure that the there's a crowbar deploment (named 'test')
-  include_context "crowbar test deployment"
-  # just 2 nodes.
-  include_context "2 dummy nodes"
 
-
-  context "test deployment with 2 nodes" do
-
-    let(:active)   { deployment.head}
-
-    before(:all) {            
-      # add node
-    }
-
-    it "we can commit the deployment" do
-      #deployment.commit
-    end
-
-  end
 end
 

@@ -33,21 +33,20 @@ RSpec.configure do |config|
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false
   # instead of true.
-  config.use_transactional_fixtures = true
+  config.use_transactional_fixtures = false
 
-  config.before(:suite) do
-    DatabaseCleaner.strategy = :transaction
+  config.before(:each) do
+    DatabaseCleaner.strategy = :truncation
     DatabaseCleaner.clean_with(:truncation)
-    Rails.application.load_seed # loading seeds
-    source_path = File.realpath(File.join(Rails.root,".."))
-    data = YAML.load_file(File.join(source_path,"crowbar.yml"))
-    data['barclamp']['source_path'] = source_path
-    Barclamp.import_or_update(data)
-    Dir.glob(File.join(source_path,"barclamps","*.yml")).each do |yml|
-      data = YAML.load_file(yml)
-      data['barclamp']['source_path'] = source_path
-      Barclamp.import_or_update(data)
-    end
+
+    FactoryGirl.create(:deployment, name: 'system', system: true, state: Deployment::COMMITTED)
+    u = FactoryGirl.build(:user, username: 'crowbar', password: 'crowbar', is_admin: true)
+    u.digest_password('crowbar')
+    u.save!
+    FactoryGirl.create(:barclamp)
+    FactoryGirl.create(:barclamp, name: 'network')
+    FactoryGirl.create(:jig)
+    FactoryGirl.create(:jig, name: 'test')
   end
 
   # If true, the base class of anonymous controllers will be inferred

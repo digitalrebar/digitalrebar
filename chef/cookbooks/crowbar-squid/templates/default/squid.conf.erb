@@ -12,6 +12,7 @@ acl to_localnet dst <%= net %>
 <% end -%>
 
 acl SSL_ports port 443
+acl SSL_ports port 6754     # DNS management
 acl Safe_ports port 80		# http
 acl Safe_ports port 21		# ftp
 acl Safe_ports port 443		# https

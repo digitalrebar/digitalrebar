@@ -153,7 +153,8 @@ pool_opts = {
   "host" => ['deny unknown-clients']
 }
 
-nameservers = node[:crowbar][:dns][:nameservers]
+# Get just the addresses
+nameservers = node[:crowbar][:dns][:nameservers].collect { |x| x['address'] }
 
 # Build a list of local information
 my_nics = ::Nic.nics

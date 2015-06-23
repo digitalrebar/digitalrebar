@@ -16,7 +16,27 @@
 class BarclampDns::Service < Service
 
   def do_transition(nr, data)
-    internal_do_transition(nr, data, "dns-service", "dns_servers")
+    internal_do_transition(nr, data, "dns-service", "dns_servers") do |s|
+      Rails.logger.debug("DnsServer: #{s.inspect} #{s.ServiceAddress}")
+      addr = IP.coerce(s.ServiceAddress)
+      Rails.logger.debug("DnsServer: #{addr.inspect}")
+
+      server_name = s.ServiceTags.first
+      server_type = ConsulAccess.getKey("opencrowbar/private/dns/#{server_name}/type")
+
+      res = { "address" => s.ServiceAddress,
+              "port" => "#{s.ServicePort}",
+              "name" => server_name,
+              "type" => server_type }
+
+      if server_type == 'POWERDNS'
+        res['mgmt_port'] = ConsulAccess.getKey("opencrowbar/private/dns/#{server_name}/mgmt_port")
+        res['mgmt_token'] = ConsulAccess.getKey("opencrowbar/private/dns/#{server_name}/mgmt_token")
+        res['mgmt_name'] = (ConsulAccess.getKey("opencrowbar/private/dns/#{server_name}/mgmt_name") rescue 'localhost')
+      end
+
+      res
+    end
   end
 
 end

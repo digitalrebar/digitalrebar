@@ -16,28 +16,35 @@ require 'spec_helper'
 
 describe "admin create" do
 
-  include_context "crowbar test deployment"
-  subject { Node.create! :name=>'rspec-admin.crowbar.com', :admin => true, :deployment => deployment }
+  subject { Node.create! :name=>'rspec-admin.crowbar.com', :admin => true, :deployment => Deployment.system }
 
   it {should be_is_admin} 
 
-  it "must have bootstrap and implicit roles" do
-    rr = Role.find_by_name('crowbar-admin-node')
+  it "must have implicit roles" do
+    rr = FactoryGirl.create(:role, implicit: true, name: 'child')
+    RoleRequire.find_or_create_by!(:role_id => rr.id, :requires => 'parent')
+    rr2 = FactoryGirl.create(:role, implicit: true, name: 'parent')
+
     rr.add_to_node(subject)
     subject.commit!
-    expect( subject.node_roles.any?{ |e| e.role.implicit } ).to be_truthy
+    expect( subject.node_roles.count{ |e| e.role.implicit } ).to be(2)
   end
 
+  it "must be added to the deployment" do
+    subject.commit!
+    expect( Deployment.system.nodes.any?{ |e| e.id == subject.id } ).to be_truthy
+  end
 end
 
 describe "node create" do
 
-  include_context "crowbar test deployment"
-  subject { Node.create! :name=>'rspec-node.crowbar.com', :admin => false, :deployment => deployment }
-
+  subject { Node.create! :name=>'rspec-node.crowbar.com', :admin => false, :deployment => Deployment.system }
 
   it "must have implicit roles" do
-    rr = Role.find_by_name('crowbar-managed-node')
+    rr = FactoryGirl.create(:role, implicit: true, name: 'child')
+    RoleRequire.find_or_create_by!(:role_id => rr.id, :requires => 'parent')
+    rr2 = FactoryGirl.create(:role, implicit: true, discovery: true, name: 'parent')
+
     rr.add_to_node(subject)
     subject.commit!
     expect( subject.node_roles.any?{ |e| e.role.implicit } ).to be_truthy
@@ -46,7 +53,7 @@ describe "node create" do
 
   it "must be added to the deployment" do
     subject.commit!
-    expect( deployment.nodes.any?{ |e| e.id == subject.id } ).to be_truthy
+    expect( Deployment.system.nodes.any?{ |e| e.id == subject.id } ).to be_truthy
   end
 
 end

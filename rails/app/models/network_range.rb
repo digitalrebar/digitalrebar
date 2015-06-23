@@ -86,6 +86,7 @@ class NetworkRange < ActiveRecord::Base
   end
 
   def allocate(node, suggestion = nil)
+    # Fixing the node role if allocation is present by node role is not.
     res = NetworkAllocation.find_by(:node_id => node.id, :network_range_id => self.id)
     return res if res
     unless suggestion

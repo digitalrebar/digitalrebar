@@ -14,7 +14,7 @@
 # 
 
 require 'json'
-class BarclampDns::Server < Role
+class BarclampDns::BindServer < Role
 
   def template
     # this is a workable solution for now, we use the admin node to determine domain (except when non-exists!)
@@ -29,6 +29,16 @@ class BarclampDns::Server < Role
                         "slave_retry" => "2h",
                         "slave_expire" => "4w",
                         "negative_cache" => 300}}}
+  end
+
+  def on_node_bind(nr)
+    # if not set, set the name to the deployment name.
+    NodeRole.transaction do
+      name = Attrib.get("dns-svc-name",nr)
+      unless name
+        Attrib.set("dns-svc-name",nr,nr.node.deployment.name)
+      end
+    end
   end
 
   def sysdata(nr)

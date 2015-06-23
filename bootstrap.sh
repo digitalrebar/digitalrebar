@@ -41,6 +41,7 @@ boot_r=('recipe[crowbar-bootstrap::boot]'
         'recipe[crowbar-bootstrap::go]'
         'recipe[crowbar-bootstrap::goiardi-build]'
         'recipe[crowbar-bootstrap::sws-build]'
+        'recipe[crowbar-bootstrap::dns-mgmt-build]'
         'recipe[crowbar-bootstrap::consul]'
         'recipe[consul::install]'
         'recipe[consul::ui]')

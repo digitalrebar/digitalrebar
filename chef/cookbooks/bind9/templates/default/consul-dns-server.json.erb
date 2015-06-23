@@ -1,7 +1,7 @@
 {
   "service": {
     "name": "dns-service",
-    "tags": [ "system" ],
+    "tags": [ "<%=@service_name%>" ],
     <% if @ip_addr -%>
     "address": "<%=@ip_addr%>",
     <% end -%>

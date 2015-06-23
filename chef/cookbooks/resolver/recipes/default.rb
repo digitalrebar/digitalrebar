@@ -20,7 +20,8 @@
 
 return if node[:crowbar_ohai][:in_docker]
 
-dns_list = (node[:crowbar][:dns][:nameservers] rescue nil) ||
+na = (node[:crowbar][:dns][:nameservers].collect { |x| x['address'] } rescue nil)
+dns_list = (na rescue nil) ||
   (node[:crowbar][:dns][:server][:forwarders] rescue [])
 
 execute "Disable resolvconf" do

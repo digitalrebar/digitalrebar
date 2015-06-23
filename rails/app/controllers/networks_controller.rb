@@ -127,7 +127,7 @@ class NetworksController < ::ApplicationController
     end
     render :json => network.node_allocations(node).map{|a|a.to_s}, :content_type=>cb_content_type(:allocations, "array")
   end
-  
+
   add_help(:update,[:id, :conduit, :team_mode, :use_team, :vlan, :use_vlan, :configure],[:put])
   def update
     @network = Network.find_key(params[:id])
@@ -156,7 +156,7 @@ class NetworksController < ::ApplicationController
       deallocate_ip
     end
   end
-      
+
   def allocate_ip
     network = Network.find_key(params[:id])
     node = Node.find_key(params[:node_id])
@@ -173,13 +173,13 @@ class NetworksController < ::ApplicationController
   def deallocate_ip
     raise ArgumentError.new("Cannot deallocate addresses for now")
     node = Node.find_key(params[:node_id])
-    allocation = Allocation.where(:address => params[:cidr], :node_id => node.id)
+    allocation = NetworkAllocation.where(:address => params[:cidr], :node_id => node.id)
     allocation.destroy
   end
 
   def enable_interface
     raise ArgumentError.new("Cannot enable interfaces without IP address allocation for now.")
-    
+
     deployment_id = params[:deployment_id]
     deployment_id = nil if deployment_id == "-1"
     network_id = params[:id]

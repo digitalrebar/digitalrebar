@@ -13,31 +13,33 @@
 # limitations under the License.
 #
 
-include_recipe "utils"
-directory "/etc/bind"
+include_recipe 'utils'
+directory '/etc/bind'
 
+ip_addr = (IP.coerce(node['dns']['service_address']).addr rescue nil)
+server_name = node['crowbar']['dns']['service_name']
 
 case node[:platform]
-when "redhat","centos"
-  template "/etc/sysconfig/named" do
-    source "redhat-sysconfig-named.erb"
+when 'redhat','centos'
+  template '/etc/sysconfig/named' do
+    source 'redhat-sysconfig-named.erb'
     mode 0644
-    owner "root"
-    variables :options => { "OPTIONS" => "-c /etc/named.conf" }
+    owner 'root'
+    variables :options => { 'OPTIONS' => '-c /etc/named.conf' }
   end
-when "suse"
-  template "/etc/sysconfig/named" do
-    source "suse-sysconfig-named.erb"
+when 'suse'
+  template '/etc/sysconfig/named' do
+    source 'suse-sysconfig-named.erb'
     mode 0644
-    owner "root"
-    variables :options => { "NAMED_ARGS" => "-c /etc/named.conf" }
+    owner 'root'
+    variables :options => { 'NAMED_ARGS' => '-c /etc/named.conf' }
   end
 end
 
-service "bind9" do
+service 'bind9' do
   case node[:platform]
-  when "centos","redhat","suse","opensuse"
-    service_name "named"
+  when 'centos','redhat','suse','opensuse'
+    service_name 'named'
   end
   supports :restart => true, :status => true, :reload => true
   running true
@@ -51,12 +53,12 @@ files.each do |file|
   template "/etc/bind/#{file}" do
     source "#{file}.erb"
     case node[:platform]
-    when "ubuntu","debian" then group "bind"
-    when "centos","redhat","suse","opensuse" then group "named"
+    when 'ubuntu','debian' then group 'bind'
+    when 'centos','redhat','suse','opensuse' then group 'named'
     end
     mode 0644
-    owner "root"
-    notifies :reload, "service[bind9]"
+    owner 'root'
+    notifies :reload, 'service[bind9]'
   end
 end
 
@@ -74,30 +76,83 @@ end
 end
 
 # Rewrite our default configuration file
-template "/etc/named.conf" do
-  source "named.conf.erb"
+template '/etc/named.conf' do
+  source 'named.conf.erb'
   mode 0644
-  owner "root"
+  owner 'root'
   case node[:platform]
-  when "ubuntu","debian" then group "bind"
-  when "centos","redhat","suse","opensuse" then group "named"
+  when 'ubuntu','debian' then group 'bind'
+  when 'centos','redhat','suse','opensuse' then group 'named'
   end
   variables(:forwarders => node[:crowbar][:dns][:forwarders])
-  notifies :restart, "service[bind9]", :immediately
+  notifies :restart, 'service[bind9]', :immediately
 end
 
-bash "reload consul" do
-  code "/usr/local/bin/consul reload"
+master_acl_token=node[:consul][:acl_master_token]
+
+ruby_block "check for dns #{server_name} server acl" do
+  block do
+    listStr = %x{curl http://localhost:8500/v1/acl/list?token=#{master_acl_token}}
+    list = JSON.parse(listStr)
+    list.each do |elem|
+      if elem['Name'] == "DNS #{server_name} Server ACL"
+        node.normal['consul']['tokens'] ||= {}
+        node.normal['consul']['tokens']["dns_#{server_name}_acl"] = elem['ID']
+        break
+      end
+    end
+  end
+  action :run
+end
+
+bash "Create dns #{server_name} Server ACL" do
+  code <<EOC
+    echo '{
+      "Name": "DNS #{server_name} Server ACL",
+      "Type": "client",
+      "Rules": "key \\"opencrowbar/private\\" { policy = \\"deny\\" }\\nkey \\"opencrowbar/private/dns/#{server_name}\\" { policy = \\"write\\" }"
+    }' > /tmp/tmp_cred.json
+    curl -X PUT --data-binary @/tmp/tmp_cred.json http://localhost:8500/v1/acl/create?token=#{master_acl_token}
+  rm -f /tmp/tmp_cred.json
+EOC
+  only_if do
+    ((node.normal['consul']['tokens']["dns_#{server_name}_acl"] == nil or
+      node.normal['consul']['tokens']["dns_#{server_name}_acl"] == {}) rescue true)
+  end
+end
+
+ruby_block "record the dns #{server_name} server acl" do
+  block do
+    listStr = %x{curl http://localhost:8500/v1/acl/list?token=#{master_acl_token}}
+    list = JSON.parse(listStr)
+    list.each do |elem|
+      if elem['Name'] == 'DNS #{server_name} Server ACL'
+        node.normal['consul']['tokens'] ||= {}
+        node.normal['consul']['tokens']["dns_#{server_name}_acl"] = elem['ID']
+        break
+      end
+    end
+  end
+  action :run
+end
+
+bash "Add dns server #{server_name} keys to consul" do
+  code <<EOC
+    curl -X PUT -d 'BIND' http://127.0.0.1:8500/v1/kv/opencrowbar/private/dns/#{server_name}/type?token=#{master_acl_token}
+EOC
+  # GREG: Make this conditional
+end
+
+bash 'reload consul' do
+  code '/usr/local/bin/consul reload'
   action :nothing
 end
 
-ip_addr = (IP.coerce(node["dns"]["service_address"]).addr rescue nil)
-
-template "/etc/consul.d/crowbar-dns.json" do
-  source "consul-dns-server.json.erb"
+template '/etc/consul.d/crowbar-dns.json' do
+  source 'consul-dns-server.json.erb'
   mode 0644
-  owner "root"
-  variables(:ip_addr => ip_addr)
-  notifies :run, "bash[reload consul]", :immediately
+  owner 'root'
+  variables(:ip_addr => ip_addr, :service_name => server_name)
+  notifies :run, 'bash[reload consul]', :immediately
 end
 

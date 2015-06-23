@@ -1,0 +1,14 @@
+{
+  "service": {
+    "name": "dns-mgmt-service",
+    "tags": [ "<%=@service_name%>" ],
+    <% if @ip_addr -%>
+    "address": "<%=@ip_addr%>",
+    <% end -%>
+    "port": <%=@web_port%>,
+    "check": {
+      "script": "pidof ocb-dns-mgmt",
+      "interval": "10s"
+    }
+  }
+}

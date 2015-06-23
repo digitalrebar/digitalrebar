@@ -154,14 +154,17 @@ after the noderole transitions to the state for the hook in question.
 
 #### Network hooks
 
-There are three hooks for letting roles take actions when networks are created or deleted:
+There are five hooks for letting roles take actions when networks are created, updated, or deleted:
 
 * `on_network_create`
 * `on_network_change`
 * `on_network_delete`
+* `on_network_allocation_create`
+* `on_network_allocation_delete`
 
 They are _for all roles_ in the system when a new network is added,
-updated, or deleted.  The role does not have to be included in a
+updated, or deleted.  The network allocation functions are called as 
+IPs are allocated or deallocated. The role does not have to be included in a
 deployment or used in anyway for this hook to be called.  If a role
 exists and implements this hook then it will get called when a network is
 created, destroyed, or changed.

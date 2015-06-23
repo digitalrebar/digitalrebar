@@ -22,7 +22,7 @@ node.normal["crowbar_wall"]["docker"] ||= Mash.new
 node.normal["crowbar_wall"]["docker"]["clients"] ||= Mash.new
 
 # Split out the v4 addresses
-v4dns, v6dns = node["crowbar"]["dns"]["nameservers"].collect{|a|IP.coerce(a)}.partition{|a|a.v4?}
+v4dns, v6dns = node["crowbar"]["dns"]["nameservers"].collect{|a|IP.coerce(a['address'])}.partition{|a|a.v4?}
 v4addresses = v4dns.collect{|a|a.addr}
 
 (node["crowbar"]["docker"]["clients"] || {} rescue {}).each do |name,info|

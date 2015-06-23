@@ -153,6 +153,16 @@ class Role < ActiveRecord::Base
     true
   end
 
+  # Event hook that will be called every time a network allocation is created
+  def on_network_allocation_create(na)
+    true
+  end
+
+  # Event hook that will be called every time a network allocation is deleted
+  def on_network_allocation_delete(na)
+    true
+  end
+
   # Event hook that is called whenever a noderole or a deployment role for this role is
   # committed.  It is called inline and synchronously with the actual commit, so it must be fast.
   # If it throws an exception, the commit will fail and the transaction around the commit

@@ -16,8 +16,35 @@
 en:
   common:
     roles:
-      dns-service: "DNS Service"
-      dns-server: "DNS Server"
+      dns-bind_server: "BIND DNS Server"
       dns-client: "DNS Client"
-      dns-database: "DNS A Records"
+      dns-service: "DNS Service"
     attribs:
+  common: &dns_common
+    name: Name
+    service: Service
+    template: Template
+    matcher: Matcher
+    priority: Priority
+    address: Address
+    filter: DNS Name Filter
+    node: Node
+  nav:
+    filters: DNS Name Filters
+    names: DNS Names
+    scaffold:
+      dns_name_filters: DNS Name Filters
+      dns_name_entries: DNS Name Entries
+  dns_name_filters:
+    index:
+      title: DNS Name Filters
+      add: Add
+      <<: *dns_common
+    show:
+      <<: *dns_common
+  dns_name_entries:
+    index:
+      title: DNS Name Entries
+      <<: *dns_common
+    show:
+      <<: *dns_common
