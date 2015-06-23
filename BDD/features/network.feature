@@ -23,7 +23,7 @@ Feature: Networks
     Then the {object:network} is properly formatted
 
   Scenario: Auto v6 sets range
-    When I use the Network API to create "v6a" with range "bar2" from "10.10.14.200/24" to "10.10.14.201/24"
+    When I use the Network API to create "v6a" with v6prefix of "auto"
     Then the {object:network} is properly formatted
       And key "v6prefix" should not be "auto"
       And key "v6prefix" should match "([a-f0-9]){1,4}:([a-f0-9]){1,4}:([a-f0-9]){1,4}:([a-f0-9]){1,4}"
@@ -41,8 +41,7 @@ Feature: Networks
     Given I use the Network API to create "foo1" with range "bar1" from "10.10.14.100/24" to "10.10.14.200/24"
     When REST gets the {object:network} "foo1" 
     Then key "name" should be "foo1"
-      And key "v6prefix" should not be "auto"
-      And key "v6prefix" should match "([a-f0-9]){1,4}:([a-f0-9]){1,4}:([a-f0-9]){1,4}:([a-f0-9]){1,4}"
+      And key "v6prefix" should be "null"
     Finally REST removes the {object:network} "foo1"
 
   Scenario: Install API Call Works Range
