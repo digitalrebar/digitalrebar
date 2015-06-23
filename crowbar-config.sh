@@ -90,6 +90,7 @@ admin_net='
   "group": "internal",
   "deployment": "system",
   "conduit": "1g0",
+  "v6prefix": "auto",
   "ranges": [
     {
       "name": "admin",

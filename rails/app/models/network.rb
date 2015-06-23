@@ -194,10 +194,19 @@ class Network < ActiveRecord::Base
 
   private
 
+  def create_auto_v6_range
+    if v6prefix && !NetworkRange.find_by(name: "host-v6", network_id: id)
+      NetworkRange.create!(name: "host-v6",
+                           first: "#{v6prefix}::1/64",
+                           last:  ((IP.coerce("#{v6prefix}::/64").broadcast) - 1).to_s,
+                           network_id: id)
+    end
+  end
+
   # for auto, we add an IPv6 prefix
   def auto_prefix
     # Add our IPv6 prefix.
-    if (category == ADMIN_CATEGORY and v6prefix.nil?) || (v6prefix == V6AUTO)
+    if (v6prefix == V6AUTO)
       Role.logger.info("Network: Creating automatic IPv6 prefix for #{name}")
       user = User.admin.first
       # this config code really needs to move to Crowbar base
@@ -210,6 +219,7 @@ class Network < ActiveRecord::Base
         update_column("v6prefix", sprintf("#{cluster_prefix}:%04x",id))
       end
       Rails.logger.info("Network: Created #{sprintf("#{cluster_prefix}:%04x",id)} for #{name}")
+      create_auto_v6_range
     end
   end
 
@@ -220,12 +230,7 @@ class Network < ActiveRecord::Base
       Rails.logger.info("Network: Adding role and attribs for #{role_name}")
       bc = Barclamp.find_key "network"
       Role.transaction do
-        if v6prefix && !NetworkRange.find_by(name: "host-v6", network_id: id)
-          NetworkRange.create!(name: "host-v6",
-                               first: "#{v6prefix}::1/64",
-                               last:  ((IP.coerce("#{v6prefix}::/64").broadcast) - 1).to_s,
-                               network_id: id)
-        end
+        create_auto_v6_range
         r = Role.find_or_create_by!(name: role_name,
                                     type: "BarclampNetwork::Role",   # force
                                     jig_name: Rails.env.production? ? "chef" : "test",
