@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"path"
 	"strings"
@@ -43,13 +44,13 @@ var session *ocbClient
 const (
 	// The Crowbar API to call.  This will be prepended to every
 	// url passed to one of the request functions.
-	API_PATH     = "/api/v2"
+	API_PATH = "/api/v2"
 )
 
 // Session establishes a new connection to Crowbar.  You must call
 // this function before using any other functions in the crowbar
 // package.
-func Session(URL, User, Password string) (error) {
+func Session(URL, User, Password string) error {
 	c := &ocbClient{URL: URL, Client: &http.Client{}, Challenge: &challenge{}}
 	// retrieve the digest info from the 301 message
 	resp, e := http.Head(URL + path.Join(API_PATH, "digest"))
@@ -77,28 +78,24 @@ func Session(URL, User, Password string) (error) {
 // err is the error that was returned.  If it is not nil, then objOut will be garbage.
 //
 // objOut and objIn should never refer to the same struct.
-func Request(method, uri string, objOut, objIn interface{}) (err error) {
+func (c *ocbClient) request(method, uri string, objIn []byte) (objOut []byte, err error) {
 	if session == nil {
-		return fmt.Errorf("ocb Client Session not set")
+		return nil, fmt.Errorf("ocb Client Session not set")
 	}
 
 	var body io.Reader
 
 	if objIn != nil {
-		rendered, err := json.Marshal(objIn)
-		if err != nil {
-			return err
-		}
-		body = bytes.NewReader(rendered)
+		body = bytes.NewReader(objIn)
 	}
 	// Construct the http.Request.
-	req, err := http.NewRequest(method, session.URL + path.Join(API_PATH,uri), body)
+	req, err := http.NewRequest(method, session.URL+path.Join(API_PATH, uri), body)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	auth, err := session.Challenge.authorize(method, path.Join(API_PATH,uri))
+	auth, err := session.Challenge.authorize(method, path.Join(API_PATH, uri))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// Make authenticated request.
 	req.Header.Set("Authorization", auth)
@@ -106,54 +103,75 @@ func Request(method, uri string, objOut, objIn interface{}) (err error) {
 	req.Header.Set("User-Agent", "gobar/v1.0")
 	req.Header.Set("Accept", "application/json")
 
+	log.Print("1")
 	resp, err := session.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	buf, err := ioutil.ReadAll(resp.Body)
+	log.Print("2")
+	objOut, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// if token expires, then try again
 	if resp.StatusCode == 401 {
+		log.Print("3")
 		err = session.Challenge.parseChallenge(resp.Header.Get("WWW-Authenticate"))
 		if err != nil {
-			return err
+			return nil, err
 		} else {
-			return Request(method, uri, objOut, objIn)
+			return c.request(method, uri, objIn)
 		}
 	} else if resp.StatusCode >= 300 {
-		return fmt.Errorf("Expected status in the 200 range, got %s", resp.Status)
+		log.Print("4")
+		return nil, fmt.Errorf("Expected status in the 200 range, got %s", resp.Status)
 	}
-	if objOut != nil {
-		err = json.Unmarshal(buf,objOut)
-		if err != nil {
-			return fmt.Errorf("Status: %v, Message: %v",resp.Status, buf)
-		}
-	}
-	return nil
+	log.Print("8")
+	return objOut, nil
 }
 
 // Get fetches an object from Crowbar and unmarshals it to objOut
-func Get(objOut interface{}, uri ...string) error {
-	return Request("GET",path.Join(uri...),objOut, nil)
+func (c *ocbClient) get(obj interface{}, uri ...string) error {
+	buf, err := c.request("GET", path.Join(uri...), nil)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(buf, &obj)
 }
 
 // Post creates a new object in Crowbar using objIn, and returns the
 // newly created object in objOut.
-func Post(objIn interface{}, uri ...string) error {
-	return Request("POST",path.Join(uri...),objIn,objIn)
+func (c *ocbClient) post(obj interface{}, uri ...string) error {
+	inbuf, err := json.Marshal(obj)
+	buf, err := c.request("POST", path.Join(uri...), inbuf)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(buf, &obj)
+
 }
 
 // Put updates the object in objIn, which is updated in place.
-func Put(objIn interface{}, uri ...string) error {
-	return Request("PUT",path.Join(uri...),objIn,objIn)
+func (c *ocbClient) put(obj interface{}, uri ...string) error {
+	inbuf, err := json.Marshal(obj)
+	buf, err := c.request("PUT", path.Join(uri...), inbuf)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(buf, &obj)
+
 }
 
 // Delete deletes whatever lives in the passed URL fragment.  No
 // objects are accepted or returned.
-func Delete(uri ...string) error {
-	return Request("DELETE",path.Join(uri...),nil,nil)
+func (c *ocbClient) destroy(uri ...string) error {
+	_, err := c.request("DELETE", path.Join(uri...), nil)
+	return err
+}
+
+func (c *ocbClient) list(uri ...string) (buf []byte, err error) {
+	buf, err = c.request("GET", path.Join(uri...), nil)
+	return buf, err
 }
 
 func h(data string) string {

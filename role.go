@@ -1,8 +1,8 @@
 package crowbar
 
 import (
+	"encoding/json"
 	"log"
-	"path"
 	"strconv"
 )
 
@@ -29,7 +29,7 @@ type Role struct {
 	UpdatedAt   string        `json:"updated_at,omitempty"`
 }
 
-func (o *Role) id() string {
+func (o *Role) Id() string {
 	if o.ID != 0 {
 		return strconv.FormatInt(o.ID, 10)
 	} else if o.Name != "" {
@@ -40,42 +40,30 @@ func (o *Role) id() string {
 	}
 }
 
-func (o *Role) url(parts ...string) string {
-	return path.Join(append([]string{"roles", o.id()}, parts...)...)
-}
-
-func (o *Role) Get() error {
-	return Get(o, o.url())
-}
-
-func (o *Role) Delete() error {
-	return Delete(o.url())
-}
-
-func (o *Role) Create() error {
-	return Post(o, "roles")
-}
-
-func (o *Role) Update() error {
-	return Put(o, o.url())
+func (o *Role) ApiName() string {
+	return "roles"
 }
 
 func (o *Role) Attribs() (res []*Attrib, err error) {
 	res = []*Attrib{}
-	err = Get(res, o.url("attribs"))
+	err = session.get(res, url(o, "attribs"))
 	return res, err
 }
 
 func (o *Role) GetAttrib(a *Attrib) error {
-	return Get(a, o.url(a.url()))
+	return session.get(a, url(o, url(a)))
 }
 
 func (o *Role) SetAttrib(a *Attrib) error {
-	return Put(a, o.url(a.url()))
+	return session.put(a, url(o, url(a)))
 }
 
-func Roles() (res []*Role, err error) {
-	res = []*Role{}
-	err = Get(res, "roles")
+func Roles(paths ...string) (res []*Role, err error) {
+	res = make([]*Role, 0)
+	buf, err := session.list(append(paths, "roles")...)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(buf, &res)
 	return res, err
 }

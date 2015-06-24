@@ -1,8 +1,8 @@
 package crowbar
 
 import (
+	"encoding/json"
 	"log"
-	"path"
 	"strconv"
 )
 
@@ -17,7 +17,7 @@ type Deployment struct {
 	UpdatedAt   string `json:"updated_at,omitempty"`
 }
 
-func (o *Deployment) id() string {
+func (o *Deployment) Id() string {
 	if o.ID != 0 {
 		return strconv.FormatInt(o.ID, 10)
 	} else if o.Name != "" {
@@ -28,50 +28,40 @@ func (o *Deployment) id() string {
 	}
 }
 
-func (o *Deployment) url(parts ...string) string {
-	return path.Join(append([]string{"deployments",o.id()}, parts...)...)
-}
-
-func (o *Deployment) Get() error {
-	return Get(o, o.url())
-}
-
-func (o *Deployment) Delete() error {
-	return Delete(o.url())
-}
-
-func (o *Deployment) Create() error {
-	return Post(o, "deployments")
-}
-
-func (o *Deployment) Update() error {
-	return Put(o, o.url())
+func (o *Deployment) ApiName() string {
+	return "deployments"
 }
 
 func (o *Deployment) Propose() error {
-	return Put(o, o.url("propose"))
+	return session.put(o, url(o, "propose"))
 }
 
 func (o *Deployment) Commit() error {
-	return Put(o, o.url("commit"))
+	return session.put(o, url(o, "commit"))
 }
 
 func (o *Deployment) Attribs() (res []*Attrib, err error) {
-	res = []*Attrib{}
-	err = Get(res, o.url("attribs"))
-	return res, err
+	return Attribs(url(o))
 }
 
 func (o *Deployment) GetAttrib(a *Attrib) error {
-	return Get(a,o.url(a.url()))
+	return session.get(a, url(o, url(a)))
 }
 
 func (o *Deployment) SetAttrib(a *Attrib) error {
-	return Put(a,o.url(a.url()))
+	return session.put(a, url(o, url(a)))
 }
 
-func Deployments() (res []*Deployment, err error) {
-	res = []*Deployment{}
-	err = Get(res, "deployments")
+func (o *Deployment) Nodes() (res []*Node, err error) {
+	return Nodes(url(o))
+}
+
+func Deployments(paths ...string) (res []*Deployment, err error) {
+	res = make([]*Deployment, 0)
+	buf, err := session.list(append(paths, "deployments")...)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(buf, &res)
 	return res, err
 }

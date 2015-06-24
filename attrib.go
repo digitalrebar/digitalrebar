@@ -1,8 +1,8 @@
 package crowbar
 
 import (
+	"encoding/json"
 	"log"
-	"path"
 	"strconv"
 )
 
@@ -22,7 +22,7 @@ type Attrib struct {
 	UpdatedAt   string      `json:"updated_at,omitempty"`
 }
 
-func (o *Attrib) id() string {
+func (o *Attrib) Id() string {
 	if o.ID != 0 {
 		return strconv.FormatInt(o.ID, 10)
 	} else if o.Name != "" {
@@ -33,36 +33,16 @@ func (o *Attrib) id() string {
 	}
 }
 
-func (o *Attrib) url(parts ...string) string {
-	return path.Join(append([]string{"attribs",o.id()}, parts...)...)
+func (o *Attrib) ApiName() string {
+	return "attribs"
 }
 
-func (o *Attrib) Get() error {
-	return Get(o, o.url())
-}
-
-func (o *Attrib) Delete() error {
-	return Delete(o.url())
-}
-
-func (o *Attrib) Create() error {
-	return Post(o, "attribs")
-}
-
-func (o *Attrib) Update() error {
-	return Put(o, o.url())
-}
-
-func (o *Attrib) Propose() error {
-	return Put(o, o.url("propose"))
-}
-
-func (o *Attrib) Commit() error {
-	return Put(o, o.url("commit"))
-}
-
-func Attribs() (res []*Attrib, err error) {
-	res = []*Attrib{}
-	err = Get(res, "attribs")
+func Attribs(paths ...string) (res []*Attrib, err error) {
+	res = make([]*Attrib, 0)
+	buf, err := session.list(append(paths, "attribs")...)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(buf, &res)
 	return res, err
 }
