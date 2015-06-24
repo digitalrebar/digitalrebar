@@ -59,57 +59,50 @@ class DnsNameFilter < ActiveRecord::Base
     patterns = {
         '{{node.name}}' => (n.name ? n.name.split('.')[0] : ''),
         '{{node.id}}' => n.id.to_s,
-        '{{node.mac}}' => (mac ? mac.gsub(':','-') : '')
+        '{{node.mac}}' => (mac ? mac.gsub(':','-') : ''),
+        '{{node.deployment}}' => n.deployment.name
     }
-    name = template
+    lname = template
     patterns.each do |p,v|
-      name.gsub!(p,v)
+      lname = lname.gsub(p,v)
     end
-    name
+    lname
   end
 
   def claim_and_update(na)
     # Only if we have an active service should we claim things.
     return false unless BarclampDns::MgmtService.get_service(service)
 
-    dne = DnsNameEntry.for_network_allocation(na).first
+    # Is there an entry for this pair
+    dne = DnsNameEntry.for_network_allocation_and_filter(na, self).first # Should be only
 
-    if (claims(na))
-      if (dne)
-        # if already claimed, make sure we have latest name
-        if (dne.dns_name_filter == self)
-          new_name = make_name(na.node)
-          if dne.name != new_name
-            BarclampDns::MgmtService.remove_ip_address(dne)
-            dne.name = new_name
-            dne.save!
-            BarclampDns::MgmtService.add_ip_address(dne)
-          end
-          return true
+    if claims(na)
+      if dne
+        new_name = make_name(na.node)
+        if dne.name != new_name
+          BarclampDns::MgmtService.remove_ip_address(dne)
+          dne.name = new_name
+          dne.save!
+          BarclampDns::MgmtService.add_ip_address(dne)
         end
-
-        # only claim if higher priority (lower priority number)
-        return false if (dne.dns_name_filter.priority < priority)
-
-        dne.release
+      else
+        DnsNameEntry.create!(dns_name_filter: self, network_allocation: na, name: make_name(na.node), rr_type: (na.address.v4? ? 'A' : 'AAAA'))
       end
-      DnsNameEntry.create!(dns_name_filter: self, network_allocation: na, name: make_name(na.node), rr_type: (na.address.v4? ? 'A' : 'AAAA'))
       return true
     end
 
-    if (dne && dne.dns_name_filter == self)
-      dne.release
-    end
+    dne.release if dne
     false
   end
 
   def self.claim_by_any(na)
+    claimed = false
     DnsNameFilter.transaction do
       DnsNameFilter.order("priority ASC").each do |dnf|
-        return true if dnf.claim_and_update(na)
+        claimed ||= dnf.claim_and_update(na)
       end
     end
-    false
+    claimed
   end
 
   def on_change_hooks

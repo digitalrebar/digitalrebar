@@ -285,9 +285,9 @@ describe 'dns_name_filter' do
     dnf2 = FactoryGirl.create(:dns_name_filter, matcher: 'deployment.name == "system"', priority: 2)
 
     dnes = DnsNameEntry.all
-    expect(dnes.length).to be(1)
+    expect(dnes.length).to be(2)
     expect(dnes[0].network_allocation).to eq(na)
-    expect(dnes[0].dns_name_filter).to eq(dnf)
+    expect(dnes[1].network_allocation).to eq(na)
 
     dnf.destroy
 
@@ -314,9 +314,9 @@ describe 'dns_name_filter' do
     dnf2 = FactoryGirl.create(:dns_name_filter, matcher: 'deployment.name == "system"', priority: 1)
 
     dnes = DnsNameEntry.all
-    expect(dnes.length).to be(1)
+    expect(dnes.length).to be(2)
     expect(dnes[0].network_allocation).to eq(na)
-    expect(dnes[0].dns_name_filter).to eq(dnf2)
+    expect(dnes[1].network_allocation).to eq(na)
 
     dnf.destroy
 

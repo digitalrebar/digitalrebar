@@ -64,8 +64,9 @@ class BarclampDns::MgmtService < Service
   end
 
   def on_network_allocation_delete(na)
-    dne = DnsNameEntry.for_network_allocation(na).first
-    dne.release if dne
+    DnsNameEntry.for_network_allocation(na).each do |dne|
+      dne.release
+    end
   end
 
   def self.get_service(service_name)
