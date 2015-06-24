@@ -24,6 +24,7 @@ class DnsNameEntry < ActiveRecord::Base
 
   scope :for_filter, ->(dnf) { where(:dns_name_filter_id => dnf.id) }
   scope :for_network_allocation, ->(na) { where(:network_allocation_id => na.id) }
+  scope :for_network_allocation_and_filter, ->(na,dnf) { where(:dns_name_filter_id => dnf.id, :network_allocation_id => na.id)}
 
   def on_destroy_hooks
     BarclampDns::MgmtService.remove_ip_address(self)
