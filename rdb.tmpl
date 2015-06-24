@@ -17,5 +17,6 @@ $TTL 1h
 @ NS {{.ServerName}}.
 
 ; Per-host records
-{{.Domain}}. IN PTR {{.Name}}.
+{{range $name := .Names}}
+{{$.Domain}} IN PTR {{$name}} {{end}}
 

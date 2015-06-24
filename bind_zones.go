@@ -83,7 +83,7 @@ type bindRZoneData struct {
 	Domain     string
 	ServerName string
 	Serial     string
-	Name       string
+	Names      []string
 }
 
 func makeRevName(t string, address string) string {
@@ -151,30 +151,44 @@ func (di *BindDnsInstance) PatchZone(zones *ZoneTracker, zoneName string, rec Re
 
 		serial := make_serial()
 
-		// Build reverse maps
+		revparts := make(map[string](map[string][]string))
+
+		// Build reverse maps - find all IPs to Names
 		for name, entry := range zone.Entries {
 			for t, contents := range entry.Types {
 				for _, content := range contents {
-					rvName := makeRevName(t, content.Content)
-					revz = append(revz, rvName)
-
-					rdata := bindRZoneData{
-						Domain:     rvName,
-						Serial:     serial,
-						ServerName: di.ServerName,
-						Name:       name + "." + zoneName,
+					if revparts[content.Content] == nil {
+						revparts[content.Content] = make(map[string][]string)
+					}
+					if revparts[content.Content][t] == nil {
+						revparts[content.Content][t] = make([]string, 0, 3)
 					}
 
-					rfile, err := os.Create("/etc/bind/" + zoneName + "/rdb." + rvName)
-					defer rfile.Close()
-					if err != nil {
-						return Zone{}, &backendError{err.Error(), http.StatusInternalServerError}
-					}
-					err = di.Templates.ExecuteTemplate(rfile, "rdb.tmpl", rdata)
-					if err != nil {
-						return Zone{}, &backendError{err.Error(), http.StatusInternalServerError}
-					}
+					revparts[content.Content][t] = append(revparts[content.Content][t], name+"."+zoneName)
+				}
+			}
+		}
 
+		for ip, m := range revparts {
+			for t, list := range m {
+				rvName := makeRevName(t, ip)
+				revz = append(revz, rvName)
+
+				rdata := bindRZoneData{
+					Domain:     rvName,
+					Serial:     serial,
+					ServerName: di.ServerName,
+					Names:      list,
+				}
+
+				rfile, err := os.Create("/etc/bind/" + zoneName + "/rdb." + rvName)
+				defer rfile.Close()
+				if err != nil {
+					return Zone{}, &backendError{err.Error(), http.StatusInternalServerError}
+				}
+				err = di.Templates.ExecuteTemplate(rfile, "rdb.tmpl", rdata)
+				if err != nil {
+					return Zone{}, &backendError{err.Error(), http.StatusInternalServerError}
 				}
 			}
 		}
