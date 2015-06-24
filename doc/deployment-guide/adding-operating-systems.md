@@ -14,6 +14,8 @@ As of April 2015, the provisioner knows how to install the following operating s
  * `redhat-7.0`: `rhel-server-7.0-x86_64-dvd.iso`
  * `debian-7.8.0`: `debian-7.8.0-mini-amd64.iso`
    * *NOTE* This is really the netboot mini.iso renamed.  This can be found [here](http://ftp.nl.debian.org/debian/dists/wheezy/main/installer-amd64/current/images/netboot/mini.iso)
+ * `debian-8.1.0 : `debian-8.1.0-mini-amd64.iso`
+  * *NOTE* This is really the netboot mini.iso renamed.  This can be found [here](http://ftp.nl.debian.org/debian/dists/jessie/main/installer-amd64/current/images/netboot/mini.iso)
  * `Mirantis Fuel 6.0`: `MirantisOpenStack-6.0.iso`
  * `ESXi 5.5`: `VMware-VMvisor-Installer-5.5.0.update02-2068190.x86_64.iso`
  * `Xen Server 6.5`: `XenServer-6.5.0-xenserver.org-install-cd.iso`
