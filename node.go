@@ -50,14 +50,6 @@ func (o *Node) Attribs() (res []*Attrib, err error) {
 	return Attribs(url(o))
 }
 
-func (o *Node) GetAttrib(a *Attrib) error {
-	return session.get(a, url(o, url(a)))
-}
-
-func (o *Node) SetAttrib(a *Attrib) error {
-	return session.put(a, url(o, url(a)))
-}
-
 func (o *Node) Deployment() (res *Deployment, err error) {
 	res = &Deployment{ID: o.DeploymentID}
 	err = Read(res)

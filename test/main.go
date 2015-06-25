@@ -28,7 +28,7 @@ func main() {
 	log.Print(string(blob))
 	log.Print("")
 	cak := &crowbar.Attrib{Name: "crowbar-access_keys"}
-	err = system.GetAttrib(cak)
+	cak, err = crowbar.GetAttrib(system,cak)
 	if err != nil {
 		log.Panic(err)
 	}

@@ -49,14 +49,6 @@ func (o *Role) Attribs() (res []*Attrib, err error) {
 	return res, err
 }
 
-func (o *Role) GetAttrib(a *Attrib) error {
-	return session.get(a, url(o, url(a)))
-}
-
-func (o *Role) SetAttrib(a *Attrib) error {
-	return session.put(a, url(o, url(a)))
-}
-
 func Roles(paths ...string) (res []*Role, err error) {
 	res = make([]*Role, 0)
 	return res, session.list(&res, append(paths, "roles")...)

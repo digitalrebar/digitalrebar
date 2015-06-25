@@ -43,14 +43,6 @@ func (o *Deployment) Attribs() (res []*Attrib, err error) {
 	return Attribs(url(o))
 }
 
-func (o *Deployment) GetAttrib(a *Attrib) error {
-	return session.get(a, url(o, url(a)))
-}
-
-func (o *Deployment) SetAttrib(a *Attrib) error {
-	return session.put(a, url(o, url(a)))
-}
-
 func (o *Deployment) Nodes() (res []*Node, err error) {
 	return Nodes(url(o))
 }
