@@ -1,7 +1,6 @@
 package crowbar
 
 import (
-	"encoding/json"
 	"log"
 	"strconv"
 )
@@ -60,10 +59,5 @@ func (o *Role) SetAttrib(a *Attrib) error {
 
 func Roles(paths ...string) (res []*Role, err error) {
 	res = make([]*Role, 0)
-	buf, err := session.list(append(paths, "roles")...)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(buf, &res)
-	return res, err
+	return res, session.list(&res, append(paths, "roles")...)
 }

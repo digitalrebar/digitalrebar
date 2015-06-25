@@ -1,7 +1,6 @@
 package crowbar
 
 import (
-	"encoding/json"
 	"log"
 	"strconv"
 )
@@ -58,10 +57,5 @@ func (o *Deployment) Nodes() (res []*Node, err error) {
 
 func Deployments(paths ...string) (res []*Deployment, err error) {
 	res = make([]*Deployment, 0)
-	buf, err := session.list(append(paths, "deployments")...)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(buf, &res)
-	return res, err
+	return res, session.list(&res,append(paths, "deployments")...)
 }

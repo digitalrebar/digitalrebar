@@ -1,7 +1,6 @@
 package crowbar
 
 import (
-	"encoding/json"
 	"log"
 	"strconv"
 )
@@ -39,10 +38,5 @@ func (o *Attrib) ApiName() string {
 
 func Attribs(paths ...string) (res []*Attrib, err error) {
 	res = make([]*Attrib, 0)
-	buf, err := session.list(append(paths, "attribs")...)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(buf, &res)
-	return res, err
+	return res, session.list(&res,append(paths, "attribs")...)
 }

@@ -103,19 +103,16 @@ func (c *ocbClient) request(method, uri string, objIn []byte) (objOut []byte, er
 	req.Header.Set("User-Agent", "gobar/v1.0")
 	req.Header.Set("Accept", "application/json")
 
-	log.Print("1")
 	resp, err := session.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	log.Print("2")
 	objOut, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 	// if token expires, then try again
 	if resp.StatusCode == 401 {
-		log.Print("3")
 		err = session.Challenge.parseChallenge(resp.Header.Get("WWW-Authenticate"))
 		if err != nil {
 			return nil, err
@@ -123,10 +120,8 @@ func (c *ocbClient) request(method, uri string, objIn []byte) (objOut []byte, er
 			return c.request(method, uri, objIn)
 		}
 	} else if resp.StatusCode >= 300 {
-		log.Print("4")
 		return nil, fmt.Errorf("Expected status in the 200 range, got %s", resp.Status)
 	}
-	log.Print("8")
 	return objOut, nil
 }
 
@@ -169,9 +164,12 @@ func (c *ocbClient) destroy(uri ...string) error {
 	return err
 }
 
-func (c *ocbClient) list(uri ...string) (buf []byte, err error) {
-	buf, err = c.request("GET", path.Join(uri...), nil)
-	return buf, err
+func (c *ocbClient) list(res interface{}, uri ...string) (err error) {
+	buf, err := c.request("GET", path.Join(uri...), nil)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(buf,&res)
 }
 
 func h(data string) string {
