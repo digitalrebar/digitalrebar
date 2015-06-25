@@ -102,5 +102,7 @@ if [ -e /root/.ssh/authorized_keys ] ; then
 fi
 
 # GREG: build_json_file
-# GREG: store_json_file_in_consul
+
+CONSUL_MACL=$(jq .acl_master_token </etc/consul.d/default.json | awk -F\" '{ print $2 }')
+curl -X PUT --data-binary @json_file.json http://127.0.0.1:8500/v1/kv/opencrowbar/private/bootstrap?token=$CONSUL_MACL
 
