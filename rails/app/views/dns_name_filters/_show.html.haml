@@ -18,4 +18,5 @@
         %td= text_field_tag :service, filter.service, :size=>20
 
   %input.button{:type => "submit", :value => t('update')}
+  = link_to "Destroy", dns_name_filter_path(filter.id), :class => 'button', :method => :delete, data: { confirm: "Are you certain you want to destroy #{filter.name}?" }
 

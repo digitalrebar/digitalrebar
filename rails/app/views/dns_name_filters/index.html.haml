@@ -18,6 +18,7 @@
         %td= dnf.template
         %td= dnf.service
         %td
+          = link_to "Destroy", dns_name_filter_path(dnf.id), :class => 'button', :method => :delete, data: { confirm: "Are you certain you want to destroy #{dnf.name}?" }
   %tfoot
     = form_for :dns_name_filter, :'data-remote' => true, :url => dns_name_filters_path(), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
       %tr

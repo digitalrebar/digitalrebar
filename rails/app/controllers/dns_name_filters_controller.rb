@@ -61,7 +61,10 @@ class DnsNameFiltersController < ::ApplicationController
   def destroy
     @filter = DnsNameFilter.find_key(params[:id])
     @filter.destroy
-    render api_delete @filter
+    respond_to do |format|
+      format.html { redirect_to dns_name_filters_path() }
+      format.json { render api_delete @filter }
+    end
   end
 
   def edit
