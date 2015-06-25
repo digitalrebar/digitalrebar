@@ -17,8 +17,14 @@ set -e
 date
 
 . /etc/profile
-cd /opt/opencrowbar/core
-. ./bootstrap.sh
+
+hostname_re='([[:alnum:]]+\.){2,}[[:alnum:]]+'
+
+check_hostname() {
+    [[ $(hostname) =~ $hostname_re ]] && return
+    echo "The hostname for the system must already be set to its proper name!"
+    exit 1
+}
 
 check_hostname
 
@@ -51,10 +57,6 @@ if [[ $upstream_proxy ]]; then
         attrib proxy-upstream_proxy \
         to "{\"value\": \"${upstream_proxy}\"}"
 fi
-
-crowbar roles set provisioner-os-install \
-    attrib provisioner-target_os \
-    to '{"value": "centos-7.1.1503"}'
 
 set -e
 set -x
@@ -140,16 +142,6 @@ bmc_net='
     "pref": "99"
   }
 }'
-
-
-admin_node="
-{
-  \"name\": \"$FQDN\",
-  \"admin\": true,
-  \"alive\": false,
-  \"bootenv\": \"local\"
-}
-"
 
 ###
 # This should vanish once we have a real bootstrapping story.

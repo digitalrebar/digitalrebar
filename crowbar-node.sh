@@ -108,7 +108,7 @@ else
     echo "Node already committed, moving on"
 fi
 
-# Always make sure we are marking the node not alive. It will comeback later.
+# Always make sure we are marking the node alive. It will comeback later.
 curl -f -g --digest -u "$CROWBAR_KEY" \
     -X PUT "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME" \
     -d 'alive=true' \
