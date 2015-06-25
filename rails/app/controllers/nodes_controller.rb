@@ -133,7 +133,7 @@ class NodesController < ApplicationController
         render api_not_implemented @node, @poweraction, @node.power.keys
       end
     elsif request.get?
-      render api_array @node.power
+      render api_array @node.power.keys
     end
 
   end
