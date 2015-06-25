@@ -3,6 +3,8 @@ package crowbar
 import (
 	"log"
 	"strconv"
+	"encoding/json"
+	"fmt"
 )
 
 type Node struct {
@@ -44,6 +46,19 @@ func (o *Node) Propose() error {
 
 func (o *Node) Commit() error {
 	return session.put(o, url(o, "commit"))
+}
+
+func (o *Node) PowerActions() ([]string, error) {
+	buf, err := session.request("GET",url(o,"power"), nil)
+	if err != nil {
+		return nil, err
+	}
+	res := []string{}
+	return res, json.Unmarshal(buf,&res)
+}
+
+func (o *Node) Power(action string) error {
+	return session.put(o,url(o,fmt.Sprintf("power?poweraction=%v",action)))
 }
 
 func (o *Node) Attribs() (res []*Attrib, err error) {
