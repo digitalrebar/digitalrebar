@@ -35,6 +35,38 @@ HOSTNAME=${FQDN%%.*}
 
 set -x
 
+# Add required services
+services=(provisioner-service crowbar-api_service crowbar-job_runner_service)
+for role in "${services[@]}"; do
+    crowbar nodes bind "system-phantom.internal.local" to "$role"
+done
+crowbar nodes commit "system-phantom.internal.local"
+
+# Bind the admin role to it, and commit the resulting
+# proposed noderoles.
+crowbar nodes bind "$FQDN" to crowbar-build-root-key
+crowbar nodes bind "$FQDN" to crowbar-api_server
+crowbar nodes bind "$FQDN" to crowbar-job_runner
+
+# Setup Up provisioner.
+crowbar nodes bind "$FQDN" to provisioner-server
+crowbar nodes bind "$FQDN" to provisioner-database
+crowbar nodes bind "$FQDN" to provisioner-repos
+crowbar nodes bind "$FQDN" to provisioner-docker-setup
+
+# Add the now mostly empty admin-node
+crowbar nodes bind "$FQDN" to crowbar-admin-node
+
+# GREG: get_json_file_in_consul
+# GREG: create services
+# GREG: Think about this.
+# crowbar nodes set "system-phantom.internal.local" attrib dns-domain to "{ \"value\": \"$DOM    AINNAME\" }"
+# GREG: create servers
+# GREG: create networks
+# GREG: join networks
+# GREG: Add access keys
+
+# GREG: Fix this
 admin_net_name='the_admin'
 
 # Figure out what IP addresses we should have, and add them.

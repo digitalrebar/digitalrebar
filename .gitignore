@@ -28,6 +28,9 @@ erl_crash.dump
 # Coverage 
 /core/rails/coverage/
 
+# Config files
+/config/ssh_keys/admin*
+
 # Docs Index
 /doc/README.md.new
 
