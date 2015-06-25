@@ -148,9 +148,9 @@ describe 'dns_name_filter' do
   end
 
   it 'must handle make_name returning a string' do
-    dnf = FactoryGirl.create(:dns_name_filter, template: '{{node.name}}..{{node.id}}..{{node.mac}}..{{node.cow}}')
-    n = FactoryGirl.create(:node, name: 'fred.drolling.pig')
-    expect(dnf.make_name(n)).to eq("fred..#{n.id}....{{node.cow}}")
+    dnf = FactoryGirl.create(:dns_name_filter, template: '{{node.name}}..{{node.id}}..{{node.mac}}..{{network.name}}..{{network.range}}..{{network.category}}..{{node.cow}}')
+    na = make_network_allocation('public', 'squeaky', 'rangy')
+    expect(dnf.make_name(n)).to eq("nodey..#{na.node.id}....squeaky..rangy..public..{{node.cow}}")
   end
 
   it 'must return false if can not claim_and_update' do

@@ -52,10 +52,10 @@ class BarclampDns::MgmtService < Service
       DnsNameFilter.claim_by_any(na)
     end
   end
-
+  
   def on_node_change(n)
     NetworkAllocation.node(n).each do |na|
-     DnsNameFilter.claim_by_any(na)
+      DnsNameFilter.claim_by_any(na)
     end
   end
 

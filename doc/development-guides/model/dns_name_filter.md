@@ -9,8 +9,7 @@ The first mandatory component is *system*.  This is a string that matches the na
 The DNS management service will be looked up and its API called to add or remove Name/IP(v6) pairs.
 
 The second mandatory component is *prioirty*. This is an integer value that must be unique amoung all filters.  This defines an order
-from lowest to highest integer value.  The filters are evaluated in this order.  The first matching filter is applied to the 
-network allocation in question.
+from lowest to highest integer value.  The filters are evaluated in this order.
 
 The third mandatory component is *matcher*.  This is a string that defines a matching string that is decoded and 
 used to match network allocations.
@@ -35,6 +34,10 @@ The template is a string that is an FQDN with the following strings that can be 
 * {{node.name}} - the current name of the noade truncated at the first '.'
 * {{node.id}} - The id of the node in integer form
 * {{node.mac}} - The mac address of the node with the '.' or ':' replaced with '-'
+* {{node.deployment}} - The deployment name of the node
+* {{network.name}} - The name of the network used for this allocation
+* {{network.range}} - The range of the network used for this allocation
+* {{network.category}} - The category of the network used for this allocation.
 
 The system will build matches for both IPv4 and IPv6 allocations.
 
