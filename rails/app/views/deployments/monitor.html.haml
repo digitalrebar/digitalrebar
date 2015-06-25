@@ -48,12 +48,14 @@
         "5": "active",
       },
       'name': {
-        '-1': "Error", //need to change this to fetch strings from string table
+        //t('en.common.state.error')
+        //t('.error')
+        '-1': '#{t("common.state.error")}', //need to change this to fetch strings from string table
         "0": " - ",
-        "-6": "Todo",
-        "2": "Ready",
-        "-3": "Blocked",
-        "5": "Active",
+        "-6": '#{t("common.state.todo")}',
+        "2": '#{t("common.state.ready")}',
+        "-3": '#{t("common.state.blocked")}',
+        "5": '#{t("common.state.active")}',
       }
     },
     barWidth: 10,
