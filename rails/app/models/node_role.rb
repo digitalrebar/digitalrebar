@@ -233,6 +233,16 @@ class NodeRole < ActiveRecord::Base
       res.rebind_attrib_parents
       r.on_node_bind(res)
     end
+
+    # We only call on_node_change when the node is available to prevent Crowbar
+    # from noticing changes it should not notice yet.
+    # on_node_bind is specific callback for the adding node.  Let the other roles
+    # know that the node has changed.
+    Role.all_cohorts.each do |r2|
+      Rails.logger.debug("Node: Calling #{r2.name} on_node_change for #{n.name}")
+      r2.on_node_change(n)
+    end if n.available?
+
     res
   end
 

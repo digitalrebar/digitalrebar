@@ -22,5 +22,5 @@ specified in crowbar-config.sh along with external service registration.
 
 The third component of the DNS subsystem are filters.  The Name filters provide a mechanism to generate names for address 
 allocations on nodes.  These name/IP pairs are sent to a specified DNS management service to handle updating the DNS server.
-Filters are ordered and evaluated until matched.  Once matched, a name is generate and the service is called.  A template
-system is used to generate names from node attributes.
+Filters are ordered and evaluated.  Once matched, a name is generate and the service is called.  A template
+system is used to generate names from node attributes.  All matching filters will be applied.

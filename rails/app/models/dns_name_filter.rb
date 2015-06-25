@@ -54,13 +54,17 @@ class DnsNameFilter < ActiveRecord::Base
     true
   end
 
-  def make_name(n)
+  def make_name(na)
+    n = na.node
     mac = Attrib.get('hint-admin-macs', n).first rescue ''
     patterns = {
         '{{node.name}}' => (n.name ? n.name.split('.')[0] : ''),
         '{{node.id}}' => n.id.to_s,
         '{{node.mac}}' => (mac ? mac.gsub(':','-') : ''),
-        '{{node.deployment}}' => n.deployment.name
+        '{{node.deployment}}' => n.deployment.name,
+        '{{network.name}}' => na.network.name,
+        '{{network.range}}' => na.network_range.name,
+        '{{network.category}}' => na.network.category
     }
     lname = template
     patterns.each do |p,v|
@@ -77,8 +81,8 @@ class DnsNameFilter < ActiveRecord::Base
     dne = DnsNameEntry.for_network_allocation_and_filter(na, self).first # Should be only
 
     if claims(na)
+      new_name = make_name(na)
       if dne
-        new_name = make_name(na.node)
         if dne.name != new_name
           BarclampDns::MgmtService.remove_ip_address(dne)
           dne.name = new_name
@@ -86,7 +90,7 @@ class DnsNameFilter < ActiveRecord::Base
           BarclampDns::MgmtService.add_ip_address(dne)
         end
       else
-        DnsNameEntry.create!(dns_name_filter: self, network_allocation: na, name: make_name(na.node), rr_type: (na.address.v4? ? 'A' : 'AAAA'))
+        DnsNameEntry.create!(dns_name_filter: self, network_allocation: na, name: new_name, rr_type: (na.address.v4? ? 'A' : 'AAAA'))
       end
       return true
     end
@@ -99,7 +103,8 @@ class DnsNameFilter < ActiveRecord::Base
     claimed = false
     DnsNameFilter.transaction do
       DnsNameFilter.order("priority ASC").each do |dnf|
-        claimed ||= dnf.claim_and_update(na)
+        c = dnf.claim_and_update(na)
+        claimed ||= c
       end
     end
     claimed
