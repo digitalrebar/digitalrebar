@@ -150,7 +150,7 @@ describe 'dns_name_filter' do
   it 'must handle make_name returning a string' do
     dnf = FactoryGirl.create(:dns_name_filter, template: '{{node.name}}..{{node.id}}..{{node.mac}}..{{network.name}}..{{network.range}}..{{network.category}}..{{node.cow}}')
     na = make_network_allocation('public', 'squeaky', 'rangy')
-    expect(dnf.make_name(n)).to eq("nodey..#{na.node.id}....squeaky..rangy..public..{{node.cow}}")
+    expect(dnf.make_name(na)).to eq("nodey..#{na.node.id}....squeaky..rangy..public..{{node.cow}}")
   end
 
   it 'must return false if can not claim_and_update' do
