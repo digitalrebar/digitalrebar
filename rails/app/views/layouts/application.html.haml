@@ -17,27 +17,28 @@
         %h1
           %a{:href => "/"}
             %span logo
-        - if current_user or session[:digest_user]
-          %div{:style=>'float:right; padding-top:10px; z-index:10; height:0px'}
-            -if session[:digest_user]
-              = t 'user.digested_as', :user=>session[:digest_user]
-            -else
-              = t 'user.signed_in_as', :user=>current_user.username
-            (
-            = link_to t('user.sign_out'), main_app.destroy_user_session_path(), :method=>'delete' rescue t('error')
-            )
-            %a{:href=>annealer_path}
-              = image_tag('icons/led/active.png', :id=>"active_led")
-              %span#active_heartbeat= "?"
-              = image_tag('icons/led/todo.png', :id=>"todo_led", :style=>"display:none")
-              %span#todo_heartbeat= ""
-              = image_tag('icons/led/error.png', :id=>"error_led", :style=>"display:none")
-              %span#error_heartbeat= ""
-          %nav
-            = render_navigation :expand_all => true, :skip_if_empty => true
-        - else
-          %nav
-            = link_to t('user.sign_in'),  main_app.new_user_session_path
+        %div{:style => 'float: right'}
+          - if current_user or session[:digest_user]
+            %div{:style=>'float: right; padding-top:10px; z-index:10; height:0px'}
+              -if session[:digest_user]
+                = t 'user.digested_as', :user=>session[:digest_user]
+              -else
+                = t 'user.signed_in_as', :user=>current_user.username
+              (
+              = link_to t('user.sign_out'), main_app.destroy_user_session_path(), :method=>'delete' rescue t('error')
+              )
+              %a{:href=>annealer_path}
+                = image_tag('icons/led/active.png', :id=>"active_led")
+                %span#active_heartbeat= "?"
+                = image_tag('icons/led/todo.png', :id=>"todo_led", :style=>"display:none")
+                %span#todo_heartbeat= ""
+                = image_tag('icons/led/error.png', :id=>"error_led", :style=>"display:none")
+                %span#error_heartbeat= ""
+            %nav
+              = render_navigation :expand_all => true, :skip_if_empty => true
+          - else
+            %nav
+              = link_to t('user.sign_in'),  main_app.new_user_session_path
     - if flash[:notice]
       .notice#flash
         .container
