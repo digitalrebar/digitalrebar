@@ -27,10 +27,10 @@
     type: "tristate",
     colorMap: {
       '-1': "#f00",
-      "1": "#777",
+      "-6": "#777",
       "2": "#0f0",
-      "3": "#ccc",
-      "5": "#000",
+      "-3": "#ccc",
+      "5": "#2b2",
       "0": "#aae",
     },
     tooltipFormat: '<strong>{{offset:role}}</strong><br/><span class="led {{value:led}}" style="display:inline-block;"></span>{{value:name}}',
@@ -48,7 +48,7 @@
         "5": "active",
       },
       'name': {
-        '-1': "Error",
+        '-1': "Error", //need to change this to fetch strings from string table
         "0": " - ",
         "-6": "Todo",
         "2": "Ready",
@@ -56,9 +56,8 @@
         "5": "Active",
       }
     },
-    tooltipPrefix: "cats",
     barWidth: 10,
-    barSpacing: 3,
+    barSpacing: 2,
   };
 
   function update() {
@@ -76,7 +75,8 @@
         //console.log(node.name+", "+Object.keys(node.roles));
         if(!nodes[node.id]) {
           $('#nodelist').append(
-            $('<tr id="li'+node.id+'"><td><span class="'+node.led+' led"></span></td><td class="nodename"><a href="'+node.path+'" title="'+node.description+'">'+node.name+'</a></td><td id="node'+node.id+'"></span></td>'));
+            $('<tr id="li'+node.id+'"'+(node.admin ? ' style="font-weight: bold;"' : '')+'><td><span class="'+node.led+' led"></span></td><td class="nodename"><a href="'+node.path+'" title="'+node.description+'">'+node.name+'</a></td><td id="node'+node.id+'"></span></td>')
+          );
         }
         var graph = $('#node'+node.id);
         var items = [];
@@ -93,7 +93,7 @@
               1: -6 //todo is pointing down and -1 is taken by error
             };
             if(swap[value])
-              value = swap[value]
+              value = swap[value];
           }
           items.push([value]);
         }

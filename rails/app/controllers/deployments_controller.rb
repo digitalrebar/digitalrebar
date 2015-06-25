@@ -125,6 +125,9 @@ class DeploymentsController < ApplicationController
       (n.node_roles.where(:deployment_id => @deployment.id).count > 0))
     end
 
+    admins = nodes.select{|n| n.admin}
+    nodes = admins + (nodes - admins)
+
     state = @deployment.state rescue Deployment::ERROR
 
     out = {
@@ -157,6 +160,7 @@ class DeploymentsController < ApplicationController
     out[:nodes] = nodes.map do |node|
       n = {
         name: node.name,
+        admin: node.admin,
         id: node.id,
         roles: {},
         description: node.description,
