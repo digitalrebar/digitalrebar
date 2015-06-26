@@ -99,19 +99,23 @@ class Attrib < ActiveRecord::Base
           when from.is_a?(Hash) then from
           when from.is_a?(Node)
             case source
+            when :proposed,:committed,:hint,:user then from.hint
             when :all then from.discovery.deep_merge(from.hint)
-            when :hint,:user then from.hint
             else from.discovery
             end
           when from.is_a?(DeploymentRole)
             case source
+            when :proposed then from.all_data(false)
+            when :committed then from.all_data(true)
             when :all then from.wall.deep_merge(from.all_data(committed))
             when :hint, :user then from.all_data(committed)
-            when :wall then from.wall
+            when :wall,:system then from.wall
             else from.data
             end
           when from.is_a?(NodeRole)
             case source
+            when :proposed then from.attrib_data(false)
+            when :committed then from.attrib_data(true)
             when :all then from.attrib_data(committed)
             when :wall then from.wall
             when :system then from.sysdata
