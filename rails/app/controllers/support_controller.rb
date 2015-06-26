@@ -95,6 +95,22 @@ class SupportController < ApplicationController
     end
   end
 
+  def bootstrap
+
+    if request.put?
+      if params[:raw]
+        ConsulAccess::setKey(Rails.configuration.crowbar.bootstrap_key, params[:data])
+      end
+    end
+
+    @config = JSON.parse(ConsulAccess::getKey(Rails.configuration.crowbar.bootstrap_key))
+
+    respond_to do |format|
+      format.html # index.html.haml
+      format.json { render :json => @config }
+    end
+  end
+
   # used by BDD to create Admin node
   def bootstrap_post
     # only create if no other netwroks

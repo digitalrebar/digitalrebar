@@ -31,12 +31,20 @@ class ConsulAccess
     Diplomat::Service.get(service_name, scope, options, meta)
   end
 
-  # Wrap the Diplomat access to set common config/values
+  # Wrap the Diplomat access to get common config/values
   def self.getKey(key)
     if Diplomat.configuration.acl_token.nil?
       Diplomat.configuration.acl_token = __cb_consul_config["acl_master_token"]
     end
     Diplomat::Kv.get(key)
+  end
+
+  # Wrap the Diplomat access to set common config/values
+  def self.setKey(key, value)
+    if Diplomat.configuration.acl_token.nil?
+      Diplomat.configuration.acl_token = __cb_consul_config["acl_master_token"]
+    end
+    Diplomat::Kv.put(key, value)
   end
 
 end
