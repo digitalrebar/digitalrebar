@@ -1,0 +1,6 @@
+{
+  "networks_to_join": [
+    "the_admin",
+    "the_bmc"
+  ]
+}

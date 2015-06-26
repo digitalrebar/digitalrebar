@@ -1,0 +1,9 @@
+{
+  "username": "crowbar",
+  "email": "crowbar@localhost.localdomain",
+  "password": "crowbar",
+  "password_confirmation": "crowbar",
+  "remember_me": false,
+  "is_admin": true,
+  "digest": true
+}

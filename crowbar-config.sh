@@ -72,10 +72,7 @@ unmanaged_net='
 }'
 
 # Create the catch all network
-crowbar networks create "$unmanaged_net"
-
-# Join the admin node into the rails app and make it manageable
-./crowbar-node.sh 127.0.0.1
+crowbar networks show 'unmananged' >/dev/null 2>&1 && crowbar networks create "$unmanaged_net"
 
 # Build a map of keys in the /root/.ssh/authorized_keys
 # Record the machine key as well. -- THIS IS NOT GREAT
@@ -89,20 +86,27 @@ if [ -e /root/.ssh/authorized_keys ] ; then
     echo "{ \"value\": {" > /tmp/key_list
     COMMA=""
     cat /root/.ssh/authorized_keys | while read line; do
-        echo "$line" >> config/ssh/"admin-$count.json"
+        echo "$line" > config/ssh_keys/"admin-$count.key"
         echo "$COMMA \"admin-$count\": \"$line\"" >> /tmp/key_list
         count=`expr $count + 1`
         COMMA=","
     done
     echo "} }" >> /tmp/key_list
+    crowbar deployments bind system to crowbar-access >/dev/null 2>&1 || true
     crowbar deployments set system attrib crowbar-access_keys to "`cat /tmp/key_list`"
     crowbar deployments set system attrib crowbar-machine_key to "{ \"value\": \"`cat /etc/crowbar.install.key`\" }"
     crowbar deployments commit system
     rm -rf /tmp/key_list
 fi
 
-# GREG: build_json_file
+# Join the admin node into the rails app and make it manageable
+./crowbar-node.sh 127.0.0.1 'false'
+
+# This may not be needed
+echo "{ \"domain\": \"$DOMAINNAME\" }" > config/domain.json
+
+./crowbar-build-json.rb > config/final.json
 
 CONSUL_MACL=$(jq .acl_master_token </etc/consul.d/default.json | awk -F\" '{ print $2 }')
-curl -X PUT --data-binary @json_file.json http://127.0.0.1:8500/v1/kv/opencrowbar/private/bootstrap?token=$CONSUL_MACL
+curl -X PUT --data-binary @config/final.json http://127.0.0.1:8500/v1/kv/opencrowbar/private/bootstrap?token=$CONSUL_MACL
 

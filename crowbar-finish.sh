@@ -35,6 +35,45 @@ HOSTNAME=${FQDN%%.*}
 
 set -x
 
+# Get config file from consul
+CONSUL_MACL=$(jq .acl_master_token </etc/consul.d/default.json | awk -F\" '{ print $2 }')
+curl "http://127.0.0.1:8500/v1/kv/opencrowbar/private/bootstrap?token=$CONSUL_MACL&raw" > config/processed.json
+
+# Process networks
+admin_nets=()
+network_count=`jq ".networks | length" config/processed.json`
+for ((i=0; i < network_count; i++)) ; do
+  network=`jq ".networks[$i]" config/processed.json`
+  name=`jq -r ".networks[$i].name" config/processed.json`
+  category=`jq -r ".networks[$i].category" config/processed.json`
+  if crowbar networks show $name >/dev/null 2>&1 ; then
+    crowbar networks update $name "$network"
+  else
+    crowbar networks create "$network"
+  fi
+  if [ "$category" == "admin" ] ; then
+    admin_nets=(${admin_nets[@]} $name)
+  fi
+done
+
+function contains () {
+  local arr=(${@:2})
+  local el=$1
+  local marr=(${arr[@]/#$el/})
+  [[ "${#arr[@]}" != "${#marr[@]}" ]]
+}
+
+# join networks
+network_count=`jq ".networks_to_join | length" config/processed.json`
+for ((i=0; i < network_count; i++)) ; do
+  network=`jq -r ".networks_to_join[$i]" config/processed.json`
+  crowbar networks add $network to "$FQDN"
+
+  if contains $network $admin_nets ; then
+    admin_net_name=$network
+  fi
+done
+
 # Add required services
 services=(provisioner-service crowbar-api_service crowbar-job_runner_service)
 for role in "${services[@]}"; do
@@ -54,23 +93,50 @@ crowbar nodes bind "$FQDN" to provisioner-database
 crowbar nodes bind "$FQDN" to provisioner-repos
 crowbar nodes bind "$FQDN" to provisioner-docker-setup
 
+# Process services/servers
+service_count=`jq ".services | length" config/processed.json`
+for ((i=0; i < service_count; i++)) ; do
+  service=`jq ".services[$i]" config/processed.json`
+# GREG: Do someting with $service
+done
+
+# Add keys into the system
+keys=`jq -r .ssh_keys config/processed.json`
+crowbar deployments set system attrib crowbar-access_keys to "{ \"value\": $keys }"
+
+# Add/Update DNS Filters into the system
+filter_count=`jq ".filters | length" config/processed.json`
+for ((i=0; i < filter_count; i++)) ; do
+  user=`jq ".filters[$i]" config/processed.json`
+  name=`jq -r ".filters[$i].name" config/processed.json`
+  if crowbar dnsnamefilters show $name >/dev/null 2>&1 ; then
+    crowbar dnsnamefilters update $name "$user"
+  else
+    crowbar dnsnamefilters create "$user"
+  fi
+done
+
+# Add/Update users into the system
+user_count=`jq ".users | length" config/processed.json`
+for ((i=0; i < user_count; i++)) ; do
+  user=`jq ".users[$i]" config/processed.json`
+  name=`jq -r ".users[$i].name" config/processed.json`
+  if crowbar users show $name >/dev/null 2>&1 ; then
+    crowbar users update $name "$user"
+  else
+    crowbar users create "$user"
+  fi
+done
+
 # Add the now mostly empty admin-node
 crowbar nodes bind "$FQDN" to crowbar-admin-node
 
-# GREG: get_json_file_in_consul
-# GREG: create services
-# GREG: Think about this.
-# crowbar nodes set "system-phantom.internal.local" attrib dns-domain to "{ \"value\": \"$DOM    AINNAME\" }"
-# GREG: create servers
-# GREG: create networks
-# GREG: join networks
-# GREG: Add access keys
-
 # GREG: Fix this
-admin_net_name='the_admin'
+#crowbar nodes set "system-phantom.internal.local" attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
 
 # Figure out what IP addresses we should have, and add them.
 # If the above adds an address, we need to make sure it starts on the node.
+ip_re='([0-9a-f.:]+/[0-9]+)'
 netline=$(crowbar nodes addresses "$FQDN" on $admin_net_name)
 nets=(${netline//,/ })
 for net in "${nets[@]}"; do

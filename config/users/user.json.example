@@ -1,0 +1,9 @@
+{
+  "username": "john",
+  "email": "john@localhost.localdomain",
+  "password": "mypassword",
+  "password_confirmation": "mypassword",
+  "remember_me": false,
+  "is_admin": false,
+  "digest": true
+}
