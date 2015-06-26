@@ -67,15 +67,13 @@
     %tr
       %th= t '.name'
       %th= t '.value'
-      %th= t '.description'
   %tbody
     - @node.attribs.order("name ASC").each do |a|
-      %tr
-        %td= link_to a.name, attrib_path(a.id)
-        %td
-          - v = a.get(@node) rescue nil
+      - v = a.get(@node) rescue nil          
+      %tr{:class => "shrunk " + cycle("even","odd")}
+        %td.name= link_to a.name, attrib_path(a.id), :title => a.description
+        %td.value
           - unless v.nil?
             = v
           - else
             %em= t('not_set')
-        %td= a.description

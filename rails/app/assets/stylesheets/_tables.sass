@@ -56,7 +56,17 @@ table.box
   tr.no-hover
     &:hover, &:active
       background: transparent !important
-      
+  tr.shrunk
+    height: 15px !important
+    td.value
+      height: 15px
+      overflow: hidden
+      text-overflow: ellipsis
+    &:hover
+      td.value
+        overflow: visible
+
+
 table.box.no-hover
   tr
     &:hover, &:active
