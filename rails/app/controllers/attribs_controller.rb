@@ -31,6 +31,7 @@ class AttribsController < ApplicationController
 
   def show
     target = find_target
+    bucket = params[:bucket] ? params[:bucket].to_sym : :all
     @attrib = Attrib.find_key params[:id]
     if target.nil?
       respond_to do |format|
@@ -39,7 +40,7 @@ class AttribsController < ApplicationController
       end
     else
       ret = @attrib.as_json
-      ret["value"] = @attrib.get(target)
+      ret["value"] = @attrib.get(target,bucket)
       respond_to do |format|
         format.html { }
         format.json { render json: ret, content_type: cb_content_type(@attrib, "obj") }

@@ -514,6 +514,12 @@ module OpenCrowbar
       obj
     end
 
+    def do_poweractions(*rest)
+      obj, res = REST.get("#{self.class.path}/#{id}/power")
+      maybe_json_die(obj, res)
+      obj
+    end
+
     def do_debug(*rest)
       obj, res = REST.put("#{self.class.path}/#{id}/debug")
       maybe_json_die(obj,res)
@@ -973,7 +979,7 @@ def run_command
   res = command.run(*(params + rest))
   exit(0) if command.cmd[-1] == "help"
   # We will blow up if we get back non-JSON errors, but that is OK for now.
-  puts JSON.pretty_generate(res.is_a?(Array) ? res.map{|a|a.to_hash} : res.to_hash)
+  puts JSON.pretty_generate(res.is_a?(Array) ? res.map{|a|a.is_a?(CrowbarProxy)? a.to_hash : a } : res.to_hash)
 end
 
 run_command
