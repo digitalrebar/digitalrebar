@@ -544,6 +544,9 @@ en:
       doc_sources: 'Doc Source'
       edge: "Edge UI"
       test: "Test UI"
+    bootstrap:
+      title: "OpenCrowbar Bootstrap Settings"
+      rawdata: "Raw JSON"
   users:
     common: &user_common
       email: Email

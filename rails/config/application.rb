@@ -31,6 +31,7 @@ module Crowbar
     # -- all .rb files in that directory are automatically loaded.
     config.crowbar = ActiveSupport::OrderedOptions.new 
     config.crowbar.version = '2.x'
+    config.crowbar.bootstrap_key = 'opencrowbar/private/bootstrap'
 
     # Custom directories with classes and modules you want to be autoloadable.
     config.autoload_paths += %W(#{config.root}/lib)

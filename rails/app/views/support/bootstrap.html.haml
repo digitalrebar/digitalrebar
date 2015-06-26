@@ -1,0 +1,13 @@
+%h1= t '.title'
+
+=form_for 'bootstrap', url: bootstrap_path(), method: :put, html: { :method => :put, :'data-type' => 'html', :class => "formtastic" } do |f|
+
+  %h3= t '.rawdata'
+
+  %textarea.editor{name: "data"}
+    = JSON.pretty_generate @config
+
+  = hidden_field_tag :raw, true
+
+  %input.button{type: "submit", value: t('update')}
+
