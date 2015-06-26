@@ -4,8 +4,8 @@ package crowbar
 
 import (
 	"fmt"
-	"path"
 	"log"
+	"path"
 )
 
 // Crudder implements basic CRUD operations.
@@ -45,9 +45,16 @@ type Attriber interface {
 	Attribs() ([]*Attrib, error)
 }
 
-// GetAttrib gets an attrib in the context of an Attriber.
-// The returned Attrib will have its value populated.
-func GetAttrib(o Attriber, a *Attrib) (res *Attrib, err error) {
+// GetAttrib gets an attrib in the context of an Attriber.  The
+// returned Attrib will have its value populated from the contents of
+// the passed bucket.  Valid buckets are:
+//
+//    * "proposed"
+//    * "committed"
+//    * "system"
+//    * "wall"
+//    * "all"
+func GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, err error) {
 	res = &Attrib{}
 	if a.ID != 0 {
 		res.ID = a.ID
@@ -56,7 +63,11 @@ func GetAttrib(o Attriber, a *Attrib) (res *Attrib, err error) {
 	} else {
 		log.Panicf("Passed Attrib %v does not have a Name or an ID!", a)
 	}
-	return res, session.get(res, url(o, url(res)))
+	url := url(o, url(res))
+	if bucket != "" {
+		url = fmt.Sprintf("%v?bucket=%v", url, bucket)
+	}
+	return res, session.get(res, url)
 }
 
 // SetAttrib sets the value of an attrib in the context of
