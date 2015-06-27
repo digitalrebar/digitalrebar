@@ -546,7 +546,16 @@ en:
       test: "Test UI"
     bootstrap:
       title: "OpenCrowbar Bootstrap Settings"
+      base: "Base Configuration"
+      net_to_join: "Networks to Join"
+      domain: "Domain"
+      networks: "Networks"
+      users: "Users"
+      filters: "Filters"
+      keys: 'Keys'
+      services: "Services"
       rawdata: "Raw JSON"
+      wizard: "Wizard"
   users:
     common: &user_common
       email: Email

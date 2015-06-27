@@ -98,8 +98,38 @@ class SupportController < ApplicationController
   def bootstrap
 
     if request.put?
-      if params[:raw]
+      if params[:raw] == 'json'
         ConsulAccess::setKey(Rails.configuration.crowbar.bootstrap_key, params[:data])
+      else
+        @config = JSON.parse(ConsulAccess::getKey(Rails.configuration.crowbar.bootstrap_key))
+        @config["domain"] = params["domain"]
+        @config["net_to_join"] = params["net_to_join"].split(",")
+        @config["networks"].each_index do |i|
+          @config["networks"][i] = JSON.parse(params["networks|#{i}"])
+        end
+        if params["networks|new"] != "{}"
+          @config["networks"] << JSON.parse(params["networks|new"])
+        end
+        @config["filters"].each_index do |i|
+          @config["filters"][i] = JSON.parse(params["filters|#{i}"])
+        end
+        if params["filters|new"] != "{}"
+          @config["filters"] << JSON.parse(params["filters|new"])
+        end
+        @config["ssh_keys"].each_key do |k|
+          @config["ssh_keys"][k] = params["ssh_keys|#{k}"]
+        end
+        if params["ssh_keys|new_data"].starts_with? "ssh-rsa"
+          @config["ssh_keys"][params["ssh_keys|new_name"]] = params["ssh_keys|new_data"]
+        end
+        # now save it
+        ConsulAccess::setKey(Rails.configuration.crowbar.bootstrap_key, JSON.pretty_generate(@config))
+ 
+
+
+ #{}"filters|0"=>"{\r\n  \"name\": \"admin-default\",\r\n  \"priority\": 50,\r\n  \"template\": \"{{node.name}}.neode.com\",\r\n  \"matcher\": \"net.category == \\\"admin\\\"\",\r\n  \"service\": \"system\"\r\n}", "filters|new"=>"{}", "services|new"=>"{}"}
+
+
       end
     end
 
