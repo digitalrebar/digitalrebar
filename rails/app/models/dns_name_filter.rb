@@ -95,7 +95,7 @@ class DnsNameFilter < ActiveRecord::Base
       return true
     end
 
-    dne.release if dne
+    dne.destroy! if dne
     false
   end
 
