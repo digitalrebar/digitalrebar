@@ -65,7 +65,7 @@ class BarclampDns::MgmtService < Service
 
   def on_network_allocation_delete(na)
     DnsNameEntry.for_network_allocation(na).each do |dne|
-      dne.release
+      dne.destroy!
     end
   end
 
@@ -97,6 +97,8 @@ class BarclampDns::MgmtService < Service
   def self.update_ip_address(dne, action)
     service = get_service(dne.dns_name_filter.service)
     return unless service
+
+    return unless Rails.env.production?
 
     address = dne.network_allocation.address
     name, domain = dne.name.split('.', 2)

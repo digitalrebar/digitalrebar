@@ -19,25 +19,19 @@ class DnsNameEntry < ActiveRecord::Base
   belongs_to :network_allocation
   belongs_to :dns_name_filter
 
+  before_destroy :on_before_destroy
   after_commit :on_create_hooks, on: :create
-  after_commit :on_destroy_hooks, on: :destroy
 
   scope :for_filter, ->(dnf) { where(:dns_name_filter_id => dnf.id) }
   scope :for_network_allocation, ->(na) { where(:network_allocation_id => na.id) }
   scope :for_network_allocation_and_filter, ->(na,dnf) { where(:dns_name_filter_id => dnf.id, :network_allocation_id => na.id)}
 
-  def on_destroy_hooks
+  def on_before_destroy
     BarclampDns::MgmtService.remove_ip_address(self)
-    DnsNameFilter.claim_by_any(self.network_allocation.reload) if self.network_allocation
   end
 
   def on_create_hooks
     BarclampDns::MgmtService.add_ip_address(self)
-  end
-
-  def release
-    self.network_allocation = nil
-    destroy!
   end
 
 end
