@@ -36,4 +36,5 @@
             .led{:class => nr_led, :title=>nr.state_name}
           %td= link_to nr.state_name, node_role_path(nr.id)
           - if nr.state == NodeRole::ERROR
-            %td= link_to t('.retry'), node_role_retry_path(nr.id), :class => 'button', :method=>:put, :'data-remote' => true
+            %td= link_to t('.retry'), "/api/v2"+node_role_path(nr.id)+"/retry", :class => 'button', :method=>:put, :'data-remote' => true
+

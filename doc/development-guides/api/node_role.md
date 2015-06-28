@@ -28,7 +28,6 @@ by ID or under the relevant Nodes, Roles, or Deployment.
 | GET  |api/v2/node_roles/:id | Specific Item |
 | PUT  |api/v2/node_roles/:id | Update Item |
 | PUT  |api/v2/node_roles/:id/retry | Retry (sets stack back to TODO) |
-| PUT  |api/v2/node_roles/:ignored/retry?list=:id|:id|:id | Retry List of IDs (pipe deliminated) |
 | POST  |api/v2/node_roles | Create Item |
 | GET  | /api/v2/node_roles/[:node_role_id]/attribs  |  List Attribs for a specific node_role |
 | GET  | /api/v2/node_roles/[:node_role_id]/attribs/[:id]  | Show Attrib (including value) for a specific Node_Role |
