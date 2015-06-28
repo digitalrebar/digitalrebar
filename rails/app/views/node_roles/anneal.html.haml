@@ -1,7 +1,12 @@
 %h1= t '.title'
 
-%h2= t '.error'
 - error = NodeRole.all_by_state(NodeRole::ERROR)
+%h2
+  = t '.error'
+  - if error.length > 0
+    - list = error.map { |nr| nr.id }.join("|")
+    %raw_button{:style => 'float:right'}
+      = link_to t('.retry'), node_role_retry_path(0, :list=>list), :class => 'button', :method=>:put
 = render :partial=>'node_roles/index', :locals => { :list => error }
 
 %h2= t '.transition'

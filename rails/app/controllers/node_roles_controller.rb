@@ -137,14 +137,22 @@ class NodeRolesController < ApplicationController
 
 
   def retry
-    params[:id] ||= params[:node_role_id]
-    @node_role = NodeRole.find_key params[:id]
-    @node_role.todo!
-    respond_to do |format|
-      format.html { redirect_to node_role_path(@node_role.id) }
-      format.json { render api_show @node_role }
+    if params.key? :list
+      ids = params[:list].split "|"
+      ids.each { |nr_id| NodeRole.find_key(nr_id).todo! }
+      respond_to do |format|
+        format.html { redirect_to annealer_path }
+        format.json { ender api_index NodeRole, NodeRole.in_state(NodeRole::TODO) }
+      end
+    else
+      params[:id] ||= params[:node_role_id]
+      @node_role = NodeRole.find_key params[:id]
+      @node_role.todo!
+      respond_to do |format|
+        format.html { redirect_to node_role_path(@node_role.id) }
+        format.json { render api_show @node_role }
+      end
     end
-
   end
 
   def anneal
