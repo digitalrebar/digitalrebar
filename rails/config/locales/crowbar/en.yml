@@ -408,6 +408,8 @@ en:
   node_roles:
     index:
       title: "Node Roles"
+      action: "Action"
+      retry: "Retry"
       <<: *deployment_common
     anneal:
       title: "Crowbar Annealer Activity Monitor"
