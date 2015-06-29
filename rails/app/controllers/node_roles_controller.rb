@@ -135,7 +135,6 @@ class NodeRolesController < ApplicationController
     end
   end
 
-
   def retry
     params[:id] ||= params[:node_role_id]
     @node_role = NodeRole.find_key params[:id]
@@ -144,7 +143,6 @@ class NodeRolesController < ApplicationController
       format.html { redirect_to node_role_path(@node_role.id) }
       format.json { render api_show @node_role }
     end
-
   end
 
   def anneal

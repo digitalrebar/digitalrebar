@@ -11,7 +11,7 @@
       = @node_role.state_name
     - if @node_role.error? || @node_role.active?
       %td{:width=>'100%', :align=>'right'}
-        = link_to t('.retry'), node_role_retry_path(@node_role.id), :class => 'button', :method=>:put
+        = link_to t('.retry'), "/api/v2"+node_role_path(@node_role.id)+"/retry.html", :class => 'button', :method=>:put
 
 - if @node_role.state == NodeRole::ERROR
   - has_hint = t(@node_role.role.name, :scope => 'node_roles.show.error_hints', :default => 'none')

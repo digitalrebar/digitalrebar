@@ -408,11 +408,14 @@ en:
   node_roles:
     index:
       title: "Node Roles"
+      action: "Action"
+      retry: "Retry"
       <<: *deployment_common
     anneal:
       title: "Crowbar Annealer Activity Monitor"
       anneal: "Run Annealer"
       step: "Single Step"
+      retry: "Retry All"
       <<: *node_role_states
     show:
       rawdata: "Raw Data (json)"

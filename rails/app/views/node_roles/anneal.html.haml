@@ -1,7 +1,12 @@
 %h1= t '.title'
 
-%h2= t '.error'
 - error = NodeRole.all_by_state(NodeRole::ERROR)
+%h2
+  = t '.error'
+  - if error.length > 0
+    - list = error.map { |nr| nr.id }.join(",")
+    %raw_button{:style => 'float:right'}
+      = link_to_function t('.retry'), "retry_all('#{list}')", :class => 'button'
 = render :partial=>'node_roles/index', :locals => { :list => error }
 
 %h2= t '.transition'
@@ -22,5 +27,14 @@
 
   function update() {
     $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
+    location.reload();
+  }
+
+  function retry_all(nr_ids) {
+    var ids = nr_ids.split(",");
+    for (var id of ids) {
+      console.log("/api/v2/node_roles/"+id+"/retry");
+      $.ajax({url: "/api/v2/node_roles/"+id+"/retry", type: "PUT"})
+    };
     location.reload();
   }

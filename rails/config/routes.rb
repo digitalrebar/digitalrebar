@@ -50,9 +50,7 @@ Crowbar::Application.routes.draw do
   resources :hammers
   resources :available_hammers
   resources :jigs
-  resources :node_roles  do
-    put :retry
-  end
+  resources :node_roles
   resources :roles
 
   resources :interfaces
@@ -131,7 +129,7 @@ Crowbar::Application.routes.draw do
   # API routes (must be json and must prefix v2)()
   scope :defaults => {:format => 'json'} do
 
-    constraints(:id => /([a-zA-Z0-9\-\.\_]*)/, :version => /v[1-9]/) do
+    constraints(:id => /([a-zA-Z0-9\-\.\_]*)/, :version => /v[2-9]/) do
 
       # framework resources pattern (not barclamps specific)
       scope 'api' do
@@ -210,10 +208,10 @@ Crowbar::Application.routes.draw do
           end
 
           resources :node_roles do
-            resources :attribs
             put :retry
             put :propose
             put :commit
+            resources :attribs
           end
           resources :roles do
             resources :attribs
