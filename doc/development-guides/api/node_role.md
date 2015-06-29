@@ -27,7 +27,9 @@ by ID or under the relevant Nodes, Roles, or Deployment.
 | GET  |api/v2/node_roles | List |
 | GET  |api/v2/node_roles/:id | Specific Item |
 | PUT  |api/v2/node_roles/:id | Update Item |
-| PUT  |api/v2/node_roles/:id/retry | Retry (sets stack back to TODO) |
+| PUT  |api/v2/node_roles/:id/retry | Retry (sets state back to TODO) |
+| PUT  |api/v2/node_roles/:id/propose | Propose (sets state to PROPOSED) |
+| PUT  |api/v2/node_roles/:id/commit | Commit (sets state to COMMIT) |
 | POST  |api/v2/node_roles | Create Item |
 | GET  | /api/v2/node_roles/[:node_role_id]/attribs  |  List Attribs for a specific node_role |
 | GET  | /api/v2/node_roles/[:node_role_id]/attribs/[:id]  | Show Attrib (including value) for a specific Node_Role |
