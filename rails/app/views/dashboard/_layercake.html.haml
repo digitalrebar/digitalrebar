@@ -1,9 +1,11 @@
 %div.layer= t ".#{layer}"
 %div.dots
+  - shorten = @layers[layer].size > 20 #current_user.settings(:ui).maxdisplay # TODO in the future if this is supposed to be a setting
+  - list = {} if shorten
   - @layers[layer].each do |nr|
     - unless nr.nil?
       - working = true
-      - node_led = 'on'
+      - node_led = 'on' 
       - if !nr.node.available
         - node_led = (nr.node.alive ? 'reserved' : 'idle')
         - working = false
@@ -12,6 +14,15 @@
         - working = false
       - nr_led = NodeRole::STATES[nr.state || NodeRole::ERROR]
       - nr_led = "wait" if !working and nr.state == NodeRole::TODO 
-      %span.led{:style=>"float:left", :class => nr_led, 
-                  :title=>"#{nr.node.name} #{nr.role.name}"}
-        = link_to "&nbsp;&nbsp;&nbsp;&nbsp;".html_safe, node_role_path(nr.id)
+      - unless shorten
+        %span.led{:style=>"float:left", :class => nr_led, 
+                    :title=>"#{nr.node.name} #{nr.role.name}"}
+          = link_to "&nbsp;&nbsp;&nbsp;&nbsp;".html_safe, node_role_path(nr.id)
+      - else
+        - list[nr_led] ||= 0
+        - list[nr_led] += 1
+
+  - if shorten
+    - list.each do |led, count|
+      = image_tag("icons/led/#{led}.png")
+      %span#active_heartbeat= count
