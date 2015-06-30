@@ -9,6 +9,9 @@ $yellow_dark: #df3
 #layercake
   width: 960px
   z-index: 0
+  width: 100% auto
+  margin-left: auto
+  margin-right: auto
 
   .title
     text-align: center
@@ -77,19 +80,31 @@ $yellow_dark: #df3
       background: desaturate($blue - #333, 60%)
       border: 1px solid #444
 
+  #leftColumn
+    width: 25%
+    position: relative
+    float: left
+    margin: 0.5em
+    display: inline-block
+
+  #rightColumn
+    width: 70%
+    margin: 0.5em
+    position: relative
+    float: right
+    display: inline-block
+
   #core
     text-align: center
     height: 340px
     padding: 0 10px
-    width: 200px
     +clearfix
 
   #jigs
     text-align: center
     height: 88px
     padding: 0 10px
-    width: 200px
-    +clearfix
+  +clearfix
 
   #apps
     padding: 0 10px
