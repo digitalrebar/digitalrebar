@@ -140,6 +140,12 @@ for ((i=0; i < service_count; i++)) ; do
     continue
   fi
 
+  if [[ $service_name == *"-"* ]] ; then
+    service_name="${service_name}_service"
+  else
+    service_name="${service_name}-service"
+  fi
+
   datacenter=`jq -r ".services[$i].datacenter" config/processed.json`
   if [ "$datacenter" == "null" ] ; then
     datacenter="opencrowbar"
@@ -165,7 +171,7 @@ for ((i=0; i < service_count; i++)) ; do
     count=`jq ".services[$i].keys|keys|length" config/processed.json`
     for ((k=0; k < count; k++)) ; do
       kname=`jq -r ".services[$i].keys|keys|.[$k]" config/processed.json`
-      kvalue=`jq ".services[$i].keys[\"$kname\"]" config/processed.json`
+      kvalue=`jq -r ".services[$i].keys[\"$kname\"]" config/processed.json`
 
       curl -X PUT -d "$kvalue" http://127.0.0.1:8500/v1/kv/$kname?token=$CONSUL_MACL
     done
