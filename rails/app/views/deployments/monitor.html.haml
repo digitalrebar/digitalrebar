@@ -126,8 +126,8 @@
           $('#nodelist').append(
             line=$('<tr id="li'+node.id+'"'+(node.admin ? ' style="font-weight: bold;"' : '')+'><td><span id="led'+node.id+'" class="led '+node.led+'"></span></td><td class="nodename"><a href="'+node.path+'" title="'+node.description+'">'+node.name+'</a></td><td id="node'+node.id+'"></span></td>')
           );
-          line.hide(); //fade the node in, 50MS after the last
-          line.delay(newCount*50).fadeIn(400);
+          //line.hide(); //fade the node in, 50MS after the last
+          //line.delay(newCount*50).fadeIn(400);
           newCount++;
           node.line = line;
         }
@@ -197,13 +197,14 @@
   var lastUpdate = 0;
   function loop() {
     var time = new Date().getTime();
-    if(lastUpdate + #{current_user.settings(:ui).fast_refresh} < time) { 
+    if(lastUpdate + 1000 < time) { 
       update();
       lastUpdate = time;
     }
     setTimeout(loop, 100);
   }
 
-$(document).ready(function() {
-  loop();
-});
+  
+  $(document).ready(function() {
+    loop();
+  });

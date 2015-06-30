@@ -181,7 +181,33 @@ table.snap
 
 table.top
   td,th
+<<<<<<< HEAD
     vertical-align: top
+=======
+    vertical-align: top  
+
+table#nodelist
+  border-collapse: collapse
+  tr
+    td
+      background: $even
+    &.selected
+      td
+        background: mix($even, $selected)
+    &:hover
+      td
+        background: mix($even, $selected)
+    &:nth-child(odd)
+      td
+        background: $odd
+      &.selected
+        td
+          background: mix($odd, $selected)
+      &:hover
+        td
+          background: mix($odd, $selected)
+
+>>>>>>> 3264d65... added alternating rows for table
     
 #node_tbl_filter
   float: right
