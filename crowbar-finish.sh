@@ -74,45 +74,126 @@ for ((i=0; i < network_count; i++)) ; do
   fi
 done
 
-# Add required services
-services=(provisioner-service crowbar-api_service crowbar-job_runner_service)
-for role in "${services[@]}"; do
-    crowbar nodes bind "system-phantom.internal.local" to "$role"
-done
-crowbar nodes commit "system-phantom.internal.local"
-
-# Bind the admin role to it, and commit the resulting
-# proposed noderoles.
-crowbar nodes bind "$FQDN" to crowbar-build-root-key
-crowbar nodes bind "$FQDN" to crowbar-api_server
-crowbar nodes bind "$FQDN" to crowbar-job_runner
-
-# Setup Up provisioner.
-crowbar nodes bind "$FQDN" to provisioner-server
-crowbar nodes bind "$FQDN" to provisioner-database
-crowbar nodes bind "$FQDN" to provisioner-repos
-crowbar nodes bind "$FQDN" to provisioner-docker-setup
 
 # Process services/servers
 service_count=`jq ".services | length" config/processed.json`
 for ((i=0; i < service_count; i++)) ; do
-  service=`jq ".services[$i]" config/processed.json`
-# GREG: Do someting with $service
+  service_type=`jq -r ".services[$i].type" config/processed.json`
+  service_name=`jq -r ".services[$i].name" config/processed.json`
+
+  has_service=`jq -r ".services[$i].has_service" config/processed.json`
+  if [ "$has_service" == "false" ] ; then
+    continue
+  fi
+
+  service_role=`jq -r ".services[$i].service_role" config/processed.json`
+  if [ "$service_role" == "null" ] ; then
+    if [[ $service_name == *"-"* ]] ; then
+      service_role="${service_name}_service"
+    else
+      service_role="${service_name}-service"
+    fi
+  fi
+
+  # Add the internal services
+  crowbar nodes bind "system-phantom.internal.local" to "$service_role"
 done
+for ((i=0; i < service_count; i++)) ; do
+  # Add external servers.
+  service_type=`jq -r ".services[$i].type" config/processed.json`
+  service_name=`jq -r ".services[$i].name" config/processed.json`
+
+  if [ "$service_type" == "external" ] ; then
+    continue
+  fi
+
+  server_role=`jq -r ".services[$i].server_role" config/processed.json`
+  if [ "$server_role" == "null" ] ; then
+    if [[ $service_name == *"-"* ]] ; then
+      server_role="${service_name}_server"
+    else
+      server_role="${service_name}-server"
+    fi
+  fi
+
+  IFS=',' read -ra ADDR <<< "$server_role"
+  for k in "${ADDR[@]}"; do
+    crowbar nodes bind "$FQDN" to $k
+  done
+
+  attrs=`jq ".services[$i].attributes" config/processed.json`
+  if [ "$attrs" != "null" ] ; then
+    count=`jq ".services[$i].attributes|keys|length" config/processed.json`
+    for ((k=0; k < count; k++)) ; do
+      kname=`jq -r ".services[$i].attributes|keys|.[$k]" config/processed.json`
+      kvalue=`jq ".services[$i].attributes[\"$kname\"]" config/processed.json`
+
+      crowbar nodes set "$FQDN" attrib $kname to "{ \"value\": $kvalue }"
+    done
+  fi
+done
+for ((i=0; i < service_count; i++)) ; do
+  service_type=`jq -r ".services[$i].type" config/processed.json`
+  service_name=`jq -r ".services[$i].name" config/processed.json`
+
+  if [ "$service_type" == "internal" ] ; then
+    continue
+  fi
+
+  datacenter=`jq -r ".services[$i].datacenter" config/processed.json`
+  if [ "$datacenter" == "null" ] ; then
+    datacenter="opencrowbar"
+  fi
+  node_name=`jq -r ".services[$i].node_name" config/processed.json`
+  if [ "$node_name" == "null" ] ; then
+    node_name="External"
+  fi
+
+  service_ip=`jq -r ".services[$i].service_ip" config/processed.json`
+  service_port=`jq -r ".services[$i].service_port" config/processed.json`
+  service_tag=`jq -r ".services[$i].service_tag" config/processed.json`
+  if [ "$service_tag" == "null" ] ; then
+    service_tag="system"
+  fi
+
+  curl -X PUT -d "{\"Datacenter\": \"$datacenter\", \"Node\": \"$node_name\", \"Address\": \"$service_ip\", \"Service\": {\"Service\": \"$service_name\", \"Port\": $service_port, \"Address\": \"$service_ip\", \"Tags\": [ \"$service_tag\" ]} }" http://127.0.0.1:8500/v1/catalog/register
+
+  attrs=`jq ".services[$i].keys" config/processed.json`
+  if [ "$attrs" != "null" ] ; then
+    CONSUL_MACL=$(jq .acl_master_token </etc/consul.d/default.json | awk -F\" '{ print $2 }')
+
+    count=`jq ".services[$i].keys|keys|length" config/processed.json`
+    for ((k=0; k < count; k++)) ; do
+      kname=`jq -r ".services[$i].keys|keys|.[$k]" config/processed.json`
+      kvalue=`jq ".services[$i].keys[\"$kname\"]" config/processed.json`
+
+      curl -X PUT -d "$kvalue" http://127.0.0.1:8500/v1/kv/$kname?token=$CONSUL_MACL
+    done
+  fi
+done
+
+# Commit the phantom
+crowbar nodes set "system-phantom.internal.local" attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
+crowbar nodes commit "system-phantom.internal.local"
+
+# Add the now mostly empty admin-node
+crowbar nodes bind "$FQDN" to crowbar-build-root-key
+crowbar nodes bind "$FQDN" to crowbar-admin-node
 
 # Add keys into the system
 keys=`jq -r .ssh_keys config/processed.json`
 crowbar deployments set system attrib crowbar-access_keys to "{ \"value\": $keys }"
+crowbar deployments commit system
 
 # Add/Update DNS Filters into the system
 filter_count=`jq ".filters | length" config/processed.json`
 for ((i=0; i < filter_count; i++)) ; do
-  user=`jq ".filters[$i]" config/processed.json`
+  dnf=`jq ".filters[$i]" config/processed.json`
   name=`jq -r ".filters[$i].name" config/processed.json`
   if crowbar dnsnamefilters show $name >/dev/null 2>&1 ; then
-    crowbar dnsnamefilters update $name "$user"
+    crowbar dnsnamefilters update $name "$dnf"
   else
-    crowbar dnsnamefilters create "$user"
+    crowbar dnsnamefilters create "$dnf"
   fi
 done
 
@@ -120,19 +201,13 @@ done
 user_count=`jq ".users | length" config/processed.json`
 for ((i=0; i < user_count; i++)) ; do
   user=`jq ".users[$i]" config/processed.json`
-  name=`jq -r ".users[$i].name" config/processed.json`
+  name=`jq -r ".users[$i].username" config/processed.json`
   if crowbar users show $name >/dev/null 2>&1 ; then
     crowbar users update $name "$user"
   else
     crowbar users create "$user"
   fi
 done
-
-# Add the now mostly empty admin-node
-crowbar nodes bind "$FQDN" to crowbar-admin-node
-
-# GREG: Fix this
-#crowbar nodes set "system-phantom.internal.local" attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
 
 # Figure out what IP addresses we should have, and add them.
 # If the above adds an address, we need to make sure it starts on the node.
@@ -162,7 +237,7 @@ if [[ $http_proxy ]] ; then
     # Make sure that Crowbar is running with the proper environment variables
     service crowbar stop
     service crowbar start
-    while ! /opt/opencrowbar/core/bin/crowbar -U crowbar -P crowbar users list; do
+    while ! crowbar users list; do
         sleep 1
     done
 fi

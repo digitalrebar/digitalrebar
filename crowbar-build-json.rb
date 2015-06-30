@@ -27,7 +27,7 @@ networks.each do |n|
 end
 
 answer["services"] = []
-services = Dir.glob("config/services/*.json")
+services = Dir.glob("config/services/*.json").sort
 services.each do |s|
   service = JSON.parse( IO.read(s) )
   answer["services"] << service

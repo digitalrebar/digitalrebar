@@ -1,0 +1,6 @@
+{
+  "name": "amqp",
+  "type": "internal",
+  "has_service": true,
+  "server_role": "rabbitmq-server"
+}

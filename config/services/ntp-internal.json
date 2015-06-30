@@ -1,0 +1,5 @@
+{
+  "type": "internal",
+  "name": "ntp",
+  "has_service": true
+}

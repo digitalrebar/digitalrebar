@@ -1,0 +1,5 @@
+{
+  "type": "internal",
+  "name": "crowbar-api",
+  "has_service": true
+}

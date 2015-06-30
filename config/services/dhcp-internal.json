@@ -1,0 +1,6 @@
+{
+  "type": "internal",
+  "name": "dhcp",
+  "has_service": false,
+  "server_role": "dhcp-database"
+}
