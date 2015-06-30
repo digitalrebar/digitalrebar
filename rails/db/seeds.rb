@@ -62,11 +62,6 @@ ActiveRecord::Base.transaction do
   Nav.find_or_create_by(item: 'manage_users', parent_item: 'users', name: 'nav.manage_users', description: 'nav.manage_users_description', path: "main_app.users_path", order: 100)
   Nav.find_or_create_by(item: 'user_settings', parent_item: 'users', name: 'nav.user_settings', description: 'nav.user_settings_description', path: "main_app.utils_settings_path", order: 400)
 
-  # help
-  Nav.find_or_create_by(item: 'help', parent_item: 'root', name: 'nav.help', description: 'nav.help_description', path: "main_app.docs_path", order: 9999)
-  Nav.find_or_create_by(item: 'help_child', parent_item: 'help', name: 'nav.help', description: 'nav.help_description', path: "main_app.docs_path", order: 100)
-  Nav.find_or_create_by(item: 'crowbar_wiki', parent_item: 'help', name: 'nav.wiki', description: 'nav.wiki_description', path: "https://github.com/opencrowbar/core/tree/master/doc", order: 200)
-
   # networks
   Nav.find_or_create_by(item: 'networks', parent_item: 'root', name: 'nav.networks', description: 'nav.networks_description', path: "networks_path", order: 1500)
   Nav.find_or_create_by(item: 'networks_child', parent_item: 'networks', name: 'nav.networks', description: 'nav.networks_description', path: "networks_path", order: 1000)

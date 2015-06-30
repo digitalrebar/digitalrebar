@@ -57,6 +57,8 @@ SimpleNavigation::Configuration.run do |navigation|
         end
       end
     end
+    # add link to help
+    primary.item :help, t('nav.help'), Rails.configuration.crowbar.docs, {:title=>t('name.help_description')}
   end
 end
 
