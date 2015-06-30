@@ -143,6 +143,7 @@ class DeploymentsController < ApplicationController
       {
         state: state,
         status: NodeRole::STATES[state],
+        path: node_role_path(service.id),
         name: service.role.name,
       }
     end
