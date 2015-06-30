@@ -8,9 +8,13 @@ import (
 	"path"
 )
 
-// Crudder implements basic CRUD operations.
+// Crudder defines what is needed to implement basic CRUD operations on an object.
 type Crudder interface {
+	// Id is a string that can be used to uniquely refer to an object in the REST
+	// API.  For most objects this can be either their ID or Name field.
 	Id() string
+	// ApiName returns the path component in the REST API that refers to this class of object.
+	// It will usually be the type name in snake_case.
 	ApiName() string
 }
 
@@ -39,9 +43,11 @@ func Update(o Crudder) error {
 	return session.put(o, url(o))
 }
 
-// Anything that can get Attribs implements Attriber.
+// Attriber defines what is needed to get and set attribs on an object.
 type Attriber interface {
+	// You must be a Crudder to be an Attriber.
 	Crudder
+	// Attribs gets a list of Attribs that pertain to this object.
 	Attribs() ([]*Attrib, error)
 }
 
@@ -74,6 +80,17 @@ func GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, err error) {
 // an attriber.
 func SetAttrib(o Attriber, a *Attrib) error {
 	return session.put(a, url(o, url(a)))
+}
+
+// Propose readies an Attriber to accept new values via SetAttrib.
+func Propose(o Attriber) error {
+	return session.put(o, url(o, "propose"))
+}
+
+// Commit makes the values set on the Attriber via SetAttrib visible
+// to the rest of the Crowbar infrastructure.
+func Commit(o Attriber) error {
+	return session.put(o, url(o, "commit"))
 }
 
 type CrowbarDigest struct {

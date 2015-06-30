@@ -2,7 +2,6 @@ package crowbar
 
 // Apache 2 License 2015 by Rob Hirschfeld for RackN
 // portions of source based on https://code.google.com/p/mlab-ns2/source/browse/gae/ns/digest/digest.go
-
 import (
 	"bytes"
 	"crypto/md5"
@@ -36,6 +35,10 @@ type ocbClient struct {
 	Challenge *challenge
 	URL       string
 }
+// The Crowbar API is exposed over a digest authenticated HTTP(s)
+// connection.  This file implements all of the basic REST and HTTP
+// operations that Crowbar uses.
+
 
 // OCB assumes global session created with NewClient
 var session *ocbClient
@@ -48,7 +51,7 @@ const (
 
 // Session establishes a new connection to Crowbar.  You must call
 // this function before using any other functions in the crowbar
-// package.
+// package.  Session stores its information in a private global variable.
 func Session(URL, User, Password string) error {
 	c := &ocbClient{URL: URL, Client: &http.Client{}, Challenge: &challenge{}}
 	// retrieve the digest info from the 301 message
@@ -72,11 +75,9 @@ func Session(URL, User, Password string) error {
 // Request makes a general call to the Crowbar API.
 // method is the raw HTTP method to use
 // uri is the section of the API to call.
-// objOut is the struct that the response should be unmarshalled to if the API call returns an object.
-// objIn is the struct that should be marshalled to JSON and passed along in the body of the request.
-// err is the error that was returned.  If it is not nil, then objOut will be garbage.
-//
-// objOut and objIn should never refer to the same struct.
+// objIn is the raw data to be passed in the request body
+// objOut is the raw request body (if any)
+// err is the error of any occurred.
 func (c *ocbClient) request(method, uri string, objIn []byte) (objOut []byte, err error) {
 	if session == nil {
 		return nil, fmt.Errorf("ocb Client Session not set")
@@ -124,7 +125,7 @@ func (c *ocbClient) request(method, uri string, objIn []byte) (objOut []byte, er
 	return objOut, nil
 }
 
-// Get fetches an object from Crowbar and unmarshals it to objOut
+// Get fetches an object from Crowbar and unmarshals it to obj
 func (c *ocbClient) get(obj interface{}, uri ...string) error {
 	buf, err := c.request("GET", path.Join(uri...), nil)
 	if err != nil {
@@ -133,8 +134,7 @@ func (c *ocbClient) get(obj interface{}, uri ...string) error {
 	return json.Unmarshal(buf, &obj)
 }
 
-// Post creates a new object in Crowbar using objIn, and returns the
-// newly created object in objOut.
+// Post creates a new object in Crowbar using obj
 func (c *ocbClient) post(obj interface{}, uri ...string) error {
 	inbuf, err := json.Marshal(obj)
 	buf, err := c.request("POST", path.Join(uri...), inbuf)
@@ -145,7 +145,7 @@ func (c *ocbClient) post(obj interface{}, uri ...string) error {
 
 }
 
-// Put updates the object in objIn, which is updated in place.
+// Put pushes an updated obj to Crowbar.
 func (c *ocbClient) put(obj interface{}, uri ...string) error {
 	inbuf, err := json.Marshal(obj)
 	buf, err := c.request("PUT", path.Join(uri...), inbuf)
@@ -163,6 +163,7 @@ func (c *ocbClient) destroy(uri ...string) error {
 	return err
 }
 
+// list is a helper specialized to get lists of objects.
 func (c *ocbClient) list(res interface{}, uri ...string) (err error) {
 	buf, err := c.request("GET", path.Join(uri...), nil)
 	if err != nil {
