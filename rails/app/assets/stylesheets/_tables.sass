@@ -178,8 +178,11 @@ table.top
 
 table#nodelist
   border-collapse: collapse
+  th
+    padding-bottom: 0.5em
   tr
     td
+      padding: 0.5em
       background: $even
     &.selected
       td
@@ -189,6 +192,7 @@ table#nodelist
         background: mix($even, $selected)
     &:nth-child(odd)
       td
+        padding: 0.5em
         background: $odd
       &.selected
         td
