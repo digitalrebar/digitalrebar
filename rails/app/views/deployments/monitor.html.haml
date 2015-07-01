@@ -38,6 +38,7 @@
       "-6": "#777",
       "2": "#0f0",
       "-3": "#ccc",
+      "4": "#339",
       "5": "#2b2",
       "0": "#aae",
     },
@@ -52,6 +53,7 @@
         "-6": "todo",
         "2": "ready",
         "-3": "blocked",
+        "4": "proposed",
         "5": "active",
       },
       'name': {
@@ -62,6 +64,7 @@
         "-6": '#{t("common.state.todo")}',
         "2": '#{t("common.state.ready")}',
         "-3": '#{t("common.state.blocked")}',
+        "4": '#{t("common.state.proposed")}',
         "5": '#{t("common.state.active")}',
       },
       'service' : {
@@ -197,7 +200,7 @@
   var lastUpdate = 0;
   function loop() {
     var time = new Date().getTime();
-    if(lastUpdate + 1000 < time) { 
+    if(lastUpdate + #{current_user.settings(:ui).fast_refresh} < time) { 
       update();
       lastUpdate = time;
     }
