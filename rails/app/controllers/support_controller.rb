@@ -101,21 +101,14 @@ class SupportController < ApplicationController
       if params[:raw] == 'json'
         ConsulAccess::setKey(Rails.configuration.crowbar.bootstrap_key, params[:data])
       else
+        yaml = params.key? :yaml
         @config = JSON.parse(ConsulAccess::getKey(Rails.configuration.crowbar.bootstrap_key))
         @config["domain"] = params["domain"]
         @config["net_to_join"] = params["net_to_join"].split(",")
-        @config["networks"].each_index do |i|
-          @config["networks"][i] = JSON.parse(params["networks|#{i}"])
-        end
-        if params["networks|new"] != "{}"
-          @config["networks"] << JSON.parse(params["networks|new"])
-        end
-        @config["filters"].each_index do |i|
-          @config["filters"][i] = JSON.parse(params["filters|#{i}"])
-        end
-        if params["filters|new"] != "{}"
-          @config["filters"] << JSON.parse(params["filters|new"])
-        end
+        bootstrap_update yaml, "networks", @config, params 
+        bootstrap_update yaml, "filters", @config, params 
+        bootstrap_update yaml, "services", @config, params 
+        bootstrap_update yaml, "users", @config, params 
         @config["ssh_keys"].each_key do |k|
           @config["ssh_keys"][k] = params["ssh_keys|#{k}"]
         end
@@ -125,11 +118,6 @@ class SupportController < ApplicationController
         # now save it
         ConsulAccess::setKey(Rails.configuration.crowbar.bootstrap_key, JSON.pretty_generate(@config))
  
-
-
- #{}"filters|0"=>"{\r\n  \"name\": \"admin-default\",\r\n  \"priority\": 50,\r\n  \"template\": \"{{node.name}}.neode.com\",\r\n  \"matcher\": \"net.category == \\\"admin\\\"\",\r\n  \"service\": \"system\"\r\n}", "filters|new"=>"{}", "services|new"=>"{}"}
-
-
       end
     end
 
@@ -229,7 +217,21 @@ class SupportController < ApplicationController
   end
 
   private 
-  
+
+  def bootstrap_update(yaml, key, config, params)  
+    # scan the keys we have
+    config[key].each_index do |i|
+      r = params["#{key}|#{i}"]
+      config[key][i] = (yaml ? YAML::load(r) : JSON.parse(r))
+    end
+    # add new keys
+    unless ["{}","---"].include? params["#{key}|new"]
+      r = params["#{key}|new"]
+      config[key] << (yaml ? YAML::load(r) : JSON.parse(r))
+    end
+  end
+
+
   def ctime
     Time.now.strftime("%Y%m%d-%H%M%S")
   end
