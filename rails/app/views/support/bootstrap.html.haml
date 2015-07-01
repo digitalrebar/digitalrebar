@@ -2,11 +2,18 @@
   - if params[:raw]
     = link_to t('.wizard'), bootstrap_path, :class => 'button'
   - else
+    - if params[:yaml]
+      = link_to t('.json'), bootstrap_path(json: true), :class => 'button'  
+    - else
+      = link_to t('.yaml'), bootstrap_path(yaml: true), :class => 'button'
     = link_to t('.rawdata'), bootstrap_path(raw: true), :class => 'button'
 %h1= t '.title'
 
 
 =form_for 'bootstrap', url: bootstrap_path(), method: :put, html: { :method => :put, :'data-type' => 'html', :class => "formtastic" } do |f|
+
+  - yaml = params.key? :yaml
+  = hidden_field_tag :yaml, yaml
 
   - if params[:raw]
 
@@ -30,10 +37,11 @@
 
     %dl
       - @config["networks"].each_index do |i|
+        - n = (yaml ? @config["networks"][i].to_yaml : JSON.pretty_generate(@config["networks"][i]))
         %dt= @config["networks"][i]["name"]
-        %dd= text_area_tag "networks|#{i}", JSON.pretty_generate(@config["networks"][i]), cols: 65, rows: 6
+        %dd= text_area_tag "networks|#{i}", n, cols: 65, rows: 6
       %dt= "new network"
-      %dd= text_area_tag "networks|new", "{}", cols: 65
+      %dd= text_area_tag "networks|new", (yaml ? "---" : "{}"), cols: 65
 
     %h3= t '.keys'
 
@@ -48,10 +56,11 @@
 
     %dl
       - @config["filters"].each_index do |i|
+        - f = (yaml ? @config["filters"][i].to_yaml : JSON.pretty_generate(@config["filters"][i]))
         %dt= @config["filters"][i]["name"]
-        %dd= text_area_tag "filters|#{i}", JSON.pretty_generate(@config["filters"][i]), cols: 65, rows: 5
+        %dd= text_area_tag "filters|#{i}", f, cols: 65, rows: 5
       %dt= "new filter"
-      %dd= text_area_tag "filters|new", "{}", cols: 65
+      %dd= text_area_tag "filters|new", (yaml ? "---" : "{}"), cols: 65
 
   - if false
     %h3= t '.users'

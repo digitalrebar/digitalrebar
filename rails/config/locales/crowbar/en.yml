@@ -557,7 +557,9 @@ en:
       filters: "Filters"
       keys: 'Keys'
       services: "Services"
-      rawdata: "Raw JSON"
+      rawdata: "Edit Raw JSON"
+      json: "Edit in JSON"
+      yaml: "Edit in YAML"
       wizard: "Wizard"
   users:
     common: &user_common

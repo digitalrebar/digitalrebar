@@ -101,20 +101,25 @@ class SupportController < ApplicationController
       if params[:raw] == 'json'
         ConsulAccess::setKey(Rails.configuration.crowbar.bootstrap_key, params[:data])
       else
+        yaml = params.key? :yaml
         @config = JSON.parse(ConsulAccess::getKey(Rails.configuration.crowbar.bootstrap_key))
         @config["domain"] = params["domain"]
         @config["net_to_join"] = params["net_to_join"].split(",")
         @config["networks"].each_index do |i|
-          @config["networks"][i] = JSON.parse(params["networks|#{i}"])
+          r = params["networks|#{i}"]
+          @config["networks"][i] = (yaml ? YAML::load(r) : JSON.parse(r))
         end
-        if params["networks|new"] != "{}"
-          @config["networks"] << JSON.parse(params["networks|new"])
+        unless ["{}","---"].include? params["networks|new"]
+          r = params["networks|new"]
+          @config["networks"] << (yaml ? YAML::load(r) : JSON.parse(r))
         end
         @config["filters"].each_index do |i|
-          @config["filters"][i] = JSON.parse(params["filters|#{i}"])
+          r = params["filters|#{i}"]
+          @config["filters"][i] = (yaml ? YAML::load(r) : JSON.parse(r))
         end
-        if params["filters|new"] != "{}"
-          @config["filters"] << JSON.parse(params["filters|new"])
+        unless ["{}","---"].include? params["filters|new"]
+          r = params["filters|new"]
+          @config["filters"] << (yaml ? YAML::load(r) : JSON.parse(r))
         end
         @config["ssh_keys"].each_key do |k|
           @config["ssh_keys"][k] = params["ssh_keys|#{k}"]
