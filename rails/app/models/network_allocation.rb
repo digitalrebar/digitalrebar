@@ -25,6 +25,8 @@ class NetworkAllocation < ActiveRecord::Base
   belongs_to :network
   belongs_to :node
 
+  has_many :dns_name_entries,   :dependent => :destroy
+
   alias_attribute :range,       :network_range
 
   scope  :node,     -> (n)   { where(:node_id => n.id) }
