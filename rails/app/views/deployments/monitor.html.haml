@@ -44,10 +44,10 @@
     },
     tooltipSkipNull: true,
     tooltipValueLookups: {
-      'role' : {
+      role: {
 
       },
-      'led': {
+      led: {
         '-1': "error",
         "0": "",
         "-6": "todo",
@@ -56,7 +56,7 @@
         "4": "proposed",
         "5": "active",
       },
-      'name': {
+      name: {
         //t('en.common.state.error')
         //t('.error')
         '-1': '#{t("common.state.error")}', //need to change this to fetch strings from string table
@@ -67,13 +67,26 @@
         "4": '#{t("common.state.proposed")}',
         "5": '#{t("common.state.active")}',
       },
-      'service' : {
+      service : {
 
       }
     },
     barWidth: 12,
     height: 24,
     barSpacing: 2,
+  };
+
+  var stateName = {
+    on: '#{t("common.power.on")}',
+    off: '#{t("common.state.off")}',
+    idle: '#{t("common.state.idle")}',
+    reserved: '#{t("common.state.reserved")}',
+    error: '#{t("common.state.error")}',
+    todo: '#{t("common.state.todo")}',
+    transition: '#{t("common.state.transition")}',
+    blocked: '#{t("common.state.blocked")}',
+    proposed: '#{t("common.state.proposed")}',
+    active:' #{t("common.state.active")}',
   };
 
   function update() {
@@ -110,6 +123,8 @@
 
       //update system led
       $("#systemled").attr("class","led "+data.status);
+      $("#systemled").attr("title", stateName[data.status]);
+
 
       //flag to remove nodes
       for(var i in nodes) {
@@ -137,8 +152,8 @@
         var graph = $('#node'+node.id); //sparkline graph
         var led = $("#led"+node.id); //led at beginning
         led.attr("class","led "+node.led); //update led
-
-
+        led.attr("title", stateName[node.led]);
+        var lookup = tristateData.tooltipValueLookups;
         //building sparklines for node roles
         var items = [];
         for(var j in roles) {
