@@ -54,6 +54,20 @@ export FQDN
 ./crowbar-database.sh
 ./crowbar-core.sh "$RAILS_ENV"
 
+# we don't run crowbar-config but we do need to do some things from there
+	# Add consul to the default deployment, and make sure it uses the same
+	# acl master token and encryption key as the current running consul.
+crowbar deployments bind system to consul
+
+for k in acl_master_token encrypt datacenter domain acl_datacenter \
+                          acl_default_policy acl_down_policy config_dir; do
+    v="$(jq ".${k}" </etc/consul.d/default.json)"
+    [[ $v = null ]] && continue
+    crowbar deployments set system attrib "consul-${k//_/-}" to "{\"value\": $v}"
+done
+
+crowbar deployments commit system
+
 # Make sure that Crowbar is running with the proper environment variables
 service crowbar stop
 service crowbar start
