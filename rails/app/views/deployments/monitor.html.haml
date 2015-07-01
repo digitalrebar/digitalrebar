@@ -1,0 +1,210 @@
+- state = @deployment.state rescue Deployment::ERROR
+- system_roles = @deployment.system_node.node_roles.count
+
+%h2
+  - if @deployment.parent
+    = link_to @deployment.parent.name, deployment_path(@deployment.parent.id), :title => @deployment.parent.description
+    = "/"
+  = link_to @deployment.name, deployment_path(@deployment.id), :title => @deployment.description
+  %span#systemled.led{:class => Deployment::STATES[state], :title=>Deployment.state_name(state), :style => "display: inline-block;"}
+
+%div{:style=>"float: right;"}
+  %h3
+    Services:
+    %span#services
+
+%table#nodelist
+  %tr
+    %th
+    %th Nodes
+    %th Roles
+
+.clear
+
+:javascript
+
+  var refreshRate = #{current_user.settings(:ui).fast_refresh};
+  var hasLoaded = false;
+  var roles = [];
+  var nodes = {};
+  var services = {};
+  var roleFormat = '<strong>{{offset:role}}</strong><br/><span class="led {{value:led}}" style="display:inline-block;"></span>{{value:name}}';
+  var serviceFormat = '<strong>{{offset:service}}</strong><br/><span class="led {{value:led}}" style="display:inline-block;"></span>{{value:name}}'; 
+
+  var tristateData = {
+    type: "tristate",
+    colorMap: {
+      '-1': "#f00",
+      "-6": "#777",
+      "2": "#0f0",
+      "-3": "#ccc",
+      "5": "#2b2",
+      "0": "#aae",
+    },
+    tooltipSkipNull: true,
+    tooltipValueLookups: {
+      'role' : {
+
+      },
+      'led': {
+        '-1': "error",
+        "0": "",
+        "-6": "todo",
+        "2": "ready",
+        "-3": "blocked",
+        "5": "active",
+      },
+      'name': {
+        //t('en.common.state.error')
+        //t('.error')
+        '-1': '#{t("common.state.error")}', //need to change this to fetch strings from string table
+        "0": " - ",
+        "-6": '#{t("common.state.todo")}',
+        "2": '#{t("common.state.ready")}',
+        "-3": '#{t("common.state.blocked")}',
+        "5": '#{t("common.state.active")}',
+      },
+      'service' : {
+
+      }
+    },
+    barWidth: 12,
+    height: 24,
+    barSpacing: 2,
+  };
+
+  function update() {
+    $.getJSON("/monitor/#{@deployment.id}", function(data, err) {
+      var newCount = 0;
+      //update role list if unloaded or more roles added
+      if(!hasLoaded || roles.length != data.roles.length) {
+        hasLoaded = true;
+        roles = data.roles;
+        for(var i = 0; i < roles.length; i++) //add role names to sparklines
+          tristateData.tooltipValueLookups['role'][""+i] = roles[i].name;
+      }
+      
+      //update services
+      services = data.services;
+      var serviceitems = [];
+      for(var i = 0; i < services.length; i++) {
+        var service = services[i];
+        tristateData.tooltipValueLookups['service'][""+i] = service.name;
+        var name = service.name;
+        var value = service.state;
+        swap = {
+          0: 5, //active can't be zero
+          3: -3, //blocked points down
+          1: -6 //todo is pointing down and -1 is taken by error
+        };
+        if(swap[value])
+          value = swap[value];
+        serviceitems.push([value]);
+      }
+      //create the service sparkline
+      tristateData['tooltipFormat'] = serviceFormat;
+      $("#services").sparkline(serviceitems, tristateData);
+
+      //update system led
+      $("#systemled").attr("class","led "+data.status);
+
+      //flag to remove nodes
+      for(var i in nodes) {
+        nodes[i].pendingRemoval = true;
+      }
+
+      //set tristate format back to role format
+      tristateData['tooltipFormat'] = roleFormat;
+      
+      //iterate through each node
+      for(var i in data.nodes) {
+        var node = data.nodes[i];
+        
+        //make a new node if it doesn't already exist
+        if(!nodes[node.id]) {
+          var line;
+          $('#nodelist').append(
+            line=$('<tr id="li'+node.id+'"'+(node.admin ? ' style="font-weight: bold;"' : '')+'><td><span id="led'+node.id+'" class="led '+node.led+'"></span></td><td class="nodename"><a href="'+node.path+'" title="'+node.description+'">'+node.name+'</a></td><td id="node'+node.id+'"></span></td>')
+          );
+          //line.hide(); //fade the node in, 50MS after the last
+          //line.delay(newCount*50).fadeIn(400);
+          newCount++;
+          node.line = line;
+        }
+        var graph = $('#node'+node.id); //sparkline graph
+        var led = $("#led"+node.id); //led at beginning
+        led.attr("class","led "+node.led); //update led
+
+
+        //building sparklines for node roles
+        var items = [];
+        for(var j in roles) {
+          var role = roles[j];
+          var name = role.name;
+          var id = role.id;
+          var value = 0;
+          if(node.roles[id]) {
+            value = node.roles[id].state;
+            swap = {
+              0: 5, //active can't be zero
+              3: -3, //blocked points down
+              1: -6 //todo is pointing down and -1 is taken by error
+            };
+            if(swap[value])
+              value = swap[value];
+          }
+          items.push([value]);
+        }
+        graph.sparkline(items, tristateData); //create the sparkline
+
+        var click = function(ev) { //open the node page when clicked
+          var sparkline = ev.sparklines[0]
+          var region = sparkline.getCurrentRegionFields();
+          var role = node.roles[roles[region.offset].id];
+          if(role)
+            location.href = role.path;
+        }
+        click.node = node;
+
+        graph.bind('sparklineClick', click);
+        nodes[node.id] = node;
+      } //end of node loop
+
+      for(var i in nodes) { //remove destroyed nodes
+        if(nodes[i].pendingRemoval) {
+          var line = $('#li'+nodes[i].id);
+          var node = nodes[i];
+          line.fadeOut(400, complete=function(){
+            line.remove();
+            delete nodes;
+          });
+        }
+      }
+      lastUpdate = new Date().getTime();
+    });
+  }
+
+  var serviceClick = function(ev) { //open the node page when clicked
+    var sparkline = ev.sparklines[0]
+    var region = sparkline.getCurrentRegionFields();
+    var service = services[region.offset];
+    if(service)
+      location.href = service.path;
+  }
+
+  $("#services").bind('sparklineClick', serviceClick);
+
+  var lastUpdate = 0;
+  function loop() {
+    var time = new Date().getTime();
+    if(lastUpdate + 1000 < time) { 
+      update();
+      lastUpdate = time;
+    }
+    setTimeout(loop, 100);
+  }
+
+  
+  $(document).ready(function() {
+    loop();
+  });

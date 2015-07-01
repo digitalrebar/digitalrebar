@@ -1,4 +1,5 @@
 table.data
+
   width: 100%
   font-size: 12px
   line-height: 17px
@@ -9,7 +10,6 @@ table.data
   thead th, table > tr th
     padding: 3px 10px
     text-align: left
-    border-bottom: 3px solid $page_bg
     +gradient($secondary_bg, $secondary_bg + #222)
   thead td, table > tr th
     text-align: left
@@ -63,9 +63,11 @@ table.box.no-hover
       background: transparent !important
 
 table
+  border-collapse: collapse
   tr
     // cell classes
     th, td
+      border-style: none
       &.number, &.percent, &.money
         text-align: right
       &.short
@@ -77,7 +79,6 @@ table
         text-align: left  
       &.container
         background: $page_bg
-        border: 1px solid $content_bg
         .box
           margin: 5px 0
           background: $content_bg
@@ -85,11 +86,8 @@ table
         table
           th
             background: $page_bg
-            border: solid $content_bg
-            border-width: 1px 1px 0 0
             font-size: 90%
             &:first-child
-              border-left-width: 1px
     th.status
       padding-left: 15px
     &.odd
@@ -97,7 +95,6 @@ table
         background: $odd
         &.container
           background: mix($page_bg, $odd)
-          border: 1px solid $odd
           .box
             background: $odd
       &.selected
@@ -111,7 +108,6 @@ table
         background: $even
         &.container
           background: mix($page_bg, $even)
-          border: 1px solid $even
           .box
             background: $even
       &.selected
@@ -142,11 +138,9 @@ table.snap
       vertical-align: bottom
       padding: 1
     &.role
-      border-left: 1px solid $content_bg + #444
       text-align: center
     &.dr
       transform-origin: 100% 100%
-      border-left: 1px solid $content_bg + #444
       height: $snapheight
       width: 1em
       align: left
@@ -170,7 +164,6 @@ table.snap
       text-align: right
       padding-right: 0.2em
     &.noderole
-      border-left: 1px solid $content_bg + #444
       text-align: left
   tr
     &:hover, &:active
@@ -181,7 +174,29 @@ table.snap
 
 table.top
   td,th
-    vertical-align: top
+    vertical-align: top  
+
+table#nodelist
+  border-collapse: collapse
+  tr
+    td
+      background: $even
+    &.selected
+      td
+        background: mix($even, $selected)
+    &:hover
+      td
+        background: mix($even, $selected)
+    &:nth-child(odd)
+      td
+        background: $odd
+      &.selected
+        td
+          background: mix($odd, $selected)
+      &:hover
+        td
+          background: mix($odd, $selected)
+
     
 #node_tbl_filter
   float: right
