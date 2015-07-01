@@ -86,22 +86,23 @@ class BarclampChef::Jig < Jig
   end
 
   def create_node(node)
-    Rails.logger.info("ChefJig Creating node #{node.name}")
-    prep_chef_auth
     cb_nodename = node.name
-    cb_noderolename = node_role_name(node)
+    Rails.logger.info("ChefJig Creating node #{cb_nodename}")
+    prep_chef_auth
+    cb_noderolename = node_role_name(cb_nodename)
     chef_node = Chef::Node.build(cb_nodename)
     chef_role = Chef::Role.new
     chef_role.name(cb_noderolename)
     chef_client = Chef::ApiClient.new
-    chef_client.name(node.name)
+    chef_client.name(cb_nodename)
     [chef_node.save, chef_role.save, chef_client.save]
   end
 
   def delete_node(node)
     prep_chef_auth
-    Rails.logger.info("ChefJig Deleting node #{node.name}")
-    chef_client = (Chef::ApiClient.load(node.name) rescue nil)
+    name = Attrib.get('chef-client_name', node)
+    Rails.logger.info("ChefJig Deleting node #{name}")
+    chef_client = (Chef::ApiClient.load(name) rescue nil)
     chef_client.destroy if chef_client
     chef_node_and_role(node).each do |i|
       i.destroy
@@ -110,8 +111,8 @@ class BarclampChef::Jig < Jig
 
   private
 
-  def node_role_name(node)
-    "crowbar-#{node.name.tr(".","_")}"
+  def node_role_name(n_name)
+    "crowbar-#{n_name.tr(".","_")}"
   end
 
   
@@ -136,9 +137,10 @@ class BarclampChef::Jig < Jig
 
   def chef_node_and_role(node)
     @@reload_mutex.synchronize do
-      Rails.logger.info("ChefJig: Reloading chef node and role info for #{node.name}")
+      cb_name = Attrib.get('chef-client_name', node)
+      Rails.logger.info("ChefJig: Reloading chef node and role info for #{cb_name}")
       prep_chef_auth
-      [Chef::Node.load(node.name),Chef::Role.load(node_role_name(node))]
+      [Chef::Node.load(cb_name),Chef::Role.load(node_role_name(cb_name))]
     end
   end
 
