@@ -17,9 +17,13 @@
         %th= t('.deployment')
     %tbody
       - if @nodes and @nodes.count > 0
-        - @nodes.sort_by{|n| n.name }.each do |node|
+        - @nodes.sort_by{|n| n.name } #sort nodes by name and by admin
+        - admins = @nodes.select{|n| n.admin}.sort_by{|n| n.name }
+        - @nodes = admins + (@nodes - admins)
+        - @nodes.each do |node|
           %tr.node{ :class => cycle(:odd, :even, :name => "nodes"), :id => node.id }
-            %td= link_to node.name, node_path(node.id), :title=> node.addresses.join(',')
+            %td{:style=>node.admin&&"font-weight: bold;"}
+              = link_to node.name, node_path(node.id), :title=> node.addresses.join(',')
             %td= text_field_tag "node:#{node.id}:description".to_sym, "#{node.description || ""}", :size => 30
             %td 
               - deployments = Deployment.all
