@@ -33,6 +33,7 @@
       %dt= t '.net_to_join'
       %dd= text_field_tag "net_to_join", @config["networks_to_join"].join(", "), size: 50
 
+    %hr
     %h3= t '.networks'
 
     %dl
@@ -43,6 +44,7 @@
       %dt= "new network"
       %dd= text_area_tag "networks|new", (yaml ? "---" : "{}"), cols: 65
 
+    %hr
     %h3= t '.keys'
 
     %dl
@@ -52,6 +54,7 @@
       %dt= text_field_tag "ssh_keys|new_name", "new_key", size: 20
       %dd= text_field_tag "ssh_keys|new_data", "replace me to add key", size: 60
 
+    %hr
     %h3= t '.filters'
 
     %dl
@@ -62,16 +65,34 @@
       %dt= "new filter"
       %dd= text_area_tag "filters|new", (yaml ? "---" : "{}"), cols: 65
 
-  - if false
+    %hr
     %h3= t '.users'
-    
+
+    %dl
+      - @config["users"].each_index do |i|
+        - u = (yaml ? @config["users"][i].to_yaml : JSON.pretty_generate(@config["users"][i]))
+        %dt
+          = @config["users"][i]["username"]
+          - unless @config["services"][i]["is_admin"]
+            <p/>
+            %em= t '.admin'
+        %dd= text_area_tag "users|#{i}", u, cols: 65, rows: 5
+      %dt= "new user"
+      %dd= text_area_tag "users|new", (yaml ? "---" : "{}"), cols: 65
+
+    %hr
     %h3= t '.services'
 
     %dl
       - @config["services"].each_index do |i|
-        %dt= @config["services"][i]["name"]
-        %dd= text_area_tag "services|#{i}", JSON.pretty_generate(@config["services"][i]), cols: 65
+        - s = (yaml ? @config["services"][i].to_yaml : JSON.pretty_generate(@config["services"][i]))
+        %dt
+          = @config["services"][i]["name"]
+          - unless @config["services"][i]["has_service"]
+            <p/>
+            %em= t '.disabled'
+        %dd= text_area_tag "services|#{i}", s, cols: 65, rows: 3
       %dt= "new service"
-      %dd= text_area_tag "services|new", "{}", cols: 65
+      %dd= text_area_tag "services|new", (yaml ? "---" : "{}"), cols: 65
 
   %input.button{type: "submit", value: t('update')}

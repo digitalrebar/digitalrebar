@@ -561,6 +561,8 @@ en:
       json: "Edit in JSON"
       yaml: "Edit in YAML"
       wizard: "Wizard"
+      disabled: "DISABLED"
+      admin: "ADMIN USER"
   users:
     common: &user_common
       email: Email
