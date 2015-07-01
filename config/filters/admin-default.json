@@ -1,5 +1,5 @@
 {
-  "name": "admin-default",
+  "name": "default",
   "priority": 50,
   "template": "{{node.name}}.neode.com",
   "matcher": "net.category == \"admin\"",
