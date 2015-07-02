@@ -114,78 +114,81 @@ class DeploymentsController < ApplicationController
     @deployment = Deployment.find_key params[:id]
     raise "deployment not found" unless @deployment
 
-    #stolen from the show function above
-    deployment_roles = @deployment.deployment_roles.sort{|a,b|a.role.cohort <=> b.role.cohort}
-    
-    roles = deployment_roles.select { |r| !r.role.service }
-    
-    nodes = Node.order("name ASC").select do |n|
-      (!n.is_system? and
-      (n.deployment_id == @deployment.id) ||
-      (n.node_roles.where(:deployment_id => @deployment.id).count > 0))
-    end
-
-    admins = nodes.select{|n| n.admin}
-    nodes = admins + (nodes - admins)
-
-    state = @deployment.state rescue Deployment::ERROR
-
-    out = {
-      roles: [],
-      nodes: [],
-      services: [],
-      state: state,
-      status: Deployment::STATES[state]
-    }
-
-    out[:services] = @deployment.system_node.node_roles.map do |service|
-      state = service.state || NodeRole::ERROR
-      {
-        state: state,
-        status: NodeRole::STATES[state],
-        path: node_role_path(service.id),
-        name: service.role.name,
-      }
-    end
-    
-    roleHash = {}
-
-    out[:roles] = roles.map do |role|
-      roleHash[role.name] = role.id
-      {
-        name: role.name,
-        id: role.id,
-      }
-    end
-    
-    out[:nodes] = nodes.map do |node|
-      n = {
-        name: node.name,
-        admin: node.admin,
-        id: node.id,
-        roles: {},
-        description: node.description,
-        path: node_path(node.id)
-      }
-      n[:led] = if !node.available
-        node.alive ? 'reserved' : 'idle'
-      elsif !node.alive
-        'off'
-      else
-        'on'
-      end
-      node.node_roles.each do |role|
-        n[:roles][roleHash[role.role.name]] = {
-          state: role.state,
-          path: node_role_path(role.id),
-        }
-      end
-      n
-    end
-
     respond_to do |format|
       format.html { }
-      format.json { render api_array out.to_json }
+      format.json {
+
+        #stolen from the show function above
+        deployment_roles = @deployment.deployment_roles.sort{|a,b|a.role.cohort <=> b.role.cohort}
+        
+        roles = deployment_roles.select { |r| !r.role.service }
+        
+        nodes = Node.order("name ASC").select do |n|
+          (!n.is_system? and
+          (n.deployment_id == @deployment.id) ||
+          (n.node_roles.where(:deployment_id => @deployment.id).count > 0))
+        end
+
+        admins = nodes.select{|n| n.admin}
+        nodes = admins + (nodes - admins)
+
+        state = @deployment.state rescue Deployment::ERROR
+
+        out = {
+          roles: [],
+          nodes: [],
+          services: [],
+          state: state,
+          status: Deployment::STATES[state]
+        }
+
+        out[:services] = @deployment.system_node.node_roles.map do |service|
+          state = service.state || NodeRole::ERROR
+          {
+            state: state,
+            status: NodeRole::STATES[state],
+            path: node_role_path(service.id),
+            name: service.role.name,
+          }
+        end
+        
+        roleHash = {}
+
+        out[:roles] = roles.map do |role|
+          roleHash[role.name] = role.id
+          {
+            name: role.name,
+            id: role.id,
+          }
+        end
+        
+        out[:nodes] = nodes.map do |node|
+          n = {
+            name: node.name,
+            admin: node.admin,
+            id: node.id,
+            roles: {},
+            description: node.description,
+            path: node_path(node.id)
+          }
+          n[:led] = if !node.available
+            node.alive ? 'reserved' : 'idle'
+          elsif !node.alive
+            'off'
+          else
+            'on'
+          end
+          node.node_roles.each do |role|
+            n[:roles][roleHash[role.role.name]] = {
+              state: role.state,
+              path: node_role_path(role.id),
+            }
+          end
+          n
+        end
+
+        render api_array out.to_json
+      }
     end
     
 
