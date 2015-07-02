@@ -47,5 +47,16 @@ iface <%= name %> <%= addr.v4? ? "inet" : "inet6" %> static
        <% end # interface.slaves.each -%>
     post-down echo -<%=name%> >/sys/class/net/bonding_masters || true
     <% end # case -%>
+<% v4addrs, v6addrs = i["addresses"].map{|a|::IP.coerce(a)}.partition{|a|a.v4?} -%>
+<% v4addr = v4addrs.first._to.split('/')[0] rescue nil -%>
+<% router = i['router'] -%>
+  <% if i['pbr'] and v4addr and router -%>
+    up ip rule add from <%=v4addr%> to any table <%=i['pbr']%>
+    up ip rule add to <%=v4addr%> dev <%=name%> table <%=i['pbr']%>
+    up ip route add default via <%=router%> table <%=i['pbr']%> dev <%=name%> src <%=v4addr%>
+    down ip rule del from <%=v4addr%> to any table <%=i['pbr']%>
+    down ip rule del to <%=v4addr%> dev <%=name%> table <%=i['pbr']%>
+    down ip route del default via <%=router%> table <%=i['pbr']%> dev <%=name%> src <%=v4addr%>
+  <% end -%>
 <% end # loop -%>
 

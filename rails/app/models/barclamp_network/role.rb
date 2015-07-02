@@ -51,6 +51,8 @@ class BarclampNetwork::Role < Role
         "conduit" => addr.range.conduit.split(',').map{|a|a.strip}.sort.join(','),
         "vlan" => addr.range.vlan,
         "category" => network.category,
+        "group" => network.group,
+        "pbr" => network.pbr,
         "team_mode" => addr.range.team_mode,
         "use_vlan" => !!addr.range.use_vlan,
         "use_team" => !!addr.range.use_team,
