@@ -1,6 +1,6 @@
 %h1= t '.title'
 
-- error = NodeRole.all_by_state(NodeRole::ERROR)
+- error = NodeRole.where(state: NodeRole::ERROR).joins(:node,:role,:deployment).select("node_roles.*, roles.name as role_name, nodes.name as node_name, nodes.alive as node_alive, nodes.available as node_available, deployments.name as deployment_name, roles.jig_name as role_jig_name")
 %h2
   = t '.error'
   - if error.length > 0
@@ -10,15 +10,15 @@
 = render :partial=>'node_roles/index', :locals => { :list => error }
 
 %h2= t '.transition'
-- trans = NodeRole.all_by_state(NodeRole::TRANSITION)
+- trans = NodeRole.where(state: NodeRole::TRANSITION).joins(:node,:role,:deployment).select("node_roles.*, roles.name as role_name, nodes.name as node_name, nodes.alive as node_alive, nodes.available as node_available, deployments.name as deployment_name, roles.jig_name as role_jig_name")
 = render :partial=>'node_roles/index', :locals => { :list => trans }
 
 %h2= t '.todo'
-- todo = NodeRole.all_by_state(NodeRole::TODO)
+- todo = NodeRole.where(state: NodeRole::TODO).joins(:node,:role,:deployment).select("node_roles.*, roles.name as role_name, nodes.name as node_name, nodes.alive as node_alive, nodes.available as node_available, deployments.name as deployment_name, roles.jig_name as role_jig_name")
 = render :partial=>'node_roles/index', :locals => { :list => todo }
   
 %h2= t '.blocked'
-- blocked = NodeRole.all_by_state(NodeRole::BLOCKED)
+- blocked = NodeRole.where(state: NodeRole::BLOCKED).joins(:node,:role,:deployment).select("node_roles.*, roles.name as role_name, nodes.name as node_name, nodes.alive as node_alive, nodes.available as node_available, deployments.name as deployment_name, roles.jig_name as role_jig_name")
 = render :partial=>'node_roles/index', :locals => { :list => blocked }
 
 .clear
