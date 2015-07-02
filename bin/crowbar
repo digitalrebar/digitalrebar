@@ -718,7 +718,7 @@ module OpenCrowbar
   end
 
 
-  class User < ProxyWithAttribs
+  class User < CrowbarProxy
 
     def self.path
       "api/v2/users"
