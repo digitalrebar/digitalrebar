@@ -151,8 +151,6 @@
         }
         var graph = $('#node'+node.id); //sparkline graph
         var led = $("#led"+node.id); //led at beginning
-        led.attr("class","led "+node.led); //update led
-        led.attr("title", stateName[node.led]);
         var lookup = tristateData.tooltipValueLookups;
         //building sparklines for node roles
         var items = [];
@@ -170,10 +168,15 @@
             };
             if(swap[value])
               value = swap[value];
+            if(value == -1)
+              node.led = "error";
           }
           items.push([value]);
         }
         graph.sparkline(items, tristateData); //create the sparkline
+
+        led.attr("class","led "+node.led); //update led
+        led.attr("title", stateName[node.led]);
 
         var click = function(ev) { //open the node page when clicked
           var sparkline = ev.sparklines[0]
@@ -199,6 +202,7 @@
         }
       }
       lastUpdate = new Date().getTime();
+      console.log("update "+lastUpdate);
     });
   }
 
@@ -210,19 +214,6 @@
       location.href = service.path;
   }
 
+  update();
+
   $("#services").bind('sparklineClick', serviceClick);
-
-  var lastUpdate = 0;
-  function loop() {
-    var time = new Date().getTime();
-    if(lastUpdate + #{current_user.settings(:ui).fast_refresh} < time) { 
-      update();
-      lastUpdate = time;
-    }
-    setTimeout(loop, 100);
-  }
-
-  
-  $(document).ready(function() {
-    loop();
-  });
