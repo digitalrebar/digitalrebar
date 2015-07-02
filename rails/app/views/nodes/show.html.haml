@@ -49,7 +49,7 @@
       %th= t ".vlan"
   %tbody
     - @node.network_allocations.order("id ASC").each do |a|
-      %tr
+      %tr{:class => cycle("even", "odd")}
         %td= link_to a.network.name, network_path(a.network.id)
         %td= a.network_range.name
         %td= a.address.to_s
@@ -67,15 +67,31 @@
     %tr
       %th= t '.name'
       %th= t '.value'
-      %th= t '.description'
   %tbody
     - @node.attribs.order("name ASC").each do |a|
-      %tr
-        %td= link_to a.name, attrib_path(a.id)
-        %td
-          - v = a.get(@node) rescue nil
+      - v = a.get(@node) rescue nil          
+      %tr{:class => "shrunk " + cycle("even","odd")}
+        %td.name= link_to a.name, attrib_path(a.id), :title => a.description
+        %td.value{:style=>"vertical-align: top;"}
           - unless v.nil?
-            = v
+            - if v.class == Hash
+              - data = JSON.pretty_generate(v)
+              - trunc = data[0..(data.length>8&&10||data.length)]+"..."
+              %pre{:onclick=>"expand($(this))",:flat=>"false",:content=>data,:trunc=>trunc}
+                = trunc
+            - else
+              = v
           - else
             %em= t('not_set')
-        %td= a.description
+
+:javascript
+  function expand(element) {
+    var flip = element.attr("flat") != "true"
+    console.log(flip);
+    element.text(element.attr(
+      flip ? 
+        "content" :
+        "trunc"
+      ));
+    element.attr("flat", flip);
+  }
