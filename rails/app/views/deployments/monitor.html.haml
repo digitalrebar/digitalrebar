@@ -1,12 +1,9 @@
 - state = @deployment.state rescue Deployment::ERROR
 - system_roles = @deployment.system_node.node_roles.count
 
-%h2
-  - if @deployment.parent
-    = link_to @deployment.parent.name, deployment_path(@deployment.parent.id), :title => @deployment.parent.description
-    = "/"
-  = link_to @deployment.name, deployment_path(@deployment.id), :title => @deployment.description
-  %span#systemled.led{:class => Deployment::STATES[state], :title=>Deployment.state_name(state), :style => "display: inline-block;"}
+%table
+  %tr
+    = render :partial => "header", :locals => { :deployment => @deployment }
 
 %div{:style=>"float: right;"}
   %h3
@@ -36,7 +33,7 @@
     colorMap: {
       '-1': "#f00",
       "-6": "#777",
-      "2": "#af0",
+      "-2": "#af0",
       "-3": "#ccc",
       "4": "#339",
       "5": "#2b2",
@@ -51,7 +48,7 @@
         '-1': "error",
         "0": "",
         "-6": "todo",
-        "2": "transition",
+        "-2": "transition",
         "-3": "blocked",
         "4": "proposed",
         "5": "active",
@@ -62,7 +59,7 @@
         '-1': '#{t("common.state.error")}', //need to change this to fetch strings from string table
         "0": " - ",
         "-6": '#{t("common.state.todo")}',
-        "2": '#{t("common.state.transition")}',
+        "-2": '#{t("common.state.transition")}',
         "-3": '#{t("common.state.blocked")}',
         "4": '#{t("common.state.proposed")}',
         "5": '#{t("common.state.active")}',
@@ -109,6 +106,7 @@
         var name = service.name;
         var value = service.state;
         swap = {
+          2: -2, //transition is facing down
           0: 5, //active can't be zero
           3: -3, //blocked points down
           1: -6 //todo is pointing down and -1 is taken by error
@@ -151,8 +149,6 @@
         }
         var graph = $('#node'+node.id); //sparkline graph
         var led = $("#led"+node.id); //led at beginning
-        led.attr("class","led "+node.led); //update led
-        led.attr("title", stateName[node.led]);
         var lookup = tristateData.tooltipValueLookups;
         //building sparklines for node roles
         var items = [];
@@ -170,10 +166,15 @@
             };
             if(swap[value])
               value = swap[value];
+            if(value == -1)
+              node.led = "error";
           }
           items.push([value]);
         }
         graph.sparkline(items, tristateData); //create the sparkline
+
+        led.attr("class","led "+node.led); //update led
+        led.attr("title", stateName[node.led]);
 
         var click = function(ev) { //open the node page when clicked
           var sparkline = ev.sparklines[0]
@@ -198,7 +199,6 @@
           });
         }
       }
-      lastUpdate = new Date().getTime();
     });
   }
 
@@ -210,19 +210,6 @@
       location.href = service.path;
   }
 
+  update();
+
   $("#services").bind('sparklineClick', serviceClick);
-
-  var lastUpdate = 0;
-  function loop() {
-    var time = new Date().getTime();
-    if(lastUpdate + #{current_user.settings(:ui).fast_refresh} < time) { 
-      update();
-      lastUpdate = time;
-    }
-    setTimeout(loop, 100);
-  }
-
-  
-  $(document).ready(function() {
-    loop();
-  });

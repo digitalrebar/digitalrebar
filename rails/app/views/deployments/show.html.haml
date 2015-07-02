@@ -3,14 +3,7 @@
 
 %table{:width=>'100%'}
   %tr
-    %td{:style=>"width:16px;"}
-      .led{:class => Deployment::STATES[state], :title=>Deployment.state_name(state)}
-    %td
-      %h2
-        - if @deployment.parent
-          = link_to @deployment.parent.name, deployment_path(@deployment.parent.id), :title => @deployment.parent.description
-          = "/"
-        = link_to @deployment.name, deployment_path(@deployment.id), :title => @deployment.description
+    = render :partial => "header", :locals => { :deployment => @deployment }
     %td
       - if state == Deployment::PROPOSED
         = form_for :add_role, :'data-remote' => true, :url => deployment_roles_path(:deployment_id=>@deployment.id, :version=>'v2'), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
