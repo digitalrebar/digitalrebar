@@ -1,12 +1,9 @@
 - state = @deployment.state rescue Deployment::ERROR
 - system_roles = @deployment.system_node.node_roles.count
 
-%h2
-  - if @deployment.parent
-    = link_to @deployment.parent.name, deployment_path(@deployment.parent.id), :title => @deployment.parent.description
-    = "/"
-  = link_to @deployment.name, deployment_path(@deployment.id), :title => @deployment.description
-  %span#systemled.led{:class => Deployment::STATES[state], :title=>Deployment.state_name(state), :style => "display: inline-block;"}
+%table
+  %tr
+    = render :partial => "header", :locals => { :deployment => @deployment }
 
 %div{:style=>"float: right;"}
   %h3
