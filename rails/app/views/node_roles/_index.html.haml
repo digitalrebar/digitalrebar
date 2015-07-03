@@ -17,21 +17,27 @@
         %tr.node{ :class => cycle(:odd, :even) }
           - working = true
           - node_led = 'on'
-          - if !nr.node.available
-            - node_led = (nr.node.alive ? 'reserved' : 'idle')
+          - n_avail = nr.node_available rescue nr.node.available
+          - n_alive = nr.node_alive rescue nr.node.alive
+          - d_name = nr.deployment_name rescue nr.deployment.name
+          - n_name = nr.node_name rescue nr.node.name
+          - role_name = nr.role_name rescue nr.role.name
+          - role_jig_name = nr.role_jig_name rescue nr.role.jig_name
+          - if !n_avail
+            - node_led = (n_alive ? 'reserved' : 'idle')
             - working = false
-          - elsif !nr.node.alive
+          - elsif !n_alive
             - node_led = 'off'
             - working = false
           - nr_led = NodeRole::STATES[nr.state || NodeRole::ERROR]
           - nr_led = "wait" if !working and nr.state == NodeRole::TODO 
-          %td= link_to nr.deployment.name, deployment_path(:id=>nr.deployment.id) rescue t 'unknown'
+          %td= link_to d_name, deployment_path(:id=>nr.deployment_id) rescue t 'unknown'
           %td          
-            = link_to nr.node.name, node_path(:id=>nr.node.id) rescue t 'unknown'
+            = link_to n_name, node_path(:id=>nr.node_id) rescue t 'unknown'
             - unless working
               = image_tag "icons/led/#{node_led}.png", {title: t(node_led, scope: "common.state")}
-          %td= link_to nr.role.name, role_path(:id=>nr.role.id) rescue t 'unknown'
-          %td= link_to nr.role.jig_name, jig_path(:id=>nr.role.jig_name) rescue t 'unknown'
+          %td= link_to role_name, role_path(:id=>nr.role_id) rescue t 'unknown'
+          %td= link_to role_jig_name, jig_path(:id=>role_jig_name) rescue t 'unknown'
           %td
             .led{:class => nr_led, :title=>nr.state_name}
           %td= link_to nr.state_name, node_role_path(nr.id)
