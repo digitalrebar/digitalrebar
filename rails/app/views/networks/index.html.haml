@@ -13,6 +13,7 @@
       %th= t '.bridge'
       %th= t '.team'
       %th= t '.conduit'
+      %th= t '.pbr'
       %th= t '.ranges'
   %tbody
     - @networks.each do |n|
@@ -27,6 +28,7 @@
         %td= (n.use_bridge ? t('yes') : t('no') )
         %td= (n.use_team ? n.team_mode : t('not_set') )
         %td= n.conduit
+        %td= n.pbr
         %td= n.ranges.map{ |r| r.name }.join(', ')
   %tfoot
     = form_for :network, :'data-remote' => true, :url => networks_path(), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
@@ -41,6 +43,7 @@
         %td= text_field_tag :bridge, "-1", :size=>4
         %td= text_field_tag :team_mode, "-1", :size=>4
         %td= text_field_tag :conduit, "10g1", :size=>4
+        %td= text_field_tag :pbr, "", :size=>4
         %td
           %input.button{:type => "submit", :value => t('.add')}
 

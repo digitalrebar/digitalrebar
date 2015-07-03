@@ -41,6 +41,7 @@ en:
     vlan: "VLAN"
     bridge: "Bridge"
     team: "Team"
+    pbr: "PBR"
     network: "Network"
     pref: "Pref"
     conduit: "Conduit(s)"

@@ -406,6 +406,9 @@ node["crowbar"]["network"]["addresses"].keys.sort{|a,b|
   if_mapping << [network['network'],network['range'],addr,net_ifs.reverse,network['category']]
   ifs[our_iface.name]["addresses"] ||= Array.new
   ifs[our_iface.name]["addresses"] << IP.coerce(addr)
+  ifs[our_iface.name]['pbr'] = network['pbr'] if network['pbr'] and network['pbr'] != ''
+  ifs[our_iface.name]['router'] = IP.coerce(network["router"]["address"]).addr if network['router']
+
   # Ditto for our default route
   if network["router"] && network["router"]["pref"] && 
      (network["router"]["pref"].to_i < route_pref)
@@ -428,6 +431,12 @@ old_ifs.each do |name,params|
     if ::File.exists?("/etc/sysconfig/network-scripts/ifcfg-#{name}")
       ::File.delete("/etc/sysconfig/network-scripts/ifcfg-#{name}")
     end
+    if ::File.exists?("/etc/sysconfig/network-scripts/route-#{name}")
+      ::File.delete("/etc/sysconfig/network-scripts/route-#{name}")
+    end
+    if ::File.exists?("/etc/sysconfig/network-scripts/rule-#{name}")
+      ::File.delete("/etc/sysconfig/network-scripts/rule-#{name}")
+    end
   when "suse"
     # SuSE also has lots of small files, but in slightly different locations.
     if ::File.exists?("/etc/sysconfig/network/ifcfg-#{name}")
@@ -436,8 +445,24 @@ old_ifs.each do |name,params|
     if ::File.exists?("/etc/sysconfig/network/ifroute-#{name}")
       ::File.delete("/etc/sysconfig/network/ifroute-#{name}")
     end
+    ## TODO: PBR Work
   end
 end
+
+pbrs=[]
+ifs.each do |n,i|
+  pbrs << i['pbr'] if i['pbr']
+end
+pbrs = pbrs.sort
+pbrs = pbrs.uniq
+
+h={}
+count=252
+pbrs.each do |p|
+  h[p] = count
+  count = count - 1
+end
+pbrs = h
 
 Nic.refresh_all
 
@@ -489,6 +514,25 @@ Nic.nics.each do |nic|
   iface["addresses"].reject{|i|nic.addresses.member?(i)}.each do |addr|
     Chef::Log.info("#{nic.name}: Adding #{addr.to_s}")
     nic.add_address addr
+  end
+  Chef::Log.info("pbr = #{iface['pbr']} router = #{iface['router']}")
+  if iface['pbr'] and iface['router']
+    v4addrs, v6addrs = iface["addresses"].map{|a|::IP.coerce(a)}.partition{|a|a.v4?}
+    v4addr = v4addrs.first.to_s.split('/')[0] rescue nil
+    pbr_number = pbrs[iface['pbr']]
+    Chef::Log.info("Removing table #{pbr_number} info")
+    while ::Kernel.system("ip rule del table #{pbr_number}") do
+      # Make sure all the rules gone
+    end
+    while ::Kernel.system("ip route del table #{pbr_number}") do
+      # Make sure all the routes gone
+    end
+    if v4addr
+      Chef::Log.info("Adding table #{pbr_number} info #{v4addr} #{nic.name} #{iface['router']}")
+      ::Kernel.system("ip rule add to #{v4addr} dev #{nic.name} table #{pbr_number}")
+      ::Kernel.system("ip rule add from #{v4addr} to any table #{pbr_number}")
+      ::Kernel.system("ip route add default via #{iface['router']} table #{pbr_number} dev #{nic.name} src #{v4addr}")
+    end
   end
   # Make sure we are using the proper default route.
   unless default_route.empty?
@@ -573,6 +617,15 @@ Chef::Log.info(%x{ip link show})
 node.set["crowbar_wall"]["network"]["interfaces"] = saved_ifs
 node.set["crowbar_wall"]["network"]["nets"] = if_mapping
 
+template "/etc/iproute2/rt_tables" do
+  source "rt_tables.erb"
+  owner "root"
+  group "root"
+  variables({
+              :pbrs => pbrs
+            })
+end
+
 case node["platform"]
 when "debian","ubuntu"
   template "/etc/network/interfaces" do
@@ -587,6 +640,24 @@ when "centos","redhat","fedora"
     next unless ifs[nic.name]
     template "/etc/sysconfig/network-scripts/ifcfg-#{nic.name}" do
       source "redhat-cfg.erb"
+      owner "root"
+      group "root"
+      variables({
+                  :interfaces => ifs, # the array of config values
+                  :nic => nic # the live object representing the current nic.
+                })
+    end
+    template "/etc/sysconfig/network-scripts/route-#{nic.name}" do
+      source "redhat-route-cfg.erb"
+      owner "root"
+      group "root"
+      variables({
+                  :interfaces => ifs, # the array of config values
+                  :nic => nic # the live object representing the current nic.
+                })
+    end
+    template "/etc/sysconfig/network-scripts/rule-#{nic.name}" do
+      source "redhat-rule-cfg.erb"
       owner "root"
       group "root"
       variables({
@@ -612,5 +683,6 @@ when "suse"
                   :nic => nic
                 })
     end if ifs[nic.name]["gateway"]
+    ## TODO: PBR Work
   end
 end
