@@ -30,7 +30,7 @@ g(Item) ->
 validate(JSON) when is_record(JSON, obj) ->
   J = JSON#obj.data,
   R =[JSON#obj.type == "network",
-      bdd_utils:is_a(J, length, 17),
+      bdd_utils:is_a(J, length, 18),
       bdd_utils:is_a(J, int, vlan),
       bdd_utils:is_a(J, boolean, use_vlan),
       bdd_utils:is_a(J, boolean, use_bridge),
