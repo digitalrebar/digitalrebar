@@ -118,19 +118,9 @@ class DeploymentsController < ApplicationController
       format.html { }
       format.json {
 
-        #stolen from the show function above
-        deployment_roles = @deployment.deployment_roles.sort{|a,b|a.role.cohort <=> b.role.cohort}
+        deployment_roles = DeploymentRole.where(deployment_id: 1).joins(:role).select("deployment_roles.*, roles.name as role_name, roles.cohort as role_cohort, roles.service as role_service").sort{|a,b|a.role_cohort <=> b.role_cohort}
         
-        roles = deployment_roles.select { |r| !r.role.service }
-        
-        nodes = Node.order("name ASC").select do |n|
-          (!n.is_system? and
-          (n.deployment_id == @deployment.id) ||
-          (n.node_roles.where(:deployment_id => @deployment.id).count > 0))
-        end
-
-        admins = nodes.select{|n| n.admin}
-        nodes = admins + (nodes - admins)
+        roles = deployment_roles.select { |r| !r.role_service }
 
         state = @deployment.state rescue Deployment::ERROR
 
@@ -142,50 +132,60 @@ class DeploymentsController < ApplicationController
           status: Deployment::STATES[state]
         }
 
-        out[:services] = @deployment.system_node.node_roles.map do |service|
+        sn = @deployment.system_node
+        out[:services] = NodeRole.where(node_id: sn.id).joins(:role).select("node_roles.*, roles.name as role_name").map do |service|
           state = service.state || NodeRole::ERROR
           {
             state: state,
             status: NodeRole::STATES[state],
             path: node_role_path(service.id),
-            name: service.role.name,
+            name: service.role_name,
           }
         end
         
         roleHash = {}
 
         out[:roles] = roles.map do |role|
-          roleHash[role.name] = role.id
+          roleHash[role.role_name] = role.id
           {
-            name: role.name,
+            name: role.role_name,
             id: role.id,
           }
         end
         
-        out[:nodes] = nodes.map do |node|
-          n = {
-            name: node.name,
-            admin: node.admin,
-            id: node.id,
-            roles: {},
-            description: node.description,
-            path: node_path(node.id)
-          }
-          n[:led] = if !node.available
-            node.alive ? 'reserved' : 'idle'
-          elsif !node.alive
-            'off'
-          else
-            'on'
-          end
-          node.node_roles.each do |role|
-            n[:roles][roleHash[role.role.name]] = {
-              state: role.state,
-              path: node_role_path(role.id),
+        node_roles = NodeRole.joins(:node,:role).where("nodes.system = 'f' and (nodes.deployment_id = #{@deployment.id} OR node_roles.deployment_id = #{@deployment.id})").select("node_roles.*, roles.name as role_name, nodes.name as node_name, nodes.admin as node_admin, nodes.available as node_avail, nodes.description as node_desc, nodes.alive as node_alive")
+
+        nodes = {}
+        node_roles.each do |nr|
+          n = nodes[nr.node_name]
+          unless n
+            n = {
+              name: nr.node_name,
+              admin: nr.node_admin,
+              id: nr.node_id,
+              roles: {},
+              description: nr.node_desc,
+              path: node_path(nr.node_id)
             }
+            n[:led] = if !nr.node_avail
+              nr.node_alive ? 'reserved' : 'idle'
+            elsif !nr.node_alive
+              'off'
+            else
+              'on'
+            end
+            nodes[nr.node_name] = n
           end
-          n
+
+          n[:roles][roleHash[nr.role_name]] = {
+            state: nr.state,
+            path: node_role_path(nr.role_id),
+          }
         end
+        
+        nodes = nodes.values.sort{|a,b| a[:name] <=> b[:name]}
+        admins = nodes.select{|n| n[:admin]}
+        out[:nodes] = admins + (nodes - admins)
 
         render api_array out.to_json
       }
