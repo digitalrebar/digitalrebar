@@ -93,6 +93,8 @@ en:
       asset_tag: "Asset Tag"
   # Layout
   nav:
+    monitor: "Monitor"
+    monitor_description: "Track System Activity"
     nodes: "Nodes"
     nodes_description: "Infrastructure Components"
     groups: "Groups"
@@ -112,9 +114,11 @@ en:
     layercake_description: "Visualize Infrastructure in Function Layers"
 
     utils: "Utilities"
+    manage_users: "Manage Users"
+    manage_users_description: "Add, remove and edit users"
+    user_settings: "Session Settings"
+    user_settings_description: "Turn on Advanced UI Controls"
     utils_description: "Tools and System Functions "
-    util_logs: "Exported Items"
-    util_logs_description: "Download information complied for review"
     jigs: "Jigs"
     jigs_description: "Configuration Manager Plug-ins"
     hammers: "Hammers"
@@ -124,16 +128,7 @@ en:
 
     help: Help
     help_description: Help
-    wiki: Online Help
-    wiki_description: Online Help
-    docs: Documentation
-    docs_description: Documentation
 
-    users: "Users"
-    manage_users: "Manage Users"
-    manage_users_description: "Add, remove and edit users"
-    user_settings: "Session Settings"
-    user_settings_description: "Turn on Advanced UI Controls"
     sign_out: "Sign Out"
     sign_out_description: "End the current session"
 
