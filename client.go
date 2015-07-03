@@ -55,11 +55,13 @@ const (
 func Session(URL, User, Password string) error {
 	c := &ocbClient{URL: URL, Client: &http.Client{}, Challenge: &challenge{}}
 	// retrieve the digest info from the 301 message
-	resp, e := http.Head(URL + path.Join(API_PATH, "digest"))
+	fmt.Printf("%v: %v\n",c.URL, path.Join(API_PATH, "digest"))
+	resp, e := c.Head(c.URL + path.Join(API_PATH, "digest"))
+	if e != nil {
+		return e
+	}
 	if resp.StatusCode != 401 {
 		return fmt.Errorf("Expected Digest Challenge Missing on URL %s got %s", URL, resp.Status)
-	} else if e != nil {
-		return e
 	}
 	var err error
 	err = c.Challenge.parseChallenge(resp.Header.Get("WWW-Authenticate"))
@@ -79,21 +81,17 @@ func Session(URL, User, Password string) error {
 // objOut is the raw request body (if any)
 // err is the error of any occurred.
 func (c *ocbClient) request(method, uri string, objIn []byte) (objOut []byte, err error) {
-	if session == nil {
-		return nil, fmt.Errorf("ocb Client Session not set")
-	}
-
 	var body io.Reader
 
 	if objIn != nil {
 		body = bytes.NewReader(objIn)
 	}
 	// Construct the http.Request.
-	req, err := http.NewRequest(method, session.URL+path.Join(API_PATH, uri), body)
+	req, err := http.NewRequest(method, c.URL+path.Join(API_PATH, uri), body)
 	if err != nil {
 		return nil, err
 	}
-	auth, err := session.Challenge.authorize(method, path.Join(API_PATH, uri))
+	auth, err := c.Challenge.authorize(method, path.Join(API_PATH, uri))
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +101,7 @@ func (c *ocbClient) request(method, uri string, objIn []byte) (objOut []byte, er
 	req.Header.Set("User-Agent", "gobar/v1.0")
 	req.Header.Set("Accept", "application/json")
 
-	resp, err := session.Do(req)
+	resp, err := c.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +111,7 @@ func (c *ocbClient) request(method, uri string, objIn []byte) (objOut []byte, er
 	}
 	// if token expires, then try again
 	if resp.StatusCode == 401 {
-		err = session.Challenge.parseChallenge(resp.Header.Get("WWW-Authenticate"))
+		err = c.Challenge.parseChallenge(resp.Header.Get("WWW-Authenticate"))
 		if err != nil {
 			return nil, err
 		} else {
