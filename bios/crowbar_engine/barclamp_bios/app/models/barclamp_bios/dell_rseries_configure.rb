@@ -71,6 +71,7 @@ class BarclampBios::DellRseriesConfigure < Role
 
   def get_config_or_panic(name)
     return if @applied_configs.include?(name)
+    @applied_configs << name
     config = @configs.find{|e|e["name"] == name}
     raise "Cannot find BIOS config #{name}" unless config
     get_config_or_panic(config["parent"]) if config["parent"]
