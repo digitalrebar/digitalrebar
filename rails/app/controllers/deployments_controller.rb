@@ -118,7 +118,7 @@ class DeploymentsController < ApplicationController
       format.html { }
       format.json {
 
-        deployment_roles = DeploymentRole.where(deployment_id: 1).joins(:role).select("deployment_roles.*, roles.name as role_name, roles.cohort as role_cohort, roles.service as role_service").sort{|a,b|a.role_cohort <=> b.role_cohort}
+        deployment_roles = DeploymentRole.where(deployment_id: @deployment.id).joins(:role).select("deployment_roles.*, roles.name as role_name, roles.cohort as role_cohort, roles.service as role_service").sort{|a,b|a.role_cohort <=> b.role_cohort}
         
         roles = deployment_roles.select { |r| !r.role_service }
 
