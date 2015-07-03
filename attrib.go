@@ -75,7 +75,7 @@ type Attrib struct {
 	Value       interface{} `json:"value,omitempty"`
 	// Default is the default value of the Attrib when the
 	// Attriber does not otherise have a value.
-	Default     interface{} `json:"default,omitempty`
+	Default     interface{} `json:"default,omitempty"`
 	CreatedAt   string      `json:"created_at,omitempty"`
 	UpdatedAt   string      `json:"updated_at,omitempty"`
 }
