@@ -176,6 +176,7 @@ Crowbar::Application.routes.draw do
           resources :networks do
             resources :network_ranges
             resources :network_routers
+            resources :network_allocations
             member do
               match 'ip', via: [:get, :post, :delete]
               post 'allocate_ip'
@@ -183,7 +184,9 @@ Crowbar::Application.routes.draw do
               get 'allocations'
             end
           end
-          resources :network_ranges
+          resources :network_ranges do
+            resources :network_allocations
+          end
           resources :network_routers
           resources :network_allocations
           resources :dns_name_filters
@@ -197,6 +200,7 @@ Crowbar::Application.routes.draw do
             resources :hammers
             resources :attribs
             resources :roles
+            resources :network_allocations
             put :propose
             put :commit
             match :power, via: [:get, :put]
