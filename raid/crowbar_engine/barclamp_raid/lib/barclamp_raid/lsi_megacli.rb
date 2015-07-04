@@ -262,7 +262,7 @@ module BarclampRaid
       cid         = controller.id
       raid_level  = volume["raid_level"]
       name        = volume["name"]
-      size        = volume["vol_size"] || "max"
+      size        = volume["size"] || "max"
       stripe_size = BarclampRaid.size_to_bytes(volume["stripe_size"] || "64 KB")
       candidates = Array.new
       @logger << "Creating #{name} on #{controller.name}\n" if @logger
