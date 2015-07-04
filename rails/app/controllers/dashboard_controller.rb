@@ -21,8 +21,12 @@ class DashboardController < ApplicationController
     @layers = {}
     @status = {}
     taxmap["layers"].each { |k| @layers[k]=[] }
-    NodeRole.all.each do |nr|
-      layer = taxmap[nr.role.name] || 'apps'
+    NodeRole.all.joins(:node,:role).select("node_roles.*,
+                                      roles.name as role_name,
+                                      nodes.name as node_name,
+                                      nodes.alive as node_alive,
+                                      nodes.available as node_available").each do |nr|
+      layer = taxmap[nr.role_name] || 'apps'
       @layers[layer] << nr 
       if nr.state == NodeRole::ERROR
         @status[layer] = 'alert'
