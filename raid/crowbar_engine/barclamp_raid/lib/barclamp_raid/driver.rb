@@ -234,7 +234,7 @@ module BarclampRaid
     def find_candidates(volume)
       raid_level  = volume["raid_level"]
       disks       = volume["disks"]
-      size        = volume["vol_size"] || "max"
+      size        = volume["size"] || "max"
       exclusive   = (volume["exclusive"].nil? || size.nil?) ? true : !!volume["exclusive"]
       disk_type   = volume["disk_type"]
       protocol    = volume["protocol"]
@@ -308,6 +308,7 @@ module BarclampRaid
                                                                             stripe_size)
                             size_buckets.keys.sort.reject{|b| b < (size_per_disk >> 35 << 35)}
                           end
+Rails.logger.error("GREG: size_candidates = #{size_candidates.inspect}")
         size_candidates.each do |c|
           next unless size_buckets[c].length >= disks
           res = size_buckets[c]
