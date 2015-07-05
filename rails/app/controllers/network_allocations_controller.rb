@@ -15,10 +15,37 @@
 class NetworkAllocationsController < ::ApplicationController
   respond_to :json
 
+  def create
+    params.require(:node_id)
+    node = Node.find(params[:node_id])
+    network = Network.find_by(id: params[:network_id])
+    range = NetworkRange.find_by(id: params[:network_range_id])
+    suggestion = params[:address]
+    suggestion = nil if suggestion && suggestion == ""
+    if range
+      ret = range.allocate(node,suggestion)
+    elsif network
+      ret = network.auto_allocate(node)
+    else
+      raise "Need a network or range"
+    end
+    render :json => ret
+  end
+
+  def destroy
+    params.require(:id)
+    @allocation = NetworkAllocation.find(params[:id])
+    @allocation.destroy
+    render api_delete @network
+  end
+
   def index
     @list = if params.has_key? :network_id or params.has_key? :network
-              network =  Network.find_key params[:network_id] || params[:network]
-              network.network_allocations
+              Network.find_key(params[:network_id] || params[:network]).network_allocations
+            elsif params.has_key?(:network_range_id)
+              NetworkRange.find(params[:network_range_id]).network_allocations
+            elsif params.has_key?(:node_id) || params.has_key?(:node)
+              Node.find_key(params[:node_id] || params[:node]).network_allocations
             else
               NetworkAllocation.all
             end

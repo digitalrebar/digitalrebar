@@ -718,7 +718,7 @@ module OpenCrowbar
   end
 
 
-  class User < ProxyWithAttribs
+  class User < CrowbarProxy
 
     def self.path
       "api/v2/users"
@@ -782,8 +782,8 @@ module OpenCrowbar
     end
 
     def do_add_to_Node(node)
-      data = {:node_id => node.id}
-      obj, res = REST.post("#{self.class.path}/#{id}/ip",data)
+      data = {:node_id => node.id, :network_id => self.id}
+      obj, res = REST.post(NetworkAllocation.path,data)
       maybe_json_die(obj,res)
       obj
     end
