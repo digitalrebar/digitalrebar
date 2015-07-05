@@ -60,7 +60,10 @@ class ::Nic
         keys = key.split(".")
         pos = pi
         keys.each do |k|
+break if k == 'unknown-tlvs'
           if k == keys.last
+Chef::Log.info("GREG: pos = #{pos.inspect} and k = #{k} value = #{value}")
+Chef::Log.info("GREG: line = #{line}")
             if pos[k]
               arr = [ pos[k], value ]
               pos[k] = arr.flatten
