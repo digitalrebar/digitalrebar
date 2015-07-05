@@ -24,7 +24,7 @@ class DnsNameEntriesController < ::ApplicationController
   end
 
   def index
-    @entries = DnsNameEntry.all
+    @entries = DnsNameEntry.all.includes(network_allocation: [:node]).includes(:dns_name_filter)
     respond_to do |format|
       format.html {}
       format.json { render api_index DnsNameEntry, @entries }
