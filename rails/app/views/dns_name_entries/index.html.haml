@@ -10,7 +10,7 @@
   %tbody
     - @entries.each do |dne|
       %tr.node{ :class => cycle(:odd, :even) }
-        %td= link_to dne.network_allocation.node.name, node_path(dne.network_allocation.node.id)
+        %td= link_to dne.network_allocation.node.name, node_path(dne.network_allocation.node_id)
         %td= link_to dne.name, dns_name_entry_path(dne.id)
-        %td= link_to dne.network_allocation.address, network_path(dne.network_allocation.network.id)
-        %td= link_to dne.dns_name_filter.name, dns_name_filter_path(dne.dns_name_filter.id)
+        %td= link_to dne.network_allocation.address, network_path(dne.network_allocation.network_id)
+        %td= link_to dne.dns_name_filter.name, dns_name_filter_path(dne.dns_name_filter_id)
