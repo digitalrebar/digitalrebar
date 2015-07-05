@@ -35,10 +35,10 @@ type ocbClient struct {
 	Challenge *challenge
 	URL       string
 }
+
 // The Crowbar API is exposed over a digest authenticated HTTP(s)
 // connection.  This file implements all of the basic REST and HTTP
 // operations that Crowbar uses.
-
 
 // OCB assumes global session created with NewClient
 var session *ocbClient
@@ -55,7 +55,6 @@ const (
 func Session(URL, User, Password string) error {
 	c := &ocbClient{URL: URL, Client: &http.Client{}, Challenge: &challenge{}}
 	// retrieve the digest info from the 301 message
-	fmt.Printf("%v: %v\n",c.URL, path.Join(API_PATH, "digest"))
 	resp, e := c.Head(c.URL + path.Join(API_PATH, "digest"))
 	if e != nil {
 		return e
@@ -167,7 +166,7 @@ func (c *ocbClient) list(res interface{}, uri ...string) (err error) {
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(buf,&res)
+	return json.Unmarshal(buf, &res)
 }
 
 func h(data string) string {

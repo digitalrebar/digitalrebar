@@ -1,9 +1,11 @@
 package crowbar
 
 import (
+	"errors"
 	"log"
 	"strconv"
 )
+
 // Deployments are the main tool that Crowbar provides to group
 // related nodes together.  They carry Deployment-specific
 // configuration information (in the form of DeploymentRoles), Nodes
@@ -22,27 +24,27 @@ import (
 // appropriate DeploymentRole in this Deployment.
 type Deployment struct {
 	// The unique identifier for a Deployment.
-	ID          int64  `json:"id,omitempty"`
+	ID int64 `json:"id,omitempty"`
 	// The state a deployment is in
-	State       int    `json:"state,omitempty"`
+	State int `json:"state,omitempty"`
 	// The name of the Deployment.  Must be globally unique.
-	Name        string `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
 	// A breif description of what the Deployment is for.
 	Description string `json:"description,omitempty"`
 	// Whether the deployment is a system deployment.  Right now,
 	// there can be only one of these.
-	System      bool   `json:"system,omitempty"`
+	System bool `json:"system,omitempty"`
 	// The ID of the deployment that is the parent of this one.
-	ParentID    int64  `json:"parent_id,omitempty"`
-	CreatedAt   string `json:"created_at,omitempty"`
-	UpdatedAt   string `json:"updated_at,omitempty"`
+	ParentID  int64  `json:"parent_id,omitempty"`
+	CreatedAt string `json:"created_at,omitempty"`
+	UpdatedAt string `json:"updated_at,omitempty"`
 }
 
 const (
-	DeploymentError = -1
-	DeploymentProposed = 0
+	DeploymentError     = -1
+	DeploymentProposed  = 0
 	DeploymentCommitted = 1
-	DeploymentActive = 2
+	DeploymentActive    = 2
 )
 
 func (o *Deployment) Id() string {
@@ -60,30 +62,50 @@ func (o *Deployment) ApiName() string {
 	return "deployments"
 }
 
-// Attribs fetches all the attribs relavent to this Deployment.  Right
-// now, that consists of all the Attribs for all the DeploymentRoles
-// in this Deployment
-func (o *Deployment) Attribs() (res []*Attrib, err error) {
-	return Attribs(url(o))
+// SetId sets the ID of an object.
+//
+// If s can be parsed as an int64 without error, the objects ID field will
+// be populated with the results of that conversion, otherwise the Name
+// field will be populated with passed string.
+// An error will be returned if the object already has a set Name or ID field,
+// or if the object does not have a Name field and the passed string cannot be
+// parsed to an int64
+func (o *Deployment) SetId(s string) error {
+	if o.ID != 0 || o.Name != "" {
+		return errors.New("SetId can only be used on an un-IDed object")
+	}
+	if id, err := strconv.ParseInt(s, 10, 64); err == nil {
+		o.ID = id
+	} else {
+		o.Name = s
+	}
+	return nil
 }
 
-// Nodes returns all the Nodes that are in this Deployment.
-func (o *Deployment) Nodes() (res []*Node, err error) {
-	return Nodes(url(o))
+func (o *Deployment) Parent() (res *Deployment, err error) {
+	res = &Deployment{ID: o.ParentID}
+	return res, Read(res)
 }
 
-// NodeRoles returns all the NodeRoles that are in this Deployment.
-func (o *Deployment) NodeRoles() (res []*NodeRole, err error) {
-	return NodeRoles(url(o))
-}
+// Satisfy salient interfaces
+func (o *Deployment) attribs()         {}
+func (o *Deployment) deploymentRoles() {}
+func (o *Deployment) nodes()           {}
+func (o *Deployment) nodeRoles()       {}
+func (o *Deployment) roles()           {}
 
-// Roles returns all the Roles that are in this Deployment.
-func (o *Deployment) Roles() (res []*Role, err error) {
-	return Roles(url(o))
+type Deploymenter interface {
+	Crudder
+	deployments()
 }
 
 // Deployments returns all of the Deployments.
-func Deployments(paths ...string) (res []*Deployment, err error) {
+func Deployments(scope ...Deploymenter) (res []*Deployment, err error) {
 	res = make([]*Deployment, 0)
-	return res, session.list(&res,append(paths, "deployments")...)
+	paths := make([]string, len(scope))
+	for i := range scope {
+		paths[i] = url(scope[i])
+	}
+
+	return res, session.list(&res, append(paths, "deployments")...)
 }

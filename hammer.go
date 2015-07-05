@@ -1,29 +1,29 @@
 package crowbar
 
 import (
+	"errors"
 	"log"
 	"strconv"
-	"errors"
 )
 
 type HammerActions struct {
-	Power []string `json:"power,omitempty"`
+	Power    []string `json:"power,omitempty"`
 	Transfer []string `json:"xfer,omitempty"`
-	Run []string `json:"run,omitempty"`
+	Run      []string `json:"run,omitempty"`
 }
 
 type Hammer struct {
-	ID int64 `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-	NodeID int64 `json:"node_id,omitempty"`
-	AvailableHammerID int64 `json:"available_hammer_id,omitempty"`
-	Priority int64 `json:"priority"`
-	Endpoint string `json:"endpoint,onitempty"`
-	Username string `json:"username,omitempty"`
-	Authenticator string `json:"authenticator,omitempty"`
-	Actions HammerActions `json:"actions,omitempty"`
-	CreatedAt string `json:"created_at,omitempty"`
-	UpdatedAt string `json:"updated_at,omitempty"`
+	ID                int64         `json:"id,omitempty"`
+	Name              string        `json:"name,omitempty"`
+	NodeID            int64         `json:"node_id,omitempty"`
+	AvailableHammerID int64         `json:"available_hammer_id,omitempty"`
+	Priority          int64         `json:"priority"`
+	Endpoint          string        `json:"endpoint,onitempty"`
+	Username          string        `json:"username,omitempty"`
+	Authenticator     string        `json:"authenticator,omitempty"`
+	Actions           HammerActions `json:"actions,omitempty"`
+	CreatedAt         string        `json:"created_at,omitempty"`
+	UpdatedAt         string        `json:"updated_at,omitempty"`
 }
 
 func (o *Hammer) Id() string {
@@ -41,7 +41,7 @@ func (o *Hammer) SetId(s string) error {
 	if o.ID != 0 || o.Name != "" {
 		return errors.New("SetId can only be used on an un-IDed object")
 	}
-	if id, err := strconv.ParseInt(s,10,64); err == nil {
+	if id, err := strconv.ParseInt(s, 10, 64); err == nil {
 		o.ID = id
 	} else {
 		o.Name = s
@@ -61,10 +61,10 @@ type Hammerer interface {
 // Hammers returns all of the Hammers.
 func Hammers(scope ...Hammerer) (res []*Hammer, err error) {
 	res = make([]*Hammer, 0)
-	paths := make([]string,len(scope))
+	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = url(scope[i])
 	}
 
-	return res, session.list(&res,append(paths, "hammers")...)
+	return res, session.list(&res, append(paths, "hammers")...)
 }

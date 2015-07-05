@@ -1,6 +1,8 @@
 package crowbar
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"strconv"
 )
@@ -41,43 +43,43 @@ import (
 type Attrib struct {
 	// ID is the database ID number of this attrib.  It has no
 	// significance other than uniqueness.
-	ID          int64       `json:"id,omitempty"`
+	ID int64 `json:"id,omitempty"`
 	// Name is the human-readable name of the Attrib.  It must be
 	// globally unique.
-	Name        string      `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
 	// Description is a brief description of what the Attrip is
 	// for.
-	Description string      `json:"description,omitempty"`
+	Description string `json:"description,omitempty"`
 	// BarclampID is the ID of the barclamp that the Attrib was
 	// declared in.
-	BarclampID  int64       `json:"barclamp_id,omitempty"`
+	BarclampID int64 `json:"barclamp_id,omitempty"`
 	// RoleID is the ID of the role that this Attrib belongs to.
 	// If RoleID is 0, then the attrib does not belong to a role.
-	RoleID      int64       `json:"role_id,omitempty"`
+	RoleID int64 `json:"role_id,omitempty"`
 	// The custom type of the Attrib, if any.  This is used by
 	// Crowbar internally to allow for Attribs to have nonstandard
 	// get and set semantics.
-	Type        string      `json:"type,omitempty"`
+	Type string `json:"type,omitempty"`
 	// Whether the Attrib can be written to.  An attrib must have
 	// a non-empty Schema as well as a set Writable flag for a
 	// SetAttrib to work, and the Value being passed must validate
 	// against the Schema.
-	Writable    bool        `json:"writable,omitempty"`
+	Writable bool `json:"writable,omitempty"`
 	// Schema is a kwalify schema fragment that the Value must
 	// match.  A SetAttrib call with an attrib Value that does not
 	// pass schema validation will fail.
-	Schema      interface{} `json:"schema,omitempty"`
+	Schema interface{} `json:"schema,omitempty"`
 	// The Map indicates where in the bucket this Attrib should be
 	// stored.
-	Map         string      `json:"map,omitempty"`
-	Order       int64       `json:"order,omitempty"`
+	Map   string `json:"map,omitempty"`
+	Order int64  `json:"order,omitempty"`
 	// Value is the value of the Attrib from a specific Attriber.
-	Value       interface{} `json:"value,omitempty"`
+	Value interface{} `json:"value,omitempty"`
 	// Default is the default value of the Attrib when the
 	// Attriber does not otherise have a value.
-	Default     interface{} `json:"default,omitempty"`
-	CreatedAt   string      `json:"created_at,omitempty"`
-	UpdatedAt   string      `json:"updated_at,omitempty"`
+	Default   interface{} `json:"default,omitempty"`
+	CreatedAt string      `json:"created_at,omitempty"`
+	UpdatedAt string      `json:"updated_at,omitempty"`
 }
 
 // Id returns this attrib's ID or Name as a string.
@@ -93,10 +95,30 @@ func (o *Attrib) Id() string {
 	}
 }
 
+func (o *Attrib) SetId(s string) error {
+	if o.ID != 0 || o.Name != "" {
+		return errors.New("SetId can only be used on an un-IDed object")
+	}
+	if id, err := strconv.ParseInt(s, 10, 64); err == nil {
+		o.ID = id
+	} else {
+		o.Name = s
+	}
+	return nil
+}
+
 // ApiName returns the pathname that should be used for all API
 // operations.
 func (o *Attrib) ApiName() string {
 	return "attribs"
+}
+
+// Attriber defines what is needed to get and set attribs on an object.
+type Attriber interface {
+	// You must be a Crudder to be an Attriber.
+	Crudder
+	// satisfy the Attriber interface.
+	attribs()
 }
 
 // Attribs gets all the Attribs from a location in the API.  If paths
@@ -104,7 +126,54 @@ func (o *Attrib) ApiName() string {
 // will be joined with "attribs" and we will attempt to fetch the
 // Attribs from there.  This behaviour exists because the REST API
 // allows you to perform scoped fetches.
-func Attribs(paths ...string) (res []*Attrib, err error) {
+func Attribs(scope ...Attriber) (res []*Attrib, err error) {
 	res = make([]*Attrib, 0)
-	return res, session.list(&res,append(paths, "attribs")...)
+	paths := make([]string, len(scope))
+	for i := range scope {
+		paths[i] = url(scope[i])
+	}
+
+	return res, session.list(&res, append(paths, "attribs")...)
+}
+
+// GetAttrib gets an attrib in the context of an Attriber.  The
+// returned Attrib will have its value populated from the contents of
+// the passed bucket.  Valid buckets are:
+//
+//    * "proposed"
+//    * "committed"
+//    * "system"
+//    * "wall"
+//    * "all"
+func GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, err error) {
+	res = &Attrib{}
+	if a.ID != 0 {
+		res.ID = a.ID
+	} else if a.Name != "" {
+		res.Name = a.Name
+	} else {
+		log.Panicf("Passed Attrib %v does not have a Name or an ID!", a)
+	}
+	url := url(o, url(res))
+	if bucket != "" {
+		url = fmt.Sprintf("%v?bucket=%v", url, bucket)
+	}
+	return res, session.get(res, url)
+}
+
+// SetAttrib sets the value of an attrib in the context of
+// an attriber.
+func SetAttrib(o Attriber, a *Attrib) error {
+	return session.put(a, url(o, url(a)))
+}
+
+// Propose readies an Attriber to accept new values via SetAttrib.
+func Propose(o Attriber) error {
+	return session.put(o, url(o, "propose"))
+}
+
+// Commit makes the values set on the Attriber via SetAttrib visible
+// to the rest of the Crowbar infrastructure.
+func Commit(o Attriber) error {
+	return session.put(o, url(o, "commit"))
 }

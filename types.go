@@ -4,7 +4,6 @@ package crowbar
 
 import (
 	"fmt"
-	"log"
 	"path"
 )
 
@@ -16,6 +15,8 @@ type Crudder interface {
 	// ApiName returns the path component in the REST API that refers to this class of object.
 	// It will usually be the type name in snake_case.
 	ApiName() string
+	// SetId sets the ID of an object.
+	SetId(string) error
 }
 
 // Calculate the API endpoint that should be used to reference this object.
@@ -43,54 +44,16 @@ func Update(o Crudder) error {
 	return session.put(o, url(o))
 }
 
-// Attriber defines what is needed to get and set attribs on an object.
-type Attriber interface {
-	// You must be a Crudder to be an Attriber.
-	Crudder
-	// Attribs gets a list of Attribs that pertain to this object.
-	Attribs() ([]*Attrib, error)
-}
-
-// GetAttrib gets an attrib in the context of an Attriber.  The
-// returned Attrib will have its value populated from the contents of
-// the passed bucket.  Valid buckets are:
+// SetId sets the ID of an object.
 //
-//    * "proposed"
-//    * "committed"
-//    * "system"
-//    * "wall"
-//    * "all"
-func GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, err error) {
-	res = &Attrib{}
-	if a.ID != 0 {
-		res.ID = a.ID
-	} else if a.Name != "" {
-		res.Name = a.Name
-	} else {
-		log.Panicf("Passed Attrib %v does not have a Name or an ID!", a)
-	}
-	url := url(o, url(res))
-	if bucket != "" {
-		url = fmt.Sprintf("%v?bucket=%v", url, bucket)
-	}
-	return res, session.get(res, url)
-}
-
-// SetAttrib sets the value of an attrib in the context of
-// an attriber.
-func SetAttrib(o Attriber, a *Attrib) error {
-	return session.put(a, url(o, url(a)))
-}
-
-// Propose readies an Attriber to accept new values via SetAttrib.
-func Propose(o Attriber) error {
-	return session.put(o, url(o, "propose"))
-}
-
-// Commit makes the values set on the Attriber via SetAttrib visible
-// to the rest of the Crowbar infrastructure.
-func Commit(o Attriber) error {
-	return session.put(o, url(o, "commit"))
+// If id can be parsed as an int64 without error, o's ID field will
+// be populated with the results of that conversion, otherwise the Name
+// field will be populated with passed string.
+// An error will be returned if the object already has a set Name or ID field,
+// or if the object does not have a Name field and the passed string cannot be
+// parsed to an int64
+func SetId(o Crudder, id string) error {
+	return o.SetId(id)
 }
 
 type CrowbarDigest struct {

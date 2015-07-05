@@ -1,10 +1,10 @@
 package crowbar
 
 import (
-	"log"
-	"fmt"
-	"strconv"
 	"errors"
+	"fmt"
+	"log"
+	"strconv"
 )
 
 type Network struct {
@@ -39,7 +39,7 @@ func (o *Network) SetId(s string) error {
 	if o.ID != 0 || o.Name != "" {
 		return errors.New("SetId can only be used on an un-IDed object")
 	}
-	if id, err := strconv.ParseInt(s,10,64); err == nil {
+	if id, err := strconv.ParseInt(s, 10, 64); err == nil {
 		o.ID = id
 	} else {
 		o.Name = s
@@ -57,17 +57,17 @@ func (o *Network) Role() (role *Role, err error) {
 }
 
 // Satisfy salient interfaces
-func (o *Network) networkRanges(){}
-func (o *Network) networkAllocations(){}
+func (o *Network) networkRanges()      {}
+func (o *Network) networkAllocations() {}
 
-type Networker interface{
+type Networker interface {
 	Crudder
 	networks()
 }
 
 // Networks returns all of the Networks.
 func Networks(scope ...Networker) (res []*Network, err error) {
-	paths := make([]string,len(scope))
+	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = url(scope[i])
 	}
@@ -106,7 +106,7 @@ func (o *NetworkRange) SetId(s string) error {
 	if o.ID != 0 {
 		return errors.New("SetId can only be used on an un-IDed object")
 	}
-	if id, err := strconv.ParseInt(s,10,64); err == nil {
+	if id, err := strconv.ParseInt(s, 10, 64); err == nil {
 		o.ID = id
 	} else {
 		return err
@@ -123,7 +123,7 @@ func (o *NetworkRange) Network() (*Network, error) {
 	return res, Read(res)
 }
 
-func (o *NetworkRange) networkAllocations(){}
+func (o *NetworkRange) networkAllocations() {}
 
 type NetworkRanger interface {
 	Crudder
@@ -132,7 +132,7 @@ type NetworkRanger interface {
 
 // Networks returns all of the Networks.
 func NetworkRanges(scope ...NetworkRanger) (res []*NetworkRange, err error) {
-	paths := make([]string,len(scope))
+	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = url(scope[i])
 	}
@@ -157,7 +157,7 @@ func (o *NetworkAllocation) SetId(s string) error {
 	if o.ID != 0 {
 		return errors.New("SetId can only be used on an un-IDed object")
 	}
-	if id, err := strconv.ParseInt(s,10,64); err == nil {
+	if id, err := strconv.ParseInt(s, 10, 64); err == nil {
 		o.ID = id
 	} else {
 		return err
@@ -186,7 +186,7 @@ type NetworkAllocater interface {
 
 // Networks returns all of the Networks.
 func NetworkAllocations(scope ...NetworkAllocater) (res []*NetworkAllocation, err error) {
-	paths := make([]string,len(scope))
+	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = url(scope[i])
 	}
