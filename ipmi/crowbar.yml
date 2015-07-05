@@ -16,7 +16,7 @@
 barclamp:
   name: ipmi
   display: IPMI
-  version: 0
+  version: "2.Drill"
   license: "apache2"
   copyright: "Dell, Inc 2013"
   api_version: "v2"

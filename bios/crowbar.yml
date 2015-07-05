@@ -18,7 +18,7 @@
 barclamp:
   name: bios
   display: BIOS
-  version: 0
+  version: "2.Drill"
 
 crowbar:
   layout: 1
