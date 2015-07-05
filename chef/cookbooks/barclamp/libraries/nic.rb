@@ -37,6 +37,51 @@ class ::Nic
     ::Kernel.system("sysctl net.ipv6.conf.#{@nic}.disable_ipv6=0")
   end
 
+  # Update nic info
+  def self.update(node)
+    node.set[:crowbar_wall] = {} unless node[:crowbar_wall]
+    node.set[:crowbar_wall][:reservations] = {} unless node[:crowbar_wall][:reservations]
+
+    cmd=%x{which lldpcli}.chomp
+    if cmd and cmd != ""
+      # Mark all nics up so that we can eventually get all the switch info
+      nics.each do |nic|
+        nic.up
+      end
+
+      # Get the lldp data we have.
+      pi={}
+      data = `#{cmd} show neighbors -f keyvalue`
+      data.split("\n").each do |line|
+        parts = line.split("=", 2)
+        key = parts[0]
+        value = parts[1]
+
+        keys = key.split(".")
+        pos = pi
+        keys.each do |k|
+          if k == keys.last
+            if pos[k]
+              arr = [ pos[k], value ]
+              pos[k] = arr.flatten
+            else
+              pos[k] = value
+            end
+          else
+            pos[k] = {} unless pos[k]
+          end
+          pos = pos[k]
+        end
+      end
+
+      pi[:status] = "Success"
+      node.set[:crowbar_wall][:reservations][:ports] = pi
+    else
+      node.set[:crowbar_wall][:reservations][:ports] = { :status => "No lldpcli" }
+    end
+
+  end
+
   # Return an unsorted array of all nics on the system.
   def self.__nics
     res = []
@@ -522,7 +567,7 @@ class ::Nic
           raise ::RuntimeError.new("Unable to load bonding module.")
         end
         # Kill any bonds that were automatically created
-        ifs = ::File.read(MASTER).strip.split.each do |i|
+        ::File.read(MASTER).strip.split.each do |i|
           self.kill_bond(i)
         end
       end

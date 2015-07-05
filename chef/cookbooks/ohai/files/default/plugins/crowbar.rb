@@ -54,8 +54,6 @@ EOF
   end
 end
 
-crowbar_ohai[:switch_config] ||= Mash.new
-
 networks = []
 mac_map = {}
 bus_found=false

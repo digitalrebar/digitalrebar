@@ -18,6 +18,7 @@ class Chef::Recipe
 end
 
 Disk.update(node)
+Nic.update(node)
 
 directory "/etc/sudoers.d" do
   action :create
