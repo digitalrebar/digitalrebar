@@ -18,10 +18,15 @@ class NodesController < ApplicationController
   # API GET /crowbar/v2/nodes
   # UI GET /dashboard
   def index
-    @list = if params.has_key? :group_id
+    @list = case
+            when params.has_key?(:group_id)
               Group.find_key(params[:group_id]).nodes
-            elsif params.has_key? :deployment_id
+            when params.has_key?(:deployment_id)
               Deployment.find_key(params[:deployment_id]).nodes
+            when params.has_key?(:role_id)
+              Role.find_key(params[:role_id]).nodes
+            when params.has_key?(:deployment_role_id)
+              DeploymentRole.find_key(params[:deployment_role_id]).nodes
             else
               Node.all
             end

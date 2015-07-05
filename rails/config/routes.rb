@@ -152,6 +152,7 @@ Crowbar::Application.routes.draw do
           resources :barclamps
           resources :deployment_roles do
             resources :roles
+            resources :nodes
             resources :attribs
             put :propose
             put :commit
@@ -222,6 +223,8 @@ Crowbar::Application.routes.draw do
           resources :roles do
             resources :attribs
             resources :deployment_roles
+            resources :node_roles
+            resources :nodes
           end
           resources :users do
             post "admin", :controller => "users", :action => "make_admin"

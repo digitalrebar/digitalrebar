@@ -56,6 +56,10 @@ class DeploymentRole < ActiveRecord::Base
     NodeRole.with_role(role).in_deployment(deployment)
   end
 
+  def nodes
+    noderoles.map{|nr|nr.node}
+  end
+
   def committed?
     proposed_data.nil?
   end
