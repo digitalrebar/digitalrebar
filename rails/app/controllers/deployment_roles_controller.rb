@@ -15,6 +15,15 @@
 
 class DeploymentRolesController < ApplicationController
 
+  def match
+    attrs = DeploymentRole.attribute_names.map{|a|a.to_sym}
+    objs = DeploymentRole.where(params.permit(attrs))
+    respond_to do |format|
+      format.html {}
+      format.json { render api_index DeploymentRole, objs }
+    end
+  end
+  
   def index
     @list = if params.has_key? :deployment_id
               Deployment.find_key(params[:deployment_id]).deployment_roles

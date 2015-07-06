@@ -16,6 +16,16 @@ class NetworksController < ::ApplicationController
   respond_to :html, :json
 
   add_help(:show,[:network_id],[:get])
+
+  def match
+    attrs = Network.attribute_names.map{|a|a.to_sym}
+    objs = Network.where(params.permit(attrs))
+    respond_to do |format|
+      format.html {}
+      format.json { render api_index Network, objs }
+    end
+  end
+
   def show
     @network = Network.find_key params[:id]
     respond_to do |format|

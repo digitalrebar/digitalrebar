@@ -15,6 +15,15 @@
 
 class NodeRolesController < ApplicationController
 
+  def match
+    attrs = NodeRole.attribute_names.map{|a|a.to_sym}
+    objs = NodeRole.where(params.permit(attrs))
+    respond_to do |format|
+      format.html {}
+      format.json { render api_index NodeRole, objs }
+    end
+  end
+  
   def index
     @list = (if params.key? :node_id
               Node.find_key(params[:node_id]).node_roles

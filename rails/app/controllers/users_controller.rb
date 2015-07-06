@@ -18,6 +18,16 @@ class UsersController < ApplicationController
   helper_method :is_edit_mode?
 
   add_help(:index,[],[:get])
+
+  def match
+    attrs = User.attribute_names.map{|a|a.to_sym}
+    objs = User.where(params.permit(attrs))
+    respond_to do |format|
+      format.html {}
+      format.json { render api_index User, objs }
+    end
+  end
+  
   def index
     @users = User.all
     respond_to do |format|

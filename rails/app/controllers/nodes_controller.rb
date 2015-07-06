@@ -17,6 +17,15 @@ class NodesController < ApplicationController
 
   # API GET /crowbar/v2/nodes
   # UI GET /dashboard
+  def match
+    attrs = Node.attribute_names.map{|a|a.to_sym}
+    objs = Node.where(params.permit(attrs))
+    respond_to do |format|
+      format.html {}
+      format.json { render api_index Node, objs }
+    end
+  end
+
   def index
     @list = case
             when params.has_key?(:group_id)

@@ -132,7 +132,7 @@ Crowbar::Application.routes.draw do
   # API routes (must be json and must prefix v2)()
   scope :defaults => {:format => 'json'} do
 
-    constraints(:id => /([a-zA-Z0-9\-\.\_]*)/, :version => /v[2-9]/) do
+    constraints(:id => /([a-zA-Z0-9\-\.\_]*)/, :api_version => /v[2-9]/) do
 
       # framework resources pattern (not barclamps specific)
       scope 'api' do
@@ -145,13 +145,28 @@ Crowbar::Application.routes.draw do
         scope 'test' do
           put "nodes(/:id)" => "nodes#test_load_data"
         end
-        scope ':version' do
+        scope ':api_version' do
           # These are not restful.  They poke the annealer and wait if you pass "sync=true".
           get "anneal", :to => "node_roles#anneal", :as => :anneal
-          resources :attribs, :as=>:attribs_api
-          resources :available_hammers
-          resources :barclamps
+          resources :attribs, :as=>:attribs_api do
+            collection do
+              post 'match'
+            end
+          end
+          resources :available_hammers do
+            collection do
+              post 'match'
+            end
+          end
+          resources :barclamps do
+            collection do
+              post 'match'
+            end
+          end
           resources :deployment_roles do
+            collection do
+              post 'match'
+            end
             resources :roles
             resources :nodes
             resources :attribs
@@ -159,6 +174,9 @@ Crowbar::Application.routes.draw do
             put :commit
           end
           resources :deployments do
+            collection do
+              post 'match'
+            end
             resources :node_roles
             resources :deployment_roles
             resources :roles
@@ -176,6 +194,9 @@ Crowbar::Application.routes.draw do
           end
 
           resources :networks do
+            collection do
+              post 'match'
+            end
             resources :network_ranges
             resources :network_routers
             resources :network_allocations
@@ -187,17 +208,50 @@ Crowbar::Application.routes.draw do
             end
           end
           resources :network_ranges do
+            collection do
+              post 'match'
+            end
             resources :network_allocations
           end
-          resources :network_routers
-          resources :network_allocations
-          resources :dns_name_filters
-          resources :dns_name_entries
-          resources :interfaces
-
-          resources :runs
-          resources :jigs
+          resources :network_routers do
+            collection do
+              post 'match'
+            end
+          end
+          resources :network_allocations do
+            collection do
+              post 'match'
+            end
+          end
+          resources :dns_name_filters do
+            collection do
+              post 'match'
+            end
+          end
+          resources :dns_name_entries do
+            collection do
+              post 'match'
+            end
+          end
+          resources :interfaces do
+            collection do
+              post 'match'
+            end
+          end
+          resources :runs do
+            collection do
+              post 'match'
+            end
+          end
+          resources :jigs do
+            collection do
+              post 'match'
+            end
+          end
           resources :nodes do
+            collection do
+              post 'match'
+            end
             resources :node_roles
             resources :hammers
             resources :attribs
@@ -212,22 +266,33 @@ Crowbar::Application.routes.draw do
             get 'addresses'
           end
           resources :hammers do
+            collection do
+              post 'match'
+            end
             post :perform
           end
-
           resources :node_roles do
+            collection do
+              post 'match'
+            end
             put :retry
             put :propose
             put :commit
             resources :attribs
           end
           resources :roles do
+            collection do
+              post 'match'
+            end
             resources :attribs
             resources :deployment_roles
             resources :node_roles
             resources :nodes
           end
           resources :users do
+            collection do
+              post 'match'
+            end
             post "admin", :controller => "users", :action => "make_admin"
             delete "admin", :controller => "users", :action => "remove_admin"
             post "lock", :controller => "users", :action => "lock"

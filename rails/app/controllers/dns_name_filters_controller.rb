@@ -15,6 +15,15 @@
 class DnsNameFiltersController < ::ApplicationController
   respond_to :html, :json
 
+  def match
+    attrs = DnsNameFilter.attribute_names.map{|a|a.to_sym}
+    objs = DnsNameFilter.where(params.permit(attrs))
+    respond_to do |format|
+      format.html {}
+      format.json { render api_index DnsNameFilter, objs }
+    end
+  end
+  
   def show
     @filter = DnsNameFilter.find_key params[:id]
     respond_to do |format|

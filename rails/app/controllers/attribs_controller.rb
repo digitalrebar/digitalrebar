@@ -15,6 +15,15 @@
 #
 class AttribsController < ApplicationController
 
+  def match
+    attrs = Attrib.attribute_names.map{|a|a.to_sym}
+    objs = Attrib.where(params.permit(attrs))
+    respond_to do |format|
+      format.html {}
+      format.json { render api_index :attrib, objs.as_json }
+    end
+  end
+
   def index
     target = find_target
     @list = target.nil? ? Attrib.all : target.attribs

@@ -15,6 +15,15 @@
 #
 class DeploymentsController < ApplicationController
 
+  def match
+    attrs = Deployment.attribute_names.map{|a|a.to_sym}
+    objs = Deployment.where(params.permit(attrs))
+    respond_to do |format|
+      format.html {}
+      format.json { render api_index Deployment, objs }
+    end
+  end
+  
   def index
     @list = Deployment.order("id DESC").all
     respond_to do |format|

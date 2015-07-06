@@ -15,6 +15,15 @@
 class NetworkAllocationsController < ::ApplicationController
   respond_to :json
 
+  def match
+    attrs = NetworkAllocation.attribute_names.map{|a|a.to_sym}
+    objs = NetworkAllocation.where(params.permit(attrs))
+    respond_to do |format|
+      format.html {}
+      format.json { render api_index NetworkAllocation, objs }
+    end
+  end
+  
   def create
     params.require(:node_id)
     node = Node.find(params[:node_id])
@@ -56,7 +65,7 @@ class NetworkAllocationsController < ::ApplicationController
   end
 
   def show
-    @allocation = network.network_allocations.find_key(params[:id]) rescue nil
+    @allocation = NetworkAllocation.find_key(params[:id]) rescue nil
     respond_to do |format|
       format.html {
                     @list = [@allocation]

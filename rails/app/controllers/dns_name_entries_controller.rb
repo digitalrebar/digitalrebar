@@ -15,6 +15,15 @@
 class DnsNameEntriesController < ::ApplicationController
   respond_to :html, :json
 
+  def match
+    attrs = DnsNameEntry.attribute_names.map{|a|a.to_sym}
+    objs = DnsNameEntry.where(params.permit(attrs))
+    respond_to do |format|
+      format.html {}
+      format.json { render api_index DnsNameEntry, objs }
+    end
+  end
+  
   def show
     @entry = DnsNameEntry.find_key params[:id]
     respond_to do |format|
