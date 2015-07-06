@@ -21,3 +21,9 @@ namespace :audits do
     AuditActions.purge
   end
 end
+
+namespace :switch do
+  task :map => :environment do
+    OcbSwitch.map
+  end
+end
