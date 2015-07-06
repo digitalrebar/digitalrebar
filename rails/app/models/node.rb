@@ -60,6 +60,7 @@ class Node < ActiveRecord::Base
   scope    :alive,              -> { where(:alive => true) }
   scope    :available,          -> { where(:available => true) }
   scope    :regular,            -> { where(:admin => false, :system=>false) }
+  scope    :non_system,         -> { where(:system=>false) }
   scope    :system,             -> { where(:system => true) }
 
   # Get all the attributes applicable to a node.
