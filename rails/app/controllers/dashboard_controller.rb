@@ -108,7 +108,7 @@ class DashboardController < ApplicationController
     @families = if params[:id]
       params[:id].split "|"
     else
-      ['cpu', 'memory',  'number_of_drives']
+      ['cpu_count', 'memory',  'number_of_drives']
     end
     @nodes = {}
     # this works by building a single key with all the requested attributes in order

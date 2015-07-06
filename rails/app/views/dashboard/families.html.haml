@@ -12,7 +12,7 @@
       %th= t('.count')
       - @families.each do |f|
         %th{:style => "white-space: nowrap;"}
-          = f
+          = link_to f, attrib_path(f)
           - ff = @families.clone.delete_if{|i| i == f}.join("|")
           = link_to image_tag("icons/delete.png"), families_path(:id=>ff)
       %th= t('.name')
