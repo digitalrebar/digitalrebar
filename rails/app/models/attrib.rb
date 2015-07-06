@@ -109,7 +109,7 @@ class Attrib < ActiveRecord::Base
             when :committed then from.all_data(true)
             when :all then from.wall.deep_merge(from.all_data(committed))
             when :hint, :user then from.all_data(committed)
-            when :wall,:system then from.wall
+            when :wall,:system,:discovery then from.wall
             else from.data
             end
           when from.is_a?(NodeRole)
@@ -117,10 +117,10 @@ class Attrib < ActiveRecord::Base
             when :proposed then from.attrib_data(false)
             when :committed then from.attrib_data(true)
             when :all then from.attrib_data(committed)
-            when :wall then from.wall
+            when :wall,:discovery then from.wall
             when :system then from.sysdata
             when :user,:hint then committed ? from.committed_data : from.data
-            else raise("#{from} is not a valid source to read noderole data from!")
+            else raise("#{from}:#{source} is not a valid source to read noderole data from!")
             end
           when from.is_a?(Role) then from.template
           else raise("Cannot extract attribute data from #{from.class.to_s}")
