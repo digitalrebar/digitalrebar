@@ -1,27 +1,39 @@
-%h1= t('.title')
+- attribs = Attrib.all.sort_by{ |a| a.name }
+
+%p{:style => 'float:right'}
+  = t '.add'
+  = select_tag "attrib_new", options_from_collection_for_select(attribs, "name", "name", "none"), :id=>'new_attrib'
+%h1= t '.title'
+
 
 %table.data.box
   %thead
     %tr
+      %th= t('.count')
+      - @families.each do |f|
+        %th{:style => "white-space: nowrap;"}
+          = f
+          - ff = @families.clone.delete_if{|i| i == f}.join("|")
+          = link_to image_tag("icons/delete.png"), families_path(:id=>ff)
       %th= t('.name')
-      %th= t('.units')
-      %th= t('.ram')
-      %th= t('.nics')
-      %th= t('.drives')
-      %th= t('.raid')
-      %th= t('.hardware')
-      %th= t('.cpu')
   %tbody
-    - @families.each do |n, f|
-      %tr{ :class => cycle(:odd, :even, :name => "family") }
+    - @nodes.sort_by{|k, _| k}.each do |id, node|
+      %tr{ :class => cycle(:odd, :even)}
+        %td= node.length
+        - id.each do |f|
+          %td= f rescue t('na')
         %td
-          %ul.plain
-            - f[:names].each do |node|
-              %li= link_to node[:name], node_path(node[:handle]), :title=> node[:description]
-        %td= f[:names].length
-        %td= format_memory(f[:family][:ram])
-        %td= f[:family][:nics]
-        %td= f[:family][:drives]
-        %td= f[:family][:raid]
-        %td= f[:family][:hw]
-        %td= f[:family][:cpu]
+          - node.sort.each do |id, n|
+            = link_to n, node_path(id)
+
+
+:javascript
+
+$(document).ready(function(){
+  $("#new_attrib").on("change", function() {
+    a = $("#new_attrib").find('option:selected').text();
+    console.debug(a);
+    window.location.href = "#{families_path(:id=>@families.join("|"))}|"+a;
+  })
+});
+

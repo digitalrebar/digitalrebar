@@ -101,12 +101,23 @@ class DashboardController < ApplicationController
     end
   end
 
+  # group nodes into categories
   def families
-    @families = {}
+
+    # the attribs list is passed as the ID w/ pipe delimiters
+    @families = if params[:id]
+      params[:id].split "|"
+    else
+      ['cpu', 'memory',  'number_of_drives']
+    end
+    @nodes = {}
+    # this works by building a single key with all the requested attributes in order
+    # that makes it easy to sort and collect like attributes
     Node.all.each do |n|
-      f = n.family.to_s  
-      @families[f] = {:names=>[], :family=>n.family} unless @families.has_key? f
-      @families[f][:names] << {:name=>n.name, :description=>n.description, :handle=>n.name}
+      next if n.system
+      key = @families.map { |f| (n.get_attrib(f) || t("unknown")).to_s }
+      @nodes[key] ||= {}
+      @nodes[key][n.id] = n.name
     end
   end
 

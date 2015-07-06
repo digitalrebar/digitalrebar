@@ -242,6 +242,11 @@ en:
       clients: "Infrastructure Clients"
       services: "Services"
       apps: "Applications"
+    families:
+      title: "Node Classifications"
+      name: "Node(s)"
+      add: "Add Class:"
+      count: "Count"
     getready:
       title: "Ready State Wizard"
       selection: "Name"

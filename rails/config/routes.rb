@@ -74,6 +74,7 @@ Crowbar::Application.routes.draw do
     get 'getready'            => 'dashboard#getready', :as => :getready
     post 'getready'           => 'dashboard#getready', :as => :post_getready
     get 'layercake'           => 'dashboard#layercake', :as => :layercake
+    get 'families(/:id)'      => 'dashboard#families', :as => :families
   end
   
   # UI only functionality to help w/ visualization
