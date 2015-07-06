@@ -111,7 +111,7 @@ class NetworksController < ::ApplicationController
 
   def map
     @networks = Network.all
-    @nodes = Node.all
+    @nodes = Node.non_system.sort
   end
 
   # Allocations for a node in a network.
