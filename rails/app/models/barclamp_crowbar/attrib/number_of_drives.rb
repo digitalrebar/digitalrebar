@@ -20,7 +20,9 @@ class BarclampCrowbar::Attrib::NumberOfDrives < Attrib
 
     # we want to leverage the map for the data in general
     # just we only want to sd* drives
-    sd = super.select { |k, v| k =~ /sd([a-z])/ } rescue {}
+    # and only use discovered data.
+    val = super(data, :discovery, committed)
+    sd = val.select { |k, v| k =~ /sd([a-z])/ } rescue {}
     # now that we have the list, return the fount
     return sd.length rescue -1
 
