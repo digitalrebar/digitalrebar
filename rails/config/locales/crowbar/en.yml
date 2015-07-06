@@ -103,6 +103,8 @@ en:
     getready_description: "Single Step to Provision Discovered Nodes"
     bulk_edit: "Bulk Edit"
     bulk_edit_description: "Edit Basic Information for Multiple Nodes"
+    families: "Families"
+    families_description: "Categorize based on Attributes"
 
     deployments: "Deployments"
     deployments_description: "Orchestration Management"
@@ -242,6 +244,11 @@ en:
       clients: "Infrastructure Clients"
       services: "Services"
       apps: "Applications"
+    families:
+      title: "Node Classifications"
+      name: "Node(s)"
+      add: "Add Class:"
+      count: "Count"
     getready:
       title: "Ready State Wizard"
       selection: "Name"
