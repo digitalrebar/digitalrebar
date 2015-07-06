@@ -8,9 +8,9 @@ import (
 
 type AvailableHammer struct {
 	ID        int64  `json:"id,omitempty"`
-	Priority  int64  `json:"priority"`
-	Name      string `json:"name"`
-	Type      string `json:"klass,omitempty"`
+	Priority  int64  `json:"priority,omitempty" yaml:"priority.omitempty"`
+	Name      string `json:"name,omitempty" yaml:"name,omitempty"`
+	Type      string `json:"klass,omitempty" yaml:"klass,omitempty"`
 	CreatedAt string `json:"created_at,omitempty"`
 	UpdatedAt string `json:"updated_at,omitempty"`
 }
@@ -40,6 +40,11 @@ func (o *AvailableHammer) SetId(s string) error {
 
 func (o *AvailableHammer) ApiName() string {
 	return "available_hammers"
+}
+
+func (o *AvailableHammer) Match() (res []*AvailableHammer, err error) {
+	res = make([]*AvailableHammer, 0)
+	return res, session.match(o, &res, o.ApiName(), "match")
 }
 
 func (o *AvailableHammer) hammers() {}

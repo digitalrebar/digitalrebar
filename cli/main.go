@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	crowbar "github.com/VictorLowther/crowbar-api"
-	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"strings"
+
+	crowbar "github.com/VictorLowther/crowbar-api"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -65,6 +66,7 @@ func init() {
 
 func makeCommandTree(singularName string,
 	lister func() ([]crowbar.Crudder, error),
+	matcher func(string) (string, error),
 	maker func() crowbar.Crudder) (res *cobra.Command) {
 	name := singularName + "s"
 	d("Making command tree for %v\n", name)
@@ -72,7 +74,7 @@ func makeCommandTree(singularName string,
 		Use:   name,
 		Short: fmt.Sprintf("Access CLI commands relating to %v", name),
 	}
-	commands := make([]*cobra.Command, 5)
+	commands := make([]*cobra.Command, 6)
 	commands[0] = &cobra.Command{
 		Use:   "list",
 		Short: fmt.Sprintf("List all %v", name),
@@ -85,6 +87,20 @@ func makeCommandTree(singularName string,
 		},
 	}
 	commands[1] = &cobra.Command{
+		Use:   "match [json]",
+		Short: fmt.Sprintf("List all %v that match the template in [json]", name),
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 1 {
+				log.Fatalf("%v requires 1 argument\n", c.UseLine())
+			}
+			objs, err := matcher(args[0])
+			if err != nil {
+				log.Fatalf("Error getting matches for %v\nError:%v\n", singularName, err.Error())
+			}
+			fmt.Println(objs)
+		},
+	}
+	commands[2] = &cobra.Command{
 		Use:   "show [id]",
 		Short: fmt.Sprintf("Show a single %v by id", singularName),
 		Run: func(c *cobra.Command, args []string) {
@@ -101,7 +117,7 @@ func makeCommandTree(singularName string,
 			fmt.Println(prettyJSON(obj))
 		},
 	}
-	commands[2] = &cobra.Command{
+	commands[3] = &cobra.Command{
 		Use:   "create [json]",
 		Short: fmt.Sprintf("Create a new %v with the passed-in JSON", singularName),
 		Run: func(c *cobra.Command, args []string) {
@@ -118,7 +134,7 @@ func makeCommandTree(singularName string,
 			fmt.Println(prettyJSON(obj))
 		},
 	}
-	commands[3] = &cobra.Command{
+	commands[4] = &cobra.Command{
 		Use:   "update [id] [json]",
 		Short: fmt.Sprintf("Update %v by id with the passed-in JSON", singularName),
 		Run: func(c *cobra.Command, args []string) {
@@ -135,7 +151,7 @@ func makeCommandTree(singularName string,
 			fmt.Println(prettyJSON(obj))
 		},
 	}
-	commands[4] = &cobra.Command{
+	commands[5] = &cobra.Command{
 		Use:   "destroy [id]",
 		Short: fmt.Sprintf("Destroy %v by id", singularName),
 		Run: func(c *cobra.Command, args []string) {

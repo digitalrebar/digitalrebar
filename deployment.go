@@ -87,6 +87,11 @@ func (o *Deployment) Parent() (res *Deployment, err error) {
 	return res, Read(res)
 }
 
+func (o *Deployment) Match() (res []*Deployment, err error) {
+	res = make([]*Deployment, 0)
+	return res, session.match(o, &res, o.ApiName(), "match")
+}
+
 // Satisfy salient interfaces
 func (o *Deployment) attribs()         {}
 func (o *Deployment) deploymentRoles() {}

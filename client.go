@@ -169,6 +169,15 @@ func (c *ocbClient) list(res interface{}, uri ...string) (err error) {
 	return json.Unmarshal(buf, &res)
 }
 
+func (c *ocbClient) match(sample interface{}, res interface{}, uri ...string) (err error) {
+	inbuf, err := json.Marshal(sample)
+	buf, err := c.request("POST", path.Join(uri...), inbuf)
+	if err != nil {
+		return nil
+	}
+	return json.Unmarshal(buf, &res)
+}
+
 func h(data string) string {
 	hf := md5.New()
 	io.WriteString(hf, data)

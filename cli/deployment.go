@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
+
 	crowbar "github.com/VictorLowther/crowbar-api"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 func addDeploymenterCommands(singularName string,
@@ -46,9 +48,21 @@ func init() {
 		}
 		return res, nil
 	}
+	matcher := func(sample string) (string, error) {
+		obj := &crowbar.Deployment{}
+		err := json.Unmarshal([]byte(sample), obj)
+		if err != nil {
+			return "", fmt.Errorf("Error unmarshalling deployment\nError: %v\n", err.Error())
+		}
+		objs, err := obj.Match()
+		if err != nil {
+			return "", fmt.Errorf("Error fetching matches for %v", sample)
+		}
+		return prettyJSON(objs), nil
+	}
 	maker := func() crowbar.Crudder { return &crowbar.Deployment{} }
 	singularName := "deployment"
-	deployments := makeCommandTree(singularName, lister, maker)
+	deployments := makeCommandTree(singularName, lister, matcher, maker)
 	deployments.AddCommand(&cobra.Command{
 		Use:   "bind [id] to [roleId]",
 		Short: "Bind a deployment to a role",

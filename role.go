@@ -18,9 +18,9 @@ type Role struct {
 	ID int64 `json:"id,omitempty"`
 	// The name of the Role.  This must also be unique amongst all
 	// the Roles.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" yaml:"name,omitempty"`
 	// A description of the Role.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitempty" yaml:"name,omitempty"`
 	// The Barclamp that the Role is a member of.  Barclamps are
 	// collections of related Roles that collectively implement a
 	// full workload.
@@ -29,7 +29,7 @@ type Role struct {
 	// whatever actions this Role needs to perform on a Node.
 	// Things like Chef, Salt, and Ansible provide jigs.  Jigs
 	// must be idempotent.
-	JigName string `json:"jig_name,omitempty"`
+	JigName string `json:"jig_name,omitempty" yaml:"jig_name,omitempty"`
 	// Whether this Role needs to be bound to a Node to work.
 	// Roles that exist only tp provide non node specific
 	// configuration information are Abstract.
@@ -68,11 +68,11 @@ type Role struct {
 	// Cohort is the maximum number of hops there is between this
 	// role and a root in the role graph.  It is used for ordering
 	// purposes internally.
-	Cohort    int           `json:"cohort,omitempty"`
-	Conflicts []interface{} `json:"conflicts,omitempty"`
-	Provides  []interface{} `json:"provides,omitempty"`
-	CreatedAt string        `json:"created_at,omitempty"`
-	UpdatedAt string        `json:"updated_at,omitempty"`
+	Cohort    int      `json:"cohort,omitempty"`
+	Conflicts []string `json:"conflicts,omitempty" yaml:"conflicts,omitempty"`
+	Provides  []string `json:"provides,omitempty" yaml:"provides,omitempty"`
+	CreatedAt string   `json:"created_at,omitempty"`
+	UpdatedAt string   `json:"updated_at,omitempty"`
 }
 
 func (o *Role) Id() string {
@@ -100,6 +100,11 @@ func (o *Role) SetId(s string) error {
 
 func (o *Role) ApiName() string {
 	return "roles"
+}
+
+func (o *Role) Match() (res []*Role, err error) {
+	res = make([]*Role, 0)
+	return res, session.match(o, &res, o.ApiName(), "match")
 }
 
 func (o *Role) attribs()         {}

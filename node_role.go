@@ -27,7 +27,7 @@ type NodeRole struct {
 	// to bind the same Role to a Node multiple times.
 	NodeID int64 `json:"node_id,omitempty"`
 	// The state a NodeRole is in.
-	State int `json:"state"`
+	State int `json:"state,omitempty"`
 	// The status of the NodeRole.  This string is settable by the user.
 	Status string `json:"status,omitempty"`
 	// The log from the last time this NodeRole ran against its Node.
@@ -71,6 +71,11 @@ func (o *NodeRole) SetId(s string) error {
 
 func (o *NodeRole) ApiName() string {
 	return "node_roles"
+}
+
+func (o *NodeRole) Match() (res []*NodeRole, err error) {
+	res = make([]*NodeRole, 0)
+	return res, session.match(o, &res, o.ApiName(), "match")
 }
 
 func (o *NodeRole) attribs() {}

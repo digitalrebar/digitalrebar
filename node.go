@@ -75,6 +75,11 @@ func (o *Node) ApiName() string {
 	return "nodes"
 }
 
+func (o *Node) Match() (res []*Node, err error) {
+	res = make([]*Node, 0)
+	return res, session.match(o, &res, o.ApiName(), "match")
+}
+
 // PowerActions gets the available power actions for this node.
 func (o *Node) PowerActions() ([]string, error) {
 	buf, err := session.request("GET", url(o, "power"), nil)

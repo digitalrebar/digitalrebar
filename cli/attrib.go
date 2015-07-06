@@ -139,5 +139,17 @@ func init() {
 		return res, nil
 	}
 	maker := func() crowbar.Crudder { return &crowbar.Attrib{} }
-	app.AddCommand(makeCommandTree("attrib", lister, maker))
+	matcher := func(sample string) (string, error) {
+		obj := &crowbar.Attrib{}
+		err := json.Unmarshal([]byte(sample), obj)
+		if err != nil {
+			return "", fmt.Errorf("Error unmarshalling attrib\nError: %v\n", err.Error())
+		}
+		objs, err := obj.Match()
+		if err != nil {
+			return "", fmt.Errorf("Error fetching matches for %v", sample)
+		}
+		return prettyJSON(objs), nil
+	}
+	app.AddCommand(makeCommandTree("attrib", lister, matcher, maker))
 }

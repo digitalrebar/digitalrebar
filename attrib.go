@@ -46,10 +46,10 @@ type Attrib struct {
 	ID int64 `json:"id,omitempty"`
 	// Name is the human-readable name of the Attrib.  It must be
 	// globally unique.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" yaml:"name,omitempty"`
 	// Description is a brief description of what the Attrip is
 	// for.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description,omitempty" yaml:"description,omitempty"`
 	// BarclampID is the ID of the barclamp that the Attrib was
 	// declared in.
 	BarclampID int64 `json:"barclamp_id,omitempty"`
@@ -59,25 +59,25 @@ type Attrib struct {
 	// The custom type of the Attrib, if any.  This is used by
 	// Crowbar internally to allow for Attribs to have nonstandard
 	// get and set semantics.
-	Type string `json:"type,omitempty"`
+	Type string `json:"type,omitempty" yaml:"type,omitempty"`
 	// Whether the Attrib can be written to.  An attrib must have
 	// a non-empty Schema as well as a set Writable flag for a
 	// SetAttrib to work, and the Value being passed must validate
 	// against the Schema.
-	Writable bool `json:"writable,omitempty"`
+	Writable bool `json:"writable,omitempty" yaml:"writable"`
 	// Schema is a kwalify schema fragment that the Value must
 	// match.  A SetAttrib call with an attrib Value that does not
 	// pass schema validation will fail.
-	Schema interface{} `json:"schema,omitempty"`
+	Schema interface{} `json:"schema,omitempty" yaml:"schema,omitempty"`
 	// The Map indicates where in the bucket this Attrib should be
 	// stored.
-	Map   string `json:"map,omitempty"`
-	Order int64  `json:"order,omitempty"`
+	Map   string `json:"map,omitempty" yaml:"map,omitempty"`
+	Order int64  `json:"order,omitempty" yaml:"order,omitempty"`
 	// Value is the value of the Attrib from a specific Attriber.
 	Value interface{} `json:"value,omitempty"`
 	// Default is the default value of the Attrib when the
 	// Attriber does not otherise have a value.
-	Default   interface{} `json:"default,omitempty"`
+	Default   interface{} `json:"default,omitempty" yaml:"default,omitempty"`
 	CreatedAt string      `json:"created_at,omitempty"`
 	UpdatedAt string      `json:"updated_at,omitempty"`
 }
@@ -111,6 +111,11 @@ func (o *Attrib) SetId(s string) error {
 // operations.
 func (o *Attrib) ApiName() string {
 	return "attribs"
+}
+
+func (o *Attrib) Match() (res []*Attrib, err error) {
+	res = make([]*Attrib, 0)
+	return res, session.match(o, &res, o.ApiName(), "match")
 }
 
 // Attriber defines what is needed to get and set attribs on an object.

@@ -17,8 +17,8 @@ type Hammer struct {
 	Name              string        `json:"name,omitempty"`
 	NodeID            int64         `json:"node_id,omitempty"`
 	AvailableHammerID int64         `json:"available_hammer_id,omitempty"`
-	Priority          int64         `json:"priority"`
-	Endpoint          string        `json:"endpoint,onitempty"`
+	Priority          int64         `json:"priority,omitempty"`
+	Endpoint          string        `json:"endpoint,omitempty"`
 	Username          string        `json:"username,omitempty"`
 	Authenticator     string        `json:"authenticator,omitempty"`
 	Actions           HammerActions `json:"actions,omitempty"`
@@ -51,6 +51,11 @@ func (o *Hammer) SetId(s string) error {
 
 func (o *Hammer) ApiName() string {
 	return "hammers"
+}
+
+func (o *Hammer) Match() (res []*Hammer, err error) {
+	res = make([]*Hammer, 0)
+	return res, session.match(o, &res, o.ApiName(), "match")
 }
 
 type Hammerer interface {

@@ -48,6 +48,11 @@ func (o *DeploymentRole) ApiName() string {
 	return "deployment_roles"
 }
 
+func (o *DeploymentRole) Match() (res []*DeploymentRole, err error) {
+	res = make([]*DeploymentRole, 0)
+	return res, session.match(o, &res, o.ApiName(), "match")
+}
+
 // Satisfy salient interfaces.
 func (o *DeploymentRole) attribs()   {}
 func (o *DeploymentRole) nodes()     {}

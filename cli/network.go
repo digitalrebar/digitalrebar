@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
+
 	crowbar "github.com/VictorLowther/crowbar-api"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 func addNetworkerCommands(singularName string,
@@ -100,8 +102,20 @@ func init() {
 		}
 		return res, nil
 	}
+	matcher := func(sample string) (string, error) {
+		obj := &crowbar.Network{}
+		err := json.Unmarshal([]byte(sample), obj)
+		if err != nil {
+			return "", fmt.Errorf("Error unmarshalling network\nError: %v\n", err.Error())
+		}
+		objs, err := obj.Match()
+		if err != nil {
+			return "", fmt.Errorf("Error fetching matches for %v", sample)
+		}
+		return prettyJSON(objs), nil
+	}
 	maker := func() crowbar.Crudder { return &crowbar.Network{} }
-	network := makeCommandTree("network", lister, maker)
+	network := makeCommandTree("network", lister, matcher, maker)
 
 	app.AddCommand(network)
 	lister = func() ([]crowbar.Crudder, error) {
@@ -115,8 +129,20 @@ func init() {
 		}
 		return res, nil
 	}
+	matcher = func(sample string) (string, error) {
+		obj := &crowbar.NetworkRange{}
+		err := json.Unmarshal([]byte(sample), obj)
+		if err != nil {
+			return "", fmt.Errorf("Error unmarshalling networkrange\nError: %v\n", err.Error())
+		}
+		objs, err := obj.Match()
+		if err != nil {
+			return "", fmt.Errorf("Error fetching matches for %v", sample)
+		}
+		return prettyJSON(objs), nil
+	}
 	maker = func() crowbar.Crudder { return &crowbar.NetworkRange{} }
-	networkrange := makeCommandTree("networkrange", lister, maker)
+	networkrange := makeCommandTree("networkrange", lister, matcher, maker)
 
 	app.AddCommand(networkrange)
 	lister = func() ([]crowbar.Crudder, error) {
@@ -130,7 +156,19 @@ func init() {
 		}
 		return res, nil
 	}
+	matcher = func(sample string) (string, error) {
+		obj := &crowbar.NetworkAllocation{}
+		err := json.Unmarshal([]byte(sample), obj)
+		if err != nil {
+			return "", fmt.Errorf("Error unmarshalling networkallocation\nError: %v\n", err.Error())
+		}
+		objs, err := obj.Match()
+		if err != nil {
+			return "", fmt.Errorf("Error fetching matches for %v", sample)
+		}
+		return prettyJSON(objs), nil
+	}
 	maker = func() crowbar.Crudder { return &crowbar.NetworkAllocation{} }
-	app.AddCommand(makeCommandTree("networkallocation", lister, maker))
+	app.AddCommand(makeCommandTree("networkallocation", lister, matcher, maker))
 
 }

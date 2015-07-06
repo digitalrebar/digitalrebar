@@ -8,13 +8,13 @@ import (
 
 type Jig struct {
 	ID             int64  `json:"id,omitempty"`
-	Name           string `json:"name,omitempty"`
-	Description    string `json:"description,omitempty"`
-	Active         bool   `json:"active"`
-	ClientRoleName string `json:"client_role_name,omitempty"`
-	Server         string `json:"server,omitempty"`
-	ClientName     string `json:"client_name,omitempty"`
-	Key            string `json:"key,omitempty"`
+	Name           string `json:"name,omitempty" yaml:"name,omitempty"`
+	Description    string `json:"description,omitempty" yaml:"name,omitempty"`
+	Active         bool   `json:"active,omitempty" yaml:"active,omitempty"`
+	ClientRoleName string `json:"client_role_name,omitempty" yaml:"client_role_name,omitempty"`
+	Server         string `json:"server,omitempty" yaml:"server,omitempty"`
+	ClientName     string `json:"client_name,omitempty" yaml:"client_name,omitempty"`
+	Key            string `json:"key,omitempty" yaml:"key,omitempty"`
 	CreatedAt      string `json:"created_at,omitempty"`
 	UpdatedAt      string `json:"updated_at,omitempty"`
 }
@@ -44,6 +44,11 @@ func (o *Jig) SetId(s string) error {
 
 func (o *Jig) ApiName() string {
 	return "jigs"
+}
+
+func (o *Jig) Match() (res []*Jig, err error) {
+	res = make([]*Jig, 0)
+	return res, session.match(o, &res, o.ApiName(), "match")
 }
 
 type Jigger interface {

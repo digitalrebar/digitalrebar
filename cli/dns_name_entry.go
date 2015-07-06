@@ -9,21 +9,21 @@ import (
 
 func init() {
 	lister := func() ([]crowbar.Crudder, error) {
-		noderoles, err := crowbar.NodeRoles()
+		dnsNameEntrys, err := crowbar.DnsNameEntrys()
 		if err != nil {
 			return nil, err
 		}
-		res := make([]crowbar.Crudder, len(noderoles))
-		for i := range noderoles {
-			res[i] = noderoles[i]
+		res := make([]crowbar.Crudder, len(dnsNameEntrys))
+		for i := range dnsNameEntrys {
+			res[i] = dnsNameEntrys[i]
 		}
 		return res, nil
 	}
 	matcher := func(sample string) (string, error) {
-		obj := &crowbar.NodeRole{}
+		obj := &crowbar.DnsNameEntry{}
 		err := json.Unmarshal([]byte(sample), obj)
 		if err != nil {
-			return "", fmt.Errorf("Error unmarshalling noderole\nError: %v\n", err.Error())
+			return "", fmt.Errorf("Error unmarshalling dnsnameentry\nError: %v\n", err.Error())
 		}
 		objs, err := obj.Match()
 		if err != nil {
@@ -31,7 +31,7 @@ func init() {
 		}
 		return prettyJSON(objs), nil
 	}
-	maker := func() crowbar.Crudder { return &crowbar.NodeRole{} }
-	singularName := "noderole"
+	maker := func() crowbar.Crudder { return &crowbar.DnsNameEntry{} }
+	singularName := "dnsnameentry"
 	app.AddCommand(makeCommandTree(singularName, lister, matcher, maker))
 }
