@@ -14,6 +14,15 @@
 #
 #
 class AvailableHammersController < ApplicationController
+  
+  def match
+    attrs = AvailableHammer.attribute_names.map{|a|a.to_sym}
+    objs = AvailableHammer.where(params.permit(attrs))
+    respond_to do |format|
+      format.html {}
+      format.json { render api_index AvailableHammer, objs }
+    end
+  end
 
   # API GET /api/v2/available_hammers
   def index

@@ -15,6 +15,15 @@
 class NetworkRoutersController < ::ApplicationController
   respond_to :json
 
+  def match
+    attrs = NetworkRouter.attribute_names.map{|a|a.to_sym}
+    objs = NetworkRouter.where(params.permit(attrs))
+    respond_to do |format|
+      format.html {}
+      format.json { render api_index NetworkRouter, objs }
+    end
+  end
+  
   def index
     @list = if params.has_key? :network_id or params.has_key? :network
               network =  Network.find_key params[:network_id] || params[:network]

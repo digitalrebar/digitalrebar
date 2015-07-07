@@ -380,6 +380,12 @@ class CrowbarProxy
     self.new(obj)
   end
 
+  def self.match_Json(data, *rest)
+    objs, res = REST.post("#{path}/match",data)
+    maybe_json_die(objs,res)
+    objs.map{|o| self.new(o)}
+  end
+
   # Spit out basic help for CRUD operations on this thing.
   def self.help
     STDERR.puts "Commands for #{apiname}:"
@@ -393,6 +399,7 @@ class CrowbarProxy
   def self.commands
     res = []
     res << Command.new(self.method(:list),self)
+    res << Command.new(self.method(:match_Json),self)
     res << Command.new(self.method(:create_Json),self)
     res << Command.new(self.method(:help),self)
     # We generate commands for any instance methods that start with do_

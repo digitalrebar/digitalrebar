@@ -17,6 +17,15 @@ class BarclampsController < ApplicationController
 
   self.help_contents = Array.new(superclass.help_contents)
 
+  def match
+    attrs = Barclamp.attribute_names.map{|a|a.to_sym}
+    objs = Barclamp.where(params.permit(attrs))
+    respond_to do |format|
+      format.html {}
+      format.json { render api_index Barclamp, objs }
+    end
+  end
+  
   def index
     @list = Barclamp.all
     respond_to do |format|

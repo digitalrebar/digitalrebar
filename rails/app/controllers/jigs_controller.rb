@@ -15,6 +15,15 @@
 #
 class JigsController < ApplicationController
 
+  def match
+    attrs = Jig.attribute_names.map{|a|a.to_sym}
+    objs = Jig.where(params.permit(attrs))
+    respond_to do |format|
+      format.html {}
+      format.json { render api_index Jig, objs }
+    end
+  end
+  
   def index
     respond_to do |format|
       format.html { @jigs = Jig.order('"order"') } # show.html.erb

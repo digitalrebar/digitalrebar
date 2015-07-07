@@ -15,6 +15,15 @@
 class InterfacesController < ::ApplicationController
   respond_to :html, :json
 
+  def match
+    attrs = Interface.attribute_names.map{|a|a.to_sym}
+    objs = Interface.where(params.permit(attrs))
+    respond_to do |format|
+      format.html {}
+      format.json { render api_index Interface, objs }
+    end
+  end
+
   def create
     pattern = params[:pattern]
     bus_order = params[:bus_order].split(" | ")
