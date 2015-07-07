@@ -1,6 +1,6 @@
 - value_raw = Attrib.get(attrib.name, obj)
 - value = value_raw.map { |iface| iface["pattern"] }.join ","
-= form_for :attrib, :remote => true, :url => attribs_api_path(:id=>attrib.id, obj_type=>obj.id, :version=>'v2'), :html => { :method=>:put, :'data-type' => 'html',  :class => "formtastic" } do |f|
+= form_for :attrib, :remote => true, :url => attribs_api_path(:id=>attrib.id, obj_type=>obj.id, :api_version=>'v2'), :html => { :method=>:put, :'data-type' => 'html',  :class => "formtastic" } do |f|
   %tr
     %td= link_to attrib.name_i18n, attrib_path(attrib.id), :title=>attrib.description
     %td= value

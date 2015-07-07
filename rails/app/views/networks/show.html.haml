@@ -26,7 +26,7 @@
   - router = NetworkRouter.new 
   - router.network = @network
   - router.address = "0.0.0.0"
-  = form_for :network_router, :'data-remote' => true, :url => network_network_routers_path(:network_id=>@network.id, :version=>'v2'), :method=>:post, :html => { :method=>:post, :'data-type' => 'json',  :class => "formtastic", :remote=>true } do |f|
+  = form_for :network_router, :'data-remote' => true, :url => network_network_routers_path(:network_id=>@network.id, :api_version=>'v2'), :method=>:post, :html => { :method=>:post, :'data-type' => 'json',  :class => "formtastic", :remote=>true } do |f|
     %dl
       %dt= t '.address'
       %dd= text_field_tag :address, router.address, :size=>15
