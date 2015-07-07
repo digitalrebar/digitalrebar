@@ -1,0 +1,13 @@
+{
+  "type": "external",
+  "name": "dns",
+  "service_ip": "1.1.1.1",
+  "service_port": 53,
+  "service_tag": "system",
+  "keys": {
+    "opencrowbar/private/dns/system/type": "POWERDNS",
+    "opencrowbar/private/dns/system/mgmt_port": 8081,
+    "opencrowbar/private/dns/system/mgmt_name": "localhost",
+    "opencrowbar/private/dns/system/mgmt_token": "accesstoken"
+  }
+}

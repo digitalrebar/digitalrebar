@@ -68,6 +68,6 @@ echo "${FQDN#*.}" > /etc/domainname
 export FQDN
 
 mkdir -p /var/log/crowbar
-for stage in boot consul database core config finish; do
+for stage in boot consul database core config ; do
     "./crowbar-${stage}.sh" 2>&1 |tee "/var/log/crowbar/install-${stage}.log"
 done

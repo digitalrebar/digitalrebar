@@ -28,6 +28,12 @@ erl_crash.dump
 # Coverage 
 /core/rails/coverage/
 
+# Config files
+/config/ssh_keys/*.key
+/config/domain.json
+/config/final.json
+/config/processed.json
+
 # Docs Index
 /doc/README.md.new
 

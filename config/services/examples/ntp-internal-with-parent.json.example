@@ -1,0 +1,8 @@
+{
+  "type": "internal",
+  "name": "ntp",
+  "has_service": true,
+  "attributes": {
+    "ntp_servers_external": [ "1.1.1.1" ]
+  }
+}

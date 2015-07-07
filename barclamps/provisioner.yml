@@ -28,7 +28,6 @@ roles:
     requires:
       - dns-client
       - logging-server
-      - ntp-client
       - proxy-client
       - crowbar-build-root-key
       - crowbar-access
@@ -78,7 +77,7 @@ roles:
         default: false
         schema:
           type: bool
-        
+
   - name: provisioner-base-images
     jig: chef
     requires:
@@ -274,6 +273,8 @@ roles:
     jig: role-provided
     flags:
       - service
+    requires:
+      - proxy-service
     attribs:
       - name: provisioner-webservers
         description: 'The URL that managed nodes should use to contact the provisioner webserver.'
@@ -341,7 +342,7 @@ roles:
         description: "The operating system to install on a node"
         map: 'crowbar/target_os'
         ui_renderer: 'barclamp_provisioner/attribs/target_os'
-        default: "ubuntu-12.04"
+        default: "centos-7.1.1503"
         schema:
           type: str
           required: true
