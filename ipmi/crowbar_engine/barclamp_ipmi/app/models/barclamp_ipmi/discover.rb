@@ -74,7 +74,7 @@ class BarclampIpmi::Discover < Role
     unless nr.node.node_roles.find_by(role_id: icr_role.id)
       Rails.logger.info("Adding ipmi-configure role to #{nr.node.name}")
       # Force the config role into the same deployment as the discover role
-      ipmi_config = icr_role.add_to_node(nr.node, nr.deployment)
+      ipmi_config = icr_role.add_to_node_in_deployment(nr.node, nr.deployment)
       ipmi_config.commit!
       # Keep the noderole graph sane by making the managed_node role for this node
       # depend on our newly-added ipmi config noderole.

@@ -33,8 +33,8 @@ class BarclampRaid::Discover < Role
     chc_role = Role.find_by!(name: 'crowbar-hardware-configured')
     NodeRole.transaction do
       # Force these nodes into the same deployment as this node role.
-      rpc_noderole = rpc_role.add_to_node(nr.node, nr.deployment)
-      chc_noderole = chc_role.add_to_node(nr.node, nr.deployment)
+      rpc_noderole = rpc_role.add_to_node_in_deployment(nr.node, nr.deployment)
+      chc_noderole = chc_role.add_to_node_in_deployment(nr.node, nr.deployment)
       rpc_noderole.add_child(chc_noderole)
     end
   end
