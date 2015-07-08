@@ -89,6 +89,15 @@ new_clients = {}
       rootdev root
       action :add
     end
+  when "ubuntu-12.04.3-install"
+    provisioner_debian mnode_name do
+      distro "ubuntu"
+      version "12.04.3"
+      address v4addr
+      target mnode_name
+      rootdev root
+      action :add
+    end
   when 'ubuntu-15.04-install'
     provisioner_debian mnode_name do
       distro 'ubuntu'

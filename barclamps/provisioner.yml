@@ -158,6 +158,14 @@ roles:
             "iso_mirror": "http://mirrors.kernel.org/ubuntu-releases/precise/ubuntu-12.04.5-server-amd64.iso"
             "iso_file": "ubuntu-12.04.5-server-amd64.iso"
             "codename": "precise"
+          "ubuntu-12.04.3":
+            "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz"
+            "kernel": "install/netboot/ubuntu-installer/amd64/linux"
+            "append": "debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --"
+            "online_mirror": "http://us.archive.ubuntu.com/ubuntu/"
+            "iso_mirror": "http://mirrors.kernel.org/ubuntu-releases/precise/ubuntu-12.04.3-server-amd64.iso"
+            "iso_file": "ubuntu-12.04.3-server-amd64.iso"
+            "codename": "precise"
           "ubuntu-15.04":
             "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz"
             "kernel": "install/netboot/ubuntu-installer/amd64/linux"
@@ -347,6 +355,7 @@ roles:
           type: str
           required: true
           enum:
+            - ubuntu-12.04.3
             - ubuntu-12.04
             - ubuntu-14.04
             - ubuntu-15.04
