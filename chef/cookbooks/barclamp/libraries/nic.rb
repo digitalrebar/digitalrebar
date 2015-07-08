@@ -42,7 +42,16 @@ class ::Nic
     node.set[:crowbar_wall] = {} unless node[:crowbar_wall]
     node.set[:crowbar_wall][:reservations] = {} unless node[:crowbar_wall][:reservations]
 
+    # Check for lldpcli and if that isn't found try the lldpctl (older form)
     cmd=%x{which lldpcli}.chomp
+    if cmd and cmd != ""
+      cmd="#{cmd} show neighbors -f keyvalue"
+    else
+      cmd=%x{which lldpctl}.chomp
+      if cmd and cmd != ""
+        cmd="#{cmd} -f keyvalue"
+      end
+    end
     if cmd and cmd != ""
       # Mark all nics up so that we can eventually get all the switch info
       nics.each do |nic|
@@ -51,7 +60,7 @@ class ::Nic
 
       # Get the lldp data we have.
       pi={}
-      data = `#{cmd} show neighbors -f keyvalue`
+      data = `#{cmd}`
       data.split("\n").each do |line|
         parts = line.split("=", 2)
         key = parts[0]
@@ -60,10 +69,8 @@ class ::Nic
         keys = key.split(".")
         pos = pi
         keys.each do |k|
-break if k == 'unknown-tlvs'
+          break if k == 'unknown-tlvs'   # Skip painful data for now
           if k == keys.last
-Chef::Log.info("GREG: pos = #{pos.inspect} and k = #{k} value = #{value}")
-Chef::Log.info("GREG: line = #{line}")
             if pos[k]
               arr = [ pos[k], value ]
               pos[k] = arr.flatten
