@@ -26,6 +26,13 @@ networks.each do |n|
   answer["networks"] << net
 end
 
+answer["deployments"] = []
+networks = Dir.glob("config/deployments/*.json")
+networks.each do |n|
+  net = JSON.parse( IO.read(n) )
+  answer["deployments"] << net
+end
+
 answer["services"] = []
 services = Dir.glob("config/services/*.json").sort
 services.each do |s|
