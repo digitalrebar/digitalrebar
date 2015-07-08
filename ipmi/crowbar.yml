@@ -207,6 +207,19 @@ roles:
                     "op": "=="
                     "match": "47488"
                     "score": 5
+            "quanta-bmc":
+              "quirklist": ["ipmi-immutable-root"]
+              "match":
+                "bmcinfo":
+                  "device_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "32"
+                  "mfgr_id":
+                    "__sm_leaf": true
+                    "op": "=="
+                    "match": "7244"
+                    "score": 5
             "ibm-20301-bmc":
               "quirklist": ["ipmi-immutable-root"]
               "match":
