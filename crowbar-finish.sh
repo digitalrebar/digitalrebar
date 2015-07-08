@@ -178,6 +178,39 @@ for ((i=0; i < service_count; i++)) ; do
   fi
 done
 
+# Deployments
+deployment_count=`jq ".deployments | length" config/processed.json`
+for ((i=0; i < deployment_count; i++)) ; do
+  name=`jq -r ".deployments[$i].deployment.name" config/processed.json`
+  deployment=`jq ".deployments[$i].deployment" config/processed.json`
+
+  # Create or update the deployment
+  if crowbar deployments show $name >/dev/null 2>&1 ; then
+    crowbar deployments update $name "$deployment"
+  else
+    crowbar deployments create "$deployment"
+  fi
+
+  # Add roles
+  dr_count=`jq ".deployments[$i].roles | length" config/processed.json`
+  for ((dri=0; dri < dr_count; dri++)) ; do
+    dr_role=`jq -r ".deployments[$i].roles[$dri]" config/processed.json`
+
+    crowbar deployments bind $name to $dr_role 2>/dev/null || true
+  done
+
+  # Update attributes
+  count=`jq ".deployments[$i].attributes|keys|length" config/processed.json`
+  for ((k=0; k < count; k++)) ; do
+    kname=`jq -r ".deployments[$i].attributes|keys|.[$k]" config/processed.json`
+    kvalue=`jq ".deployments[$i].attributes[\"$kname\"]" config/processed.json`
+
+    crowbar deployments set $name attrib $kname to "{ \"value\": $kvalue }"
+  done
+
+  crowbar deployments commit $name
+done
+
 # Commit the phantom
 crowbar nodes set "system-phantom.internal.local" attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
 crowbar nodes commit "system-phantom.internal.local"
