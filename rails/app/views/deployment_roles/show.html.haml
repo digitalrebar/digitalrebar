@@ -2,9 +2,9 @@
   = t '.title'
   = link_to @deployment_role.deployment.name, deployment_path(@deployment_role.deployment.id)
   = link_to @deployment_role.role.name_i18n, role_path(@deployment_role.role.id)
-  = link_to "Destroy", deployment_role_path(@deployment_role.id, :version=>2), :class => 'button', :method => :delete, data: { confirm: "Are you certain you want to destroy deployment #{@deployment_role.deployment.name} role data for #{@deployment_role.role.name}?" }
+  = link_to "Destroy", deployment_role_path(@deployment_role.id, :api_version=>2), :class => 'button', :method => :delete, data: { confirm: "Are you certain you want to destroy deployment #{@deployment_role.deployment.name} role data for #{@deployment_role.role.name}?" }
   - if @deployment_role.proposed?
-    = link_to t('.commit'), deployment_role_commit_path(@deployment_role.id, :version=>2), :class => 'button', :method=>:put
+    = link_to t('.commit'), deployment_role_commit_path(@deployment_role.id, :api_version=>2), :class => 'button', :method=>:put
   - if @deployment_role.committed?
     = link_to t('.propose'), deployment_role_propose_path(:deployment_role_id=>@deployment_role.id), :class => 'button', :method=>:put
 

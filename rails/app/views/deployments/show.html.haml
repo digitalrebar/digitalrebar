@@ -6,7 +6,7 @@
     = render :partial => "header", :locals => { :deployment => @deployment }
     %td
       - if state == Deployment::PROPOSED
-        = form_for :add_role, :'data-remote' => true, :url => deployment_roles_path(:deployment_id=>@deployment.id, :version=>'v2'), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
+        = form_for :add_role, :'data-remote' => true, :url => deployment_roles_path(:deployment_id=>@deployment.id, :api_version=>'v2'), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
           - aroles = @deployment.available_roles
           - if current_user and current_user.settings(:ui).milestone_roles
             - aroles.keep_if {| r | r.milestone }
@@ -85,7 +85,7 @@
               - elsif state == Deployment::PROPOSED
                 - display = (dr.role.noop? ? "inline" : "none" )
                 %span{:style=>"margin-left:30%; display:#{display}"}
-                  = link_to image_tag('icons/add.png'), node_roles_path(:deployment_id=>@deployment.id, :format=>:json, :version=>'v2', :node_id=>node.id, :role_id=>dr.role.id), :'data-remote'=>true, :method=>:post, :class=>'node_role_add'
+                  = link_to image_tag('icons/add.png'), node_roles_path(:deployment_id=>@deployment.id, :format=>:json, :api_version=>'v2', :node_id=>node.id, :role_id=>dr.role.id), :'data-remote'=>true, :method=>:post, :class=>'node_role_add'
               - else
                 %span{:style=>"width:16px; margin:0px auto; text-align:center"}= "-"
   - else

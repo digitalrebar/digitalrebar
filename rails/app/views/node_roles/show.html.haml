@@ -2,7 +2,7 @@
   = link_to @node_role.deployment.name, deployment_path(@node_role.deployment.id)
   = link_to @node_role.node.name, node_path(@node_role.node.id)
   = link_to @node_role.role.name_i18n, role_path(@node_role.role.id)
-  = link_to "Destroy", node_role_path(@node_role.id, :version=>2), :class => 'button', :method => :delete, data: { confirm: "Are you certain you want to destroy #{@node_role.node.name} node data for #{@node_role.role.name}?" }
+  = link_to "Destroy", node_role_path(@node_role.id, :api_version=>2), :class => 'button', :method => :delete, data: { confirm: "Are you certain you want to destroy #{@node_role.node.name} node data for #{@node_role.role.name}?" }
 %table.plane
   %tr
     %td
