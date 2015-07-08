@@ -27,7 +27,7 @@ class BarclampProvisioner::BaseImages < Role
 
   def on_active(nr)
     # Make sure that the default is in the list, if not reset it to the first entry.
-    oses = Attrib.get("provisioner-available-oses", admin).map{ |k,v| k } rescue []
+    oses = Attrib.get("provisioner-available-oses", nr.node).map{ |k,v| k } rescue []
     default = Attrib.get('provisioner-target_os', Role.find_by(name: 'provisioner-os-install')) rescue "fred"
     # If oses is not empty and oses does not include default
     unless oses.empty? or oses.include?(default)
