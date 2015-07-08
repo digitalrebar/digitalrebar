@@ -73,6 +73,25 @@ extra_files:
   - http://storage.core-os.net/coreos/amd64-generic/38.0.0/pkgs/sys-apps/dmidecode-2.10.tbz2
 
 debs:
+  ubuntu-12.04.3:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef_11.12.8-1_amd64.deb
+    repos:
+      - deb http://us.archive.ubuntu.com/ubuntu/ precise main restricted universe multiverse
+      - deb-src http://us.archive.ubuntu.com/ubuntu/ precise main restricted universe multiverse
+      - deb http://us.archive.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse
+      - deb-src http://us.archive.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse
+      - deb http://archive.canonical.com/ubuntu precise partner
+      - deb-src http://archive.canonical.com/ubuntu precise partner
+      - deb http://extras.ubuntu.com/ubuntu precise main
+      - deb-src http://extras.ubuntu.com/ubuntu precise main
+      - deb http://security.ubuntu.com/ubuntu precise-security main restricted universe multiverse
+      - deb-src http://security.ubuntu.com/ubuntu precise-security main restricted universe multiverse
+      - deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main
+      - deb http://ppa.launchpad.net/saltstack/salt/ubuntu precise main
+      - deb http://download.draios.com/stable/deb stable-amd64/
+    pkgs:
+      - rpcbind
   ubuntu-12.04:
     raw_pkgs:
       - http://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef_11.12.8-1_amd64.deb
