@@ -212,6 +212,7 @@ for ((i=0; i < deployment_count; i++)) ; do
 done
 
 # Commit the phantom
+crowbar nodes propose "system-phantom.internal.local"
 crowbar nodes set "system-phantom.internal.local" attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
 crowbar nodes commit "system-phantom.internal.local"
 
