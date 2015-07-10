@@ -45,7 +45,7 @@ class NetworkAllocationsController < ::ApplicationController
     params.require(:id)
     @allocation = NetworkAllocation.find(params[:id])
     @allocation.destroy
-    render api_delete @network
+    render api_delete @allocation
   end
 
   def index
