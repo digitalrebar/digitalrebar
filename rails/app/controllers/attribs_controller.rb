@@ -83,10 +83,15 @@ class AttribsController < ApplicationController
       return
     end
     # unpack form updates
+    bucket = params[:bucket] ? params[:bucket].to_sym : :user
+    if bucket != :user && bucket != :note
+      render api_not_supported 'put', 'attribs/:id'
+      return
+    end
     params[:value] = params[:attrib][:value] if params[:attrib]
     params.require(:value)
     attrib = Attrib.find_key(params[:id])
-    target.attribs.find(attrib.id).set(target,params[:value], :user)
+    target.attribs.find(attrib.id).set(target,params[:value], bucket)
     ret = attrib.as_json
     ret["value"] = params[:value]
     render json: ret, content_type: cb_content_type(attrib, "obj")

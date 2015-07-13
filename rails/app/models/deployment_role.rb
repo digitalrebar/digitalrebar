@@ -100,6 +100,13 @@ class DeploymentRole < ActiveRecord::Base
     res
   end
 
+  def note_update(val)
+    transaction do
+      self.notes = self.notes.deep_merge(val)
+      save!
+    end
+  end
+
   def data_update(val)
     DeploymentRole.transaction do
       update!(proposed_data: data.deep_merge(val))

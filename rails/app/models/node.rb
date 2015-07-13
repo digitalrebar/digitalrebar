@@ -287,6 +287,13 @@ class Node < ActiveRecord::Base
     end
   end
 
+  def note_update(val)
+    transaction do
+      self.notes = self.notes.deep_merge(val)
+      save!
+    end
+  end
+  
   def hint_update(val)
     Node.transaction do
       self.hint = self.hint.deep_merge(val)
