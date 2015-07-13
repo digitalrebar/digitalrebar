@@ -3,9 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+
 	crowbar "github.com/VictorLowther/crowbar-api"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 func addAttriberCommands(singularName string,
@@ -60,30 +61,34 @@ func addAttriberCommands(singularName string,
 		},
 	}
 	commands[2] = &cobra.Command{
-		Use:   "set [id] attrib [attrib] to [json]",
+		Use:   "set [id] attrib [attrib] to [json] bucket [bucket=user]",
 		Short: fmt.Sprintf("Set an attrib value for a specific %v", singularName),
 		Run: func(c *cobra.Command, args []string) {
-			if len(args) != 5 {
-				log.Fatalf("%v requires 3 arguments.\n", c.UseLine())
+			bucket := "user"
+			if len(args) != 5 || len(args) != 7 {
+				log.Fatalf("%v requires 3 or 4 arguments.\n", c.UseLine())
 			}
 			obj := maker().(crowbar.Attriber)
 			attr := &crowbar.Attrib{}
 			if crowbar.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
-			if crowbar.SetId(attr, args[1]) != nil {
+			if crowbar.SetId(attr, args[2]) != nil {
 				log.Fatalf("Failed to parse ID %v for an attrib\n", args[1])
+			}
+			if len(args) == 7 {
+				bucket = args[6]
 			}
 			type Valuer struct {
 				Value interface{} `json:"value"`
 			}
 			val := &Valuer{}
-			err := json.Unmarshal([]byte(args[2]), val)
+			err := json.Unmarshal([]byte(args[4]), val)
 			if err != nil {
 				log.Fatalf("Failed to parse %v as JSON!\nError: %v\n", args[2], err.Error())
 			}
 			attr.Value = val.Value
-			if err := crowbar.SetAttrib(obj, attr); err != nil {
+			if err := crowbar.SetAttrib(obj, attr, bucket); err != nil {
 				log.Fatalf("Unable to set attrib! Error: %v\n", err.Error())
 			}
 			fmt.Println(prettyJSON(attr))

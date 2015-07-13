@@ -168,8 +168,12 @@ func GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, err error) {
 
 // SetAttrib sets the value of an attrib in the context of
 // an attriber.
-func SetAttrib(o Attriber, a *Attrib) error {
-	return session.put(a, url(o, url(a)))
+func SetAttrib(o Attriber, a *Attrib, bucket string) error {
+	if bucket == "" {
+		bucket = "user"
+	}
+	uri := fmt.Sprintf("%v?bucket=%v", url(o, url(a)), bucket)
+	return session.put(a, uri)
 }
 
 // Propose readies an Attriber to accept new values via SetAttrib.
