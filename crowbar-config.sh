@@ -105,6 +105,15 @@ fi
 # This may not be needed
 echo "{ \"domain\": \"$DOMAINNAME\" }" > config/domain.json
 
+# This is a hack as well for now.
+echo "{ \
+  \"name\": \"default\", \
+  \"priority\": 50, \
+  \"template\": \"{{node.name}}.$DOMAINNAME\", \
+  \"matcher\": \"net.category == \\\"admin\\\"\", \
+  \"service\": \"system\" \
+}" > config/filters/admin-default.json
+
 ./crowbar-build-json.rb > config/final.json
 
 CONSUL_MACL=$(jq .acl_master_token </etc/consul.d/default.json | awk -F\" '{ print $2 }')
