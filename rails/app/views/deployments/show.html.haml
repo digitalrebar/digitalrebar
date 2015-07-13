@@ -50,7 +50,7 @@
         - @roles.each do |dr|
           %th.dr{:id=>dr.id}
             %div
-              - name = dr.role.name_safe.truncate(30).html_safe
+              - name = dr.role.name_safe.html_safe
               = link_to name, deployment_role_path(dr.id), :title=>dr.role.description
     %tbody
       - @nodes.each do |node|
