@@ -194,6 +194,11 @@ done
 
 mv -f /etc/resolv.conf.new /etc/resolv.conf
 
+# We gotta have jq
+if ! which jq; then
+    yum -y install jq
+fi
+
 # Force reliance on DNS
 echo '127.0.0.1 localhost' >/etc/hosts
 echo '::1 localhost6' >>/etc/hosts

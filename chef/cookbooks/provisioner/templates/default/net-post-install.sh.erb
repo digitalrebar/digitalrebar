@@ -112,7 +112,7 @@ export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
 export LC_ALL=C LANGUAGE=C LANG=C
 apt-get -y --force-yes update
 apt-get -y --force-yes remove apparmor
-apt-get -y --force-yes install ntpdate
+apt-get -y --force-yes install ntpdate jq
 
 echo "PermitRootLogin without-password" >> /etc/ssh/sshd_config
 # Allow client to pass http proxy environment variables
