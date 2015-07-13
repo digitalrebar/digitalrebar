@@ -21,19 +21,43 @@ class InventoryController < ApplicationController
     @inventory = {  ansible_ssh_user: "root",  ansible_ssh_port: 22 }
 
     # list of deployment groups
-    ds = params[:id] ? [Deployments.find_key(params[:id])] : Deployments.all
-    ds do |d|
-      hosts = d.addressable_nodes.map { |n| n.name }
-      children = d.children.map { |c| c.name }
+    ds = params[:id] ? [Deployment.find_key(params[:id])] : Deployment.all
+    ds.each do |d|
+      hosts = d.nodes.map { |n| n.name if !n.admin and !n.system  }
+      children = Deployment.children_of(d).map { |c| c.name }
       vars = {}
       vars['networks'] = d.networks.map { |n| n.name }
       vars['roles'] = d.deployment_roles.map { |dr| dr.name }
-      @inventory[d.name] = { hosts: hosts, children: children, vars: vars }
+      @inventory[d.name] = { hosts: hosts.delete_if{|i| !i}, children: children, vars: vars }
     end
 
-    # list of hosts with variable information
     hostvars = {}
-    ns = params[:id] ? ds.first.nodes : Nodes.all
+    @inventory["_meta"] = { hostvars: hostvars }
+    ns = params[:id] ? ds.first.nodes : Node.all
+    ns.each do |n|
+      hostvars[n.name] = {}
+      hostvars[n.name]["alive"] = n.alive
+      hostvars[n.name]["available"] = n.available
+      hostvars[n.name]["state"] = NodeRole::STATES[n.state]
+      hostvars[n.name]["os"] = n.get_attrib("os") || 'unknown'
+      attribs = {"cpu_count" => -1, "memory" => 1, "number_of_drives" => -1}
+      attribs.each { |k,v| hostvars[n.name][k] = n.get_attrib(k) || v }
+      n.network_allocations.each do |na|
+        hostvars[n.name]["network.#{na.network.name}.#{na.network_range.name}"] = na.address.to_s
+      end
+      nets = n.get_attrib("network-current_config")["nets"] rescue []
+      nets.each do |net| 
+        hostvars[n.name]["interface.#{net[0]}"] = net[3] rescue ""
+      end
+    end 
+
+    render json: @inventory
+  end
+
+  def foo
+
+
+    # list of hosts with variable information
     ns do |n|
       hostvars[n.name] = {}
       hostvars[n.name]["alive"] = n.alive
@@ -48,11 +72,6 @@ class InventoryController < ApplicationController
       end
       # provide interfaces here
     end 
-    @inventory["_meta"] = { hostvars: hostvars }
 
-    respond_to do |format|
-      format.json { @inventory }
-    end
   end
-
 end
