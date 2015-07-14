@@ -183,7 +183,8 @@ class Role < ActiveRecord::Base
   end
 
   def name_i18n
-    I18n.t(name, :default=>name, :scope=>'common.roles')
+    #I18n.t(name, :default=>name, :scope=>'common.roles')
+    name.truncate(35)
   end
 
   def name_safe
