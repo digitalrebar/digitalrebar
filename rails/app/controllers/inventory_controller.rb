@@ -23,12 +23,13 @@ class InventoryController < ApplicationController
     # list of deployment groups
     ds = params[:id] ? [Deployment.find_key(params[:id])] : Deployment.all
     ds.each do |d|
-      hosts = d.nodes.map { |n| n.name if !n.admin and !n.system  }
+      hosts = d.nodes.map{ |n| n.name if !n.admin and !n.system  }.delete_if{|i| !i}
       children = Deployment.children_of(d).map { |c| c.name }
       vars = {}
       vars['networks'] = d.networks.map { |n| n.name }
       vars['roles'] = d.deployment_roles.map { |dr| dr.name }
-      @inventory[d.name] = { hosts: hosts.delete_if{|i| !i}, children: children, vars: vars }
+      @inventory[d.name] = { hosts: hosts, vars: vars }
+      @inventory[d.name][:children] = children if children.length > 0
     end
 
     hostvars = {}
@@ -54,24 +55,4 @@ class InventoryController < ApplicationController
     render json: @inventory
   end
 
-  def foo
-
-
-    # list of hosts with variable information
-    ns do |n|
-      hostvars[n.name] = {}
-      hostvars[n.name]["alive"] = n.alive
-      hostvars[n.name]["available"] = n.available
-      hostvars[n.name]["state"] = n.state
-      hostvars[n.name]["os"] = n.get_attrib("os") || 'unknown'
-      hostvars[n.name]["cpus"] = n.get_attrib("cpus") || -1
-      hostvars[n.name]["disks"] = n.get_attrib("number_of_disks") || -1
-      hostvars[n.name]["ram"] = n.get_attrib("ram") || -1
-      n.network_allocations.each do |na|
-        hostvars[n.name][na.name] = na.address
-      end
-      # provide interfaces here
-    end 
-
-  end
 end
