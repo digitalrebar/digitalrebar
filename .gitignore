@@ -30,7 +30,7 @@ erl_crash.dump
 
 # Config files
 /config/ssh_keys/*.key
-/config/ssh_keys/*.json
+/config/filters/*.json
 /config/domain.json
 /config/final.json
 /config/processed.json
