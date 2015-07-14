@@ -73,13 +73,7 @@ func Session(URL, User, Password string) error {
 	return nil
 }
 
-// Request makes a general call to the Crowbar API.
-// method is the raw HTTP method to use
-// uri is the section of the API to call.
-// objIn is the raw data to be passed in the request body
-// objOut is the raw request body (if any)
-// err is the error of any occurred.
-func (c *ocbClient) request(method, uri string, objIn []byte) (objOut []byte, err error) {
+func (c *ocbClient) basicRequest(method, uri string, objIn []byte) (resp *http.Response, err error) {
 	var body io.Reader
 
 	if objIn != nil {
@@ -94,29 +88,46 @@ func (c *ocbClient) request(method, uri string, objIn []byte) (objOut []byte, er
 	if err != nil {
 		return nil, err
 	}
-	// Make authenticated request.
 	req.Header.Set("Authorization", auth)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "gobar/v1.0")
 	req.Header.Set("Accept", "application/json")
+	resp, err = c.Do(req)
+	if err == nil {
+		return
+	}
+	if resp != nil {
+		resp.Body.Close()
+	}
+	return nil, err
+}
 
-	resp, err := c.Do(req)
+// Request makes a general call to the Crowbar API.
+// method is the raw HTTP method to use
+// uri is the section of the API to call.
+// objIn is the raw data to be passed in the request body
+// objOut is the raw request body (if any)
+// err is the error of any occurred.
+func (c *ocbClient) request(method, uri string, objIn []byte) (objOut []byte, err error) {
+	resp, err := c.basicRequest(method, uri, objIn)
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode == 401 {
+		err = c.Challenge.parseChallenge(resp.Header.Get("WWW-Authenticate"))
+		if err != nil {
+			return nil, err
+		}
+		resp, err = c.basicRequest(method, uri, objIn)
+		if err != nil {
+			return nil, err
+		}
 	}
 	objOut, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	// if token expires, then try again
-	if resp.StatusCode == 401 {
-		err = c.Challenge.parseChallenge(resp.Header.Get("WWW-Authenticate"))
-		if err != nil {
-			return nil, err
-		} else {
-			return c.request(method, uri, objIn)
-		}
-	} else if resp.StatusCode >= 300 {
+	if resp.StatusCode >= 300 {
 		return nil, fmt.Errorf("Expected status in the 200 range, got %s", resp.Status)
 	}
 	return objOut, nil
