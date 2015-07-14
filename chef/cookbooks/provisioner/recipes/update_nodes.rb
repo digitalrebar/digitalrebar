@@ -41,7 +41,8 @@ new_clients = {}
     "v4addr" => provisioner_info["v4addr"],
     "nodeaddr" => nodeaddr,
     "pxefile" => pxefile,
-    "uefifile" => uefifile
+    "uefifile" => uefifile,
+    "bootenv" => bootenv
   }
   # Generate an appropriate control.sh for the system.
   directory "#{node_dir}/#{mnode_name}" do
