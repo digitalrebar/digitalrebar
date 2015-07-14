@@ -45,7 +45,6 @@ ntp
 ntpdate
 tcpdump
 efibootmgr
-
 %post
 
 exec > /root/post-install.log 2>&1
@@ -138,6 +137,8 @@ if [ ! -f "$rsyslog_dir/10-crowbar-client.conf" ]; then
         rm -f "$rsyslog_dir/00-crowbar-debug.conf"
     fi
 fi
+
+yum -y install jq
 
 mkdir -p /root/.ssh
 cat >/root/.ssh/authorized_keys <<EOF

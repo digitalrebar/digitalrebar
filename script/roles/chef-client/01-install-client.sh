@@ -36,12 +36,11 @@ EOF
     elif [[ -f /etc/SuSE-release ]]; then
         zypper install -y -l chef
     elif [[ "x$NAME" == "xCoreOS" ]]; then
-        webserver_re='"url"=>"([^"]+)"'
-        if ! [[ $(read_attribute "crowbar/provisioner/server/webservers") =~ $webserver_re ]]; then
+        webserver=$(read_attribute "crowbar/provisioner/server/webservers/0/url")
+        if [[ ! $webserver ]]; then
             echo "Cannot figure out the URL to poll to see if we are ready to reboot!"
             exit 1
         fi
-        webserver="${BASH_REMATCH[1]}"
         mkdir -p /opt
         cd /opt
         wget --quiet "http://$webserver/files/coreos-chef.tgz"

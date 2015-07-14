@@ -11,7 +11,7 @@ export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
 export LC_ALL=C LANGUAGE=C LANG=C
 
 has_attribute() {
-    [[ -f $TMPDIR/attrs/$1/attr ]]
+    [[ $(read_attribute "$1") ]]
 }
 
 get_keys() {
@@ -25,18 +25,30 @@ get_keys() {
 }
 
 read_attribute() {
-    if [[ -f $TMPDIR/attrs/$1/attr ]]; then
-        cat "$TMPDIR/attrs/$1/attr"
-    else
+    local -a keys
+    local i
+    local num_re='^[0-9]+$'
+    IFS='/' read -r -s -a keys <<< "$1"
+    for i in "${!keys[@]}"; do
+        if [[ ${keys[$i]} =~ $num_re ]]; then
+            keys[$i]="[${keys[$i]}]"
+        else
+            keys[$i]="[\"${keys[$i]}\"]"
+        fi
+    done
+    local keyarg="$(printf '.%s | ' "${keys[@]}")"
+    local v="$(jq -r -c "${keyarg%* | }" <"$TMPDIR/attrs.json")"
+    if [[ $v = null ]]; then
         echo ""
+    else
+        printf '%s' "$v"
     fi
 }
 
 read_attribute_file_content() {
-    local loc="$TMPDIR/attrs/$1"
-    cp "$loc/attr" $2
+    read_attribute "$1" > "$2"
     # The write content stripped the newline - in rails
-    echo "" >> $2
+    echo "" >> "$2"
 }
 
 write_attribute() {

@@ -7,12 +7,8 @@
 
 set -x
 set +e
-webserver_re='"url"=>"([^"]+)"'
-if ! [[ $(read_attribute "crowbar/provisioner/server/webservers") =~ $webserver_re ]]; then
-    echo "Cannot figure out the URL to poll to see if we are ready to reboot!"
-    exit 1
-fi
-webserver="${BASH_REMATCH[1]}"
+
+webserver="$(read_attribute "crowbar/provisioner/server/webservers/0/url")"
 
 # Nuke it all.
 declare vg pv maj min blocks name
