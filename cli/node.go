@@ -127,5 +127,19 @@ func init() {
 			}
 		},
 	})
+	nodes.AddCommand(&cobra.Command{
+		Use:   "activebootenv [id]",
+		Short: "Get the boot environment that the provisioner has configured for the node.",
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 1 {
+				log.Fatalf("%v requires 1 argument\n", c.UseLine())
+			}
+			obj := &crowbar.Node{}
+			if crowbar.SetId(obj, args[0]) != nil {
+				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
+			}
+			fmt.Println(obj.ActiveBootstate())
+		},
+	})
 	app.AddCommand(nodes)
 }

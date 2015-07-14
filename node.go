@@ -95,6 +95,19 @@ func (o *Node) Power(action string) error {
 	return session.put(o, url(o, fmt.Sprintf("power?poweraction=%v", action)))
 }
 
+func (o *Node) ActiveBootstate() string {
+	attr := &Attrib{}
+	attr, err := GetAttrib(o, &Attrib{Name: "provisioner-active-bootstate"}, "")
+	if err != nil {
+		return ""
+	}
+	if res, ok := attr.Value.(string); !ok {
+		return ""
+	} else {
+		return res
+	}
+}
+
 // Satisfy salient interfaces
 func (o *Node) attribs()            {}
 func (o *Node) deploymentRoles()    {}
