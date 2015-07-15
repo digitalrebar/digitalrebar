@@ -37,7 +37,7 @@ g(Item) ->
 validate(JSON) when is_record(JSON, obj) ->
   J = JSON#obj.data,
   R =[JSON#obj.type == "node",
-      bdd_utils:is_a(J, length, 17),
+      bdd_utils:is_a(J, length, 18),
       bdd_utils:is_a(J, boolean, alive),
       bdd_utils:is_a(J, boolean, system),
       bdd_utils:is_a(J, boolean, available),

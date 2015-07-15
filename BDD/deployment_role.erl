@@ -33,7 +33,7 @@ g(Item) ->
 validate(JSON) when is_record(JSON, obj) ->
   J = JSON#obj.data,
   R =[JSON#obj.type == "deployment_role",
-      bdd_utils:is_a(J, length, 8),
+      bdd_utils:is_a(J, length, 9),
       bdd_utils:is_a(J, string, proposed_data),
       bdd_utils:is_a(J, string, committed_data),
       bdd_utils:is_a(J, string, wall),
