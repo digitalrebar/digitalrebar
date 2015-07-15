@@ -99,12 +99,14 @@ class Attrib < ActiveRecord::Base
           when from.is_a?(Hash) then from
           when from.is_a?(Node)
             case source
+            when :note then from.notes
             when :proposed,:committed,:hint,:user then from.hint
             when :all then from.discovery.deep_merge(from.hint)
             else from.discovery
             end
           when from.is_a?(DeploymentRole)
             case source
+            when :note then from.notes
             when :proposed then from.all_data(false)
             when :committed then from.all_data(true)
             when :all then from.wall.deep_merge(from.all_data(committed))
@@ -114,6 +116,7 @@ class Attrib < ActiveRecord::Base
             end
           when from.is_a?(NodeRole)
             case source
+            when :note then from.notes
             when :proposed then from.attrib_data(false)
             when :committed then from.attrib_data(true)
             when :all then from.attrib_data(committed)
@@ -122,7 +125,11 @@ class Attrib < ActiveRecord::Base
             when :user,:hint then committed ? from.committed_data : from.data
             else raise("#{from}:#{source} is not a valid source to read noderole data from!")
             end
-          when from.is_a?(Role) then from.template
+          when from.is_a?(Role)
+            case source
+            when :note then from.notes
+            else from.template
+            end
           else raise("Cannot extract attribute data from #{from.class.to_s}")
           end
     end
@@ -149,6 +156,10 @@ class Attrib < ActiveRecord::Base
     template(get(from,hint,committed))
   end
 
+  def note_set(to,value)
+    __set(to,value,:note)
+  end
+  
   def hint_set(to,value)
     __set(to,value,:hint)
   end
@@ -242,6 +253,7 @@ class Attrib < ActiveRecord::Base
       when to.is_a?(Hash) then to.deep_merge(to_merge)
       when to.is_a?(Node)
         case target
+        when :note then to.note_update(to_merge)
         when :discovery then to.discovery_update(to_merge)
         else to.hint_update(to_merge)
         end
@@ -249,16 +261,20 @@ class Attrib < ActiveRecord::Base
         to.node_roles.order("cohort ASC").each do |nr|
           next unless RoleRequireAttrib.find_by(role_id: nr.role_id, attrib_name: self.name)
           poke(nr)
-        end
+        end if target != :note
       when to.is_a?(Role)
-        to.template_update(to_merge)
+        case target
+        when :note then to.note_update(to_merge)
+        else to.template_update(to_merge)
+        end
         # Poke all the noderoles that are bound to this role.
         to.node_roles.order("cohort ASC").each do |nr|
           poke(nr)
-        end
+        end if target != :note
       when to.is_a?(DeploymentRole)
         val = self.get(to,:all,true)
         case target
+        when :note then to.note_update(to_merge)
         when :system, :wall
           to.wall_update(to_merge)
           # Poke all the noderoles in this deployment that get data from this deployment role.
@@ -269,9 +285,10 @@ class Attrib < ActiveRecord::Base
           to.data_update(to_merge)
         end
       when to.is_a?(NodeRole)
-        val = self.get(to,:all,true)
         case target
+        when :note then to.note_update(to_merge)
         when :system
+          val = self.get(to,:all,true)
           to.sysdata_update(to_merge)
           poke(to) unless val == self.get(to,:all,true)
         when :user,:hint then to.data_update(to_merge)

@@ -35,12 +35,8 @@ class BarclampCrowbar::Jig < Jig
     end
     local_tmpdir = %x{mktemp -d /tmp/local-scriptjig-XXXXXX}.strip
     Rails.logger.info("Using local temp dir: #{local_tmpdir}")
-    attr_to_shellish(data).each do |k,v|
-      target = File.join(local_tmpdir,"attrs",k)
-      FileUtils.mkdir_p(target)
-      File.open(File.join(target,"attr"),"w") do |f|
-        f.printf("%s",v.to_s)
-      end
+    File.open(File.join(local_tmpdir,"attrs.json"),"w") do |f|
+      JSON.dump(data,f)
     end
     FileUtils.cp_r(local_scripts,local_tmpdir)
     FileUtils.cp('/opt/opencrowbar/core/script/runner',local_tmpdir)
@@ -64,7 +60,7 @@ class BarclampCrowbar::Jig < Jig
             when v.downcase == "true" then true
             when v.downcase == "false" then false
             when v =~ /^[-+]?[0-9]+$/ then v.to_i
-            when v =~ /^[-+]?[0'9a-fA-f]+$/ then v.to_i(16)
+            when v =~ /^[-+]?[0-9a-fA-f]+$/ then v.to_i(16)
             when v =~ /^[-+]?0[bodx]?[0-9a-fA-F]+$/ then v.to_i(0)
             else v
             end
@@ -94,32 +90,6 @@ class BarclampCrowbar::Jig < Jig
 
   def delete_node(node)
     Rails.logger.info("ScriptJig Deleting node: #{node.name}")
-  end
-
-  private
-
-  # Turn a nested hash table into an array of key/value pairs
-  # This is intended to be turned into a filesystem structure that the
-  # scripts being executed on the remote system can access.
-  def attr_to_shellish(values, prefix=[])
-    res = {}
-    if values.kind_of?(Array)
-      values.each_index do |i|
-        res[i.to_s]=values[i]
-      end
-      values = res
-      res = {}
-    end
-    values.each do |k,v|
-      key = prefix.dup << k.to_s
-      case
-      when v.nil? then next
-      when v.kind_of?(Hash) && !v.empty?
-        res.merge!(attr_to_shellish(v,key)) unless v.empty?
-      when v.respond_to?(:to_s) then res[key.join("/")] = v.to_s
-      end
-    end
-    res
   end
 
 end

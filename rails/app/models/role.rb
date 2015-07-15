@@ -68,6 +68,13 @@ class Role < ActiveRecord::Base
     Role.where("id in (select role_id from all_role_requires where required_role_id = ?)",id).order("cohort ASC")
   end
 
+  def note_update(val)
+    transaction do
+      self.notes = self.notes.deep_merge(val)
+      save!
+    end
+  end
+  
   # incremental update (merges with existing)
   def template_update(val)
     Role.transaction do

@@ -351,6 +351,13 @@ class NodeRole < ActiveRecord::Base
     new_parent.add_child(self)
   end
 
+  def note_update(val)
+    transaction do
+      self.notes = self.notes.deep_merge(val)
+      save!
+    end
+  end
+
   def data
     proposed? ? proposed_data : committed_data
   end
