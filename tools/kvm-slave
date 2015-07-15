@@ -3,8 +3,8 @@
 set -e 
 . "${0%/*}/kvm_lib.sh"
 
-OCB_MEM=2G
-OCB_CPUS=2
+OCB_MEM=${SLAVE_MEM:-2G}
+OCB_CPUS=${SLAVE_CPUS:-2}
 bridge_exists "$OCB_BRIDGE" || OCB_BRIDGE=docker0
 
 bridge_exists "$OCB_BRIDGE" || die "No bridge $OCB_BRIDGE to attach to!"
@@ -12,7 +12,7 @@ bridge_exists "$OCB_BRIDGE" || die "No bridge $OCB_BRIDGE to attach to!"
 # screen -S "$OCB_SCREEN" -X screen
 
 # Create our disk images
-qemu-img create -f raw "$VM_DIR/$VMID.disk" 10G &>/dev/null
+qemu-img create -f raw "$VM_DIR/$VMID.disk" 20G &>/dev/null
 qemu-img create -f qcow2 "$VM_DIR/$VMID-01.disk" 20G &>/dev/null
 qemu-img create -f qcow2 "$VM_DIR/$VMID-02.disk" 20G &>/dev/null
 qemu-img create -f qcow2 "$VM_DIR/$VMID-03.disk" 20G &>/dev/null
