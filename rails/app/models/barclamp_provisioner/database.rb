@@ -27,6 +27,14 @@ class BarclampProvisioner::Database < Role
     rerun_my_noderoles
   end
 
+  def on_active(nr)
+    ents = nr.wall["crowbar_wall"]["provisioner"]["clients"] rescue {}
+    ents.each do |k,v|
+      target_node = Node.find_by!(name: k)
+      Attrib.set('provisioner-active-bootstate',target_node,v['bootenv'])
+    end
+  end
+
   def rerun_my_noderoles
     hosts = {}
     to_enqueue = []

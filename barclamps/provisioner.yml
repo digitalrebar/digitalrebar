@@ -372,3 +372,8 @@ roles:
             - xenserver-6.5
             - esxi-5.5
             - fuel-6.0
+attribs:
+ - name: provisioner-active-bootstate
+   description: 'The bootstate that the provisioner last configured the node to use'
+   map: 'crowbar/provisioner/active_bootstate'
+   default: "unknown"
