@@ -41,6 +41,9 @@ class Deployment < ActiveRecord::Base
   has_many        :node_roles,        :dependent => :destroy
   has_many        :nodes
   belongs_to      :parent,            class_name: "Deployment"
+  has_many        :networks
+
+  scope           :children_of,     ->(d)  { where(:parent_id => d.id) }
 
   def self.state_name(s)
     raise("#{state || 'nil'} is not a valid Deployment state!") unless s and STATES.include? s
