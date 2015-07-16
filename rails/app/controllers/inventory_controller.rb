@@ -18,10 +18,12 @@ class InventoryController < ApplicationController
   # API GET /api/v2/inventory
   # uses the Ansible dynamic inventory format
   def index
-    @inventory = {  ansible_ssh_user: "root",  ansible_ssh_port: 22 }
+    available_os = Attrib.get("provisioner-available-oses", Node.admin.where(:available => true).first) rescue []
+    @inventory = {  all: { vars: { ansible_ssh_user: "root",  ansible_ssh_port: 22, available_os: available_os.keys }}}
 
     # list of deployment groups
-    ds = params[:id] ? [Deployment.find_key(params[:id])] : Deployment.all
+    d = Deployment.find_key params[:id] || 'system'
+    ds = (d.name != 'system' ? [d] : Deployment.all)
     ds.each do |d|
       hosts = d.nodes.map{ |n| n.name if !n.admin and !n.system  }.delete_if{|i| !i}
       children = Deployment.children_of(d).map { |c| c.name }
@@ -36,6 +38,7 @@ class InventoryController < ApplicationController
     @inventory["_meta"] = { hostvars: hostvars }
     ns = params[:id] ? ds.first.nodes : Node.all
     ns.each do |n|
+      next if n.admin or n.system
       hostvars[n.name] = {}
       hostvars[n.name]["alive"] = n.alive
       hostvars[n.name]["available"] = n.available

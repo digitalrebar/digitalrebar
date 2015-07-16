@@ -610,6 +610,11 @@ module OpenCrowbar
       DeploymentRole.new(obj)
     end
 
+    def do_inventory(*rest)
+      obj,res = REST.get("api/status/inventory/#{id.to_s}")
+      obj
+    end
+
   end
 
   class Role < ProxyWithAttribs
