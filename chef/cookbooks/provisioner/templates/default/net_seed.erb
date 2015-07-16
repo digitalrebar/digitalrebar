@@ -1,7 +1,7 @@
 #### Contents of the preconfiguration file (for &releasename;)
 ### Localization
 # Locale sets language and country.
-d-i debian-installer/locale string en_US.utf8
+d-i debian-installer/locale string en_US.UTF-8
 
 # Keyboard selection.
 # Disable automatic (interactive) keymap detection.
@@ -13,7 +13,7 @@ d-i console-setup/layoutcode string us
 #d-i console-setup/variantcode string dvorak
 
 d-i keyboard-configuration/xkb-keymap select us
-d-i debian-installer/locale string en_US
+d-i debian-installer/locale string en_US.UTF-8
 d-i console-tools/archs select at
 d-i console-keymaps-at/keymap select American English
 d-i debian-installer/keymap string us

@@ -27,7 +27,7 @@ end
 
 file "/etc/sudoers.d/00_root_no_tty" do
   action :create
-  mode "0644"
+  mode "0440"
   content <<EOC
 Defaults:root !requiretty\n
 EOC
