@@ -37,25 +37,27 @@ if [[ -f /etc/crowbar.install.key ]]; then
     export CROWBAR_KEY="$(cat /etc/crowbar.install.key)"
 fi
 
+
 put_alive() {
     echo "Seting node alive=$1"
-    while ! curl -f -u "$CROWBAR_KEY" --digest -L -X PUT \
-        -d "bootenv=local" \
-        -d "alive=$1" \
-        "<%=@api_server%>/api/v2/nodes/<%=@name%>" &>/dev/null; do
+    local curlargs=(-f -u "$CROWBAR_KEY" --digest -L -X PUT -d "alive=$1")
+    if [[ $1 == true ]]; then
+        curlargs+=(-d "bootenv=local")
+    fi
+    while ! curl "${curlargs[@]}" "<%=@api_server%>/api/v2/nodes/<%=@name%>" &>/dev/null; do
         sleep 1
         # Get our hostname - Sometimes it isn't set yet.
         HOSTNAME=$(hostname -f)
     done
 }
 
-# Force time (some OS already have this done
+# Force time (some OS already have this done)
 ntpdate <%=@ntp_server%> 2>/dev/null >/dev/null
 
 case $1 in
     stop) put_alive false;;
     status) echo "OK";;
-    start) put_alive false; put_alive true;;
+    start) put_alive false; put_alive true ;;
     *) echo "Unknown action to crowbar_join.sh."
         exit 1;;
 esac
