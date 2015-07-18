@@ -268,6 +268,11 @@ func convertSubnetToApiSubnet(s *Subnet) *ApiSubnet {
 	apiSubnet.ActiveLeaseTime = int(s.ActiveLeaseTime.Seconds())
 	apiSubnet.ReservedLeaseTime = int(s.ReservedLeaseTime.Seconds())
 
+	if s.NextServer != nil {
+		ns := s.NextServer.String()
+		apiSubnet.NextServer = &ns
+	}
+
 	for _, v := range s.Leases {
 		apiSubnet.Leases = append(apiSubnet.Leases, v)
 	}
@@ -304,6 +309,11 @@ func convertApiSubnetToSubnet(as *ApiSubnet, subnet *Subnet) (*Subnet, error) {
 	subnet.ActiveLeaseTime = time.Duration(as.ActiveLeaseTime) * time.Second
 	subnet.ReservedLeaseTime = time.Duration(as.ReservedLeaseTime) * time.Second
 	subnet.ActiveBits = bitset.New(uint(dhcp.IPRange(subnet.ActiveStart, subnet.ActiveEnd)))
+
+	if as.NextServer != nil {
+		ip := net.ParseIP(*as.NextServer).To4()
+		subnet.NextServer = &ip
+	}
 
 	if subnet.ActiveLeaseTime == 0 {
 		subnet.ActiveLeaseTime = 30 * time.Second

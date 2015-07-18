@@ -14,6 +14,7 @@ import (
 type Subnet struct {
 	Name              string
 	Subnet            *MyIPNet
+	NextServer        *net.IP `"json:,omitempty"`
 	ActiveStart       net.IP
 	ActiveEnd         net.IP
 	ActiveLeaseTime   time.Duration
@@ -307,6 +308,8 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			subnet.Options.SelectOrderOrAll(options[dhcp.OptionParameterRequestList]))
 		if binding != nil && binding.NextServer != nil {
 			reply.SetSIAddr(net.ParseIP(*binding.NextServer))
+		} else if subnet.NextServer != nil {
+			reply.SetSIAddr(*subnet.NextServer)
 		}
 		return reply
 

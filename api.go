@@ -25,6 +25,7 @@ import (
 type ApiSubnet struct {
 	Name              string     `json:"name"`
 	Subnet            string     `json:"subnet"`
+	NextServer        *string    `json:"next_server,omitempty"`
 	ActiveStart       string     `json:"active_start"`
 	ActiveEnd         string     `json:"active_end"`
 	ActiveLeaseTime   int        `json:"active_lease_time"`
@@ -167,6 +168,9 @@ func (dt *DataTracker) save_data() {
 
 func (dt *DataTracker) subnetsOverlap(subnet *Subnet) bool {
 	for _, es := range dt.Subnets {
+		if es.Name == subnet.Name {
+			continue
+		}
 		if es.Subnet.Contains(subnet.Subnet.IP) {
 			return true
 		}

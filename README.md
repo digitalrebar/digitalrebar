@@ -21,6 +21,7 @@ Returns: a json array of subnet objects
   {
     "name": "192.168.124.0",
     "subnet": "192.168.124.0/24",
+    "next_server": [[]]
     "active_start": "192.168.124.22",
     "active_end": "192.168.124.92",
     "active_lease_time": 30,
@@ -111,6 +112,7 @@ Data is in the format:
 {
     "name": "192.168.124.0",
     "subnet": "192.168.124.0/24",
+    "next_server": "192.168.124.10",
     "active_start": "192.168.124.22",
     "active_end": "192.168.124.92",
     "active_lease_time": 30,
@@ -118,7 +120,11 @@ Data is in the format:
 }
 ```
 
-Active start/end specifies a free range of DHCP addresses given to anyone.
+All fields are optional expect name and subnet.
+
+Active start/end specifies a free range of DHCP addresses given to
+anyone.  If none is specified, then only bound addresses will be given
+out.
 
 ### Update Subnet
 
