@@ -18,25 +18,38 @@ class InventoryController < ApplicationController
   # API GET /api/v2/inventory
   # uses the Ansible dynamic inventory format
   def index
-    available_os = Attrib.get("provisioner-available-oses", Node.admin.where(:available => true).first) rescue []
-    @inventory = {  all: { vars: { ansible_ssh_user: "root",  ansible_ssh_port: 22, available_os: available_os.keys }}}
 
-    # list of deployment groups
-    d = Deployment.find_key params[:id] || 'system'
-    ds = (d.name != 'system' ? [d] : Deployment.all)
-    ds.each do |d|
-      hosts = d.nodes.map{ |n| n.name if !n.admin and !n.system  }.delete_if{|i| !i}
-      children = Deployment.children_of(d).map { |c| c.name }
-      vars = {}
-      vars['networks'] = d.networks.map { |n| n.name }
-      vars['roles'] = d.deployment_roles.map { |dr| dr.name }
-      @inventory[d.name] = { hosts: hosts, vars: vars }
-      @inventory[d.name][:children] = children if children.length > 0
+    @inventory = {}
+    hostvars = {}
+
+    if !params[:hostvar] || params[:hostvar] == "none"
+
+      available_os = Attrib.get("provisioner-available-oses", Node.admin.where(:available => true).first) rescue []
+      @inventory[:all] = { vars: { ansible_ssh_user: "root",  ansible_ssh_port: 22, available_os: available_os.keys }}
+
+      # list of deployment groups
+      d = Deployment.find_key params[:id] || 'system'
+      ds = (d.name != 'system' ? [d] : Deployment.all)
+      ds.each do |d|
+        hosts = d.nodes.map{ |n| n.name if !n.admin and !n.system  }.delete_if{|i| !i}
+        children = Deployment.children_of(d).map { |c| c.name }
+        vars = {}
+        vars['networks'] = d.networks.map { |n| n.name }
+        vars['roles'] = d.deployment_roles.map { |dr| dr.name }
+        @inventory[d.name] = { hosts: hosts, vars: vars }
+        @inventory[d.name][:children] = children if children.length > 0
+      end
+
     end
 
-    hostvars = {}
-    @inventory["_meta"] = { hostvars: hostvars }
-    ns = params[:id] ? ds.first.nodes : Node.all
+    ns = if params[:hostvar] == 'none'
+      [] # do nothing
+    elsif params[:hostvar]
+      ns = [Node.find_key(params[:hostvar])]
+    else
+      ns = params[:id] ? ds.first.nodes : Node.all
+    end
+
     ns.each do |n|
       next if n.admin or n.system
       hostvars[n.name] = {}
@@ -54,8 +67,13 @@ class InventoryController < ApplicationController
         hostvars[n.name]["interface.#{net[0]}"] = net[3] rescue ""
       end
     end 
+    if params[:hostvar] and params[:hostvar] != 'none'
+      @inventory = hostvars[ns.first.name]
+    else
+      @inventory["_meta"] = { hostvars: hostvars } if hostvars.length > 0
+    end
 
-    render json: @inventory
+    render json: @inventory, content_type: "application/vnd.crowbar.inventory+json; version=2.0"
   end
 
 end
