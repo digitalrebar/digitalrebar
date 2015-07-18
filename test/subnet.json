@@ -3,8 +3,6 @@
   "subnet": "192.168.124.0/24",
   "active_start": "192.168.124.22",
   "active_end": "192.168.124.92",
-  "reserved_start": "192.168.124.93",
-  "reserved_end": "192.168.124.192",
   "options": [
     { "id": 3, "value": "192.168.124.1" },
     { "id": 15, "value": "alneode.com" },

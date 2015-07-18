@@ -265,10 +265,8 @@ func convertSubnetToApiSubnet(s *Subnet) *ApiSubnet {
 	apiSubnet.Subnet = s.Subnet.String()
 	apiSubnet.ActiveStart = s.ActiveStart.String()
 	apiSubnet.ActiveEnd = s.ActiveEnd.String()
-	apiSubnet.ActiveLeaseTime = int(s.ActiveLeaseTime)
-	apiSubnet.ReservedStart = s.ReservedStart.String()
-	apiSubnet.ReservedEnd = s.ReservedEnd.String()
-	apiSubnet.ReservedLeaseTime = int(s.ReservedLeaseTime)
+	apiSubnet.ActiveLeaseTime = int(s.ActiveLeaseTime.Seconds())
+	apiSubnet.ReservedLeaseTime = int(s.ReservedLeaseTime.Seconds())
 
 	for _, v := range s.Leases {
 		apiSubnet.Leases = append(apiSubnet.Leases, v)
@@ -289,8 +287,10 @@ func convertSubnetToApiSubnet(s *Subnet) *ApiSubnet {
 	return apiSubnet
 }
 
-func convertApiSubnetToSubnet(as *ApiSubnet) (*Subnet, error) {
-	subnet := NewSubnet()
+func convertApiSubnetToSubnet(as *ApiSubnet, subnet *Subnet) (*Subnet, error) {
+	if subnet == nil {
+		subnet = NewSubnet()
+	}
 	subnet.Name = as.Name
 
 	_, netdata, err := net.ParseCIDR(as.Subnet)
@@ -301,11 +301,30 @@ func convertApiSubnetToSubnet(as *ApiSubnet) (*Subnet, error) {
 	subnet.Subnet = &MyIPNet{netdata}
 	subnet.ActiveStart = net.ParseIP(as.ActiveStart).To4()
 	subnet.ActiveEnd = net.ParseIP(as.ActiveEnd).To4()
-	subnet.ActiveLeaseTime = time.Duration(as.ActiveLeaseTime)
-	subnet.ReservedStart = net.ParseIP(as.ReservedStart).To4()
-	subnet.ReservedEnd = net.ParseIP(as.ReservedEnd).To4()
-	subnet.ReservedLeaseTime = time.Duration(as.ReservedLeaseTime)
+	subnet.ActiveLeaseTime = time.Duration(as.ActiveLeaseTime) * time.Second
+	subnet.ReservedLeaseTime = time.Duration(as.ReservedLeaseTime) * time.Second
 	subnet.ActiveBits = bitset.New(uint(dhcp.IPRange(subnet.ActiveStart, subnet.ActiveEnd)))
+
+	if subnet.ActiveLeaseTime == 0 {
+		subnet.ActiveLeaseTime = 30 * time.Second
+	}
+	if subnet.ReservedLeaseTime == 0 {
+		subnet.ReservedLeaseTime = 2 * time.Hour
+	}
+
+	for _, v := range as.Leases {
+		subnet.Leases[v.Mac] = v
+		if dhcp.IPInRange(subnet.ActiveStart, subnet.ActiveEnd, v.Ip) {
+			subnet.ActiveBits.Set(uint(dhcp.IPRange(subnet.ActiveStart, v.Ip) - 1))
+		}
+	}
+
+	for _, v := range as.Bindings {
+		subnet.Bindings[v.Mac] = v
+		if dhcp.IPInRange(subnet.ActiveStart, subnet.ActiveEnd, v.Ip) {
+			subnet.ActiveBits.Set(uint(dhcp.IPRange(subnet.ActiveStart, v.Ip) - 1))
+		}
+	}
 
 	// Seed initial options
 	subnet.Options[dhcp.OptionSubnetMask] = []byte(net.IP(netdata.Mask).To4())
@@ -329,25 +348,9 @@ func convertApiSubnetToSubnet(as *ApiSubnet) (*Subnet, error) {
 	if !netdata.Contains(subnet.ActiveEnd) {
 		return nil, errors.New("ActiveEnd not in Subnet")
 	}
-	if !netdata.Contains(subnet.ReservedStart) {
-		return nil, errors.New("ReservedStart not in Subnet")
-	}
-	if !netdata.Contains(subnet.ReservedEnd) {
-		return nil, errors.New("ReservedEnd not in Subnet")
-	}
 
 	if dhcp.IPLess(subnet.ActiveEnd, subnet.ActiveStart) {
 		return nil, errors.New("ActiveEnd less than ActiveStart")
-	}
-	if dhcp.IPLess(subnet.ReservedEnd, subnet.ReservedStart) {
-		return nil, errors.New("ReservedEnd less than ReservedStart")
-	}
-
-	if dhcp.IPInRange(subnet.ActiveStart, subnet.ActiveEnd, subnet.ReservedStart) {
-		return nil, errors.New("ReservedStart not in Active Range")
-	}
-	if dhcp.IPInRange(subnet.ActiveStart, subnet.ActiveEnd, subnet.ReservedEnd) {
-		return nil, errors.New("ReservedEnd not in Active Range")
 	}
 
 	return subnet, nil

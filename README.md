@@ -23,23 +23,43 @@ Returns: a json array of subnet objects
     "subnet": "192.168.124.0/24",
     "active_start": "192.168.124.22",
     "active_end": "192.168.124.92",
-    "reserved_start": "192.168.124.93",
-    "reserved_end": "192.168.124.192",
+    "active_lease_time": 30,
+    "reserved_lease_time": 7200,
     "leases": [
       {
-        "ip": "192.168.124.22",
-        "mac": "52:54:77:4e:00:00",
+        "ip": "192.168.124.23",
+        "mac": "52:54:77:4e:00:02",
         "valid": true,
-        "expire_time": "2015-07-17T15:24:35.342825306Z"
+        "expire_time": "2015-07-18T03:55:48.210556397Z"
       },
       {
-        "ip": "192.168.124.23",
-        "mac": "52:54:13:f1:00:00",
+        "ip": "192.168.124.24",
+        "mac": "52:54:77:4e:00:00",
         "valid": true,
-        "expire_time": "2015-07-17T15:26:14.588516975Z"
+        "expire_time": "2015-07-18T03:55:32.331706048Z"
+      },
+      {
+        "ip": "192.168.124.25",
+        "mac": "52:54:77:4e:00:01",
+        "valid": true,
+        "expire_time": "2015-07-18T03:55:40.329631313Z"
+      }
+    ],
+    "bindings": [
+      {
+        "ip": "192.168.124.22",
+        "mac": "aa:bb:cc:dd:ee:ff"
       }
     ],
     "options": [
+      {
+        "id": 67,
+        "value": "discovery/pxelinux.0"
+      },
+      {
+        "id": 1,
+        "value": "255.255.255.0"
+      },
       {
         "id": 28,
         "value": "192.168.124.255"
@@ -55,20 +75,11 @@ Returns: a json array of subnet objects
       {
         "id": 6,
         "value": "192.168.124.10"
-      },
-      {
-        "id": 67,
-        "value": "discovery/pxelinux.0"
-      },
-      {
-        "id": 1,
-        "value": "255.255.255.0"
       }
     ]
   }
 ]
 ```
-
 
 ### Show Subnet
 
@@ -89,7 +100,7 @@ to a byte string before sending to clients.
 
 Url: https://user:password@127.0.0.1:6754/zones
 Method: Post
-Data: json Subnet object (without leases or bindings, but can have
+Data: json Subnet object (can have bindings, leases, and options)
 options)
 Returns: a json subnet object like the element in list
 Errors: 400 if request not valid
@@ -102,22 +113,18 @@ Data is in the format:
     "subnet": "192.168.124.0/24",
     "active_start": "192.168.124.22",
     "active_end": "192.168.124.92",
-    "reserved_start": "192.168.124.93",
-    "reserved_end": "192.168.124.192",
+    "active_lease_time": 30,
+    "reserved_lease_time": 7200
 }
 ```
 
 Active start/end specifies a free range of DHCP addresses given to anyone.
-Reserved start/end specifies a range of DHCP addresses that are
-statically defined and only given to bound devices.
-
-Reserved is silly and may go away to be replaced by bindings only.
 
 ### Update Subnet
 
 Url: https://user:password@127.0.0.1:6754/zones/<name>
 Method: Put
-Data: json Subnet object (without leases or bindings, but can have
+Data: json Subnet object (can have bindings, leases, and options)
 options)
 Returns: a json subnet object like the element in list
 Errors: 400 if request not valid
@@ -149,7 +156,16 @@ The binding object may also contain options for the device.
 
 The bind object looks like:
 ```
-GREG:
+{
+  "ip": "192.168.124.22",
+  "mac": "aa:bb:cc:dd:ee:ff",
+  "options": [
+    {
+      "id": 1,
+      "value": "255.255.255.0"
+    }
+  ]
+}
 
 ```
 

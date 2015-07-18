@@ -3,6 +3,7 @@ package main
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	dhcp "github.com/krolaw/dhcp4"
 	"github.com/willf/bitset"
 	"log"
@@ -17,8 +18,6 @@ type Subnet struct {
 	ActiveEnd         net.IP
 	ActiveLeaseTime   time.Duration
 	ActiveBits        *bitset.BitSet
-	ReservedStart     net.IP
-	ReservedEnd       net.IP
 	ReservedLeaseTime time.Duration
 	Leases            map[string]*Lease
 	Bindings          map[string]*Binding
@@ -32,6 +31,35 @@ func NewSubnet() *Subnet {
 		Options:    make(dhcp.Options),
 		ActiveBits: bitset.New(0),
 	}
+}
+
+func (s *Subnet) MarshalJSON() ([]byte, error) {
+	as := convertSubnetToApiSubnet(s)
+	return json.Marshal(as)
+}
+
+func (s *Subnet) UnmarshalJSON(data []byte) error {
+	var as ApiSubnet
+
+	err := json.Unmarshal(data, &as)
+	if err != nil {
+		return err
+	}
+
+	if s.Leases == nil {
+		s.Leases = make(map[string]*Lease)
+	}
+	if s.Bindings == nil {
+		s.Bindings = make(map[string]*Binding)
+	}
+	if s.Options == nil {
+		s.Options = make(dhcp.Options)
+	}
+	if s.ActiveBits == nil {
+		s.ActiveBits = bitset.New(0)
+	}
+	_, err = convertApiSubnetToSubnet(&as, s)
+	return err
 }
 
 func (subnet *Subnet) free_lease(dt *DataTracker, nic string) {
@@ -58,11 +86,12 @@ func firstClearBit(bs *bitset.BitSet) (uint, bool) {
 	return 0, false
 }
 
-func (subnet *Subnet) getFreeIP() (net.IP, bool) {
+func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 	bit, success := firstClearBit(subnet.ActiveBits)
 	if success {
 		subnet.ActiveBits.Set(bit)
-		return dhcp.IPAdd(subnet.ActiveStart, int(bit)), true
+		ip := dhcp.IPAdd(subnet.ActiveStart, int(bit))
+		return &ip, true
 	}
 
 	// Free invalid or expired leases
@@ -81,7 +110,8 @@ func (subnet *Subnet) getFreeIP() (net.IP, bool) {
 	bit, success = firstClearBit(subnet.ActiveBits)
 	if success {
 		subnet.ActiveBits.Set(bit)
-		return dhcp.IPAdd(subnet.ActiveStart, int(bit)), true
+		ip := dhcp.IPAdd(subnet.ActiveStart, int(bit))
+		return &ip, true
 	}
 
 	// We got nothin'
@@ -91,10 +121,10 @@ func (subnet *Subnet) getFreeIP() (net.IP, bool) {
 func (subnet *Subnet) find_or_get_info(dt *DataTracker, nic string, suggest net.IP) (*Lease, *Binding) {
 	lease, binding := subnet.find_info(dt, nic)
 
-	var theip net.IP
+	var theip *net.IP
 
 	if binding != nil {
-		theip = binding.Ip
+		theip = &binding.Ip
 	}
 
 	// Resolve potential conflicts.
@@ -107,7 +137,8 @@ func (subnet *Subnet) find_or_get_info(dt *DataTracker, nic string, suggest net.
 
 	if lease == nil {
 		if theip == nil {
-			theip, save_me := subnet.getFreeIP()
+			var save_me bool
+			theip, save_me = subnet.getFreeIP()
 			if theip == nil {
 				if save_me {
 					dt.save_data()
@@ -116,7 +147,7 @@ func (subnet *Subnet) find_or_get_info(dt *DataTracker, nic string, suggest net.
 			}
 		}
 		lease = &Lease{
-			Ip:    theip,
+			Ip:    *theip,
 			Mac:   nic,
 			Valid: true,
 		}
@@ -133,7 +164,12 @@ func (s *Subnet) update_lease_time(dt *DataTracker, lease *Lease, d time.Duratio
 }
 
 func (s *Subnet) build_options(lease *Lease, binding *Binding) (dhcp.Options, time.Duration) {
-	lt := s.ActiveLeaseTime
+	var lt time.Duration
+	if binding == nil {
+		lt = s.ActiveLeaseTime
+	} else {
+		lt = s.ReservedLeaseTime
+	}
 
 	opts := make(dhcp.Options)
 
@@ -151,12 +187,14 @@ func (s *Subnet) build_options(lease *Lease, binding *Binding) (dhcp.Options, ti
 	}
 
 	// fold in binding options
-	for _, v := range binding.Options {
-		b, err := convertOptionValueToByte(v.Code, v.Value)
-		if err != nil {
-			log.Println("Failed to parse option: ", v.Code, " ", v.Value)
-		} else {
-			opts[v.Code] = b
+	if binding != nil {
+		for _, v := range binding.Options {
+			b, err := convertOptionValueToByte(v.Code, v.Value)
+			if err != nil {
+				log.Println("Failed to parse option: ", v.Code, " ", v.Value)
+			} else {
+				opts[v.Code] = b
+			}
 		}
 	}
 

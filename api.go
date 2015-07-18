@@ -28,9 +28,7 @@ type ApiSubnet struct {
 	ActiveStart       string     `json:"active_start"`
 	ActiveEnd         string     `json:"active_end"`
 	ActiveLeaseTime   int        `json:"active_lease_time"`
-	ReservedStart     string     `json:"reserved_start"`
-	ReservedEnd       string     `json:"reserved_end"`
-	ReservedLeaseTime int        `json:"active_lease_time"`
+	ReservedLeaseTime int        `json:"reserved_lease_time"`
 	Leases            []*Lease   `json:"leases,omitempty"`
 	Bindings          []*Binding `json:"bindings,omitempty"`
 	Options           []*Option  `json:"options,omitempty"`
@@ -218,7 +216,7 @@ func (fe *Frontend) CreateSubnet(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	subnet, err := convertApiSubnetToSubnet(apisubnet)
+	subnet, err := convertApiSubnetToSubnet(apisubnet, nil)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -252,7 +250,7 @@ func (fe *Frontend) UpdateSubnet(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	subnet, err := convertApiSubnetToSubnet(apisubnet)
+	subnet, err := convertApiSubnetToSubnet(apisubnet, nil)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -311,10 +309,8 @@ func (fe *Frontend) BindSubnet(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	if !(dhcp.IPInRange(lsubnet.ActiveStart, lsubnet.ActiveEnd, binding.Ip) ||
-		dhcp.IPInRange(lsubnet.ReservedStart, lsubnet.ReservedEnd, binding.Ip)) {
-		rest.Error(w, "Bound address must be in address range", http.StatusBadRequest)
-		return
+	if dhcp.IPInRange(lsubnet.ActiveStart, lsubnet.ActiveEnd, binding.Ip) {
+		lsubnet.ActiveBits.Set(uint(dhcp.IPRange(lsubnet.ActiveStart, binding.Ip) - 1))
 	}
 
 	lsubnet.Bindings[binding.Mac] = &binding
