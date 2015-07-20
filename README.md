@@ -226,6 +226,13 @@ openssl req -nodes -sha256 -x509 -newkey rsa:2048 \
 
 NOTE: Sometimes certs need addition configuration to deal with names or IPs.
 
+# Testing
+
+To run the unit tests:
+
+* go get -t
+* go test
+
 # Running
 
 ```
