@@ -90,6 +90,17 @@ func (o *Node) PowerActions() ([]string, error) {
 	return res, json.Unmarshal(buf, &res)
 }
 
+func (o *Node) Move(depl *Deployment) error {
+	old_deployment_id := o.DeploymentID
+	tgt := fmt.Sprintf("%v?old_deployment_id=%v", url(o), o.DeploymentID)
+	o.DeploymentID = depl.ID
+	err := session.put(o, tgt)
+	if err != nil {
+		o.DeploymentID = old_deployment_id
+	}
+	return err
+}
+
 // Power performs a power managmeent action for the node.
 func (o *Node) Power(action string) error {
 	return session.put(o, url(o, fmt.Sprintf("power?poweraction=%v", action)))
