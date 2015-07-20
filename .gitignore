@@ -26,3 +26,4 @@ key.pem
 cert.pem
 ocb-dhcp
 src
+database.json
