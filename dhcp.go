@@ -216,10 +216,9 @@ func RunDhcpHandler(dhcpInfo *DataTracker, intf net.Interface, myIp *net.Addr) {
 }
 
 type DHCPHandler struct {
-	intf          net.Interface // Interface processing on.
-	ip            net.IP        // Server IP to use
-	info          *DataTracker  // Subnet data
-	leaseDuration time.Duration // Lease period
+	intf net.Interface // Interface processing on.
+	ip   net.IP        // Server IP to use
+	info *DataTracker  // Subnet data
 }
 
 func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options dhcp.Options) (d dhcp.Packet) {
@@ -299,7 +298,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 
 		options, lease_time := subnet.build_options(lease, binding)
 
-		subnet.update_lease_time(h.info, lease, h.leaseDuration)
+		subnet.update_lease_time(h.info, lease, lease_time)
 
 		reply := dhcp.ReplyPacket(p, dhcp.ACK,
 			h.ip,
