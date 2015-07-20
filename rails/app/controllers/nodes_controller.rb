@@ -203,7 +203,7 @@ class NodesController < ApplicationController
 
   def update
     Node.transaction do
-      @node = Node.find_key params[:id]
+      @node = Node.find_key(params[:id]).lock!
       # sometimes we pass in a nested set of parameters
       params[:node_deployment].each { |k,v| params[k] = v } if params.has_key? :node_deployment
       params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
