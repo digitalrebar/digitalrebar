@@ -3,11 +3,8 @@ package main
 import (
 	"code.google.com/p/gcfg"
 	"flag"
-	"fmt"
-	"github.com/ant0ine/go-json-rest/rest"
 	"log"
 	"net"
-	"net/http"
 )
 
 type Config struct {
@@ -36,33 +33,7 @@ func main() {
 		log.Fatal(cerr)
 	}
 
-	fe := NewFrontend(data_dir)
-
-	api := rest.NewApi()
-	api.Use(&rest.AuthBasicMiddleware{
-		Realm: "test zone",
-		Authenticator: func(userId string, password string) bool {
-			if userId == cfg.Network.Username && password == cfg.Network.Password {
-				return true
-			}
-			return false
-		},
-	})
-	api.Use(rest.DefaultDevStack...)
-	router, err := rest.MakeRouter(
-		rest.Get("/subnets", fe.GetAllSubnets),
-		rest.Get("/subnets/#id", fe.GetSubnet),
-		rest.Post("/subnets", fe.CreateSubnet),
-		rest.Put("/subnets/#id", fe.UpdateSubnet),
-		rest.Delete("/subnets/#id", fe.DeleteSubnet),
-		rest.Post("/subnets/#id/bind", fe.BindSubnet),
-		rest.Delete("/subnets/#id/bind/#mac", fe.UnbindSubnet),
-		rest.Put("/subnets/#id/next_server/#ip", fe.NextServer),
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	api.SetApp(router)
+	fe := NewFrontend(data_dir, cert_pem, key_pem, cfg)
 
 	intfs, err := net.Interfaces()
 	if err != nil {
@@ -87,7 +58,5 @@ func main() {
 		go RunDhcpHandler(fe.DhcpInfo, intf, serverIp)
 	}
 
-	connStr := fmt.Sprintf(":%d", cfg.Network.Port)
-	log.Println("Web Interface Using", connStr)
-	log.Fatal(http.ListenAndServeTLS(connStr, cert_pem, key_pem, api.MakeHandler()))
+	fe.RunServer()
 }
