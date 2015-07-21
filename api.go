@@ -234,7 +234,7 @@ func (fe *Frontend) NextServer(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(nextServer)
 }
 
-func (fe *Frontend) RunServer() {
+func (fe *Frontend) RunServer(blocking bool) http.Handler {
 	api := rest.NewApi()
 	api.Use(&rest.AuthBasicMiddleware{
 		Realm: "test zone",
@@ -264,5 +264,12 @@ func (fe *Frontend) RunServer() {
 
 	connStr := fmt.Sprintf(":%d", fe.cfg.Network.Port)
 	log.Println("Web Interface Using", connStr)
-	log.Fatal(http.ListenAndServeTLS(connStr, cert_pem, key_pem, api.MakeHandler()))
+	if blocking {
+		if fe.cert_pem == "" || fe.key_pem == "" {
+			log.Fatal(http.ListenAndServe(connStr, api.MakeHandler()))
+		} else {
+			log.Fatal(http.ListenAndServeTLS(connStr, fe.cert_pem, fe.key_pem, api.MakeHandler()))
+		}
+	}
+	return api.MakeHandler()
 }

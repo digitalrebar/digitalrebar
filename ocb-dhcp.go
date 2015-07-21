@@ -38,5 +38,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fe.RunServer()
+	fe.RunServer(true)
 }
