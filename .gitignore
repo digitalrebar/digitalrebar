@@ -27,3 +27,5 @@ cert.pem
 ocb-dhcp
 src
 database.json
+coverage.html
+cover.out
