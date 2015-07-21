@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"github.com/ant0ine/go-json-rest/rest"
 	dhcp "github.com/krolaw/dhcp4"
+	"log"
 	"net"
 	"net/http"
 	"time"
@@ -75,10 +77,18 @@ func NewBinding() *Binding {
  */
 type Frontend struct {
 	DhcpInfo *DataTracker
+	data_dir string
+	cert_pem string
+	key_pem  string
+	cfg      Config
 }
 
-func NewFrontend(data_dir string) *Frontend {
+func NewFrontend(data_dir, cert_pem, key_pem string, cfg Config) *Frontend {
 	fe := &Frontend{
+		data_dir: data_dir,
+		cert_pem: cert_pem,
+		key_pem:  key_pem,
+		cfg:      cfg,
 		DhcpInfo: NewDataTracker(data_dir),
 	}
 
@@ -222,4 +232,37 @@ func (fe *Frontend) NextServer(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	w.WriteJson(nextServer)
+}
+
+func (fe *Frontend) RunServer() {
+	api := rest.NewApi()
+	api.Use(&rest.AuthBasicMiddleware{
+		Realm: "test zone",
+		Authenticator: func(userId string, password string) bool {
+			if userId == fe.cfg.Network.Username &&
+				password == fe.cfg.Network.Password {
+				return true
+			}
+			return false
+		},
+	})
+	api.Use(rest.DefaultDevStack...)
+	router, err := rest.MakeRouter(
+		rest.Get("/subnets", fe.GetAllSubnets),
+		rest.Get("/subnets/#id", fe.GetSubnet),
+		rest.Post("/subnets", fe.CreateSubnet),
+		rest.Put("/subnets/#id", fe.UpdateSubnet),
+		rest.Delete("/subnets/#id", fe.DeleteSubnet),
+		rest.Post("/subnets/#id/bind", fe.BindSubnet),
+		rest.Delete("/subnets/#id/bind/#mac", fe.UnbindSubnet),
+		rest.Put("/subnets/#id/next_server/#ip", fe.NextServer),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	api.SetApp(router)
+
+	connStr := fmt.Sprintf(":%d", fe.cfg.Network.Port)
+	log.Println("Web Interface Using", connStr)
+	log.Fatal(http.ListenAndServeTLS(connStr, cert_pem, key_pem, api.MakeHandler()))
 }
