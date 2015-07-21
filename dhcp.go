@@ -215,6 +215,32 @@ func RunDhcpHandler(dhcpInfo *DataTracker, intf net.Interface, myIp *net.Addr) {
 	log.Fatal(dhcp.ListenAndServeIf(intf.Name, handler))
 }
 
+func StartDhcpHandlers(dhcpInfo *DataTracker) error {
+	intfs, err := net.Interfaces()
+	if err != nil {
+		return err
+	}
+	var serverIp *net.Addr
+	serverIp = nil
+	for _, intf := range intfs {
+		if (intf.Flags & net.FlagLoopback) == net.FlagLoopback {
+			continue
+		}
+		if (intf.Flags & net.FlagUp) != net.FlagUp {
+			continue
+		}
+		if serverIp == nil {
+			addrs, err := intf.Addrs()
+			if err != nil {
+				return err
+			}
+			serverIp = &addrs[0]
+		}
+		go RunDhcpHandler(dhcpInfo, intf, serverIp)
+	}
+	return nil
+}
+
 type DHCPHandler struct {
 	intf net.Interface // Interface processing on.
 	ip   net.IP        // Server IP to use

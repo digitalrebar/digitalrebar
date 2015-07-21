@@ -4,7 +4,6 @@ import (
 	"code.google.com/p/gcfg"
 	"flag"
 	"log"
-	"net"
 )
 
 type Config struct {
@@ -35,28 +34,9 @@ func main() {
 
 	fe := NewFrontend(data_dir, cert_pem, key_pem, cfg)
 
-	intfs, err := net.Interfaces()
+	err := StartDhcpHandlers(fe.DhcpInfo)
 	if err != nil {
 		log.Fatal(err)
 	}
-	var serverIp *net.Addr
-	serverIp = nil
-	for _, intf := range intfs {
-		if (intf.Flags & net.FlagLoopback) == net.FlagLoopback {
-			continue
-		}
-		if (intf.Flags & net.FlagUp) != net.FlagUp {
-			continue
-		}
-		if serverIp == nil {
-			addrs, err := intf.Addrs()
-			if err != nil {
-				log.Fatal(err)
-			}
-			serverIp = &addrs[0]
-		}
-		go RunDhcpHandler(fe.DhcpInfo, intf, serverIp)
-	}
-
 	fe.RunServer()
 }
