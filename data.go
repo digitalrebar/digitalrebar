@@ -99,8 +99,7 @@ func (ipnet MyIPNet) MarshalText() ([]byte, error) {
 // The IP address is expected in a form accepted by ParseIP.
 func (ipnet *MyIPNet) UnmarshalText(text []byte) error {
 	if len(text) == 0 {
-		ipnet = nil
-		return nil
+		return errors.New("Empty MyIPNet")
 	}
 	s := string(text)
 	_, newnet, err := net.ParseCIDR(s)
