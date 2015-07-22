@@ -1,7 +1,8 @@
 package crowbar
 
-// Apache 2 License 2015 by Rob Hirschfeld for RackN
-// portions of source based on https://code.google.com/p/mlab-ns2/source/browse/gae/ns/digest/digest.go
+// Apache 2 License 2015 by Rob Hirschfeld for RackN portions of
+// source based on
+// https://code.google.com/p/mlab-ns2/source/browse/gae/ns/digest/digest.go
 import (
 	"bytes"
 	"crypto/md5"

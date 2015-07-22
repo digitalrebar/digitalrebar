@@ -6,6 +6,7 @@ import (
 	"strconv"
 )
 
+// AvailableHammer helps track what Hammers are available to be bound to a Node.
 type AvailableHammer struct {
 	ID        int64  `json:"id,omitempty"`
 	Priority  int64  `json:"priority,omitempty" yaml:"priority.omitempty"`

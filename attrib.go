@@ -12,7 +12,7 @@ import (
 // works is like this:
 //
 // Each thing that can hold Attribs (which in this API is anything
-// that implements the Attriber interface) has 1 to 4 buckets that
+// that implements the Attriber interface) has 2 to 5 buckets that
 // values can be stored in. Each bucket is implemented on the server
 // side as a large JSON blob that holds the Attrib values.  This
 // implementation is likely to change, so this API does not expose
@@ -35,6 +35,11 @@ import (
 // The fourth bucket is the wall.  It contains the values of attribs
 // that are updated as a consequence of a Role being run against a
 // Node
+//
+// The fifth bucket is the notes.  Notes do not participate in the
+// annealing process, and are inteded to be used by users for
+// attaching arbitrary data that they need to remember but that
+// Crowbar does not need to care about.
 //
 // Additionally, each Attrib has a default value, which is used if
 // there is no Attrib value from any of the other buckets.
@@ -149,6 +154,7 @@ func Attribs(scope ...Attriber) (res []*Attrib, err error) {
 //    * "committed"
 //    * "system"
 //    * "wall"
+//    * "note"
 //    * "all"
 func GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, err error) {
 	res = &Attrib{}
@@ -167,7 +173,10 @@ func GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, err error) {
 }
 
 // SetAttrib sets the value of an attrib in the context of
-// an attriber.
+// an attriber in the passed bucket.  Valid buckets are:
+//
+//    * "user"
+//    * "note"
 func SetAttrib(o Attriber, a *Attrib, bucket string) error {
 	if bucket == "" {
 		bucket = "user"

@@ -6,6 +6,8 @@ import (
 	"strconv"
 )
 
+// Jigs use Hammers to perform (hopefully) idempotent actions on Nodes
+// on behalf of Roles through NodeRoles.
 type Jig struct {
 	ID             int64  `json:"id,omitempty"`
 	Name           string `json:"name,omitempty" yaml:"name,omitempty"`

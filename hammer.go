@@ -12,18 +12,36 @@ type HammerActions struct {
 	Run      []string `json:"run,omitempty"`
 }
 
+// Hammer is a binding between an AvailableHammer and a Node.
 type Hammer struct {
-	ID                int64         `json:"id,omitempty"`
-	Name              string        `json:"name,omitempty"`
-	NodeID            int64         `json:"node_id,omitempty"`
-	AvailableHammerID int64         `json:"available_hammer_id,omitempty"`
-	Priority          int64         `json:"priority,omitempty"`
-	Endpoint          string        `json:"endpoint,omitempty"`
-	Username          string        `json:"username,omitempty"`
-	Authenticator     string        `json:"authenticator,omitempty"`
-	Actions           HammerActions `json:"actions,omitempty"`
-	CreatedAt         string        `json:"created_at,omitempty"`
-	UpdatedAt         string        `json:"updated_at,omitempty"`
+	// The ID of the Hammer.
+	ID int64 `json:"id,omitempty"`
+	// The Name of the Hammer.  It is the same as the name of the
+	// AvailableHammer to which it is bound
+	Name string `json:"name,omitempty"`
+	// The ID of the Node that this Hammer works with.
+	NodeID int64 `json:"node_id,omitempty"`
+	// The ID of the AvailableHammer that this Hammer works through.
+	AvailableHammerID int64 `json:"available_hammer_id,omitempty"`
+	// The Priority of this Hammer as it alloes to this Node.  If
+	// two Hammers provide the same Action, then the Hammer with
+	// the higher Prioirty will be used.
+	Priority int64 `json:"priority,omitempty"`
+	// The Endpoint that this Hammer talks to in order to perform
+	// its action.  The exact format of this Endpoint is
+	// AvailableHammer specific.
+	Endpoint string `json:"endpoint,omitempty"`
+	// Username is the user that this Hammer shoud authenticate
+	// against the Endpoint with.  Not all Hammers require a
+	// Username
+	Username string `json:"username,omitempty"`
+	// Authenticator is an opaque token that should be used to
+	// authenticate with.
+	Authenticator string `json:"authenticator,omitempty"`
+	// Actions define what non-idempotent Actions this Hammer can take.
+	Actions   HammerActions `json:"actions,omitempty"`
+	CreatedAt string        `json:"created_at,omitempty"`
+	UpdatedAt string        `json:"updated_at,omitempty"`
 }
 
 func (o *Hammer) Id() string {
