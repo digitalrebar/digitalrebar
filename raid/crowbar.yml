@@ -15,7 +15,7 @@
 barclamp:
   name: raid
   display: RAID
-  version: "2.Drill"
+  version: "2.3"
 
 crowbar:
   layout: 1
