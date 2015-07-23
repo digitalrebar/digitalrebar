@@ -48,6 +48,7 @@ end
 
 bash "Create database for goiardi" do
   code <<EOC
+set -e
 su -c 'createuser goiardi' postgres
 su -c 'createdb goiardi -O goiardi' postgres
 EOC
@@ -55,8 +56,25 @@ EOC
 end
 
 bash "Populate goiardi database" do
-  cwd "#{goiardi_src}/sql-files/postgres-bundle"
-  code "sqitch deploy db:pg://goiardi@/goiardi"
+  code <<EOC
+set -e
+tmpdir=$(mktemp -d /tmp/sqitch-XXXXXX)
+cd "$tmpdir"
+cp -a "#{goiardi_src}/sql-files/postgres-bundle/"* .
+chown -R postgres .
+su -c "cd $tmpdir; sqitch deploy db:pg:goiardi" postgres
+su -c 'psql goiardi -c "grant all on database goiardi to goiardi;"' postgres
+su -c 'psql goiardi -c "grant all on schema goiardi to goiardi;"' postgres
+su -c 'psql goiardi -c "grant all on schema public to goiardi;"' postgres
+su -c 'psql goiardi -c "grant all on all tables in schema goiardi to goiardi;"' postgres
+su -c 'psql goiardi -c "grant all on all tables in schema public to goiardi;"' postgres
+su -c 'psql goiardi -c "grant all on all sequences in schema public to goiardi;"' postgres
+su -c 'psql goiardi -c "grant all on all sequences in schema goiardi to goiardi;"' postgres
+su -c 'psql goiardi -c "grant all on all functions in schema goiardi to goiardi;"' postgres
+su -c 'psql goiardi -c "grant all on all functions in schema public to goiardi;"' postgres
+cd ..
+rm -rf "$tmpdir"
+EOC
 end
 
 template "/etc/init.d/goiardi" do
