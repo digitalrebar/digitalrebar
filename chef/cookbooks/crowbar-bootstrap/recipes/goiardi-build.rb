@@ -32,7 +32,11 @@ goiardi_repo=node["bootstrap"]["goiardi"]["repo"]
 goiardi_src="#{ENV["GOPATH"]}/src/#{goiardi_repo}"
 
 bash "Fetch Goiardi Source" do
-  code "/usr/local/go/bin/go get -t '#{goiardi_repo}'"
+  code <<EOC
+/usr/local/go/bin/go get -u -t '#{goiardi_repo}'
+cd "#{goiardi_src}"
+git checkout "#{node["bootstrap"]["goiardi"]["version"]}"
+EOC
   not_if { File.directory?(goiardi_src) }
 end
 
