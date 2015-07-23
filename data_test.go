@@ -190,6 +190,17 @@ func TestMarshallingMyIPNet(t *testing.T) {
 	myunipnet := &MyIPNet{}
 	err = myunipnet.UnmarshalText(b)
 	assert.Equal(t, myunipnet.String(), "192.168.124.0/24", "Should be 192.168.124.0/24, but is %s", myunipnet.String())
+
+	myunipnet2 := &MyIPNet{}
+	b = make([]byte, 0)
+	err = myunipnet2.UnmarshalText(b)
+	assert.NotNil(t, err, "Err should be nil")
+	assert.Equal(t, err.Error(), "Empty MyIPNet", "Error message should be 'Empty MyIPNet', but was %s", err.Error())
+
+	b = []byte("fredrocks")
+	err = myunipnet.UnmarshalText(b)
+	assert.NotNil(t, err, "Error should not be nil")
+	assert.Equal(t, err.Error(), "invalid NetIP address: fredrocks", "Error message should be 'invalid NetIP address: fredrocks', but was %s", err.Error())
 }
 
 // GREG: Test load/save data

@@ -233,6 +233,12 @@ To run the unit tests:
 * go get -t
 * go test
 
+To get coverage:
+
+* go test -coverprofile=cover.out
+* sed -i -e "s#.*/\(.*\.go\)#\./\\1#" cover.out 
+* go tool cover -html=cover.out -o coverage.html
+
 # Running
 
 ```

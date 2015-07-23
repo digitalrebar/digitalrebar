@@ -124,9 +124,14 @@ func (fe *Frontend) GetSubnet(w rest.ResponseWriter, r *rest.Request) {
 // Create function
 func (fe *Frontend) CreateSubnet(w rest.ResponseWriter, r *rest.Request) {
 	apisubnet := NewApiSubnet()
-	err := r.DecodeJsonPayload(&apisubnet)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
+	if r.Body != nil {
+		err := r.DecodeJsonPayload(&apisubnet)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	} else {
+		rest.Error(w, "Must have body", http.StatusBadRequest)
 		return
 	}
 
@@ -149,9 +154,14 @@ func (fe *Frontend) CreateSubnet(w rest.ResponseWriter, r *rest.Request) {
 func (fe *Frontend) UpdateSubnet(w rest.ResponseWriter, r *rest.Request) {
 	subnetName := r.PathParam("id")
 	apisubnet := NewApiSubnet()
-	err := r.DecodeJsonPayload(&apisubnet)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
+	if r.Body != nil {
+		err := r.DecodeJsonPayload(&apisubnet)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	} else {
+		rest.Error(w, "Must have body", http.StatusBadRequest)
 		return
 	}
 
@@ -186,9 +196,14 @@ func (fe *Frontend) DeleteSubnet(w rest.ResponseWriter, r *rest.Request) {
 func (fe *Frontend) BindSubnet(w rest.ResponseWriter, r *rest.Request) {
 	subnetName := r.PathParam("id")
 	binding := Binding{}
-	err := r.DecodeJsonPayload(&binding)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
+	if r.Body != nil {
+		err := r.DecodeJsonPayload(&binding)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	} else {
+		rest.Error(w, "Must have body", http.StatusBadRequest)
 		return
 	}
 
@@ -217,9 +232,14 @@ func (fe *Frontend) UnbindSubnet(w rest.ResponseWriter, r *rest.Request) {
 func (fe *Frontend) NextServer(w rest.ResponseWriter, r *rest.Request) {
 	subnetName := r.PathParam("id")
 	nextServer := NextServer{}
-	err := r.DecodeJsonPayload(&nextServer)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
+	if r.Body != nil {
+		err := r.DecodeJsonPayload(&nextServer)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	} else {
+		rest.Error(w, "Must have body", http.StatusBadRequest)
 		return
 	}
 

@@ -21,12 +21,3 @@ curl -X Delete -H 'Content-Type: application/json' --data-binary @./test/bind.js
 # Next server
 curl -X Put -H 'Content-Type: application/json' --data-binary @./test/next_server.json -k https://admin:admin@127.0.0.1:6755/subnets/192.168.124.0/next_server/192.168.124.22
 
-
-
-
-Testing with unit tests:
-go test -coverprofile=cover.out
-sed -i -e "s#.*/\(.*\.go\)#\./\\1#" cover.out 
-go tool cover -html=cover.out -o coverage.html
-
-
