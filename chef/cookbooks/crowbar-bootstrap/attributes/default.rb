@@ -12,6 +12,7 @@ default["bootstrap"]["tftproot"] = "/tftpboot"
 default["bootstrap"]["gopath"] = "/root/go"
 default["bootstrap"]["gover"] = "1.4"
 default["bootstrap"]["goiardi"]["repo"] = "github.com/ctdk/goiardi"
+default["bootstrap"]["goiardi"]["version"] = "v0.10.0"
 default["bootstrap"]["goiardi"]["port"] = 4646
 default["bootstrap"]["goiardi"]["protocol"] = "http"
 default["bootstrap"]["sws"] = "github.com/VictorLowther/sws"
