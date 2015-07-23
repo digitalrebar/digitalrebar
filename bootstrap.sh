@@ -50,8 +50,8 @@ node_r=('recipe[crowbar-bootstrap::ssh]'
         'recipe[crowbar-bootstrap::crowbar-user]')
 
 database_r=('recipe[crowbar-bootstrap::consul]'
-            'recipe[crowbar-bootstrap::postgresql]'
-            'recipe[crowbar-bootstrap::goiardi]')
+            'recipe[crowbar-bootstrap::postgresql]')
+chef_server_r=('recipe[crowbar-bootstrap::goiardi]')
 proxy_r=("${prefix_r[@]}"
          'recipe[crowbar-squid::client]')
 consul_r=('recipe[crowbar-bootstrap::consul]'
@@ -66,6 +66,7 @@ make_recipes() {
 prefix_recipes="$(make_recipes "${prefix_r[@]}")"
 boot_recipes="$(make_recipes "${boot_r[@]}")"
 database_recipes="$(make_recipes "${database_r[@]}")"
+chef_server_recipes="$(make_recipes "${chef_server_r[@]}")"
 proxy_recipes="$(make_recipes "${proxy_r[@]}")"
 consul_recipes="$(make_recipes "${consul_r[@]}")"
 node_recipes="$(make_recipes "${node_r[@]}")"
