@@ -19,11 +19,12 @@ We've also made it easy to setup and run latest Crowbar using our [**Fast-Start 
 
 ## Current Release
 
-* Release v2.2 as of 4/1/2015 (was known as _Camshaft_) on *master* branch
-* Development for _Drill_ cycle moved to *develop* branch
-* Earlier Reseases: 
+* Release v2.3 as of 7/30/2015 (was known as _Drill_) on *master* branch
+* Development for _Epoxy_ cycle moved to *develop* branch
+* Earlier Releases: 
   * Anvil became v2.0 in Apr 2014
   * Broom became v2.1 in Dec 2014
+  * Camshaft became v2.2 in Apr 2015
 
 ## Join Our Community
 

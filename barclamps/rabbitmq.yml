@@ -18,7 +18,7 @@ barclamp:
   parent: "core"
   display: "RabbitMQ"
   description: "Rabbit MQ (AMQP)"
-  version: "2.Drill"
+  version: "2.3"
   source_url: "https://github.com/opencrowbar/core"
   license: "Apache 2"
   license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"

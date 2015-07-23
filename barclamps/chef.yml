@@ -18,7 +18,7 @@ barclamp:
   parent: "core"
   description: "Chef CMDB & DevOps Framework"
   display: "Chef"
-  version: "2.Drill"
+  version: "2.3"
   source_url: "https://github.com/opencrowbar/core"
   license: "Apache 2"
   license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
