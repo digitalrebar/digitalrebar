@@ -29,5 +29,8 @@
 
   function update() {
     $.ajaxSetup({ timeout: #{current_user.settings(:ui).refresh} });
-    location.reload();
+      var elasped = parseInt($('span#elapsed_heartbeat').text());
+      if (elasped < 3600) {
+        location.reload();
+      }
   }

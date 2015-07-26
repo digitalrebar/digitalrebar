@@ -202,10 +202,15 @@ class SupportController < ApplicationController
 
   # supplies UI heartbeat information
   def heartbeat
+    if session[:marker] != params[:marker]
+      session[:marker] = params[:marker]
+      session[:start] = Time.now
+    end
+    elapsed = (Time.now - session[:start]) rescue 0
     total = NodeRole.count
     error = NodeRole.where(state: NodeRole::ERROR).count
     active = NodeRole.where(state: NodeRole::ACTIVE).count
-    render :json=>{ :active=>active, :todo=>(total-error-active), :error=>error } 
+    render :json=>{ :active=>active, :todo=>(total-error-active), :error=>error, :elapsed=>elapsed.to_i } 
   end
 
   private 

@@ -62,5 +62,7 @@
 
     function update() {
       $.ajaxSetup({ timeout: #{current_user.settings(:ui).refresh} });
-      location.reload();
+      if (elasped < 3600) {
+        location.reload();
+      }
     }

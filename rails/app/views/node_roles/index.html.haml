@@ -12,6 +12,9 @@
 :javascript
 
   function update() {
-    $.ajaxSetup({ timeout: 1000 });
-    location.reload();
+    $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
+      var elasped = parseInt($('span#elapsed_heartbeat').text());
+      if (elasped < 3600) {
+        location.reload();
+      }
   }

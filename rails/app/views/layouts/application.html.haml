@@ -34,6 +34,8 @@
                 %span#todo_heartbeat= ""
                 = image_tag('icons/led/error.png', :id=>"error_led", :style=>"display:none")
                 %span#error_heartbeat= ""
+                = image_tag('icons/led/wait.png', :id=>"elasped_led", :title=>"session seconds timer", :style=>"#{(current_user.settings(:ui).edge ? 'display:inline' : 'display:none')}")
+                %span#elapsed_heartbeat{:style=>"#{(current_user.settings(:ui).edge ? 'display:inline' : 'display:none')}"}= "-1"
             %nav
               = render_navigation :expand_all => true, :skip_if_empty => true
           - else
@@ -60,28 +62,46 @@
 - if current_user or session[:digest_user]
   :javascript
 
+    Elasped = 0;
+
     function heartbeat() {
-      $.ajaxSetup({ timeout: 2500 });
 
-      $.getJSON("#{heartbeat_status_path()}", function(data) {
+      if (Elasped < 60000) {
 
-        $('span#active_heartbeat').text(data['active']);
-        if (data["todo"]==0) {
-          $('span#todo_heartbeat').text("");
-          $('img#todo_led').attr('style', 'display:none');
-        } else {
-          $('span#todo_heartbeat').text(data['todo']);
-          $('img#todo_led').attr('style', 'display:inline');
-        }
-        if (data["error"]==0) {
-          $('span#error_heartbeat').text("");
-          $('img#error_led').attr('style', 'display:none');
-        } else {
-          $('span#error_heartbeat').text(data['error']);
-          $('img#error_led').attr('style', 'display:inline');
-        }
+        $.ajaxSetup({ timeout: 2500 });
 
-      });
+        $.getJSON("#{heartbeat_status_path()}?marker=#{request.original_url}", function(data) {
+
+          Elasped = parseInt(data['elapsed']);
+          $('span#elapsed_heartbeat').text(data['elapsed']);
+
+          $('span#active_heartbeat').text(data['active']);
+          if (data["todo"]==0) {
+            $('span#todo_heartbeat').text("");
+            $('img#todo_led').attr('style', 'display:none');
+          } else {
+            $('span#todo_heartbeat').text(data['todo']);
+            $('img#todo_led').attr('style', 'display:inline');
+          }
+          if (data["error"]==0) {
+            $('span#error_heartbeat').text("");
+            $('img#error_led').attr('style', 'display:none');
+          } else {
+            $('span#error_heartbeat').text(data['error']);
+            $('img#error_led').attr('style', 'display:inline');
+          }
+        });
+
+      } else {
+        // stop polling
+        $('span#todo_heartbeat').text("");
+        $('span#error_heartbeat').text("");
+        $('span#active_heartbeat').text("?");
+        $('img#todo_led').attr('style', 'display:none');
+        $('img#error_led').attr('style', 'display:none');
+        $('img#active_led').attr('style', 'display:none');
+      }
+
     }
 
     heartbeat();
