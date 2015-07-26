@@ -62,17 +62,16 @@
 - if current_user or session[:digest_user]
   :javascript
 
-    Elasped = 0;
-
     function heartbeat() {
 
-      if (Elasped < 60000) {
+      elasped = parseInt($('span#elapsed_heartbeat').text());
+
+      if (elasped < 3600) {
 
         $.ajaxSetup({ timeout: 2500 });
 
         $.getJSON("#{heartbeat_status_path()}?marker=#{request.original_url}", function(data) {
 
-          Elasped = parseInt(data['elapsed']);
           $('span#elapsed_heartbeat').text(data['elapsed']);
 
           $('span#active_heartbeat').text(data['active']);
@@ -96,11 +95,14 @@
         // stop polling
         $('span#todo_heartbeat').text("");
         $('span#error_heartbeat').text("");
-        $('span#active_heartbeat').text("?");
+        $('span#active_heartbeat').text("!");
+        $('img#elasped_led').attr('style', 'display:inline');
         $('img#todo_led').attr('style', 'display:none');
         $('img#error_led').attr('style', 'display:none');
         $('img#active_led').attr('style', 'display:none');
       }
+
+      //console.debug($('span#elapsed_heartbeat').text(), elasped < 3600);
 
     }
 

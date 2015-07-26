@@ -32,5 +32,7 @@
       var elasped = parseInt($('span#elapsed_heartbeat').text());
       if (elasped < 3600) {
         location.reload();
+      } else {
+        console.debug("layercake no refresh: ", elasped);
       }
   }
