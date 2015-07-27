@@ -27,8 +27,11 @@
 
   function update() {
     $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
-    location.reload();
-  }
+      var elasped = parseInt($('span#elapsed_heartbeat').text());
+      if (elasped < 3600) {
+        location.reload();
+      }
+    }
 
   function retry_all(nr_ids) {
     var ids = nr_ids.split(",");

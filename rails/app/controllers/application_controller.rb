@@ -294,6 +294,8 @@ class ApplicationController < ActionController::Base
   end
 
   def do_auth!
+    session[:marker] = "login"
+    session[:start] = Time.now
     respond_to do |format|
       format.html { authenticate_user! }
       format.json { digest_auth! }

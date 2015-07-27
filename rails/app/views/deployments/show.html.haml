@@ -99,9 +99,12 @@
   var height = 100;
 
   function update() {
-    $.ajaxSetup({ timeout: 1000 });
+    $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
     if (#{state != Deployment::PROPOSED}) {
-      location.reload();
+      var elasped = parseInt($('span#elapsed_heartbeat').text());
+      if (elasped < 3600) {
+        location.reload();
+      }
     }
   };
 
