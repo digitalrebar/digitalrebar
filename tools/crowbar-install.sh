@@ -90,10 +90,6 @@ if [[ $WITH_HARDWARE = 'YES' ]]; then
     echo "Remember to populate /tftpboot/files/raid"
     echo "See: https://github.com/opencrowbar/hardware/tree/master/doc"
     echo ""
-    echo "Files can be pulled from these links after accepting licenses."
-    echo "  http://www.lsi.com/downloads/Public/Host%20Bus%20Adapters/Host%20Bus%20Adapters%20Common%20Files/SAS_SATA_6G_P19/SAS2IRCU_P19.zip"
-    echo "  http://www.lsi.com/downloads/Public/RAID%20Controllers/RAID%20Controllers%20Common%20Files/8.07.14_MegaCLI.zip"
-    echo ""
 fi
 
 if [[ $WITH_DOWNLOAD = 'NO' ]]; then
