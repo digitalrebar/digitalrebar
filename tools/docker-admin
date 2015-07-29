@@ -38,23 +38,29 @@ mountdir="${mountdir%/tools/docker-admin}"
 mountdir="${mountdir%/*}"
 
 MAP_PORTS=1
-if [ "$1" == "--dont-map-ports" ] ; then
-  MAP_PORTS=0
-  shift
-fi
+while [[ $1 ]]; do
+    case "$1" in
+        --dont-map-ports)
+            MAP_PORTS=0
+            shift;;
+        --hostname)
+            docker_args+=(-h "$2")
+            shift
+            shift;;
+        --daemon)
+            DAEMON=true
+            shift;;
+        *)
+            break;;
+    esac
+done
 
 docker_args=(-t -i -w /opt/opencrowbar/core -v "$mountdir:/opt/opencrowbar")
-
-if [ "$1" == "--hostname" ] ; then
-  docker_args+=(-h "$2")
-  shift
-  shift
-fi
 
 declare -A image_map
 #image_map["ubuntu"]="ubuntu:precise"
 image_map["ubuntu"]="opencrowbar/ubuntu:12.04-4"
-#image_map["centos"]="centos:centos6"
+image_map["centos-base"]="centos:centos6"
 image_map["centos"]="opencrowbar/centos:6.6-4"
 image_map["centos7"]="centos:centos7"
 image_map["opensuse"]="mmckeen/opensuse-13-1:latest"
@@ -71,7 +77,6 @@ if [[ ! $image ]]; then
 fi
 shift
 
-echo "We will mount $mountdir at /opt/opencrowbar"
 mkdir -p "$HOME/.cache/opencrowbar/tftpboot"
 
 docker_args+=(-v "$HOME/.cache/opencrowbar/tftpboot:$tftproot")
@@ -108,9 +113,16 @@ done
 docker_args+=("--privileged")
 # Run whatever we specified to run inside a container.
 sudo rm -rf "$HOME/.cache/opencrowbar/tftpboot/nodes"
-docker run "${docker_args[@]}" "$image" /opt/opencrowbar/core/tools/docker-init.sh "$@"
+if [[ $DAEMON ]]; then
+    id=$(docker run -d "${docker_args[@]}" "$image" /opt/opencrowbar/core/tools/docker-init.sh "$@")
+    while ! docker exec $id test -f /root/.ssh/authorized_keys &>/dev/null; do
+        sleep 1
+    done
+    echo $id
+else
+    docker run "${docker_args[@]}" "$image" /opt/opencrowbar/core/tools/docker-init.sh "$@"
 
-# helpful reminder for docker hygene
-echo "now may be a good time to run: docker ps -q -a | xargs docker rm"
-
-exit $?
+    # helpful reminder for docker hygene
+    echo "now may be a good time to run: docker ps -q -a | xargs docker rm"
+    exit $?
+fi
