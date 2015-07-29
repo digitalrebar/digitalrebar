@@ -158,13 +158,12 @@ class NodeRolesController < ApplicationController
     respond_to do |format|
       format.html { }
       format.json {
-        if NodeRole.committed.in_state(NodeRole::TODO).count > 0
-          render :json => { "message" => "scheduled" }, :status => 202
+        if NodeRole.committed.in_state(NodeRole::ERROR).count > 0
+          render :json => { "message" => "failed" }, :status => 409
         elsif NodeRole.committed.in_state(NodeRole::TRANSITION).count > 0
           render :json => { "message" => "working" }, :status => 202
-        elsif NodeRole.committed.in_state(NodeRole::ERROR).count > 0
-          Rails.logger.info("Failed node roles: #{NodeRole.committed.in_state(NodeRole::ERROR).inspect}")
-          render :json => { "message" => "failed" }, :status => 409
+        elsif NodeRole.committed.in_state(NodeRole::TODO).count > 0
+          render :json => { "message" => "scheduled" }, :status => 202
         else
           render :json => { "message" => "finished" }, :state => 200
         end
