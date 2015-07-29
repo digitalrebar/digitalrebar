@@ -23,6 +23,7 @@ if [[ $1 = --no-shell ]]; then
     shift
     NO_SHELL=true
 fi
+[[ -d /tftpboot/nodes ]] && rm -rf /tftpboot/nodes || :
 mkdir -p /root/.ssh
 printf "%s\n" "$SSH_PUBKEY" >> /root/.ssh/authorized_keys
 
@@ -34,4 +35,3 @@ fi
 . /etc/profile
 export PATH=$PATH:/opt/opencrowbar/core/bin
 /bin/bash -i
-rm -rf /tftpboot/nodes
