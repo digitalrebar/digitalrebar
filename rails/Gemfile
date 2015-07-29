@@ -46,6 +46,8 @@ gem 'structurematch', '~> 0.1.1'
 gem 'diplomat'
 gem 'httpclient'
 gem 'rest-client'
+# For RFC 6902 json patch support
+gem 'json-patch'
 
 group :development, :test do
   gem 'coveralls'
