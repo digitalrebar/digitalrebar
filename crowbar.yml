@@ -309,6 +309,7 @@ rpms:
       - ipmitool
       - swig
       - openwsman-devel
+      - bzip2
     pkgs:
       # openldap stuff
       - openldap
@@ -364,6 +365,7 @@ rpms:
       - ipmitool
       - swig
       - openwsman-devel
+      - bzip2
     pkgs:
       # openldap stuff
       - openldap
@@ -428,6 +430,7 @@ rpms:
       - git
       - mercurial
       - subversion
+      - bzip2
     pkgs:
       # openldap stuff
       - openldap
@@ -492,6 +495,7 @@ rpms:
       - git
       - mercurial
       - subversion
+      - bzip2
     pkgs:
       # openldap stuff
       - openldap
@@ -551,6 +555,7 @@ rpms:
       - perl-devel
       - perl-CPAN
       - perl-DBD-Pg
+      - bzip2
     pkgs:
       # openldap stuff
       - openldap
