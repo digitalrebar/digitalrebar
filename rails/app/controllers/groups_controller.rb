@@ -48,8 +48,13 @@ class GroupsController < ApplicationController
       render api_not_supported 'put', 'nodes/:id/groups/:id'
     else
       params.require(:name)
+      params[:category] = params[:category].first if params[:category].kind_of?(Array)
       @group = Group.create! params.permit(:name, :description, :category)
-      render api_show @group
+
+      respond_to do |format|
+        format.html { redirect_to group_path(@group.id)}
+        format.json { render api_show @group }
+      end
     end
   end
   
@@ -61,6 +66,7 @@ class GroupsController < ApplicationController
       n.groups << g  if g and n
       render :text=>I18n.t('api.added', :item=>g.name, :collection=>'node.groups')
     else
+      params[:category] = params[:category].first if params[:category].kind_of?(Array)
       @group = Group.find_key(params[:id])
       @group.update_attributes!(params.permit(:name, :description, :category))
       render api_show @group
