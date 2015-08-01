@@ -61,7 +61,7 @@
           %td= a.default["value"] 
           %td= a.map
 
-%h3= "Wanted Attributes"
+%h3= t '.wanted'
 
 - if @role.wanted_attribs.count == 0
   =t 'no_items'
@@ -79,3 +79,28 @@
           %td= a.description
           %td= link_to a.role.name, role_path(a.role.name)
 
+- inuse = @role.node_roles.sort
+%h3
+  = t '.inuse'
+    - if inuse.length > 0
+      - list = inuse.map { |nr| nr.id }.join(",")
+    %raw_button{:style => 'float:right'}
+      = link_to_function t('.reapply'), "retry_all('#{list}')", :class => 'button'
+
+- if @role.node_roles.count == 0
+  =t 'no_items'
+- else
+  = render :partial=>'node_roles/index', :locals => { :list => inuse }
+
+.clear
+
+:javascript
+
+  function retry_all(nr_ids) {
+    var ids = nr_ids.split(",");
+    for (var id of ids) {
+      console.log("/api/v2/node_roles/"+id+"/retry");
+      $.ajax({url: "/api/v2/node_roles/"+id+"/retry", type: "PUT"})
+    };
+    location.reload();
+  }
