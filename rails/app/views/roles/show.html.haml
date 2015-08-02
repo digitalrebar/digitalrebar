@@ -82,25 +82,25 @@
 - inuse = @role.node_roles.sort
 %h3
   = t '.inuse'
-    - if inuse.length > 0
-      - list = inuse.map { |nr| nr.id }.join(",")
+  - if inuse.length > 0
+    - nrlist = inuse.map { |nr| nr.id }.join(",")
     %raw_button{:style => 'float:right'}
-      = link_to_function t('.reapply'), "retry_all('#{list}')", :class => 'button'
+      = link_to_function t('.reapply'), "retry_all('#{nrlist}')", :class => 'button'
 
-- if @role.node_roles.count == 0
+- if inuse.length == 0
   =t 'no_items'
 - else
   = render :partial=>'node_roles/index', :locals => { :list => inuse }
 
-.clear
+  .clear
 
-:javascript
+  :javascript
 
-  function retry_all(nr_ids) {
-    var ids = nr_ids.split(",");
-    for (var id of ids) {
-      console.log("/api/v2/node_roles/"+id+"/retry");
-      $.ajax({url: "/api/v2/node_roles/"+id+"/retry", type: "PUT"})
-    };
-    location.reload();
-  }
+    function retry_all(nr_ids) {
+      var ids = nr_ids.split(",");
+      for (var id of ids) {
+        console.log("/api/v2/node_roles/"+id+"/retry");
+        $.ajax({url: "/api/v2/node_roles/"+id+"/retry", type: "PUT"})
+      };
+      location.reload();
+    }
