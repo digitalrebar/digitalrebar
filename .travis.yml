@@ -20,6 +20,8 @@ addons:
   postgresql: "9.3"
 env:
   - RAILS_ENV='development'
+sudo: false
+cache: bundler
 
 before_script:
   - tools/travis_consul.sh
