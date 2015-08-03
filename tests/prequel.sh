@@ -12,6 +12,8 @@ if [[ ! $ADMIN_HOSTNAME ]]; then
     ADMIN_HOSTNAME=${ADMIN_HOSTNAMES[$(($RANDOM % ${#ADMIN_HOSTNAMES[@]}))]}
 fi
 
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+
 debug() {
     printf '%s\n' "$@" >&2
 }
@@ -42,12 +44,16 @@ run_admin() {
 
 clean_up() {
     set +e
-    pkill kvm_slave
+    pkill -f kvm-slave
     if [[ $DOCKER_ID ]]; then
         docker cp "$DOCKER_ID:/var/log/crowbar" .
         docker kill $DOCKER_ID
         docker rm $DOCKER_ID
     fi &>/dev/null
+}
+
+crowbar() {
+    docker exec $DOCKER_ID /opt/opencrowbar/core/bin/crowbar "$@"
 }
 
 [[ -x $PWD/core/tools/docker-admin ]] || \
