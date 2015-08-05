@@ -30,7 +30,7 @@ launch_admin() {
         DOCKER_IP="$(docker inspect $DOCKER_ID |jq -r '.[0] | .["NetworkSettings"] | .["IPAddress"]')"
         debug "Docker admin container at $DOCKER_ID"
         export DOCKER_ID
-        trap clean_up EXIT
+        trap clean_up EXIT TERM INT
         set -e
         return 0
     fi
