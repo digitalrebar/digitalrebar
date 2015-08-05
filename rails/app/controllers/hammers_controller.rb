@@ -46,11 +46,18 @@ class HammersController < ApplicationController
   end
 
   def update
-    @nm = Hammer.find_key(params[:id])
-    @nm.update_attributes!(params.permit(:priority,
-                                         :endpoint,
-                                         :username,
-                                         :authenticator))
+    Hammer.transaction do
+      @nm = Hammer.find_key(params[:id]).lock!
+      if request.patch?
+        patch(@nm,%w{priority endpoint username authenticator})
+      else
+        @nm.update_attributes!(params.permit(:priority,
+                                             :endpoint,
+                                             :username,
+                                             :authenticator))
+      end
+    end
+    render api_show @nm
   end
 
   def create

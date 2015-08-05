@@ -204,21 +204,24 @@ class NodesController < ApplicationController
   def update
     Node.transaction do
       @node = Node.find_key(params[:id]).lock!
-      # sometimes we pass in a nested set of parameters
-      params[:node_deployment].each { |k,v| params[k] = v } if params.has_key? :node_deployment
-      params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
-      if params.has_key?(:deployment_id) && params.has_key?(:old_deployment_id)
-        old_deployment = Deployment.find_key(params[:old_deployment_id])
-        raise "Node is not in old deployment #{params[:old_deployment_id]}" unless @node.deployment == old_deployment
+      if request.patch?
+        patch(@node,%w{name description target_role_id deployment_id allocated available alive bootenv})
+      else
+        params[:node_deployment].each { |k,v| params[k] = v } if params.has_key? :node_deployment
+        params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
+        if params.has_key?(:deployment_id) && params.has_key?(:old_deployment_id)
+          old_deployment = Deployment.find_key(params[:old_deployment_id])
+          raise "Node is not in old deployment #{params[:old_deployment_id]}" unless @node.deployment == old_deployment
+        end
+        @node.update_attributes!(params.permit(:name,
+                                               :description,
+                                               :target_role_id,
+                                               :deployment_id,
+                                               :allocated,
+                                               :available,
+                                               :alive,
+                                               :bootenv))
       end
-      @node.update_attributes!(params.permit(:name,
-                                             :description,
-                                             :target_role_id,
-                                             :deployment_id,
-                                             :allocated,
-                                             :available,
-                                             :alive,
-                                             :bootenv))
     end
     render api_show @node
   end

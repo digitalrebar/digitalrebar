@@ -69,9 +69,16 @@ class DeploymentRolesController < ApplicationController
   end
 
   def update
-    @deployment_role = DeploymentRole.find_key(params[:id])
-    params.require(:data)
-    @deployment_role.data = params[:data]
+    DeploymentRole.transaction do
+      @deployment_role = DeploymentRole.find_key(params[:id]).lock!
+      if request.patch?
+        raise "Cannot PATCH deployment roles!"
+      else
+        params.require(:data)
+        @deployment_role.data = params[:data]
+        @deployment_role.save!
+      end
+    end
     render api_show @deployment_role
   end
 

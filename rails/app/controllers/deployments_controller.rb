@@ -67,14 +67,32 @@ class DeploymentsController < ApplicationController
   end
 
   def update
-    @deployment = Deployment.find_key params[:id]
-    @deployment.update_attributes!(params.permit(:name,:description))
-    respond_to do |format|
-      format.html { redirect_to deployment_path(@deployment.id) }
-      format.json { render api_show @deployment }
+    if request.patch?
+      Deployment.transaction do
+        @deployment = Deployment.find_key(params[:id]).lock!
+        patch(@deployment,%w{name description})
+      end
+      render api_show @deployment
+    else
+      respond_to do |format|
+        format.html do
+          Deployment.transaction do
+            @deployment = Deployment.find_key(params[:id]).lock!
+            @deployment.update_attributes!(params.permit(:name,:description))
+          end
+          redirect_to deployment_path(@deployment.id)
+        end
+        format.json do
+          Deployment.transaction do
+            @deployment = Deployment.find_key(params[:id]).lock!
+            @deployment.update_attributes!(params.permit(:name,:description))
+          end
+          render api_show @deployment
+        end
+      end
     end
   end
-
+  
   def destroy
     @deployment = Deployment.find_key params[:id]
     @deployment.destroy

@@ -55,11 +55,17 @@ class UsersController < ApplicationController
   end
 
   def update
-    @user = User.find_by_id_or_username params[:id]
-    @user.update_attributes!(user_params)
-    if params[:digest]
-      @user.digest_password(params[:password])
-      @user.save!
+    User.transaction do
+      @user = User.find_by_id_or_username(params[:id]).lock!
+      if request.patch?
+        patch(@user,%w{username email})
+      else
+        @user.update_attributes!(user_params)
+        if params[:digest]
+          @user.digest_password(params[:password])
+          @user.save!
+        end
+      end
     end
     render api_show @user
   end

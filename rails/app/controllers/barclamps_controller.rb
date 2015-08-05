@@ -44,6 +44,9 @@ class BarclampsController < ApplicationController
 
   def update
     params.require(:value)
+    if request.patch?
+      raise "PATCH update for barclamps not implemented!"
+    end
     @barclamp = Barclamp.import_or_update(params[:value])
     respond_to do |format|
       format.html {  }

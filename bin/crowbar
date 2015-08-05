@@ -191,6 +191,10 @@ class REST
   def self.delete(path)
     go(Net::HTTP::Delete,path)
   end
+
+  def self.patch(path,data=nil)
+    go(Net::HTTP::Patch,path,data)
+  end
 end
 
 # Command encapsulates common logic for deriving a commandline

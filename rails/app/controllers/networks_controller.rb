@@ -140,11 +140,17 @@ class NetworksController < ::ApplicationController
 
   add_help(:update,[:id, :conduit, :team_mode, :use_team, :vlan, :use_vlan, :configure],[:put])
   def update
-    @network = Network.find_key(params[:id])
-    # Sorry, but no changing of the admin conduit for now.
-    params.delete(:conduit) if @network.name == "admin"
-    params.delete(:v6prefix) if params[:v6prefix] == ""
-    @network.update_attributes!(params.permit(:description, :vlan, :use_vlan, :v6prefix, :use_bridge, :team_mode, :use_team, :conduit, :configure, :pbr, :category, :group, :deployment_id))
+    Network.transaction do
+      @network = Network.find_key(params[:id]).lock!
+      # Sorry, but no changing of the admin conduit for now.
+      params.delete(:conduit) if @network.name == "admin"
+      params.delete(:v6prefix) if params[:v6prefix] == ""
+      if request.patch?
+        patch(@network,%w{description vlan use_vlan v6prefix use_bridge team_mode use_team conduit configure pbr category group deployment_id})
+      else
+        @network.update_attributes!(params.permit(:description, :vlan, :use_vlan, :v6prefix, :use_bridge, :team_mode, :use_team, :conduit, :configure, :pbr, :category, :group, :deployment_id))
+      end
+    end
     respond_to do |format|
       format.html { render :action=>:show }
       format.json { render api_show @network }
