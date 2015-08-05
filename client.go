@@ -14,6 +14,8 @@ import (
 	"net/http"
 	"path"
 	"strings"
+
+	"github.com/VictorLowther/jsonpatch"
 )
 
 type challenge struct {
@@ -90,7 +92,11 @@ func (c *ocbClient) basicRequest(method, uri string, objIn []byte) (resp *http.R
 		return nil, err
 	}
 	req.Header.Set("Authorization", auth)
-	req.Header.Set("Content-Type", "application/json")
+	if method == "PATCH" {
+		req.Header.Set("Content-Type", jsonpatch.ContentType)
+	} else {
+		req.Header.Set("Content-Type", "application/json")
+	}
 	req.Header.Set("User-Agent", "gobar/v1.0")
 	req.Header.Set("Accept", "application/json")
 	resp, err = c.Do(req)
@@ -132,44 +138,6 @@ func (c *ocbClient) request(method, uri string, objIn []byte) (objOut []byte, er
 		return nil, fmt.Errorf("Expected status in the 200 range, got %s", resp.Status)
 	}
 	return objOut, nil
-}
-
-// Get fetches an object from Crowbar and unmarshals it to obj
-func (c *ocbClient) get(obj interface{}, uri ...string) error {
-	buf, err := c.request("GET", path.Join(uri...), nil)
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(buf, &obj)
-}
-
-// Post creates a new object in Crowbar using obj
-func (c *ocbClient) post(obj interface{}, uri ...string) error {
-	inbuf, err := json.Marshal(obj)
-	buf, err := c.request("POST", path.Join(uri...), inbuf)
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(buf, &obj)
-
-}
-
-// Put pushes an updated obj to Crowbar.
-func (c *ocbClient) put(obj interface{}, uri ...string) error {
-	inbuf, err := json.Marshal(obj)
-	buf, err := c.request("PUT", path.Join(uri...), inbuf)
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(buf, &obj)
-
-}
-
-// Delete deletes whatever lives in the passed URL fragment.  No
-// objects are accepted or returned.
-func (c *ocbClient) destroy(uri ...string) error {
-	_, err := c.request("DELETE", path.Join(uri...), nil)
-	return err
 }
 
 // list is a helper specialized to get lists of objects.

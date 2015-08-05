@@ -38,6 +38,7 @@ type NodeRole struct {
 	NodeError bool   `json:"node_error,omitempty"`
 	CreatedAt string `json:"created_at,omitempty"`
 	UpdatedAt string `json:"updated_at,omitempty"`
+	lastJson  []byte
 }
 
 const (
@@ -76,6 +77,15 @@ func (o *NodeRole) ApiName() string {
 func (o *NodeRole) Match() (res []*NodeRole, err error) {
 	res = make([]*NodeRole, 0)
 	return res, session.match(o, &res, o.ApiName(), "match")
+}
+
+func (o *NodeRole) setLastJSON(b []byte) {
+	o.lastJson = make([]byte, len(b))
+	copy(o.lastJson, b)
+}
+
+func (o *NodeRole) lastJSON() []byte {
+	return o.lastJson
 }
 
 func (o *NodeRole) attribs() {}

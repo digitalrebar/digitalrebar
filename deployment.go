@@ -38,6 +38,7 @@ type Deployment struct {
 	ParentID  int64  `json:"parent_id,omitempty"`
 	CreatedAt string `json:"created_at,omitempty"`
 	UpdatedAt string `json:"updated_at,omitempty"`
+	lastJson  []byte
 }
 
 const (
@@ -90,6 +91,15 @@ func (o *Deployment) Parent() (res *Deployment, err error) {
 func (o *Deployment) Match() (res []*Deployment, err error) {
 	res = make([]*Deployment, 0)
 	return res, session.match(o, &res, o.ApiName(), "match")
+}
+
+func (o *Deployment) setLastJSON(b []byte) {
+	o.lastJson = make([]byte, len(b))
+	copy(o.lastJson, b)
+}
+
+func (o *Deployment) lastJSON() []byte {
+	return o.lastJson
 }
 
 // Satisfy salient interfaces

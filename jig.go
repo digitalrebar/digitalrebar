@@ -10,15 +10,16 @@ import (
 // on behalf of Roles through NodeRoles.
 type Jig struct {
 	ID             int64  `json:"id,omitempty"`
-	Name           string `json:"name,omitempty" yaml:"name,omitempty"`
-	Description    string `json:"description,omitempty" yaml:"name,omitempty"`
-	Active         bool   `json:"active,omitempty" yaml:"active,omitempty"`
-	ClientRoleName string `json:"client_role_name,omitempty" yaml:"client_role_name,omitempty"`
-	Server         string `json:"server,omitempty" yaml:"server,omitempty"`
-	ClientName     string `json:"client_name,omitempty" yaml:"client_name,omitempty"`
-	Key            string `json:"key,omitempty" yaml:"key,omitempty"`
+	Name           string `json:"name,omitempty"`
+	Description    string `json:"description,omitempty"`
+	Active         bool   `json:"active,omitempty"`
+	ClientRoleName string `json:"client_role_name,omitempty"`
+	Server         string `json:"server,omitempty"`
+	ClientName     string `json:"client_name,omitempty"`
+	Key            string `json:"key,omitempty"`
 	CreatedAt      string `json:"created_at,omitempty"`
 	UpdatedAt      string `json:"updated_at,omitempty"`
+	lastJson       []byte
 }
 
 func (o *Jig) Id() string {
@@ -51,6 +52,15 @@ func (o *Jig) ApiName() string {
 func (o *Jig) Match() (res []*Jig, err error) {
 	res = make([]*Jig, 0)
 	return res, session.match(o, &res, o.ApiName(), "match")
+}
+
+func (o *Jig) setLastJSON(b []byte) {
+	o.lastJson = make([]byte, len(b))
+	copy(o.lastJson, b)
+}
+
+func (o *Jig) lastJSON() []byte {
+	return o.lastJson
 }
 
 type Jigger interface {

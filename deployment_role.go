@@ -22,6 +22,7 @@ type DeploymentRole struct {
 	RoleID       int64  `json:"role_id,omitempty"`
 	CreatedAt    string `json:"created_at,omitempty"`
 	UpdatedAt    string `json:"updated_at,omitempty"`
+	lastJson     []byte
 }
 
 func (o *DeploymentRole) Id() string {
@@ -51,6 +52,15 @@ func (o *DeploymentRole) ApiName() string {
 func (o *DeploymentRole) Match() (res []*DeploymentRole, err error) {
 	res = make([]*DeploymentRole, 0)
 	return res, session.match(o, &res, o.ApiName(), "match")
+}
+
+func (o *DeploymentRole) setLastJSON(b []byte) {
+	o.lastJson = make([]byte, len(b))
+	copy(o.lastJson, b)
+}
+
+func (o *DeploymentRole) lastJSON() []byte {
+	return o.lastJson
 }
 
 // Satisfy salient interfaces.

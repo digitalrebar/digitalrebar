@@ -15,6 +15,7 @@ type DnsNameFilter struct {
 	Template  string `json:"template,omitempty"`
 	CreatedAt string `json:"created_at,omitempty"`
 	UpdatedAt string `json:"updated_at,omitempty"`
+	lastJson  []byte
 }
 
 func (o *DnsNameFilter) Id() string {
@@ -47,6 +48,15 @@ func (o *DnsNameFilter) ApiName() string {
 func (o *DnsNameFilter) Match() (res []*DnsNameFilter, err error) {
 	res = make([]*DnsNameFilter, 0)
 	return res, session.match(o, &res, o.ApiName(), "match")
+}
+
+func (o *DnsNameFilter) setLastJSON(b []byte) {
+	o.lastJson = make([]byte, len(b))
+	copy(o.lastJson, b)
+}
+
+func (o *DnsNameFilter) lastJSON() []byte {
+	return o.lastJson
 }
 
 func DnsNameFilters() (res []*DnsNameFilter, err error) {

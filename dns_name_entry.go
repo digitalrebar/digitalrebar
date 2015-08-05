@@ -14,6 +14,7 @@ type DnsNameEntry struct {
 	RRType              string `json:"rr_type,omitempty"`
 	CreatedAt           string `json:"created_at,omitempty"`
 	UpdatedAt           string `json:"updated_at,omitempty"`
+	lastJson            []byte
 }
 
 func (o *DnsNameEntry) Id() string {
@@ -44,6 +45,15 @@ func (o *DnsNameEntry) ApiName() string {
 func (o *DnsNameEntry) Match() (res []*DnsNameEntry, err error) {
 	res = make([]*DnsNameEntry, 0)
 	return res, session.match(o, &res, o.ApiName(), "match")
+}
+
+func (o *DnsNameEntry) setLastJSON(b []byte) {
+	o.lastJson = make([]byte, len(b))
+	copy(o.lastJson, b)
+}
+
+func (o *DnsNameEntry) lastJSON() []byte {
+	return o.lastJson
 }
 
 func DnsNameEntrys() (res []*DnsNameEntry, err error) {

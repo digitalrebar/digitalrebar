@@ -1,6 +1,7 @@
 package crowbar
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -51,10 +52,10 @@ type Attrib struct {
 	ID int64 `json:"id,omitempty"`
 	// Name is the human-readable name of the Attrib.  It must be
 	// globally unique.
-	Name string `json:"name,omitempty" yaml:"name,omitempty"`
+	Name string `json:"name,omitempty"`
 	// Description is a brief description of what the Attrip is
 	// for.
-	Description string `json:"description,omitempty" yaml:"description,omitempty"`
+	Description string `json:"description,omitempty"`
 	// BarclampID is the ID of the barclamp that the Attrib was
 	// declared in.
 	BarclampID int64 `json:"barclamp_id,omitempty"`
@@ -64,27 +65,28 @@ type Attrib struct {
 	// The custom type of the Attrib, if any.  This is used by
 	// Crowbar internally to allow for Attribs to have nonstandard
 	// get and set semantics.
-	Type string `json:"type,omitempty" yaml:"type,omitempty"`
+	Type string `json:"type,omitempty"`
 	// Whether the Attrib can be written to.  An attrib must have
 	// a non-empty Schema as well as a set Writable flag for a
 	// SetAttrib to work, and the Value being passed must validate
 	// against the Schema.
-	Writable bool `json:"writable,omitempty" yaml:"writable"`
+	Writable bool `json:"writable,omitempty"`
 	// Schema is a kwalify schema fragment that the Value must
 	// match.  A SetAttrib call with an attrib Value that does not
 	// pass schema validation will fail.
-	Schema interface{} `json:"schema,omitempty" yaml:"schema,omitempty"`
+	Schema interface{} `json:"schema,omitempty"`
 	// The Map indicates where in the bucket this Attrib should be
 	// stored.
-	Map   string `json:"map,omitempty" yaml:"map,omitempty"`
-	Order int64  `json:"order,omitempty" yaml:"order,omitempty"`
+	Map   string `json:"map,omitempty"`
+	Order int64  `json:"order,omitempty"`
 	// Value is the value of the Attrib from a specific Attriber.
 	Value interface{} `json:"value,omitempty"`
 	// Default is the default value of the Attrib when the
 	// Attriber does not otherise have a value.
-	Default   interface{} `json:"default,omitempty" yaml:"default,omitempty"`
+	Default   interface{} `json:"default,omitempty"`
 	CreatedAt string      `json:"created_at,omitempty"`
 	UpdatedAt string      `json:"updated_at,omitempty"`
+	lastJson  []byte
 }
 
 // Id returns this attrib's ID or Name as a string.
@@ -110,6 +112,15 @@ func (o *Attrib) SetId(s string) error {
 		o.Name = s
 	}
 	return nil
+}
+
+func (o *Attrib) setLastJSON(b []byte) {
+	o.lastJson = make([]byte, len(b))
+	copy(o.lastJson, b)
+}
+
+func (o *Attrib) lastJSON() []byte {
+	return o.lastJson
 }
 
 // ApiName returns the pathname that should be used for all API
@@ -169,7 +180,15 @@ func GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, err error) {
 	if bucket != "" {
 		url = fmt.Sprintf("%v?bucket=%v", url, bucket)
 	}
-	return res, session.get(res, url)
+	inbuf, err := json.Marshal(res)
+	if err != nil {
+		return res, err
+	}
+	outbuf, err := session.request("GET", url, inbuf)
+	if err != nil {
+		return res, err
+	}
+	return res, unmarshal(outbuf, res)
 }
 
 // SetAttrib sets the value of an attrib in the context of
@@ -182,16 +201,40 @@ func SetAttrib(o Attriber, a *Attrib, bucket string) error {
 		bucket = "user"
 	}
 	uri := fmt.Sprintf("%v?bucket=%v", url(o, url(a)), bucket)
-	return session.put(a, uri)
+	inbuf, err := json.Marshal(a)
+	if err != nil {
+		return err
+	}
+	outbuf, err := session.request("PUT", uri, inbuf)
+	if err != nil {
+		return err
+	}
+	return unmarshal(outbuf, a)
 }
 
 // Propose readies an Attriber to accept new values via SetAttrib.
 func Propose(o Attriber) error {
-	return session.put(o, url(o, "propose"))
+	inbuf, err := json.Marshal(o)
+	if err != nil {
+		return err
+	}
+	outbuf, err := session.request("PUT", url(o, "propose"), inbuf)
+	if err != nil {
+		return err
+	}
+	return unmarshal(outbuf, o)
 }
 
 // Commit makes the values set on the Attriber via SetAttrib visible
 // to the rest of the Crowbar infrastructure.
 func Commit(o Attriber) error {
-	return session.put(o, url(o, "commit"))
+	inbuf, err := json.Marshal(o)
+	if err != nil {
+		return err
+	}
+	outbuf, err := session.request("PUT", url(o, "commit"), inbuf)
+	if err != nil {
+		return err
+	}
+	return unmarshal(outbuf, o)
 }

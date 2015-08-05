@@ -46,6 +46,7 @@ type Node struct {
 	TargetRoleID int64  `json:"target_role_id,omitempty"`
 	CreatedAt    string `json:"created_at,omitempty"`
 	UpdatedAt    string `json:"updated_at,omitempty"`
+	lastJson     []byte
 }
 
 func (o *Node) Id() string {
@@ -80,6 +81,15 @@ func (o *Node) Match() (res []*Node, err error) {
 	return res, session.match(o, &res, o.ApiName(), "match")
 }
 
+func (o *Node) setLastJSON(b []byte) {
+	o.lastJson = make([]byte, len(b))
+	copy(o.lastJson, b)
+}
+
+func (o *Node) lastJSON() []byte {
+	return o.lastJson
+}
+
 // PowerActions gets the available power actions for this node.
 func (o *Node) PowerActions() ([]string, error) {
 	buf, err := session.request("GET", url(o, "power"), nil)
@@ -94,7 +104,8 @@ func (o *Node) Move(depl *Deployment) error {
 	old_deployment_id := o.DeploymentID
 	tgt := fmt.Sprintf("%v?old_deployment_id=%v", url(o), o.DeploymentID)
 	o.DeploymentID = depl.ID
-	err := session.put(o, tgt)
+	inbuf, err := json.Marshal(o)
+	_, err = session.request("PUT", tgt, inbuf)
 	if err != nil {
 		o.DeploymentID = old_deployment_id
 	}
@@ -103,7 +114,8 @@ func (o *Node) Move(depl *Deployment) error {
 
 // Power performs a power managmeent action for the node.
 func (o *Node) Power(action string) error {
-	return session.put(o, url(o, fmt.Sprintf("power?poweraction=%v", action)))
+	_, err := session.request("PUT", fmt.Sprintf("power?poweraction=%v", action), nil)
+	return err
 }
 
 func (o *Node) ActiveBootstate() string {

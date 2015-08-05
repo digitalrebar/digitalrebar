@@ -9,11 +9,12 @@ import (
 // AvailableHammer helps track what Hammers are available to be bound to a Node.
 type AvailableHammer struct {
 	ID        int64  `json:"id,omitempty"`
-	Priority  int64  `json:"priority,omitempty" yaml:"priority.omitempty"`
-	Name      string `json:"name,omitempty" yaml:"name,omitempty"`
-	Type      string `json:"klass,omitempty" yaml:"klass,omitempty"`
+	Priority  int64  `json:"priority,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Type      string `json:"klass,omitempty"`
 	CreatedAt string `json:"created_at,omitempty"`
 	UpdatedAt string `json:"updated_at,omitempty"`
+	lastJson  []byte
 }
 
 func (o *AvailableHammer) Id() string {
@@ -41,6 +42,15 @@ func (o *AvailableHammer) SetId(s string) error {
 
 func (o *AvailableHammer) ApiName() string {
 	return "available_hammers"
+}
+
+func (o *AvailableHammer) setLastJSON(b []byte) {
+	o.lastJson = make([]byte, len(b))
+	copy(o.lastJson, b)
+}
+
+func (o *AvailableHammer) lastJSON() []byte {
+	return o.lastJson
 }
 
 func (o *AvailableHammer) Match() (res []*AvailableHammer, err error) {

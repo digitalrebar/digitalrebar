@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	crowbar "github.com/VictorLowther/crowbar-api"
+	"github.com/VictorLowther/jsonpatch"
 	"github.com/spf13/cobra"
 )
 
@@ -74,7 +75,7 @@ func makeCommandTree(singularName string,
 		Use:   name,
 		Short: fmt.Sprintf("Access CLI commands relating to %v", name),
 	}
-	commands := make([]*cobra.Command, 6)
+	commands := make([]*cobra.Command, 7)
 	commands[0] = &cobra.Command{
 		Use:   "list",
 		Short: fmt.Sprintf("List all %v", name),
@@ -136,22 +137,58 @@ func makeCommandTree(singularName string,
 	}
 	commands[4] = &cobra.Command{
 		Use:   "update [id] [json]",
-		Short: fmt.Sprintf("Update %v by id with the passed-in JSON", singularName),
+		Short: fmt.Sprintf("Unsafely update %v by id with the passed-in JSON", singularName),
 		Run: func(c *cobra.Command, args []string) {
 			if len(args) != 2 {
-				log.Fatalf("%v requires 1 argument\n", c.UseLine())
+				log.Fatalf("%v requires 2 arguments\n", c.UseLine())
 			}
 			obj := maker()
-			if err := json.Unmarshal([]byte(args[0]), obj); err != nil {
-				log.Fatalf("Unable to parse %v JSON %v\nError: %v\n", args[0], err.Error())
+			if err := crowbar.SetId(obj, args[0]); err != nil {
+				log.Fatalf("Failed to parse ID %v for a %v\n%v\n", args[0], singularName, err)
 			}
-			if crowbar.SetId(obj, args[0]) != nil {
-				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
+			if err := crowbar.Read(obj); err != nil {
+				log.Fatalf("Failed to fetch %v from the server\n%v\n", args[0], err)
 			}
+			if err := json.Unmarshal([]byte(args[1]), obj); err != nil {
+				log.Fatalf("Unable to parse %v JSON %v\nError: %v\n", args[1], err.Error())
+			}
+			if err := crowbar.Update(obj); err != nil {
+				log.Fatalf("Unable to update %v\n%v\n", args[0], err)
+			}
+
 			fmt.Println(prettyJSON(obj))
 		},
 	}
 	commands[5] = &cobra.Command{
+		Use:   "patch [objectJson] [changesJson]",
+		Short: fmt.Sprintf("Patch %v with the passed-in JSON", singularName),
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 2 {
+				log.Fatalf("%v requires 2 arguments\n", c.UseLine())
+			}
+			obj := maker()
+			if err := json.Unmarshal([]byte(args[0]), obj); err != nil {
+				log.Fatalf("Unable to parse %v JSON %v\nError: %v\n", args[0], err)
+			}
+			newObj := maker()
+			json.Unmarshal([]byte(args[0]), newObj)
+			if err := json.Unmarshal([]byte(args[1]), newObj); err != nil {
+				log.Fatalf("Unable to parse %v JSON %v\nError: %v\n", args[1], err)
+			}
+			newBuf, _ := json.Marshal(newObj)
+			patch, err := jsonpatch.GenerateJSON([]byte(args[0]), newBuf, true)
+			if err != nil {
+				log.Fatalf("Cannot generate JSON Patch\n%v\n", err)
+			}
+
+			if err := crowbar.Patch(obj, patch); err != nil {
+				log.Fatalf("Unable to patch %v\n%v\n", args[0], err)
+			}
+
+			fmt.Println(prettyJSON(obj))
+		},
+	}
+	commands[6] = &cobra.Command{
 		Use:   "destroy [id]",
 		Short: fmt.Sprintf("Destroy %v by id", singularName),
 		Run: func(c *cobra.Command, args []string) {

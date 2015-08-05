@@ -63,6 +63,7 @@ type Network struct {
 	Conduit  string `json:"conduit,omitempty"`
 	Category string `json:"category,omitempty"`
 	Group    string `json:"group,omitempty"`
+	lastJson []byte
 }
 
 func (o *Network) Id() string {
@@ -95,6 +96,15 @@ func (o *Network) ApiName() string {
 func (o *Network) Match() (res []*Network, err error) {
 	res = make([]*Network, 0)
 	return res, session.match(o, &res, o.ApiName(), "match")
+}
+
+func (o *Network) setLastJSON(b []byte) {
+	o.lastJson = make([]byte, len(b))
+	copy(o.lastJson, b)
+}
+
+func (o *Network) lastJSON() []byte {
+	return o.lastJson
 }
 
 // Role gets the Crowbar Role that is responsible for configuring the
@@ -144,8 +154,9 @@ type NetworkRange struct {
 	First string `json:"first,omitempty"`
 	// The last address that can be callocated from this NetworkRange.
 	// It must be of the same type and in the same subnet as the First address.
-	Last string `json:"last,omitempty"`
-	Name string `json:"string,omitempty"`
+	Last     string `json:"last,omitempty"`
+	Name     string `json:"string,omitempty"`
+	lastJson []byte
 }
 
 func (o *NetworkRange) Id() string {
@@ -180,6 +191,15 @@ func (o *NetworkRange) Match() (res []*NetworkRange, err error) {
 	return res, session.match(o, &res, o.ApiName(), "match")
 }
 
+func (o *NetworkRange) setLastJSON(b []byte) {
+	o.lastJson = make([]byte, len(b))
+	copy(o.lastJson, b)
+}
+
+func (o *NetworkRange) lastJSON() []byte {
+	return o.lastJson
+}
+
 func (o *NetworkRange) Network() (*Network, error) {
 	res := &Network{ID: o.NetworkID}
 	return res, Read(res)
@@ -210,7 +230,8 @@ type NetworkAllocation struct {
 	NetworkID      int64 `json:"network_id,omitempty"`
 	NetworkRangeID int64 `json:"network_range_id,omitempty"`
 	// Address is an IPv4 or v6 address in CIDR format.
-	Address string `json:"address,omitempty"`
+	Address  string `json:"address,omitempty"`
+	lastJson []byte
 }
 
 func (o *NetworkAllocation) Id() string {
@@ -242,6 +263,15 @@ func (o *NetworkAllocation) ApiName() string {
 func (o *NetworkAllocation) Match() (res []*NetworkAllocation, err error) {
 	res = make([]*NetworkAllocation, 0)
 	return res, session.match(o, &res, o.ApiName(), "match")
+}
+
+func (o *NetworkAllocation) setLastJSON(b []byte) {
+	o.lastJson = make([]byte, len(b))
+	copy(o.lastJson, b)
+}
+
+func (o *NetworkAllocation) lastJSON() []byte {
+	return o.lastJson
 }
 
 func (o *NetworkAllocation) Node() (*Node, error) {
