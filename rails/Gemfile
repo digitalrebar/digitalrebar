@@ -35,7 +35,7 @@ gem 'xml-simple'
 gem 'daemons'
 gem 'active_scaffold'
 gem 'devise', "~>3.0.0"
-gem 'rails_config'
+gem 'rails_config', '~>0.4.2'
 gem 'que'
 gem 'ledermann-rails-settings', :require => 'rails-settings'
 gem 'jquery-rails'
