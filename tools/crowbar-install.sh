@@ -31,7 +31,7 @@ if [[ $1 = '--develop' ]]; then
 elif [[ $1 = '--master' ]]; then
   shift
   RELEASE="master"
-  RELPATH="el6"
+  RELPATH="master"
 elif [[ $1 = '--release' ]]; then
   shift
   RELEASE="$1"
@@ -39,7 +39,7 @@ elif [[ $1 = '--release' ]]; then
   shift
 else
   RELEASE="master"
-  RELPATH="el6"
+  RELPATH="master"
 fi
 
 # Setup repo
