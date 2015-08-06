@@ -65,7 +65,7 @@ func addAttriberCommands(singularName string,
 		Short: fmt.Sprintf("Set an attrib value for a specific %v", singularName),
 		Run: func(c *cobra.Command, args []string) {
 			bucket := "user"
-			if len(args) != 5 || len(args) != 7 {
+			if len(args) != 5 && len(args) != 7 {
 				log.Fatalf("%v requires 3 or 4 arguments.\n", c.UseLine())
 			}
 			obj := maker().(crowbar.Attriber)
