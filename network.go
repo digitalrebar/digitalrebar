@@ -156,17 +156,15 @@ type NetworkRange struct {
 	// The last address that can be callocated from this NetworkRange.
 	// It must be of the same type and in the same subnet as the First address.
 	Last     string `json:"last,omitempty"`
-	Name     string `json:"string,omitempty"`
+	Name     string `json:"name,omitempty"`
 	lastJson []byte
 }
 
 func (o *NetworkRange) Id() string {
 	if o.ID != 0 {
 		return strconv.FormatInt(o.ID, 10)
-	} else if o.Name != "" {
-		return o.Name
 	} else {
-		log.Panic("NetworkRange has no ID or name")
+		log.Panic("NetworkRange has no ID")
 		return ""
 	}
 }
