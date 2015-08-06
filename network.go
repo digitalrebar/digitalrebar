@@ -117,6 +117,7 @@ func (o *Network) Role() (role *Role, err error) {
 // Satisfy salient interfaces
 func (o *Network) networkRanges()      {}
 func (o *Network) networkAllocations() {}
+func (o *Network) networkRouters()     {}
 
 type Networker interface {
 	Crudder
@@ -298,4 +299,75 @@ func NetworkAllocations(scope ...NetworkAllocater) (res []*NetworkAllocation, er
 
 	res = make([]*NetworkAllocation, 0)
 	return res, session.list(&res, append(paths, "network_allocations")...)
+}
+
+type NetworkRouter struct {
+	ID        int64  `json:"id,omitempty"`
+	NetworkID int64  `json:"network_id,omitempty"`
+	Address   string `json:"address,omitempty"`
+	Pref      int64  `json:"pref,omitempty"`
+	CreatedAt string `json:"created_at,omitempty"`
+	UpdatedAt string `json:"updated_at,omitempty"`
+	lastJson  []byte
+}
+
+func (o *NetworkRouter) Id() string {
+	if o.ID != 0 {
+		return strconv.FormatInt(o.ID, 10)
+	} else if o.Address != "" {
+		return o.Address
+	}
+	log.Panic("NetworkAllocation has no ID or Address")
+	return ""
+}
+
+func (o *NetworkRouter) SetId(s string) error {
+	if o.ID != 0 || o.Address != "" {
+		return errors.New("SetId can only be used on an un-IDed object")
+	}
+	if id, err := strconv.ParseInt(s, 10, 64); err == nil {
+		o.ID = id
+	} else {
+		o.Address = s
+	}
+	return nil
+}
+
+func (o *NetworkRouter) ApiName() string {
+	return "network_routers"
+}
+
+func (o *NetworkRouter) Match() (res []*NetworkRouter, err error) {
+	res = make([]*NetworkRouter, 0)
+	return res, session.match(o, &res, o.ApiName(), "match")
+}
+
+func (o *NetworkRouter) setLastJSON(b []byte) {
+	o.lastJson = make([]byte, len(b))
+	copy(o.lastJson, b)
+}
+
+func (o *NetworkRouter) lastJSON() []byte {
+	return o.lastJson
+}
+
+func (o *NetworkRouter) Network() (*Network, error) {
+	res := &Network{ID: o.NetworkID}
+	return res, Read(res)
+}
+
+type NetworkRouterer interface {
+	Crudder
+	networkRouters()
+}
+
+// Networks returns all of the Networks.
+func NetworkRouters(scope ...NetworkRouterer) (res []*NetworkRouter, err error) {
+	paths := make([]string, len(scope))
+	for i := range scope {
+		paths[i] = url(scope[i])
+	}
+
+	res = make([]*NetworkRouter, 0)
+	return res, session.list(&res, append(paths, "network_routers")...)
 }

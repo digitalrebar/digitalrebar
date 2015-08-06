@@ -90,6 +90,33 @@ func addNetworkAllocaterCommands(singularName string,
 	res.AddCommand(cmd)
 }
 
+func addNetworkRouterCommands(singularName string,
+	maker func() crowbar.Crudder,
+	res *cobra.Command) {
+	if _, ok := maker().(crowbar.NetworkRouterer); !ok {
+		return
+	}
+	cmd := &cobra.Command{
+		Use:   "networkrouters [id]",
+		Short: fmt.Sprintf("List all networkrouters for a specifc %v", singularName),
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 1 {
+				log.Fatalf("%v requires 1 argument\n", c.UseLine())
+			}
+			obj := maker().(crowbar.NetworkRouterer)
+			if crowbar.SetId(obj, args[0]) != nil {
+				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
+			}
+			objs, err := crowbar.NetworkRouters(obj)
+			if err != nil {
+				log.Fatalf("Failed to get networkrouters for %v(%v)\n", singularName, args[0])
+			}
+			fmt.Println(prettyJSON(objs))
+		},
+	}
+	res.AddCommand(cmd)
+}
+
 func init() {
 	lister := func() ([]crowbar.Crudder, error) {
 		objs, err := crowbar.Networks()
@@ -116,6 +143,60 @@ func init() {
 	}
 	maker := func() crowbar.Crudder { return &crowbar.Network{} }
 	network := makeCommandTree("network", lister, matcher, maker)
+	importCmd := &cobra.Command{
+		Use:   "import [json]",
+		Short: "Import a network + optional ranges and routers into Crowbar",
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 1 {
+				log.Fatalf("%v requires 1 argument\n", c.UseLine())
+			}
+			obj := &crowbar.Network{}
+			if err := json.Unmarshal([]byte(args[0]), obj); err != nil {
+				log.Fatalf("Argument does not contain a valid network!\n")
+			}
+			if err := crowbar.Create(obj); err != nil {
+				log.Fatalln("Failed to create new network.")
+			}
+			unwind := true
+			toClean := []crowbar.Crudder{obj}
+			defer func() {
+				if unwind {
+					for _, o := range toClean {
+						crowbar.Destroy(o)
+					}
+				}
+			}()
+
+			type rangeHelper struct {
+				Ranges []*crowbar.NetworkRange `json:"ranges"`
+			}
+
+			ranges := &rangeHelper{}
+			if err := json.Unmarshal([]byte(args[0]), ranges); err != nil {
+				log.Fatalln("Failed to unmarshal Ranges")
+			}
+			for _, netRange := range ranges.Ranges {
+				if err := crowbar.Create(netRange); err != nil {
+					log.Fatalln("Failed to create network range")
+				}
+				toClean = append(toClean, netRange)
+			}
+			// Continue here
+			type routerHelper struct {
+				Router *crowbar.NetworkRouter `json:"router"`
+			}
+			router := &routerHelper{}
+			if err := json.Unmarshal([]byte(args[0]), router); err != nil {
+				log.Fatalln("Failed to unmarshal Routers")
+			}
+			if err := crowbar.Create(router.Router); err != nil {
+				log.Fatalln("Failed to create network router")
+			}
+			fmt.Println(prettyJSON(obj))
+		},
+	}
+
+	network.AddCommand(importCmd)
 
 	app.AddCommand(network)
 	lister = func() ([]crowbar.Crudder, error) {
@@ -171,4 +252,29 @@ func init() {
 	maker = func() crowbar.Crudder { return &crowbar.NetworkAllocation{} }
 	app.AddCommand(makeCommandTree("networkallocation", lister, matcher, maker))
 
+	lister = func() ([]crowbar.Crudder, error) {
+		objs, err := crowbar.NetworkRouters()
+		if err != nil {
+			return nil, err
+		}
+		res := make([]crowbar.Crudder, len(objs))
+		for i := range objs {
+			res[i] = objs[i]
+		}
+		return res, nil
+	}
+	matcher = func(sample string) (string, error) {
+		obj := &crowbar.NetworkRouter{}
+		err := json.Unmarshal([]byte(sample), obj)
+		if err != nil {
+			return "", fmt.Errorf("Error unmarshalling networkrouter\nError: %v\n", err.Error())
+		}
+		objs, err := obj.Match()
+		if err != nil {
+			return "", fmt.Errorf("Error fetching matches for %v", sample)
+		}
+		return prettyJSON(objs), nil
+	}
+	maker = func() crowbar.Crudder { return &crowbar.NetworkRouter{} }
+	app.AddCommand(makeCommandTree("networkrouter", lister, matcher, maker))
 }
