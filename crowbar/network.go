@@ -177,6 +177,7 @@ func init() {
 					log.Fatalln("Failed to unmarshal Ranges")
 				}
 				for _, netRange := range ranges.Ranges {
+					netRange.NetworkID = obj.ID
 					if err := crowbar.Create(netRange); err != nil {
 						log.Fatalln("Failed to create network range")
 					}
@@ -189,6 +190,7 @@ func init() {
 				if err := json.Unmarshal([]byte(args[0]), router); err != nil {
 					log.Fatalln("Failed to unmarshal Routers")
 				}
+				router.NetworkID = obj.ID
 				if err := crowbar.Create(router.Router); err != nil {
 					log.Fatalln("Failed to create network router")
 				}
