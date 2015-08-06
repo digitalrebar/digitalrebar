@@ -75,7 +75,7 @@ func init() {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
 			role := &crowbar.Role{}
-			if crowbar.SetId(obj, args[2]) != nil {
+			if crowbar.SetId(role, args[2]) != nil {
 				log.Fatalf("Failed to parse ID %v for a role\n", args[2])
 			}
 			if err := crowbar.Read(obj); err != nil {
