@@ -8,8 +8,6 @@ OCB_CPUS=${SLAVE_CPUS:-2}
 bridge_exists "$OCB_BRIDGE" || OCB_BRIDGE=docker0
 
 bridge_exists "$OCB_BRIDGE" || die "No bridge $OCB_BRIDGE to attach to!"
-# Create our initial screen session
-# screen -S "$OCB_SCREEN" -X screen
 
 # Create our disk images
 qemu-img create -f raw "$VM_DIR/$VMID.disk" 20G &>/dev/null

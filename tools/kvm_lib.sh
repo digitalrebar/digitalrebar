@@ -61,7 +61,6 @@ VMID=$$
 OCB_ADMIN_IP=192.168.124.10/24
 OCB_BRIDGE_IP=192.168.124.1/24
 CROWBAR_KEY="crowbar:crowbar"
-OCB_SCREEN="ocb-test"
 
 ADMIN_HOSTNAMES=("cr0wbar.pwns.joo"
     "vltima.ratio.regvm"
@@ -483,9 +482,9 @@ run_kvm() {
         "$KVM" "${kvmargs[@]}" "$@"
     else
         # otherwise, launch ourselves under screen.
-        screen -S "$OCB_SCREEN" -X screen \
-            -t "$vm_gen" "$KVM" "${kvmargs[@]}" "$@"
-        screen -S "$OCB_SCREEN" -p "$vm_gen" -X log on
+        kvmargs+=( -vnc "unix:${vm_logdir%.*}.vncsock" -monitor stdio)
+        screen -S "${VMID}" -d -m -- "$KVM" "${kvmargs[@]}" "$@" || die "Aiee!"
+        screen -S "${VMID}" -X log on || die "Turbo-die"
     fi
     # wait up to 10 seconds for a PID file
     local s

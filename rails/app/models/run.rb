@@ -192,7 +192,7 @@ class Run < ActiveRecord::Base
       res << " Run: #{r.id}: running:#{r.running}: #{r.node_role.name}: state #{r.node_role.state}"
       if r.running && r.job_id
         j = r.que_job
-        res << " Job:  #{j.job_id} queue #{j.queue} running on pid #{j.pid || "None"}"
+        res << " Job:  #{r.job_id} queue #{j.queue} running on pid #{j.pid || "None"}"
       end
       res << "\n"
     end
