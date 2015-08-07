@@ -17,7 +17,9 @@ class DnsNameEntriesController < ::ApplicationController
 
   def match
     attrs = DnsNameEntry.attribute_names.map{|a|a.to_sym}
-    objs = DnsNameEntry.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = DnsNameEntry.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index DnsNameEntry, objs }

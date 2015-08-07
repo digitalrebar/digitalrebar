@@ -17,7 +17,9 @@ class DeploymentRolesController < ApplicationController
 
   def match
     attrs = DeploymentRole.attribute_names.map{|a|a.to_sym}
-    objs = DeploymentRole.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = DeploymentRole.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index DeploymentRole, objs }

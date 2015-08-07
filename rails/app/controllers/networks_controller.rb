@@ -19,7 +19,9 @@ class NetworksController < ::ApplicationController
 
   def match
     attrs = Network.attribute_names.map{|a|a.to_sym}
-    objs = Network.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = Network.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index Network, objs }

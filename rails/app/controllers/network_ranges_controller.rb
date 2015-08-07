@@ -17,7 +17,9 @@ class NetworkRangesController < ::ApplicationController
 
   def match
     attrs = NetworkRange.attribute_names.map{|a|a.to_sym}
-    objs = NetworkRange.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = NetworkRange.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index NetworkRange, objs }

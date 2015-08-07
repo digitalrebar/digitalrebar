@@ -17,7 +17,9 @@ class NetworkRoutersController < ::ApplicationController
 
   def match
     attrs = NetworkRouter.attribute_names.map{|a|a.to_sym}
-    objs = NetworkRouter.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = NetworkRouter.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index NetworkRouter, objs }

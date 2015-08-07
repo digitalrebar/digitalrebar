@@ -314,7 +314,7 @@ class ApplicationController < ActionController::Base
   def digest_auth!
     u = nil
     authed = authenticate_or_request_with_http_digest(User::DIGEST_REALM) do |username|
-      u = User.find_by_username(username)
+      u = User.find_by!(username: username)
       session[:digest_user] = u.username
       u.encrypted_password
     end

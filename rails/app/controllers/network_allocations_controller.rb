@@ -17,7 +17,9 @@ class NetworkAllocationsController < ::ApplicationController
 
   def match
     attrs = NetworkAllocation.attribute_names.map{|a|a.to_sym}
-    objs = NetworkAllocation.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = NetworkAllocation.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index NetworkAllocation, objs }

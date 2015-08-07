@@ -17,7 +17,9 @@ class RolesController < ApplicationController
 
   def match
     attrs = Role.attribute_names.map{|a|a.to_sym}
-    objs = Role.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = Role.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index Role, objs }
