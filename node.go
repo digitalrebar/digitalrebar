@@ -2,87 +2,16 @@ package crowbar
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"log"
-	"strconv"
+	"path"
+
+	"github.com/VictorLowther/crowbar-api/datatypes"
 )
 
-// Node represents a system (real or virtual) that Crowbar can manage.
 type Node struct {
-	// The numeric ID of the Node.  This is an opaque value that has
-	// no meaning beyond being unique in the set of all Nodes.
-	ID int64 `json:"id"`
-	// The name of the node.  This is generally the FQDN of the
-	// node, and it must be unique in the set of all Nodes.
-	Name string `json:"name"`
-	// The description of this Node.
-	Description string `json:"description"`
-	// Whether this node can coordinate and act on behalf of Crowbar.
-	// Any node that runs the Crowbar API should have this set.
-	Admin bool `json:"admin"`
-	// A short alias that this node can be referred to by.  Deprecated.
-	Alias string `json:"alias"`
-	// Whether the node is powered on and reachable by Crowbar.
-	Alive bool `json:"alive"`
-	// I do not remember what this flag is used for.
-	Allocated bool `json:"allocated"`
-	// Whether the node is available to the rest of the Crowbar infrastructure.
-	// Nodes that are not alive and available will not have jobs run on them.
-	Available bool `json:"available"`
-	// The current environment that the node should boot into.
-	// This includes, but is not restricted to:
-	//    * "local" for booting to local storage.
-	//    * "<operating system>-install" for booting an OS install.
-	//    * "sledgehammer" for booting to our discovery/inventory environment
-	Bootenv string `json:"bootenv"`
-	// The deployment that this Node is currently a member of.
-	DeploymentID int64 `json:"deployment_id"`
-	Order        int64 `json:"order"`
-	// Whether this node is available to run non-system roles on.
-	System bool `json:"system"`
-	// The target Role that the annealer should converge the node to.
-	// If it is 0, then the annealer will try to converge all the roles bound to the node.
-	TargetRoleID int64  `json:"target_role_id"`
-	CreatedAt    string `json:"created_at"`
-	UpdatedAt    string `json:"updated_at"`
-	lastJson     []byte
-}
-
-func (o *Node) Id() string {
-	if o.ID != 0 {
-		return strconv.FormatInt(o.ID, 10)
-	} else if o.Name != "" {
-		return o.Name
-	} else {
-		log.Panic("Node has no ID or name")
-		return ""
-	}
-}
-
-func (o *Node) SetId(s string) error {
-	if o.ID != 0 || o.Name != "" {
-		return errors.New("SetId can only be used on an un-IDed object")
-	}
-	if id, err := strconv.ParseInt(s, 10, 64); err == nil {
-		o.ID = id
-	} else {
-		o.Name = s
-	}
-	return nil
-}
-
-func (o *Node) ApiName() string {
-	return "nodes"
-}
-
-func (o *Node) setLastJSON(b []byte) {
-	o.lastJson = make([]byte, len(b))
-	copy(o.lastJson, b)
-}
-
-func (o *Node) lastJSON() []byte {
-	return o.lastJson
+	datatypes.Node
+	Timestamps
+	apiHelper
 }
 
 // PowerActions gets the available power actions for this node.
@@ -115,7 +44,8 @@ func (o *Node) Power(action string) error {
 
 func (o *Node) ActiveBootstate() string {
 	attr := &Attrib{}
-	attr, err := GetAttrib(o, &Attrib{Name: "provisioner-active-bootstate"}, "")
+	attr.Name = "provisioner-active-bootstate"
+	attr, err := GetAttrib(o, attr, "")
 	if err != nil {
 		return ""
 	}
@@ -137,7 +67,8 @@ func (o *Node) networkRanges()      {}
 func (o *Node) networkAllocations() {}
 
 func (o *Node) Deployment() (res *Deployment, err error) {
-	res = &Deployment{ID: o.DeploymentID}
+	res = &Deployment{}
+	res.ID = o.DeploymentID
 	err = Read(res)
 	return res, err
 }
@@ -152,7 +83,7 @@ func Nodes(scope ...Noder) (res []*Node, err error) {
 	for i := range scope {
 		paths[i] = url(scope[i])
 	}
-
+	paths = append(paths, "nodes")
 	res = make([]*Node, 0)
-	return res, session.list(&res, append(paths, "nodes")...)
+	return res, List(path.Join(paths...), &res)
 }

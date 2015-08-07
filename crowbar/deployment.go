@@ -60,7 +60,9 @@ func init() {
 			if err := crowbar.Read(role); err != nil {
 				log.Fatalf("Failed to fetch Role: %v\n", err.Error())
 			}
-			nr := &crowbar.DeploymentRole{RoleID: role.ID, DeploymentID: obj.ID}
+			nr := &crowbar.DeploymentRole{}
+			nr.RoleID = role.ID
+			nr.DeploymentID = obj.ID
 			if err := crowbar.Create(nr); err != nil {
 				log.Fatalf("Failed to create deploymentrole for deployment:%v role:%v\n", args[0], args[2])
 			}

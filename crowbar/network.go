@@ -196,7 +196,9 @@ func init() {
 				if err := crowbar.Read(network); err != nil {
 					log.Fatalln("Unable to fetch network from Crowbar")
 				}
-				alloc := &crowbar.NetworkAllocation{NodeID: node.ID, NetworkID: network.ID}
+				alloc := &crowbar.NetworkAllocation{}
+				alloc.NodeID = node.ID
+				alloc.NetworkID = network.ID
 				if err := crowbar.Create(alloc); err != nil {
 					log.Fatalf("Unable to create new NetworkAllocation: %v", err)
 				}
@@ -242,11 +244,10 @@ func init() {
 						log.Fatalln("Unable to fetch network range")
 					}
 				}
-				alloc := &crowbar.NetworkAllocation{
-					NetworkID:      netRange.NetworkID,
-					NetworkRangeID: netRange.ID,
-					NodeID:         node.ID,
-				}
+				alloc := &crowbar.NetworkAllocation{}
+				alloc.NetworkID = netRange.NetworkID
+				alloc.NetworkRangeID = netRange.ID
+				alloc.NodeID = node.ID
 				if len(args) == 7 {
 					alloc.Address = args[6]
 				}

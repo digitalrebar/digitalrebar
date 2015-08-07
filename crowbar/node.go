@@ -60,7 +60,9 @@ func init() {
 			if err := crowbar.Read(role); err != nil {
 				log.Fatalf("Failed to fetch Role: %v\n", err.Error())
 			}
-			nr := &crowbar.NodeRole{RoleID: role.ID, NodeID: obj.ID}
+			nr := &crowbar.NodeRole{}
+			nr.RoleID = role.ID
+			nr.NodeID = obj.ID
 			if err := crowbar.Create(nr); err != nil {
 				log.Fatalf("Failed to create noderole for node:%v role:%v\n", args[0], args[2])
 			}

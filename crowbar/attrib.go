@@ -70,20 +70,24 @@ func addAttriberCommands(singularName string,
 			}
 			obj := maker().(crowbar.Attriber)
 			attr := &crowbar.Attrib{}
+			if len(args) == 7 {
+				bucket = args[6]
+			}
 			if crowbar.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
 			if crowbar.SetId(attr, args[2]) != nil {
 				log.Fatalf("Failed to parse ID %v for an attrib\n", args[1])
 			}
-			if len(args) == 7 {
-				bucket = args[6]
+			attr, err := crowbar.GetAttrib(obj, attr, "")
+			if err != nil {
+				log.Fatalf("Failed to fetch Attrib from server\n%v", err)
 			}
 			type Valuer struct {
 				Value interface{} `json:"value"`
 			}
 			val := &Valuer{}
-			err := json.Unmarshal([]byte(args[4]), val)
+			err = json.Unmarshal([]byte(args[4]), val)
 			if err != nil {
 				log.Fatalf("Failed to parse %v as JSON!\nError: %v\n", args[2], err.Error())
 			}
