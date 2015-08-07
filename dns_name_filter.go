@@ -7,14 +7,14 @@ import (
 )
 
 type DnsNameFilter struct {
-	ID        int64  `json:"id,omitempty"`
-	Name      string `json:"name,omitempty"`
-	Matcher   string `json:"matcher,omitempty"`
-	Priority  int64  `json:"priority,omitempty"`
-	Service   string `json:"service,omitempty"`
-	Template  string `json:"template,omitempty"`
-	CreatedAt string `json:"created_at,omitempty"`
-	UpdatedAt string `json:"updated_at,omitempty"`
+	ID        int64  `json:"id"`
+	Name      string `json:"name"`
+	Matcher   string `json:"matcher"`
+	Priority  int64  `json:"priority"`
+	Service   string `json:"service"`
+	Template  string `json:"template"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 	lastJson  []byte
 }
 

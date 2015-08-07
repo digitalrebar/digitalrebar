@@ -49,43 +49,43 @@ import (
 type Attrib struct {
 	// ID is the database ID number of this attrib.  It has no
 	// significance other than uniqueness.
-	ID int64 `json:"id,omitempty"`
+	ID int64 `json:"id"`
 	// Name is the human-readable name of the Attrib.  It must be
 	// globally unique.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// Description is a brief description of what the Attrip is
 	// for.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description"`
 	// BarclampID is the ID of the barclamp that the Attrib was
 	// declared in.
-	BarclampID int64 `json:"barclamp_id,omitempty"`
+	BarclampID int64 `json:"barclamp_id"`
 	// RoleID is the ID of the role that this Attrib belongs to.
 	// If RoleID is 0, then the attrib does not belong to a role.
-	RoleID int64 `json:"role_id,omitempty"`
+	RoleID int64 `json:"role_id"`
 	// The custom type of the Attrib, if any.  This is used by
 	// Crowbar internally to allow for Attribs to have nonstandard
 	// get and set semantics.
-	Type string `json:"type,omitempty"`
+	Type string `json:"type"`
 	// Whether the Attrib can be written to.  An attrib must have
 	// a non-empty Schema as well as a set Writable flag for a
 	// SetAttrib to work, and the Value being passed must validate
 	// against the Schema.
-	Writable bool `json:"writable,omitempty"`
+	Writable bool `json:"writable"`
 	// Schema is a kwalify schema fragment that the Value must
 	// match.  A SetAttrib call with an attrib Value that does not
 	// pass schema validation will fail.
-	Schema interface{} `json:"schema,omitempty"`
+	Schema interface{} `json:"schema"`
 	// The Map indicates where in the bucket this Attrib should be
 	// stored.
-	Map   string `json:"map,omitempty"`
-	Order int64  `json:"order,omitempty"`
+	Map   string `json:"map"`
+	Order int64  `json:"order"`
 	// Value is the value of the Attrib from a specific Attriber.
-	Value interface{} `json:"value,omitempty"`
+	Value interface{} `json:"value"`
 	// Default is the default value of the Attrib when the
 	// Attriber does not otherise have a value.
-	Default   interface{} `json:"default,omitempty"`
-	CreatedAt string      `json:"created_at,omitempty"`
-	UpdatedAt string      `json:"updated_at,omitempty"`
+	Default   interface{} `json:"default"`
+	CreatedAt string      `json:"created_at"`
+	UpdatedAt string      `json:"updated_at"`
 	lastJson  []byte
 }
 

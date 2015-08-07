@@ -7,13 +7,13 @@ import (
 )
 
 type DnsNameEntry struct {
-	ID                  int64  `json:"id,omitempty"`
-	NetworkAllocationID int64  `json:"network_allocation_id,omitempty"`
-	DnsNameFilterID     int64  `json:"dns_name_filter_id,omitempty"`
-	Name                string `json:"name,omitempty"`
-	RRType              string `json:"rr_type,omitempty"`
-	CreatedAt           string `json:"created_at,omitempty"`
-	UpdatedAt           string `json:"updated_at,omitempty"`
+	ID                  int64  `json:"id"`
+	NetworkAllocationID int64  `json:"network_allocation_id"`
+	DnsNameFilterID     int64  `json:"dns_name_filter_id"`
+	Name                string `json:"name"`
+	RRType              string `json:"rr_type"`
+	CreatedAt           string `json:"created_at"`
+	UpdatedAt           string `json:"updated_at"`
 	lastJson            []byte
 }
 

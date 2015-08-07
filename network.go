@@ -10,31 +10,31 @@ import (
 // Network holds configuration for a specific network.
 type Network struct {
 	// ID is an opaque integer used to uniquely identify the network.
-	ID int64 `json:"id,omitempty"`
+	ID int64 `json:"id"`
 	// DeploymentID is the deployment for which this network is defined.
-	DeploymentID int64 `json:"deployment_id,omitempty"`
+	DeploymentID int64 `json:"deployment_id"`
 	// Vlan is the VLAN that this network should run over.
-	Vlan int64 `json:"vlan,omitempty"`
+	Vlan int64 `json:"vlan"`
 	// TeamingMode is the bonding mode that the conduit should use.
-	TeamingMode int64 `json:"team_mode,omitempty"`
+	TeamingMode int64 `json:"team_mode"`
 	// UseTeam controls whether the Network should operate in teamed mode.
-	UseTeam bool `json:"use_team,omitempty"`
+	UseTeam bool `json:"use_team"`
 	// UseVlan controles whether the network should run over a specific
 	// tagged VLAN interface.
-	UseVlan bool `json:"use_vlan,omitempty"`
+	UseVlan bool `json:"use_vlan"`
 	// UseBridge controls whether this Network should allocate a bridge layer.
 	// This can be useful if you know that the workload this network will provide
 	// services for will require attaching virtual interfaces to this interface.
-	UseBridge bool `json:"use_bridge,omitempty"`
-	Configure bool `json:"configure,omitempty"`
+	UseBridge bool `json:"use_bridge"`
+	Configure bool `json:"configure"`
 	// The name of the network.  Must be globally unique.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// The description of this network.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description"`
 	// The IPv6 prefix this network should use to hand out IPv6 addresses.
 	// If empty, no IPv6 addresses will be allocated.  If the address is not in CIDR
 	// form, Crowbar will assume it is a /64 subnet.
-	V6Prefix string `json:"v6prefix,omitempty"`
+	V6Prefix string `json:"v6prefix"`
 	// The conduit that this Network should run over.  A Conduit
 	// defnintion is a comma-seperated list of abstract interface
 	// names that have the following format:
@@ -60,9 +60,9 @@ type Network struct {
 	//   Conduit, and Conduit specifications for different
 	//   networks on the same machine must either overlap
 	//   perfectly or not at all.
-	Conduit  string `json:"conduit,omitempty"`
-	Category string `json:"category,omitempty"`
-	Group    string `json:"group,omitempty"`
+	Conduit  string `json:"conduit"`
+	Category string `json:"category"`
+	Group    string `json:"group"`
 	lastJson []byte
 }
 
@@ -141,22 +141,22 @@ func Networks(scope ...Networker) (res []*Network, err error) {
 // different teaming, VLAN, bonding, and conduit specifications than
 // their parent Network.
 type NetworkRange struct {
-	ID          int64  `json:"id,omitempty"`
-	NetworkID   int64  `json:"network_id,omitempty"`
-	Vlan        int64  `json:"vlan,omitempty"`
-	TeamingMode int64  `json:"team_mode,omitempty"`
-	UseTeam     bool   `json:"use_team,omitempty"`
-	UseVlan     bool   `json:"use_vlan,omitempty"`
-	UseBridge   bool   `json:"use_bridge,omitempty"`
-	Overlap     bool   `json:"overlap,omitempty"`
-	Conduit     string `json:"conduit,omitempty"`
+	ID          int64  `json:"id"`
+	NetworkID   int64  `json:"network_id"`
+	Vlan        int64  `json:"vlan"`
+	TeamingMode int64  `json:"team_mode"`
+	UseTeam     bool   `json:"use_team"`
+	UseVlan     bool   `json:"use_vlan"`
+	UseBridge   bool   `json:"use_bridge"`
+	Overlap     bool   `json:"overlap"`
+	Conduit     string `json:"conduit"`
 	// The first address that can be allocated in this NetworkRange.
 	// The address can be either IPv4 or IPv6, and must be in CIDR form.
-	First string `json:"first,omitempty"`
+	First string `json:"first"`
 	// The last address that can be callocated from this NetworkRange.
 	// It must be of the same type and in the same subnet as the First address.
-	Last     string `json:"last,omitempty"`
-	Name     string `json:"name,omitempty"`
+	Last     string `json:"last"`
+	Name     string `json:"name"`
 	lastJson []byte
 }
 
@@ -224,12 +224,12 @@ func NetworkRanges(scope ...NetworkRanger) (res []*NetworkRange, err error) {
 
 // NetworkAllocation is the allocation of an address from a NetworkRange to a Node.
 type NetworkAllocation struct {
-	ID             int64 `json:"id,omitempty"`
-	NodeID         int64 `json:"node_id,omitempty"`
-	NetworkID      int64 `json:"network_id,omitempty"`
-	NetworkRangeID int64 `json:"network_range_id,omitempty"`
+	ID             int64 `json:"id"`
+	NodeID         int64 `json:"node_id"`
+	NetworkID      int64 `json:"network_id"`
+	NetworkRangeID int64 `json:"network_range_id"`
 	// Address is an IPv4 or v6 address in CIDR format.
-	Address  string `json:"address,omitempty"`
+	Address  string `json:"address"`
 	lastJson []byte
 }
 
@@ -300,12 +300,12 @@ func NetworkAllocations(scope ...NetworkAllocater) (res []*NetworkAllocation, er
 }
 
 type NetworkRouter struct {
-	ID        int64  `json:"id,omitempty"`
-	NetworkID int64  `json:"network_id,omitempty"`
-	Address   string `json:"address,omitempty"`
-	Pref      int64  `json:"pref,omitempty"`
-	CreatedAt string `json:"created_at,omitempty"`
-	UpdatedAt string `json:"updated_at,omitempty"`
+	ID        int64  `json:"id"`
+	NetworkID int64  `json:"network_id"`
+	Address   string `json:"address"`
+	Pref      int64  `json:"pref"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 	lastJson  []byte
 }
 

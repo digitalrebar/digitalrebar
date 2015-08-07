@@ -12,32 +12,32 @@ import (
 type NodeRole struct {
 	// The ID of the NodeRole.  It is an opaque integer that is
 	// unique among all the NodeRoles
-	ID int64 `json:"id,omitempty"`
+	ID int64 `json:"id"`
 	// The Deployment that this noderole was created or committed
 	// in.  While they are in Proposed, a noderole will follow the
 	// node when it changes deployments.  Once the NodeRole is
 	// committed for the first time, however, it will be bound to
 	// the Deployment it was committed in, and will use that
 	// deplpyment's DeploymentRoles to construct Attribs for jobs.
-	DeploymentID int64 `json:"deployment_id,omitempty"`
+	DeploymentID int64 `json:"deployment_id"`
 	// The Role that this noderole is bound to.
-	RoleID int64 `json:"role_id,omitempty"`
+	RoleID int64 `json:"role_id"`
 	// The Node that this noderole is bound to.  The
 	// (NodeID,RoleID) pair must be unique -- it is not possible
 	// to bind the same Role to a Node multiple times.
-	NodeID int64 `json:"node_id,omitempty"`
+	NodeID int64 `json:"node_id"`
 	// The state a NodeRole is in.
-	State int `json:"state,omitempty"`
+	State int `json:"state"`
 	// The status of the NodeRole.  This string is settable by the user.
-	Status string `json:"status,omitempty"`
+	Status string `json:"status"`
 	// The log from the last time this NodeRole ran against its Node.
-	RunLog string `json:"runlog,omitempty"`
+	RunLog string `json:"runlog"`
 	// Whether this NodeRole is available to the annealer
-	Available bool   `json:"available,omitempty"`
-	Order     int    `json:"order,omitempty"`
-	NodeError bool   `json:"node_error,omitempty"`
-	CreatedAt string `json:"created_at,omitempty"`
-	UpdatedAt string `json:"updated_at,omitempty"`
+	Available bool   `json:"available"`
+	Order     int    `json:"order"`
+	NodeError bool   `json:"node_error"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 	lastJson  []byte
 }
 

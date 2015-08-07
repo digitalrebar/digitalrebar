@@ -7,14 +7,14 @@ import (
 )
 
 type User struct {
-	ID        int64  `json:"id,omitempty"`
-	Name      string `json:"username,omitempty"`
-	Email     string `json:"email,omitempty"`
-	Admin     bool   `json:"is_admin,omitempty"`
-	Locked    bool   `json:"locked,omitempty"`
-	Password  string `json:"password,omitempty"`
-	CreatedAt string `json:"created_at,omitempty"`
-	UpdatedAt string `json:"updated_at,omitempty"`
+	ID        int64  `json:"id"`
+	Name      string `json:"username"`
+	Email     string `json:"email"`
+	Admin     bool   `json:"is_admin"`
+	Locked    bool   `json:"locked"`
+	Password  string `json:"password"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 	lastJson  []byte
 }
 

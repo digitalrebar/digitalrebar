@@ -24,20 +24,20 @@ import (
 // appropriate DeploymentRole in this Deployment.
 type Deployment struct {
 	// The unique identifier for a Deployment.
-	ID int64 `json:"id,omitempty"`
+	ID int64 `json:"id"`
 	// The state a deployment is in
-	State int `json:"state,omitempty"`
+	State int `json:"state"`
 	// The name of the Deployment.  Must be globally unique.
-	Name string `json:"name,omitempty"`
+	Name string `json:"name"`
 	// A breif description of what the Deployment is for.
-	Description string `json:"description,omitempty"`
+	Description string `json:"description"`
 	// Whether the deployment is a system deployment.  Right now,
 	// there can be only one of these.
-	System bool `json:"system,omitempty"`
+	System bool `json:"system"`
 	// The ID of the deployment that is the parent of this one.
-	ParentID  int64  `json:"parent_id,omitempty"`
-	CreatedAt string `json:"created_at,omitempty"`
-	UpdatedAt string `json:"updated_at,omitempty"`
+	ParentID  int64  `json:"parent_id"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 	lastJson  []byte
 }
 

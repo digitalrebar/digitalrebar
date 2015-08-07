@@ -9,16 +9,16 @@ import (
 // Jigs use Hammers to perform (hopefully) idempotent actions on Nodes
 // on behalf of Roles through NodeRoles.
 type Jig struct {
-	ID             int64  `json:"id,omitempty"`
-	Name           string `json:"name,omitempty"`
-	Description    string `json:"description,omitempty"`
-	Active         bool   `json:"active,omitempty"`
-	ClientRoleName string `json:"client_role_name,omitempty"`
-	Server         string `json:"server,omitempty"`
-	ClientName     string `json:"client_name,omitempty"`
-	Key            string `json:"key,omitempty"`
-	CreatedAt      string `json:"created_at,omitempty"`
-	UpdatedAt      string `json:"updated_at,omitempty"`
+	ID             int64  `json:"id"`
+	Name           string `json:"name"`
+	Description    string `json:"description"`
+	Active         bool   `json:"active"`
+	ClientRoleName string `json:"client_role_name"`
+	Server         string `json:"server"`
+	ClientName     string `json:"client_name"`
+	Key            string `json:"key"`
+	CreatedAt      string `json:"created_at"`
+	UpdatedAt      string `json:"updated_at"`
 	lastJson       []byte
 }
 

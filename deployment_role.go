@@ -17,11 +17,11 @@ import (
 //
 // DeploymentRole satisfies the Attriber interface.
 type DeploymentRole struct {
-	ID           int64  `json:"id,omitempty"`
-	DeploymentID int64  `json:"deployment_id,omitempty"`
-	RoleID       int64  `json:"role_id,omitempty"`
-	CreatedAt    string `json:"created_at,omitempty"`
-	UpdatedAt    string `json:"updated_at,omitempty"`
+	ID           int64  `json:"id"`
+	DeploymentID int64  `json:"deployment_id"`
+	RoleID       int64  `json:"role_id"`
+	CreatedAt    string `json:"created_at"`
+	UpdatedAt    string `json:"updated_at"`
 	lastJson     []byte
 }
 

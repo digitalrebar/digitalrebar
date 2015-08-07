@@ -8,12 +8,12 @@ import (
 
 // AvailableHammer helps track what Hammers are available to be bound to a Node.
 type AvailableHammer struct {
-	ID        int64  `json:"id,omitempty"`
-	Priority  int64  `json:"priority,omitempty"`
-	Name      string `json:"name,omitempty"`
-	Type      string `json:"klass,omitempty"`
-	CreatedAt string `json:"created_at,omitempty"`
-	UpdatedAt string `json:"updated_at,omitempty"`
+	ID        int64  `json:"id"`
+	Priority  int64  `json:"priority"`
+	Name      string `json:"name"`
+	Type      string `json:"klass"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 	lastJson  []byte
 }
 

@@ -7,16 +7,16 @@ import (
 )
 
 type Barclamp struct {
-	ID          int64  `json:"id,omitempty"`
-	Name        string `json:"name,omitempty"`
-	Description string `json:"description,omitempty"`
-	ParentID    int64  `json:"barclamp_id,omitempty"`
-	Version     string `json:"version,omitempty"`
-	SourceURL   string `json:"source_url,omitempty"`
-	SourcePath  string `json:"source_path,omitempty"`
-	// CfgData     *RawCfgData `json:"cfg_data,omitempty"`
-	CreatedAt string `json:"created_at,omitempty"`
-	UpdatedAt string `json:"updated_at,omitempty"`
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	ParentID    int64  `json:"barclamp_id"`
+	Version     string `json:"version"`
+	SourceURL   string `json:"source_url"`
+	SourcePath  string `json:"source_path"`
+	// CfgData     *RawCfgData `json:"cfg_data"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 	lastJson  []byte
 }
 
