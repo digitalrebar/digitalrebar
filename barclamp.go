@@ -47,11 +47,6 @@ func (o *Barclamp) ApiName() string {
 	return "barclamps"
 }
 
-func (o *Barclamp) Match() (res []*Barclamp, err error) {
-	res = make([]*Barclamp, 0)
-	return res, session.match(o, &res, o.ApiName(), "match")
-}
-
 func (o *Barclamp) setLastJSON(b []byte) {
 	o.lastJson = make([]byte, len(b))
 	copy(o.lastJson, b)

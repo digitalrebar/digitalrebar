@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -37,32 +36,9 @@ func addDeploymenterCommands(singularName string,
 }
 
 func init() {
-	lister := func() ([]crowbar.Crudder, error) {
-		deployments, err := crowbar.Deployments()
-		if err != nil {
-			return nil, err
-		}
-		res := make([]crowbar.Crudder, len(deployments))
-		for i := range deployments {
-			res[i] = deployments[i]
-		}
-		return res, nil
-	}
-	matcher := func(sample string) (string, error) {
-		obj := &crowbar.Deployment{}
-		err := json.Unmarshal([]byte(sample), obj)
-		if err != nil {
-			return "", fmt.Errorf("Error unmarshalling deployment\nError: %v\n", err.Error())
-		}
-		objs, err := obj.Match()
-		if err != nil {
-			return "", fmt.Errorf("Error fetching matches for %v", sample)
-		}
-		return prettyJSON(objs), nil
-	}
 	maker := func() crowbar.Crudder { return &crowbar.Deployment{} }
 	singularName := "deployment"
-	deployments := makeCommandTree(singularName, lister, matcher, maker)
+	deployments := makeCommandTree(singularName, maker)
 	deployments.AddCommand(&cobra.Command{
 		Use:   "bind [id] to [roleId]",
 		Short: "Bind a deployment to a role",

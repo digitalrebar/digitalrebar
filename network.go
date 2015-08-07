@@ -93,11 +93,6 @@ func (o *Network) ApiName() string {
 	return "networks"
 }
 
-func (o *Network) Match() (res []*Network, err error) {
-	res = make([]*Network, 0)
-	return res, session.match(o, &res, o.ApiName(), "match")
-}
-
 func (o *Network) setLastJSON(b []byte) {
 	o.lastJson = make([]byte, len(b))
 	copy(o.lastJson, b)
@@ -185,11 +180,6 @@ func (o *NetworkRange) ApiName() string {
 	return "network_ranges"
 }
 
-func (o *NetworkRange) Match() (res []*NetworkRange, err error) {
-	res = make([]*NetworkRange, 0)
-	return res, session.match(o, &res, o.ApiName(), "match")
-}
-
 func (o *NetworkRange) setLastJSON(b []byte) {
 	o.lastJson = make([]byte, len(b))
 	copy(o.lastJson, b)
@@ -257,11 +247,6 @@ func (o *NetworkAllocation) SetId(s string) error {
 
 func (o *NetworkAllocation) ApiName() string {
 	return "network_allocations"
-}
-
-func (o *NetworkAllocation) Match() (res []*NetworkAllocation, err error) {
-	res = make([]*NetworkAllocation, 0)
-	return res, session.match(o, &res, o.ApiName(), "match")
 }
 
 func (o *NetworkAllocation) setLastJSON(b []byte) {
@@ -333,11 +318,6 @@ func (o *NetworkRouter) SetId(s string) error {
 
 func (o *NetworkRouter) ApiName() string {
 	return "network_routers"
-}
-
-func (o *NetworkRouter) Match() (res []*NetworkRouter, err error) {
-	res = make([]*NetworkRouter, 0)
-	return res, session.match(o, &res, o.ApiName(), "match")
 }
 
 func (o *NetworkRouter) setLastJSON(b []byte) {

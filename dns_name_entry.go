@@ -42,11 +42,6 @@ func (o *DnsNameEntry) ApiName() string {
 	return "dns_name_entries"
 }
 
-func (o *DnsNameEntry) Match() (res []*DnsNameEntry, err error) {
-	res = make([]*DnsNameEntry, 0)
-	return res, session.match(o, &res, o.ApiName(), "match")
-}
-
 func (o *DnsNameEntry) setLastJSON(b []byte) {
 	o.lastJson = make([]byte, len(b))
 	copy(o.lastJson, b)

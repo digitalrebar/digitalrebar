@@ -45,11 +45,6 @@ func (o *User) ApiName() string {
 	return "users"
 }
 
-func (o *User) Match() (res []*User, err error) {
-	res = make([]*User, 0)
-	return res, session.match(o, &res, o.ApiName(), "match")
-}
-
 func (o *User) setLastJSON(b []byte) {
 	o.lastJson = make([]byte, len(b))
 	copy(o.lastJson, b)

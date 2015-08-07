@@ -1,41 +1,14 @@
 package main
 
-import (
-	"encoding/json"
-	"fmt"
+import crowbar "github.com/VictorLowther/crowbar-api"
 
-	crowbar "github.com/VictorLowther/crowbar-api"
-	//	"github.com/spf13/cobra"
-	//	"log"
-)
+//	"github.com/spf13/cobra"
+//	"log"
 
 func init() {
-	lister := func() ([]crowbar.Crudder, error) {
-		barclamps, err := crowbar.Barclamps()
-		if err != nil {
-			return nil, err
-		}
-		res := make([]crowbar.Crudder, len(barclamps))
-		for i := range barclamps {
-			res[i] = barclamps[i]
-		}
-		return res, nil
-	}
 	maker := func() crowbar.Crudder { return &crowbar.Barclamp{} }
-	matcher := func(sample string) (string, error) {
-		obj := &crowbar.Barclamp{}
-		err := json.Unmarshal([]byte(sample), obj)
-		if err != nil {
-			return "", fmt.Errorf("Error unmarshalling barclamp\nError: %v\n", err.Error())
-		}
-		objs, err := obj.Match()
-		if err != nil {
-			return "", fmt.Errorf("Error fetching matches for %v", sample)
-		}
-		return prettyJSON(objs), nil
-	}
 	singularName := "barclamp"
-	barclamps := makeCommandTree(singularName, lister, matcher, maker)
+	barclamps := makeCommandTree(singularName, maker)
 	/* Not actaully implemented yet
 	barclamps.AddCommand(&cobra.Command{
 		Use: "import [path]",

@@ -129,11 +129,6 @@ func (o *Attrib) ApiName() string {
 	return "attribs"
 }
 
-func (o *Attrib) Match() (res []*Attrib, err error) {
-	res = make([]*Attrib, 0)
-	return res, session.match(o, &res, o.ApiName(), "match")
-}
-
 // Attriber defines what is needed to get and set attribs on an object.
 type Attriber interface {
 	// You must be a Crudder to be an Attriber.

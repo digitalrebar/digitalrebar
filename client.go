@@ -149,9 +149,11 @@ func (c *ocbClient) list(res interface{}, uri ...string) (err error) {
 	return json.Unmarshal(buf, &res)
 }
 
-func (c *ocbClient) match(sample interface{}, res interface{}, uri ...string) (err error) {
-	inbuf, err := json.Marshal(sample)
-	buf, err := c.request("POST", path.Join(uri...), inbuf)
+func (c *ocbClient) match(vals map[string]interface{}, res interface{}, uri ...string) (err error) {
+	inbuf, err := json.Marshal(vals)
+	buf, err := c.request("POST",
+		path.Join(path.Join(uri...), "match"),
+		inbuf)
 	if err != nil {
 		return nil
 	}

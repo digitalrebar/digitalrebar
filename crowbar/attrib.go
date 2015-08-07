@@ -132,29 +132,6 @@ func addAttriberCommands(singularName string,
 }
 
 func init() {
-	lister := func() ([]crowbar.Crudder, error) {
-		attribs, err := crowbar.Attribs()
-		if err != nil {
-			return nil, err
-		}
-		res := make([]crowbar.Crudder, len(attribs))
-		for i := range attribs {
-			res[i] = attribs[i]
-		}
-		return res, nil
-	}
 	maker := func() crowbar.Crudder { return &crowbar.Attrib{} }
-	matcher := func(sample string) (string, error) {
-		obj := &crowbar.Attrib{}
-		err := json.Unmarshal([]byte(sample), obj)
-		if err != nil {
-			return "", fmt.Errorf("Error unmarshalling attrib\nError: %v\n", err.Error())
-		}
-		objs, err := obj.Match()
-		if err != nil {
-			return "", fmt.Errorf("Error fetching matches for %v", sample)
-		}
-		return prettyJSON(objs), nil
-	}
-	app.AddCommand(makeCommandTree("attrib", lister, matcher, maker))
+	app.AddCommand(makeCommandTree("attrib", maker))
 }

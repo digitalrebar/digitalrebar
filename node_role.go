@@ -74,11 +74,6 @@ func (o *NodeRole) ApiName() string {
 	return "node_roles"
 }
 
-func (o *NodeRole) Match() (res []*NodeRole, err error) {
-	res = make([]*NodeRole, 0)
-	return res, session.match(o, &res, o.ApiName(), "match")
-}
-
 func (o *NodeRole) setLastJSON(b []byte) {
 	o.lastJson = make([]byte, len(b))
 	copy(o.lastJson, b)

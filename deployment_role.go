@@ -49,11 +49,6 @@ func (o *DeploymentRole) ApiName() string {
 	return "deployment_roles"
 }
 
-func (o *DeploymentRole) Match() (res []*DeploymentRole, err error) {
-	res = make([]*DeploymentRole, 0)
-	return res, session.match(o, &res, o.ApiName(), "match")
-}
-
 func (o *DeploymentRole) setLastJSON(b []byte) {
 	o.lastJson = make([]byte, len(b))
 	copy(o.lastJson, b)

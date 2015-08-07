@@ -72,11 +72,6 @@ func (o *Hammer) ApiName() string {
 	return "hammers"
 }
 
-func (o *Hammer) Match() (res []*Hammer, err error) {
-	res = make([]*Hammer, 0)
-	return res, session.match(o, &res, o.ApiName(), "match")
-}
-
 func (o *Hammer) setLastJSON(b []byte) {
 	o.lastJson = make([]byte, len(b))
 	copy(o.lastJson, b)

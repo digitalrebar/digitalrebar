@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -36,30 +35,7 @@ func addRolerCommands(singularName string,
 }
 
 func init() {
-	lister := func() ([]crowbar.Crudder, error) {
-		roles, err := crowbar.Roles()
-		if err != nil {
-			return nil, err
-		}
-		res := make([]crowbar.Crudder, len(roles))
-		for i := range roles {
-			res[i] = roles[i]
-		}
-		return res, nil
-	}
-	matcher := func(sample string) (string, error) {
-		obj := &crowbar.Role{}
-		err := json.Unmarshal([]byte(sample), obj)
-		if err != nil {
-			return "", fmt.Errorf("Error unmarshalling role\nError: %v\n", err.Error())
-		}
-		objs, err := obj.Match()
-		if err != nil {
-			return "", fmt.Errorf("Error fetching matches for %v", sample)
-		}
-		return prettyJSON(objs), nil
-	}
 	maker := func() crowbar.Crudder { return &crowbar.Role{} }
 	singularName := "role"
-	app.AddCommand(makeCommandTree(singularName, lister, matcher, maker))
+	app.AddCommand(makeCommandTree(singularName, maker))
 }

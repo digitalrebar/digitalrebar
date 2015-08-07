@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -37,32 +36,9 @@ func addNoderCommands(singularName string,
 }
 
 func init() {
-	lister := func() ([]crowbar.Crudder, error) {
-		nodes, err := crowbar.Nodes()
-		if err != nil {
-			return nil, err
-		}
-		res := make([]crowbar.Crudder, len(nodes))
-		for i := range nodes {
-			res[i] = nodes[i]
-		}
-		return res, nil
-	}
-	matcher := func(sample string) (string, error) {
-		obj := &crowbar.Node{}
-		err := json.Unmarshal([]byte(sample), obj)
-		if err != nil {
-			return "", fmt.Errorf("Error unmarshalling node\nError: %v\n", err.Error())
-		}
-		objs, err := obj.Match()
-		if err != nil {
-			return "", fmt.Errorf("Error fetching matches for %v", sample)
-		}
-		return prettyJSON(objs), nil
-	}
 	maker := func() crowbar.Crudder { return &crowbar.Node{} }
 	singularName := "node"
-	nodes := makeCommandTree(singularName, lister, matcher, maker)
+	nodes := makeCommandTree(singularName, maker)
 	nodes.AddCommand(&cobra.Command{
 		Use:   "bind [id] to [roleId]",
 		Short: "Bind a node to a role",

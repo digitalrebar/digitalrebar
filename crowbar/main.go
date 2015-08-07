@@ -66,8 +66,6 @@ func init() {
 }
 
 func makeCommandTree(singularName string,
-	lister func() ([]crowbar.Crudder, error),
-	matcher func(string) (string, error),
 	maker func() crowbar.Crudder) (res *cobra.Command) {
 	name := singularName + "s"
 	d("Making command tree for %v\n", name)
@@ -80,8 +78,8 @@ func makeCommandTree(singularName string,
 		Use:   "list",
 		Short: fmt.Sprintf("List all %v", name),
 		Run: func(c *cobra.Command, args []string) {
-			objs, err := lister()
-			if err != nil {
+			objs := []interface{}{}
+			if err := crowbar.List(maker().ApiName(), &objs); err != nil {
 				log.Fatalf("Error listing %v: %v", name, err.Error())
 			}
 			fmt.Println(prettyJSON(objs))
@@ -94,8 +92,12 @@ func makeCommandTree(singularName string,
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			objs, err := matcher(args[0])
-			if err != nil {
+			objs := []interface{}{}
+			vals := map[string]interface{}{}
+			if err := json.Unmarshal([]byte(args[0]), &vals); err != nil {
+				log.Fatalf("Matches not valid JSON\n%v", err)
+			}
+			if err := crowbar.Match(maker().ApiName(), vals, &objs); err != nil {
 				log.Fatalf("Error getting matches for %v\nError:%v\n", singularName, err.Error())
 			}
 			fmt.Println(objs)

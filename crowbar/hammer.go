@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -37,30 +36,7 @@ func addHammererCommands(singularName string,
 }
 
 func init() {
-	lister := func() ([]crowbar.Crudder, error) {
-		hammers, err := crowbar.Hammers()
-		if err != nil {
-			return nil, err
-		}
-		res := make([]crowbar.Crudder, len(hammers))
-		for i := range hammers {
-			res[i] = hammers[i]
-		}
-		return res, nil
-	}
-	matcher := func(sample string) (string, error) {
-		obj := &crowbar.Hammer{}
-		err := json.Unmarshal([]byte(sample), obj)
-		if err != nil {
-			return "", fmt.Errorf("Error unmarshalling hammer\nError: %v\n", err.Error())
-		}
-		objs, err := obj.Match()
-		if err != nil {
-			return "", fmt.Errorf("Error fetching matches for %v", sample)
-		}
-		return prettyJSON(objs), nil
-	}
 	maker := func() crowbar.Crudder { return &crowbar.Hammer{} }
 	singularName := "hammer"
-	app.AddCommand(makeCommandTree(singularName, lister, matcher, maker))
+	app.AddCommand(makeCommandTree(singularName, maker))
 }

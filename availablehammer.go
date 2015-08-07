@@ -53,11 +53,6 @@ func (o *AvailableHammer) lastJSON() []byte {
 	return o.lastJson
 }
 
-func (o *AvailableHammer) Match() (res []*AvailableHammer, err error) {
-	res = make([]*AvailableHammer, 0)
-	return res, session.match(o, &res, o.ApiName(), "match")
-}
-
 func (o *AvailableHammer) hammers() {}
 
 func AvailableHammers() (res []*AvailableHammer, err error) {

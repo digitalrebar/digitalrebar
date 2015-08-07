@@ -98,6 +98,14 @@ func Update(o Crudder) error {
 	return Patch(o, patch)
 }
 
+func Match(path string, vals map[string]interface{}, res interface{}) error {
+	return session.match(vals, res, path)
+}
+
+func List(path string, res interface{}) error {
+	return session.list(res, path)
+}
+
 // SetId sets the ID of an object.
 //
 // If id can be parsed as an int64 without error, o's ID field will

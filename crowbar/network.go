@@ -118,31 +118,8 @@ func addNetworkRouterCommands(singularName string,
 }
 
 func init() {
-	lister := func() ([]crowbar.Crudder, error) {
-		objs, err := crowbar.Networks()
-		if err != nil {
-			return nil, err
-		}
-		res := make([]crowbar.Crudder, len(objs))
-		for i := range objs {
-			res[i] = objs[i]
-		}
-		return res, nil
-	}
-	matcher := func(sample string) (string, error) {
-		obj := &crowbar.Network{}
-		err := json.Unmarshal([]byte(sample), obj)
-		if err != nil {
-			return "", fmt.Errorf("Error unmarshalling network\nError: %v\n", err.Error())
-		}
-		objs, err := obj.Match()
-		if err != nil {
-			return "", fmt.Errorf("Error fetching matches for %v", sample)
-		}
-		return prettyJSON(objs), nil
-	}
 	maker := func() crowbar.Crudder { return &crowbar.Network{} }
-	network := makeCommandTree("network", lister, matcher, maker)
+	network := makeCommandTree("network", maker)
 	cmds := []*cobra.Command{
 		&cobra.Command{
 			Use:   "import [json]",
@@ -242,7 +219,8 @@ func init() {
 				}
 				netRange := &crowbar.NetworkRange{}
 				if err := crowbar.SetId(netRange, args[4]); err != nil {
-					netRange.Name = args[4]
+					vals := map[string]interface{}{}
+					vals["name"] = args[4]
 					network := &crowbar.Network{}
 					if err := crowbar.SetId(network, args[2]); err != nil {
 						log.Fatalf("Unable to use %v as a network ID", args[2])
@@ -250,9 +228,9 @@ func init() {
 					if err := crowbar.Read(network); err != nil {
 						log.Fatalln("Unable to fetch network from Crowbar")
 					}
-					netRange.NetworkID = network.ID
-					netRanges, err := netRange.Match()
-					if err != nil {
+					vals["network_id"] = network.ID
+					netRanges := []*crowbar.NetworkRange{}
+					if err := crowbar.Match(netRange.ApiName(), vals, &netRanges); err != nil {
 						log.Fatalf("Unable to fetch ranges matching %#v\n%v\n", netRange, err)
 					}
 					if len(netRanges) != 1 {
@@ -279,86 +257,13 @@ func init() {
 			},
 		},
 	}
-
 	network.AddCommand(cmds...)
-
 	app.AddCommand(network)
-	lister = func() ([]crowbar.Crudder, error) {
-		objs, err := crowbar.NetworkRanges()
-		if err != nil {
-			return nil, err
-		}
-		res := make([]crowbar.Crudder, len(objs))
-		for i := range objs {
-			res[i] = objs[i]
-		}
-		return res, nil
-	}
-	matcher = func(sample string) (string, error) {
-		obj := &crowbar.NetworkRange{}
-		err := json.Unmarshal([]byte(sample), obj)
-		if err != nil {
-			return "", fmt.Errorf("Error unmarshalling networkrange\nError: %v\n", err.Error())
-		}
-		objs, err := obj.Match()
-		if err != nil {
-			return "", fmt.Errorf("Error fetching matches for %v", sample)
-		}
-		return prettyJSON(objs), nil
-	}
 	maker = func() crowbar.Crudder { return &crowbar.NetworkRange{} }
-	networkrange := makeCommandTree("networkrange", lister, matcher, maker)
-
+	networkrange := makeCommandTree("networkrange", maker)
 	app.AddCommand(networkrange)
-	lister = func() ([]crowbar.Crudder, error) {
-		objs, err := crowbar.NetworkAllocations()
-		if err != nil {
-			return nil, err
-		}
-		res := make([]crowbar.Crudder, len(objs))
-		for i := range objs {
-			res[i] = objs[i]
-		}
-		return res, nil
-	}
-	matcher = func(sample string) (string, error) {
-		obj := &crowbar.NetworkAllocation{}
-		err := json.Unmarshal([]byte(sample), obj)
-		if err != nil {
-			return "", fmt.Errorf("Error unmarshalling networkallocation\nError: %v\n", err.Error())
-		}
-		objs, err := obj.Match()
-		if err != nil {
-			return "", fmt.Errorf("Error fetching matches for %v", sample)
-		}
-		return prettyJSON(objs), nil
-	}
 	maker = func() crowbar.Crudder { return &crowbar.NetworkAllocation{} }
-	app.AddCommand(makeCommandTree("networkallocation", lister, matcher, maker))
-
-	lister = func() ([]crowbar.Crudder, error) {
-		objs, err := crowbar.NetworkRouters()
-		if err != nil {
-			return nil, err
-		}
-		res := make([]crowbar.Crudder, len(objs))
-		for i := range objs {
-			res[i] = objs[i]
-		}
-		return res, nil
-	}
-	matcher = func(sample string) (string, error) {
-		obj := &crowbar.NetworkRouter{}
-		err := json.Unmarshal([]byte(sample), obj)
-		if err != nil {
-			return "", fmt.Errorf("Error unmarshalling networkrouter\nError: %v\n", err.Error())
-		}
-		objs, err := obj.Match()
-		if err != nil {
-			return "", fmt.Errorf("Error fetching matches for %v", sample)
-		}
-		return prettyJSON(objs), nil
-	}
+	app.AddCommand(makeCommandTree("networkallocation", maker))
 	maker = func() crowbar.Crudder { return &crowbar.NetworkRouter{} }
-	app.AddCommand(makeCommandTree("networkrouter", lister, matcher, maker))
+	app.AddCommand(makeCommandTree("networkrouter", maker))
 }
