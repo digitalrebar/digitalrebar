@@ -341,6 +341,12 @@ en:
       description: "Description"
       members: "Members"
       category: "Category"
+      all: "All"
+    show:
+      description: "Description"
+      nodes: "Nodes"
+      node: "Node"
+      move_to: "Move Node To Group"
   jigs:
     index:
       title: "Installed Configuration Managers - Jigs"

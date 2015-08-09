@@ -1,0 +1,36 @@
+%h1
+  = link_to @group.category, groups_path(category: @group.category)
+  = @group.name
+
+= "#{t '.description'}:"
+= @group.description if @group.description
+
+%h2= t '.nodes'
+
+%table.data.box
+  %thead
+    %tr{ :class => cycle(:odd, :even) }
+      %th= t '.node'
+      - Group.category(@group.category).each do |g|
+        - next if g.id == @group.id
+        %th= link_to g.name, group_path(g.id)
+  %tbdoy
+    - if @group.nodes.count == 0
+      %tr
+        %td= t 'no_items'
+    - else
+      - @group.nodes.each do |n|
+        %tr#node{id: n.id}
+          %td= link_to n.name, node_path(n.id)
+          - Group.category(@group.category).each do |g|
+            - next if g.id == @group.id
+            %td= link_to_function image_tag('icons/add.png'), "move(#{n.id}, #{g.id})"
+
+.clear
+
+:javascript
+
+  function move(node, group) {
+    //console.log(node, group);
+    $('tr#node_'+node).hide().fadeOut();
+  }

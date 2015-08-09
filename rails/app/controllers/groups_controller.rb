@@ -39,7 +39,10 @@ class GroupsController < ApplicationController
       redirect_to groups_path(:id=>params[:id])
     else
       @group = Group.find_key params[:id]
-      render api_show @group
+    end
+    respond_to do |format|
+      format.html { }
+      format.json { render api_show @group }
     end
   end
   

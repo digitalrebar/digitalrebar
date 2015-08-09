@@ -15,16 +15,20 @@
 
 class Group < ActiveRecord::Base
   
-  CATEGORIES = %w(ui rack tag)
+  CATEGORIES = %w(class rack tag ui)
+  # REMINDER: if you add a new group category, update the g(categories) list in BDD/groups_cb.erl!
+
+  after_commit :add_nodes, on: :create
 
   validates_format_of :name, :with=>/\A[a-zA-Z][_a-zA-Z0-9]*\z/, :message => I18n.t("db.lettersnumbers", :default=>"Name limited to [_a-zA-Z0-9]")
   validates_format_of :category, :with=>/\A[a-zA-Z][_a-zA-Z0-9]*\z/, :message => I18n.t("db.lettersnumbers", :default=>"Category limited to [_a-zA-Z0-9]")
 
   validates_uniqueness_of :name, :scope => :category, :case_sensitive => false, :message => I18n.t("db.notuniqueincategory", :default=>"Name item must be unique within category")
   validates_inclusion_of :category, :in => CATEGORIES, :message => I18n.t("db.group_category", :default=>"Illegal group category")
-  # REMINDER: if you add a new group category, update the g(categories) list in BDD/groups.erl!
 
   has_and_belongs_to_many :nodes, :join_table => "node_groups", :foreign_key => "group_id"
+
+  scope :category,           -> (cat) { where(["category = ?", cat]) }
 
   def <=>(other)
     # use Array#<=> to compare the attributes
@@ -33,6 +37,16 @@ class Group < ActiveRecord::Base
 
   def to_s
     name
+  end
+
+  private
+
+  # if this is the first group in a category, add all the nodes to it
+  def add_nodes
+    nodes = Node.category(self.category)
+    if nodes.count == 0
+      Node.all.each { |n| self.nodes << n } 
+    end
   end
 
 end

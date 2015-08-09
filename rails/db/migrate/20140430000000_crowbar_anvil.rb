@@ -264,7 +264,7 @@ with recursive p (child_id, parent_id) as (
       select child_id, parent_id from p;"
 
     create_table :groups do |t|
-      t.string      :name,        index: { unique: true }
+      t.string      :name
       t.string      :description, null: true
       t.string      :category,    default: 'ui'
       t.integer     :order,       default: 10000
