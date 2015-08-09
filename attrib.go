@@ -56,15 +56,10 @@ func GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, err error) {
 	}
 	res.SetId(id)
 	uri := url(o, url(res))
-	res.setLastFetch(uri)
 	if bucket != "" {
 		uri = fmt.Sprintf("%v?bucket=%v", uri, bucket)
 	}
-	inbuf, err := json.Marshal(res)
-	if err != nil {
-		return res, err
-	}
-	outbuf, err := session.request("GET", uri, inbuf)
+	outbuf, err := session.request("GET", uri, nil)
 	if err != nil {
 		return res, err
 	}
@@ -81,7 +76,6 @@ func SetAttrib(o Attriber, a *Attrib, bucket string) error {
 		bucket = "user"
 	}
 	uri := url(o, url(a))
-	a.setLastFetch(uri)
 	uri = fmt.Sprintf("%v?bucket=%v", uri, bucket)
 	patch, err := MakePatch(a)
 	if err != nil {
