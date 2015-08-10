@@ -1,10 +1,12 @@
 package datatypes
 
+import "github.com/guregu/null"
+
 type DnsNameEntry struct {
 	NameID
-	NetworkAllocationID int64  `json:"network_allocation_id"`
-	DnsNameFilterID     int64  `json:"dns_name_filter_id"`
-	RRType              string `json:"rr_type"`
+	NetworkAllocationID int64       `json:"network_allocation_id"`
+	DnsNameFilterID     int64       `json:"dns_name_filter_id"`
+	RRType              null.String `json:"rr_type"`
 }
 
 func (o *DnsNameEntry) ApiName() string {
@@ -12,7 +14,8 @@ func (o *DnsNameEntry) ApiName() string {
 }
 
 type DnsNameFilter struct {
-	NameID
+	SimpleID
+	Name     string `json:"name"`
 	Matcher  string `json:"matcher"`
 	Priority int64  `json:"priority"`
 	Service  string `json:"service"`

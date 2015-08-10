@@ -84,7 +84,8 @@ func init() {
 			if crowbar.Read(obj) != nil {
 				log.Fatalf("Failed to retrieve deployment %v\n", args[0])
 			}
-			if obj.ParentID == 0 {
+			if !obj.ParentID.Valid {
+				log.Fatalf("System deployment does not have a parent")
 				return
 			}
 			res, err := obj.Parent()

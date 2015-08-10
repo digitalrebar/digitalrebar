@@ -6,6 +6,7 @@ import (
 	"log"
 
 	crowbar "github.com/VictorLowther/crowbar-api"
+	"github.com/guregu/null"
 	"github.com/spf13/cobra"
 )
 
@@ -197,7 +198,7 @@ func init() {
 					log.Fatalln("Unable to fetch network from Crowbar")
 				}
 				alloc := &crowbar.NetworkAllocation{}
-				alloc.NodeID = node.ID
+				alloc.NodeID = null.IntFrom(node.ID)
 				alloc.NetworkID = network.ID
 				if err := crowbar.Create(alloc); err != nil {
 					log.Fatalf("Unable to create new NetworkAllocation: %v", err)
@@ -247,7 +248,7 @@ func init() {
 				alloc := &crowbar.NetworkAllocation{}
 				alloc.NetworkID = netRange.NetworkID
 				alloc.NetworkRangeID = netRange.ID
-				alloc.NodeID = node.ID
+				alloc.NodeID = null.IntFrom(node.ID)
 				if len(args) == 7 {
 					alloc.Address = args[6]
 				}

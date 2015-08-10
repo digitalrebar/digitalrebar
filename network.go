@@ -1,6 +1,7 @@
 package crowbar
 
 import (
+	"errors"
 	"fmt"
 	"path"
 
@@ -80,8 +81,11 @@ type NetworkAllocation struct {
 
 func (o *NetworkAllocation) Node() (*Node, error) {
 	res := &Node{}
-	res.ID = o.NodeID
-	return res, Read(res)
+	if o.NodeID.Valid {
+		res.ID = o.NodeID.Int64
+		return res, Read(res)
+	}
+	return nil, errors.New("NetworkAllocation not bound to a Node")
 }
 
 func (o *NetworkAllocation) Network() (*Network, error) {

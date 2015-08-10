@@ -1,5 +1,7 @@
 package datatypes
 
+import "github.com/guregu/null"
+
 // Deployments are the main tool that Crowbar provides to group
 // related nodes together.  They carry Deployment-specific
 // configuration information (in the form of DeploymentRoles), Nodes
@@ -26,7 +28,7 @@ type Deployment struct {
 	// there can be only one of these.
 	System bool `json:"system"`
 	// The ID of the deployment that is the parent of this one.
-	ParentID int64 `json:"parent_id"`
+	ParentID null.Int `json:"parent_id"`
 }
 
 func (o *Deployment) ApiName() string {

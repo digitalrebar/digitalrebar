@@ -1,5 +1,7 @@
 package datatypes
 
+import "github.com/guregu/null"
+
 // Attrib encapsualtes the concept of per-thing user settable
 // parameters that can be overridden in a generic fashion. The way it
 // works is like this:
@@ -45,14 +47,14 @@ type Attrib struct {
 	Description string `json:"description"`
 	// BarclampID is the ID of the barclamp that the Attrib was
 	// declared in.
-	BarclampID int64 `json:"barclamp_id"`
+	BarclampID null.Int `json:"barclamp_id"`
 	// RoleID is the ID of the role that this Attrib belongs to.
 	// If RoleID is 0, then the attrib does not belong to a role.
-	RoleID int64 `json:"role_id"`
+	RoleID null.Int `json:"role_id"`
 	// The custom type of the Attrib, if any.  This is used by
 	// Crowbar internally to allow for Attribs to have nonstandard
 	// get and set semantics.
-	Type string `json:"type"`
+	Type null.String `json:"type"`
 	// Whether the Attrib can be written to.  An attrib must have
 	// a non-empty Schema as well as a set Writable flag for a
 	// SetAttrib to work, and the Value being passed must validate

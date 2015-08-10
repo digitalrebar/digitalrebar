@@ -1,5 +1,7 @@
 package datatypes
 
+import "github.com/guregu/null"
+
 type HammerActions struct {
 	Power    []string `json:"power"`
 	Transfer []string `json:"xfer"`
@@ -21,14 +23,14 @@ type Hammer struct {
 	// The Endpoint that this Hammer talks to in order to perform
 	// its action.  The exact format of this Endpoint is
 	// AvailableHammer specific.
-	Endpoint string `json:"endpoint"`
+	Endpoint null.String `json:"endpoint"`
 	// Username is the user that this Hammer shoud authenticate
 	// against the Endpoint with.  Not all Hammers require a
 	// Username
 	Username string `json:"username"`
 	// Authenticator is an opaque token that should be used to
 	// authenticate with.
-	Authenticator string `json:"authenticator"`
+	Authenticator null.String `json:"authenticator"`
 	// Actions define what non-idempotent Actions this Hammer can take.
 	Actions HammerActions `json:"actions"`
 }

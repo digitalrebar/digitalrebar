@@ -1,12 +1,14 @@
 package datatypes
 
+import "github.com/guregu/null"
+
 type Barclamp struct {
 	NameID
-	Description string `json:"description"`
-	ParentID    int64  `json:"barclamp_id"`
-	Version     string `json:"version"`
-	SourceURL   string `json:"source_url"`
-	SourcePath  string `json:"source_path"`
+	Description string      `json:"description"`
+	ParentID    null.Int    `json:"barclamp_id"`
+	Version     null.Int    `json:"version"`
+	SourceURL   null.String `json:"source_url"`
+	SourcePath  null.String `json:"source_path"`
 	// CfgData     *RawCfgData `json:"cfg_data"`
 }
 

@@ -1,6 +1,7 @@
 package crowbar
 
 import (
+	"errors"
 	"path"
 
 	"github.com/VictorLowther/crowbar-api/datatypes"
@@ -14,8 +15,11 @@ type Deployment struct {
 
 func (o *Deployment) Parent() (res *Deployment, err error) {
 	res = &Deployment{}
-	res.ID = o.ParentID
-	return res, Read(res)
+	if o.ParentID.Valid {
+		res.ID = o.ParentID.Int64
+		return res, Read(res)
+	}
+	return nil, errors.New("Deployment has no parent")
 }
 
 // Satisfy salient interfaces

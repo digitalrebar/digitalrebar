@@ -1,6 +1,7 @@
 package datatypes
 
 import "strconv"
+import "github.com/guregu/null"
 
 // Network holds configuration for a specific network.
 type Network struct {
@@ -26,7 +27,7 @@ type Network struct {
 	// The IPv6 prefix this network should use to hand out IPv6 addresses.
 	// If empty, no IPv6 addresses will be allocated.  If the address is not in CIDR
 	// form, Crowbar will assume it is a /64 subnet.
-	V6Prefix string `json:"v6prefix"`
+	V6Prefix null.String `json:"v6prefix"`
 	// The conduit that this Network should run over.  A Conduit
 	// defnintion is a comma-seperated list of abstract interface
 	// names that have the following format:
@@ -52,9 +53,10 @@ type Network struct {
 	//   Conduit, and Conduit specifications for different
 	//   networks on the same machine must either overlap
 	//   perfectly or not at all.
-	Conduit  string `json:"conduit"`
-	Category string `json:"category"`
-	Group    string `json:"group"`
+	Conduit          string      `json:"conduit"`
+	Category         string      `json:"category"`
+	Group            string      `json:"group"`
+	PolicyBasedRoute null.String `json:"pbr"`
 }
 
 func (o *Network) ApiName() string {
@@ -68,14 +70,14 @@ func (o *Network) ApiName() string {
 // their parent Network.
 type NetworkRange struct {
 	SimpleID
-	NetworkID   int64  `json:"network_id"`
-	Vlan        int64  `json:"vlan"`
-	TeamingMode int64  `json:"team_mode"`
-	UseTeam     bool   `json:"use_team"`
-	UseVlan     bool   `json:"use_vlan"`
-	UseBridge   bool   `json:"use_bridge"`
-	Overlap     bool   `json:"overlap"`
-	Conduit     string `json:"conduit"`
+	NetworkID   int64       `json:"network_id"`
+	Vlan        null.Int    `json:"vlan"`
+	TeamingMode null.Int    `json:"team_mode"`
+	UseTeam     null.Bool   `json:"use_team"`
+	UseVlan     null.Bool   `json:"use_vlan"`
+	UseBridge   null.Bool   `json:"use_bridge"`
+	Overlap     bool        `json:"overlap"`
+	Conduit     null.String `json:"conduit"`
 	// The first address that can be allocated in this NetworkRange.
 	// The address can be either IPv4 or IPv6, and must be in CIDR form.
 	First string `json:"first"`
@@ -121,9 +123,9 @@ func (o *AddressID) SetId(s string) error {
 // NetworkAllocation is the allocation of an address from a NetworkRange to a Node.
 type NetworkAllocation struct {
 	AddressID
-	NodeID         int64 `json:"node_id"`
-	NetworkID      int64 `json:"network_id"`
-	NetworkRangeID int64 `json:"network_range_id"`
+	NodeID         null.Int `json:"node_id"`
+	NetworkID      int64    `json:"network_id"`
+	NetworkRangeID int64    `json:"network_range_id"`
 }
 
 func (o *NetworkAllocation) ApiName() string {
