@@ -74,7 +74,7 @@ func makeCommandTree(singularName string,
 		Use:   name,
 		Short: fmt.Sprintf("Access CLI commands relating to %v", name),
 	}
-	commands := make([]*cobra.Command, 7)
+	commands := make([]*cobra.Command, 8)
 	commands[0] = &cobra.Command{
 		Use:   "list",
 		Short: fmt.Sprintf("List all %v", name),
@@ -122,6 +122,20 @@ func makeCommandTree(singularName string,
 		},
 	}
 	commands[3] = &cobra.Command{
+		Use:   "sample",
+		Short: fmt.Sprintf("Get the default values for a %v", singularName),
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 0 {
+				log.Fatalf("%v takes no arguments", c.UseLine())
+			}
+			obj := maker()
+			if err := crowbar.Init(obj); err != nil {
+				log.Fatalf("Unable to fetch defaults for %v: %v\n", singularName, err.Error())
+			}
+			fmt.Println(prettyJSON(obj))
+		},
+	}
+	commands[4] = &cobra.Command{
 		Use:   "create [json]",
 		Short: fmt.Sprintf("Create a new %v with the passed-in JSON", singularName),
 		Run: func(c *cobra.Command, args []string) {
@@ -138,7 +152,7 @@ func makeCommandTree(singularName string,
 			fmt.Println(prettyJSON(obj))
 		},
 	}
-	commands[4] = &cobra.Command{
+	commands[5] = &cobra.Command{
 		Use:   "update [id] [json]",
 		Short: fmt.Sprintf("Unsafely update %v by id with the passed-in JSON", singularName),
 		Run: func(c *cobra.Command, args []string) {
@@ -172,7 +186,7 @@ func makeCommandTree(singularName string,
 			fmt.Println(prettyJSON(obj))
 		},
 	}
-	commands[5] = &cobra.Command{
+	commands[6] = &cobra.Command{
 		Use:   "patch [objectJson] [changesJson]",
 		Short: fmt.Sprintf("Patch %v with the passed-in JSON", singularName),
 		Run: func(c *cobra.Command, args []string) {
@@ -201,7 +215,7 @@ func makeCommandTree(singularName string,
 			fmt.Println(prettyJSON(obj))
 		},
 	}
-	commands[6] = &cobra.Command{
+	commands[7] = &cobra.Command{
 		Use:   "destroy [id]",
 		Short: fmt.Sprintf("Destroy %v by id", singularName),
 		Run: func(c *cobra.Command, args []string) {

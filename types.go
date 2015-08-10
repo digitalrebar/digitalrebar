@@ -70,14 +70,26 @@ func unmarshal(path string, buf []byte, o Crudder) error {
 	return nil
 }
 
-// Read fetches the object from the server.
-func Read(o Crudder) error {
-	path := url(o)
-	buf, err := session.request("GET", path, nil)
+// Init populates a Crudder with its default values as returned from the server.
+// You should always call Init() on any new object you intend to call Create() on in the
+// future to ensure that the defaults for the fields are populated correctly.
+func Init(o Crudder) error {
+	uri := path.Join(o.ApiName(), "sample")
+	buf, err := session.request("GET", uri, nil)
 	if err != nil {
 		return err
 	}
-	return unmarshal(path, buf, o)
+	return unmarshal(uri, buf, o)
+}
+
+// Read fetches the object from the server.
+func Read(o Crudder) error {
+	uri := url(o)
+	buf, err := session.request("GET", uri, nil)
+	if err != nil {
+		return err
+	}
+	return unmarshal(uri, buf, o)
 }
 
 // Create creates an object on the server.
@@ -86,12 +98,12 @@ func Create(o Crudder) error {
 	if err != nil {
 		return err
 	}
-	path := o.ApiName()
-	outbuf, err := session.request("POST", path, inbuf)
+	uri := o.ApiName()
+	outbuf, err := session.request("POST", uri, inbuf)
 	if err != nil {
 		return err
 	}
-	return unmarshal(path, outbuf, o)
+	return unmarshal(uri, outbuf, o)
 }
 
 // Destroy removes this object from the server.
@@ -102,12 +114,12 @@ func Destroy(o Crudder) error {
 
 // Patch attempts to update o with patch, which must be an RFC6902 JSON Patch.
 func Patch(o Crudder, patch []byte) error {
-	path := url(o)
-	outbuf, err := session.request("PATCH", path, patch)
+	uri := url(o)
+	outbuf, err := session.request("PATCH", uri, patch)
 	if err != nil {
 		return err
 	}
-	return unmarshal(path, outbuf, o)
+	return unmarshal(uri, outbuf, o)
 }
 
 // MakePatch generates a JSON Patch that describes the difference between the last time
