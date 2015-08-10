@@ -15,6 +15,10 @@
 class DnsNameEntriesController < ::ApplicationController
   respond_to :html, :json
 
+  def sample
+    render api_sample(DnsNameEntry)
+  end
+
   def match
     attrs = DnsNameEntry.attribute_names.map{|a|a.to_sym}
     objs = []

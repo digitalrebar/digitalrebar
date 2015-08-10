@@ -15,6 +15,10 @@
 class NetworkAllocationsController < ::ApplicationController
   respond_to :json
 
+  def sample
+    render api_sample(NetworkAllocation)
+  end
+
   def match
     attrs = NetworkAllocation.attribute_names.map{|a|a.to_sym}
     objs = []

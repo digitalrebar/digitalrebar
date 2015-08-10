@@ -15,6 +15,10 @@
 
 class DeploymentRolesController < ApplicationController
 
+  def sample
+    render api_sample(DeploymentRole)
+  end
+
   def match
     attrs = DeploymentRole.attribute_names.map{|a|a.to_sym}
     objs = []

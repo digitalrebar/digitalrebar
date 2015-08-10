@@ -15,6 +15,11 @@
 
 class NodeRolesController < ApplicationController
 
+  def sample
+    render api_sample(NodeRole)
+  end
+
+
   def match
     attrs = NodeRole.attribute_names.map{|a|a.to_sym}
     objs = []

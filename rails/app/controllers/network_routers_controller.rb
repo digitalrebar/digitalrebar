@@ -15,6 +15,10 @@
 class NetworkRoutersController < ::ApplicationController
   respond_to :json
 
+  def sample
+    return api_sample(NetworkRouter)
+  end
+
   def match
     attrs = NetworkRouter.attribute_names.map{|a|a.to_sym}
     objs = []

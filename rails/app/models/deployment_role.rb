@@ -29,6 +29,12 @@ class DeploymentRole < ActiveRecord::Base
 
   scope  :by_name,      -> (n)   { joins(:role).where('roles.name' => n) }
 
+  def as_json(args = nil)
+    args ||= {}
+    args[:except] = [ :proposed_data, :committed_data, :wall, :notes]
+    super(args)
+  end
+
   # convenience methods
 
   def name

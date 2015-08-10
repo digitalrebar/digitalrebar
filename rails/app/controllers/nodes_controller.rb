@@ -17,6 +17,11 @@ class NodesController < ApplicationController
 
   # API GET /crowbar/v2/nodes
   # UI GET /dashboard
+
+  def sample
+    render api_sample(Node)
+  end
+  
   def match
     attrs = Node.attribute_names.map{|a|a.to_sym}
     objs = []

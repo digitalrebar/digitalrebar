@@ -14,6 +14,10 @@
 #
 #
 class AvailableHammersController < ApplicationController
+
+  def sample
+    render api_sample(AvailableHammer)
+  end
   
   def match
     attrs = AvailableHammer.attribute_names.map{|a|a.to_sym}

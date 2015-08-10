@@ -19,6 +19,10 @@ class UsersController < ApplicationController
 
   add_help(:index,[],[:get])
 
+  def sample
+    render api_sample(User)
+  end
+
   def match
     attrs = User.attribute_names.map{|a|a.to_sym}
     objs = []

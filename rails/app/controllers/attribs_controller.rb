@@ -15,6 +15,10 @@
 #
 class AttribsController < ApplicationController
 
+  def sample
+    render api_sample(Attrib)
+  end
+
   def match
     attrs = Attrib.attribute_names.map{|a|a.to_sym}
     objs = []

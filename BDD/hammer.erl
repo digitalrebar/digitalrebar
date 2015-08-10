@@ -34,10 +34,9 @@ g(Item) ->
 validate(JSON) when is_record(JSON, obj) ->
   J = JSON#obj.data,
   R =[hammer_type(JSON#obj.type),
-      bdd_utils:is_a(J, length, 9),
+      bdd_utils:is_a(J, length, 8),
       bdd_utils:is_a(J, int, node_id),
       bdd_utils:is_a(J, string, name),
-      bdd_utils:is_a(J, str, authenticator),
       bdd_utils:is_a(J, int, priority),
       bdd_utils:is_a(J, str, username),
       bdd_utils:is_a(J, integer, available_hammer_id),

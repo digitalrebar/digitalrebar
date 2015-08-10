@@ -17,6 +17,11 @@ class NetworksController < ::ApplicationController
 
   add_help(:show,[:network_id],[:get])
 
+  def sample
+    render api_sample(Network)
+  end
+
+
   def match
     attrs = Network.attribute_names.map{|a|a.to_sym}
     objs = []

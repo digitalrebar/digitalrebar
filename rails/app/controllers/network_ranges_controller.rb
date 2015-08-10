@@ -15,6 +15,10 @@
 class NetworkRangesController < ::ApplicationController
   respond_to :json
 
+  def sample
+    render api_sample(NetworkRange)
+  end
+
   def match
     attrs = NetworkRange.attribute_names.map{|a|a.to_sym}
     objs = []

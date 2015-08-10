@@ -151,21 +151,25 @@ Crowbar::Application.routes.draw do
           get "anneal", :to => "node_roles#anneal", :as => :anneal
           resources :attribs, :as=>:attribs_api do
             collection do
+              get 'sample'
               post 'match'
             end
           end
           resources :available_hammers do
             collection do
+              get 'sample'
               post 'match'
             end
           end
           resources :barclamps do
             collection do
+              get 'sample'
               post 'match'
             end
           end
           resources :deployment_roles do
             collection do
+              get 'sample'
               post 'match'
             end
             resources :roles
@@ -176,6 +180,7 @@ Crowbar::Application.routes.draw do
           end
           resources :deployments do
             collection do
+              get 'sample'
               post 'match'
             end
             resources :node_roles
@@ -196,6 +201,7 @@ Crowbar::Application.routes.draw do
 
           resources :networks do
             collection do
+              get 'sample'
               post 'match'
             end
             resources :network_ranges
@@ -210,47 +216,46 @@ Crowbar::Application.routes.draw do
           end
           resources :network_ranges do
             collection do
+              get 'sample'
               post 'match'
             end
             resources :network_allocations
           end
           resources :network_routers do
             collection do
+              get 'sample'
               post 'match'
             end
           end
           resources :network_allocations do
             collection do
+              get 'sample'
               post 'match'
             end
           end
           resources :dns_name_filters do
             collection do
+              get 'sample'
               post 'match'
             end
           end
           resources :dns_name_entries do
             collection do
+              get 'sample'
               post 'match'
             end
           end
-          resources :interfaces do
-            collection do
-              post 'match'
-            end
-          end
-          resources :runs do
-            collection do
-              post 'match'
-            end
-          end
+          resources :interfaces
+          resources :runs
           resources :jigs do
             collection do
+              get 'sample'
               post 'match'
             end
           end
           resources :nodes do
             collection do
+              get 'sample'
               post 'match'
             end
             resources :node_roles
@@ -268,12 +273,14 @@ Crowbar::Application.routes.draw do
           end
           resources :hammers do
             collection do
+              get 'sample'
               post 'match'
             end
             post :perform
           end
           resources :node_roles do
             collection do
+              get 'sample'
               post 'match'
             end
             put :retry
@@ -283,6 +290,7 @@ Crowbar::Application.routes.draw do
           end
           resources :roles do
             collection do
+              get 'sample'
               post 'match'
             end
             resources :attribs
@@ -292,6 +300,7 @@ Crowbar::Application.routes.draw do
           end
           resources :users do
             collection do
+              get 'sample'
               post 'match'
             end
             post "admin", :controller => "users", :action => "make_admin"

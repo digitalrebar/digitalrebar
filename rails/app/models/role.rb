@@ -74,7 +74,13 @@ class Role < ActiveRecord::Base
       save!
     end
   end
-  
+
+  def as_json(args = nil)
+    args ||= {}
+    args[:except] = [ :template, :notes ]
+    super(args)
+  end
+
   # incremental update (merges with existing)
   def template_update(val)
     Role.transaction do

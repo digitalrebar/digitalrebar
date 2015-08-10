@@ -15,6 +15,10 @@
 #
 class JigsController < ApplicationController
 
+  def sample
+    render api_sample(Jig)
+  end
+
   def match
     attrs = Jig.attribute_names.map{|a|a.to_sym}
     objs = []

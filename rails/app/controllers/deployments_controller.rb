@@ -15,6 +15,10 @@
 #
 class DeploymentsController < ApplicationController
 
+  def sample
+    render api_sample(Deployment)
+  end
+  
   def match
     attrs = Deployment.attribute_names.map{|a|a.to_sym}
     objs = []
@@ -69,27 +73,20 @@ class DeploymentsController < ApplicationController
   end
 
   def update
-    if request.patch?
-      Deployment.transaction do
-        @deployment = Deployment.find_key(params[:id]).lock!
+    Deployment.transaction do
+      @deployment = Deployment.find_key(params[:id]).lock!
+      if request.patch?
         patch(@deployment,%w{name description})
-      end
-      render api_show @deployment
-    else
-      respond_to do |format|
-        format.html do
-          Deployment.transaction do
-            @deployment = Deployment.find_key(params[:id]).lock!
-            @deployment.update_attributes!(params.permit(:name,:description))
+        render api_show @deployment
+      else
+        @deployment.update_attributes!(params.permit(:name,:description))
+        respond_to do |format|
+          format.html do
+            redirect_to deployment_path(@deployment.id)
           end
-          redirect_to deployment_path(@deployment.id)
-        end
-        format.json do
-          Deployment.transaction do
-            @deployment = Deployment.find_key(params[:id]).lock!
-            @deployment.update_attributes!(params.permit(:name,:description))
+          format.json do
+            render api_show @deployment
           end
-          render api_show @deployment
         end
       end
     end

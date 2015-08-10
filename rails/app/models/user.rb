@@ -17,8 +17,8 @@ require 'digest/md5'
 
 class User < ActiveRecord::Base
   # Include default devise modules. Others available are:
-  # :authenticatable, :confirmable, :database_authenticatable, :lockable, :omniauthable, 
-  # :recoverable, :registerable, :rememberable, :timeoutable, :token_authenticatable, 
+  # :authenticatable, :confirmable, :database_authenticatable, :lockable, :omniauthable,
+  # :recoverable, :registerable, :rememberable, :timeoutable, :token_authenticatable,
   # :trackable, :validatable
 
   audited except: [:password, :encrypted_password]
@@ -39,20 +39,14 @@ class User < ActiveRecord::Base
   end
 
   # Setup accessible (or protected) attributes for your model
-  
+
   validates :username, :uniqueness => {:case_sensitive => false}, :presence => true
   DIGEST_REALM = "Crowbar"
-  
+
   scope  :admin,              -> { where(:is_admin => true) }
- 
+
   def self.name_column
     :username
-  end
- 
-  def as_json(args)
-    # brings devise method into Crowbar json
-    args[:methods] = :is_locked
-    super(args)
   end
 
   def self.find_by_id_or_username(id)
@@ -67,10 +61,17 @@ class User < ActiveRecord::Base
    ret
   end
 
+  def as_json(args = nil)
+    # brings devise method into Crowbar json
+    args ||= {}
+    args[:methods] = :is_locked
+    super(args)
+  end
+
   def digest_password(new_pass)
     self.encrypted_password = digester(new_pass)
   end
-  
+
   def is_locked
     access_locked?
   end
@@ -78,7 +79,7 @@ class User < ActiveRecord::Base
   def email_required?
     false
   end
-  
+
   def password_required?
      (!persisted? || !password.nil? || !password_confirmation.nil?) || admin_reset_password?
   end
@@ -86,7 +87,7 @@ class User < ActiveRecord::Base
   def admin_reset_password?
     @admin_reset_password == true
   end
- 
+
   def valid_password?(password)
     # try default password test first DatabaseAuthenticatable valid_password?
     # see https://github.com/plataformatec/devise/blob/master/lib/devise/models/database_authenticatable.rb
@@ -98,16 +99,15 @@ class User < ActiveRecord::Base
     rescue
       # ignore, keep going
     end
-    
+
     # now the compromise, fall back to MD5 method as backup
     return digester(password).eql?(encrypted_password)
   end
 
   private
- 
+
   def digester(pass)
     Digest::MD5.hexdigest([username,DIGEST_REALM,pass].join(":"))
   end
- 
-end
 
+end

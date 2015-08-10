@@ -78,6 +78,11 @@ class ApplicationController < ActionController::Base
     request.xhr?
   end
 
+  def api_sample(model)
+    j = model.column_defaults.reject{|k,v| /(^id)|_(id|at)$/ =~ k}
+    api_show(j,model)
+  end
+    
   # Given an object and list of permitted object attributes to update, extract the
   # JSON patch that should be in the request body, apply it to the object cast as a
   # JSON blob, and update the permitted attribs of the actual object.

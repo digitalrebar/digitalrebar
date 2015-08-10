@@ -43,8 +43,10 @@ class Hammer < ActiveRecord::Base
     Hammer.create!(args)
   end
 
-  def as_json(args)
+  def as_json(args = nil)
+    args ||= {}
     args[:methods] = :actions
+    args[:except] = [ :authenticator ]
     super(args)
   end
 

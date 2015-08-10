@@ -63,6 +63,12 @@ class Node < ActiveRecord::Base
   scope    :non_system,         -> { where(:system=>false) }
   scope    :system,             -> { where(:system => true) }
 
+  def as_json(args = nil)
+    args ||= {}
+    args[:except] = [ :discovery, :hint, :order, :notes ]
+    super(args)
+  end
+
   # Get all the attributes applicable to a node.
   # This includes:
   # * All attributes that are defined for our node roles, by virtue of
@@ -293,7 +299,7 @@ class Node < ActiveRecord::Base
       save!
     end
   end
-  
+
   def hint_update(val)
     Node.transaction do
       self.hint = self.hint.deep_merge(val)
@@ -568,5 +574,5 @@ class Node < ActiveRecord::Base
       return true
     end
   end
-  
+
 end
