@@ -25,9 +25,11 @@ type NodeRole struct {
 	// The log from the last time this NodeRole ran against its Node.
 	RunLog string `json:"runlog"`
 	// Whether this NodeRole is available to the annealer
-	Available bool `json:"available"`
-	Order     int  `json:"order"`
-	NodeError bool `json:"node_error"`
+	Available bool  `json:"available"`
+	Order     int   `json:"order"`
+	NodeError bool  `json:"node_error"`
+	Cohort    int64 `json:"cohort"`
+	RunCount  int64 `json:"run_count"`
 }
 
 func (o *NodeRole) ApiName() string {

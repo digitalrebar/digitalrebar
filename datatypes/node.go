@@ -28,7 +28,8 @@ type Node struct {
 	System bool `json:"system"`
 	// The target Role that the annealer should converge the node to.
 	// If it is 0, then the annealer will try to converge all the roles bound to the node.
-	TargetRoleID int64 `json:"target_role_id"`
+	TargetRoleID int64    `json:"target_role_id"`
+	Quirks       []string `json:"quirks"`
 }
 
 func (o *Node) ApiName() string {
