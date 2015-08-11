@@ -6,6 +6,7 @@ import (
 	"log"
 
 	crowbar "github.com/VictorLowther/crowbar-api"
+	"github.com/VictorLowther/jsonpatch/utils"
 	"github.com/guregu/null"
 	"github.com/spf13/cobra"
 )
@@ -130,9 +131,34 @@ func init() {
 					log.Fatalf("%v requires 1 argument\n", c.UseLine())
 				}
 				obj := &crowbar.Network{}
-				if err := json.Unmarshal([]byte(args[0]), obj); err != nil {
+				if err := crowbar.Init(obj); err != nil {
+					log.Fatalf("Unable to fetch defaults for network\n%v\n", err)
+				}
+				intermediate := map[string]interface{}{}
+				if err := utils.Remarshal(obj, intermediate); err != nil {
+					log.Fatalf("Should not happen in network import")
+				}
+				netdef := map[string]interface{}{}
+				if err := json.Unmarshal([]byte(args[0]), &netdef); err != nil {
 					log.Fatalf("Argument does not contain a valid network!\n")
 				}
+				netdef = utils.Merge(intermediate, netdef).(map[string]interface{})
+				if v, ok := netdef["deployment"]; ok {
+					depl_name, ok := v.(string)
+					if !ok {
+						log.Fatalln("deployment parameter not a string")
+					}
+					depl := &crowbar.Deployment{}
+					depl.SetId(depl_name)
+					if err := crowbar.Read(depl); err != nil {
+						log.Fatalf("Unable to fetch deployment %v\n", depl_name)
+					}
+					netdef["deployment_id"] = depl.ID
+				}
+				if err := utils.Remarshal(netdef, obj); err != nil {
+					log.Fatalln("SHould not happen 2 in networks import")
+				}
+
 				if err := crowbar.Create(obj); err != nil {
 					log.Fatalln("Failed to create new network.")
 				}
