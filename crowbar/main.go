@@ -143,7 +143,15 @@ func makeCommandTree(singularName string,
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
 			obj := maker()
-			if err := json.Unmarshal([]byte(args[0]), obj); err != nil {
+			if err := crowbar.Init(obj); err != nil {
+				log.Fatalf("Unable to fetch defaults for %v\n%v\n", singularName, err)
+			}
+			buf, _ := json.Marshal(obj)
+			newObj, err := utils.MergeJSON(buf, []byte(args[0]))
+			if err != nil {
+				log.Fatalf("Failed to merge supplied attributes with defauts for %v\n%v\n", singularName, err)
+			}
+			if err := json.Unmarshal(newObj, obj); err != nil {
 				log.Fatalf("Unable to parse %v JSON %v\nError: %v\n", args[0], err.Error())
 			}
 			if err := crowbar.Create(obj); err != nil {
