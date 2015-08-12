@@ -45,7 +45,7 @@ class Group < ActiveRecord::Base
   def add_nodes
     nodes = Node.category(self.category)
     if nodes.count == 0
-      Node.all.each { |n| self.nodes << n } 
+      Node.all.each { |n| self.nodes << n unless n.admin or n.system} 
     end
   end
 

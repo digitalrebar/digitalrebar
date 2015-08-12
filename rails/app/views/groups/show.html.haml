@@ -31,6 +31,30 @@
 :javascript
 
   function move(node, group) {
-    //console.log(node, group);
+    addurl = "/api/v2/groups/"+group+"/nodes"
+    adddata = {node_id:node},
+    rmurl = "/api/v2/groups/#{@group.id}/nodes/" + node
+    //console.log("add " + addurl);
+    $.ajax({
+             type: "DELETE",
+             url: rmurl,
+             contentType: "application/json; charset=utf-8",
+             crossDomain: false})
+       .fail(function (jqXHR, status) {
+           // error handler
+          console.log("delete fail ", jqXHR);
+       });
+    $.ajax({
+           type: "POST",
+           url: addurl,
+           data: JSON.stringify(adddata),
+           dataType: "json",
+           contentType: "application/json; charset=utf-8",
+           crossDomain: false})
+      .fail(function (jqXHR, status) {
+               // error handler
+               console.log("add fail ", jqXHR);
+               //alert('fail' + status.code);
+           });
     $('tr#node_'+node).hide().fadeOut();
   }

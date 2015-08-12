@@ -123,10 +123,16 @@ class NodesController < ApplicationController
   # RESTful DELETE of the node resource
   def destroy
     @node = Node.find_key(params[:id] || params[:name])
-    @node.destroy
-    respond_to do |format|
-      format.html { redirect_to deployment_path(@node.deployment_id) }
-      format.json { render api_delete @node }
+    if params[:group_id]
+      g = Group.find_key params[:group_id]
+      g.nodes.delete(@node) if g.nodes.include? @node
+      render :text=>I18n.t('api.removed', :item=>'node', :collection=>'group')
+    else
+      @node.destroy
+      respond_to do |format|
+        format.html { redirect_to deployment_path(@node.deployment_id) }
+        format.json { render api_delete @node }
+      end
     end
   end
 
@@ -174,31 +180,38 @@ class NodesController < ApplicationController
 
   # RESTfule POST of the node resource
   def create
-    params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
-    params[:deployment_id] ||= Deployment.system
-    params.require(:name)
-    params.require(:deployment_id)
-    default_net = nil
-    Node.transaction do
-      @node = Node.create!(params.permit(:name,
-                                         :description,
-                                         :admin,
-                                         :deployment_id,
-                                         :allocated,
-                                         :alive,
-                                         :system,
-                                         :available,
-                                         :bootenv))
-      # Keep suport for mac and ip hints in short form around for legacy Sledgehammer purposes
-      if params[:ip]
-        default_net = Network.lookup_network(params[:ip]) ||
-                      Network.find_by_name("unmanaged")
-        Attrib.set("hint-#{default_net.name}-v4addr",@node,params[:ip]) if default_net
-        Attrib.set("hint-admin-macs", @node, [params[:mac]]) if params[:mac]
+    if params[:group_id] and params[:node_id]
+      g = Group.find_key params[:group_id]
+      n = Node.find_key params[:node_id]
+      n.groups << g if g and n
+      render :text=>I18n.t('api.added', :item=>g.name, :collection=>'node.groups')
+    else
+      params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
+      params[:deployment_id] ||= Deployment.system
+      params.require(:name)
+      params.require(:deployment_id)
+      default_net = nil
+      Node.transaction do
+        @node = Node.create!(params.permit(:name,
+                                           :description,
+                                           :admin,
+                                           :deployment_id,
+                                           :allocated,
+                                           :alive,
+                                           :system,
+                                           :available,
+                                           :bootenv))
+        # Keep suport for mac and ip hints in short form around for legacy Sledgehammer purposes
+        if params[:ip]
+          default_net = Network.lookup_network(params[:ip]) ||
+                        Network.find_by_name("unmanaged")
+          Attrib.set("hint-#{default_net.name}-v4addr",@node,params[:ip]) if default_net
+          Attrib.set("hint-admin-macs", @node, [params[:mac]]) if params[:mac]
+        end
       end
+      default_net.make_node_role(@node) if default_net
+      render api_show @node
     end
-    default_net.make_node_role(@node) if default_net
-    render api_show @node
   end
 
   def update
