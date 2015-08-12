@@ -1,15 +1,13 @@
 package datatypes
 
 import "strconv"
-import "github.com/guregu/null"
 
 type User struct {
-	ID       int64       `json:"id"`
-	Name     string      `json:"username"`
-	Email    string      `json:"email"`
-	Admin    bool        `json:"is_admin"`
-	Locked   bool        `json:"locked"`
-	Password null.String `json:"password"`
+	ID     int64  `json:"id"`
+	Name   string `json:"username"`
+	Email  string `json:"email"`
+	Admin  bool   `json:"is_admin"`
+	Locked bool   `json:"locked"`
 }
 
 func (o *User) Id() (string, error) {
