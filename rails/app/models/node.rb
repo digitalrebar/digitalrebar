@@ -198,7 +198,7 @@ class Node < ActiveRecord::Base
   end
 
   def active_node_roles
-    NodeRole.on_node(setlf).in_state(NodeRole::ACTIVE).committed.order("cohort ASC")
+    NodeRole.on_node(self).in_state(NodeRole::ACTIVE).committed.order("cohort ASC")
   end
 
   def all_active_data
