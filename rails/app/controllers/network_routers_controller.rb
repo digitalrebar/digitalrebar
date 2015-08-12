@@ -16,7 +16,7 @@ class NetworkRoutersController < ::ApplicationController
   respond_to :json
 
   def sample
-    return api_sample(NetworkRouter)
+    render api_sample(NetworkRouter)
   end
 
   def match

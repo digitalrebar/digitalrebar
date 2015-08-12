@@ -198,22 +198,6 @@ Crowbar::Application.routes.draw do
               get 'nodes'
             end
           end
-
-          resources :networks do
-            collection do
-              get 'sample'
-              post 'match'
-            end
-            resources :network_ranges
-            resources :network_routers
-            resources :network_allocations
-            member do
-              match 'ip', via: [:get, :post, :delete]
-              post 'allocate_ip'
-              delete 'deallocate_ip'
-              get 'allocations'
-            end
-          end
           resources :network_ranges do
             collection do
               get 'sample'
@@ -231,6 +215,22 @@ Crowbar::Application.routes.draw do
             collection do
               get 'sample'
               post 'match'
+            end
+          end
+          resources :networks do
+            collection do
+              get 'sample'
+              post 'match'
+            end
+            resources :network_ranges
+            resources :network_routers
+            resources :network_allocations
+            member do
+              match 'ip', via: [:get, :post, :delete]
+              post 'allocate_ip'
+              delete 'deallocate_ip'
+              get 'allocations'
+              get 'auto_ranges/:node_id', to: :auto_ranges
             end
           end
           resources :dns_name_filters do

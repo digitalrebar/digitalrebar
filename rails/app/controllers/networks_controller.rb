@@ -21,7 +21,6 @@ class NetworksController < ::ApplicationController
     render api_sample(Network)
   end
 
-
   def match
     attrs = Network.attribute_names.map{|a|a.to_sym}
     objs = []
@@ -31,6 +30,13 @@ class NetworksController < ::ApplicationController
       format.html {}
       format.json { render api_index Network, objs }
     end
+  end
+
+  def auto_ranges
+    @network = Network.find_key params[:id]
+    @node = Node.find_key params[:node_id]
+    ranges = @network.auto_ranges(@node)
+    render api_index NetworkRange, ranges
   end
 
   def show
@@ -56,9 +62,9 @@ class NetworksController < ::ApplicationController
   def create
 
     # cleanup inputs
-    params[:use_vlan] = true if params[:vlan].to_int > 0 rescue false
+    params[:use_vlan] = true if !params.key?(:use_vlan) && params[:vlan].to_int > 0 rescue false
     params[:vlan] ||= 0
-    params[:use_team] = true if params[:team_mode].to_int > 0 rescue false
+    params[:use_team] = true if !params.key?(:use_team) && params[:team_mode].to_int > 0 rescue false
     params[:team_mode] ||= 5
     params[:configure] = true unless params.key?(:configure)
     params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
