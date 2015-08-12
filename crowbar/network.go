@@ -214,17 +214,17 @@ func init() {
 				}
 				node := &crowbar.Node{}
 				network := &crowbar.Network{}
-				if err := crowbar.SetId(node, args[0]); err != nil {
-					log.Fatalf("Unable to use %v as a node ID\n%v\n", args[0], err)
+				if err := crowbar.SetId(node, args[2]); err != nil {
+					log.Fatalf("Unable to use %v as a node ID\n%v\n", args[2], err)
 				}
-				if err := crowbar.SetId(network, args[2]); err != nil {
-					log.Fatalf("Unable to use %v as a network ID\n%v\n", args[2], err)
+				if err := crowbar.SetId(network, args[0]); err != nil {
+					log.Fatalf("Unable to use %v as a network ID\n%v\n", args[0], err)
 				}
 				if err := crowbar.Read(node); err != nil {
-					log.Fatalln("Unable to fetch node from Crowbar\n%v\n", err)
+					log.Fatalln("Unable to fetch node from Crowbar", err)
 				}
 				if err := crowbar.Read(network); err != nil {
-					log.Fatalln("Unable to fetch network from Crowbar\n%v\n", err)
+					log.Fatalln("Unable to fetch network from Crowbar", err)
 				}
 				alloc := &crowbar.NetworkAllocation{}
 				alloc.NodeID = null.IntFrom(node.ID)
