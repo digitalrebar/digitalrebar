@@ -63,7 +63,7 @@ func init() {
 			nr := &crowbar.DeploymentRole{}
 			nr.RoleID = role.ID
 			nr.DeploymentID = obj.ID
-			if err := crowbar.Create(nr); err != nil {
+			if err := crowbar.BaseCreate(nr); err != nil {
 				log.Fatalf("Failed to create deploymentrole for deployment:%v role:%v\n", args[0], args[2])
 			}
 			fmt.Println(prettyJSON(nr))

@@ -124,8 +124,8 @@ func (o *AddressID) SetId(s string) error {
 type NetworkAllocation struct {
 	AddressID
 	NodeID         null.Int `json:"node_id"`
-	NetworkID      int64    `json:"network_id"`
-	NetworkRangeID int64    `json:"network_range_id"`
+	NetworkID      null.Int `json:"network_id"`
+	NetworkRangeID null.Int `json:"network_range_id"`
 }
 
 func (o *NetworkAllocation) ApiName() string {

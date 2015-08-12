@@ -90,8 +90,11 @@ func (o *NetworkAllocation) Node() (*Node, error) {
 
 func (o *NetworkAllocation) Network() (*Network, error) {
 	res := &Network{}
-	res.ID = o.NetworkID
-	return res, Read(res)
+	if o.NetworkID.Valid {
+		res.ID = o.NetworkID.Int64
+		return res, Read(res)
+	}
+	return nil, errors.New("NetworkAllocation not bound to a Network")
 }
 
 type NetworkAllocater interface {

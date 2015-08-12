@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/VictorLowther/jsonpatch"
+	"github.com/VictorLowther/jsonpatch/utils"
 )
 
 type Timestamps struct {
@@ -70,12 +71,21 @@ func unmarshal(path string, buf []byte, o Crudder) error {
 	return nil
 }
 
+// SampleJSON returns the template that should be used to create a new
+// object.  This template will have its fields set to the database
+// defaults.  It returns the path used to fetch the sample JSON, the
+// JSON itself, and an error.
+func SampleJSON(o Crudder) (string, []byte, error) {
+	uri := path.Join(o.ApiName(), "sample")
+	buf, err := session.request("GET", uri, nil)
+	return uri, buf, err
+}
+
 // Init populates a Crudder with its default values as returned from the server.
 // You should always call Init() on any new object you intend to call Create() on in the
 // future to ensure that the defaults for the fields are populated correctly.
 func Init(o Crudder) error {
-	uri := path.Join(o.ApiName(), "sample")
-	buf, err := session.request("GET", uri, nil)
+	uri, buf, err := SampleJSON(o)
 	if err != nil {
 		return err
 	}
@@ -92,8 +102,9 @@ func Read(o Crudder) error {
 	return unmarshal(uri, buf, o)
 }
 
-// Create creates an object on the server.
-func Create(o Crudder) error {
+// BaseCreate creates an object on the server. It does NOT prepoulate
+// otherwise unused fields with their default vaules.
+func BaseCreate(o Crudder) error {
 	inbuf, err := json.Marshal(o)
 	if err != nil {
 		return err
@@ -104,6 +115,42 @@ func Create(o Crudder) error {
 		return err
 	}
 	return unmarshal(uri, outbuf, o)
+}
+
+// Create creates a new object on the server.  The new object will consist
+// of the results of merging Init(o) with toMerge.  This will ensure that
+// all of the otherwise unused fields on the object will be set to their defaults.
+func Create(o Crudder, toMerge interface{}) error {
+	if err := Init(o); err != nil {
+		return err
+	}
+	var initBuf interface{}
+	if err := utils.Remarshal(o, &initBuf); err != nil {
+		return err
+	}
+	merged := utils.Merge(initBuf, toMerge)
+	if err := utils.Remarshal(merged, o); err != nil {
+		return err
+	}
+	return BaseCreate(o)
+}
+
+// Create creates a new object on the server, merging in the
+// JSON that toMerge contains to initially populate the fields.
+// The passed-in Crudder will be overwritten with the new object.
+func CreateJSON(o Crudder, toMerge []byte) error {
+	_, buf, err := SampleJSON(o)
+	if err != nil {
+		return err
+	}
+	merged, err := utils.MergeJSON(buf, toMerge)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(merged, &o); err != nil {
+		return err
+	}
+	return BaseCreate(o)
 }
 
 // Destroy removes this object from the server.

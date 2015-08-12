@@ -6,7 +6,6 @@ import (
 	"log"
 
 	crowbar "github.com/VictorLowther/crowbar-api"
-	"github.com/VictorLowther/jsonpatch/utils"
 	"github.com/guregu/null"
 	"github.com/spf13/cobra"
 )
@@ -131,18 +130,10 @@ func init() {
 					log.Fatalf("%v requires 1 argument\n", c.UseLine())
 				}
 				obj := &crowbar.Network{}
-				if err := crowbar.Init(obj); err != nil {
-					log.Fatalf("Unable to fetch defaults for network\n%v\n", err)
-				}
-				intermediate := map[string]interface{}{}
-				if err := utils.Remarshal(obj, intermediate); err != nil {
-					log.Fatalf("Should not happen in network import\n%v\n", err)
-				}
 				netdef := map[string]interface{}{}
 				if err := json.Unmarshal([]byte(args[0]), &netdef); err != nil {
 					log.Fatalf("Argument does not contain a valid network!\n%v\n", err)
 				}
-				netdef = utils.Merge(intermediate, netdef).(map[string]interface{})
 				if v, ok := netdef["deployment"]; ok {
 					depl_name, ok := v.(string)
 					if !ok {
@@ -154,12 +145,14 @@ func init() {
 						log.Fatalf("Unable to fetch deployment %v\n%v\n", depl_name, err)
 					}
 					netdef["deployment_id"] = depl.ID
+					delete(netdef, "deployment")
 				}
-				if err := utils.Remarshal(netdef, obj); err != nil {
-					log.Fatalln("Should not happen 2 in networks import\n%v\n", err)
+				buf, err := json.Marshal(netdef)
+				if err != nil {
+					log.Fatalln("Failed to marshal fixed-up network definition", err)
 				}
 
-				if err := crowbar.Create(obj); err != nil {
+				if err := crowbar.CreateJSON(obj, buf); err != nil {
 					log.Fatalln("Failed to create new network.\n%v\n", err)
 				}
 				unwind := true
@@ -173,7 +166,7 @@ func init() {
 				}()
 
 				type rangeHelper struct {
-					Ranges []*crowbar.NetworkRange `json:"ranges"`
+					Ranges []interface{} `json:"ranges"`
 				}
 
 				ranges := &rangeHelper{}
@@ -182,25 +175,30 @@ func init() {
 				}
 				if ranges != nil {
 					for _, netRange := range ranges.Ranges {
-						netRange.NetworkID = obj.ID
-						if err := crowbar.Create(netRange); err != nil {
+						rangeObj := &crowbar.NetworkRange{}
+						if err := crowbar.Init(rangeObj); err != nil {
+							log.Fatalf("Failed to initialize new NetworkRange\n%v\n", err)
+						}
+						rangeObj.NetworkID = obj.ID
+						if err := crowbar.Create(rangeObj, netRange); err != nil {
 							log.Fatalln("Failed to create network range\n%v\n", err)
 						}
-						toClean = append(toClean, netRange)
+						toClean = append(toClean, rangeObj)
 					}
 				}
 
 				type routerHelper struct {
-					Router *crowbar.NetworkRouter `json:"router"`
+					Router interface{} `json:"router"`
 				}
 				router := &routerHelper{}
 				if err := json.Unmarshal([]byte(args[0]), router); err != nil {
 					log.Fatalln("Failed to unmarshal Router\n%v\n", err)
 				}
 				if router != nil && router.Router != nil {
-					router.Router.NetworkID = obj.ID
-					if err := crowbar.Create(router.Router); err != nil {
-						log.Fatalln("Failed to create network router\n%v\n", err)
+					routerObj := &crowbar.NetworkRouter{}
+					routerObj.NetworkID = obj.ID
+					if err := crowbar.Create(routerObj, router.Router); err != nil {
+						log.Fatalln("Failed to create network router", err)
 					}
 				}
 				unwind = false
@@ -230,8 +228,8 @@ func init() {
 				}
 				alloc := &crowbar.NetworkAllocation{}
 				alloc.NodeID = null.IntFrom(node.ID)
-				alloc.NetworkID = network.ID
-				if err := crowbar.Create(alloc); err != nil {
+				alloc.NetworkID = null.IntFrom(network.ID)
+				if err := crowbar.BaseCreate(alloc); err != nil {
 					log.Fatalf("Unable to create new NetworkAllocation: %v", err)
 				}
 				fmt.Println(prettyJSON(alloc))
@@ -277,13 +275,13 @@ func init() {
 					}
 				}
 				alloc := &crowbar.NetworkAllocation{}
-				alloc.NetworkID = netRange.NetworkID
-				alloc.NetworkRangeID = netRange.ID
+				alloc.NetworkID = null.IntFrom(netRange.NetworkID)
+				alloc.NetworkRangeID = null.IntFrom(netRange.ID)
 				alloc.NodeID = null.IntFrom(node.ID)
 				if len(args) == 7 {
 					alloc.Address = args[6]
 				}
-				if err := crowbar.Create(alloc); err != nil {
+				if err := crowbar.BaseCreate(alloc); err != nil {
 					log.Fatalf("Unable to add node to network\n%v\n", err)
 				}
 				fmt.Println(prettyJSON(alloc))

@@ -61,9 +61,12 @@ func init() {
 				log.Fatalf("Failed to fetch Role: %v\n", err.Error())
 			}
 			nr := &crowbar.NodeRole{}
+			if err := crowbar.Init(nr); err != nil {
+				log.Fatalf("Failed to initialize NodeRole with defaults\n%v\n", err)
+			}
 			nr.RoleID = role.ID
 			nr.NodeID = obj.ID
-			if err := crowbar.Create(nr); err != nil {
+			if err := crowbar.BaseCreate(nr); err != nil {
 				log.Fatalf("Failed to create noderole for node:%v role:%v\n", args[0], args[2])
 			}
 			fmt.Println(prettyJSON(nr))
