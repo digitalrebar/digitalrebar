@@ -30,7 +30,7 @@ func addNetworkerCommands(singularName string,
 			}
 			objs, err := crowbar.Networks(obj)
 			if err != nil {
-				log.Fatalf("Failed to get networks for %v(%v)\n", singularName, args[0])
+				log.Fatalf("Failed to get networks for %v(%v)\n%v\n", singularName, args[0], err)
 			}
 			fmt.Println(prettyJSON(objs))
 		},
@@ -52,12 +52,12 @@ func addNetworkRangerCommands(singularName string,
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
 			obj := maker().(crowbar.NetworkRanger)
-			if crowbar.SetId(obj, args[0]) != nil {
-				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
+			if err := crowbar.SetId(obj, args[0]); err != nil {
+				log.Fatalf("Failed to parse ID %v for an %v\n%v\n", args[0], singularName, err)
 			}
 			objs, err := crowbar.NetworkRanges(obj)
 			if err != nil {
-				log.Fatalf("Failed to get networkRanges for %v(%v)\n", singularName, args[0])
+				log.Fatalf("Failed to get networkRanges for %v(%v)\n%v\n", singularName, args[0], err)
 			}
 			fmt.Println(prettyJSON(objs))
 		},
@@ -79,12 +79,12 @@ func addNetworkAllocaterCommands(singularName string,
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
 			obj := maker().(crowbar.NetworkAllocater)
-			if crowbar.SetId(obj, args[0]) != nil {
-				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
+			if err := crowbar.SetId(obj, args[0]); err != nil {
+				log.Fatalf("Failed to parse ID %v for an %v\n%v\n", args[0], singularName, err)
 			}
 			objs, err := crowbar.NetworkAllocations(obj)
 			if err != nil {
-				log.Fatalf("Failed to get networkallocations for %v(%v)\n", singularName, args[0])
+				log.Fatalf("Failed to get networkallocations for %v(%v)\n%v\n", singularName, args[0], err)
 			}
 			fmt.Println(prettyJSON(objs))
 		},
@@ -106,12 +106,12 @@ func addNetworkRouterCommands(singularName string,
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
 			obj := maker().(crowbar.NetworkRouterer)
-			if crowbar.SetId(obj, args[0]) != nil {
-				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
+			if err := crowbar.SetId(obj, args[0]); err != nil {
+				log.Fatalf("Failed to parse ID %v for an %v\n%v\n", args[0], singularName, err)
 			}
 			objs, err := crowbar.NetworkRouters(obj)
 			if err != nil {
-				log.Fatalf("Failed to get networkrouters for %v(%v)\n", singularName, args[0])
+				log.Fatalf("Failed to get networkrouters for %v(%v)\n%v\n", singularName, args[0], err)
 			}
 			fmt.Println(prettyJSON(objs))
 		},
@@ -136,11 +136,11 @@ func init() {
 				}
 				intermediate := map[string]interface{}{}
 				if err := utils.Remarshal(obj, intermediate); err != nil {
-					log.Fatalf("Should not happen in network import")
+					log.Fatalf("Should not happen in network import\n%v\n", err)
 				}
 				netdef := map[string]interface{}{}
 				if err := json.Unmarshal([]byte(args[0]), &netdef); err != nil {
-					log.Fatalf("Argument does not contain a valid network!\n")
+					log.Fatalf("Argument does not contain a valid network!\n%v\n", err)
 				}
 				netdef = utils.Merge(intermediate, netdef).(map[string]interface{})
 				if v, ok := netdef["deployment"]; ok {
@@ -151,16 +151,16 @@ func init() {
 					depl := &crowbar.Deployment{}
 					depl.SetId(depl_name)
 					if err := crowbar.Read(depl); err != nil {
-						log.Fatalf("Unable to fetch deployment %v\n", depl_name)
+						log.Fatalf("Unable to fetch deployment %v\n%v\n", depl_name, err)
 					}
 					netdef["deployment_id"] = depl.ID
 				}
 				if err := utils.Remarshal(netdef, obj); err != nil {
-					log.Fatalln("SHould not happen 2 in networks import")
+					log.Fatalln("Should not happen 2 in networks import\n%v\n", err)
 				}
 
 				if err := crowbar.Create(obj); err != nil {
-					log.Fatalln("Failed to create new network.")
+					log.Fatalln("Failed to create new network.\n%v\n", err)
 				}
 				unwind := true
 				toClean := []crowbar.Crudder{obj}
@@ -184,7 +184,7 @@ func init() {
 					for _, netRange := range ranges.Ranges {
 						netRange.NetworkID = obj.ID
 						if err := crowbar.Create(netRange); err != nil {
-							log.Fatalln("Failed to create network range")
+							log.Fatalln("Failed to create network range\n%v\n", err)
 						}
 						toClean = append(toClean, netRange)
 					}
@@ -195,12 +195,12 @@ func init() {
 				}
 				router := &routerHelper{}
 				if err := json.Unmarshal([]byte(args[0]), router); err != nil {
-					log.Fatalln("Failed to unmarshal Routers")
+					log.Fatalln("Failed to unmarshal Router\n%v\n", err)
 				}
 				if router != nil && router.Router != nil {
 					router.Router.NetworkID = obj.ID
 					if err := crowbar.Create(router.Router); err != nil {
-						log.Fatalln("Failed to create network router")
+						log.Fatalln("Failed to create network router\n%v\n", err)
 					}
 				}
 				unwind = false
@@ -217,16 +217,16 @@ func init() {
 				node := &crowbar.Node{}
 				network := &crowbar.Network{}
 				if err := crowbar.SetId(node, args[0]); err != nil {
-					log.Fatalf("Unable to use %v as a node ID", args[0])
+					log.Fatalf("Unable to use %v as a node ID\n%v\n", args[0], err)
 				}
 				if err := crowbar.SetId(network, args[2]); err != nil {
-					log.Fatalf("Unable to use %v as a network ID", args[2])
+					log.Fatalf("Unable to use %v as a network ID\n%v\n", args[2], err)
 				}
 				if err := crowbar.Read(node); err != nil {
-					log.Fatalln("Unable to fetch node from Crowbar")
+					log.Fatalln("Unable to fetch node from Crowbar\n%v\n", err)
 				}
 				if err := crowbar.Read(network); err != nil {
-					log.Fatalln("Unable to fetch network from Crowbar")
+					log.Fatalln("Unable to fetch network from Crowbar\n%v\n", err)
 				}
 				alloc := &crowbar.NetworkAllocation{}
 				alloc.NodeID = null.IntFrom(node.ID)
@@ -246,10 +246,10 @@ func init() {
 				}
 				node := &crowbar.Node{}
 				if err := crowbar.SetId(node, args[0]); err != nil {
-					log.Fatalf("Unable to use %v as a node ID", args[0])
+					log.Fatalf("Unable to use %v as a node ID\n%v\n", args[0], err)
 				}
 				if err := crowbar.Read(node); err != nil {
-					log.Fatalln("Unable to fetch node from Crowbar")
+					log.Fatalln("Unable to fetch node from Crowbar\n%v\n", err)
 				}
 				netRange := &crowbar.NetworkRange{}
 				if err := crowbar.SetId(netRange, args[4]); err != nil {
@@ -257,10 +257,10 @@ func init() {
 					vals["name"] = args[4]
 					network := &crowbar.Network{}
 					if err := crowbar.SetId(network, args[2]); err != nil {
-						log.Fatalf("Unable to use %v as a network ID", args[2])
+						log.Fatalf("Unable to use %v as a network ID\n%v\n", args[2], err)
 					}
 					if err := crowbar.Read(network); err != nil {
-						log.Fatalln("Unable to fetch network from Crowbar")
+						log.Fatalln("Unable to fetch network from Crowbar\n%v\n", err)
 					}
 					vals["network_id"] = network.ID
 					netRanges := []*crowbar.NetworkRange{}
@@ -273,7 +273,7 @@ func init() {
 					netRange = netRanges[0]
 				} else {
 					if err := crowbar.Read(netRange); err != nil {
-						log.Fatalln("Unable to fetch network range")
+						log.Fatalln("Unable to fetch network range\n%v\n", err)
 					}
 				}
 				alloc := &crowbar.NetworkAllocation{}
