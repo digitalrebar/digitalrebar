@@ -303,11 +303,15 @@ Crowbar::Application.routes.draw do
               get 'sample'
               post 'match'
             end
-            post "admin", :controller => "users", :action => "make_admin"
-            delete "admin", :controller => "users", :action => "remove_admin"
-            post "lock", :controller => "users", :action => "lock"
-            delete "lock", :controller => "users", :action => "unlock"
-            put "reset_password", :controller => "users", :action => "reset_password"
+            member do
+              post "admin", to: :make_admin
+              get "start_password_reset"
+              post "complete_password_reset"
+              delete "admin", to: :remove_admin
+              post "lock"
+              delete "lock", to: :unlock
+              put "reset_password"
+            end
           end
           get 'digest'        => "support#digest"
         end # version

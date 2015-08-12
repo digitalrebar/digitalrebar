@@ -81,7 +81,7 @@ class User < ActiveRecord::Base
   end
 
   def password_required?
-     (!persisted? || !password.nil? || !password_confirmation.nil?) || admin_reset_password?
+    false
   end
 
   def admin_reset_password?
