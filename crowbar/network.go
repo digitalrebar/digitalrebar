@@ -226,13 +226,35 @@ func init() {
 				if err := crowbar.Read(network); err != nil {
 					log.Fatalln("Unable to fetch network from Crowbar", err)
 				}
-				alloc := &crowbar.NetworkAllocation{}
-				alloc.NodeID = null.IntFrom(node.ID)
-				alloc.NetworkID = null.IntFrom(network.ID)
-				if err := crowbar.BaseCreate(alloc); err != nil {
-					log.Fatalf("Unable to create new NetworkAllocation: %v", err)
+				ranges, err := network.AutoRanges(node)
+				if err != nil {
+					log.Fatalln("Failed to get auto ranges for network", err)
 				}
-				fmt.Println(prettyJSON(alloc))
+				res := make([]*crowbar.NetworkAllocation, len(ranges))
+				unwind := true
+				defer func() {
+					if unwind {
+						for _, allocation := range res {
+							if allocation != nil {
+								crowbar.Destroy(allocation)
+							}
+						}
+					}
+				}()
+
+				for i, netRange := range ranges {
+					alloc := &crowbar.NetworkAllocation{}
+					alloc.NodeID = null.IntFrom(node.ID)
+					alloc.NetworkID = null.IntFrom(network.ID)
+					alloc.NetworkRangeID = null.IntFrom(netRange.ID)
+
+					if err := crowbar.BaseCreate(alloc); err != nil {
+						log.Fatalf("Unable to create new NetworkAllocation: %v", err)
+					}
+					res[i] = alloc
+				}
+				unwind = false
+				fmt.Println(prettyJSON(res))
 			},
 		},
 		&cobra.Command{

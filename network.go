@@ -22,6 +22,20 @@ func (o *Network) Role() (role *Role, err error) {
 	return role, Read(role)
 }
 
+func (o *Network) AutoRanges(node *Node) ([]*NetworkRange, error) {
+	netId, err := o.Id()
+	if err != nil {
+		return nil, err
+	}
+	nodeId, err := node.Id()
+	if err != nil {
+		return nil, err
+	}
+	uri := path.Join(o.ApiName(), netId, "auto_ranges", nodeId)
+	res := make([]*NetworkRange, 0)
+	return res, List(uri, &res)
+}
+
 // Satisfy salient interfaces
 func (o *Network) networkRanges()      {}
 func (o *Network) networkAllocations() {}
