@@ -66,6 +66,7 @@ func init() {
 			}
 			nr.RoleID = role.ID
 			nr.NodeID = obj.ID
+			nr.DeploymentID = obj.DeploymentID
 			if err := crowbar.BaseCreate(nr); err != nil {
 				log.Fatalf("Failed to create noderole for node:%v role:%v\n", args[0], args[2])
 			}
