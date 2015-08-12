@@ -1,7 +1,6 @@
 package crowbar
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"path"
@@ -90,11 +89,7 @@ func SetAttrib(o Attriber, a *Attrib, bucket string) error {
 
 // Propose readies an Attriber to accept new values via SetAttrib.
 func Propose(o Attriber) error {
-	inbuf, err := json.Marshal(o)
-	if err != nil {
-		return err
-	}
-	outbuf, err := session.request("PUT", url(o, "propose"), inbuf)
+	outbuf, err := session.request("PUT", url(o, "propose"), nil)
 	if err != nil {
 		return err
 	}
@@ -104,11 +99,7 @@ func Propose(o Attriber) error {
 // Commit makes the values set on the Attriber via SetAttrib visible
 // to the rest of the Crowbar infrastructure.
 func Commit(o Attriber) error {
-	inbuf, err := json.Marshal(o)
-	if err != nil {
-		return err
-	}
-	outbuf, err := session.request("PUT", url(o, "commit"), inbuf)
+	outbuf, err := session.request("PUT", url(o, "commit"), nil)
 	if err != nil {
 		return err
 	}
