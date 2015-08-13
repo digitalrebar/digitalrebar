@@ -47,6 +47,9 @@ func init() {
 				}
 				obj := &crowbar.User{}
 				if err := crowbar.CreateJSON(obj, []byte(args[0])); err != nil {
+					if _, err := obj.Id(); err != nil {
+						log.Fatalln("User has no name", err)
+					}
 					if err := crowbar.Read(obj); err != nil {
 						log.Fatalln("Unable to create or fetch user", err)
 					}
