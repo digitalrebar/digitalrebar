@@ -103,6 +103,13 @@ func Read(o Crudder) error {
 	return unmarshal(uri, buf, o)
 }
 
+func Fetch(o Crudder, id string) error {
+	if err := SetId(o, id); err != nil {
+		return err
+	}
+	return Read(o)
+}
+
 // BaseCreate creates an object on the server. It does NOT prepoulate
 // otherwise unused fields with their default vaules.
 func BaseCreate(o Crudder) error {

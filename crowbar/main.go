@@ -6,8 +6,10 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	crowbar "github.com/VictorLowther/crowbar-api"
+	"github.com/VictorLowther/crowbar-api/datatypes"
 	"github.com/VictorLowther/jsonpatch"
 	"github.com/VictorLowther/jsonpatch/utils"
 	"github.com/spf13/cobra"
@@ -261,6 +263,32 @@ func main() {
 		},
 	}
 
+	converge := &cobra.Command{
+		Use:   "converge",
+		Short: "Wait for all the noderoles to become active, and fail if any error out",
+		Run: func(c *cobra.Command, args []string) {
+			for {
+				nodeRoles, err := crowbar.NodeRoles()
+				if err != nil {
+					log.Fatalln("Could not fetch noderoles!", err)
+				}
+				allActive := true
+				for _, nodeRole := range nodeRoles {
+					if nodeRole.State == datatypes.NodeRoleError {
+						log.Fatalln("Crowbar could not converge")
+					}
+					if nodeRole.State != datatypes.NodeRoleActive {
+						allActive = false
+					}
+				}
+				if allActive {
+					os.Exit(0)
+				}
+				time.Sleep(10 * time.Second)
+			}
+		},
+	}
+	app.AddCommand(converge)
 	app.AddCommand(ping)
 
 	app.Execute()
