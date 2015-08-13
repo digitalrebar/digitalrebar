@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	crowbar "github.com/VictorLowther/crowbar-api"
+	"github.com/VictorLowther/crowbar-api/client"
 	"github.com/VictorLowther/crowbar-api/datatypes"
 	"github.com/VictorLowther/jsonpatch"
 	"github.com/spf13/cobra"
@@ -68,7 +68,7 @@ func init() {
 }
 
 func makeCommandTree(singularName string,
-	maker func() crowbar.Crudder) (res *cobra.Command) {
+	maker func() client.Crudder) (res *cobra.Command) {
 	name := singularName + "s"
 	d("Making command tree for %v\n", name)
 	res = &cobra.Command{
@@ -81,7 +81,7 @@ func makeCommandTree(singularName string,
 		Short: fmt.Sprintf("List all %v", name),
 		Run: func(c *cobra.Command, args []string) {
 			objs := []interface{}{}
-			if err := crowbar.List(maker().ApiName(), &objs); err != nil {
+			if err := client.List(maker().ApiName(), &objs); err != nil {
 				log.Fatalf("Error listing %v: %v", name, err.Error())
 			}
 			fmt.Println(prettyJSON(objs))
@@ -99,7 +99,7 @@ func makeCommandTree(singularName string,
 			if err := json.Unmarshal([]byte(args[0]), &vals); err != nil {
 				log.Fatalf("Matches not valid JSON\n%v", err)
 			}
-			if err := crowbar.Match(maker().ApiName(), vals, &objs); err != nil {
+			if err := client.Match(maker().ApiName(), vals, &objs); err != nil {
 				log.Fatalf("Error getting matches for %v\nError:%v\n", singularName, err.Error())
 			}
 			fmt.Println(prettyJSON(objs))
@@ -113,7 +113,7 @@ func makeCommandTree(singularName string,
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
 			obj := maker()
-			if crowbar.Fetch(obj, args[0]) != nil {
+			if client.Fetch(obj, args[0]) != nil {
 				log.Fatalf("Failed to fetch %v\n", singularName, args[0])
 			}
 			fmt.Println(prettyJSON(obj))
@@ -127,7 +127,7 @@ func makeCommandTree(singularName string,
 				log.Fatalf("%v takes no arguments", c.UseLine())
 			}
 			obj := maker()
-			if err := crowbar.Init(obj); err != nil {
+			if err := client.Init(obj); err != nil {
 				log.Fatalf("Unable to fetch defaults for %v: %v\n", singularName, err.Error())
 			}
 			fmt.Println(prettyJSON(obj))
@@ -141,7 +141,7 @@ func makeCommandTree(singularName string,
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
 			obj := maker()
-			if err := crowbar.CreateJSON(obj, []byte(args[0])); err != nil {
+			if err := client.CreateJSON(obj, []byte(args[0])); err != nil {
 				log.Fatalf("Unable to create new %v: %v\n", singularName, err.Error())
 			}
 			fmt.Println(prettyJSON(obj))
@@ -155,10 +155,10 @@ func makeCommandTree(singularName string,
 				log.Fatalf("%v requires 2 arguments\n", c.UseLine())
 			}
 			obj := maker()
-			if err := crowbar.Fetch(obj, args[0]); err != nil {
+			if err := client.Fetch(obj, args[0]); err != nil {
 				log.Fatalf("Failed to fetch %v\n%v\n", singularName, err)
 			}
-			if err := crowbar.UpdateJSON(obj, []byte(args[2])); err != nil {
+			if err := client.UpdateJSON(obj, []byte(args[2])); err != nil {
 				log.Fatalf("Unable to patch %v\n%v\n", args[0], err)
 			}
 
@@ -187,7 +187,7 @@ func makeCommandTree(singularName string,
 				log.Fatalf("Cannot generate JSON Patch\n%v\n", err)
 			}
 
-			if err := crowbar.Patch(obj, patch); err != nil {
+			if err := client.Patch(obj, patch); err != nil {
 				log.Fatalf("Unable to patch %v\n%v\n", args[0], err)
 			}
 
@@ -202,10 +202,10 @@ func makeCommandTree(singularName string,
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
 			obj := maker()
-			if crowbar.SetId(obj, args[0]) != nil {
+			if client.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
-			if err := crowbar.Destroy(obj); err != nil {
+			if err := client.Destroy(obj); err != nil {
 				log.Fatalf("Unable to destroy %v %v\nError: %v\n", singularName, args[0], err.Error())
 			}
 			fmt.Printf("Deleted %v %v\n", singularName, args[0])
@@ -230,7 +230,7 @@ func makeCommandTree(singularName string,
 func main() {
 	app.PersistentPreRun = func(c *cobra.Command, a []string) {
 		d("Talking to Crowbar with %v (%v:%v)", endpoint, username, password)
-		if err := crowbar.Session(endpoint, username, password); err != nil {
+		if err := client.Session(endpoint, username, password); err != nil {
 			log.Fatalf("Could not connect to Crowbar: %v\n", err.Error())
 		}
 	}
@@ -248,7 +248,7 @@ func main() {
 		Short: "Wait for all the noderoles to become active, and fail if any error out",
 		Run: func(c *cobra.Command, args []string) {
 			for {
-				nodeRoles, err := crowbar.NodeRoles()
+				nodeRoles, err := client.NodeRoles()
 				if err != nil {
 					log.Fatalln("Could not fetch noderoles!", err)
 				}

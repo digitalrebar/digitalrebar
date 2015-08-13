@@ -1,10 +1,10 @@
 package main
 
-import crowbar "github.com/VictorLowther/crowbar-api"
+import "github.com/VictorLowther/crowbar-api/client"
 
 func init() {
 
-	maker := func() crowbar.Crudder { return &crowbar.AvailableHammer{} }
+	maker := func() client.Crudder { return &client.AvailableHammer{} }
 	singularName := "availablehammer"
 	app.AddCommand(makeCommandTree(singularName, maker))
 }

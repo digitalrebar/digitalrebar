@@ -1,4 +1,4 @@
-package crowbar
+package client
 
 import (
 	"errors"

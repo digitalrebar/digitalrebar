@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"log"
 
-	crowbar "github.com/VictorLowther/crowbar-api"
+	"github.com/VictorLowther/crowbar-api/client"
 	"github.com/spf13/cobra"
 )
 
 func addNoderCommands(singularName string,
-	maker func() crowbar.Crudder,
+	maker func() client.Crudder,
 	res *cobra.Command) {
-	if _, ok := maker().(crowbar.Noder); !ok {
+	if _, ok := maker().(client.Noder); !ok {
 		return
 	}
 	cmd := &cobra.Command{
@@ -21,11 +21,11 @@ func addNoderCommands(singularName string,
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := maker().(crowbar.Noder)
-			if crowbar.SetId(obj, args[0]) != nil {
+			obj := maker().(client.Noder)
+			if client.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
-			objs, err := crowbar.Nodes(obj)
+			objs, err := client.Nodes(obj)
 			if err != nil {
 				log.Fatalf("Failed to get nodes for %v(%v)\n", singularName, args[0])
 			}
@@ -36,7 +36,7 @@ func addNoderCommands(singularName string,
 }
 
 func init() {
-	maker := func() crowbar.Crudder { return &crowbar.Node{} }
+	maker := func() client.Crudder { return &client.Node{} }
 	singularName := "node"
 	nodes := makeCommandTree(singularName, maker)
 	nodes.AddCommand(&cobra.Command{
@@ -46,19 +46,19 @@ func init() {
 			if len(args) != 3 {
 				log.Fatalf("%v requires 2 arguments", c.UseLine())
 			}
-			node := &crowbar.Node{}
-			net := &crowbar.Network{}
-			if err := crowbar.Fetch(node, args[0]); err != nil {
+			node := &client.Node{}
+			net := &client.Network{}
+			if err := client.Fetch(node, args[0]); err != nil {
 				log.Fatalln("Failed to fetch node:", err)
 			}
-			if err := crowbar.Fetch(net, args[2]); err != nil {
+			if err := client.Fetch(net, args[2]); err != nil {
 				log.Fatalln("Failed to fetch network:", err)
 			}
-			allocations := []*crowbar.NetworkAllocation{}
+			allocations := []*client.NetworkAllocation{}
 			matcher := make(map[string]interface{})
 			matcher["network_id"] = net.ID
 			matcher["node_id"] = node.ID
-			if err := crowbar.Match("network_allocations", matcher, &allocations); err != nil {
+			if err := client.Match("network_allocations", matcher, &allocations); err != nil {
 				log.Fatalln("Failed to fetch allocations:", err)
 			}
 			addresses := make([]string, len(allocations))
@@ -82,23 +82,23 @@ func init() {
 			if len(args) != 3 || args[1] != "to" {
 				log.Fatalf("%v requires 2 arguments seperated by \"to\"", c.UseLine())
 			}
-			obj := &crowbar.Node{}
+			obj := &client.Node{}
 
-			role := &crowbar.Role{}
-			if err := crowbar.Fetch(obj, args[0]); err != nil {
+			role := &client.Role{}
+			if err := client.Fetch(obj, args[0]); err != nil {
 				log.Fatalf("Failed to fetch Node: %v\n", err.Error())
 			}
-			if err := crowbar.Fetch(role, args[2]); err != nil {
+			if err := client.Fetch(role, args[2]); err != nil {
 				log.Fatalf("Failed to fetch Role: %v\n", err.Error())
 			}
-			nr := &crowbar.NodeRole{}
-			if err := crowbar.Init(nr); err != nil {
+			nr := &client.NodeRole{}
+			if err := client.Init(nr); err != nil {
 				log.Fatalf("Failed to initialize NodeRole with defaults\n%v\n", err)
 			}
 			nr.RoleID = role.ID
 			nr.NodeID = obj.ID
 			nr.DeploymentID = obj.DeploymentID
-			if err := crowbar.BaseCreate(nr); err != nil {
+			if err := client.BaseCreate(nr); err != nil {
 				log.Fatalf("Failed to create noderole for node:%v role:%v\n", args[0], args[2])
 			}
 			fmt.Println(prettyJSON(nr))
@@ -111,12 +111,12 @@ func init() {
 			if len(args) != 3 {
 				log.Fatalf("%v requires 2 argument\n", c.UseLine())
 			}
-			obj := &crowbar.Node{}
-			if crowbar.Fetch(obj, args[0]) != nil {
+			obj := &client.Node{}
+			if client.Fetch(obj, args[0]) != nil {
 				log.Fatalf("Failed to fetch %v\n", singularName)
 			}
-			depl := &crowbar.Deployment{}
-			if crowbar.Fetch(depl, args[2]) != nil {
+			depl := &client.Deployment{}
+			if client.Fetch(depl, args[2]) != nil {
 				log.Fatalf("Failed fetch deployment")
 			}
 			if obj.Move(depl) != nil {
@@ -132,8 +132,8 @@ func init() {
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := &crowbar.Node{}
-			if crowbar.SetId(obj, args[0]) != nil {
+			obj := &client.Node{}
+			if client.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
 			res, err := obj.PowerActions()
@@ -150,8 +150,8 @@ func init() {
 			if len(args) != 2 {
 				log.Fatalf("%v requires 2 arguments\n", c.UseLine())
 			}
-			obj := &crowbar.Node{}
-			if crowbar.SetId(obj, args[0]) != nil {
+			obj := &client.Node{}
+			if client.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
 			err := obj.Power(args[1])
@@ -167,8 +167,8 @@ func init() {
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := &crowbar.Node{}
-			if crowbar.SetId(obj, args[0]) != nil {
+			obj := &client.Node{}
+			if client.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
 			fmt.Println(obj.ActiveBootstate())

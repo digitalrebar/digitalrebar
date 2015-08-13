@@ -1,9 +1,9 @@
 package main
 
-import crowbar "github.com/VictorLowther/crowbar-api"
+import "github.com/VictorLowther/crowbar-api/client"
 
 func init() {
-	maker := func() crowbar.Crudder { return &crowbar.DnsNameFilter{} }
+	maker := func() client.Crudder { return &client.DnsNameFilter{} }
 	singularName := "dnsnamefilter"
 	app.AddCommand(makeCommandTree(singularName, maker))
 }

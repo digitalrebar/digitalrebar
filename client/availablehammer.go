@@ -1,4 +1,4 @@
-package crowbar
+package client
 
 import "github.com/VictorLowther/crowbar-api/datatypes"
 

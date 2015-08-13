@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"log"
 
-	crowbar "github.com/VictorLowther/crowbar-api"
+	"github.com/VictorLowther/crowbar-api/client"
 	"github.com/spf13/cobra"
 )
 
 func addJiggerCommands(singularName string,
-	maker func() crowbar.Crudder,
+	maker func() client.Crudder,
 	res *cobra.Command) {
-	if _, ok := maker().(crowbar.Jigger); !ok {
+	if _, ok := maker().(client.Jigger); !ok {
 		return
 	}
 	cmd := &cobra.Command{
@@ -21,11 +21,11 @@ func addJiggerCommands(singularName string,
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := maker().(crowbar.Jigger)
-			if crowbar.SetId(obj, args[0]) != nil {
+			obj := maker().(client.Jigger)
+			if client.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
-			objs, err := crowbar.Jigs(obj)
+			objs, err := client.Jigs(obj)
 			if err != nil {
 				log.Fatalf("Failed to get jigss for %v(%v)\n", singularName, args[0])
 			}
@@ -36,7 +36,7 @@ func addJiggerCommands(singularName string,
 }
 
 func init() {
-	maker := func() crowbar.Crudder { return &crowbar.Jig{} }
+	maker := func() client.Crudder { return &client.Jig{} }
 	singularName := "jig"
 	app.AddCommand(makeCommandTree(singularName, maker))
 }

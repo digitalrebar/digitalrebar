@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"log"
 
-	crowbar "github.com/VictorLowther/crowbar-api"
+	"github.com/VictorLowther/crowbar-api/client"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	maker := func() crowbar.Crudder { return &crowbar.User{} }
+	maker := func() client.Crudder { return &client.User{} }
 	singularName := "user"
 	tree := makeCommandTree(singularName, maker)
 	tree.AddCommand(
@@ -21,8 +21,8 @@ func init() {
 				if len(args) != 3 {
 					log.Fatalf("%v requires 2 arguments", c.UseLine())
 				}
-				obj := &crowbar.User{}
-				if err := crowbar.Fetch(obj, args[0]); err != nil {
+				obj := &client.User{}
+				if err := client.Fetch(obj, args[0]); err != nil {
 					log.Fatalln("Unable to fetch user from the server", err)
 				}
 				token, err := obj.StartPasswordReset()
@@ -42,15 +42,15 @@ func init() {
 				if len(args) != 1 {
 					log.Fatalf("%v requires 1 argument", c.UseLine())
 				}
-				obj := &crowbar.User{}
-				if err := crowbar.CreateJSON(obj, []byte(args[0])); err != nil {
+				obj := &client.User{}
+				if err := client.CreateJSON(obj, []byte(args[0])); err != nil {
 					if _, err := obj.Id(); err != nil {
 						log.Fatalln("User has no name", err)
 					}
-					if err := crowbar.Read(obj); err != nil {
+					if err := client.Read(obj); err != nil {
 						log.Fatalln("Unable to create or fetch user", err)
 					}
-					if err := crowbar.UpdateJSON(obj, []byte(args[0])); err != nil {
+					if err := client.UpdateJSON(obj, []byte(args[0])); err != nil {
 						log.Fatalln("Unable to update user", err)
 					}
 				}

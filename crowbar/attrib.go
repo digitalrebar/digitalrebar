@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"log"
 
-	crowbar "github.com/VictorLowther/crowbar-api"
+	"github.com/VictorLowther/crowbar-api/client"
 	"github.com/spf13/cobra"
 )
 
 func addAttriberCommands(singularName string,
-	maker func() crowbar.Crudder,
+	maker func() client.Crudder,
 	res *cobra.Command) {
-	if _, ok := maker().(crowbar.Attriber); !ok {
+	if _, ok := maker().(client.Attriber); !ok {
 		return
 	}
 	commands := make([]*cobra.Command, 5)
@@ -23,11 +23,11 @@ func addAttriberCommands(singularName string,
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := maker().(crowbar.Attriber)
-			if crowbar.SetId(obj, args[0]) != nil {
+			obj := maker().(client.Attriber)
+			if client.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
-			objs, err := crowbar.Attribs(obj)
+			objs, err := client.Attribs(obj)
 			if err != nil {
 				log.Fatalf("Failed to get attribs for %v(%v)\n", singularName, args[0])
 			}
@@ -41,19 +41,19 @@ func addAttriberCommands(singularName string,
 			if len(args) != 3 && len(args) != 5 {
 				log.Fatalf("%v requires 2 or 3 arguments.\n", c.UseLine())
 			}
-			obj := maker().(crowbar.Attriber)
-			attr := &crowbar.Attrib{}
-			if crowbar.SetId(obj, args[0]) != nil {
+			obj := maker().(client.Attriber)
+			attr := &client.Attrib{}
+			if client.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
-			if crowbar.SetId(attr, args[2]) != nil {
+			if client.SetId(attr, args[2]) != nil {
 				log.Fatalf("Failed to parse ID %v for an attrib\n", args[1])
 			}
 			bucket := "all"
 			if len(args) == 5 {
 				bucket = args[4]
 			}
-			attr, err := crowbar.GetAttrib(obj, attr, bucket)
+			attr, err := client.GetAttrib(obj, attr, bucket)
 			if err != nil {
 				log.Fatalf("Error fetching attrib %v for %v(%v): %v\n", args[1], singularName, args[0], err.Error())
 			}
@@ -68,18 +68,18 @@ func addAttriberCommands(singularName string,
 			if len(args) != 5 && len(args) != 7 {
 				log.Fatalf("%v requires 3 or 4 arguments.\n", c.UseLine())
 			}
-			obj := maker().(crowbar.Attriber)
-			attr := &crowbar.Attrib{}
+			obj := maker().(client.Attriber)
+			attr := &client.Attrib{}
 			if len(args) == 7 {
 				bucket = args[6]
 			}
-			if crowbar.SetId(obj, args[0]) != nil {
+			if client.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
-			if crowbar.SetId(attr, args[2]) != nil {
+			if client.SetId(attr, args[2]) != nil {
 				log.Fatalf("Failed to parse ID %v for an attrib\n", args[1])
 			}
-			attr, err := crowbar.GetAttrib(obj, attr, "")
+			attr, err := client.GetAttrib(obj, attr, "")
 			if err != nil {
 				log.Fatalf("Failed to fetch Attrib from server\n%v", err)
 			}
@@ -92,7 +92,7 @@ func addAttriberCommands(singularName string,
 				log.Fatalf("Failed to parse %v as JSON!\nError: %v\n", args[2], err.Error())
 			}
 			attr.Value = val.Value
-			if err := crowbar.SetAttrib(obj, attr, bucket); err != nil {
+			if err := client.SetAttrib(obj, attr, bucket); err != nil {
 				log.Fatalf("Unable to set attrib! Error: %v\n", err.Error())
 			}
 			fmt.Println(prettyJSON(attr))
@@ -105,11 +105,11 @@ func addAttriberCommands(singularName string,
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := maker().(crowbar.Attriber)
-			if crowbar.SetId(obj, args[0]) != nil {
+			obj := maker().(client.Attriber)
+			if client.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
-			if err := crowbar.Propose(obj); err != nil {
+			if err := client.Propose(obj); err != nil {
 				log.Fatalf("Failed to propose: %v\n", err.Error())
 			}
 			fmt.Println(prettyJSON(obj))
@@ -122,11 +122,11 @@ func addAttriberCommands(singularName string,
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := maker().(crowbar.Attriber)
-			if crowbar.SetId(obj, args[0]) != nil {
+			obj := maker().(client.Attriber)
+			if client.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
-			if err := crowbar.Commit(obj); err != nil {
+			if err := client.Commit(obj); err != nil {
 				log.Fatalf("Failed to commit: %v\n", err.Error())
 			}
 			fmt.Println(prettyJSON(obj))
@@ -136,6 +136,6 @@ func addAttriberCommands(singularName string,
 }
 
 func init() {
-	maker := func() crowbar.Crudder { return &crowbar.Attrib{} }
+	maker := func() client.Crudder { return &client.Attrib{} }
 	app.AddCommand(makeCommandTree("attrib", maker))
 }

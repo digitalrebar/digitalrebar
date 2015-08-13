@@ -1,4 +1,4 @@
-package crowbar
+package client
 
 // Apache 2 License 2015 by Rob Hirschfeld for RackN portions of
 // source based on

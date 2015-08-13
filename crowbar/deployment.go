@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"log"
 
-	crowbar "github.com/VictorLowther/crowbar-api"
+	"github.com/VictorLowther/crowbar-api/client"
 	"github.com/spf13/cobra"
 )
 
 func addDeploymenterCommands(singularName string,
-	maker func() crowbar.Crudder,
+	maker func() client.Crudder,
 	res *cobra.Command) {
-	if _, ok := maker().(crowbar.Deploymenter); !ok {
+	if _, ok := maker().(client.Deploymenter); !ok {
 		return
 	}
 	cmd := &cobra.Command{
@@ -21,11 +21,11 @@ func addDeploymenterCommands(singularName string,
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := maker().(crowbar.Deploymenter)
-			if crowbar.SetId(obj, args[0]) != nil {
+			obj := maker().(client.Deploymenter)
+			if client.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
-			objs, err := crowbar.Deployments(obj)
+			objs, err := client.Deployments(obj)
 			if err != nil {
 				log.Fatalf("Failed to get deploymentss for %v(%v)\n", singularName, args[0])
 			}
@@ -36,7 +36,7 @@ func addDeploymenterCommands(singularName string,
 }
 
 func init() {
-	maker := func() crowbar.Crudder { return &crowbar.Deployment{} }
+	maker := func() client.Crudder { return &client.Deployment{} }
 	singularName := "deployment"
 	deployments := makeCommandTree(singularName, maker)
 	deployments.AddCommand(&cobra.Command{
@@ -46,18 +46,18 @@ func init() {
 			if len(args) != 3 || args[1] != "to" {
 				log.Fatalf("%v requires 2 arguments seperated by \"to\"", c.UseLine())
 			}
-			obj := &crowbar.Deployment{}
-			if crowbar.Fetch(obj, args[0]) != nil {
+			obj := &client.Deployment{}
+			if client.Fetch(obj, args[0]) != nil {
 				log.Fatalf("Failed to fetch %v\n", singularName)
 			}
-			role := &crowbar.Role{}
-			if crowbar.Fetch(role, args[2]) != nil {
+			role := &client.Role{}
+			if client.Fetch(role, args[2]) != nil {
 				log.Fatalf("Failed to fetch role\n")
 			}
-			nr := &crowbar.DeploymentRole{}
+			nr := &client.DeploymentRole{}
 			nr.RoleID = role.ID
 			nr.DeploymentID = obj.ID
-			if err := crowbar.BaseCreate(nr); err != nil {
+			if err := client.BaseCreate(nr); err != nil {
 				log.Fatalf("Failed to create deploymentrole for deployment:%v role:%v\n", args[0], args[2])
 			}
 			fmt.Println(prettyJSON(nr))
@@ -71,8 +71,8 @@ func init() {
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := &crowbar.Deployment{}
-			if crowbar.Fetch(obj, args[0]) != nil {
+			obj := &client.Deployment{}
+			if client.Fetch(obj, args[0]) != nil {
 				log.Fatalf("Failed to fetch %v\n", singularName)
 			}
 			if !obj.ParentID.Valid {
