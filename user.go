@@ -72,9 +72,10 @@ func (u *User) CompletePasswordReset(tok *PasswordChangeToken, newPassword strin
 	}
 	payload := `{"password":"` + newPassword + `"}`
 	encPayload := box.Seal(nil, []byte(payload), &nonce, &theirPubKey, privKey)
-	body := fmt.Sprintf(`{"token":"%v","decoder":"%v","payload":"%v","digest":true}`,
+	body := fmt.Sprintf(`{"token":"%v","decoder":"%v","nonce":"%v","payload":"%v","digest":true}`,
 		base64.StdEncoding.EncodeToString(theirPubKey[:]),
 		base64.StdEncoding.EncodeToString(pubKey[:]),
+		base64.StdEncoding.EncodeToString(nonce[:]),
 		base64.StdEncoding.EncodeToString(encPayload))
 	_, err = session.request("POST", url(u, "complete_password_reset"), []byte(body))
 	if err != nil {
