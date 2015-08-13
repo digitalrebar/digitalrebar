@@ -4,6 +4,7 @@ package crowbar
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"path"
@@ -135,22 +136,40 @@ func Create(o Crudder, toMerge interface{}) error {
 	return BaseCreate(o)
 }
 
+func safeMergeJSON(target, toMerge []byte) ([]byte, error) {
+	targetObj := make(map[string]interface{})
+	toMergeObj := make(map[string]interface{})
+	if err := json.Unmarshal(target, &targetObj); err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(toMerge, &toMergeObj); err != nil {
+		return nil, err
+	}
+	outObj, ok := utils.Merge(targetObj, toMergeObj).(map[string]interface{})
+	if !ok {
+		return nil, errors.New("Cannot happen in safeMergeJSON")
+	}
+	keys := make([]string, 0)
+	for k := range outObj {
+		if _, ok := targetObj[k]; !ok {
+			keys = append(keys, k)
+		}
+	}
+	for _, k := range keys {
+		delete(outObj, k)
+	}
+	return json.Marshal(outObj)
+}
+
 // Create creates a new object on the server, merging in the
 // JSON that toMerge contains to initially populate the fields.
 // The passed-in Crudder will be overwritten with the new object.
 func CreateJSON(o Crudder, toMerge []byte) error {
-	_, buf, err := SampleJSON(o)
-	if err != nil {
+	var buf interface{}
+	if err := json.Unmarshal(toMerge, &buf); err != nil {
 		return err
 	}
-	merged, err := utils.MergeJSON(buf, toMerge)
-	if err != nil {
-		return err
-	}
-	if err := json.Unmarshal(merged, &o); err != nil {
-		return err
-	}
-	return BaseCreate(o)
+	return Create(o, buf)
 }
 
 // Destroy removes this object from the server.
@@ -203,7 +222,7 @@ func UpdateJSON(o Crudder, toMerge []byte) error {
 	if len(buf) == 0 {
 		return fmt.Errorf("Cannot update an object that has never been fetched")
 	}
-	merged, err := utils.MergeJSON(buf, toMerge)
+	merged, err := safeMergeJSON(buf, toMerge)
 	if err != nil {
 		return err
 	}
