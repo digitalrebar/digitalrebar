@@ -47,7 +47,12 @@ func init() {
 				}
 				obj := &crowbar.User{}
 				if err := crowbar.CreateJSON(obj, []byte(args[0])); err != nil {
-					log.Fatalln("Unable to create new user", err)
+					if err := crowbar.Read(obj); err != nil {
+						log.Fatalln("Unable to create or fetch user", err)
+					}
+					if err := crowbar.UpdateJSON(obj, []byte(args[0])); err != nil {
+						log.Fatalln("Unable to update user", err)
+					}
 				}
 				rest := make(map[string]interface{})
 				if err := json.Unmarshal([]byte(args[0]), &rest); err != nil {
@@ -71,6 +76,5 @@ func init() {
 			},
 		},
 	)
-
 	app.AddCommand(tree)
 }

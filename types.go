@@ -195,6 +195,25 @@ func Update(o Crudder) error {
 	return Patch(o, patch)
 }
 
+// UpdateJSON tries to update Crudder with toMerge, which should be a
+// JSON blob with keys that correspond to the Crudder's struct fields
+// when serialzed to JSON.
+func UpdateJSON(o Crudder, toMerge []byte) error {
+	buf := o.lastJSON()
+	if len(buf) == 0 {
+		return fmt.Errorf("Cannot update an object that has never been fetched")
+	}
+	merged, err := utils.MergeJSON(buf, toMerge)
+	if err != nil {
+		return err
+	}
+	patch, err := jsonpatch.GenerateJSON(buf, merged, true)
+	if err != nil {
+		return err
+	}
+	return Patch(o, patch)
+}
+
 func updatePaths(p string, val interface{}) {
 	v := reflect.ValueOf(val)
 	if v.Kind() != reflect.Slice {
