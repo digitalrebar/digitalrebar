@@ -8,13 +8,16 @@ import (
 	"github.com/VictorLowther/crowbar-api/datatypes"
 )
 
+// Attrib wraps datatypes.Attrib with the needed functionality for the
+// client side API
 type Attrib struct {
 	datatypes.Attrib
 	Timestamps
 	apiHelper
 }
 
-// Attriber defines what is needed to get and set attribs on an object.
+// Attriber defines what is needed to get and set attribs on an
+// object.
 type Attriber interface {
 	// You must be a Crudder to be an Attriber.
 	Crudder

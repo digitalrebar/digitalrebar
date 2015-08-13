@@ -6,6 +6,7 @@ import (
 	"github.com/VictorLowther/crowbar-api/datatypes"
 )
 
+// Role wraps datatypes.Role to provide the client API.
 type Role struct {
 	datatypes.Role
 	Timestamps
@@ -18,11 +19,13 @@ func (o *Role) deployments()     {}
 func (o *Role) deploymentRoles() {}
 func (o *Role) nodeRoles()       {}
 
+// A Roler is anything that a Role can be bound to.
 type Roler interface {
 	Crudder
 	roles()
 }
 
+// Roles returns all the Roles.
 func Roles(scope ...Roler) (res []*Role, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {

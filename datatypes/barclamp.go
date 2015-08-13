@@ -2,6 +2,7 @@ package datatypes
 
 import "github.com/guregu/null"
 
+// Barclamp tracks the Barclamps that Crowbar can work with.
 type Barclamp struct {
 	NameID
 	Description string      `json:"description"`

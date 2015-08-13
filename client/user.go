@@ -11,12 +11,15 @@ import (
 	"golang.org/x/crypto/nacl/box"
 )
 
+// User wraps datatypes.User to provide the client API.
 type User struct {
 	datatypes.User
 	Timestamps
 	apiHelper
 }
 
+// PasswordChangeToken is an auxillary struct used for the secure
+// password update API.
 type PasswordChangeToken struct {
 	Token []byte `json:"token"`
 }
@@ -44,11 +47,13 @@ func (p *PasswordChangeToken) UnmarshalJSON(buf []byte) error {
 	return err
 }
 
+// Users returns all the Users in the system
 func Users() (res []*User, err error) {
 	res = make([]*User, 0)
 	return res, List("users", &res)
 }
 
+// StartPasswordReset fetches a PasswordChangeToken for this user.
 func (u *User) StartPasswordReset() (*PasswordChangeToken, error) {
 	buf, err := session.request("GET", url(u, "start_password_reset"), nil)
 	if err != nil {
@@ -58,6 +63,9 @@ func (u *User) StartPasswordReset() (*PasswordChangeToken, error) {
 	return res, json.Unmarshal(buf, res)
 }
 
+// CompletePasswordReset encrypts the new password in such a way that
+// it can only be decrypted by the Server using the generated Token,
+// and posts everything needed back to the server.
 func (u *User) CompletePasswordReset(tok *PasswordChangeToken, newPassword string) error {
 	pubKey, privKey, err := box.GenerateKey(rand.Reader)
 	theirPubKey := [32]byte{}

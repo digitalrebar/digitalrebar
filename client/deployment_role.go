@@ -6,6 +6,7 @@ import (
 	"github.com/VictorLowther/crowbar-api/datatypes"
 )
 
+// DeploymentRole wraps datatypes.DeploymentRole to add client API functionality.
 type DeploymentRole struct {
 	datatypes.DeploymentRole
 	Timestamps
@@ -31,8 +32,8 @@ func (o *DeploymentRole) Role() (res *Role, err error) {
 	return res, Read(res)
 }
 
-// DeploymentRoler is an interface that anything that has related DeploymentRoles can satisfy to
-// get its related DeploymentRoles
+// DeploymentRoler is an interface that anything that has related
+// DeploymentRoles can satisfy to get its related DeploymentRoles
 type DeploymentRoler interface {
 	Crudder
 	deploymentRoles()

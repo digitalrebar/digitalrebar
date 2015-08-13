@@ -6,11 +6,14 @@ import (
 	"github.com/VictorLowther/crowbar-api/datatypes"
 )
 
+// Hammer wraps datatypes.Hammer to provide client API functionality
 type Hammer struct {
 	datatypes.Hammer
 	Timestamps
 	apiHelper
 }
+
+// Hammerer is anything that a Hammer can be bound to.
 type Hammerer interface {
 	Crudder
 	hammers()

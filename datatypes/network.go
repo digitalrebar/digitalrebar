@@ -91,6 +91,8 @@ func (o *NetworkRange) ApiName() string {
 	return "network_ranges"
 }
 
+// AddressID is used for NetworkAllocation and NetworkRouter, as they
+// can be uniquely identified by either their ID or Address fields.
 type AddressID struct {
 	ID int64 `json:"id"`
 	// Address is an IPv4 or v6 address in CIDR format.
@@ -132,6 +134,8 @@ func (o *NetworkAllocation) ApiName() string {
 	return "network_allocations"
 }
 
+// NetworkRouter holds the address that should be used to route
+// traffic out of the network it is associated with.
 type NetworkRouter struct {
 	AddressID
 	NetworkID int64 `json:"network_id"`

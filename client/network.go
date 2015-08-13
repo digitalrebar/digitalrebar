@@ -8,6 +8,7 @@ import (
 	"github.com/VictorLowther/crowbar-api/datatypes"
 )
 
+// Network wraps datatypes.Network to provide client API functionality
 type Network struct {
 	datatypes.Network
 	Timestamps
@@ -22,6 +23,7 @@ func (o *Network) Role() (role *Role, err error) {
 	return role, Read(role)
 }
 
+// AutoRanges returns the NetworkRanges in a Network for a specific Node.
 func (o *Network) AutoRanges(node *Node) ([]*NetworkRange, error) {
 	netId, err := o.Id()
 	if err != nil {
@@ -41,6 +43,7 @@ func (o *Network) networkRanges()      {}
 func (o *Network) networkAllocations() {}
 func (o *Network) networkRouters()     {}
 
+// Networker is anything that a Network can be added or removed from.
 type Networker interface {
 	Crudder
 	networks()
@@ -57,12 +60,14 @@ func Networks(scope ...Networker) (res []*Network, err error) {
 	return res, List(path.Join(paths...), &res)
 }
 
+// NetworkRange wraps datatypes.NetworkRange to provide the client API
 type NetworkRange struct {
 	datatypes.NetworkRange
 	Timestamps
 	apiHelper
 }
 
+// Network returns the Network that owns this NetworkRange
 func (o *NetworkRange) Network() (*Network, error) {
 	res := &Network{}
 	res.ID = o.NetworkID
@@ -71,12 +76,13 @@ func (o *NetworkRange) Network() (*Network, error) {
 
 func (o *NetworkRange) networkAllocations() {}
 
+// NetworkRanger is anything that a NetworkRange can be bound to.
 type NetworkRanger interface {
 	Crudder
 	networkRanges()
 }
 
-// Networks returns all of the Networks.
+// NetworkRanges returns all of the NetworkRanges
 func NetworkRanges(scope ...NetworkRanger) (res []*NetworkRange, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
@@ -87,12 +93,14 @@ func NetworkRanges(scope ...NetworkRanger) (res []*NetworkRange, err error) {
 	return res, List(path.Join(paths...), &res)
 }
 
+// NetworkAllocation wraps datatypes.NetworkAllocation to provide the client API.
 type NetworkAllocation struct {
 	datatypes.NetworkAllocation
 	Timestamps
 	apiHelper
 }
 
+// Node returns the Node that this NetowrkAllocation is bound to, if any.
 func (o *NetworkAllocation) Node() (*Node, error) {
 	res := &Node{}
 	if o.NodeID.Valid {
@@ -102,6 +110,7 @@ func (o *NetworkAllocation) Node() (*Node, error) {
 	return nil, errors.New("NetworkAllocation not bound to a Node")
 }
 
+// Network returns the Network this Allocation belongs to.
 func (o *NetworkAllocation) Network() (*Network, error) {
 	res := &Network{}
 	if o.NetworkID.Valid {
@@ -111,12 +120,13 @@ func (o *NetworkAllocation) Network() (*Network, error) {
 	return nil, errors.New("NetworkAllocation not bound to a Network")
 }
 
+// NetworkAllocator is anything that a NetworkAllocation can be bound to.
 type NetworkAllocater interface {
 	Crudder
 	networkAllocations()
 }
 
-// Networks returns all of the Networks.
+// NetworkAllocations returns all of the NetworkAllocations.
 func NetworkAllocations(scope ...NetworkAllocater) (res []*NetworkAllocation, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
@@ -127,18 +137,21 @@ func NetworkAllocations(scope ...NetworkAllocater) (res []*NetworkAllocation, er
 	return res, List(path.Join(paths...), &res)
 }
 
+// NetworkRouter wraps datatypes.NetworkRouter to provide the client API.
 type NetworkRouter struct {
 	datatypes.NetworkRouter
 	Timestamps
 	apiHelper
 }
 
+// Network returns the Network that this NetworkRouter belongs to.
 func (o *NetworkRouter) Network() (*Network, error) {
 	res := &Network{}
 	res.ID = o.NetworkID
 	return res, Read(res)
 }
 
+// NetworkRouterer is anything that a NetworkRouter can be bound to.
 type NetworkRouterer interface {
 	Crudder
 	networkRouters()

@@ -15,11 +15,14 @@ import (
 	"github.com/VictorLowther/jsonpatch/utils"
 )
 
+// Timestamps records the times an object was created at and last
+// updated at on the server.
 type Timestamps struct {
 	CreatedAt *time.Time `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
 }
 
+// apiHelper tracks some auxillary data used to help out the client API
 type apiHelper struct {
 	lastJson []byte
 	fetchUrl string
@@ -42,6 +45,8 @@ func (o *apiHelper) lastFetch() string {
 	return o.fetchUrl
 }
 
+// Crudder is the interface that a type must satisfy for the client
+// API to be able to manage it.
 type Crudder interface {
 	Id() (string, error)
 	ApiName() string
@@ -82,9 +87,10 @@ func SampleJSON(o Crudder) (string, []byte, error) {
 	return uri, buf, err
 }
 
-// Init populates a Crudder with its default values as returned from the server.
-// You should always call Init() on any new object you intend to call Create() on in the
-// future to ensure that the defaults for the fields are populated correctly.
+// Init populates a Crudder with its default values as returned from
+// the server.  You should always call Init() on any new object you
+// intend to call Create() on in the future to ensure that the
+// defaults for the fields are populated correctly.
 func Init(o Crudder) error {
 	uri, buf, err := SampleJSON(o)
 	if err != nil {
@@ -93,7 +99,8 @@ func Init(o Crudder) error {
 	return unmarshal(uri, buf, o)
 }
 
-// Read fetches the object from the server.
+// Read fetches the object from the server.  The ID must have been
+// populated with a previous SetId() call.
 func Read(o Crudder) error {
 	uri := url(o)
 	buf, err := session.request("GET", uri, nil)
@@ -103,6 +110,7 @@ func Read(o Crudder) error {
 	return unmarshal(uri, buf, o)
 }
 
+// Fetch combines SetID() and Read().
 func Fetch(o Crudder, id string) error {
 	if err := SetId(o, id); err != nil {
 		return err
@@ -185,7 +193,7 @@ func Destroy(o Crudder) error {
 	return err
 }
 
-// Patch attempts to update o with patch, which must be an RFC6902 JSON Patch.
+// Patch attempts to update the object with patch, which must be an RFC6902 JSON Patch.
 func Patch(o Crudder, patch []byte) error {
 	uri := url(o)
 	outbuf, err := session.request("PATCH", uri, patch)
@@ -272,6 +280,8 @@ func Match(path string, vals map[string]interface{}, res interface{}) error {
 
 }
 
+// List fetches all the object available from path, and unmarshals
+// them into res.
 func List(path string, res interface{}) error {
 	err := session.list(res, path)
 	updatePaths(path, res)
@@ -288,32 +298,4 @@ func List(path string, res interface{}) error {
 // parsed to an int64
 func SetId(o Crudder, id string) error {
 	return o.SetId(id)
-}
-
-type CrowbarDigest struct {
-	CSRFToken string `json:"csrf_token"`
-	Message   string `json:"message"`
-}
-
-type Error struct {
-	Message   string `json:"message"`
-	Status    int    `json:"status"`
-	Backtrace string `json:"backtrace"`
-}
-
-func (e *Error) Error() string {
-	return fmt.Sprintf("Status: %v\nMessage: %v\n Backtrace: %v")
-}
-
-type NodePower struct {
-	ID     int64  `json:"id"`
-	Action string `json:"action"`
-	Result string `json:"result"`
-}
-
-type NodeAddress struct {
-	Node      string   `json:"node"`
-	Network   string   `json:"network"`
-	Category  string   `json:"category"`
-	Addresses []string `json:"addresses"`
 }

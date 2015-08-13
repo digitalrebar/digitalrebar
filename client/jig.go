@@ -6,12 +6,14 @@ import (
 	"github.com/VictorLowther/crowbar-api/datatypes"
 )
 
+// Jig wraps datatypes.Jig to provide client API functionality
 type Jig struct {
 	datatypes.Jig
 	Timestamps
 	apiHelper
 }
 
+// Jigger is anything that a Jig can be bound to.
 type Jigger interface {
 	Crudder
 	jigs()
