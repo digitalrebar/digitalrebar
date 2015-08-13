@@ -158,7 +158,7 @@ func makeCommandTree(singularName string,
 			if err := client.Fetch(obj, args[0]); err != nil {
 				log.Fatalf("Failed to fetch %v\n%v\n", singularName, err)
 			}
-			if err := client.UpdateJSON(obj, []byte(args[2])); err != nil {
+			if err := client.UpdateJSON(obj, []byte(args[1])); err != nil {
 				log.Fatalf("Unable to patch %v\n%v\n", args[0], err)
 			}
 
