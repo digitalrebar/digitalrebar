@@ -1,0 +1,273 @@
+#!/usr/bin/env ruby
+# Copyright 2011, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+require 'rubygems'
+require 'net/http'
+require 'net/http/digest_auth'
+require 'uri'
+require 'json'
+require 'yaml'
+
+$hostname = "127.0.0.1"
+$port = 3000
+$url = nil
+$data = ""
+$timeout = 500
+$key = if ENV["CROWBAR_KEY"]
+         $key = ENV["CROWBAR_KEY"]
+       elsif File.file?("/etc/crowbar.install.key")
+         IO.read("/etc/crowbar.install.key")
+       else
+         raise "No crowbar install key, will not install barclamps!"
+       end
+$username, $password = $key.strip.split(':',2)
+
+def debug(foo)
+  STDERR.puts("DEBUG: #{foo}") if $debug
+end
+
+def maybe_json_die(json,code)
+  case
+  when code < 300 then return
+  when (code == 404) || (code == 409)
+    STDERR.puts(JSON.pretty_generate(json))
+    exit 1
+  else
+    STDERR.puts(JSON.pretty_generate(json))
+    STDERR.puts("Return code: #{code}")
+    raise ""
+  end
+end
+
+# Common REST functions.  They are in their own class
+# to prevent being polluted by CrowbarProxy specific things.
+class REST
+
+  # Handle digest authentication.
+  def self.authenticate(req,uri,data=nil)
+    request_headers={
+      "Accept" => "application/json",
+      "Content-Type" => "application/json"}
+    request_headers['x-return-attributes']=$attributes if $attributes
+    uri.user=$username
+    uri.password=$password
+    res=nil
+    Net::HTTP.start(uri.host, uri.port) {|http|
+      http.read_timeout = $timeout
+      r = req.new(uri.request_uri,request_headers)
+      r.body = data if data
+      res = http.request r
+      debug "(a) return code: #{res.code}"
+      debug "(a) return body: #{res.body}"
+      debug "(a) return headers:"
+      res.each_header do |h, v|
+        debug "#{h}: #{v}"
+      end if $debug
+
+      if res['www-authenticate']
+        debug "(a) uri: #{uri}"
+        debug "(a) www-authenticate: #{res['www-authenticate']}"
+        debug "(a) req-method: #{req::METHOD}"
+        auth=Net::HTTP::DigestAuth.new.auth_header(uri,
+                                                   res['www-authenticate'],
+                                                   req::METHOD)
+        r.add_field 'Authorization', auth
+        res = http.request r
+      end
+    }
+    res
+  end
+
+  # Common data and debug handling.
+  def self.go(verb,path,data=nil)
+    if $url
+      uri = URI.parse("#{$url}/#{path}" )
+    else
+      uri = URI.parse("http://#{$hostname}:#{$port}/#{path}" )
+    end
+    # We want to give valid JSON to the API, so if we were
+    # handed an array or a hash as the data to be messed with,
+    # turn it into a blob of JSON.
+    data = data.to_json if data.is_a?(Array) || data.is_a?(Hash)
+    res = authenticate(verb,uri,data)
+    debug "(#{verb}) hostname: #{uri.host}:#{uri.port}"
+    debug "(#{verb}) request: #{uri.path}"
+    debug "(#{verb}) data: #{data}"
+    debug "(#{verb}) return code: #{res.code}"
+    debug "(#{verb}) return body: #{res.body}"
+    [ JSON.parse(res.body), res.code.to_i ]
+  end
+
+  def self.get(path)
+    go(Net::HTTP::Get,path)
+  end
+
+  def self.post(path, data=nil)
+    go(Net::HTTP::Post,path,data)
+  end
+
+  def self.put(path, data=nil)
+    go(Net::HTTP::Put,path,data)
+  end
+
+  def self.delete(path)
+    go(Net::HTTP::Delete,path)
+  end
+
+  def self.patch(path,data=nil)
+    go(Net::HTTP::Patch,path,data)
+  end
+end
+
+# The base class for all Crowbar commandline providers.
+# They will wind up being roughly grouped by controller or
+# barclamp name.
+class CrowbarProxy
+
+  def self.apiname
+    "#{name.downcase.split("::").last}s"
+  end
+
+  def self.argname
+    name.split("::").last
+  end
+
+  def self.path
+    "api/v2/#{apiname}"
+  end
+
+  # This should be passed either:
+  # 1: A name or ID for the things to retrieve from the server
+  # 2: A pre-retrieved blob of JSON.
+  def initialize(blob,*rest)
+    case
+    when blob.is_a?(String) || blob.is_a?(Integer)
+      @blob,res = REST.get("#{self.class.path}/#{blob}")
+      maybe_json_die(@blob,res)
+    when blob.is_a?(Hash)
+      @blob = blob
+    else
+      raise("Cannot cast #{blob.inspect} into a #{self.class.name}}")
+    end
+  end
+
+  # Common CRUD operations.
+  # List things.
+  def self.list(*rest)
+    objs, res = REST.get(path)
+    maybe_json_die(objs,res)
+    objs.map{|o| self.new(o)}
+  end
+
+  # Create a new thing from a blob of JSON.
+  # The server side will handle all sanity checking.
+  def self.create_Json(data, *rest)
+    obj, res = REST.post(path,data)
+    maybe_json_die(obj,res)
+    self.new(obj)
+  end
+
+  def self.match_Json(data, *rest)
+    objs, res = REST.post("#{path}/match",data)
+    maybe_json_die(objs,res)
+    objs.map{|o| self.new(o)}
+  end
+
+  def [](k)
+    @blob[k]
+  end
+
+  def []=(k,v)
+    raise("Cannot modify #{k}") if k =~ /(^(name|order))|(.*_(id|at))$/
+    do_update_Json({k => v}.to_json)
+  end
+
+  def id
+    @blob["id"]
+  end
+
+  # Reload this thing.
+  def reload
+    @blob,res = REST.get("#{self.class.path}/#{id}")
+    maybe_json_die(@blob,res)
+    self
+  end
+
+  # Push an update to this thing back to the server.
+  # Save the updated version we get back.
+  def do_update_Json(data, *rest)
+    obj, res = REST.put("#{self.class.path}/#{id}",data)
+    maybe_json_die(obj,res)
+    @blob = obj
+    self
+  end
+
+  # Destroy this thing.
+  def do_destroy(*rest)
+    obj,res = REST.delete("#{self.class.path}/#{id}")
+    maybe_json_die(obj,res)
+    obj
+  end
+
+  # Show this thing.  We automatically show everything as JSON.
+  def do_show
+    self
+  end
+
+  # Turn this thing into a JSON string.
+  def to_json
+    JSON.pretty_generate(@blob)
+  end
+
+  def to_hash
+    @blob.dup
+  end
+end
+
+class Barclamp < CrowbarProxy
+  def self.install(path)
+    if path.split("/")[-1] == "crowbar.yml"
+      yml = path
+      path = File.join(*path.split("/")[0..-2])
+    else
+      yml = File.join(path,"crowbar.yml")
+    end
+    raise "No crowbar.yml at #{path}" unless File.exists?(yml)
+    settings = YAML.load_file(yml)
+    settings['barclamp']['source_path'] = File.realpath(path)
+    return {} if settings['barclamp']['parent']
+    bc, res = REST.get("#{self.path}/#{settings['barclamp']['name']}")
+    if res >= 400
+      bc = create_Json({'value' => settings})
+    else
+      Barclamp.new(bc).do_update_Json({'value' => settings})
+    end
+    # Load child barclamps
+    Dir.glob(File.join(path,"barclamps","*.yml")).each do |child_yml|
+      settings = YAML.load_file(child_yml)
+      settings['barclamp']['source_path'] = path
+      child, res = REST.get("#{self.path}/#{settings['barclamp']['name']}")
+      if res >= 400
+        create_Json({'value' => settings})
+      else
+        Barclamp.new(child).do_update_Json({'value' => settings})
+      end
+    end
+    bc
+  end
+end
+
+Barclamp.install(ARGV.shift)

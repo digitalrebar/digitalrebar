@@ -19,9 +19,9 @@
 
 run_cli(Scenario, Params) ->
   CLI = bdd_utils:scenario_retrieve(Scenario, cli, bdd_utils:config(cli)),
-  Username = " " ++ bdd_utils:config(cli_user_key,"--username") ++ " '" ++ bdd_utils:config(user, "NOT_GIVEN") ++ "' ",
-  Password = " " ++ bdd_utils:config(cli_password_key,"--password") ++ " '" ++ bdd_utils:config(password, "NOT_GIVEN") ++ "' ",
-  URL = " " ++ bdd_utils:config(cli_url_key,"--url") ++ " '" ++ bdd_utils:config(url, "NOT_GIVEN") ++ "' ",
+  Username = " " ++ bdd_utils:config(cli_user_key,"-U") ++ " '" ++ bdd_utils:config(user, "NOT_GIVEN") ++ "' ",
+  Password = " " ++ bdd_utils:config(cli_password_key,"-P") ++ " '" ++ bdd_utils:config(password, "NOT_GIVEN") ++ "' ",
+  URL = " " ++ bdd_utils:config(cli_url_key,"-E") ++ " '" ++ bdd_utils:config(url, "NOT_GIVEN") ++ "' ",
   Cmd = CLI ++ " " ++ Params ++ Username ++ Password ++ URL,
   Out = os:cmd(Cmd),
   bdd_utils:log(debug, bdd_clirat, run_cli, "os:cmd(~p). Output ~p",[Cmd, Out]),

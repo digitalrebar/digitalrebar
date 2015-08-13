@@ -16,6 +16,6 @@ fi
 
 /etc/init.d/crowbar start
 # Wait for the webserver to be ready.
-while ! /opt/opencrowbar/core/bin/crowbar -U crowbar -P crowbar users list; do
+while ! crowbar -U crowbar -P crowbar -E http://127.0.0.1:3000 ping; do
     sleep 1
 done

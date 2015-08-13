@@ -4,6 +4,7 @@
 set +e
 run_crowbar() (
     export CROWBAR_KEY='crowbar:crowbar'
+    echo "$CROWBAR_KEY" >/etc/crowbar.install.key
     cd /opt/opencrowbar/core/rails
     tasks=("rake db:drop"
         "rake db:create"
@@ -16,10 +17,10 @@ run_crowbar() (
     QUE_WORKER_COUNT=2 QUE_QUEUE=HighPriorityRunner bundle exec rake que:work &
     QUE_WORKER_COUNT=10 QUE_QUEUE=NodeRoleRunner bundle exec rake que:work &
     bundle exec rails server -d
-    while ! ../bin/crowbar users list; do
+    while ! crowbar ping; do
         sleep 1
     done
-    (cd ..; CROWBAR_KEY="crowbar:crowbar" bin/crowbar barclamps install $PWD)
+    (cd ..; CROWBAR_KEY="crowbar:crowbar" bin/barclamp_import $PWD)
 )
 
 kill_crowbar() (

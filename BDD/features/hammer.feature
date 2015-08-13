@@ -53,27 +53,6 @@ Feature: Hammers API
       And Array contains key "reboot"
     Finally REST removes the {object:node} "power.works.power
 
-  Scenario: Hammers works from CLI
-    Given REST creates the {object:node} "hammer.works.cli"
-      And there are no pending Crowbar runs for {o:node} "hammer.works.cli"
-      And CLI is {apply:crowbar.g.cli}
-    When I run the "nodes power hammer.works.cli reboot" command
-    Then {object:node} "hammer.works.cli" is not alive
-      And the CLI should return "reboot"
-      And the CLI should return "development faked"
-    Finally REST removes the {object:node} "hammer.works.cli"
-
-  Scenario: Hammers fails from CLI
-    Given REST creates the {object:node} "hammer.fails.cli"
-      And there are no pending Crowbar runs for {o:node} "hammer.fails.cli"
-      And CLI is {apply:crowbar.g.cli}
-    When I run the "nodes power hammer.fails.cli rtfm" command
-    Then {object:node} "hammer.fails.cli" is alive
-      And the CLI should return "API call ok"
-      And the CLI should return ":reboot"
-      And the CLI should return "501"
-    Finally REST removes the {object:node} "hammer.fails.cli"
-
   Scenario: Hammers gives 501 for invalid option
     Given REST creates the {object:node} "hammer.r501.com"
       And there are no pending Crowbar runs for {o:node} "hammer.r501.com"
