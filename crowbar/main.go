@@ -11,7 +11,6 @@ import (
 	crowbar "github.com/VictorLowther/crowbar-api"
 	"github.com/VictorLowther/crowbar-api/datatypes"
 	"github.com/VictorLowther/jsonpatch"
-	"github.com/VictorLowther/jsonpatch/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -114,11 +113,8 @@ func makeCommandTree(singularName string,
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
 			obj := maker()
-			if crowbar.SetId(obj, args[0]) != nil {
-				log.Fatalf("Failed to parse ID %v for an %v\n", singularName, args[0])
-			}
-			if err := crowbar.Read(obj); err != nil {
-				log.Fatalf("Unable to load %v %v\n", singularName, obj)
+			if crowbar.Fetch(obj, args[0]) != nil {
+				log.Fatalf("Failed to fetch %v\n", singularName, args[0])
 			}
 			fmt.Println(prettyJSON(obj))
 		},
@@ -159,26 +155,10 @@ func makeCommandTree(singularName string,
 				log.Fatalf("%v requires 2 arguments\n", c.UseLine())
 			}
 			obj := maker()
-			if err := crowbar.SetId(obj, args[0]); err != nil {
-				log.Fatalf("Failed to parse ID %v for a %v\n%v\n", args[0], singularName, err)
+			if err := crowbar.Fetch(obj, args[0]); err != nil {
+				log.Fatalf("Failed to fetch %v\n%v\n", singularName, err)
 			}
-			if err := crowbar.Read(obj); err != nil {
-				log.Fatalf("Failed to fetch %v from the server\n%v\n", args[0], err)
-			}
-			intermediate, err := json.Marshal(obj)
-			if err != nil {
-				log.Fatalf("Unable to marshal %v\n%v", args[0], err)
-			}
-			merged, err := utils.MergeJSON(intermediate, []byte(args[1]))
-			if err != nil {
-				log.Fatalf("Unable to generate merged JSON\n%v", err)
-			}
-			patch, err := jsonpatch.GenerateJSON(intermediate, merged, true)
-			if err != nil {
-				log.Fatalf("Cannot generate JSON Patch\n%v\n", err)
-			}
-
-			if err := crowbar.Patch(obj, patch); err != nil {
+			if err := crowbar.UpdateJSON(obj, []byte(args[2])); err != nil {
 				log.Fatalf("Unable to patch %v\n%v\n", args[0], err)
 			}
 

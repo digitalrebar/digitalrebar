@@ -112,18 +112,12 @@ func init() {
 				log.Fatalf("%v requires 2 argument\n", c.UseLine())
 			}
 			obj := &crowbar.Node{}
-			if crowbar.SetId(obj, args[0]) != nil {
-				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
+			if crowbar.Fetch(obj, args[0]) != nil {
+				log.Fatalf("Failed to fetch %v\n", singularName)
 			}
 			depl := &crowbar.Deployment{}
-			if crowbar.SetId(depl, args[2]) != nil {
-				log.Fatalf("Failed to parse ID %v for a Deployment", args[2])
-			}
-			if crowbar.Read(obj) != nil {
-				log.Fatalf("%v is not a valid Node\n", args[0])
-			}
-			if crowbar.Read(depl) != nil {
-				log.Fatalf("%v is not a valid Deployment\n", args[2])
+			if crowbar.Fetch(depl, args[2]) != nil {
+				log.Fatalf("Failed fetch deployment")
 			}
 			if obj.Move(depl) != nil {
 				log.Fatalf("Failed to move node %v to deployment %v\n", args[0], args[2])

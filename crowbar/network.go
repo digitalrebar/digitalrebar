@@ -140,8 +140,7 @@ func init() {
 						log.Fatalln("deployment parameter not a string")
 					}
 					depl := &crowbar.Deployment{}
-					depl.SetId(depl_name)
-					if err := crowbar.Read(depl); err != nil {
+					if err := crowbar.Fetch(depl, depl_name); err != nil {
 						log.Fatalf("Unable to fetch deployment %v\n%v\n", depl_name, err)
 					}
 					netdef["deployment_id"] = depl.ID
@@ -214,17 +213,11 @@ func init() {
 				}
 				node := &crowbar.Node{}
 				network := &crowbar.Network{}
-				if err := crowbar.SetId(node, args[2]); err != nil {
-					log.Fatalf("Unable to use %v as a node ID\n%v\n", args[2], err)
+				if err := crowbar.Fetch(node, args[2]); err != nil {
+					log.Fatalf("Unable to fetch node\n%v\n", err)
 				}
-				if err := crowbar.SetId(network, args[0]); err != nil {
-					log.Fatalf("Unable to use %v as a network ID\n%v\n", args[0], err)
-				}
-				if err := crowbar.Read(node); err != nil {
-					log.Fatalln("Unable to fetch node from Crowbar", err)
-				}
-				if err := crowbar.Read(network); err != nil {
-					log.Fatalln("Unable to fetch network from Crowbar", err)
+				if err := crowbar.Fetch(network, args[0]); err != nil {
+					log.Fatalf("Unable to fetch network\n%v\n", err)
 				}
 				ranges, err := network.AutoRanges(node)
 				if err != nil {
@@ -265,10 +258,7 @@ func init() {
 					log.Fatalf("%v requires 3 or 4 arguments", c.UseLine())
 				}
 				node := &crowbar.Node{}
-				if err := crowbar.SetId(node, args[0]); err != nil {
-					log.Fatalf("Unable to use %v as a node ID\n%v\n", args[0], err)
-				}
-				if err := crowbar.Read(node); err != nil {
+				if err := crowbar.Fetch(node, args[0]); err != nil {
 					log.Fatalln("Unable to fetch node from Crowbar\n%v\n", err)
 				}
 				netRange := &crowbar.NetworkRange{}
@@ -276,10 +266,7 @@ func init() {
 					vals := map[string]interface{}{}
 					vals["name"] = args[4]
 					network := &crowbar.Network{}
-					if err := crowbar.SetId(network, args[2]); err != nil {
-						log.Fatalf("Unable to use %v as a network ID\n%v\n", args[2], err)
-					}
-					if err := crowbar.Read(network); err != nil {
+					if err := crowbar.Fetch(network, args[2]); err != nil {
 						log.Fatalln("Unable to fetch network from Crowbar\n%v\n", err)
 					}
 					vals["network_id"] = network.ID

@@ -22,10 +22,7 @@ func init() {
 					log.Fatalf("%v requires 2 arguments", c.UseLine())
 				}
 				obj := &crowbar.User{}
-				if err := crowbar.SetId(obj, args[0]); err != nil {
-					log.Fatalln("Unable to set user ID", err)
-				}
-				if err := crowbar.Read(obj); err != nil {
+				if err := crowbar.Fetch(obj, args[0]); err != nil {
 					log.Fatalln("Unable to fetch user from the server", err)
 				}
 				token, err := obj.StartPasswordReset()

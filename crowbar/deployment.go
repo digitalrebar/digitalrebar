@@ -47,18 +47,12 @@ func init() {
 				log.Fatalf("%v requires 2 arguments seperated by \"to\"", c.UseLine())
 			}
 			obj := &crowbar.Deployment{}
-			if crowbar.SetId(obj, args[0]) != nil {
-				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
+			if crowbar.Fetch(obj, args[0]) != nil {
+				log.Fatalf("Failed to fetch %v\n", singularName)
 			}
 			role := &crowbar.Role{}
-			if crowbar.SetId(role, args[2]) != nil {
-				log.Fatalf("Failed to parse ID %v for a role\n", args[2])
-			}
-			if err := crowbar.Read(obj); err != nil {
-				log.Fatalf("Failed to fetch Deployment: %v\n", err.Error())
-			}
-			if err := crowbar.Read(role); err != nil {
-				log.Fatalf("Failed to fetch Role: %v\n", err.Error())
+			if crowbar.Fetch(role, args[2]) != nil {
+				log.Fatalf("Failed to fetch role\n")
 			}
 			nr := &crowbar.DeploymentRole{}
 			nr.RoleID = role.ID
@@ -78,11 +72,8 @@ func init() {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
 			obj := &crowbar.Deployment{}
-			if crowbar.SetId(obj, args[0]) != nil {
-				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
-			}
-			if crowbar.Read(obj) != nil {
-				log.Fatalf("Failed to retrieve deployment %v\n", args[0])
+			if crowbar.Fetch(obj, args[0]) != nil {
+				log.Fatalf("Failed to fetch %v\n", singularName)
 			}
 			if !obj.ParentID.Valid {
 				log.Fatalf("System deployment does not have a parent")
