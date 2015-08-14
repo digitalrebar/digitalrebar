@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -102,6 +103,57 @@ func init() {
 				log.Fatalf("Failed to create noderole for node:%v role:%v\n", args[0], args[2])
 			}
 			fmt.Println(prettyJSON(nr))
+		},
+	})
+	nodes.AddCommand(&cobra.Command{
+		Use:   "import [json]",
+		Short: "Import a node definition as a JSON blob.  May include a mac and an IP hint.",
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 1 {
+				log.Fatalf("%v requires 1 argument\n", c.UseLine())
+			}
+			obj := &client.Node{}
+			if err := client.CreateJSON(obj, []byte(args[0])); err != nil {
+				log.Fatalf("Failed to create node\n%v\n", err)
+			}
+			type ipMacHelper struct {
+				Mac string `json:"mac"`
+				IP  string `json:"ip"`
+			}
+			hints := &ipMacHelper{}
+			json.Unmarshal([]byte(args[0]), hints)
+			if hints.Mac != "" {
+				attr := &client.Attrib{}
+				attr.Name = "hint-admin-macs"
+				attr, err := client.GetAttrib(obj, attr, "")
+				if err != nil {
+					log.Printf("Unable to get attrib for mac address hint")
+				} else {
+					attr.Value = []string{hints.Mac}
+					if client.SetAttrib(obj, attr, "") != nil {
+						log.Printf("Error setting mac address hint")
+					}
+				}
+			}
+			if hints.IP != "" {
+				network := &client.Network{}
+				network.Name = hints.IP
+				if err := client.Read(network); err != nil {
+					log.Println("Unable to find network for IP hint")
+				} else {
+					attr := &client.Attrib{}
+					attr.Name = "hint-" + network.Name + "-v4addr"
+					attr, err := client.GetAttrib(obj, attr, "")
+					if err != nil {
+						log.Printf("Unable to get attrib for ip address hint")
+					} else {
+						attr.Value = []string{hints.IP}
+						if client.SetAttrib(obj, attr, "") != nil {
+							log.Printf("Error setting IP address hint")
+						}
+					}
+				}
+			}
 		},
 	})
 	nodes.AddCommand(&cobra.Command{
