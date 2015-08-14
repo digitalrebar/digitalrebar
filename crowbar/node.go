@@ -137,8 +137,7 @@ func init() {
 			}
 			if hints.IP != "" {
 				network := &client.Network{}
-				network.Name = hints.IP
-				if err := client.Read(network); err != nil {
+				if err := network.ForAddress(hints.IP); err != nil {
 					log.Println("Unable to find network for IP hint")
 				} else {
 					attr := &client.Attrib{}
