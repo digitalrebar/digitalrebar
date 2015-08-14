@@ -14,6 +14,7 @@
 # limitations under the License.
 
 shopt -s extglob
+set -o pipefail
 
 date
 
@@ -46,22 +47,14 @@ ip_re='([0-9a-f.:]+/[0-9]+)'
 chef-solo -c /opt/opencrowbar/core/bootstrap/chef-solo.rb -o "${node_recipes}"
 
 # Build access values
-export CROWBAR_KEY=`cat /etc/crowbar.install.key`
-export CROWBAR_WEB="http://$1:3000"
+export CROWBAR_KEY=$(cat /etc/crowbar.install.key)
+export CROWBAR_ENDPOINT="http://$1:3000"
 
 # This could error if this is the first time.  Ignore it
 set +e
-
-# Get ssh keys public keys
-ROLE_ID=`crowbar --hostname $admin_ip roles show provisioner-server | grep '"id"'`
-ROLE_ID=${ROLE_ID##*:}
-ROLE_ID=${ROLE_ID%,}
-# XXX: Node id is hard-coded and bad.
-NODE_ROLE_ID=`crowbar --hostname $admin_ip noderoles list | grep -B2 -A2 "\"role_id\":$ROLE_ID" | grep -B3 -A2 '"node_id": 2' | grep \"id\"`
-NODE_ROLE_ID=${NODE_ROLE_ID##*:}
-NODE_ROLE_ID=${NODE_ROLE_ID%,}
-if [ "$NODE_ROLE_ID" != "" ] ; then
-  crowbar --hostname $admin_ip noderoles get $NODE_ROLE_ID attrib provisioner-access_keys | awk -F\" '{ print $4 }' >> /root/.ssh/authorized_keys
+# Node id is harcoded here, and that is a Bad Thing
+if blob="$(crowbar nodes get 2 attrib provisioner-access_keys)"; then
+    awk -F\" '{ print $4 }' <<<"$blob" >> /root/.ssh/authorized_keys
 fi
 
 set -e
@@ -73,17 +66,10 @@ IPADDR="${BASH_REMATCH[1]}"
 echo "Using $IPADDR for this host"
 
 # Add node to OpenCrowbar
-exists=$(curl -s -o /dev/null -w "%{http_code}" --digest -u "$CROWBAR_KEY" \
-  -X GET "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME")
-if [[ $exists == 404 ]]; then
+if ! crowbar nodes show "$HOSTNAME"; then
     # Create a new node for us,
     # Let the annealer do its thing.
-    curl -f -g --digest -u "$CROWBAR_KEY" -X POST \
-      -d "name=$HOSTNAME" \
-      -d 'admin=true' \
-      -d "ip=$IPADDR" \
-      -d 'bootenv=local' \
-      "$CROWBAR_WEB/api/v2/nodes/" || {
+    crowbar nodes import "{\"name\": \"$HOSTNAME\", \"admin\": true, \"ip\": \"$IPADDR\", \"bootenv\": \"local\"}"|| {
         echo "We could not create a node for ourself!"
         exit 1
     }
@@ -92,15 +78,9 @@ else
 fi
 
 # does the crowbar-joined-role exist?
-managed=$(curl -s -o /dev/null -w "%{http_code}" --digest -u "$CROWBAR_KEY" \
-  -X GET "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME/node_roles/crowbar-joined-node")
-if [[ $managed == 404 ]]; then
-    curl -f -g --digest -u "$CROWBAR_KEY" -X POST \
-      -d "node=$HOSTNAME" \
-      -d "role=crowbar-joined-node" \
-      "$CROWBAR_WEB/api/v2/node_roles/" && \
-    curl -f -g --digest -u "$CROWBAR_KEY" -X PUT \
-      "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME/commit" || {
+if ! crowbar nodes roles $HOSTNAME  |grep -q 'crowbar-joined-node'; then
+    crowbar nodes bind "$HOSTNAME" to 'crowbar-joined-node'
+    crowbar nodes commit "$HOSTNAME" || {
         echo "We could not commit the node!"
         exit 1
     }
@@ -109,8 +89,5 @@ else
 fi
 
 # Always make sure we are marking the node alive. It will comeback later.
-curl -f -g --digest -u "$CROWBAR_KEY" \
-    -X PUT "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME" \
-    -d 'alive=$2' \
-    -d 'bootenv=local'
+crowbar nodes update "$HOSTNAME" "{\"alive\": $2, \"bootenv\": \"local\"}"
 

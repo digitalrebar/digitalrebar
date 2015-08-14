@@ -40,15 +40,24 @@ class NetworksController < ::ApplicationController
   end
 
   def show
-    @network = Network.find_key params[:id]
+    begin
+      addr = IP.coerce(params[:id])
+      @network = Network.lookup_network(addr, (params[:category] || "admin"))
+    rescue 
+      @network = Network.find_key params[:id]
+    end
     respond_to do |format|
       format.html { }
       format.json { render api_show @network }
     end
   end
-
+  
   def index
-    if (params[:category])
+    if (params[:address])
+      @network = Network.lookup_network(params[:address], (params[:category] || "admin"))
+      render api_show @network
+      return
+    elsif (params[:category])
       @networks = Network.in_category(params[:category])
     else
       @networks = Network.all
