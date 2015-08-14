@@ -22,7 +22,7 @@ type NodeRoler interface {
 func NodeRoles(scope ...NodeRoler) (res []*NodeRole, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = url(scope[i])
+		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "node_roles")
 	res = make([]*NodeRole, 0)

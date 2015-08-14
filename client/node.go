@@ -17,7 +17,7 @@ type Node struct {
 
 // PowerActions gets the available power actions for this node.
 func (o *Node) PowerActions() ([]string, error) {
-	buf, err := session.request("GET", url(o, "power"), nil)
+	buf, err := session.request("GET", urlFor(o, "power"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func (o *Node) PowerActions() ([]string, error) {
 // guaranteed to be atomic.
 func (o *Node) Move(depl *Deployment) error {
 	old_deployment_id := o.DeploymentID
-	tgt := fmt.Sprintf("%v?old_deployment_id=%v", url(o), o.DeploymentID)
+	tgt := fmt.Sprintf("%v?old_deployment_id=%v", urlFor(o), o.DeploymentID)
 	o.DeploymentID = depl.ID
 	inbuf, err := json.Marshal(o)
 	_, err = session.request("PUT", tgt, inbuf)
@@ -90,7 +90,7 @@ type Noder interface {
 func Nodes(scope ...Noder) (res []*Node, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = url(scope[i])
+		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "nodes")
 	res = make([]*Node, 0)

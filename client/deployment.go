@@ -43,7 +43,7 @@ func Deployments(scope ...Deploymenter) (res []*Deployment, err error) {
 	res = make([]*Deployment, 0)
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = url(scope[i])
+		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "deployments")
 	return res, List(path.Join(paths...), &res)

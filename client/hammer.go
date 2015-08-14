@@ -24,7 +24,7 @@ func Hammers(scope ...Hammerer) (res []*Hammer, err error) {
 	res = make([]*Hammer, 0)
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = url(scope[i])
+		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "hammers")
 	return res, List(path.Join(paths...), &res)

@@ -3,6 +3,7 @@ package client
 import (
 	"errors"
 	"fmt"
+	"net/url"
 	"path"
 
 	"github.com/VictorLowther/crowbar-api/datatypes"
@@ -38,6 +39,16 @@ func (o *Network) AutoRanges(node *Node) ([]*NetworkRange, error) {
 	return res, List(uri, &res)
 }
 
+// ForAddress allows you to look up the network that contains this address.
+func (o *Network) ForAddress(addr string) error {
+	p := fmt.Sprintf("%v?address=%v", o.ApiName(), url.QueryEscape(addr))
+	buf, err := session.request("GET", p, nil)
+	if err != nil {
+		return err
+	}
+	return unmarshal(p, buf, o)
+}
+
 // Satisfy salient interfaces
 func (o *Network) networkRanges()      {}
 func (o *Network) networkAllocations() {}
@@ -53,7 +64,7 @@ type Networker interface {
 func Networks(scope ...Networker) (res []*Network, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = url(scope[i])
+		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "networks")
 	res = make([]*Network, 0)
@@ -86,7 +97,7 @@ type NetworkRanger interface {
 func NetworkRanges(scope ...NetworkRanger) (res []*NetworkRange, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = url(scope[i])
+		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "network_ranges")
 	res = make([]*NetworkRange, 0)
@@ -130,7 +141,7 @@ type NetworkAllocater interface {
 func NetworkAllocations(scope ...NetworkAllocater) (res []*NetworkAllocation, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = url(scope[i])
+		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "network_allocations")
 	res = make([]*NetworkAllocation, 0)
@@ -161,7 +172,7 @@ type NetworkRouterer interface {
 func NetworkRouters(scope ...NetworkRouterer) (res []*NetworkRouter, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = url(scope[i])
+		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "network_routers")
 	res = make([]*NetworkRouter, 0)

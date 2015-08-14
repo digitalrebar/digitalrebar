@@ -29,7 +29,7 @@ type Roler interface {
 func Roles(scope ...Roler) (res []*Role, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = url(scope[i])
+		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "roles")
 	res = make([]*Role, 0)

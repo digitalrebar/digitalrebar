@@ -58,7 +58,7 @@ type Crudder interface {
 }
 
 // Calculate the API endpoint that should be used to reference this object.
-func url(o Crudder, parts ...string) string {
+func urlFor(o Crudder, parts ...string) string {
 	id, err := o.Id()
 	if err != nil {
 		log.Panic(err)
@@ -102,7 +102,7 @@ func Init(o Crudder) error {
 // Read fetches the object from the server.  The ID must have been
 // populated with a previous SetId() call.
 func Read(o Crudder) error {
-	uri := url(o)
+	uri := urlFor(o)
 	buf, err := session.request("GET", uri, nil)
 	if err != nil {
 		return err
@@ -189,13 +189,13 @@ func CreateJSON(o Crudder, toMerge []byte) error {
 
 // Destroy removes this object from the server.
 func Destroy(o Crudder) error {
-	_, err := session.request("DELETE", url(o), nil)
+	_, err := session.request("DELETE", urlFor(o), nil)
 	return err
 }
 
 // Patch attempts to update the object with patch, which must be an RFC6902 JSON Patch.
 func Patch(o Crudder, patch []byte) error {
-	uri := url(o)
+	uri := urlFor(o)
 	outbuf, err := session.request("PATCH", uri, patch)
 	if err != nil {
 		return err

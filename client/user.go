@@ -55,7 +55,7 @@ func Users() (res []*User, err error) {
 
 // StartPasswordReset fetches a PasswordChangeToken for this user.
 func (u *User) StartPasswordReset() (*PasswordChangeToken, error) {
-	buf, err := session.request("GET", url(u, "start_password_reset"), nil)
+	buf, err := session.request("GET", urlFor(u, "start_password_reset"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (u *User) CompletePasswordReset(tok *PasswordChangeToken, newPassword strin
 		base64.StdEncoding.EncodeToString(pubKey[:]),
 		base64.StdEncoding.EncodeToString(nonce[:]),
 		base64.StdEncoding.EncodeToString(encPayload))
-	_, err = session.request("POST", url(u, "complete_password_reset"), []byte(body))
+	_, err = session.request("POST", urlFor(u, "complete_password_reset"), []byte(body))
 	if err != nil {
 		return err
 	}

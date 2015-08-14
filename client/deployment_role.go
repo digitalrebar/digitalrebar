@@ -43,7 +43,7 @@ type DeploymentRoler interface {
 func DeploymentRoles(scope ...DeploymentRoler) (res []*DeploymentRole, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = url(scope[i])
+		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "deployment_roles")
 	res = make([]*DeploymentRole, 0)

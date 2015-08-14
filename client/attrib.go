@@ -34,7 +34,7 @@ func Attribs(scope ...Attriber) (res []*Attrib, err error) {
 	res = make([]*Attrib, 0)
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = url(scope[i])
+		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "attribs")
 	return res, List(path.Join(paths...), &res)
@@ -57,7 +57,7 @@ func GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, err error) {
 		log.Panic(err)
 	}
 	res.SetId(id)
-	uri := url(o, url(res))
+	uri := urlFor(o, urlFor(res))
 	if bucket != "" {
 		uri = fmt.Sprintf("%v?bucket=%v", uri, bucket)
 	}
@@ -77,7 +77,7 @@ func SetAttrib(o Attriber, a *Attrib, bucket string) error {
 	if bucket == "" {
 		bucket = "user"
 	}
-	uri := url(o, url(a))
+	uri := urlFor(o, urlFor(a))
 	uri = fmt.Sprintf("%v?bucket=%v", uri, bucket)
 	patch, err := MakePatch(a)
 	if err != nil {
@@ -92,19 +92,19 @@ func SetAttrib(o Attriber, a *Attrib, bucket string) error {
 
 // Propose readies an Attriber to accept new values via SetAttrib.
 func Propose(o Attriber) error {
-	outbuf, err := session.request("PUT", url(o, "propose"), nil)
+	outbuf, err := session.request("PUT", urlFor(o, "propose"), nil)
 	if err != nil {
 		return err
 	}
-	return unmarshal(url(o), outbuf, o)
+	return unmarshal(urlFor(o), outbuf, o)
 }
 
 // Commit makes the values set on the Attriber via SetAttrib visible
 // to the rest of the Crowbar infrastructure.
 func Commit(o Attriber) error {
-	outbuf, err := session.request("PUT", url(o, "commit"), nil)
+	outbuf, err := session.request("PUT", urlFor(o, "commit"), nil)
 	if err != nil {
 		return err
 	}
-	return unmarshal(url(o), outbuf, o)
+	return unmarshal(urlFor(o), outbuf, o)
 }
