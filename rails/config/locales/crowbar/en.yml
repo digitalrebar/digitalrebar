@@ -347,6 +347,7 @@ en:
       nodes: "Nodes"
       node: "Node"
       move_to: "Move Node To Group"
+      unclaimed: "Unassigned Nodes"
   jigs:
     index:
       title: "Installed Configuration Managers - Jigs"

@@ -39,15 +39,5 @@ class Group < ActiveRecord::Base
     name
   end
 
-  private
-
-  # if this is the first group in a category, add all the nodes to it
-  def add_nodes
-    nodes = Node.category(self.category)
-    if nodes.count == 0
-      Node.all.each { |n| self.nodes << n unless n.admin or n.system} 
-    end
-  end
-
 end
 

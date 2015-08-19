@@ -5,9 +5,18 @@
 = "#{t '.description'}:"
 = @group.description if @group.description
 
+
+- nodes = Node.regular - Node.category(@group.category)
+- if nodes.count > 0
+  
+  %h2= t '.unclaimed'
+
+  - nodes.each do |n|
+    = link_to_function n.name, "add(#{n.id}, #{@group.id}, '#{n.name}')", {id: n.id}
+
 %h2= t '.nodes'
 
-%table.data.box
+%table.data.box#nodelist
   %thead
     %tr{ :class => cycle(:odd, :even) }
       %th= t '.node'
@@ -15,8 +24,8 @@
         - next if g.id == @group.id
         %th= link_to g.name, group_path(g.id)
   %tbdoy
-    - if @group.nodes.count == 0
-      %tr
+    - if params[:all] or @group.nodes.count == 0
+      %tr#node{id: 0}
         %td= t 'no_items'
     - else
       - @group.nodes.each do |n|
@@ -26,24 +35,41 @@
             - next if g.id == @group.id
             %td= link_to_function image_tag('icons/add.png'), "move(#{n.id}, #{g.id})"
 
+
 .clear
 
 :javascript
 
+  function add(node, group, name) {
+    action(node, group);
+    $('table.data.box#nodelist').append('<tr#node id='+node+'><td><a href="/nodes/'+node+'">'+name+'</a></td></tr>');
+    $('a#'+node).hide();
+    $('tr#node_0').hide();
+  }
+
   function move(node, group) {
-    addurl = "/api/v2/groups/"+group+"/nodes"
-    adddata = {node_id:node},
-    rmurl = "/api/v2/groups/#{@group.id}/nodes/" + node
+    action(node, group);
+    $('tr#node_'+node).hide();
+  }
+
+  function action(node, group) {
+    addurl = "/api/v2/groups/"+group+"/nodes";
+    adddata = {node_id:node};
     //console.log("add " + addurl);
-    $.ajax({
-             type: "DELETE",
-             url: rmurl,
-             contentType: "application/json; charset=utf-8",
-             crossDomain: false})
-       .fail(function (jqXHR, status) {
-           // error handler
-          console.log("delete fail ", jqXHR);
-       });
+    // skip if this group is the screen group
+    if (group!=#{@group.id}) {
+      rmurl = "/api/v2/groups/#{@group.id}/nodes/" + node
+      $.ajax({
+               type: "DELETE",
+               url: rmurl,
+               contentType: "application/json; charset=utf-8",
+               crossDomain: false})
+         .fail(function (jqXHR, status) {
+             // error handler
+            console.log("delete fail ", jqXHR);
+         });
+    }
+    // add group 
     $.ajax({
            type: "POST",
            url: addurl,
@@ -56,5 +82,4 @@
                console.log("add fail ", jqXHR);
                //alert('fail' + status.code);
            });
-    $('tr#node_'+node).hide().fadeOut();
   }
