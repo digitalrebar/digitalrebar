@@ -16,18 +16,6 @@
 set -x
 date
 
-# setup & load env info
-if [[ ! -f /etc/profile.d/crowbar.sh ]]; then
-  cat > /etc/profile.d/crowbar.sh <<EOF
-export PATH="$PATH:/opt/opencrowbar/core/bin"
-EOF
-fi
-
-#if ! fgrep -q '/opt/opencrowbar/core/bin' < <(echo \$PATH); then
-#  export PATH=\$PATH:/opt/opencrowbar/core/bin
-#fi
-
-
 # Add /opt/chef/bin to path for systems that don't have chef-client "normally"
 cat > /etc/profile.d/chef-path.sh <<EOF
 export PATH="\$PATH:/opt/chef/bin"
@@ -40,7 +28,7 @@ cd /opt/opencrowbar/core
 sleep 20 # GREG:
 
 if [[ ! -e /etc/crowbar.install.key ]]; then
-  key=`dd if=/dev/urandom bs=65536 count=1 2>/dev/null | sha512sum - 2>/dev/null | awk '{ print $1 }'`
+  key=`dd if=/dev/urandom bs=64 count=1 2>/dev/null | sha512sum - 2>/dev/null | awk '{ print $1 }'`
   echo "Creating machine-install user"
   machine_user="
 {
@@ -53,7 +41,7 @@ if [[ ! -e /etc/crowbar.install.key ]]; then
   \"digest\": true
 }"
 
-  if ! /opt/opencrowbar/core/bin/crowbar -U crowbar -P crowbar users create "$machine_user"; then
+  if ! crowbar -U crowbar -P crowbar users import "$machine_user"; then
     echo "Could not create machine-install user!"
     exit 1
   fi
@@ -65,12 +53,12 @@ fi
 
 # Load the initial barclamp
 echo "Loading the core barclamp metadata"
-crowbar barclamps install /opt/opencrowbar/core
+/opt/opencrowbar/core/bin/barclampe_import /opt/opencrowbar/core
 
 # Load the rest of the barclamps
 while read bc; do
   echo "Loading barclamp metadata from $bc"
-  crowbar barclamps install "$bc"
+  /opt/opencrowbar/core/bin/barclampe_import "$bc"
 done < <(find /opt/opencrowbar -name crowbar.yml |grep -v '/core/')
 
 unmanaged_net='
@@ -97,7 +85,7 @@ unmanaged_net='
 }'
 
 # Create the catch all network
-crowbar networks show 'unmananged' >/dev/null 2>&1 && crowbar networks create "$unmanaged_net"
+crowbar networks show 'unmananged' >/dev/null 2>&1 && crowbar networks import "$unmanaged_net"
 
 # Build a map of keys in the /root/.ssh/authorized_keys
 # Record the machine key as well. -- THIS IS NOT GREAT
@@ -159,7 +147,7 @@ for ((i=0; i < network_count; i++)) ; do
   if crowbar networks show $name >/dev/null 2>&1 ; then
     crowbar networks update $name "$network"
   else
-    crowbar networks create "$network"
+    crowbar networks import "$network"
   fi
   if [ "$category" == "admin" ] ; then
     admin_nets=(${admin_nets[@]} $name)
@@ -357,12 +345,12 @@ for ((i=0; i < user_count; i++)) ; do
   if crowbar users show $name >/dev/null 2>&1 ; then
     crowbar users update $name "$user"
   else
-    crowbar users create "$user"
+    crowbar users import "$user"
   fi
 done
 
 # Mark the node as alive.
 echo "Configuration Complete, you can watch annealing from the UI.  \`su - crowbar\` to begin managing the system."
 # Converge the admin node.
-#crowbar converge && date
+crowbar converge && date
 
