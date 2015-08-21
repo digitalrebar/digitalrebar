@@ -29,10 +29,12 @@ class Publisher
       unless @@connection
         # Lookup amqp service and build url for bunny
         s = ConsulAccess.getService('amqp-service')
-        if s == nil || s.ServiceAddress == nil
+        if s == nil || s.ServiceAddress == nil || s.Address == nil
           raise "AMQP Service not available"
         end
-        addr = IP.coerce(s.ServiceAddress)
+        str_addr = s.ServiceAddress
+        str_addr = s.Address if str_addr.nil? or str_addr.empty?
+        addr = IP.coerce(str_addr)
         hash = {}
         hash[:user] = 'crowbar'
         hash[:pass] = 'crowbar'

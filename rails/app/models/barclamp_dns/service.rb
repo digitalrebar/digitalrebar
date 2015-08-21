@@ -17,14 +17,16 @@ class BarclampDns::Service < Service
 
   def do_transition(nr, data)
     internal_do_transition(nr, data, "dns-service", "dns_servers") do |s|
-      Rails.logger.debug("DnsServer: #{s.inspect} #{s.ServiceAddress}")
-      addr = IP.coerce(s.ServiceAddress)
+      str_addr = s.ServiceAddress
+      str_addr = s.Address if str_addr.nil? or str_addr.empty?
+      Rails.logger.debug("DnsServer: #{s.inspect} #{str_addr}")
+      addr = IP.coerce(str_addr)
       Rails.logger.debug("DnsServer: #{addr.inspect}")
 
       server_name = s.ServiceTags.first
       server_type = ConsulAccess.getKey("opencrowbar/private/dns/#{server_name}/type")
 
-      res = { "address" => s.ServiceAddress,
+      res = { "address" => str_addr,
               "port" => "#{s.ServicePort}",
               "name" => server_name,
               "type" => server_type }

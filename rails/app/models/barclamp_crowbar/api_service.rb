@@ -17,8 +17,10 @@ class BarclampCrowbar::ApiService < Service
 
   def do_transition(nr, data)
     internal_do_transition(nr, data, "crowbar-api-service", "crowbar-api-servers") do |s|
-      Rails.logger.debug("ApiService: #{s.inspect} #{s.ServiceAddress}")
-      addr = IP.coerce(s.ServiceAddress)
+      str_addr = s.ServiceAddress
+      str_addr = s.Address if str_addr.nil? or str_addr.empty?
+      Rails.logger.debug("ApiService: #{s.inspect} #{str_addr}")
+      addr = IP.coerce(str_addr)
       Rails.logger.debug("ApiService: #{addr.inspect}")
       url = "http://"
       if addr.v6?
@@ -27,7 +29,7 @@ class BarclampCrowbar::ApiService < Service
         url << addr.addr
       end
       url << ":#{s.ServicePort}"
-      { "address" => s.ServiceAddress,
+      { "address" => str_addr,
         "port" => "#{s.ServicePort}",
         "url" => url}
     end
