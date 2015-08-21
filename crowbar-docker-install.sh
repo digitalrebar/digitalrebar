@@ -21,9 +21,6 @@ cat > /etc/profile.d/chef-path.sh <<EOF
 export PATH="\$PATH:/opt/chef/bin"
 EOF
 
-. /etc/profile
-cd /opt/opencrowbar/core
-
 # Wait for the crowbar server to startup
 sleep 20 # GREG:
 
@@ -37,7 +34,7 @@ if [[ ! -e /etc/crowbar.install.key ]]; then
   \"password\": \"$key\",
   \"password_confirmation\": \"$key\",
   \"remember_me\": false,
-  \"is_admin\": false,
+  \"is_admin\": true,
   \"digest\": true
 }"
 
@@ -51,14 +48,17 @@ export CROWBAR_KEY=machine-install:$key
 EOF
 fi
 
+. /etc/profile
+cd /opt/opencrowbar/core
+
 # Load the initial barclamp
 echo "Loading the core barclamp metadata"
-/opt/opencrowbar/core/bin/barclampe_import /opt/opencrowbar/core
+/opt/opencrowbar/core/bin/barclamp_import /opt/opencrowbar/core
 
 # Load the rest of the barclamps
 while read bc; do
   echo "Loading barclamp metadata from $bc"
-  /opt/opencrowbar/core/bin/barclampe_import "$bc"
+  /opt/opencrowbar/core/bin/barclamp_import "$bc"
 done < <(find /opt/opencrowbar -name crowbar.yml |grep -v '/core/')
 
 unmanaged_net='
@@ -352,5 +352,5 @@ done
 # Mark the node as alive.
 echo "Configuration Complete, you can watch annealing from the UI.  \`su - crowbar\` to begin managing the system."
 # Converge the admin node.
-#crowbar converge && date
+crowbar converge && date
 
