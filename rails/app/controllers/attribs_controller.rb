@@ -15,9 +15,15 @@
 #
 class AttribsController < ApplicationController
 
+  def sample
+    render api_sample(Attrib)
+  end
+
   def match
     attrs = Attrib.attribute_names.map{|a|a.to_sym}
-    objs = Attrib.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = Attrib.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index :attrib, objs.as_json }
@@ -75,25 +81,50 @@ class AttribsController < ApplicationController
   end
 
   def update
-    target = find_target
-    if target.nil?
-      # We do not allow updating attribs outside the context of
-      # some other object.
-      render api_not_supported 'put', 'attribs/:id'
-      return
+    ret = Hash.new
+    attrib = nil
+    Attrib.transaction do
+      attrib = Attrib.find_key(params[:id])
+      # unpack form updates
+      bucket = params[:bucket] ? params[:bucket].to_sym : :user
+      if bucket != :user && bucket != :note
+        render api_not_supported 'put', 'attribs/:id'
+        return
+      end
+      target = find_target
+      if target.nil?
+        # We do not allow updating attribs outside the context of
+        # some other object.
+        render api_not_supported 'put', 'attribs/:id'
+        return
+      end
+      target.lock!
+      if request.patch?
+        current_attrib = attrib.as_json
+        current_attrib["value"]=target.attribs.find(attrib.id).get(target)
+        Rails.logger.debug(current_attrib.inspect)
+        Rails.logger.debug(request.raw_post)
+        ret = JSON::Patch.new(current_attrib,JSON.parse(request.raw_post)).call
+        updated = false
+        current_attrib.each_key do |k|
+          next if current_attrib[k] == ret[k]
+          if k != "value"
+            raise "Only allowed to update attrib value on attrib update"
+          end
+          updated = true
+        end
+        if updated
+          target.attribs.find(attrib.id).set(target,ret["value"], bucket)
+        end
+      else
+        params[:value] = params[:attrib][:value] if params[:attrib]
+        params.require(:value)
+    
+        target.attribs.find(attrib.id).set(target,params[:value], bucket)
+        ret = attrib.as_json
+        ret["value"] = params[:value]
+      end
     end
-    # unpack form updates
-    bucket = params[:bucket] ? params[:bucket].to_sym : :user
-    if bucket != :user && bucket != :note
-      render api_not_supported 'put', 'attribs/:id'
-      return
-    end
-    params[:value] = params[:attrib][:value] if params[:attrib]
-    params.require(:value)
-    attrib = Attrib.find_key(params[:id])
-    target.attribs.find(attrib.id).set(target,params[:value], bucket)
-    ret = attrib.as_json
-    ret["value"] = params[:value]
     render json: ret, content_type: cb_content_type(attrib, "obj")
   end
 

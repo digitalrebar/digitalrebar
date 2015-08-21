@@ -15,9 +15,15 @@
 class NetworkRoutersController < ::ApplicationController
   respond_to :json
 
+  def sample
+    render api_sample(NetworkRouter)
+  end
+
   def match
     attrs = NetworkRouter.attribute_names.map{|a|a.to_sym}
-    objs = NetworkRouter.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = NetworkRouter.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index NetworkRouter, objs }
@@ -81,17 +87,23 @@ class NetworkRoutersController < ::ApplicationController
   end
 
   def update
-    if params[:network_id] || params[:network] 
-      network = Network.find_key (params[:network_id] || params[:network])
-      if network.router
-        @network_router = network.router
+    NetworkRouter.transaction do
+      if params[:network_id] || params[:network] 
+        network = Network.find_key(params[:network_id] || params[:network])
+        if network.router
+          @network_router = network.router.lock!
+        else
+          raise "CANNOT UPDATE: no router on network #{params[:network_id]}"
+        end
       else
-        raise "CANNOT UPDATE: no router on network #{params[:network_id]}"
+        @network_router = NetworkRouter.find_key(params[:id]).lock!
       end
-    else
-      @network_router = NetworkRouter.find_key params[:id]
+      if request.patch?
+        patch(@network_router,%w{address pref})
+      else
+        @network_router.update_attributes!(params.permit(:address,:pref))
+      end
     end
-    @network_router.update_attributes!(params.permit(:address,:pref))
     render api_show @network_router
   end
 

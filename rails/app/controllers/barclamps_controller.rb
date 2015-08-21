@@ -17,6 +17,10 @@ class BarclampsController < ApplicationController
 
   self.help_contents = Array.new(superclass.help_contents)
 
+  def sample
+    render api_sample(Barclamp)
+  end
+
   def match
     attrs = Barclamp.attribute_names.map{|a|a.to_sym}
     objs = Barclamp.where(params.permit(attrs))
@@ -44,6 +48,9 @@ class BarclampsController < ApplicationController
 
   def update
     params.require(:value)
+    if request.patch?
+      raise "PATCH update for barclamps not implemented!"
+    end
     @barclamp = Barclamp.import_or_update(params[:value])
     respond_to do |format|
       format.html {  }

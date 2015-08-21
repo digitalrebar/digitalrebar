@@ -49,7 +49,7 @@ for ((i=0; i < network_count; i++)) ; do
   if crowbar networks show $name >/dev/null 2>&1 ; then
     crowbar networks update $name "$network"
   else
-    crowbar networks create "$network"
+    crowbar networks import "$network"
   fi
   if [ "$category" == "admin" ] ; then
     admin_nets=(${admin_nets[@]} $name)
@@ -242,11 +242,7 @@ user_count=`jq ".users | length" config/processed.json`
 for ((i=0; i < user_count; i++)) ; do
   user=`jq ".users[$i]" config/processed.json`
   name=`jq -r ".users[$i].username" config/processed.json`
-  if crowbar users show $name >/dev/null 2>&1 ; then
-    crowbar users update $name "$user"
-  else
-    crowbar users create "$user"
-  fi
+  crowbar users import "$user"
 done
 
 # Figure out what IP addresses we should have, and add them.

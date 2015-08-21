@@ -76,16 +76,6 @@ describe User do
   
   describe "password validations" do
 
-    it "should require a password" do
-      u = User.new(@attr.merge(:password => "", :password_confirmation => ""))
-      expect(u).not_to be_valid
-    end
-
-    it "should require a matching password confirmation" do
-      u = User.new(@attr.merge(:password_confirmation => "invalid"))
-      expect(u).not_to be_valid
-    end
-    
     it "should reject short passwords" do
       short = "a" * 5
       hash = @attr.merge(:password => short, :password_confirmation => short)

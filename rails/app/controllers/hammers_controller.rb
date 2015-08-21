@@ -15,9 +15,15 @@
 #
 class HammersController < ApplicationController
 
+  def sample
+    render api_sample(Hammer)
+  end
+
   def match
     attrs = Hammer.attribute_names.map{|a|a.to_sym}
-    objs = Hammer.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = Hammer.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index Hammer, objs }
@@ -46,11 +52,18 @@ class HammersController < ApplicationController
   end
 
   def update
-    @nm = Hammer.find_key(params[:id])
-    @nm.update_attributes!(params.permit(:priority,
-                                         :endpoint,
-                                         :username,
-                                         :authenticator))
+    Hammer.transaction do
+      @nm = Hammer.find_key(params[:id]).lock!
+      if request.patch?
+        patch(@nm,%w{priority endpoint username authenticator})
+      else
+        @nm.update_attributes!(params.permit(:priority,
+                                             :endpoint,
+                                             :username,
+                                             :authenticator))
+      end
+    end
+    render api_show @nm
   end
 
   def create

@@ -43,3 +43,11 @@ cookbook_file "/etc/profile.d/gopath.sh" do
   action :create
 end
 
+bash "Fetch and install the Crowbar CLI" do
+  code <<EOC
+. /etc/profile
+go get -u github.com/VictorLowther/crowbar-api/crowbar
+cp "$GOPATH/bin/crowbar" /usr/local/bin
+EOC
+  not_if "test -x /usr/local/go/bin/crowbar"
+end

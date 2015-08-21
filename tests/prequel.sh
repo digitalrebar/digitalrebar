@@ -53,7 +53,7 @@ clean_up() {
 }
 
 crowbar() {
-    docker exec $DOCKER_ID /opt/opencrowbar/core/bin/crowbar "$@"
+    docker exec $DOCKER_ID crowbar "$@"
 }
 
 [[ -x $PWD/core/tools/docker-admin ]] || \

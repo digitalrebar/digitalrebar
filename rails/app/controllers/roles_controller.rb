@@ -15,9 +15,15 @@
 #
 class RolesController < ApplicationController
 
+  def sample
+    render api_sample(Role)
+  end
+  
   def match
     attrs = Role.attribute_names.map{|a|a.to_sym}
-    objs = Role.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = Role.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index Role, objs }
@@ -61,11 +67,17 @@ class RolesController < ApplicationController
   end
 
   def update
-    @role = Role.find_key params[:id]
-    @role.update_attributes!(params.permit(:description))
-    if params.key? :template
-      @role.template = params[:template]
-      @role.save!
+    Role.transaction do
+      @role = Role.find_key params[:id].lock!
+      if request.patch?
+        patch(@role, %w{description,template})
+      else
+        @role.update_attributes!(params.permit(:description))
+        if params.key? :template
+          @role.template = params[:template]
+          @role.save!
+        end
+      end
     end
     respond_to do |format|
       format.html { render :action=>:show }

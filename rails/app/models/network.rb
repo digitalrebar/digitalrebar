@@ -45,18 +45,13 @@ class Network < ActiveRecord::Base
   belongs_to :deployment
 
   def self.lookup_network(ipstring, category = "admin")
-    the_ip_network = IP.coerce(ipstring).network
-    the_network = nil
+    addr = IP.coerce(ipstring)
     Network.in_category(category).each do |n|
-      n.ranges.each do |r|
-        if (r.first.network == the_ip_network)
-          the_network = n
-          break
-        end
+      n.ranges.where(overlap: false).each do |r|
+        return n if r === addr
       end
-      break if the_network
     end
-    the_network
+    Network.find_by!(name: "unmanaged")
   end
 
   def self.address(params)

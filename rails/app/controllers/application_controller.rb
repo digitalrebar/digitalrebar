@@ -78,6 +78,40 @@ class ApplicationController < ActionController::Base
     request.xhr?
   end
 
+  def api_sample(model)
+    j = model.column_defaults.reject{|k,v| /(^id)|_(id|at)$/ =~ k}
+    api_show(j,model)
+  end
+    
+  # Given an object and list of permitted object attributes to update, extract the
+  # JSON patch that should be in the request body, apply it to the object cast as a
+  # JSON blob, and update the permitted attribs of the actual object.
+  # If the patch fails to apply, or if the patch tries to update an attribute not in
+  # the permitted list, fail.
+  #
+  # This method MUST be called within a transaction, and obj MUST be locked in order
+  # to guarantee that the requested changes happen atomically.
+  def patch(obj, permitted_attribs)
+    patch = JSON.parse(request.raw_post)
+    Rails.logger.debug(obj.as_json)
+    Rails.logger.debug(request.raw_post)
+    raise "Patch not formatted properly" unless patch.is_a?(Array)
+    res = JSON::Patch.new(obj.as_json,patch).call
+    # Now, sanity-check res to make sure it only updated the keys we wanted it to
+    res.keys.each do |k|
+      # Ignore synthetic keys
+      next unless obj.has_attribute?(k)
+      # Nothing changed, OK.
+      next if obj[k] == res[k]
+      if permitted_attribs.member?(k)
+        obj[k] = res[k]
+      else
+        raise "Cannot update attribute #{k} for #{obj.class.name}"
+      end
+    end
+    obj.save!
+  end
+
   # creates the content type for a consistent API
   def cb_content_type(type, form="list", type_override=nil)
     type = type_override || type2name(type)
@@ -285,7 +319,7 @@ class ApplicationController < ActionController::Base
   def digest_auth!
     u = nil
     authed = authenticate_or_request_with_http_digest(User::DIGEST_REALM) do |username|
-      u = User.find_by_username(username)
+      u = User.find_by!(username: username)
       session[:digest_user] = u.username
       u.encrypted_password
     end

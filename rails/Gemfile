@@ -48,6 +48,8 @@ gem 'httpclient'
 gem 'rest-client'
 # For RFC 6902 json patch support
 gem 'json-patch'
+# For password change via the API
+gem 'rbnacl-libsodium'
 
 group :development, :test do
   gem 'coveralls'

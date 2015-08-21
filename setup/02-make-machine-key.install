@@ -12,7 +12,7 @@ export PATH="\$PATH:/opt/chef/bin"
 EOF
 
 if [[ ! -e /etc/crowbar.install.key ]]; then
-    read key rest < <(dd if=/dev/urandom bs=65536 count=1 2>/dev/null |sha512sum - 2>/dev/null)
+    read key rest < <(dd if=/dev/urandom bs=64 count=1 2>/dev/null |sha512sum - 2>/dev/null)
     echo "Creating machine-install user"
     machine_user="
 {
@@ -21,11 +21,11 @@ if [[ ! -e /etc/crowbar.install.key ]]; then
   \"password\": \"$key\",
   \"password_confirmation\": \"$key\",
   \"remember_me\": false,
-  \"is_admin\": false,
+  \"is_admin\": true,
   \"digest\": true
 }"
 
-    if ! /opt/opencrowbar/core/bin/crowbar -U crowbar -P crowbar users create "$machine_user"; then
+    if ! crowbar -U crowbar -P crowbar -E http://127.0.0.1:3000 users import "$machine_user"; then
         echo "Could not create machine-install user!"
         exit 1
     fi

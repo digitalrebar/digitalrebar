@@ -15,9 +15,15 @@
 
 class DeploymentRolesController < ApplicationController
 
+  def sample
+    render api_sample(DeploymentRole)
+  end
+
   def match
     attrs = DeploymentRole.attribute_names.map{|a|a.to_sym}
-    objs = DeploymentRole.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = DeploymentRole.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index DeploymentRole, objs }
@@ -69,9 +75,16 @@ class DeploymentRolesController < ApplicationController
   end
 
   def update
-    @deployment_role = DeploymentRole.find_key(params[:id])
-    params.require(:data)
-    @deployment_role.data = params[:data]
+    DeploymentRole.transaction do
+      @deployment_role = DeploymentRole.find_key(params[:id]).lock!
+      if request.patch?
+        raise "Cannot PATCH deployment roles!"
+      else
+        params.require(:data)
+        @deployment_role.data = params[:data]
+        @deployment_role.save!
+      end
+    end
     render api_show @deployment_role
   end
 

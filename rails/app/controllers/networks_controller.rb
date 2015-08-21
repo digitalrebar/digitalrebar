@@ -17,25 +17,47 @@ class NetworksController < ::ApplicationController
 
   add_help(:show,[:network_id],[:get])
 
+  def sample
+    render api_sample(Network)
+  end
+
   def match
     attrs = Network.attribute_names.map{|a|a.to_sym}
-    objs = Network.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = Network.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index Network, objs }
     end
   end
 
-  def show
+  def auto_ranges
     @network = Network.find_key params[:id]
+    @node = Node.find_key params[:node_id]
+    ranges = @network.auto_ranges(@node)
+    render api_index NetworkRange, ranges
+  end
+
+  def show
+    begin
+      addr = IP.coerce(params[:id])
+      @network = Network.lookup_network(addr, (params[:category] || "admin"))
+    rescue 
+      @network = Network.find_key params[:id]
+    end
     respond_to do |format|
       format.html { }
       format.json { render api_show @network }
     end
   end
-
+  
   def index
-    if (params[:category])
+    if (params[:address])
+      @network = Network.lookup_network(params[:address], (params[:category] || "admin"))
+      render api_show @network
+      return
+    elsif (params[:category])
       @networks = Network.in_category(params[:category])
     else
       @networks = Network.all
@@ -49,9 +71,9 @@ class NetworksController < ::ApplicationController
   def create
 
     # cleanup inputs
-    params[:use_vlan] = true if params[:vlan].to_int > 0 rescue false
+    params[:use_vlan] = true if !params.key?(:use_vlan) && params[:vlan].to_int > 0 rescue false
     params[:vlan] ||= 0
-    params[:use_team] = true if params[:team_mode].to_int > 0 rescue false
+    params[:use_team] = true if !params.key?(:use_team) && params[:team_mode].to_int > 0 rescue false
     params[:team_mode] ||= 5
     params[:configure] = true unless params.key?(:configure)
     params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
@@ -140,11 +162,17 @@ class NetworksController < ::ApplicationController
 
   add_help(:update,[:id, :conduit, :team_mode, :use_team, :vlan, :use_vlan, :configure],[:put])
   def update
-    @network = Network.find_key(params[:id])
-    # Sorry, but no changing of the admin conduit for now.
-    params.delete(:conduit) if @network.name == "admin"
-    params.delete(:v6prefix) if params[:v6prefix] == ""
-    @network.update_attributes!(params.permit(:description, :vlan, :use_vlan, :v6prefix, :use_bridge, :team_mode, :use_team, :conduit, :configure, :pbr, :category, :group, :deployment_id))
+    Network.transaction do
+      @network = Network.find_key(params[:id]).lock!
+      # Sorry, but no changing of the admin conduit for now.
+      params.delete(:conduit) if @network.name == "admin"
+      params.delete(:v6prefix) if params[:v6prefix] == ""
+      if request.patch?
+        patch(@network,%w{description vlan use_vlan v6prefix use_bridge team_mode use_team conduit configure pbr category group deployment_id})
+      else
+        @network.update_attributes!(params.permit(:description, :vlan, :use_vlan, :v6prefix, :use_bridge, :team_mode, :use_team, :conduit, :configure, :pbr, :category, :group, :deployment_id))
+      end
+    end
     respond_to do |format|
       format.html { render :action=>:show }
       format.json { render api_show @network }

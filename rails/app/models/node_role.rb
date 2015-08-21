@@ -158,13 +158,16 @@ class NodeRole < ActiveRecord::Base
     NodeRole.state_name(state)
   end
 
+  def as_json(args = nil)
+    args ||= {}
+    args[:except] = [ :proposed_data, :committed_data, :sysdata, :wall, :notes ]
+    args[:methods] = :node_error
+    super(args)
+  end
+
   def self.state_name(state)
     raise InvalidState.new("#{state || 'nil'} is not a valid NodeRole state!") unless state and STATES.include? state
     I18n.t(STATES[state], :scope=>'node_role.state')
-  end
-
-  def as_json(options = nil)
-    super({ methods: :node_error}.merge(options || {}))
   end
 
   def node_error

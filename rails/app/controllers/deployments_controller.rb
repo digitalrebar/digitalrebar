@@ -15,9 +15,15 @@
 #
 class DeploymentsController < ApplicationController
 
+  def sample
+    render api_sample(Deployment)
+  end
+  
   def match
     attrs = Deployment.attribute_names.map{|a|a.to_sym}
-    objs = Deployment.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = Deployment.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index Deployment, objs }
@@ -67,14 +73,25 @@ class DeploymentsController < ApplicationController
   end
 
   def update
-    @deployment = Deployment.find_key params[:id]
-    @deployment.update_attributes!(params.permit(:name,:description))
-    respond_to do |format|
-      format.html { redirect_to deployment_path(@deployment.id) }
-      format.json { render api_show @deployment }
+    Deployment.transaction do
+      @deployment = Deployment.find_key(params[:id]).lock!
+      if request.patch?
+        patch(@deployment,%w{name description})
+        render api_show @deployment
+      else
+        @deployment.update_attributes!(params.permit(:name,:description))
+        respond_to do |format|
+          format.html do
+            redirect_to deployment_path(@deployment.id)
+          end
+          format.json do
+            render api_show @deployment
+          end
+        end
+      end
     end
   end
-
+  
   def destroy
     @deployment = Deployment.find_key params[:id]
     @deployment.destroy

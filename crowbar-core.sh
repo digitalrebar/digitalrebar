@@ -14,6 +14,7 @@
 # limitations under the License.
 
 set -e
+set -x
 date
 
 # setup & load env info
@@ -37,18 +38,26 @@ check_hostname
 ./setup/00-crowbar-rake-tasks.install && \
     ./setup/01-crowbar-start.install && \
     ./setup/02-make-machine-key.install || {
-    echo "Failed to bootstrap the Crowbar UI"
+        echo "Failed to bootstrap the Crowbar UI"
+        exit 1
+    }
+
+[[ -f /etc/crowbar.install.key ]] || {
+    echo "Cannot find the Crowbar install key!"
     exit 1
 }
 
+read -r -s CROWBAR_KEY < /etc/crowbar.install.key
+export CROWBAR_KEY
+
 # Load the initial barclamp
 echo "Loading the core barclamp metadata"
-crowbar barclamps install /opt/opencrowbar/core
+/opt/opencrowbar/core/bin/barclamp_import /opt/opencrowbar/core
 
 # Load the rest of the barclamps
 while read bc; do
     echo "Loading barclamp metadata from $bc"
-    crowbar barclamps install "$bc"
+    /opt/opencrowbar/core/bin/barclamp_import "$bc"
 done < <(find /opt/opencrowbar -name crowbar.yml |grep -v '/core/')
 
 # Add consul to the default deployment, and make sure it uses the same

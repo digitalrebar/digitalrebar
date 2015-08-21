@@ -15,9 +15,16 @@
 
 class NodeRolesController < ApplicationController
 
+  def sample
+    render api_sample(NodeRole)
+  end
+
+
   def match
     attrs = NodeRole.attribute_names.map{|a|a.to_sym}
-    objs = NodeRole.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = NodeRole.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index NodeRole, objs }
@@ -92,27 +99,30 @@ class NodeRolesController < ApplicationController
   def update
     # we're being called from /nodes path we may get the name instead of ID
     key = params[:id]
-    @node_role = if params.key? :node_id
-      node = Node.find_key params[:node_id]
-      if key.is_a?(Fixnum) or key.is_a?(Integer) or key =~ /^[0-9]+$/
-        NodeRole.find key
+    NodeRole.transaction do
+      @node_role = if params.key? :node_id
+                     node = Node.find_key params[:node_id]
+                     if key.is_a?(Fixnum) or key.is_a?(Integer) or key =~ /^[0-9]+$/
+                       NodeRole.find_by!(id: key).lock!
+                     else
+                       role = Role.find_by!(name: key)
+                       NodeRole.find_by!(node_id: node.id, role_id: role.id).lock!
+                     end
+                   else
+                     NodeRole.find_key(key).lock!
+                   end
+      # if you've been passed data then save it
+      if request.patch?
+        patch(@node_role, %w{data})
       else
-        role = Role.find_by :name=>key
-        NodeRole.find_by :node_id=>node.id, :role_id=>role.id
-      end
-    else
-      NodeRole.find_key key
-    end
-    # if you've been passed data then save it
-    if params[:data]
-      NodeRole.transaction do
-        @node_role.data = params[:data]
-        @node_role.save!
-        flash[:notice] = I18n.t 'saved', :scope=>'layouts.node_roles.show'
+        if params[:data]
+          @node_role.data = params[:data]
+          @node_role.save!
+        end
       end
     end
     respond_to do |format|
-      format.html { render 'show' }
+      format.html { flash[:notice] = I18n.t 'saved', :scope=>'layouts.node_roles.show'; render 'show' }
       format.json { render api_show @node_role }
     end
   end

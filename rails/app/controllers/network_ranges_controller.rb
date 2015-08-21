@@ -15,9 +15,15 @@
 class NetworkRangesController < ::ApplicationController
   respond_to :json
 
+  def sample
+    render api_sample(NetworkRange)
+  end
+
   def match
     attrs = NetworkRange.attribute_names.map{|a|a.to_sym}
-    objs = NetworkRange.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = NetworkRange.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index NetworkRange, objs }
@@ -76,21 +82,27 @@ class NetworkRangesController < ::ApplicationController
 
   def update
     params[:network_id] = Network.find_key(params[:network]).id if params.has_key? :network
-    if params.has_key? :id
-      @network_range = NetworkRange.find_key params[:id]
-    else
-      @network_range = NetworkRange.where(:name=>params[:name], :network_id=>params[:network_id]).first
+    NetworkRange.transaction do
+      if params.has_key? :id
+        @network_range = NetworkRange.find_key(params[:id]).lock!
+      else
+        @network_range = NetworkRange.find_by!(name: params[:name], network_id: params[:network_id]).lock!
+      end
+      if request.patch?
+        patch(@network_range,%w{name first last conduit vlan team_mode overlap use_vlan use_bridge use_team})
+      else
+        @network_range.update_attributes!(params.permit(:name,
+                                                        :first,
+                                                        :last,
+                                                        :conduit,
+                                                        :vlan,
+                                                        :team_mode,
+                                                        :overlap,
+                                                        :use_vlan,
+                                                        :use_bridge,
+                                                        :use_team))
+      end
     end
-    @network_range.update_attributes!(params.permit(:name,
-                                                    :first,
-                                                    :last,
-                                                    :conduit,
-                                                    :vlan,
-                                                    :team_mode,
-                                                    :overlap,
-                                                    :use_vlan,
-                                                    :use_bridge,
-                                                    :use_team))
     render api_show @network_range
   end
 

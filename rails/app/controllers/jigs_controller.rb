@@ -15,9 +15,15 @@
 #
 class JigsController < ApplicationController
 
+  def sample
+    render api_sample(Jig)
+  end
+
   def match
     attrs = Jig.attribute_names.map{|a|a.to_sym}
-    objs = Jig.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = Jig.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index Jig, objs }
@@ -44,8 +50,14 @@ class JigsController < ApplicationController
   end
 
   def update
-    @jig = Jig.find_key(params[:id])
-    @jig.update_attributes!(params.permit(:description,:active,:server,:client_name,:key))
+    Jig.transaction do
+      @jig = Jig.find_key(params[:id]).lock!
+      if request.patch?
+        patch(@jig,%w{description active server client_name key})
+      else
+        @jig.update_attributes!(params.permit(:description,:active,:server,:client_name,:key))
+      end
+    end
     render api_show @jig
   end
 

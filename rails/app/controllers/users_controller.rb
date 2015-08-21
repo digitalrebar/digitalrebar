@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+require 'base64'
+
 class UsersController < ApplicationController
   respond_to :html, :json
   
@@ -19,9 +22,15 @@ class UsersController < ApplicationController
 
   add_help(:index,[],[:get])
 
+  def sample
+    render api_show({},User)
+  end
+
   def match
     attrs = User.attribute_names.map{|a|a.to_sym}
-    objs = User.where(params.permit(attrs))
+    objs = []
+    ok_params = params.permit(attrs)
+    objs = User.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
       format.json { render api_index User, objs }
@@ -44,6 +53,7 @@ class UsersController < ApplicationController
   end
   
   add_help(:create,[:username, :email, :password, :password_confirmation, :remember_me, :is_admin, :digest],[:post])
+  
   def create
     required_user_params
     @user = User.create! user_params
@@ -55,11 +65,19 @@ class UsersController < ApplicationController
   end
 
   def update
-    @user = User.find_by_id_or_username params[:id]
-    @user.update_attributes!(user_params)
-    if params[:digest]
-      @user.digest_password(params[:password])
-      @user.save!
+    User.transaction do
+      @user = User.find_by_id_or_username(params[:id]).lock!
+      if request.patch?
+        fields = %w{username email}
+        fields << "is_admin" if current_user.is_admin && current_user.id != @user.id
+        patch(@user,fields)
+      else
+        @user.update_attributes!(user_params)
+        if params[:digest]
+          @user.digest_password(params[:password])
+          @user.save!
+        end
+      end
     end
     render api_show @user
   end
@@ -100,14 +118,41 @@ class UsersController < ApplicationController
       format.json do
         render api_show @user
       end
-   end
- end 
- 
+    end
+  end
+
+  def start_password_reset
+    User.transaction do
+      @user = User.find_key(params[:id])
+      unless current_user.is_admin || current_user == @user
+        sleep 2
+        raise "Cannot start password change"
+      end
+      PasswordChangeToken.where(user_id: @user.id).delete_all
+      render api_show PasswordChangeToken.create!(user: @user)
+    end
+  end
+
+  def complete_password_reset
+    @user = User.find_key(params[:id])
+    User.transaction do 
+      token = PasswordChangeToken.find_by!(token: params[:token])
+      unless @user.id == token.user_id && (current_user == @user || current_user.is_admin)
+        sleep 2
+        raise "Password change failed"
+      end
+      payload = token.decode(params[:decoder],params[:nonce],params[:payload])
+      @user.digest_password(payload["password"])
+      @user.save!
+    end
+    render api_show @user
+  end
+
  add_help(:reset_password,[:id, :password, :password_confirmation],[:put])
  def reset_password
     #  TODO REFACTOR!
    ret = fetch_user
-  respond_with(@user)  do |format|
+   respond_with(@user)  do |format|
     Rails.logger.debug("Reset password for user #{@user}")
     format.html do
       if !params[:cancel].nil?
@@ -139,7 +184,7 @@ class UsersController < ApplicationController
       render api_show @user
     end
    end
-  end
+ end
 
   def is_edit_mode?
     current_user.is_admin? && Rails.env.development?
@@ -194,13 +239,13 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.permit(:username, :email,
-                  :password, :password_confirmation,
-                  :remember_me, :is_admin)
+    fields = [:username, :email, :password, :password_confirmation, :remember_me ]
+    fields << :is_admin if current_user.is_admin
+    params.permit(*fields)
   end
 
   def required_user_params
-    [:username, :email, :password, :password_confirmation].each do |k|
+    [:username, :email].each do |k|
       params.require(k)
     end
   end
@@ -241,7 +286,7 @@ class UsersController < ApplicationController
     end
   end
   
- def fetch_user
+  def fetch_user
     ret = nil
     begin
       @user = User.find_by_id_or_username((params[:user].nil? or params[:user][:id].nil?) ? \
