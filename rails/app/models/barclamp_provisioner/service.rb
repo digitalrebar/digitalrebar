@@ -29,7 +29,7 @@ class BarclampProvisioner::Service < Service
         url << addr.addr
       end
       url << ":#{s.ServicePort}"
-      { "address" => s.str_addr,
+      { "address" => str_addr,
         "port" => "#{s.ServicePort}",
         "url" => url}
     end
