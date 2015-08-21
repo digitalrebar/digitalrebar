@@ -352,5 +352,5 @@ done
 # Mark the node as alive.
 echo "Configuration Complete, you can watch annealing from the UI.  \`su - crowbar\` to begin managing the system."
 # Converge the admin node.
-crowbar converge && date
+#crowbar converge && date
 
