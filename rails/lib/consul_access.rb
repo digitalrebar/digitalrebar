@@ -17,7 +17,11 @@
 class ConsulAccess
 
   def self.__cb_consul_config
-    JSON.parse(File.read("/etc/consul.d/default.json"))
+    if File.exists?("/etc/consul_m_acl.json")
+      JSON.parse(File.read("/etc/consul_m_acl.json"))
+    else
+      JSON.parse(File.read("/etc/consul.d/default.json"))
+    end
   end
 
   # TODO: One day, we should update Diplomat to take token as an option.
