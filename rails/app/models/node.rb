@@ -62,6 +62,7 @@ class Node < ActiveRecord::Base
   scope    :regular,            -> { where(:admin => false, :system=>false) }
   scope    :non_system,         -> { where(:system=>false) }
   scope    :system,             -> { where(:system => true) }
+  scope    :category,           -> (cat) { joins(:groups).where(["groups.category = ?", cat]) }
 
   def as_json(args = nil)
     args ||= {}
@@ -548,7 +549,7 @@ class Node < ActiveRecord::Base
 
   def on_create_hooks
     # Call all role on_node_create hooks with self.
-    # These should happen synchronously.
+   # These should happen synchronously.
     # do the low cohorts first
     if !self.is_system?
       Hammer.bind(manager_name: "ssh", username: "root", node: self)

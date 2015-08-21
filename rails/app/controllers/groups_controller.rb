@@ -15,11 +15,6 @@
 #
 class GroupsController < ApplicationController
   
-  def nodes
-    g = Group.find_key params[:id]
-    render api_index :nodes, g.nodes
-  end
-
   def index
     @list = if params.has_key? :node_id
       n = Node.find_key params[:node_id]
@@ -34,51 +29,34 @@ class GroupsController < ApplicationController
   end
 
   def show
-    if params.has_key? :node_id
-      # this should use the _path
-      redirect_to groups_path(:id=>params[:id])
-    else
-      @group = Group.find_key params[:id]
-      render api_show @group
+    @group = Group.find_key params[:id]
+    respond_to do |format|
+      format.html { }
+      format.json { render api_show @group }
     end
   end
   
   def create
-    if params.has_key? :node_id
-      render api_not_supported 'put', 'nodes/:id/groups/:id'
-    else
-      params.require(:name)
-      @group = Group.create! params.permit(:name, :description, :category)
-      render api_show @group
+    params.require(:name)
+    params[:category] = params[:category].first if params[:category].kind_of?(Array)
+    @group = Group.create! params.permit(:name, :description, :category)
+    respond_to do |format|
+      format.html { redirect_to group_path(@group.id)}
+      format.json { render api_show @group }
     end
   end
   
   def update
-    if params.has_key? :node_id
-      # TODO this needs to be restricted to the node only
-      g = Group.find_key params[:id]
-      n = Node.find_key params[:node_id]
-      n.groups << g  if g and n
-      render :text=>I18n.t('api.added', :item=>g.name, :collection=>'node.groups')
-    else
-      @group = Group.find_key(params[:id])
-      @group.update_attributes!(params.permit(:name, :description, :category))
-      render api_show @group
-    end
+    params[:category] = params[:category].first if params[:category].kind_of?(Array)
+    @group = Group.find_key(params[:id])
+    @group.update_attributes!(params.permit(:name, :description, :category))
+    render api_show @group
   end
 
   def destroy
-    if params.has_key? :node_id
-      # TODO this needs to be restricted to the node only
-      g = Group.find_key params[:id]
-      n = Node.find_key params[:node_id]
-      g.nodes.delete(n) if g.nodes.include? n
-      render :text=>I18n.t('api.removed', :item=>'node', :collection=>'group')
-    else
-      @group = Group.find_key(params[:id])
-      @group.destroy
-      render api_delete @group
-    end
+    @group = Group.find_key(params[:id])
+    @group.destroy
+    render api_delete @group
   end
 
   
