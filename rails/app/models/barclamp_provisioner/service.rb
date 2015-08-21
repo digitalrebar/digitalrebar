@@ -17,8 +17,10 @@ class BarclampProvisioner::Service < Service
 
   def do_transition(nr, data)
     internal_do_transition(nr, data, "provisioner-service", "provisioner-webservers") do |s|
-      Rails.logger.debug("ProvisionerService: #{s.inspect} #{s.ServiceAddress}")
-      addr = IP.coerce(s.ServiceAddress)
+      str_addr = s.ServiceAddress
+      str_addr = s.Address if str_addr.nil? or str_addr.empty?
+      Rails.logger.debug("ProvisionerService: #{s.inspect} #{str_addr}")
+      addr = IP.coerce(str_addr)
       Rails.logger.debug("ProvisionerService: #{addr.inspect}")
       url = "http://"
       if addr.v6?
@@ -27,7 +29,7 @@ class BarclampProvisioner::Service < Service
         url << addr.addr
       end
       url << ":#{s.ServicePort}"
-      { "address" => s.ServiceAddress,
+      { "address" => s.str_addr,
         "port" => "#{s.ServicePort}",
         "url" => url}
     end

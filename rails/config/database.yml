@@ -10,6 +10,11 @@ db = ConsulAccess.getService('crowbar-database')
 username = ConsulAccess.getKey('opencrowbar/private/database/opencrowbar/username')
 password = ConsulAccess.getKey('opencrowbar/private/database/opencrowbar/password')
 database = ConsulAccess.getKey('opencrowbar/private/database/opencrowbar/database')
+host = db.ServiceAddress 
+host = db.Address if host.nil? or host.empty?
+host = "database" if host.nil? or host.empty?
+port = db.ServicePort
+port = 5432 if port.nil? or port == 0
 %>
 
 base: &default
@@ -18,8 +23,8 @@ base: &default
   pool: 32
   timeout: 5000
   reaping_frequency: 3
-  host:               <%= db.ServiceAddress %>
-  port:               <%= db.ServicePort %>
+  host:               <%= host %>
+  port:               <%= port %>
 
 production:
   <<: *default

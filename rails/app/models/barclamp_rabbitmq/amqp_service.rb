@@ -17,10 +17,12 @@ class BarclampRabbitmq::AmqpService < Service
 
   def do_transition(nr, data)
     internal_do_transition(nr, data, "amqp-service", "amqp_servers") do |s|
-      Rails.logger.debug("AmqpService: #{s.inspect} #{s.ServiceAddress}")
-      addr = IP.coerce(s.ServiceAddress)
+      str_addr = s.ServiceAddress
+      str_addr = s.Address if str_addr.nil? or str_addr.empty?
+      Rails.logger.debug("AmqpService: #{s.inspect} #{str_addr}")
+      addr = IP.coerce(str_addr)
       Rails.logger.debug("AmqpService: #{addr.inspect}")
-      { "address" => s.ServiceAddress,
+      { "address" => str_addr,
         "port" => "#{s.ServicePort}" }
     end
   end

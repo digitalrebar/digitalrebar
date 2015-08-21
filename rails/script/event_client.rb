@@ -28,12 +28,14 @@ end
 
 # Lookup amqp service and build url for bunny
 s = ConsulAccess.getService('amqp-service')
-if s == nil or s.ServiceAddress == nil
+if s == nil or s.ServiceAddress == nil or s.Address == nil
   puts "AMQP Service not available, retry later"
   exit 1
 end
 
-addr = IP.coerce(s.ServiceAddress)
+str_addr = s.ServiceAddress
+str_addr = s.Address if str_addr.nil? or str_addr.empty?
+addr = IP.coerce(str_addr)
 hash = {}
 hash[:user] = 'crowbar'
 hash[:pass] = 'crowbar'

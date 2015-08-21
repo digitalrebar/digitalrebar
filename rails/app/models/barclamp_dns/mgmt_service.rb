@@ -20,8 +20,10 @@ class BarclampDns::MgmtService < Service
 
   def do_transition(nr,data)
     internal_do_transition(nr, data, 'dns-mgmt-service', 'dns-management-servers') do |s|
-      Rails.logger.debug("DnsMgmtServer: #{s.inspect} #{s.ServiceAddress}")
-      addr = IP.coerce(s.ServiceAddress)
+      str_addr = s.ServiceAddress
+      str_addr = s.Address if str_addr.nil? or str_addr.empty?
+      Rails.logger.debug("DnsMgmtServer: #{s.inspect} #{str_addr}")
+      addr = IP.coerce(str_addr)
       Rails.logger.debug("DnsMgmtServer: #{addr.inspect}")
 
       server_name = s.ServiceTags.first
@@ -36,7 +38,7 @@ class BarclampDns::MgmtService < Service
       end
       url = URI::HTTPS.build(host: saddr, port: s.ServicePort, userinfo: "#{access_name}:#{access_password}")
 
-      { 'address' => s.ServiceAddress,
+      { 'address' => str_addr,
         'port' => "#{s.ServicePort}",
         'name' => server_name,
         'cert' => cert_pem,
