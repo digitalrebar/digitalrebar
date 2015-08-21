@@ -335,7 +335,19 @@ en:
       topic_missing: "Topic not found!"
   groups:
     index:
-      title: "Node Groups"
+      title: "Groups"
+      default: "group1"
+      name: "Group Name"
+      description: "Description"
+      members: "Members"
+      category: "Category"
+      all: "All"
+    show:
+      description: "Description"
+      nodes: "Nodes"
+      node: "Node"
+      move_to: "Move Node To Group"
+      unclaimed: "Unassigned Nodes"
   jigs:
     index:
       title: "Installed Configuration Managers - Jigs"

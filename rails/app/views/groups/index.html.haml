@@ -1,10 +1,41 @@
-%h1= t '.title'
+%table{:width=>'100%'}
+  %tr
+    %td
+      %h1
+        = params[:category] if params[:category]
+        = t '.title'
+        -  if params[:category]
+          = "("
+          = link_to t('.all'), groups_path()
+          = ")"
+    %td{:align=>'right'}
+      = form_for :group, :'data-remote' => true, :url => groups_path(), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
+        = text_field_tag :name, t('.default'), :size => 15
+        - if params[:category]
+          = select :category, nil, options_for_select(Group::CATEGORIES, params[:category])
+        - else
+          = select :category, nil, Group::CATEGORIES
+        %input.button{:type => "submit", :name => "create", :method=>:post, :value => t('new')}
 
-%ul
-  - @list.each do |i|
-    %li
-      = "#{i.name}: #{i.description}"
-      %ul
-        - i.nodes do |n|
-          %li
-            = "#{n.name}: #{n.description}" 
+- if @list.length == 0
+  = t 'no_items'
+- else
+  %table.data.box
+    %thead
+      %tr
+        %th= t '.name'
+        %th= t '.description'
+        %th= t '.category'
+        %th= t '.members'
+        %th
+    %tbody
+      - @list.each do |i|
+        - next if params[:category] and i.category != params[:category]
+        = form_for :group, :remote => true, :url => group_path(:id=>i.id), :html => { :method=>:put, :'data-type' => 'html',  :class => "formtastic", :onsubmit =>"location.reload();"  } do |f|
+          %tr.group{ :class => cycle(:odd, :even) }
+            %td= link_to i.name, group_path(i.id)
+            %td= text_field_tag :description, i.description || "", :size => 30
+            %td= select :category, nil, options_for_select(Group::CATEGORIES, i.category)
+            %td= i.nodes.count
+            %td
+              %input.button{:type => "submit", :name => "update", :method=>:post, :value => t('update')}

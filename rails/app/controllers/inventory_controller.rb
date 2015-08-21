@@ -39,7 +39,6 @@ class InventoryController < ApplicationController
         @inventory[d.name] = { hosts: hosts, vars: vars }
         @inventory[d.name][:children] = children if children.length > 0
       end
-
     end
 
     ns = if params[:hostvar] == 'none'
@@ -49,6 +48,15 @@ class InventoryController < ApplicationController
     else
       ns = params[:id] ? ds.first.nodes : Node.all
     end
+
+    # groups
+    Group.all.each do |g|
+      @inventory["#{g.category}_#{g.name}"] = []
+      g.nodes.each do |n|
+        @inventory["#{g.category}_#{g.name}"] << n.name
+      end
+    end
+
 
     ns.each do |n|
       next if n.admin or n.system

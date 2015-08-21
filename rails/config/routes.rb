@@ -194,9 +194,7 @@ Crowbar::Application.routes.draw do
             get :graph
           end
           resources :groups do
-            member do
-              get 'nodes'
-            end
+            resources :nodes
           end
           resources :network_ranges do
             collection do

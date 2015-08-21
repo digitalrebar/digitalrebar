@@ -19,7 +19,7 @@
 	
 g(Item) ->
   case Item of
-    categories -> ["ui","rack","tag"];
+    categories -> ["ui","rack","tag", "class"];
     path -> "/api/v2/groups";
     name1 -> "bddthings";
     atom1 -> group1;
