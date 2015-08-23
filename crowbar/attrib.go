@@ -83,10 +83,9 @@ func addAttriberCommands(singularName string,
 			if err != nil {
 				log.Fatalf("Failed to fetch Attrib from server\n%v", err)
 			}
-			type Valuer struct {
+			val := &struct {
 				Value interface{} `json:"value"`
-			}
-			val := &Valuer{}
+			}{}
 			err = json.Unmarshal([]byte(args[4]), val)
 			if err != nil {
 				log.Fatalf("Failed to parse %v as JSON!\nError: %v\n", args[2], err.Error())

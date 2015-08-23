@@ -141,7 +141,7 @@ func makeCommandTree(singularName string,
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
 			obj := maker()
-			if err := client.CreateJSON(obj, []byte(args[0])); err != nil {
+			if err := client.Import(obj, []byte(args[0])); err != nil {
 				log.Fatalf("Unable to create new %v: %v\n", singularName, err.Error())
 			}
 			fmt.Println(prettyJSON(obj))

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -130,77 +129,9 @@ func init() {
 					log.Fatalf("%v requires 1 argument\n", c.UseLine())
 				}
 				obj := &client.Network{}
-				netdef := map[string]interface{}{}
-				if err := json.Unmarshal([]byte(args[0]), &netdef); err != nil {
-					log.Fatalf("Argument does not contain a valid network!\n%v\n", err)
+				if err := client.Import(obj, []byte(args[0])); err != nil {
+					log.Fatalf("Unable to import network: %v\n", err)
 				}
-				if v, ok := netdef["deployment"]; ok {
-					depl_name, ok := v.(string)
-					if !ok {
-						log.Fatalln("deployment parameter not a string")
-					}
-					depl := &client.Deployment{}
-					if err := client.Fetch(depl, depl_name); err != nil {
-						log.Fatalf("Unable to fetch deployment %v\n%v\n", depl_name, err)
-					}
-					netdef["deployment_id"] = depl.ID
-					delete(netdef, "deployment")
-				}
-				buf, err := json.Marshal(netdef)
-				if err != nil {
-					log.Fatalln("Failed to marshal fixed-up network definition", err)
-				}
-
-				if err := client.CreateJSON(obj, buf); err != nil {
-					log.Fatalln("Failed to create new network.\n%v\n", err)
-				}
-				unwind := true
-				toClean := []client.Crudder{obj}
-				defer func() {
-					if unwind {
-						for _, o := range toClean {
-							client.Destroy(o)
-						}
-					}
-				}()
-
-				type rangeHelper struct {
-					Ranges []interface{} `json:"ranges"`
-				}
-
-				ranges := &rangeHelper{}
-				if err := json.Unmarshal([]byte(args[0]), ranges); err != nil {
-					log.Fatalln("Failed to unmarshal Ranges")
-				}
-				if ranges != nil {
-					for _, netRange := range ranges.Ranges {
-						rangeObj := &client.NetworkRange{}
-						if err := client.Init(rangeObj); err != nil {
-							log.Fatalf("Failed to initialize new NetworkRange\n%v\n", err)
-						}
-						rangeObj.NetworkID = obj.ID
-						if err := client.Create(rangeObj, netRange); err != nil {
-							log.Fatalln("Failed to create network range\n%v\n", err)
-						}
-						toClean = append(toClean, rangeObj)
-					}
-				}
-
-				type routerHelper struct {
-					Router interface{} `json:"router"`
-				}
-				router := &routerHelper{}
-				if err := json.Unmarshal([]byte(args[0]), router); err != nil {
-					log.Fatalln("Failed to unmarshal Router\n%v\n", err)
-				}
-				if router != nil && router.Router != nil {
-					routerObj := &client.NetworkRouter{}
-					routerObj.NetworkID = obj.ID
-					if err := client.Create(routerObj, router.Router); err != nil {
-						log.Fatalln("Failed to create network router", err)
-					}
-				}
-				unwind = false
 				fmt.Println(prettyJSON(obj))
 			},
 		},

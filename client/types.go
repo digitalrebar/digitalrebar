@@ -151,6 +151,18 @@ func Create(o Crudder, toMerge interface{}) error {
 	return BaseCreate(o)
 }
 
+// Import also creates a new object on the server, but it passes the JSON in inBuf through unchanged.
+// It is intended to be used for object types where we have special-case handling on the server side
+// for parameters that are not part of the basic object definition.
+func Import(o Crudder, inBuf []byte) error {
+	uri := o.ApiName()
+	buf, err := session.request("POST", uri, inBuf)
+	if err != nil {
+		return err
+	}
+	return unmarshal(uri, buf, o)
+}
+
 func safeMergeJSON(target, toMerge []byte) ([]byte, error) {
 	targetObj := make(map[string]interface{})
 	toMergeObj := make(map[string]interface{})
