@@ -11,8 +11,8 @@ import (
 
 	"github.com/VictorLowther/crowbar-api/client"
 	"github.com/VictorLowther/crowbar-api/datatypes"
+	"github.com/VictorLowther/yaml"
 	"github.com/spf13/cobra"
-	yaml "gopkg.in/yaml.v2"
 )
 
 func init() {
