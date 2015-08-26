@@ -43,11 +43,12 @@ cookbook_file "/etc/profile.d/gopath.sh" do
   action :create
 end
 
-bash "Fetch and install the Crowbar CLI" do
+cli_repo = node["bootstrap"]["cli"]["repo"]
+cli_src="#{ENV["GOPATH"]}/src/#{cli_repo}"
+
+bash "Fetch Crowbar CLI" do
   code <<EOC
-. /etc/profile
-go get -u github.com/VictorLowther/crowbar-api/crowbar
-cp "$GOPATH/bin/crowbar" /usr/local/bin
+/usr/local/go/bin/go get -u -t '#{cli_repo}'
+mv "#{ENV["GOPATH"]}/bin/crowbar" /usr/local/bin
 EOC
-  not_if "test -x /usr/local/go/bin/crowbar"
 end
