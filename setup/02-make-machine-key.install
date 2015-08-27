@@ -12,7 +12,8 @@ export PATH="\$PATH:/opt/chef/bin"
 EOF
 
 if [[ ! -e /etc/crowbar.install.key ]]; then
-    read key rest < <(dd if=/dev/urandom bs=64 count=1 2>/dev/null |sha512sum - 2>/dev/null)
+    # read key rest < <(dd if=/dev/urandom bs=64 count=1 2>/dev/null |sha512sum - 2>/dev/null)
+    key=`dd if=/dev/urandom bs=64 count=1 2>/dev/null | sha512sum - 2>/dev/null | awk '{ print $1 }'`
     echo "Creating machine-install user"
     machine_user="
 {
@@ -31,7 +32,7 @@ if [[ ! -e /etc/crowbar.install.key ]]; then
     fi
     echo "machine-install:$key" >/etc/crowbar.install.key
     cat >/etc/profile.d/crowbar-key.sh <<EOF
-export CROWBAR_KEY=$(cat /etc/crowbar.install.key)
+export CROWBAR_KEY=machine-install:$key
 EOF
     rm "/tmp/.crowbar_in_bootstrap"
 fi
