@@ -99,6 +99,7 @@ class NetworkRange < ActiveRecord::Base
       suggestion = Attrib.get(attr_name,node)
     end
     suggestion ||= node.auto_v6_address(network) if first.v6?
+    return nil if suggestion == nil and network.configure == false
     begin
       Rails.logger.info("NetworkRange: allocating address from #{fullname} for #{node.name} with suggestion #{suggestion}")
       NetworkAllocation.locked_transaction do
