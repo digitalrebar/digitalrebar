@@ -102,9 +102,13 @@ class AttribsController < ApplicationController
       if request.patch?
         current_attrib = attrib.as_json
         current_attrib["value"]=target.attribs.find(attrib.id).get(target)
+        # Patch modifies in place and causes the below to not update.
+        ca2 = attrib.as_json
+        ca2["value"]=target.attribs.find(attrib.id).get(target)
         Rails.logger.debug(current_attrib.inspect)
+        Rails.logger.debug(ca2.inspect)
         Rails.logger.debug(request.raw_post)
-        ret = JSON::Patch.new(current_attrib,JSON.parse(request.raw_post)).call
+        ret = JSON::Patch.new(ca2,JSON.parse(request.raw_post)).call
         updated = false
         current_attrib.each_key do |k|
           next if current_attrib[k] == ret[k]
@@ -119,7 +123,7 @@ class AttribsController < ApplicationController
       else
         params[:value] = params[:attrib][:value] if params[:attrib]
         params.require(:value)
-    
+
         target.attribs.find(attrib.id).set(target,params[:value], bucket)
         ret = attrib.as_json
         ret["value"] = params[:value]
