@@ -85,7 +85,7 @@ unmanaged_net='
 }'
 
 # Create the catch all network
-crowbar networks show 'unmananged' >/dev/null 2>&1 && crowbar networks import "$unmanaged_net"
+crowbar networks show 'unmananged' >/dev/null 2>&1 || crowbar networks import "$unmanaged_net"
 
 # Build a map of keys in the /root/.ssh/authorized_keys
 # Record the machine key as well. -- THIS IS NOT GREAT
