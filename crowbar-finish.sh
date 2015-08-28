@@ -107,6 +107,12 @@ for ((i=0; i < service_count; i++)) ; do
     continue
   fi
 
+  # We could have a server that doesn't have a server role.
+  no_server=`jq -r ".services[$i].no_server" config/processed.json`
+  if [ "$no_server" == "true" ] ; then
+    continue
+  fi
+
   server_role=`jq -r ".services[$i].server_role" config/processed.json`
   if [ "$server_role" == "null" ] ; then
     if [[ $service_name == *"-"* ]] ; then
