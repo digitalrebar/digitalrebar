@@ -16,38 +16,6 @@
 set -x
 date
 
-# Add /opt/chef/bin to path for systems that don't have chef-client "normally"
-cat > /etc/profile.d/chef-path.sh <<EOF
-export PATH="\$PATH:/opt/chef/bin"
-EOF
-
-# Wait for the crowbar server to startup
-sleep 20 # GREG:
-
-if [[ ! -e /etc/crowbar.install.key ]]; then
-  key=`dd if=/dev/urandom bs=64 count=1 2>/dev/null | sha512sum - 2>/dev/null | awk '{ print $1 }'`
-  echo "Creating machine-install user"
-  machine_user="
-{
-  \"username\": \"machine-install\",
-  \"email\": \"root@localhost.localdomain\",
-  \"password\": \"$key\",
-  \"password_confirmation\": \"$key\",
-  \"remember_me\": false,
-  \"is_admin\": true,
-  \"digest\": true
-}"
-
-  if ! crowbar -U crowbar -P crowbar users import "$machine_user"; then
-    echo "Could not create machine-install user!"
-    exit 1
-  fi
-  echo "machine-install:$key" >/etc/crowbar.install.key
-  cat >/etc/profile.d/crowbar-key.sh <<EOF
-export CROWBAR_KEY=machine-install:$key
-EOF
-fi
-
 . /etc/profile
 cd /opt/opencrowbar/core
 

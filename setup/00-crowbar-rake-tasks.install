@@ -8,10 +8,10 @@ set -x
 
 cd /opt/opencrowbar/core/rails
 tasks=("rake db:create"
-    "rake assets:precompile"
     "rake railties:install:migrations"
     "rake db:migrate"
-    "rake db:seed")
+    "rake db:seed"
+    "rake assets:precompile")
 
 for task in "${tasks[@]}"; do
     su -l -s /bin/bash -c "cd /opt/opencrowbar/core/rails; RAILS_ENV=$RAILS_ENV bundle exec $task" crowbar && continue
