@@ -72,7 +72,7 @@ class DashboardController < ApplicationController
           node = parts[1]
           area = parts[2]
           nodes[node] ||= {} 
-          nodes[node][area] = (v.empty? ? nil : v)
+          nodes[node][area] = v
         end
       end
       succeeded = []
