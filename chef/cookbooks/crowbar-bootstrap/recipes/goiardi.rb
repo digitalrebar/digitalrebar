@@ -130,7 +130,7 @@ EDITOR=/bin/true knife client create "$admin_client" \
 chown -R crowbar:crowbar /home/crowbar/.chef
 EOC
   not_if { File.exists?(keyfile) }
-  notifies [bash["Insert into consul"], :run]
+  notifies :run, "bash[Insert into consul]", :immediately
 end
 
 bash "consul reload" do
