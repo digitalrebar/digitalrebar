@@ -99,6 +99,9 @@ if [ -e /root/.ssh/authorized_keys ] ; then
     rm -rf /tmp/key_list
 fi
 
+# Always add the chef-service first
+crowbar nodes bind "system-phantom.internal.local" to "chef-service"
+
 # Join the admin node into the rails app and make it manageable
 ./crowbar-node.sh 127.0.0.1 'false'
 

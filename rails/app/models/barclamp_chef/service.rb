@@ -51,7 +51,7 @@ syntax_check_cache_path  '/home/crowbar/.chef/syntax_check_cache'
       File.open("/home/crowbar/.chef/#{account}.pem", 'w', 0600) {|f| f.write(key) }
 
       # Make sure chef-server has code
-      system("sudo -u crowbar /opt/opencrowbar/core/bin/chef-cookbook-upload >/tmp/chef-upload.out 2>&1")
+      system("/opt/opencrowbar/core/bin/chef-cookbook-upload >/tmp/chef-upload.out 2>&1")
 
       j = BarclampChef::Jig.where(:name => "chef").first
       j.server = url
