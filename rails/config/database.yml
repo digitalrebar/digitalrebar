@@ -25,11 +25,11 @@ base: &default
   reaping_frequency: 3
   host:               <%= host %>
   port:               <%= port %>
+  database: <%= database %>
+  password: <%= password %>
 
 production:
   <<: *default
-  database: <%= database %>
-  password: <%= password %>
 
 development:
   <<: *default
