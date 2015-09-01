@@ -27,7 +27,10 @@ Crowbar::Application.routes.draw do
   # UI resources (should generally match the API paths)
   get "annealer", :to => "node_roles#anneal", :as => :annealer
   resources :attribs
-  resources :barclamps
+  resources :barclamps do
+    get :wizard
+    post :wizard
+  end
   resources :deployment_roles do
     resources :node_roles
     put :propose

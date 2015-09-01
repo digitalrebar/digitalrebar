@@ -226,6 +226,19 @@ en:
       rawconfig: "Raw Configuration"
       commit: "Commit xRef"
       build_on: "Date xRef"
+    wizard:
+      title: "%{barclamp} Configuration Wizard"
+      selection: "Selection"
+      selection_value: "Value"
+      deployment: "Deployment"
+      name: "Node Name"
+      os: "Operating System"
+      disk: "Disk Config"
+      mem: "RAM"
+      proc: "Processor"
+      raid: 'RAID'
+      create: "Create"
+      <<: *raid_types
   dashboard:
     list:
       title: "Bulk Edit Nodes"

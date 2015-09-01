@@ -71,6 +71,35 @@ class BarclampsController < ApplicationController
     end
   end
 
+  # allow barclamp/workload to provide a wizard
+  def wizard
+    @bc = Barclamp.find_key params[:barclamp_id]
+    if request.get?
+      @roles = @bc.roles.keep_if { |r| r.milestone }
+      @nodes = Deployment.system.nodes.where(:admin=>false, :system=>false)
+    elsif request.post?
+      wiz_name = params[:deployment]
+      throw "Deployment Name is required" unless wiz_name
+      d = Deployment.find_or_create_by_name! :name=>wiz_name, :parent=>Deployment.system
+
+      # milestone for OS assignment
+      wiz = Role.find_key 'crowbar-installed-node'
+      #wiz.add_to_deployment d
+
+      params.each do |key, value|
+        if key =~ /^node_([0-9]*)_role_([0-9]*)$/
+          n = Node.find $1.to_i
+          r = Role.find $2.to_i
+          Rails.logger.info "Barclamp wizard #{r.name} added node #{n.name}"
+        else
+          Rails.logger.info "Barclamp wizard MISS #{key} #{value} #{$0} #{$1}"
+        end
+      end
+      #redirect_to deployment_path(:id=>d.id)
+      redirect_to barclamp_path(:id=>@bc.id)
+    end
+  end
+
   #
   # Barclamp catalog
   # 
