@@ -1,12 +1,12 @@
 [![Stories in Ready](https://badge.waffle.io/opencrowbar/core.png?label=ready&title=Ready)](https://waffle.io/opencrowbar/core)
 # Welcome to OpenCrowbar
-[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/opencrowbar/core?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/digitalrebar/core?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Welcome to the OpenCrowbar Project - the gateway to a new hardware provisioning experience that delivers the best of software deployment automation and orchestration. OpenCrowbar is a successor of the 4 year-old & still active [Crowbar project](http://github.com/crowbar). It derives much of its functionality from its predecessor, but offers a lot more.
 
 ## Getting Started & Documentation
 
-Documentation close by and located in under the **/doc** directory of OpenCrowbar and for each workload module.
+Documentation close by and located in under the **/doc** directory of Digital Rebar and for each workload module.
 
 Want to _try out OpenCrowbar_?  Install following the [**deployment guide (for Centos)**](/doc/deployment-guide).
 For the quick start, just go [here](/doc/deployment-guide/Install-CentOS-RHEL-6.6-AdminNode.md) to build an admin node.
@@ -30,7 +30,7 @@ We've also made it easy to setup and run latest Crowbar using our [**Fast-Start 
 
 * [Live Weekly Planning and Design Meetings](http://bit.ly/crowbar-calendar)
 * [Mailing List](http://bit.ly/crowbarlist)
-* [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/opencrowbar/core?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+* [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/digitalrebar/core?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 * #Crowbar IRC channel on Freenode  - kinda quiet - best to find us on list.
 
 ## Exec Summary 
