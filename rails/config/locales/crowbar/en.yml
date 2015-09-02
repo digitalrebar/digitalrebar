@@ -193,7 +193,7 @@ en:
   # Layout / Views
   layouts:
     application:
-      provided_by: Based On
+      provided_by: "Built With"
     deployment:
       anneal:
         annealling: "Annealing (initiated by user)"

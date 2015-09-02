@@ -128,6 +128,6 @@ jQuery(document).ready(function($) {
   });
 
   $(document).konami(function(){
-    $("header h1 a").css('background-image','url("/assets/layout/bunny.png")').css('width','279px');
+    $("header h1 a").css('background-image','url("/assets/layout/dr_bunny.png")').css('width','279px');
   });
 });
