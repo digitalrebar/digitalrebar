@@ -1,3 +1,0 @@
-## User Model
-
-Users!
