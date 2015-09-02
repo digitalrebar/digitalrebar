@@ -8,5 +8,5 @@ They are intended as a companion to the [Digital Rebar documentation](https://gi
 
 The following install approaches are available:
 
+* [Ansible Playbook(s)](install_ansible.md)  <==== STEP-BY-STEP INSTALL
 * [Vagrant Install](install_vagrant.md)
-* [Ansible Playbook(s)](install_ansible.md)
