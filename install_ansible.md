@@ -18,6 +18,7 @@ On your local workstation:
 
   * Ansible installed (`sudo apt-get install ansible`)
   * IP of the target system in Ansible inventory (`sudo vi /etc/ansible/hosts`)
+    * include `ansible_ssh_user=root` after the IP
 
 ## Install Process
 
@@ -26,6 +27,7 @@ On your local workstation:
 From your workstation:
 
   * run the selected playbook: `ansible-playbook [ubuntu1404.yml]`
+    * include `-u root` if you did _not_ specific an ssh user in inventory
   * watch and wait
   * visit the Digital Rebar UI: http://[system address]:3000
 
