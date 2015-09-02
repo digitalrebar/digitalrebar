@@ -1,0 +1,63 @@
+--- 
+- name: Install Digital Rebar
+  hosts: all
+  sudo: yes
+  gather_facts: no
+  tasks:
+    - name: Update repos (was not working from apt:)
+      command: sudo apt-get update -y
+    - name: Install Prereqs [SLOW]
+      apt: name={{ item }} state=latest
+      with_items:
+        - git
+        - screen
+        - qemu-kvm
+        - libvirt-bin
+        - ubuntu-vm-builder
+        - bridge-utils
+        - ruby1.9.1-dev
+        - make
+
+    - name: gem install kvm slaves
+      command: sudo gem install json net-http-digest_auth
+    - name: stop apparmor
+      command: sudo service apparmor teardown
+    - name: remove apparmor
+      command: sudo update-rc.d -f apparmor remove
+
+    - name: Get Docker
+      command: curl -sSL https://get.docker.com/ -o /tmp/docker.sh
+    - name: Prep Docker
+      command: sudo chmod +7 /tmp/docker.sh
+    - name: Install Docker [SLOW]
+      command: sudo /tmp/docker.sh
+    - name: restart docker service
+      command: sudo service docker restart
+    - pause: seconds=3
+    - name: allow docker access (without reboot)
+      command: sudo chmod 666 /var/run/docker.sock
+    - name: network mapping
+      command: sudo ip a add 192.168.124.4/24 dev docker0
+    - name: prep image [SLOW]
+      command: docker pull opencrowbar/centos:6.6-4
+
+    - name: Passwordless Sudo  
+      command: 'sudo sed -ie "s/%sudo\tALL=(ALL:ALL) ALL/%sudo ALL=(ALL) NOPASSWD:ALL/g" /etc/sudoers'
+    - name: Make User
+      user: name=vagrant groups=sudo,docker,kvm generate_ssh_key=yes
+    - name: get code
+      command: su -c "git clone https://github.com/digitalrebar/core.git" - vagrant
+    - name: get code
+      command: su -c "git clone https://github.com/rackn/kubernetes.git" - vagrant
+    - name: noproxy
+      command: su -c "echo export no_proxy='127.0.0.1,[::1],localhost,192.168.124.0/24,172.16.0.0/12' >> /home/vagrant/.bashrc" - vagrant
+    - name: make cache directory 
+      command: su -c "mkdir -p /home/vagrant/.cache/opencrowbar/tftpboot/isos" - vagrant
+    - name: download ISO [BACKGROUND] (see list https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
+      command: su -c "nohup wget http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.3-server-amd64.iso -nc -O /home/vagrant/.cache/opencrowbar/tftpboot/isos/ubuntu-14.04.2-server-amd64.iso &"
+    - name: authorized keys
+      command: cp /root/.ssh/authorized_keys -n --no-preserve=all /home/vagrant/.ssh/
+    - name: Add groups
+      command: sudo usermod -G docker,sudo,kvm vagrant
+    - name: bring up admin [SLOW]
+      command: su -c "/home/vagrant/core/tools/docker-admin --daemon centos ./production.sh admin.rebar.digital" - vagrant
