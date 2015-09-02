@@ -3,7 +3,7 @@
 The following documentation will setup a complete running Digital Rebar system for test purposes.
 
 Available playbooks:
-  * ubuntu1404.yml
+  * [ubuntu1404.yml](https://github.com/rackn/digitalrebar-deploy/blob/master/ubuntu1404.yml)
 
 ## Prereqs
 
