@@ -10,6 +10,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.network "private_network", ip: "192.168.124.10", auto_config: true
     config.vm.network "private_network", ip: "10.10.10.10", auto_config: false
 
+    config.vm.network "forwarded_port", guest: 3000, host: 3030
+    config.vm.network "forwarded_port", guest: 8500, host: 8585
+    
     config.vm.provision "ansible" do |ansible|
 
 	    # proxy pass through

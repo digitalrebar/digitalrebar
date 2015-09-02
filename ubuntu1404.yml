@@ -50,7 +50,7 @@
     - name: get code
       command: su -c "git clone https://github.com/rackn/kubernetes.git" - vagrant
     - name: noproxy
-      command: su -c "echo export no_proxy='127.0.0.1,[::1],localhost,192.168.124.0/24,172.16.0.0/12' >> /home/vagrant/.bashrc" - vagrant
+      command: su -c 'echo export no_proxy="127.0.0.1,[::1],localhost,192.168.124.0/24,172.16.0.0/12" >> /home/vagrant/.bashrc' - vagrant
     - name: make cache directory 
       command: su -c "mkdir -p /home/vagrant/.cache/opencrowbar/tftpboot/isos" - vagrant
     - name: download ISO [BACKGROUND] (see list https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)

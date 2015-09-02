@@ -8,11 +8,11 @@ The following documentation will setup a complete running Digital Rebar admin no
 
 On your local workstation:
 
-  * Vagrant installed (e.g.: `sudo apt-get install vagrant`)
+  * Vagrant installed (from [Vagrant website](http://www.vagrantup.com/downloads.html) not apt-get)
   * Vagrant requires several other items:
      * Virtualbox (or similar) (e.g.: `sudo apt-get install virtualbox`)
      * Ansible plugin: `vagrant plugin install ansible`
-     * (optional) Vagrant Proxy: `vagrant plugin install vagrant-proxyconf`
+     * (optional if you have a proxy) Vagrant Proxy: `vagrant plugin install vagrant-proxyconf`
      * (optional) Pre-fetch the box: `vagrant box add ubuntu/trusty64`
 
 ## Install Process
