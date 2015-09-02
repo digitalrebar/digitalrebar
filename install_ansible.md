@@ -39,7 +39,7 @@ Note: It will take additional time after the playbook completes before Digital R
   * all pre-requists including latest Docker with correct permissions
   * latest Digital Rebar code from develop branch
   * latest Kubernetes workload from RackN
-  * Node targer operating systems:
+  * Node target operating systems:
     * Ubuntu 14.04 ISO
   * Default IP maps for Digital Rebar: 
     * internal address of 192.168.124.10
@@ -66,3 +66,10 @@ See [kvm slaves](https://github.com/digitalrebar/doc/blob/master/development/adv
 > Select the interface you want to use for DHCP/Discovery.
 
 `sudo brtcl addif docker0 [external interface]`
+
+### Update the Digital Rebar code:
+
+  * Find the Admin container: `docker ps`
+  * Kill the Admin container: `docker kill [container id]`
+  * Update the code in core: `cd core` then `git pull`
+  * Restart the container: `home/vagrant/core/tools/docker-admin --daemon centos ./production.sh admin.rebar.digital`
