@@ -53,24 +53,7 @@ d_opts = node[:crowbar][:dhcp][:options] || []
 case node[:platform]
 when "ubuntu","debian"
   case node[:lsb][:codename]
-  when "natty","oneiric","precise"
-    template "/etc/dhcp/dhcpd.conf" do
-      owner "root"
-      group "root"
-      mode 0644
-      source "dhcpd.conf.erb"
-      variables(:options => d_opts)
-      notifies :restart, "service[dhcp3-server]"
-    end
-    template "/etc/default/isc-dhcp-server" do
-      owner "root"
-      group "root"
-      mode 0644
-      source "dhcp3-server.erb"
-      variables(:interfaces => intfs)
-      notifies :restart, "service[dhcp3-server]"
-    end
-  else
+  when "maverick"
     template "/etc/dhcp3/dhcpd.conf" do
       owner "root"
       group "root"
@@ -80,6 +63,23 @@ when "ubuntu","debian"
       notifies :restart, "service[dhcp3-server]"
     end
     template "/etc/default/dhcp3-server" do
+      owner "root"
+      group "root"
+      mode 0644
+      source "dhcp3-server.erb"
+      variables(:interfaces => intfs)
+      notifies :restart, "service[dhcp3-server]"
+    end
+  else
+    template "/etc/dhcp/dhcpd.conf" do
+      owner "root"
+      group "root"
+      mode 0644
+      source "dhcpd.conf.erb"
+      variables(:options => d_opts)
+      notifies :restart, "service[dhcp3-server]"
+    end
+    template "/etc/default/isc-dhcp-server" do
       owner "root"
       group "root"
       mode 0644
@@ -227,6 +227,8 @@ service "dhcp3-server" do
     when "maverick"
       service_name "dhcp3-server"
     when "natty", "oneiric", "precise"
+      service_name "isc-dhcp-server"
+    else
       service_name "isc-dhcp-server"
     end
   end

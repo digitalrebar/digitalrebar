@@ -20,10 +20,13 @@
 
 case node[:platform]
 when "ubuntu","debian"
+  lease_dir="/var/lib/dhcp"
   package "dhcp3-server"
 when "redhat","centos"
+  lease_dir="/var/lib/dhcpd"
   package "dhcp"
 when "suse"
+  lease_dir="/var/lib/dhcpd"
   package "dhcp-server"
 end
 
@@ -51,8 +54,8 @@ bash 'build DHCP server' do
   code <<EOF
 ./configure \
     --enable-dhcpv6 \
-    --with-srv-lease-file=/var/lib/dhcpd/dhcpd.leases \
-    --with-srv6-lease-file=/var/lib/dhcpd/dhcpd6.leases \
+    --with-srv-lease-file=#{lease_dir}/dhcpd.leases \
+    --with-srv6-lease-file=#{lease_dir}/dhcpd6.leases \
     --with-cli-lease-file=/var/lib/dhclient/dhclient.leases \
     --with-cli6-lease-file=/var/lib/dhclient/dhclient6.leases \
     --with-srv-pid-file=/var/run/dhcpd.pid \
