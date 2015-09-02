@@ -80,7 +80,7 @@ if [ -e /root/.ssh/authorized_keys ] ; then
     rm -rf /tmp/key_list
 fi
 
-# This may not be needed
+DOMAINNAME=$BASE_DOMAINNAME
 echo "{ \"domain\": \"$DOMAINNAME\" }" > config/domain.json
 
 # This is a hack as well for now.
@@ -98,7 +98,6 @@ curl -X PUT --data-binary @config/final.json http://127.0.0.1:8500/v1/kv/opencro
 
 [[ $FQDN ]] || export FQDN="$(hostname)"
 
-DOMAINNAME="neode.com"
 HOSTNAME=${FQDN%%.*}
 
 # Get config file from consul
