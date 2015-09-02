@@ -39,7 +39,7 @@ end
 
 service "rsyslog" do
   case
-  when File.directory?("/etc/systemd") then provider Chef::Provider::Service::Systemd
+  when File.executable?("/bin/systemctl") then provider Chef::Provider::Service::Systemd
   when node[:platform] == "ubuntu" then provider Chef::Provider::Service::Upstart
   when node[:platform] == "suse" && node[:platform_version].to_f < 12.3
     service_name "syslog"
