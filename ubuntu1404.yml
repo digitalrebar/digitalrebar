@@ -1,5 +1,5 @@
 --- 
-- name: Install Digital Rebar
+- name: Install Digital Rebar by RackN 2015
   hosts: all
   sudo: yes
   gather_facts: no
