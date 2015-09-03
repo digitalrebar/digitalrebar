@@ -2,50 +2,16 @@
 - name: Install Digital Rebar by RackN 2015
   hosts: all
   sudo: yes
-  gather_facts: no
   tasks:
-    - name: Update repos (was not working from apt:)
-      command: sudo apt-get update -y
-    - name: Install Prereqs [SLOW]
-      apt: name={{ item }} state=latest
-      with_items:
-        - git
-        - screen
-        - qemu-kvm
-        - libvirt-bin
-        - ubuntu-vm-builder
-        - bridge-utils
-        - ruby1.9.1-dev
-        - make
+    - include: tasks/ubuntu1404-base.yml
+    - include: tasks/docker.yml
 
-    - name: gem install kvm slaves
-      command: sudo gem install json net-http-digest_auth
-    - name: stop apparmor
-      command: sudo service apparmor teardown
-    - name: remove apparmor
-      command: sudo update-rc.d -f apparmor remove
-
-    - name: Get Docker
-      command: curl -sSL https://get.docker.com/ -o /tmp/docker.sh
-    - name: Prep Docker
-      command: sudo chmod +7 /tmp/docker.sh
-    - name: Install Docker [SLOW]
-      command: sudo /tmp/docker.sh
-    - name: restart docker service
-      command: sudo service docker restart
-    - name: Get Docker Compose
-      command: curl -L https://github.com/docker/compose/releases/download/1.4.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-    - name: Chmod Docker Compose
-      command: chmod +x /usr/local/bin/docker-compose
-    - pause: seconds=3
-    - name: allow docker access (without reboot)
-      command: sudo chmod 666 /var/run/docker.sock
     - name: network mapping
       command: sudo ip a add 192.168.124.4/24 dev docker0
     - name: prep image [SLOW]
       command: docker pull opencrowbar/centos:6.6-4
 
-    - name: Passwordless Sudo  
+    - name: Passwordless Sudo
       command: 'sudo sed -ie "s/%sudo\tALL=(ALL:ALL) ALL/%sudo ALL=(ALL) NOPASSWD:ALL/g" /etc/sudoers'
     - name: Make User
       user: name=vagrant groups=sudo,docker,kvm generate_ssh_key=yes

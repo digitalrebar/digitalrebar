@@ -1,0 +1,23 @@
+# Try to keep this OS neutral
+---
+  - name: Get Docker
+    command: curl -sSL https://get.docker.com/ -o /tmp/docker.sh
+    args:
+      creates: /tmp/docker.sh
+  - name: Prep Docker
+    command: sudo chmod +7 /tmp/docker.sh
+  - name: Install Docker [SLOW]
+    command: sudo /tmp/docker.sh
+    args:
+      creates: /usr/bin/docker
+  - name: restart docker service
+    command: sudo service docker restart
+  - name: Get Docker Compose
+    command: curl -L https://github.com/docker/compose/releases/download/1.4.0/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }} -o /usr/local/bin/docker-compose
+    args:
+      creates: /usr/local/bin/docker-compose
+  - name: Chmod Docker Compose
+    command: chmod +x /usr/local/bin/docker-compose
+  - pause: seconds=3
+  - name: allow docker access (without reboot)
+    command: sudo chmod 666 /var/run/docker.sock
