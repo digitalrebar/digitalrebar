@@ -28,6 +28,10 @@ class BarclampProvisioner::Service < Service
       else
         url << addr.addr
       end
+
+      # Make sure that the provisioner is setup.
+      system("/opt/opencrowbar/core/bin/update-provisioner #{addr.addr}")
+
       url << ":#{s.ServicePort}"
       { "address" => str_addr,
         "port" => "#{s.ServicePort}",
