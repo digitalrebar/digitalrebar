@@ -16,7 +16,7 @@ func TestMakeRevName(t *testing.T) {
 
 func TestMakeSerial(t *testing.T) {
 	answer := make_serial()
-	if answer < "20150101010101" {
-		t.Error("Should be older than 2015/1/1 answer = " + answer)
+	if answer < "24717455" {
+		t.Error("Should be older than 2015/9/4 answer = " + answer)
 	}
 }

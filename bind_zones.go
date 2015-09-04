@@ -118,7 +118,9 @@ func makeRevName(t string, address string) string {
 }
 
 func make_serial() string {
-	return time.Now().Format("20060102030405")
+	t := time.Now()
+	i := ((t.Year()-2015)*366+t.YearDay())*100000 + t.Hour()*24*60 + t.Minute()*60 + t.Second()
+	return fmt.Sprintf("%d", i)
 }
 
 // Patch function
