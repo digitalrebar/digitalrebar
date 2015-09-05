@@ -1,0 +1,84 @@
+b {
+	font-weight: bold;
+}
+
+.full-screen {
+	height:100vh;
+}
+
+body {
+	font-family: 'Roboto';
+}
+
+.parallax {
+	min-height: 100vh;
+	height: 100%;
+}
+
+content header {
+	font-weight: bold;
+	font-size: 3em;
+	text-align: center;
+	background: #2962FF;
+	color: #fff;
+	padding: 2em;
+}
+
+article {
+	font-family: Tahoma, sans-serif;
+	background: #fff;
+	width: 50%;
+	margin: 0 auto;
+	padding-bottom: 4em;
+	width: 100% auto;
+	margin-top: 0;
+	min-height: 200px;
+}
+
+article header {
+	background: #fff;
+	font-weight: bold;
+	font-size: 2em;
+	color: #222;
+	text-align: center;
+	padding: 1em;
+}
+
+article .network {
+	padding: 1em;
+	width: 100% auto;
+	margin-bottom: 1em;
+}
+
+article .network td {
+	padding-right: 0.25em;
+	padding-left: 0.25em;
+}
+
+article .network th {
+	font-weight: bold;
+}
+
+article .network input {
+	width: 100%;
+}
+
+article .network:nth-child(odd) {
+	background: #eee;
+}
+
+tr td:nth-child(odd) {
+	text-align: right;
+}
+
+td {
+	padding: 0.1em;
+}
+
+article p,form {
+	padding: 1em;
+	padding-left: 2em;
+	padding-right: 2em;
+	line-height: 1.7em;
+}
+
