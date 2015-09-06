@@ -8,7 +8,7 @@
       = stylesheet_link_tag 'ie', :media => "all"
     = javascript_include_tag 'application'
     = csrf_meta_tag
-    %link{:rel=>"SHORTCUT ICON", :href=>image_path("icons/bunny.ico")}
+    %link{:rel=>"SHORTCUT ICON", :href=>image_path("icons/digitalrebar.ico")}
 
   %body
 
@@ -53,10 +53,10 @@
 
     %footer
       =t '.provided_by'
-      %a{:href=>"http://opencrowbar.org", :target=>"_new"}
-        = image_tag("ocb_logo.png", :alt=>"OpenCrowbar Project", :title=>"OpenCrowbar Project", :width=>'20px', :style=>"vertical-align:middle;padding-bottom:2px")
-      %a{:href=>"https://github.com/orgs/opencrowbar/people", :target=>"_new", :alt=>"OpenCrowbar"}
-        OpenCrowbar
+      %a{:href=>"http://rebar.digital", :target=>"_new"}
+        = image_tag("dr_logo.png", :alt=>"Digital Rebar", :title=>"Digital Rebar", :width=>'20px', :style=>"vertical-align:middle;padding-bottom:2px")
+      %a{:href=>"https://github.com/orgs/digitalrebar/people", :target=>"_new", :alt=>"Digital Rebar"}
+        Digital Rebar
       =t 'version', :version=>Rails.configuration.crowbar.version || '2.x'
 
 - if current_user or session[:digest_user]
