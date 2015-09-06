@@ -101,25 +101,45 @@ directory "/etc/chef" do
   action :create
 end
 
+account="crowbar"
+keyfile="/root/#{account}.pem"
+token = nil
+if node[:consul][:acl_master_token] && !node[:consul][:acl_master_token].empty?
+  token = "?token=#{node[:consul][:acl_master_token]}"
+end
+baseurl="http://127.0.0.1:8500/v1/kv/opencrowbar/private/chef/system"
+
+bash "Insert into consul" do
+  code <<EOC
+curl --data-binary "$(cat #{keyfile})" -X PUT #{baseurl}/pem#{token}
+curl --data-binary "#{account}" -X PUT #{baseurl}/account#{token}
+curl --data-binary "#{goiardi_protocol}" -X PUT #{baseurl}/proto#{token}
+EOC
+  action :nothing
+end
+
 bash "Create admin client for Crowbar user" do
   code <<EOC
 mkdir /home/crowbar/.chef
-admin_client="crowbar"
-KEYFILE="/home/crowbar/.chef/$admin_client.pem"
+admin_client="#{account}"
+KEYFILE="#{keyfile}"
 EDITOR=/bin/true knife client create "$admin_client" \
     -s #{goiardi_protocol}://localhost:#{goiardi_port} \
     -a --file "$KEYFILE" -u admin \
     -k /etc/goiardi/admin.pem
 chown -R crowbar:crowbar /home/crowbar/.chef
 EOC
-  not_if { File.exists?("/home/crowbar/.chef/crowbar.pem") }
+  not_if { File.exists?(keyfile) }
+  notifies :run, "bash[Insert into consul]", :immediately
 end
 
-template "/home/crowbar/.chef/knife.rb" do
-  user "crowbar"
-  group "crowbar"
-  source "knife.rb.erb"
-  variables node_name: "crowbar",
-            client_key: "/home/crowbar/.chef/crowbar.pem",
-            chef_server_url: "#{goiardi_protocol}://localhost:#{goiardi_port}"
+bash "consul reload" do
+  code "consul reload"
+  action :nothing
 end
+
+template "/etc/consul.d/crowbar-chef.json" do
+  source "crowbar-chef.json.erb"
+  notifies :run, "bash[consul reload]", :immediately
+end
+

@@ -1,0 +1,6 @@
+{
+  "type": "internal",
+  "name": "chef",
+  "has_service": true,
+  "no_server": true
+}

@@ -3,7 +3,7 @@
   "amqp-service":"services",
   "bmc-nat-client":"nodes",
   "bmc-nat-router":"core",
-  "chef-server":"jigs",
+  "chef-service":"services",
   "chef-client":"clients",
   "ceph-config":"hide",
   "ceph-mon":"services",

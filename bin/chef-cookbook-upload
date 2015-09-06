@@ -11,8 +11,8 @@ unset no_proxy
 set -e
 IFS=$'\n'
 while read -r -s berksfile; do
-   berks install -d -b "$berksfile"
-   berks upload -d -b "$berksfile" --no-ssl-verify
+   /usr/local/bin/berks install -d -b "$berksfile"
+   /usr/local/bin/berks upload -d -b "$berksfile" --no-ssl-verify
 done < <(find /opt/opencrowbar -path '*/chef/cookbooks/Berksfile')
 
 roles=($(find /opt/opencrowbar -path '*/chef/roles/*.rb'))

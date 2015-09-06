@@ -46,6 +46,7 @@ gem 'structurematch', '~> 0.1.1'
 gem 'diplomat'
 gem 'httpclient'
 gem 'rest-client'
+gem 'berkshelf'
 # For RFC 6902 json patch support
 gem 'json-patch'
 # For password change via the API

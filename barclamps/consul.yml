@@ -27,7 +27,6 @@ roles:
     description: "Consul is our default service monitoring and discovery tool."
     jig: chef
     flags:
-      - bootstrap
       - implicit
       - cluster
     attribs:

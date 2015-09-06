@@ -51,7 +51,8 @@ node_r=('recipe[crowbar-bootstrap::ssh]'
 
 database_r=('recipe[crowbar-bootstrap::consul]'
             'recipe[crowbar-bootstrap::postgresql]')
-chef_server_r=('recipe[crowbar-bootstrap::goiardi]')
+chef_server_r=('recipe[crowbar-bootstrap::consul]'
+               'recipe[crowbar-bootstrap::goiardi]')
 proxy_r=("${prefix_r[@]}"
          'recipe[crowbar-squid::client]')
 consul_r=('recipe[crowbar-bootstrap::consul]'
