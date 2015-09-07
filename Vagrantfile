@@ -1,32 +1,64 @@
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 VAGRANTFILE_API_VERSION = "2"
+BASE_OS_BOX = "ubuntu/trusty64"
+SLAVE_RAM = "2048"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-    config.vm.box = "ubuntu/trusty64"
-	# config.vm.box = "parallels/ubuntu-14.04 "
+
+  config.vm.define "admin", primary: true do |admin|
+  
+    admin.vm.box = BASE_OS_BOX
 
     # Create a private network, which allows host-only access to the machine
     # using a specific IP.
-    config.vm.network "private_network", ip: "192.168.124.10", auto_config: true
-    config.vm.network "private_network", ip: "10.10.10.10", auto_config: false
+    admin.vm.network "private_network", ip: "192.168.124.10", auto_config: true
+    admin.vm.network "private_network", ip: "10.10.10.10", auto_config: false
 
-    config.vm.network "forwarded_port", guest: 3000, host: 3030
-    config.vm.network "forwarded_port", guest: 8500, host: 8585
-    
-    config.vm.provision "ansible" do |ansible|
+    #admin.vm.network "forwarded_port", guest: 3000, host: 3030
+    #admin.vm.network "forwarded_port", guest: 8500, host: 8585
 
-	    # proxy pass through
-	    if Vagrant.has_plugin?("vagrant-proxyconf") && ENV['http_proxy'] 
-	      port = ENV['http_proxy'].split(":")[2]
-	      config.proxy.http     = "http://10.0.2.2:#{port}"
-	      config.proxy.https    = "http://10.0.2.2:#{port}" 
-	      config.proxy.no_proxy = "127.0.0.1,[::1],localhost,192.168.124.0/24,192.168.1.0/12,10.0.2.0/24"
-	    else
-	      puts "If you have a local proxy cache, install the proxy plug-in! 'vagrant plugin install vagrant-proxyconf'"
-	    end
+    # avoid redownloading large files      
+    admin.vm.synced_folder "~/.cache/opencrowbar/tftpboot/isos/", "/home/vagrant/.cache/opencrowbar/tftpboot/isos/"
 
-		ansible.sudo = true
-		ansible.sudo_user = "root"
-        ansible.playbook = "ubuntu1404.yml"
+    admin.vm.provision "ansible" do |ansible|
+  		ansible.sudo = true
+  		ansible.sudo_user = "root"
+      ansible.playbook = "ubuntu1404.yml"
     end
+
+    puts "To monitor http://192.168.124.10:8500 (Consul) andhttp://192.168.124.10:3000 (Digital Rebar)"
+    puts "After the system is up, you can start the nodes using `vagrant up /node[1-3]/`"
+
+  end
+
+  config.vm.define "node1", autostart:false do |slave|
+
+    slave.vm.box = BASE_OS_BOX
+    slave.vm.network "private_network", ip: "192.168.124.101", auto_config: true
+    slave.vm.network "private_network",  ip: "10.10.10.101", auto_config: false
+    slave.vm.provider "virtualbox" do |vb| 
+      vb.memory = SLAVE_RAM
+    end
+  end
+
+  config.vm.define "node2", autostart:false do |slave|
+
+    slave.vm.box = BASE_OS_BOX
+    slave.vm.network "private_network", ip: "192.168.124.102", auto_config: true
+    slave.vm.network "private_network",  ip: "10.10.10.102", auto_config: false
+    slave.vm.provider "virtualbox" do |vb| 
+      vb.memory = SLAVE_RAM
+    end
+  end
+
+  config.vm.define "node3", autostart:false do |slave|
+
+    slave.vm.box = BASE_OS_BOX
+    slave.vm.network "private_network", ip: "192.168.124.103", auto_config: true
+    slave.vm.network "private_network",  ip: "10.10.10.103", auto_config: false
+    slave.vm.provider "virtualbox" do |vb| 
+      vb.memory = SLAVE_RAM
+    end
+  end
+
 end

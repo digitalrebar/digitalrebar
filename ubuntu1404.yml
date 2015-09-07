@@ -9,8 +9,7 @@
     - name: network mapping
       command: sudo ip a add 192.168.124.4/24 dev docker0
     - name: prep image [SLOW]
-      command: docker pull opencrowbar/centos:6.6-4
-
+      command: docker pull ubuntu:14.04
     - name: Passwordless Sudo
       command: 'sudo sed -ie "s/%sudo\tALL=(ALL:ALL) ALL/%sudo ALL=(ALL) NOPASSWD:ALL/g" /etc/sudoers'
     - name: Make User
@@ -29,5 +28,3 @@
       command: cp /root/.ssh/authorized_keys -n --no-preserve=all /home/vagrant/.ssh/
     - name: Add groups
       command: sudo usermod -G docker,sudo,kvm vagrant
-    - name: bring up admin [SLOW]
-      command: su -c "/home/vagrant/core/tools/docker-admin --daemon centos ./production.sh admin.rebar.digital" - vagrant
