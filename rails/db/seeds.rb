@@ -80,7 +80,6 @@ ActiveRecord::Base.transaction do
   Nav.find_or_create_by(item: 'scaffold_nodes', parent_item: 'scaffold', name: 'nav.scaffold.nodes', path: "main_app.scaffolds_nodes_path", order: 2000, development: true)
   Nav.find_or_create_by(item: 'scaffold_groups', parent_item: 'scaffold', name: 'nav.scaffold.groups', path: "main_app.scaffolds_groups_path", order: 2300, development: true)
   Nav.find_or_create_by(item: 'scaffold_nav', parent_item: 'scaffold', name: 'nav.scaffold.menus', path: "main_app.scaffolds_navs_path", order: 5400, development: true)
-  Nav.find_or_create_by(item: 'scaffold_docs', parent_item: 'scaffold', name: 'nav.scaffold.docs', path: "main_app.scaffolds_docs_path", order: 5500, development: true)
   Nav.find_or_create_by(item: 'scaffold_networks',  parent_item: 'scaffold', name: 'nav.scaffold.networks',  path: "scaffolds_networks_path", order: 2000, development: true)
   Nav.find_or_create_by(item: 'scaffold_allocations',  parent_item: 'scaffold', name: 'nav.scaffold.allocations',  path: "scaffolds_network_allocations_path", order: 2040, development: true)
   Nav.find_or_create_by(item: 'scaffold_dns_name_filters',  parent_item: 'scaffold', name: 'nav.scaffold.dns_name_filters',  path: "scaffolds_dns_name_filters_path", order: 2080, development: true)
