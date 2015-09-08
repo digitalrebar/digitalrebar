@@ -32,7 +32,3 @@ get '/' do
   @networks.compact!
   erb :index
 end
-
-get '/json' do
-  send_file 'data.json', :type => :txt
-end
