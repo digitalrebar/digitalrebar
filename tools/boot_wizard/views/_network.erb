@@ -1,37 +1,35 @@
-<%= @network = locals[:network];'' %>
-
 <div class='network'>
     <table>
       <tr>
         <td style="width: 7em;"><b>Filename:</b></td>
         <td>
-          <input type="text" value="<%= @network['name'] %>" id="<%= @network['name'] %>_name"/>
+          <input type="text" value="<%= locals[:network]['name'] %>" id="<%= locals[:network]['name'] %>_name"/>
         </td>
         <td style="width: 7em;"><b>Conduit:</b></td>
         <td>
-          <input type="text" value="<%= @network['conduit'] %>" id="<%= @network['name'] %>_conduit"/>
+          <input type="text" value="<%= locals[:network]['conduit'] %>" id="<%= locals[:network]['name'] %>_conduit"/>
         </td>
       </tr>
       <tr>
         <td><b>Category:</b></td>
         <td>
-          <input type="text" value="<%= @network['category'] %>" id="<%= @network['name'] %>_category"/>
+          <input type="text" value="<%= locals[:network]['category'] %>" id="<%= locals[:network]['name'] %>_category"/>
         </td>
         <td><b>Group:</b></td>
         <td>
-          <input type="text" value="<%= @network['group']%>" id="<%= @network['name'] %>_group"/>
+          <input type="text" value="<%= locals[:network]['group']%>" id="<%= locals[:network]['name'] %>_group"/>
         </td>
       </tr>
       <tr>
         <td><b>Deployment:</b></td>
         <td>
-          <select value="<%= @network['deployment'] %>" id="<%= @network['name'] %>_deployment">
+          <select value="<%= locals[:network]['deployment'] %>" id="<%= locals[:network]['name'] %>_deployment">
             <option value="system">system</option>
           </select>
         </td>
         <td><b>v6prefix:</b></td>
         <td>
-          <input type="text" value="<%= @network['v6prefix'] || 'auto' %>" id="<%= @network['name'] %>_v6prefix"/>
+          <input type="text" value="<%= locals[:network]['v6prefix'] || 'auto' %>" id="<%= locals[:network]['name'] %>_v6prefix"/>
         </td>
       </tr>
     </table><br/>
@@ -46,12 +44,12 @@
       </thead>
         <tfoot>
           <tr>
-            <td><button onclick="addRange('<%= @network['name'] %>')">Add</button></td>
+            <td><button onclick="addRange('<%= locals[:network]['name'] %>')">Add</button></td>
             <td></td><td></td>
           </tr>
         </tfoot>
-      <tbody id="<%= @network['name'] %>_range">
-        <%= @network["ranges"].map do |range|
+      <tbody id="<%= locals[:network]['name'] %>_range">
+        <%= locals[:network]["ranges"].map do |range|
         """<tr>
           <td><input type=\"text\" value=\"#{range['name']}\"/></td>
           <td><input type=\"text\" value=\"#{range['first']}\"/></td>
@@ -65,15 +63,15 @@
       <tr>
         <td style="width: 7em;"><b>Address:</b></td>
         <td>
-          <input type="text" value="<%= @network['router']['address'] %>" id="<%= @network['name'] %>_routeraddress"/>
+          <input type="text" value="<%= locals[:network]['router']['address'] %>" id="<%= locals[:network]['name'] %>_routeraddress"/>
         </td>
         <td style="width: 7em;"><b>Pref:</b></td>
         <td>
-          <input type="text" value="<%= @network['router']['pref'] %>" id="<%= @network['name'] %>_routerpref"/>
+          <input type="text" value="<%= locals[:network]['router']['pref'] %>" id="<%= locals[:network]['name'] %>_routerpref"/>
         </td>
       </tr>
     </table><br/>
 
-    <button onclick="saveData('<%= @network['name']%>')">Save Network</button>
+    <button onclick="saveData('<%= locals[:network]['name']%>')">Save Network</button>
 
 </div>
