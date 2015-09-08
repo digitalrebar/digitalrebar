@@ -351,7 +351,7 @@ class Node < ActiveRecord::Base
     #
     is_docker_node = false
     node_roles.each do |nr|
-      if nr.role.name == "crowbar-docker-node"
+      if nr.role.name == "crowbar-joined-node"
         is_docker_node = true
         break
       end

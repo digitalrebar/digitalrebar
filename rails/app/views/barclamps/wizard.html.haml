@@ -1,4 +1,5 @@
-- admin = Node.admin.where(:available => true).first
+- provisioner = Role.find_key 'provisioner-base-images'
+- admin = provisioner.nodes.first
 - available_os = Attrib.get("provisioner-available-oses", admin).map{ |k,v| k } rescue []
 - initial_role = Attrib.get('provisioner-target_os', Role.find_by(name: 'provisioner-os-install')) rescue "fred"
 %h1
@@ -21,7 +22,7 @@
     %thead
       %tr
         %th= t('.name')
-        - if @roles.count > 0
+        - if @roles and @roles.count > 0
           - @roles.each do |r| 
             %th= r.name
         %th= t('.os')
@@ -34,12 +35,15 @@
           - unless node.is_admin? or node.is_system?
             %tr.node{ :class => cycle(:odd, :even, :name => "nodes"), :id => node.id }
               %td= link_to node.name, node_path(node.id), :title=>node.description
-              - if @roles.count > 0
+              - if @roles and @roles.count > 0
                 - @roles.each do |r|
                   %td= check_box_tag "node_#{node.id}_role_#{r.id}", "include"
               %td
                 - if available_os.count > 0
-                  = f.select "node_#{node.id}_os", available_os, :selected=>initial_role
+                  - if node.is_docker_node?
+                    = t 'no_config'
+                  - else
+                    = f.select "node_#{node.id}_os", available_os, :selected=>initial_role
                 - else
                   = t 'no_items'
               %td= "#{node.attrib_number_of_drives || 0}, #{t('.raid')}: #{t((node.attrib_raid_set || 'not_set'))}"

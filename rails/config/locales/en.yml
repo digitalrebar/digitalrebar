@@ -51,6 +51,7 @@ en:
   created_on: "Created on %{date}"
   updated_on: "Updated on %{date}"
   no_items: "No Items"
+  no_config: "Not Configurable"
   complete: "Complete"
   'yes': 'Yes'
   'no': 'No'

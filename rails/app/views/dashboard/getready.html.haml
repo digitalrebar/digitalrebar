@@ -52,7 +52,10 @@
               %td= link_to node.name, node_path(node.id), :title=>node.description
               %td
                 - if available_os.count > 0
-                  = f.select "node_#{node.id}_os", available_os, :selected=>initial_role
+                  - if node.is_docker_node?
+                    = t 'no_config'
+                  - else
+                    = f.select "node_#{node.id}_os", available_os, :selected=>initial_role
                 - else
                   = t 'no_items'
               %td= "#{node.attrib_number_of_drives || 0}, #{t('.raid')}: #{t((node.attrib_raid_set || 'not_set'))}"
