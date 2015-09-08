@@ -1,0 +1,6 @@
+{
+  "type": "external",
+  "name": "crowbar-job_runner",
+  "has_service": true,
+  "server_role": "crowbar-job_runner"
+}

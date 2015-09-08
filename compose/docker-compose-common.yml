@@ -1,0 +1,166 @@
+
+consul:
+  image: galthaus/dr_consul
+  command: --server --bootstrap
+  volumes:
+    - ./config-dir/consul/server-default.json:/etc/consul.d/default.json
+  env_file:
+    - ./common.env
+  ports:
+    - "8300:8300"
+    - "8301:8301"
+    - "8301/udp:8301/udp"
+    - "8302:8302"
+    - "8302/udp:8302/udp"
+    - "8400:8400"
+    - "8500:8500"
+    - "8600:8600"
+    - "8600/udp:8600/udp"
+
+postgres:
+  image: galthaus/dr_postgres
+  volumes:
+    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./config-dir/postgres/initdb.d:/docker-entrypoint-initdb.d
+  env_file:
+    - ./common.env
+  ports:
+    - "5432:5432"
+
+webproxy:
+  image: galthaus/dr_webproxy
+  volumes:
+    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+  env_file:
+    - ./common.env
+  # GREG: Think about this.
+  ports:
+    - "8123:3128"
+
+goiardi:
+  image: galthaus/dr_goiardi
+  volumes:
+    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+  env_file:
+    - ./common.env
+  ports:
+    - "4646:4646"
+
+rebar_api:
+  image: galthaus/dr_rebar_api
+  volumes:
+    - ./components/rebar_api/digitalrebar:/opt/opencrowbar
+    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./config-dir/api/config:/opt/opencrowbar/core/config
+    - ./data-dir/node:/node-data
+  env_file:
+    - ./common.env
+  ports:
+    - "3000:3000"
+
+ntp:
+  image: galthaus/dr_ntp
+  volumes:
+    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./config-dir/ntp/ntp.conf:/etc/ntp.conf
+  env_file:
+    - ./common.env
+  ports:
+    - "123:123"
+    - "123/udp:123/udp"
+
+dns:
+  image: galthaus/dr_dns
+  volumes:
+    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./config-dir/bind/named.conf:/etc/named.conf
+    - ./config-dir/bind/named.conf:/etc/bind/named.conf
+  env_file:
+    - ./common.env
+  ports:
+    - "53:53"
+    - "53/udp:53/udp"
+    - "6754:6754"
+
+dhcp:
+  image: galthaus/dr_dhcp
+  privileged: true
+  volumes:
+    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./data-dir/node:/etc/rebar-data
+  env_file:
+    - ./common.env
+  ports:
+    - "67/udp:67/udp"
+    - "6755:6755"
+
+#cobbler:
+#  image: galthaus/dr_cobbler
+#  volumes:
+#    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+#  env_file:
+#    - ./common.env
+#  ports:
+#    - "69/udp:69/udp"
+#    - "80:80"
+#    - "443:443"
+#    - "25151:25151"
+
+provisioner:
+  image: galthaus/dr_provisioner
+  privileged: true
+  volumes:
+    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ~/.cache/opencrowbar/tftpboot:/tftpboot
+    - ./data-dir/node:/etc/rebar-data
+  env_file:
+    - ./common.env
+  ports:
+    - "69/udp:69/udp"
+    - "8091:8091"
+
+elasticsearch:
+  image: galthaus/dr_elasticsearch
+  ports:
+    - "9200:9200"
+    - "9300:9300"
+
+logstash:
+  image: galthaus/dr_logstash
+  ports:
+    - "5000:5000"
+    - "5000:5000/udp"
+  environment:
+    # otherwise logstash will keep sending its own logs to itself over and
+    # over... not fun
+    LOGSPOUT: ignore 
+  command: -f /etc/logstash.sample.conf
+
+kibana:
+  image: galthaus/dr_kibana
+  ports:
+    - "5601:5601"
+
+logspout:
+  image: galthaus/dr_logspout
+  environment:
+    DEBUG: true
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+  command: syslog://localhost:5000
+
+cadvisor:
+  image: google/cadvisor:latest
+  volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:rw
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+  ports:
+    - "8080:8080"
+
+node:
+  image: galthaus/dr_node
+  volumes:
+    - ./data-dir/node:/etc/rebar-data
+

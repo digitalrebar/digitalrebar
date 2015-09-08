@@ -1,0 +1,6 @@
+{
+  "type": "internal",
+  "name": "provisioner",
+  "has_service": true,
+  "no_server": true
+}

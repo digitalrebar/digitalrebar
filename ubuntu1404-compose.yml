@@ -1,0 +1,39 @@
+--- 
+- name: Install Digital Rebar by RackN 2015
+  hosts: all
+  sudo: yes
+  tasks:
+    - include: tasks/ubuntu1404-base.yml
+    - include: tasks/docker.yml
+
+    - name: network mapping
+      command: sudo ip addr add 192.168.124.10/24 dev docker0
+      ignore_errors: yes
+
+    - name: Make cache dirs
+      command: mkdir -p .cache/opencrowbar/tftpboot/isos
+
+    - name: download ISO [BACKGROUND] (see list https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
+      command: su -c "nohup wget http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.3-server-amd64.iso -nc -O .cache/opencrowbar/tftpboot/isos/ubuntu-14.04.2-server-amd64.iso &"
+      args:
+        creates: .cache/opencrowbar/tftpboot/isos/ubuntu-14.04.2-server-amd64.iso
+    - name: download ISO [BACKGROUND] (see list https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
+      command: su -c "nohup wget http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso -nc -O .cache/opencrowbar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso &"
+      args:
+        creates: .cache/opencrowbar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
+    - name: get code
+      copy: src=compose dest=.
+    - name: setup compose
+      command: ./setup.sh
+      args:
+        chdir: compose
+        creates: compose/components/crowbar_api/opencrowbar/core
+    - name: Stop ntp
+      command: service ntp stop
+    - name: Stop dnsmasq
+      command: killall dnsmasq
+      ignore_errors: yes
+    - name: Run compose
+      command: docker-compose up -d
+      args:
+        chdir: compose

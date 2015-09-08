@@ -23,4 +23,5 @@
     command: sudo update-rc.d -f apparmor remove
   - name: no dns servers
     command: sudo killall dnsmasq
+    ignore_errors: yes
 

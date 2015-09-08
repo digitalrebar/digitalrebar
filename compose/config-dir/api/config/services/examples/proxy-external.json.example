@@ -1,0 +1,7 @@
+{
+  "type": "external",
+  "name": "proxy",
+  "service_ip": "1.1.1.1",
+  "service_port": 8123,
+  "service_tag": "system"
+}

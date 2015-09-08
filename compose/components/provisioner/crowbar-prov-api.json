@@ -1,0 +1,11 @@
+{
+  "service": {
+    "name": "provisioner-mgmt-service",
+    "tags": [ "system" ],
+    "port": 8092,
+    "check": {
+      "script": "pidof fred",
+      "interval": "10s"
+    }
+  }
+}

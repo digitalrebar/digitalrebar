@@ -1,0 +1,110 @@
+
+consul:
+  extends:
+    file: docker-compose-common.yml
+    service: consul
+
+postgres:
+  extends:
+    file: docker-compose-common.yml
+    service: postgres
+  links:
+    - consul:consul
+
+webproxy:
+  extends:
+    file: docker-compose-common.yml
+    service: webproxy
+  links:
+    - consul:consul
+
+goiardi:
+  extends:
+    file: docker-compose-common.yml
+    service: goiardi
+  links:
+    - consul:consul
+    - postgres:database
+
+rebar_api:
+  extends:
+    file: docker-compose-common.yml
+    service: rebar_api
+  environment:
+    - DR_DEV=true
+  links:
+    - consul:consul
+    - postgres:database
+    - goiardi:goiardi
+
+ntp:
+  extends:
+    file: docker-compose-common.yml
+    service: ntp
+  links:
+    - consul:consul
+
+dns:
+  extends:
+    file: docker-compose-common.yml
+    service: dns
+  links:
+    - consul:consul
+
+dhcp:
+  extends:
+    file: docker-compose-common.yml
+    service: dhcp
+  links:
+    - consul:consul
+
+#cobbler:
+#  extends:
+#    file: docker-compose-common.yml
+#    service: cobbler
+#  links:
+#    - consul:consul
+
+provisioner:
+  extends:
+    file: docker-compose-common.yml
+    service: provisioner
+  links:
+    - consul:consul
+
+elasticsearch:
+  extends:
+    file: docker-compose-common.yml
+    service: elasticsearch
+
+logstash:
+  extends:
+    file: docker-compose-common.yml
+    service: logstash
+  links:
+    - elasticsearch:elasticsearch
+
+kibana:
+  extends:
+    file: docker-compose-common.yml
+    service: kibana
+  links:
+    - elasticsearch:elasticsearch
+
+logspout:
+  net: container:logstash
+  extends:
+    file: docker-compose-common.yml
+    service: logspout
+
+cadvisor:
+  extends:
+    file: docker-compose-common.yml
+    service: cadvisor
+
+node:
+  extends:
+    file: docker-compose-common.yml
+    service: node
+  links:
+    - rebar_api:rebar_api

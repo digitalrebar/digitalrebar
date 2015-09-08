@@ -1,0 +1,20 @@
+# Copyright 2015, RackN
+#
+# All Rights Reserved
+#
+
+.#*
+*~
+*.dia.autosave
+install-*.log
+
+/components/rebar_api/core
+/components/rebar_api/opencrowbar
+/components/rebar-api/core
+/config-dir/api/config/final.json
+/config-dir/api/config/processed.json
+/data-dir/node/crowbar-key.sh
+/config-dir/api/config/ssh_keys/*
+
+.idea
+Berksfile.lock

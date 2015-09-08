@@ -1,0 +1,123 @@
+
+consul:
+  extends:
+    file: docker-compose-common.yml
+    service: consul
+  build: components/consul
+
+postgres:
+  extends:
+    file: docker-compose-common.yml
+    service: postgres
+  build: components/postgres
+  links:
+    - consul:consul
+
+webproxy:
+  extends:
+    file: docker-compose-common.yml
+    service: webproxy
+  build: components/webproxy
+  links:
+    - consul:consul
+
+goiardi:
+  extends:
+    file: docker-compose-common.yml
+    service: goiardi
+  build: components/goiardi
+  links:
+    - consul:consul
+    - postgres:database
+
+rebar_api:
+  extends:
+    file: docker-compose-common.yml
+    service: rebar_api
+  build: components/rebar_api
+  links:
+    - consul:consul
+    - postgres:database
+    - goiardi:goiardi
+
+ntp:
+  extends:
+    file: docker-compose-common.yml
+    service: ntp
+  build: components/ntp
+  links:
+    - consul:consul
+
+dns:
+  extends:
+    file: docker-compose-common.yml
+    service: dns
+  build: components/dns
+  links:
+    - consul:consul
+
+dhcp:
+  extends:
+    file: docker-compose-common.yml
+    service: dhcp
+  build: components/dhcp
+  links:
+    - consul:consul
+
+#cobbler:
+#  extends:
+#    file: docker-compose-common.yml
+#    service: cobbler
+#  build: components/cobbler
+#  links:
+#    - consul:consul
+
+provisioner:
+  extends:
+    file: docker-compose-common.yml
+    service: provisioner
+  build: components/provisioner
+  links:
+    - consul:consul
+
+elasticsearch:
+  extends:
+    file: docker-compose-common.yml
+    service: elasticsearch
+  build: components/elasticsearch
+
+logstash:
+  extends:
+    file: docker-compose-common.yml
+    service: logstash
+  build: components/logstash
+  links:
+    - elasticsearch:elasticsearch
+
+kibana:
+  extends:
+    file: docker-compose-common.yml
+    service: kibana
+  build: components/kibana
+  links:
+    - elasticsearch:elasticsearch
+
+logspout:
+  net: container:logstash
+  extends:
+    file: docker-compose-common.yml
+    service: logspout
+  build: components/logspout
+
+cadvisor:
+  extends:
+    file: docker-compose-common.yml
+    service: cadvisor
+
+node:
+  extends:
+    file: docker-compose-common.yml
+    service: node
+  build: components/node
+  links:
+    - rebar_api:rebar_api
