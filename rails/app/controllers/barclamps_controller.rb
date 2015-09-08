@@ -85,18 +85,27 @@ class BarclampsController < ApplicationController
       # milestone for OS assignment
       wiz = Role.find_key 'crowbar-installed-node'
       #wiz.add_to_deployment d
+      nodes = {}
 
+      # add new roles
       params.each do |key, value|
         if key =~ /^node_([0-9]*)_role_([0-9]*)$/
           n = Node.find $1.to_i
           r = Role.find $2.to_i
+          nodes[n.id] = params["node_#{n.id}_os"]   # we onlt want to do the node stuff once
+          r.add_to_node_in_deployment n, d
           Rails.logger.info "Barclamp wizard #{r.name} added node #{n.name}"
-        else
-          Rails.logger.info "Barclamp wizard MISS #{key} #{value} #{$0} #{$1}"
         end
       end
-      #redirect_to deployment_path(:id=>d.id)
-      redirect_to barclamp_path(:id=>@bc.id)
+      # set operating systems for selected nodes (unless docker)
+      nodes.each do |nid, os|
+        n = Node.find nid
+        n.deployment = d
+        n.save!
+        next if n.is_docker_node?
+        Attrib.set "provisioner-target_os", n, os, :user
+      end
+      redirect_to deployment_path(:id=>d.id)
     end
   end
 
