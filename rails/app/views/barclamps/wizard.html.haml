@@ -21,8 +21,9 @@
     %thead
       %tr
         %th= t('.name')
-        - @roles.each do |r|
-          %th= r.name
+        - if @roles.count > 0
+          - @roles.each do |r| 
+            %th= r.name
         %th= t('.os')
         %th= t('.disk')
         %th= t('.mem')
@@ -33,8 +34,9 @@
           - unless node.is_admin? or node.is_system?
             %tr.node{ :class => cycle(:odd, :even, :name => "nodes"), :id => node.id }
               %td= link_to node.name, node_path(node.id), :title=>node.description
-              - @roles.each do |r|
-                %td= check_box_tag "node_#{node.id}_role_#{r.id}", "include"
+              - if @roles.count > 0
+                - @roles.each do |r|
+                  %td= check_box_tag "node_#{node.id}_role_#{r.id}", "include"
               %td
                 - if available_os.count > 0
                   = f.select "node_#{node.id}_os", available_os, :selected=>initial_role

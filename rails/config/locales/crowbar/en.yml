@@ -513,6 +513,7 @@ en:
       discovery: "Discovery"
       abstract: "Abstract"
       cluster: "Cluster"
+      milestone: "Milestone"
       destructive: "Destructive"
       service: "Service"
       provides: "Provides"
