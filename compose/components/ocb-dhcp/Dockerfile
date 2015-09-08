@@ -1,0 +1,34 @@
+#FROM ubuntu:14.04
+FROM compose_consul
+
+# TORUN
+
+ENV GOPATH /go
+
+# Set our command
+ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
+
+# Get packages
+RUN apt-get update \
+  && apt-get -y install git make build-essential jq \
+  && curl -fgL -o '/tmp/goball.tgz' 'https://storage.googleapis.com/golang/go1.4.linux-amd64.tar.gz' \
+  && rm -rf /usr/local/go \
+  && tar -C '/usr/local' -zxf /tmp/goball.tgz \
+  && rm /tmp/goball.tgz \
+  && /usr/local/go/bin/go get -v github.com/galthaus/ocb-dhcp \
+  && mkdir -p /var/cache/ocb-dhcp \
+  && mkdir -p /etc/consul.d \
+  && chmod 700 /var/cache/ocb-dhcp \
+  && cp $GOPATH/bin/ocb-dhcp /usr/local/bin \
+  && rm -rf $GOPATH /usr/local/go \
+  && apt-get -y purge git make build-essential
+
+COPY docker-entrypoint.sh /sbin/docker-entrypoint.sh
+
+COPY dhcp.json /etc/consul.d/dhcp.json
+COPY ocb-dhcp.conf /etc/ocb-dhcp.conf
+COPY database.json /var/cache/ocb-dhcp/database.json
+COPY ocb-dhcp-cert.conf /etc/ocb-dhcp-cert.conf
+
+# Ports to expose/map
+# EXPOSE 67, 6755

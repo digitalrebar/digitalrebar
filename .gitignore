@@ -9,3 +9,19 @@
 # limitations under the License.
 
 /.vagrant/
+/compose/components/rebar_api/digitalrebar
+
+.#*
+*~
+*.dia.autosave
+install-*.log
+
+/compose/config-dir/api/config/final.json
+/compose/config-dir/api/config/processed.json
+/compose/data-dir/node/crowbar-key.sh
+/compose/config-dir/api/config/ssh_keys/*
+
+.idea
+Berksfile.lock
+
+run-in-hosts

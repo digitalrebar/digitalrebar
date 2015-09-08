@@ -1,0 +1,11 @@
+{
+  "service": {
+    "name": "provisioner-service",
+    "tags": [ "system" ],
+    "port": 80,
+    "check": {
+      "script": "pidof apache2",
+      "interval": "10s"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+{   "name": "default",   "priority": 50,   "template": "{{node.name}}.local.neode.org",   "matcher": "net.category == \"admin\"",   "service": "system" }

@@ -1,0 +1,9 @@
+{
+  "type": "internal",
+  "name": "dns",
+  "has_service": true,
+  "server_role": "dns-bind_server",
+  "attributes": {
+    "dns-forwarders": [ "1.1.1.1", "2.2.2.2" ]
+  }
+}

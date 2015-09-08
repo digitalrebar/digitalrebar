@@ -1,0 +1,12 @@
+{
+  "service": {
+    "name": "ntp-service",
+    "tags": [ "system" ],
+    "port": 123,
+    "check": {
+      "script": "ntpdate -q 127.0.0.1 2>&1 >/dev/null",
+      "interval": "10s"
+    }
+  }
+}
+

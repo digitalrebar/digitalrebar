@@ -1,0 +1,11 @@
+{
+  "service": {
+    "name": "dns-mgmt-service",
+    "tags": [ "system" ],
+    "port": 6754,
+    "check": {
+      "script": "pidof ocb-dns-mgmt",
+      "interval": "10s"
+    }
+  }
+}

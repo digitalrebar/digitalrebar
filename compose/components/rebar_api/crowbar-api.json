@@ -1,0 +1,11 @@
+{
+  "service": {
+    "name": "crowbar-api-service",
+    "tags": [ "system" ],
+    "port": 3000,
+    "check": {
+      "script": "curl 127.0.0.1:3000",
+      "interval": "10s"
+    }
+  }
+}

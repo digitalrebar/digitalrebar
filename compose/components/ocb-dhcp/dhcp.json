@@ -1,0 +1,11 @@
+{
+  "service": {
+    "name": "dhcp-service",
+    "tags": [ "system" ],
+    "port": 6755,
+    "check": {
+      "script": "pidof ocb-dhcp",
+      "interval": "10s"
+    }
+  }
+}

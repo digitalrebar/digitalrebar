@@ -1,0 +1,13 @@
+{
+  "deployment": {
+    "name": "system",
+    "description": "Main discovery and holding deployment"
+  },
+  "roles": [
+    "ipmi-configure"
+  ],
+  "attributes": {
+    "ipmi-username": "ipmi",
+    "ipmi-password": "franklin"
+  }
+}

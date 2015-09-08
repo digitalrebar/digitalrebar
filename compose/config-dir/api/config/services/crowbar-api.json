@@ -1,0 +1,5 @@
+{
+  "type": "external",
+  "name": "crowbar-api",
+  "has_service": true
+}
