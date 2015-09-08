@@ -42,12 +42,12 @@
         <th>Last</th>
       </tr>
     </thead>
-      <tfoot>
-        <tr>
-          <td><button onclick="addRange('<%= locals[:network]['name'] %>')">Add</button></td>
-          <td></td><td></td>
-        </tr>
-      </tfoot>
+    <tfoot>
+      <tr>
+        <td><button onclick="addRange('<%= locals[:network]['name'] %>')">Add</button></td>
+        <td></td><td></td>
+      </tr>
+    </tfoot>
     <tbody id="<%= locals[:network]['name'] %>_range">
       <%= locals[:network]["ranges"].map do |range|
       """<tr>
