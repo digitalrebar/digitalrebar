@@ -15,12 +15,10 @@ post '/save/:network' do
   begin
     request.body.rewind
     data = JSON.pretty_generate JSON.parse request.body.read
-    puts "got data"
     open("../../config/networks/#{params['network']}.json","wb+") do |file|
       file.write data
     end
   ensure
-    puts "Redirecting"
     redirect '/'
   end
 end
@@ -32,7 +30,6 @@ get '/' do
   end
 
   @networks.compact!
-
   erb :index
 end
 
