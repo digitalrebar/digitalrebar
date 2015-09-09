@@ -1,29 +1,19 @@
 {
-  "name": "the_admin",
-  "category": "admin",
+  "name": "new_network",
+  "category": "default",
   "group": "internal",
   "deployment": "system",
   "conduit": "1g0",
   "v6prefix": "auto",
   "ranges": [
     {
-      "name": "admin",
-      "first": "192.168.124.10/24",
-      "last": "192.168.124.11/24"
-    },
-    {
       "name": "host",
-      "first": "192.168.124.81/24",
-      "last": "192.168.124.254/24"
-    },
-    {
-      "name": "dhcp",
-      "first": "192.168.124.21/24",
-      "last": "192.168.124.80/24"
+      "first": "10.10.10.10/24",
+      "last": "10.10.10.200/24"
     }
   ],
   "router": {
-    "address": "192.168.124.10/24",
-    "pref": "10"
+    "address": "10.10.10.1/24",
+    "pref": "20"
   }
 }
