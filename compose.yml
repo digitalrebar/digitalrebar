@@ -3,8 +3,10 @@
   hosts: all
   sudo: yes
   tasks:
-    - include: tasks/ubuntu1404-base.yml
+    - include: tasks/centos07-base.yml
+      when: ansible_os_family == "RedHat"
     - include: tasks/docker.yml
+      when: ansible_os_family == "Debian"
 
     - name: network mapping
       command: sudo ip addr add 192.168.124.10/24 dev docker0
@@ -22,18 +24,18 @@
       args:
         creates: .cache/opencrowbar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
     - name: get code
-      copy: src=compose dest=.
+      synchronize: src=./compose dest=/root rsync_path="rsync"
     - name: setup compose
       command: ./setup.sh
       args:
         chdir: compose
-        creates: compose/components/crowbar_api/opencrowbar/core
+        creates: compose/components/rebar_api/digitalrebar/core
     - name: Stop ntp
-      command: service ntp stop
+      service: name=ntp state=stopped
     - name: Stop dnsmasq
       command: killall dnsmasq
       ignore_errors: yes
     - name: Run compose
-      command: docker-compose up -d
+      command: /usr/local/bin/docker-compose up -d
       args:
         chdir: compose

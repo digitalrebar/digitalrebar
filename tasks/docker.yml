@@ -10,6 +10,11 @@
     command: sudo /tmp/docker.sh
     args:
       creates: /usr/bin/docker
+  - name: install docker-selinux
+    yum: name={{ item }} state=latest
+    with_items:
+      - docker-selinux
+    when: ansible_os_family == "RedHat"
   - name: restart docker service
     command: sudo service docker restart
   - name: Get Docker Compose
