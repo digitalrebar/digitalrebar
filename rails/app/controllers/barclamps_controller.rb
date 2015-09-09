@@ -98,8 +98,8 @@ class BarclampsController < ApplicationController
         if key =~ /^node_([0-9]*)_role_([0-9]*)$/
           nid = $1.to_i
           rid = $2.to_i
-          nodes[nid] = params["wizard"]["node_#{nid}_os"]   # we only want to do the node stuff once
           roles[rid] << nid  ## add nodes that we are going to add
+          nodes[nid] = params["wizard"]["node_#{nid}_os"] if params["wizard"] # we only want to do the node stuff once
         end
       end
 

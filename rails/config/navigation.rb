@@ -30,6 +30,8 @@ SimpleNavigation::Configuration.run do |navigation|
             item.children.each do |nav|
               if nav.path and nav.path.starts_with? 'http'
                 secondary.item nav.item.to_sym, t(nav.name), nav.path.to_s, {:title=>t(nav.description, :default=>t(nav.name)), :link => { :target => "_blank" } } 
+              elsif nav.item.starts_with? 'wizard_'
+                secondary.item nav.item.to_sym, nav.name, nav.path.to_s, {:title=>nav.description} 
               elsif nav.path =~ /(.*)_path/ 
                 if nav.development 
                   next unless current_user and current_user.settings(:ui).edge
