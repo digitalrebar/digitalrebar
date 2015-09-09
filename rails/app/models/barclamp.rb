@@ -220,7 +220,7 @@ class Barclamp < ActiveRecord::Base
       end if bc['attribs']
       # add menut item if wizard enabled
       if bc['wizard']
-        Nav.find_or_create_by(item: "wizard_"+bc_name, parent_item: 'deploy', name: bc_name.titleize+" Wizard", description: bc['barclamp']['description'], path: "barclamps/#{bc_name}/wizard", order: 5000)
+        Nav.find_or_create_by(item: "wizard_"+bc_name, parent_item: 'deploy', name: bc_name.titleize+" Wizard", description: bc['barclamp']['description'], path: "/barclamps/#{bc_name}/wizard", order: 5000)
       end
       barclamp
     end
