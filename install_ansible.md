@@ -4,6 +4,7 @@ The following documentation will setup a complete running Digital Rebar system f
 
 Available playbooks:
   * [ubuntu1404.yml](https://github.com/rackn/digitalrebar-deploy/blob/master/ubuntu1404.yml)
+  * [compose.yml](https://github.com/rackn/digitalrebar-deploy/blob/master/compose.yml)
 
 ## Prereqs
 
@@ -16,9 +17,13 @@ You need a target system:
 
 On your local workstation:
 
-  * Ansible installed (`sudo apt-get install ansible`)
+  * Ansible installed
+    *  Ubuntu (`sudo apt-get install ansible`)
+    *  Centos (`yum install ansible`)
+      * May have to add epel first (`yum install epel-release`)
   * IP of the target system in Ansible inventory (`sudo vi /etc/ansible/hosts`)
     * include `ansible_ssh_user=root` after the IP
+    * If doing localhost, make sure to use the IP of the node and not 127.0.0.1
 
 ## Install Process
 

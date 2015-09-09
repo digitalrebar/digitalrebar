@@ -1,0 +1,22 @@
+---
+  - name: Update repos
+    command: yum makecache
+  - name: Install Prereqs [SLOW]
+    yum: name={{ item }} state=latest
+    with_items:
+      - git
+      - screen
+      - qemu-kvm
+      - libvirt
+      - bridge-utils
+      - ruby-devel
+      - make
+      - curl
+      - gcc
+      - psmisc
+  - name: gem install kvm slaves
+    command: sudo gem install json net-http-digest_auth
+  - name: no dns servers
+    command: sudo killall dnsmasq
+    ignore_errors: yes
+
