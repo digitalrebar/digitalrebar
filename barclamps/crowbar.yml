@@ -165,6 +165,7 @@ roles:
     provides:
       - crowbar-installed-node
       - crowbar-managed-node
+      - deployer-client
 
 hammers:
   - name: 'ssh'
