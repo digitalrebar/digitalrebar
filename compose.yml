@@ -5,8 +5,9 @@
   tasks:
     - include: tasks/centos07-base.yml
       when: ansible_os_family == "RedHat"
-    - include: tasks/docker.yml
+    - include: tasks/ubuntu1404-base.yml
       when: ansible_os_family == "Debian"
+    - include: tasks/docker.yml
 
     - name: network mapping
       command: sudo ip addr add 192.168.124.10/24 dev docker0
