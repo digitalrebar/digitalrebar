@@ -19,6 +19,7 @@
           %td= link_to role.barclamp.name, barclamp_path(role.barclamp.id), :title=>role.barclamp.description
           %td= role.description
           %td
+            = t '.milestone' if role.milestone
             = t '.library' if role.library 
             = t '.discovery' if role.discovery
             = t '.implicit' if role.implicit

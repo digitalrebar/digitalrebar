@@ -12,8 +12,9 @@ Documentation is maintained in the [**doc** repository](https://github.com/digit
 
 * [Live Weekly Planning and Design Meetings](http://bit.ly/digitalrebarcalendar)
 * [Mailing List](http://bit.ly/digitalrebarlist)
-* [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/digitalrebar/core?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-* #digitalrebar IRC channel on [Freenode](https://webchat.freenode.net/) (hint: Gitter is more active).
+* Chat
+  * Gitter: [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/digitalrebar/core?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+  * IRC: #digitalrebar channel on [Freenode](https://webchat.freenode.net/) (try Gitter first)
 
 Commercial support for Digital Rebar is available from [RackN Inc](http://rackn.com).
 
@@ -25,4 +26,3 @@ Commercial support for Digital Rebar is available from [RackN Inc](http://rackn.
   * Anvil became v2.0 in Apr 2014
   * Broom became v2.1 in Dec 2014
   * Camshaft became v2.2 in Apr 2015
-

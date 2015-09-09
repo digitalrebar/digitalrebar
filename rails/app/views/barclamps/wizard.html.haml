@@ -3,53 +3,41 @@
 - available_os = Attrib.get("provisioner-available-oses", admin).map{ |k,v| k } rescue []
 - initial_role = Attrib.get('provisioner-target_os', Role.find_by(name: 'provisioner-os-install')) rescue "fred"
 %h1
-  =t '.title'
+  =t '.title', :barclamp => @bc.name.titleize
 
-= form_for :dashboard, :'data-remote' => true, :url => '/dashboard/getready', :html => { :method=>:post, :'data-type' => 'json',  :id => 'getready', :class => "formtastic" } do |f|
+= params[:id]
+= form_for :wizard, :'data-remote' => true, :url => "/barclamps/#{@bc.id}/wizard", :html => { :method=>:post, :'data-type' => 'json',  :id => @bc.name, :class => "formtastic" } do |f|
 
   %table.data.box
     %thead
       %tr
         %th{:width=>'10%'}= t('.selection')
-        %th= t('.selectionValue')
+        %th= t('.selection_value')
     %tbody
       %tr{:class => cycle(:odd,:even)}
         %td= t('.deployment')
-        %td= text_field_tag(:deployment, t('.default'), :size => 15)
-      %tr{:class => cycle(:odd,:even)}
-        %td= t('.conduit')
-        %td= text_field_tag(:conduit, Network::DEFAULTCONDUIT, :size => 15)
-      %tr{:class => cycle(:odd,:even)}
-        %td= t('.range')
-        %td= text_field_tag(:range, t('.range_base'), :size => 15)
-      %tr{:class => cycle(:odd,:even)}
-        %td= t('.first_ip')
-        %td= text_field_tag(:first_ip, "10.10.10.10/24", :size => 15)
-      %tr{:class => cycle(:odd,:even)}
-        %td= t('.last_ip')
-        %td= text_field_tag(:last_ip, "10.10.10.250/24", :size => 15)
+        %td= text_field_tag(:deployment, @bc.name, :size => 15)
 
   %table.data.box
     %thead
       %tr
-        %th{:width=>'5%'}
-        %th= t('.state')
         %th= t('.name')
+        - if @roles and @roles.count > 0
+          - @roles.each do |r| 
+            %th= r.name
         %th= t('.os')
         %th= t('.disk')
         %th= t('.mem')
-        %th= t('.nics')
         %th= t('.proc')
-        %th= t('.asset')
     %tbody
       - if @nodes and @nodes.count > 0
         - @nodes.sort_by{|n| n.name }.each do |node|
           - unless node.is_admin? or node.is_system?
             %tr.node{ :class => cycle(:odd, :even, :name => "nodes"), :id => node.id }
-              %td= check_box_tag "node_#{node.id}", "include", !node.is_admin?
-              %td.status
-                .led{:class => node.status, :title=>t(node.status, :scope=>'status', :default=>node.status)} 
               %td= link_to node.name, node_path(node.id), :title=>node.description
+              - if @roles and @roles.count > 0
+                - @roles.each do |r|
+                  %td= check_box_tag "node_#{node.id}_role_#{r.id}", "include"
               %td
                 - if available_os.count > 0
                   - if node.is_docker_node?
@@ -60,9 +48,7 @@
                   = t 'no_items'
               %td= "#{node.attrib_number_of_drives || 0}, #{t('.raid')}: #{t((node.attrib_raid_set || 'not_set'))}"
               %td= format_memory(node.attrib_memory)
-              %td= node.attrib_nics.count rescue 0
               %td= node.attrib_cpu
-              %td= node.attrib_asset_tag
       - else
         %tr
           %td{ :colspan=>9}

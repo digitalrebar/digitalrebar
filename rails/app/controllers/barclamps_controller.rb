@@ -71,6 +71,72 @@ class BarclampsController < ApplicationController
     end
   end
 
+  # allow barclamp/workload to provide a wizard
+  def wizard
+    @bc = Barclamp.find_key params[:barclamp_id]
+    if request.get?
+      @roles = @bc.roles.keep_if { |r| r.milestone }
+      @nodes = Deployment.system.nodes.where(:admin=>false, :system=>false)
+    elsif request.post?
+
+      wiz_name = params[:deployment]
+      throw "Deployment Name is required" unless wiz_name
+
+      d = Deployment.find_or_create_by_name! :name=>wiz_name, :parent=>Deployment.system
+
+      # track nodes
+      nodes = {}
+      roles = {}
+      @bc.roles.each { |r| roles[r.id] = [] if r.milestone }  # get the available milestones
+
+      # milestone for OS assignment
+      cin = Role.find_key 'crowbar-installed-node'
+      roles[cin] = []
+
+      # find nodes and roles
+      params.each do |key, value|
+        if key =~ /^node_([0-9]*)_role_([0-9]*)$/
+          nid = $1.to_i
+          rid = $2.to_i
+          roles[rid] << nid  ## add nodes that we are going to add
+          nodes[nid] = params["wizard"]["node_#{nid}_os"] if params["wizard"] # we only want to do the node stuff once
+        end
+      end
+
+      # set the roles
+      roles.each do |rid, nodes|
+        r = Role.find rid
+        r.add_to_deployment d
+        Rails.logger.info "Barclamp wizard: deployment-role #{r.name} added to deployment #{d.name}"
+        nodes.each do |nid|
+          n = Node.find nid
+          r.add_to_node_in_deployment(n, d) unless n.is_docker_node? and r.id == cin
+          Rails.logger.info "Barclamp wizard: #{r.name} adding node #{n.name} in deployment #{d.name}"
+        end
+        Rails.logger.debug "Barclamp wizard: made all changes for role #{r.name}"
+      end
+
+      # set operating systems for selected nodes (unless docker)
+      nodes.each do |nid, os|
+        n = Node.find nid
+        n.deployment = d
+        n.save!
+        Rails.logger.debug "Barclamp wizard: set #{n.name} into deployment #{d.name}"
+        unless n.is_docker_node?
+          Attrib.set "provisioner-target_os", n, os, :user if os
+          Rails.logger.info "Barclamp wizard: assigning #{os} to node #{n.name} in deployment #{d.name}"
+        else
+          Rails.logger.info "Barclamp wizard: NOT assigning #{os} to node #{n.name} because it's DOCKER"
+        end
+      end
+
+      Rails.logger.debug "Barclamp wizard: opening deployment #{deployment_path(:id=>d.id)}"
+      redirect_to deployment_path(:id=>d.id)
+      
+    end
+
+  end
+
   #
   # Barclamp catalog
   # 
