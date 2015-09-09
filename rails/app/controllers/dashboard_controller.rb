@@ -149,7 +149,8 @@ class DashboardController < ApplicationController
             Rails.logger.info "Dashboard GetReady Deployment #{d.name} added node #{n.name}"
             # assign milestone for OS assignment
             ready.add_to_node_in_deployment n, d unless n.is_docker_node?
-            ready_network.add_to_node_in_deployment n, d
+            nics = n.attrib_nics.count rescue 0
+            ready_network.add_to_node_in_deployment n, d if nics > 0
           end
           # set desired OS to attribute
           Attrib.set "provisioner-target_os", n, params["dashboard"]["#{node_id}_os"], :user unless n.is_docker_node?

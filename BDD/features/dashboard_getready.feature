@@ -8,7 +8,7 @@ Feature: Dashboard GetReady
     Then I should see {bdd:crowbar.i18n.dashboard.getready.title}
       And I should see an input box "deployment" with {bdd:crowbar.i18n.dashboard.getready.default}
       And I should see an input box "range" with {bdd:crowbar.i18n.dashboard.getready.range_base}
-      And I should see an input box "conduit" with "1g1"
+      And I should see an input box "conduit" with "1g0"
       And I should see an input box "first_ip" with "10.10.10.10/24"
       And I should see an input box "last_ip" with "10.10.10.250/24"
       And I should see {lookup:dashboard_getready.name}
