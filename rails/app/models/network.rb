@@ -17,7 +17,7 @@ class Network < ActiveRecord::Base
   ADMIN_CATEGORY = "admin"
   BMC_CATEGORY   = "bmc"
   V6AUTO         = "auto"   # if this changes, update the :v6prefix validator too!
-  DEFAULTCONDUIT = '1g1'
+  DEFAULTCONDUIT = '1g0'
   BMCCONDUIT     = 'bmc'
 
   audited
