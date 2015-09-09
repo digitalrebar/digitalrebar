@@ -15,10 +15,6 @@
 
 class BarclampRaid::Discover < Role
 
-  def on_node_bind(nr)
-    nr.add_child('crowbar-managed-node')
-  end
-
   def on_active(nr)
     # Do nothing unless we discovered RAID controllers we can manage on this node.
     controllers = (nr.wall["crowbar_wall"]["raid"]["controllers"] || [] rescue [])
