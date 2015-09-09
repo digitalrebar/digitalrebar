@@ -34,8 +34,10 @@ roles:
     flags:
       - implicit
       - discovery
+    attaches:
+      - crowbar-hardware-configured
     requires:
-      - deployer-client
+      - crowbar-managed-node
       - provisioner-service
     attribs:
       - name: bios-set-mapping
@@ -181,7 +183,6 @@ roles:
   - name: bios-dell-rseries-configure
     jig: role-provided
     requires:
-      - crowbar-managed-node
       - bios-discover
     wants-attribs:
       - bios-config-sets

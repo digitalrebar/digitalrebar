@@ -24,8 +24,8 @@ roles:
   - name: raid-tools-install
     jig: chef
     requires:
-      - deployer-client
       - provisioner-service
+      - crowbar-managed-node
     flags:
       - implicit
     attribs:
@@ -82,6 +82,8 @@ roles:
     flags:
       - discovery
       - implicit
+    attaches:
+      - crowbar-hardware-configured
     requires:
       - raid-tools-install
     attribs:
@@ -98,7 +100,6 @@ roles:
       - destructive
     requires:
       - raid-discover
-      - crowbar-managed-node
     attribs:
       - name: raid-enable
         description: "Whether or not to use the RAID controllers on a specific node."
