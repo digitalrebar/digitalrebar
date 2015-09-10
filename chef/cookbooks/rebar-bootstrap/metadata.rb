@@ -1,5 +1,5 @@
 name             'rebar-bootstrap'
-maintainer       'Dell Rebar Team'
+maintainer       'Rebar Team'
 maintainer_email 'rebar@lists.us.dell.com'
 license          'Apache 2'
 description      'Installs/Configures rebar'

@@ -69,7 +69,7 @@ OS_BASIC_PACKAGES=(MAKEDEV upstart audit-libs basesystem bash binutils \
     python-libs python-pycurl python-iniparse python-urlgrabber readline rpm \
     rpm-libs rpm-python sed setup shadow-utils centos-release \
     sqlite rsyslog tzdata udev util-linux-ng xz xz-libs yum \
-    yum-plugin-downloadonly yum-metadata-parser yum-utils zlib)
+    yum-metadata-parser yum-utils zlib)
 
 EXTRA_REPOS=('http://mirror.centos.org/centos/6/os/x86_64' \
     'http://mirror.centos.org/centos/6/updates/x86_64' \
@@ -264,7 +264,7 @@ setup_sledgehammer_chroot() {
         rnum=$((rnum + 1))
     done
     # Eleventh, bootstrap the rest of the chroot with yum.
-    in_chroot yum -y install yum yum-downloadonly createrepo
+    in_chroot yum -y install yum createrepo
     # fastestmirror support behind a proxy is not that good.
     [[ -f $CHROOT/etc/yum/pluginconf.d/fastestmirror.conf ]] && \
         sudo -H chroot "$CHROOT" /bin/sed -ie "/^enabled/ s/1/0/" \

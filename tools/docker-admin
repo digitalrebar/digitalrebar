@@ -59,9 +59,9 @@ done
 
 declare -A image_map
 #image_map["ubuntu"]="ubuntu:precise"
-image_map["ubuntu"]="digitalrebar/ubuntu:12.04-4"
+image_map["ubuntu"]="opencrowbar/ubuntu:12.04-4"
 image_map["centos-base"]="centos:centos6"
-image_map["centos"]="digitalrebar/centos:6.6-4"
+image_map["centos"]="opencrowbar/centos:6.6-4"
 image_map["centos7"]="centos:centos7"
 image_map["opensuse"]="mmckeen/opensuse-13-1:latest"
 image_map["fedora"]="fedora:20"

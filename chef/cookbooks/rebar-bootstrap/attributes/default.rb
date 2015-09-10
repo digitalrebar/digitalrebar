@@ -7,7 +7,7 @@ default["bootstrap"]["sledgehammer"]["url"] = "http://opencrowbar.s3-website-us-
 # Includes vconfig, which I was not including for some derpy reason.
 #default["bootstrap"]["sledgehammer"]["signature"] = "69336fba18038fd931b19358eccdc87f40b80c79"
 # Includes jq, needed for the scriptjig attr handling change
-default["bootstrap"]["sledgehammer"]["signature"] = "1a85ff3f0d0bedacb2b4cc306d5568510552d48e"
+default["bootstrap"]["sledgehammer"]["signature"] = "20d2dccd4ea335acd7fb2b9dd5b644518ed3dbcb"
 default["bootstrap"]["tftproot"] = "/tftpboot"
 default["bootstrap"]["gopath"] = "/root/go"
 default["bootstrap"]["gover"] = "1.4"
