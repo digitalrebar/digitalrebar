@@ -7,8 +7,8 @@ require "barclamp_ipmi/version"
 Gem::Specification.new do |s|
   s.name        = "barclamp_ipmi"
   s.version     = BarclampIpmi::VERSION
-  s.authors     = ["Dell Rebar Team"]
-  s.email       = ["rebar@dell.com"]
+  s.authors     = ["Rebar Team"]
+  s.email       = ["support@rackn.com"]
   s.homepage    = ""
   s.summary     = " Summary of BarclampIpmi."
   s.description = " Description of BarclampIpmi."
