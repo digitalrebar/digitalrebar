@@ -1,6 +1,6 @@
-# ocb-dhcp
+# rebar-dhcp
 
-This is a Simple DHCP server that provides enough for what OpenCrowbar
+This is a Simple DHCP server that provides enough for what DigitalRebar
 needs to operate an environment.  It also provides a managemenet interface
 that allows for the alteration of leases and mapping data on the fly.
 This requires no-restarts of the server.
@@ -206,23 +206,23 @@ The next server object looks like:
 
 # Build
 
-go get -u github.com/galthaus/ocb-dhcp
-go install github.com/galthaus/ocb-dhcp
+go get -u github.com/galthaus/rebar-dhcp
+go install github.com/galthaus/rebar-dhcp
 
 # Installing
 
 The following things need to be done to run the micro-service.
 From the source directory, do the following.
 
-* cp config/config.gcfg /etc/ocb-dhcp.conf
+* cp config/config.gcfg /etc/rebar-dhcp.conf
 * You will need a https-cert.pem and https-key.pem.
 ```
 openssl req -nodes -sha256 -x509 -newkey rsa:2048 \
    -keyout https-key.pem -out https-cert.pem -days 1001 \
    -subj "/C=US/ST=Denial/L=Anytown/O=Dis/CN=admin"
 ```
-* cp https-key.pem /etc/ocb-dhcp-https-key.pem
-* cp https-cert.pem /etc/ocb-dhcp-https-cert.pem
+* cp https-key.pem /etc/rebar-dhcp-https-key.pem
+* cp https-cert.pem /etc/rebar-dhcp-https-cert.pem
 
 NOTE: Sometimes certs need addition configuration to deal with names or IPs.
 
@@ -242,7 +242,7 @@ To get coverage:
 # Running
 
 ```
-$GOPATH/bin/ocb-dhcp
+$GOPATH/bin/rebar-dhcp
 ```
 
 # Config Syntax

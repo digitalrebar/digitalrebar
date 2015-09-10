@@ -24,7 +24,7 @@ _testmain.go
 *.prof
 key.pem
 cert.pem
-ocb-dhcp
+rebar-dhcp
 src
 database.json
 coverage.html
