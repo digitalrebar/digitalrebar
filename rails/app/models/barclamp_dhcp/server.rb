@@ -21,7 +21,7 @@ class BarclampDhcp::Server < Role
     end
 
     {
-        "crowbar" => {
+        "rebar" => {
             "dhcp" => { "networks" => networks }
         }
     }

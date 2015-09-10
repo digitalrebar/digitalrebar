@@ -36,14 +36,14 @@ class Publisher
         str_addr = s.Address if str_addr.nil? or str_addr.empty?
         addr = IP.coerce(str_addr)
         hash = {}
-        hash[:user] = 'crowbar'
-        hash[:pass] = 'crowbar'
+        hash[:user] = 'rebar'
+        hash[:pass] = 'rebar1'
         if addr.v6?
           hash[:host] = "[#{addr.addr}]"
         else
           hash[:host] = addr.addr
         end
-        hash[:vhost] = '/opencrowbar'
+        hash[:vhost] = '/digitalrebar'
         hash[:port] = s.ServicePort.to_i
 
         Rails.logger.debug("Attempting to connection to AMQP service: #{hash}")
@@ -71,7 +71,7 @@ class Publisher
     @@lock.synchronize do
       begin
         channel = self.get_channel
-        x = channel.topic("opencrowbar")
+        x = channel.topic("digitalrebar")
         # and simply publish message
         x.publish(message.to_json, :routing_key => "#{who}.#{type}")
         @@success = true

@@ -27,9 +27,9 @@ class BarclampDns::MgmtService < Service
       Rails.logger.debug("DnsMgmtServer: #{addr.inspect}")
 
       server_name = s.ServiceTags.first
-      cert_pem = ConsulAccess.getKey("opencrowbar/private/dns-mgmt/#{server_name}/cert_pem")
-      access_name = ConsulAccess.getKey("opencrowbar/private/dns-mgmt/#{server_name}/access_name")
-      access_password = ConsulAccess.getKey("opencrowbar/private/dns-mgmt/#{server_name}/access_password")
+      cert_pem = ConsulAccess.getKey("digitalrebar/private/dns-mgmt/#{server_name}/cert_pem")
+      access_name = ConsulAccess.getKey("digitalrebar/private/dns-mgmt/#{server_name}/access_name")
+      access_password = ConsulAccess.getKey("digitalrebar/private/dns-mgmt/#{server_name}/access_password")
 
       if addr.v6?
         saddr = "[#{addr.addr}]"

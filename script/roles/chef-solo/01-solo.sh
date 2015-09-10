@@ -18,7 +18,7 @@ fi
 
 mkdir -p "/etc/chef"
 mkdir -p "/var/chef"
-clientname=$(read_attribute "crowbar/chef-solo/name")
+clientname=$(read_attribute "rebar/chef-solo/name")
 cat > "/etc/chef/solo.rb" <<EOF
 log_level       :info
 log_location    STDOUT

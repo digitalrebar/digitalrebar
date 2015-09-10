@@ -18,7 +18,7 @@ from apiobject import ApiObject
 
 class NodeEP(EndPoint):    
     '''
-    https://github.com/opencrowbar/core/blob/master/doc/devguide/api/node.md
+    https://github.com/digitalrebar/core/blob/master/doc/devguide/api/node.md
     '''
     __endpoint   = "/api/v2/nodes"     
  

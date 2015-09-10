@@ -39,8 +39,8 @@ class ::Nic
 
   # Update nic info
   def self.update(node)
-    node.set[:crowbar_wall] = {} unless node[:crowbar_wall]
-    node.set[:crowbar_wall][:reservations] = {} unless node[:crowbar_wall][:reservations]
+    node.set[:rebar_wall] = {} unless node[:rebar_wall]
+    node.set[:rebar_wall][:reservations] = {} unless node[:rebar_wall][:reservations]
 
     # Check for lldpcli and if that isn't found try the lldpctl (older form)
     cmd=%x{which lldpcli}.chomp
@@ -85,9 +85,9 @@ class ::Nic
       end
 
       pi[:status] = "Success"
-      node.set[:crowbar_wall][:reservations][:ports] = pi
+      node.set[:rebar_wall][:reservations][:ports] = pi
     else
-      node.set[:crowbar_wall][:reservations][:ports] = { :status => "No lldpcli" }
+      node.set[:rebar_wall][:reservations][:ports] = { :status => "No lldpcli" }
     end
 
   end

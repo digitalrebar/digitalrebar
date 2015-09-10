@@ -75,7 +75,7 @@ Devise.setup do |config|
   # config.http_authenticatable_on_xhr = true
 
   # The realm used in Http Basic Authentication. "Application" by default.
-  config.http_authentication_realm = 'Crowbar'
+  config.http_authentication_realm = 'Rebar'
 
   # It will change confirmation, password recovery and other workflows
   # to behave the same regardless if the e-mail provided was right or wrong.

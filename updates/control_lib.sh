@@ -22,7 +22,7 @@ try_to() {
 __post_state() {
   local curlargs=(--connect-timeout 60 -s -L -X PUT -d "{ \"state\": \"$1\" }" \
       -H "Accept: application/json" -H "Content-Type: application/json")
-  [[ $CROWBAR_KEY ]] && curlargs+=(-u "$CROWBAR_KEY" --digest --anyauth)
+  [[ $REBAR_KEY ]] && curlargs+=(-u "$REBAR_KEY" --digest --anyauth)
   (unset http_proxy; curl "${curlargs[@]}" \
       "http://$ADMIN_IP:3000/api/v2/nodes/$HOSTNAME/transition")
 }
@@ -30,7 +30,7 @@ __post_state() {
 __get_state() {
     local curlargs=(--connect-timeout 60 -s -L -H "Accept: application/json" \
         -H "Content-Type: application/json")
-  [[ $CROWBAR_KEY ]] && curlargs+=(-u "$CROWBAR_KEY" --digest)
+  [[ $REBAR_KEY ]] && curlargs+=(-u "$REBAR_KEY" --digest)
   curl "${curlargs[@]}" \
       "http://$ADMIN_IP:3000/api/v2/nodes/$HOSTNAME"
 }
@@ -64,16 +64,16 @@ hook_has_run() {
     fi
 }
 
-wait_for_crowbar_state() {
+wait_for_rebar_state() {
     # $1 = hostname
-    # $2 = crowbar state to wait for.  If empty, wait for a state change
-    [[ $2 && $2 = $CROWBAR_STATE ]] && return
-    local current_state=$CROWBAR_STATE
+    # $2 = rebar state to wait for.  If empty, wait for a state change
+    [[ $2 && $2 = $REBAR_STATE ]] && return
+    local current_state=$REBAR_STATE
     while [[ 1 = 1 ]]; do
         get_state "$1"
         if [[ $2 ]]; then
-            [[ $2 = $CROWBAR_STATE ]] && return
-        elif [[ $current_state != $CROWBAR_STATE ]]; then
+            [[ $2 = $REBAR_STATE ]] && return
+        elif [[ $current_state != $REBAR_STATE ]]; then
             return
         fi
         sleep 15

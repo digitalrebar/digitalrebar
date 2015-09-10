@@ -13,23 +13,23 @@
 # limitations under the License.
 #
 
-domain_name = node['crowbar']['dns']['domain']
-provisioner_web=node['crowbar']['provisioner']['server']['webservers'].first["url"]
-api_server=node['crowbar']['api']['servers'].first["url"]
-ntp_server="#{node['crowbar']['ntp']['servers'].first}"
-tftproot = node['crowbar']['provisioner']['server']['root']
-machine_key = node["crowbar"]["machine_key"]
+domain_name = node['rebar']['dns']['domain']
+provisioner_web=node['rebar']['provisioner']['server']['webservers'].first["url"]
+api_server=node['rebar']['api']['servers'].first["url"]
+ntp_server="#{node['rebar']['ntp']['servers'].first}"
+tftproot = node['rebar']['provisioner']['server']['root']
+machine_key = node["rebar"]["machine_key"]
 node_dir="#{tftproot}/nodes"
 discover_dir="#{tftproot}/discovery"
 pxecfg_dir="#{discover_dir}/pxelinux.cfg"
 uefi_dir=discover_dir
 
-node.normal['crowbar_wall'] ||= Mash.new
-node.normal['crowbar_wall']['provisioner'] ||= Mash.new
-node.normal['crowbar_wall']['provisioner']['clients'] ||= Mash.new
+node.normal['rebar_wall'] ||= Mash.new
+node.normal['rebar_wall']['provisioner'] ||= Mash.new
+node.normal['rebar_wall']['provisioner']['clients'] ||= Mash.new
 new_clients = {}
 
-(node['crowbar']['provisioner']['clients'] || {} rescue {}).each do |mnode_name,provisioner_info|
+(node['rebar']['provisioner']['clients'] || {} rescue {}).each do |mnode_name,provisioner_info|
   # Build PXE and ELILO config files for each system
   v4addr = IP.coerce(provisioner_info["v4addr"])
   nodeaddr = sprintf("%08X",v4addr.address)
@@ -59,9 +59,9 @@ new_clients = {}
       action :add
     end
   when 'sledgehammer'
-    pxe_params = node['crowbar']['provisioner']['server']['sledgehammer_kernel_params'].split(' ')
-    pxe_params << "crowbar.fqdn=#{mnode_name}"
-    pxe_params << "crowbar.install.key=#{machine_key}"
+    pxe_params = node['rebar']['provisioner']['server']['sledgehammer_kernel_params'].split(' ')
+    pxe_params << "rebar.fqdn=#{mnode_name}"
+    pxe_params << "rebar.install.key=#{machine_key}"
     provisioner_bootfile mnode_name do
       kernel_params pxe_params.join(' ')
       address v4addr
@@ -72,12 +72,12 @@ new_clients = {}
       source 'control.sh.erb'
       mode '0755'
       variables(:provisioner_name => node.name,
-                :online => node['crowbar']['provisioner']['server']['online'],
+                :online => node['rebar']['provisioner']['server']['online'],
                 :domain => domain_name,
                 :provisioner_web => provisioner_web,
                 :ntp_server => ntp_server,
-                :proxy => node['crowbar']['proxy']['servers'].first['url'],
-                :keys => (node['crowbar']['access_keys'] rescue Hash.new).values.sort.join($/),
+                :proxy => node['rebar']['proxy']['servers'].first['url'],
+                :keys => (node['rebar']['access_keys'] rescue Hash.new).values.sort.join($/),
                 :api_server => api_server
                 )
     end
@@ -244,8 +244,8 @@ new_clients = {}
 end
 
 # Now that we have handled any updates we care about, delete any info about nodes we have deleted.
-(node['crowbar_wall']['provisioner']['clients'].keys - new_clients.keys).each do |old_node_name|
-  old_node = node['crowbar_wall']['provisioner']['clients'][old_node_name]
+(node['rebar_wall']['provisioner']['clients'].keys - new_clients.keys).each do |old_node_name|
+  old_node = node['rebar_wall']['provisioner']['clients'][old_node_name]
   a = provisioner_bootfile old_node_name do
     action :nothing
     address IP.coerce(old_node["v4addr"])
@@ -263,4 +263,4 @@ bash "Restore selinux contexts for #{tftproot}" do
   only_if 'which selinuxenabled && selinxenabled'
 end
 
-node.normal['crowbar_wall']['provisioner']['clients']=new_clients
+node.normal['rebar_wall']['provisioner']['clients']=new_clients

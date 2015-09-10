@@ -27,8 +27,8 @@ module BarclampLibrary
 
         return [interface_list[0], interface_list, nil] if interface_list.size == 1
 
-        node["crowbar"]["bond_list"] = {} if (node["crowbar"].nil? or node["crowbar"]["bond_list"].nil?)
-        bond_list = node["crowbar"]["bond_list"]
+        node["rebar"]["bond_list"] = {} if (node["rebar"].nil? or node["rebar"]["bond_list"].nil?)
+        bond_list = node["rebar"]["bond_list"]
         the_bond = nil
         bond_list.each do |bond, map|
           the_bond = bond if map == interface_list

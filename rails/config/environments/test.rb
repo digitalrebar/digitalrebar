@@ -14,7 +14,7 @@
 # 
 # Settings specified here will take precedence over those in config/environment.rb
 
-Crowbar::Application.configure do
+Rebar::Application.configure do
 
   # The test environment is used exclusively to run your application's
   # test suite.  You never need to work with it otherwise.  Remember that
@@ -38,7 +38,7 @@ Crowbar::Application.configure do
   config.action_mailer.delivery_method = :test
 
   #require 'syslogger'
-  #config.logger = Syslogger.new("crowbar_app", Syslog::LOG_PID, Syslog::LOG_LOCAL0)
+  #config.logger = Syslogger.new("rebar_app", Syslog::LOG_PID, Syslog::LOG_LOCAL0)
   #config.logger.level = Logger::DEBUG
   config.log_level = :debug
   config.eager_load = false

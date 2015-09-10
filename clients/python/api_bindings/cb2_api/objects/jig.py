@@ -17,7 +17,7 @@ from apiobject import ApiObject
 
 class JigEP(EndPoint):    
     '''
-    https://github.com/opencrowbar/core/blob/master/doc/devguide/api/jig.md
+    https://github.com/digitalrebar/core/blob/master/doc/devguide/api/jig.md
     '''
     __endpoint   = "/api/v2/jigs"      
     __apiObjectType = "Jig"

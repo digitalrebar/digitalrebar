@@ -1,4 +1,4 @@
-# File managed by Crowbar
+# File managed by Rebar
 subnet <%= @addr.addr -%> netmask <%= @addr.netmask %> {
 <% if @router -%>
   option routers <%= IP.coerce(@router).addr %>;

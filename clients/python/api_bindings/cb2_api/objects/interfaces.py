@@ -17,7 +17,7 @@ from apiobject import ApiObject
 
 class InterfacesEP(EndPoint):    
     '''
-    https://github.com/opencrowbar/core/blob/master/doc/devguide/api/interfaces.md
+    https://github.com/digitalrebar/core/blob/master/doc/devguide/api/interfaces.md
     '''
     __endpoint   = "/api/v2/interfaces"      
     __apiObjectType = "Interface"

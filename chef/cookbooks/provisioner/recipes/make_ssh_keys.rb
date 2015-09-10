@@ -24,5 +24,5 @@ end
 unless ::File.exists?("/root/.ssh/id_rsa.pub")
   %x{ssh-keygen -t rsa -f /root/.ssh/id_rsa -N ""}
 end
-node.normal["crowbar"]["root_public_key"] = IO.read("/root/.ssh/id_rsa.pub").strip
+node.normal["rebar"]["root_public_key"] = IO.read("/root/.ssh/id_rsa.pub").strip
 

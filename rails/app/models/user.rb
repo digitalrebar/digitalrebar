@@ -41,7 +41,7 @@ class User < ActiveRecord::Base
   # Setup accessible (or protected) attributes for your model
 
   validates :username, :uniqueness => {:case_sensitive => false}, :presence => true
-  DIGEST_REALM = "Crowbar"
+  DIGEST_REALM = "Rebar"
 
   scope  :admin,              -> { where(:is_admin => true) }
 
@@ -62,7 +62,7 @@ class User < ActiveRecord::Base
   end
 
   def as_json(args = nil)
-    # brings devise method into Crowbar json
+    # brings devise method into Rebar json
     args ||= {}
     args[:methods] = :is_locked
     super(args)

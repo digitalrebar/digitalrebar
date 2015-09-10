@@ -16,7 +16,7 @@
 # Note : This script runs on both the admin and compute nodes.
 # It intentionally ignores the bios->enable node data flag.
 
-nets = (node[:crowbar][:network] rescue nil) || return
+nets = (node[:rebar][:network] rescue nil) || return
 nets[:bmc] && nets[:admin] && nets[:bmc_vlan] || return
 bmc_subnet    = nets[:bmc][:subnet]
 bmc_netmask   = nets[:bmc][:netmask]

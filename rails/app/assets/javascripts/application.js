@@ -6,7 +6,7 @@
 //= require codemirror/codemirror
 //= require codemirror/javascript
 //= require jquery.spritely-0.6.1
-//= require crowbar
+//= require rebar
 //= require event_helpers
 //= require drag_drop_helpers
 //= require jquery.dataTables

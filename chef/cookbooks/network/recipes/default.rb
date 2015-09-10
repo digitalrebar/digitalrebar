@@ -149,14 +149,14 @@ end
 # If we need to force ordering away from the way the PCI addresses would
 # normally fall out on the system, here is where we do it.
 forcing_ents = Array.new
-node["crowbar"]["interface_map"].each do |ent|
+node["rebar"]["interface_map"].each do |ent|
   next unless node[:dmi][:system][:product_name] =~ /#{ent["pattern"]}/
   Chef::Log.info("Using interface map override for #{ent["pattern"]}")
   ent["bus_order"].each do |i|
     forcing_ents << split_pci(i)
   end
   break
-end if (node["crowbar"]["interface_map"] rescue nil) && node[:dmi] && !node[:dmi].empty?
+end if (node["rebar"]["interface_map"] rescue nil) && node[:dmi] && !node[:dmi].empty?
 
 Chef::Log.info("Not using any forcing entries") if forcing_ents.empty?
 
@@ -188,8 +188,8 @@ end
 
 # Now, save our final sorted list by sorting each bucket by PCI address,
 # then mapping the address back to a nic name, then flattening the whole list.
-node.set["crowbar"] ||= Mash.new
-node.set["crowbar"]["sorted_ifs"] = sorted_keys.compact.map{|e|
+node.set["rebar"] ||= Mash.new
+node.set["rebar"]["sorted_ifs"] = sorted_keys.compact.map{|e|
   e.sort.map{|e|
     nics[e]
   }
@@ -210,12 +210,12 @@ end
 
 route_pref = 10000
 ifs = Mash.new
-old_ifs = node["crowbar_wall"]["network"]["interfaces"] || Mash.new rescue Mash.new
+old_ifs = node["rebar_wall"]["network"]["interfaces"] || Mash.new rescue Mash.new
 if_mapping = Array.new
 
 default_route = {}
 
-# Silly little helper for sorting Crowbar networks.
+# Silly little helper for sorting Rebar networks.
 # Netowrks that use vlans and bridges will be handled later
 def net_weight(net)
   res = 0
@@ -234,10 +234,10 @@ end
 #  * The final number designates the zero-based offset into the set of physical
 #    interfaces that have the requested speed we want.
 def resolve_conduit(conduit)
-  if node["crowbar_ohai"]["in_docker"]
+  if node["rebar_ohai"]["in_docker"]
     return ["eth0"]
   end
-  known_ifs = node["crowbar"]["sorted_ifs"]
+  known_ifs = node["rebar"]["sorted_ifs"]
   speeds = %w{10m 100m 1g 10g}
   intf_re = /^([-+?]?)(\d{1,3}[mg])(\d+)$/
   finders = conduit.split(',').map{|f|f.strip}
@@ -279,10 +279,10 @@ def resolve_conduit(conduit)
 end
 
 # Dynamically create our new local interfaces.
-node["crowbar"]["network"]["addresses"].keys.sort{|a,b|
-  net_weight(node["crowbar"]["network"]["addresses"][a]) <=> net_weight(node["crowbar"]["network"]["addresses"][b])
+node["rebar"]["network"]["addresses"].keys.sort{|a,b|
+  net_weight(node["rebar"]["network"]["addresses"][a]) <=> net_weight(node["rebar"]["network"]["addresses"][b])
 }.each do |addr|
-  network = node["crowbar"]["network"]["addresses"][addr]
+  network = node["rebar"]["network"]["addresses"][addr]
   # Skip BMC conduits.
   next if network["conduit"] == "bmc"
   next if network["network"] == "unmanaged"
@@ -507,7 +507,7 @@ Nic.nics.each do |nic|
   # Ditch old addresses, add new ones.
   old_iface["addresses"].reject{|i|iface["addresses"].member?(i)}.each do |addr|
     # Don't kill Docker's IP address, we will need it.
-    next if node["crowbar_ohai"]["in_docker"] && IP.coerce("172.17.0.0/16").include?(addr)
+    next if node["rebar_ohai"]["in_docker"] && IP.coerce("172.17.0.0/16").include?(addr)
     Chef::Log.info("#{nic.name}: Removing #{addr.to_s}")
     nic.remove_address addr
   end if old_iface
@@ -562,7 +562,7 @@ if ["delete","reset"].member?(node["state"])
 end
 
 # Wait for the networks to come back
-node["crowbar"]["network"].each do |netname,net|
+node["rebar"]["network"].each do |netname,net|
   next if net["conduit"] == "bmc"
   unless net["targets"]
     Chef::Log.info("Network #{netname} does not have any targets to ping.")
@@ -599,23 +599,23 @@ node["crowbar"]["network"].each do |netname,net|
   end
 end
 
-node.set["crowbar_wall"] ||= Mash.new
-node.set["crowbar_wall"]["network"] ||= Mash.new
+node.set["rebar_wall"] ||= Mash.new
+node.set["rebar_wall"]["network"] ||= Mash.new
 saved_ifs = Mash.new
 ifs.each {|k,v|
   addrs = v["addresses"].map{|a|a.to_s}.sort
   saved_ifs[k]=v
   saved_ifs[k]["addresses"] = addrs
 }
-Chef::Log.info("Saving interfaces to crowbar_wall: #{saved_ifs.inspect}")
+Chef::Log.info("Saving interfaces to rebar_wall: #{saved_ifs.inspect}")
 
 
 Chef::Log.info("Final nic configuration:")
 Chef::Log.info(%x{ip addr show})
 Chef::Log.info(%x{ip -6 addr show})
 Chef::Log.info(%x{ip link show})
-node.set["crowbar_wall"]["network"]["interfaces"] = saved_ifs
-node.set["crowbar_wall"]["network"]["nets"] = if_mapping
+node.set["rebar_wall"]["network"]["interfaces"] = saved_ifs
+node.set["rebar_wall"]["network"]["nets"] = if_mapping
 
 template "/etc/iproute2/rt_tables" do
   source "rt_tables.erb"

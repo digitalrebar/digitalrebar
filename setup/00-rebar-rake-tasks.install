@@ -1,0 +1,21 @@
+#!/bin/bash
+
+## only do this on real installs.
+[[  -d /opt/digitalrebar/core ]] || \
+    { echo "Not an admin node, not installing Rebar"; exit 0; }
+
+set -x
+
+cd /opt/digitalrebar/core/rails
+tasks=("rake db:create"
+    "rake railties:install:migrations"
+    "rake db:migrate"
+    "rake db:seed"
+    "rake assets:precompile")
+
+for task in "${tasks[@]}"; do
+    su -l -s /bin/bash -c "cd /opt/digitalrebar/core/rails; RAILS_ENV=$RAILS_ENV bundle exec $task" rebar && continue
+    echo "Task $task failed." >&2
+    exit 1
+done
+

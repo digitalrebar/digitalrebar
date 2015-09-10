@@ -22,7 +22,7 @@
 g(Item) ->
   case Item of
     path -> "api/v2/runs";
-    _ -> crowbar:g(Item)
+    _ -> rebar:g(Item)
   end.
   
 % Common Routine

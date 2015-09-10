@@ -17,7 +17,7 @@
 
 # The production environment is meant for finished, "live" apps.
 # Code is not reloaded between requests
-Crowbar::Application.configure do
+Rebar::Application.configure do
   config.cache_classes = true
   # Full error reports are disabled and caching is turned on
   #config.action_controller.consider_all_requests_local = false
@@ -31,7 +31,7 @@ Crowbar::Application.configure do
 
   # See everything in the log (default is :info)
   config.log_level = :debug
-  config.paths['log'] = "/var/log/crowbar/#{Rails.env}.log"
+  config.paths['log'] = "/var/log/rebar/#{Rails.env}.log"
 
   # Use a different logger for distributed setups
 
@@ -43,6 +43,6 @@ Crowbar::Application.configure do
 
   # Disable delivery errors, bad email addresses will be ignored
   # config.action_mailer.raise_delivery_errors = false
-  config.crowbar.version = '2.E'
-  config.crowbar.docs = "https://github.com/opencrowbar/core/tree/develop/doc"
+  config.rebar.version = '2.E'
+  config.rebar.docs = "https://github.com/digitalrebar/core/tree/develop/doc"
 end

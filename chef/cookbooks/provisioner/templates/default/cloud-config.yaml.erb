@@ -5,16 +5,16 @@ coreos:
       command: start
     - name: fleet.service
       command: start
-    - name: crowbar-join.service
+    - name: rebar-join.service
       command: start
       content: |
         [Unit]
-        Description=Crowbar Join
+        Description=Rebar Join
         Requires=systemd-hostnamed.service
         After=systemd-hostnamed.service
 
         [Service]
-        ExecStart=/opt/opencrowbar/bin/crowbar_join.sh start
+        ExecStart=/opt/digitalrebar/bin/rebar_join.sh start
         RemainAfterExit=yes
         Type=oneshot
 ssh_authorized_keys:

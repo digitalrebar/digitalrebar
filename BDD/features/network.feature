@@ -54,7 +54,7 @@ Feature: Networks
   Scenario: Network List
     Given I use the Network API to create "bdd_network" with range "bdd11" from "10.10.11.100/24" to "10.10.11.200/24"
     When I go to the "networks" page
-    Then I should see {bdd:crowbar.i18n.networks.index.title}
+    Then I should see {bdd:rebar.i18n.networks.index.title}
       And I should see "admin" in section "main_body"
       And I should see "bdd_network" in section "main_body"
       And there should be no translation errors
@@ -75,7 +75,7 @@ Feature: Networks
 
   Scenario: Interfaces List
     When I go to the "interfaces" page
-    Then I should see {bdd:crowbar.i18n.interfaces.index.title}
+    Then I should see {bdd:rebar.i18n.interfaces.index.title}
       And there should be no translation errors
 
   Scenario: Interface Add to List

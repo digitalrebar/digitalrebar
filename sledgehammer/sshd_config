@@ -1,4 +1,4 @@
-# Default sshd config for Sledgehammer in Crowbar 2
+# Default sshd config for Sledgehammer in Rebar 2
 
 Protocol 2
 SyslogFacility AUTHPRIV

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Run opencrowbar in a docker container.
+# Run digitalrebar in a docker container.
 # $1 = OS to run in
 # $@ = Command to run, if nothing then /bin/bash -i
 
@@ -37,7 +37,7 @@ mountdir="${mountdir%/tools/docker-admin}"
 # This gets us to the parent directory of core, where presumably the rest of our repos are checked out
 mountdir="${mountdir%/*}"
 
-docker_args=(-t -i -w /opt/opencrowbar/core -v "$mountdir:/opt/opencrowbar")
+docker_args=(-t -i -w /opt/digitalrebar/core -v "$mountdir:/opt/digitalrebar")
 
 MAP_PORTS=1
 while [[ $1 ]]; do
@@ -77,9 +77,9 @@ if [[ ! $image ]]; then
 fi
 shift
 
-mkdir -p "$HOME/.cache/opencrowbar/tftpboot"
+mkdir -p "$HOME/.cache/digitalrebar/tftpboot"
 
-docker_args+=(-v "$HOME/.cache/opencrowbar/tftpboot:$tftproot")
+docker_args+=(-v "$HOME/.cache/digitalrebar/tftpboot:$tftproot")
 docker_args+=(-e "OUTER_UID=$(id -u)")
 docker_args+=(-e "OUTER_GID=$(id -g)")
 if [[ -f $HOME/.ssh/id_rsa.pub ]]; then
@@ -88,7 +88,7 @@ else
     docker_args+=(-e "SSH_PUBKEY=")
 fi
 if [ "$MAP_PORTS" == "1" ] ; then
-    docker_args+=(-p "3000:3000")   # Crowbar Rails web server
+    docker_args+=(-p "3000:3000")   # Rebar Rails web server
     docker_args+=(-p "8500:8500")   # Consul Server
     docker_args+=(-p "443:443")     # Chef Server
 fi
@@ -112,15 +112,15 @@ done
 # since 0.8.1 we need to run in privileged mode so we can change the networking
 docker_args+=("--privileged")
 # Run whatever we specified to run inside a container.
-sudo rm -rf "$HOME/.cache/opencrowbar/tftpboot/nodes"
+sudo rm -rf "$HOME/.cache/digitalrebar/tftpboot/nodes"
 if [[ $DAEMON ]]; then
-    id=$(docker run -d "${docker_args[@]}" "$image" /opt/opencrowbar/core/tools/docker-init.sh "$@")
+    id=$(docker run -d "${docker_args[@]}" "$image" /opt/digitalrebar/core/tools/docker-init.sh "$@")
     while ! docker exec $id test -f /root/.ssh/authorized_keys &>/dev/null; do
         sleep 1
     done
     echo $id
 else
-    docker run "${docker_args[@]}" "$image" /opt/opencrowbar/core/tools/docker-init.sh "$@"
+    docker run "${docker_args[@]}" "$image" /opt/digitalrebar/core/tools/docker-init.sh "$@"
 
     # helpful reminder for docker hygene
     echo "now may be a good time to run: docker ps -q -a | xargs docker rm"

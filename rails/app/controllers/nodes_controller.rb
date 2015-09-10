@@ -15,7 +15,7 @@
 #
 class NodesController < ApplicationController
 
-  # API GET /crowbar/v2/nodes
+  # API GET /rebar/v2/nodes
   # UI GET /dashboard
 
   def sample

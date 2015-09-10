@@ -1,6 +1,6 @@
 - t = JSON.parse(template)
 %dl
   %dt= t ".external_servers"
-  %dd= text_field_tag :data_external_servers, t["crowbar"]["ntp"]["external_servers"], :size => 40
+  %dd= text_field_tag :data_external_servers, t["rebar"]["ntp"]["external_servers"], :size => 40
 = hidden_field_tag :dataprefix, "data_"
 

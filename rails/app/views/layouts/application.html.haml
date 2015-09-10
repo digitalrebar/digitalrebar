@@ -1,9 +1,9 @@
 !!!
 %html
   %head
-    %title= t 'title', default: "OpenCrowbar"
+    %title= t 'title', default: "DigitalRebar"
     = csrf_meta_tags
-    = stylesheet_link_tag Rails.configuration.crowbar.sass_base || 'application'
+    = stylesheet_link_tag Rails.configuration.rebar.sass_base || 'application'
     /[if IE]
       = stylesheet_link_tag 'ie', :media => "all"
     = javascript_include_tag 'application'
@@ -57,7 +57,7 @@
         = image_tag("dr_logo.png", :alt=>"Digital Rebar", :title=>"Digital Rebar", :width=>'20px', :style=>"vertical-align:middle;padding-bottom:2px")
       %a{:href=>"https://github.com/orgs/digitalrebar/people", :target=>"_new", :alt=>"Digital Rebar"}
         Digital Rebar
-      =t 'version', :version=>Rails.configuration.crowbar.version || '2.x'
+      =t 'version', :version=>Rails.configuration.rebar.version || '2.x'
 
 - if current_user or session[:digest_user]
   :javascript

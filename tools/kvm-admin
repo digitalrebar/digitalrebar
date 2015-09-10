@@ -3,7 +3,7 @@
 export 'PS4=${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 
 set -e
-# Check that we are in the root of the opencrowbar checkout tree
+# Check that we are in the root of the digitalrebar checkout tree
 if [[ $0 = /* ]]; then
     OCBDIR="$0"
 elif [[ $0 = .*  || $0 = */* ]]; then
@@ -68,10 +68,10 @@ while [[ $1 ]]; do
     esac
 done
 
-admin_server_loc="$HOME/.cache/opencrowbar/tftpboot/centos-6.6"
-admin_server_iso="$HOME/.cache/opencrowbar/tftpboot/isos/CentOS-6.6-x86_64-bin-DVD1.iso"
+admin_server_loc="$HOME/.cache/digitalrebar/tftpboot/centos-6.6"
+admin_server_iso="$HOME/.cache/digitalrebar/tftpboot/isos/CentOS-6.6-x86_64-bin-DVD1.iso"
 . "$OCBDIR/core/tools/kvm_lib.sh"
-TMPDIR=$(mktemp -d /tmp/ocb-kvm-admin-XXXXXX)
+TMPDIR=$(mktemp -d /tmp/rebar-kvm-admin-XXXXXX)
 
 myclean() {
     set +e
@@ -83,7 +83,7 @@ myclean() {
         qemu-img convert -c -p -f qcow2 -O qcow2 "$VM_DIR/$VMID.disk" "$image_name"
     fi
     cleanup
-    kill_ocb_bridge
+    kill_rebar_bridge
 }
 
 if [[ ! $use_image = true ]]; then
@@ -94,36 +94,36 @@ if [[ ! $use_image = true ]]; then
     if [[ ! $no_rpms ]]; then
         if [[ ! -d $OCBDIR/build-tools/.git ]]; then
             echo "Cloning build-tools into $OCBDIR"
-            (cd "$OCBDIR" && git clone https://github.com/opencrowbar/build-tools)
+            (cd "$OCBDIR" && git clone https://github.com/digitalrebar/build-tools)
         fi
         echo "Creating OCB install RPM packages"
-        "$OCBDIR/build-tools/bin/make-rpms.sh --target_dir=${admin_server_loc#/*opencrowbar}"
+        "$OCBDIR/build-tools/bin/make-rpms.sh --target_dir=${admin_server_loc#/*digitalrebar}"
     fi
 fi
 
 trap 'myclean' 0 INT QUIT TERM
 
 if [[ ! $use_image = true ]]; then
-    # Inject opencrowbar packages and kickstart into the PXE install ISO.
+    # Inject digitalrebar packages and kickstart into the PXE install ISO.
     mkdir -p "$TMPDIR/initrd"
-    if [[ -d $HOME/.cache/opencrowbar/tftpboot/files ]]; then
-        tar -C "$HOME/.cache/opencrowbar/tftpboot" \
-            -czf "$TMPDIR/initrd/ocb-files.tar.gz" files
+    if [[ -d $HOME/.cache/digitalrebar/tftpboot/files ]]; then
+        tar -C "$HOME/.cache/digitalrebar/tftpboot" \
+            -czf "$TMPDIR/initrd/rebar-files.tar.gz" files
     fi
     if [[ $no_rpms ]]; then
-        tar -C "$OCBDIR" -czf "$TMPDIR/initrd/ocb.tar.gz" .
+        tar -C "$OCBDIR" -czf "$TMPDIR/initrd/rebar.tar.gz" .
     else
-        tar -C "$admin_server_loc" -czf "$TMPDIR/initrd/ocb.tar.gz" ocb-packages
+        tar -C "$admin_server_loc" -czf "$TMPDIR/initrd/rebar.tar.gz" rebar-packages
     fi
-    cat >"$TMPDIR/initrd/opencrowbar.ks" <<'EOF'
-# Opencrowbar Admin Development Kickstart
+    cat >"$TMPDIR/initrd/digitalrebar.ks" <<'EOF'
+# Openrebar Admin Development Kickstart
 install
 cdrom
 key --skip
 lang en_US.UTF-8
 keyboard us
 text
-# crowbar
+# rebar
 rootpw --iscrypted $1$H6F/NLec$Fps2Ut0zY4MjJtsa1O2yk0
 firewall --disabled
 authconfig --enableshadow --enablemd5
@@ -134,9 +134,9 @@ ignoredisk --only-use=sda
 clearpart --all --drives=sda
 part /boot --fstype ext4 --size=100 --ondisk=sda
 part pv.6 --size=1 --grow --ondisk=sda
-volgroup ocb_admin --pesize=32768 pv.6
-logvol / --fstype ext4 --name=root --vgname=ocb_admin --size=1 --grow
-logvol swap --size=4096 --name=swap --vgname=ocb_admin
+volgroup rebar_admin --pesize=32768 pv.6
+logvol / --fstype ext4 --name=root --vgname=rebar_admin --size=1 --grow
+logvol swap --size=4096 --name=swap --vgname=rebar_admin
 reboot
 
 %packages --nobase
@@ -157,14 +157,14 @@ policycoreutils-python
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 exec > /mnt/sysimage/root/post-install.log 2>&1
 set -x
-mkdir -p /mnt/sysimage/opt/opencrowbar
-tar -C /mnt/sysimage/opt/opencrowbar -xzf /ocb.tar.gz
+mkdir -p /mnt/sysimage/opt/digitalrebar
+tar -C /mnt/sysimage/opt/digitalrebar -xzf /rebar.tar.gz
 mkdir -p /mnt/sysimage/tftpboot/centos-6.6/install
 cp -a /mnt/source/. /mnt/sysimage/tftpboot/centos-6.6/install/.
 
-if [[ -f /ocb-files.tar.gz ]]; then
+if [[ -f /rebar-files.tar.gz ]]; then
     mkdir -p /mnt/sysimage/tftpboot
-    tar -C /mnt/sysimage/tftpboot -xzf /ocb-files.tar.gz
+    tar -C /mnt/sysimage/tftpboot -xzf /rebar-files.tar.gz
     chown -R root:root /mnt/sysimage/tftpboot/files
     chmod -R ugo+r /mnt/sysimage/tftpboot/files
 fi
@@ -173,7 +173,7 @@ fi
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 exec > /root/post-install.log 2>&1
 set -x
-authkey_re='crowbar\.authkey=([^ ]+)'
+authkey_re='rebar\.authkey=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $authkey_re ]]; then
     mkdir -p "/root/.ssh"
     printf '%b\n'  "${BASH_REMATCH[1]}" >> "/root/.ssh/authorized_keys"
@@ -181,17 +181,17 @@ if [[ $(cat /proc/cmdline) =~ $authkey_re ]]; then
 fi
 mkdir -p /etc/profile.d
 for proxy in http_proxy https_proxy no_proxy; do
-    match_re="crowbar\.$proxy=([^ ]+)"
+    match_re="rebar\.$proxy=([^ ]+)"
     [[ $(cat /proc/cmdline) =~ $match_re ]] || continue
     printf 'export %s="%b"\n' "$proxy" "${BASH_REMATCH[1]}" >> /etc/profile.d/proxy.sh
     printf '%s=%b\n' "$proxy" "${BASH_REMATCH[1]}" >> /etc/environment
 done
 
-if [[ -d /opt/opencrowbar/ocb-packages ]]; then
-    cat >/etc/yum.repos.d/local-ocb.repo <<EOR
-[ocb]
-name=Local Opencrowbar
-baseurl=file:///opt/opencrowbar/ocb-packages
+if [[ -d /opt/digitalrebar/rebar-packages ]]; then
+    cat >/etc/yum.repos.d/local-rebar.repo <<EOR
+[rebar]
+name=Local Openrebar
+baseurl=file:///opt/digitalrebar/rebar-packages
 gpgcheck=0
 EOR
 fi
@@ -248,19 +248,19 @@ EOF
     chmod 644 "$TMPDIR/initrd.img" 
     (cd "$TMPDIR/initrd"; find . -depth  |cpio --create --format=newc |gzip -9 >>"$TMPDIR/initrd.img")
     install_params=("ksdevice=eth0"
-                    "ks=file:/opencrowbar.ks"
+                    "ks=file:/digitalrebar.ks"
                     "ip=192.168.124.10"
                     "netmask=255.255.255.0 nofb"
                     "text")
-    install_params+=("crowbar.authkey=$(sed 's/ /\\040/g' <"$HOME/.ssh/id_rsa.pub")")
+    install_params+=("rebar.authkey=$(sed 's/ /\\040/g' <"$HOME/.ssh/id_rsa.pub")")
     . "$OCBDIR/core/tools/proxy_lib.sh"
     mangle_proxies "${OCB_BRIDGE_IP%/*}"
     for proxy in "${!mangled_proxies[@]}"; do
-        install_params+=("crowbar.$proxy=${mangled_proxies[$proxy]}")
+        install_params+=("rebar.$proxy=${mangled_proxies[$proxy]}")
     done
 fi
 
-make_ocb_bridge
+make_rebar_bridge
 if [[ ! $use_image = true ]]; then
     qemu-img create -f qcow2 "$VM_DIR/$VMID.disk" 30G &>/dev/null
 fi
@@ -292,15 +292,15 @@ while [[ ! -f $VM_DIR/$VMID.killed ]]; do
         while ! ssh root@192.168.124.10 true; do
             sleep 5
         done
-        ssh -f root@192.168.124.10 -- screen -d -m -S ocb-install -t 'Shell'
+        ssh -f root@192.168.124.10 -- screen -d -m -S rebar-install -t 'Shell'
         ssh -f root@192.168.124.10 -- "screen -X caption always '%{-b ..}%-w%{+b ..}[[%n%f*%t]]%{-}%+w'"
-        ssh -f root@192.168.124.10 -- screen -S ocb-install -X zombie kr
+        ssh -f root@192.168.124.10 -- screen -S rebar-install -X zombie kr
         if [[ $autoinstall = true && $installed = false ]]; then
-            ssh root@192.168.124.10 -- screen -S ocb-install -X \
-                screen -t 'Install' "/opt/opencrowbar/core/production.sh $ADMIN_HOSTNAME"
+            ssh root@192.168.124.10 -- screen -S rebar-install -X \
+                screen -t 'Install' "/opt/digitalrebar/core/production.sh $ADMIN_HOSTNAME"
             installed=true
         fi
-        ssh -t root@192.168.124.10 -- screen -r -S ocb-install
+        ssh -t root@192.168.124.10 -- screen -r -S rebar-install
         kill_vm exited
     else
         update_vm_status "Node failed to deploy."

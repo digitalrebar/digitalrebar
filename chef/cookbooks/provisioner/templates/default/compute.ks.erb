@@ -9,8 +9,8 @@ repo --name="CentOS"  --baseurl=<%=@os_install_site %> --proxy="<%=@proxy%>" --c
 key --skip
 lang en_US.UTF-8
 keyboard us
-# crowbar
-rootpw --iscrypted <%= node[:crowbar][:provisioner][:server][:default_password_hash] %>
+# rebar
+rootpw --iscrypted <%= node[:rebar][:provisioner][:server][:default_password_hash] %>
 firewall --disabled
 authconfig --enableshadow --enablemd5
 selinux --disabled
@@ -54,16 +54,16 @@ export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 (cd /etc/yum.repos.d && rm *)
 <% end -%>
 
-key_re='crowbar\.install\.key=([^ ]+)'
+key_re='rebar\.install\.key=([^ ]+)'
 
 if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
-    export CROWBAR_KEY="${BASH_REMATCH[1]}"
-    echo "$CROWBAR_KEY" >/etc/crowbar.install.key
-elif [[ -f /etc/crowbar.install.key ]]; then
-    export CROWBAR_KEY="$(cat /etc/crowbar.install.key)"
+    export REBAR_KEY="${BASH_REMATCH[1]}"
+    echo "$REBAR_KEY" >/etc/rebar.install.key
+elif [[ -f /etc/rebar.install.key ]]; then
+    export REBAR_KEY="$(cat /etc/rebar.install.key)"
 fi
 
-hostname_re='crowbar\.fqdn=([^ ]+)'
+hostname_re='rebar\.fqdn=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $hostname_re ]]; then
    HOSTNAME=${BASH_REMATCH[1]}
    if [ -f /etc/sysconfig/network ] ; then
@@ -86,9 +86,9 @@ echo "Setting up repositories"
        rpm_sources, bare_sources = @repos[repo].keys.sort.partition{|r|r =~ /^rpm /} -%>
     <% bare_sources.each do |source|
          _, name, _, url = source.split -%>
-cat >/etc/yum.repos.d/crowbar-<%=name%>.repo <<EOF
-[crowbar-<%=name%>]
-name=Crowbar <%=name%> Repo
+cat >/etc/yum.repos.d/rebar-<%=name%>.repo <<EOF
+[rebar-<%=name%>]
+name=Rebar <%=name%> Repo
 baseurl=<%= url %>
 gpgcheck=0
 EOF
@@ -105,9 +105,9 @@ rpm -Uvh '/var/cache/<%=file%>'
     <% end -%>
   <% else
     url = @repos[repo].keys.first -%>
-cat >/etc/yum.repos.d/crowbar-<%=repo%>.repo <<EOF
-[crowbar-<%=repo%>]
-name=Crowbar <%=repo%> Repo
+cat >/etc/yum.repos.d/rebar-<%=repo%>.repo <<EOF
+[rebar-<%=repo%>]
+name=Rebar <%=repo%> Repo
 <%= url %>
 gpgcheck=0
 EOF
@@ -129,12 +129,12 @@ cp /etc/gemrc /root/.gemrc
 rsyslog_dir="/etc/rsyslog.d"
 mkdir -p "$rsyslog_dir"
 echo '$IncludeConfig /etc/rsyslog.d/*.conf' >>/etc/rsyslog.conf
-if [ ! -f "$rsyslog_dir/10-crowbar-client.conf" ]; then
-    echo "*.* @@$<%= @logging_server %>" > "$rsyslog_dir/10-crowbar-client.conf"
-    if ! curl -f -s -o "$rsyslog_dir/00-crowbar-debug.conf" \
-        <%= @provisioner_web %>/rsyslog.d/00-crowbar-debug.conf
+if [ ! -f "$rsyslog_dir/10-rebar-client.conf" ]; then
+    echo "*.* @@$<%= @logging_server %>" > "$rsyslog_dir/10-rebar-client.conf"
+    if ! curl -f -s -o "$rsyslog_dir/00-rebar-debug.conf" \
+        <%= @provisioner_web %>/rsyslog.d/00-rebar-debug.conf
     then
-        rm -f "$rsyslog_dir/00-crowbar-debug.conf"
+        rm -f "$rsyslog_dir/00-rebar-debug.conf"
     fi
 fi
 
@@ -151,16 +151,16 @@ echo "PermitRootLogin without-password" >> /etc/ssh/sshd_config
 echo "AcceptEnv http_proxy https_proxy no_proxy" >> /etc/ssh/sshd_config
 
 
-curl -s -o /etc/init.d/crowbar_join.sh "<%=@web_path%>/crowbar_join.sh"
-chmod +x /etc/init.d/crowbar_join.sh
-ln -s /etc/init.d/crowbar_join.sh /etc/rc3.d/S80crowbar
-ln -s /etc/init.d/crowbar_join.sh /etc/rc5.d/S80crowbar
-ln -s /etc/init.d/crowbar_join.sh /etc/rc2.d/S80crowbar
+curl -s -o /etc/init.d/rebar_join.sh "<%=@web_path%>/rebar_join.sh"
+chmod +x /etc/init.d/rebar_join.sh
+ln -s /etc/init.d/rebar_join.sh /etc/rc3.d/S80rebar
+ln -s /etc/init.d/rebar_join.sh /etc/rc5.d/S80rebar
+ln -s /etc/init.d/rebar_join.sh /etc/rc2.d/S80rebar
 
 # boot to runlevel 3 by default
 sed -i -e '/initdefault/ s/5/3/' /etc/inittab
 
-curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
+curl -u "$REBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
     "<%=@api_server%>/api/v2/nodes/$HOSTNAME"
 
 # Wait for the provisioner to change the bootenv

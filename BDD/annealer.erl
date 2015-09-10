@@ -21,7 +21,7 @@
 % Provide Feature scoped strings to DRY the code
 g(Item) ->
   case Item of
-    _ -> crowbar:g(Item)
+    _ -> rebar:g(Item)
   end.
   
 

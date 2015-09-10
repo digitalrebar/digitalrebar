@@ -27,9 +27,9 @@ g(Item) ->
     name -> "bdd1.example.com";
     bootenv -> "local";
     atom -> node1;
-    role -> "crowbar-managed-node";
+    role -> "rebar-managed-node";
     deployment -> "system";
-    _ -> crowbar:g(Item)
+    _ -> rebar:g(Item)
   end.
 
 % Common Routine
@@ -46,7 +46,7 @@ validate(JSON) when is_record(JSON, obj) ->
       bdd_utils:is_a(J, string, bootenv),
       bdd_utils:is_a(J, dbid, deployment_id),
       bdd_utils:is_a(J, dbid, target_role_id),
-      crowbar_rest:validate(J)],
+      rebar_rest:validate(J)],
   bdd_utils:assert(R).
 
 % Common Routine
@@ -56,7 +56,7 @@ inspector() ->
 
 % Common Routine
 % Creates JSON used for POST/PUT requests
-json(Name, Description, Order) -> crowbar:json([{name, Name}, {description, Description}, {order, Order}, {alive, "true"}, {bootenv, node:g(bootenv)}]).
+json(Name, Description, Order) -> rebar:json([{name, Name}, {description, Description}, {order, Order}, {alive, "true"}, {bootenv, node:g(bootenv)}]).
 
 % only CREATES, you still have to bind, commit and turn on 
 create_node(Name, Params, Atom) ->
@@ -65,7 +65,7 @@ create_node(Name, Params, Atom) ->
   case Obj#obj.id of
     "-1" -> 
           P = lists:append([{name, Name}, {alive, true}, {bootenv, node:g(bootenv)}], Params),
-          JSON = crowbar:json(P),
+          JSON = rebar:json(P),
           bdd_utils:log(trace, node, create_node, "Creating Node ~p on ~p with ~p", [Name, Path, JSON]),
           [_R, O] = bdd_crud:create(Path, JSON, Atom),
           bdd_utils:log(debug, node, create_node, "Node ~p created (id ~p)", [Name, O#obj.id]),
@@ -82,7 +82,7 @@ add_node(Name, Role, Params, Atom) ->
   bind(O#obj.id, Role),
   % add os choices for admin node
   case Role of
-    "crowbar-admin-node" -> node_role:available_os(O#obj.id, ["ubuntu-12.04","centos-6.6"]);
+    "rebar-admin-node" -> node_role:available_os(O#obj.id, ["ubuntu-12.04","centos-6.6"]);
     _ -> noop
   end,
   % complete deploy
@@ -115,7 +115,7 @@ step(_Given, {step_given, {_Scenario, _N}, ["REST sets the",node,Node,Field,"sta
 step(_Given, {step_when, {_Scenario, _N}, ["REST sets the",node,Node,Field,"state to be",Value]}) -> 
   % this could be done genericly in bdd_restrat if we get it working!!
   URI = eurl:path([g(path), Node]),
-  JSON = crowbar:json([{Field, Value}]),
+  JSON = rebar:json([{Field, Value}]),
   bdd_crud:update(URI, JSON);
 
 step(_Global, {step_given, {ScenarioID, _N}, ["REST creates and commits the",node,Name]}) ->
@@ -125,9 +125,9 @@ step(_Global, {step_setup, _N, _}) ->
   % create node(s) for tests
   Node = json(g(name), g(description), 100),
   bdd_crud:create(g(path), Node, g(atom)),
-  crowbar:step([], {foo, {0,0}, ["process", "delayed","returns", "delayed_job.([0..9])"]});
+  rebar:step([], {foo, {0,0}, ["process", "delayed","returns", "delayed_job.([0..9])"]});
 
 step(_Global, {step_teardown, _N, _}) -> 
   % find the node from setup and remove it
-  crowbar:step([], {step_given, {0, 0}, ["there are no pending Crowbar runs for",node,g(name)]}), 
+  rebar:step([], {step_given, {0, 0}, ["there are no pending Rebar runs for",node,g(name)]}), 
   bdd_crud:delete(g(atom)).  

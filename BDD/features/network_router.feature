@@ -53,15 +53,15 @@ Feature: Network Routers
 
   Scenario: UI for NetworkRouters
     When I go to the "network_routers" page
-    Then I should see {bdd:crowbar.i18n.network_routers.index.title}
+    Then I should see {bdd:rebar.i18n.network_routers.index.title}
       And there should be no translation errors
 
   Scenario: UI for Network-NetworkRouters
     When I go to the "networks/testrouter/network_routers" page
-    Then I should see {bdd:crowbar.i18n.network_routers.index.title}
+    Then I should see {bdd:rebar.i18n.network_routers.index.title}
       And there should be no translation errors
 
   Scenario: UI for Network-NetworkRouters
     When I go to the "networks/testrouter/network_routers/anys" page
-    Then I should see {bdd:crowbar.i18n.network_routers.show.title}
+    Then I should see {bdd:rebar.i18n.network_routers.show.title}
       And there should be no translation errors

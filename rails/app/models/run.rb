@@ -79,11 +79,11 @@ class NodeRoleRun < Que::Job
         a.set(nr.node,val)
       end
       # Handle updating our global idea about reservations if our wall has any.
-      if (nr.wall["crowbar_wall"]["reservations"] rescue nil)
+      if (nr.wall["rebar_wall"]["reservations"] rescue nil)
         res = Hash.new
         nr.node.node_roles.each do |this_nr|
-          next unless (this_nr.wall["crowbar_wall"]["reservations"] rescue nil)
-          res.deep_merge!(this_nr.wall["crowbar_wall"]["reservations"])
+          next unless (this_nr.wall["rebar_wall"]["reservations"] rescue nil)
+          res.deep_merge!(this_nr.wall["rebar_wall"]["reservations"])
           end
         nr.node.hint_update({"reservations" => res})
       end

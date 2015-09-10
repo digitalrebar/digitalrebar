@@ -49,11 +49,11 @@ echo "<%=url%>" >> \
 rm -f /target/etc/apt/sources.list
 rsyslog_dir="/target/etc/rsyslog.d"
 if [ -d "$rsyslog_dir" ]; then
-    if [ ! -f "$rsyslog_dir/10-crowbar-client.conf" ]; then
-        echo "*.* @@<%= @logging_server %>" > "$rsyslog_dir/10-crowbar-client.conf"
-	if ! wget -O "$rsyslog_dir/00-crowbar-debug.conf" -q <%=@provisioner_web%>/rsyslog.d/00-crowbar-debug.conf
+    if [ ! -f "$rsyslog_dir/10-rebar-client.conf" ]; then
+        echo "*.* @@<%= @logging_server %>" > "$rsyslog_dir/10-rebar-client.conf"
+	if ! wget -O "$rsyslog_dir/00-rebar-debug.conf" -q <%=@provisioner_web%>/rsyslog.d/00-rebar-debug.conf
 	then
-	    rm -f "$rsyslog_dir/00-crowbar-debug.conf"
+	    rm -f "$rsyslog_dir/00-rebar-debug.conf"
 	fi
     fi
 fi
@@ -70,7 +70,7 @@ EOF
 
 cp /etc/gemrc /root/.gemrc
 
-wget -q <%=@web_path%>/crowbar_join.sh -O- > /target/etc/init.d/crowbar_join
+wget -q <%=@web_path%>/rebar_join.sh -O- > /target/etc/init.d/rebar_join
 
 mkdir -p /target/root/.ssh
 
@@ -84,15 +84,15 @@ cat > /target/update_system2.sh <<"EOF"
 #!/bin/bash
 
 set -x
-key_re='crowbar\.install\.key=([^ ]+)'
+key_re='rebar\.install\.key=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
-    export CROWBAR_KEY="${BASH_REMATCH[1]}"
-    echo "$CROWBAR_KEY" >/etc/crowbar.install.key
-elif [[ -f /etc/crowbar.install.key ]]; then
-    export CROWBAR_KEY="$(cat /etc/crowbar.install.key)"
+    export REBAR_KEY="${BASH_REMATCH[1]}"
+    echo "$REBAR_KEY" >/etc/rebar.install.key
+elif [[ -f /etc/rebar.install.key ]]; then
+    export REBAR_KEY="$(cat /etc/rebar.install.key)"
 fi
 
-hostname_re='crowbar\.fqdn=([^ ]+)'
+hostname_re='rebar\.fqdn=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $hostname_re ]]; then
    HOSTNAME=${BASH_REMATCH[1]}
    if [ -f /etc/sysconfig/network ] ; then
@@ -118,9 +118,9 @@ echo "PermitRootLogin without-password" >> /etc/ssh/sshd_config
 # Allow client to pass http proxy environment variables
 echo "AcceptEnv http_proxy https_proxy no_proxy" >> /etc/ssh/sshd_config
 
-update-rc.d crowbar_join defaults
+update-rc.d rebar_join defaults
 
-curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
+curl -u "$REBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
     "<%=@api_server%>/api/v2/nodes/$HOSTNAME"
 
 # Wait for the provisioner to catch up
@@ -131,7 +131,7 @@ while true; do
 done
 EOF
 
-chmod +x /target/etc/init.d/crowbar_join
+chmod +x /target/etc/init.d/rebar_join
 chmod +x /target/update_system2.sh    
 chroot /target /update_system2.sh
 sync

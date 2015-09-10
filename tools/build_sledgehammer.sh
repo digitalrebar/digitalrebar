@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Build a sledgehammer image for Crowbar and put it in the build cache.
+# Build a sledgehammer image for Rebar and put it in the build cache.
 
 # Copyright 2011, Dell
 #
@@ -30,16 +30,16 @@ readonly currdir="$PWD"
 export PATH="$PATH:/sbin:/usr/sbin:/usr/local/sbin"
 
 # Location for caches that should not be erased between runs
-[[ $CACHE_DIR ]] || CACHE_DIR="$HOME/.cache/opencrowbar/sledgehammer"
-[[ $SLEDGEHAMMER_PXE_DIR ]] || SLEDGEHAMMER_PXE_DIR="$HOME/.cache/opencrowbar/tftpboot/discovery"
-[[ $SLEDGEHAMMER_ARCHIVE ]] || SLEDGEHAMMER_ARCHIVE="$HOME/.cache/opencrowbar/tftpboot/sledgehammer"
+[[ $CACHE_DIR ]] || CACHE_DIR="$HOME/.cache/digitalrebar/sledgehammer"
+[[ $SLEDGEHAMMER_PXE_DIR ]] || SLEDGEHAMMER_PXE_DIR="$HOME/.cache/digitalrebar/tftpboot/discovery"
+[[ $SLEDGEHAMMER_ARCHIVE ]] || SLEDGEHAMMER_ARCHIVE="$HOME/.cache/digitalrebar/tftpboot/sledgehammer"
 [[ $CHROOT ]] || CHROOT="$CACHE_DIR/chroot"
 [[ $SLEDGEHAMMER_LIVECD_CACHE ]] || SLEDGEHAMMER_LIVECD_CACHE="$CACHE_DIR/livecd_cache"
 [[ $SYSTEM_TFTPBOOT_DIR ]] || SYSTEM_TFTPBOOT_DIR="/mnt/tftpboot"
 
-CROWBAR_DIR="${0%/*}/.."
+REBAR_DIR="${0%/*}/.."
 
-signature=$(sha1sum < <(cat "$0" "$CROWBAR_DIR/sledgehammer/"*) |awk '{print $1}')
+signature=$(sha1sum < <(cat "$0" "$REBAR_DIR/sledgehammer/"*) |awk '{print $1}')
 SLEDGEHAMMER_IMAGE_DIR="$SLEDGEHAMMER_ARCHIVE/$signature"
 
 sudo rm -rf "$CHROOT"
@@ -69,7 +69,7 @@ OS_BASIC_PACKAGES=(MAKEDEV upstart audit-libs basesystem bash binutils \
     python-libs python-pycurl python-iniparse python-urlgrabber readline rpm \
     rpm-libs rpm-python sed setup shadow-utils centos-release \
     sqlite rsyslog tzdata udev util-linux-ng xz xz-libs yum \
-    yum-plugin-downloadonly yum-metadata-parser yum-utils zlib)
+    yum-metadata-parser yum-utils zlib)
 
 EXTRA_REPOS=('http://mirror.centos.org/centos/6/os/x86_64' \
     'http://mirror.centos.org/centos/6/updates/x86_64' \
@@ -264,7 +264,7 @@ setup_sledgehammer_chroot() {
         rnum=$((rnum + 1))
     done
     # Eleventh, bootstrap the rest of the chroot with yum.
-    in_chroot yum -y install yum yum-downloadonly createrepo
+    in_chroot yum -y install yum createrepo
     # fastestmirror support behind a proxy is not that good.
     [[ -f $CHROOT/etc/yum/pluginconf.d/fastestmirror.conf ]] && \
         sudo -H chroot "$CHROOT" /bin/sed -ie "/^enabled/ s/1/0/" \
@@ -277,7 +277,7 @@ setup_sledgehammer_chroot() {
 }
 
 setup_sledgehammer_chroot
-sudo cp "$CROWBAR_DIR/sledgehammer/"* "$CHROOT/mnt"
+sudo cp "$REBAR_DIR/sledgehammer/"* "$CHROOT/mnt"
 in_chroot mkdir -p /mnt/cache
 sudo mount --bind "$SLEDGEHAMMER_LIVECD_CACHE" "$CHROOT/mnt/cache"
 in_chroot touch /mnt/make_sledgehammer

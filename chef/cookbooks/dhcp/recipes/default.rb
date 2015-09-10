@@ -48,7 +48,7 @@ EOH
 end
 
 intfs = [] # [node.interface.name]
-d_opts = node[:crowbar][:dhcp][:options] || []
+d_opts = node[:rebar][:dhcp][:options] || []
 
 case node[:platform]
 when "ubuntu","debian"
@@ -135,10 +135,10 @@ when "suse"
   end
 end
 
-domain_name = (node[:crowbar][:dns][:domain] || node[:domain] rescue node[:domain])
-lease_time = node[:crowbar][:dhcp][:lease_time] || 60
-Chef::Log.info("Webservers: #{ node['crowbar'].inspect}")
-next_server_ip = node['crowbar']['provisioner']['server']['webservers'].first["address"]
+domain_name = (node[:rebar][:dns][:domain] || node[:domain] rescue node[:domain])
+lease_time = node[:rebar][:dhcp][:lease_time] || 60
+Chef::Log.info("Webservers: #{ node['rebar'].inspect}")
+next_server_ip = node['rebar']['provisioner']['server']['webservers'].first["address"]
 
 pool_opts = {
   "dhcp" => ['allow unknown-clients',
@@ -154,7 +154,7 @@ pool_opts = {
 }
 
 # Get just the addresses
-nameservers = node[:crowbar][:dns][:nameservers].collect { |x| x['address'] }
+nameservers = node[:rebar][:dns][:nameservers].collect { |x| x['address'] }
 
 # Build a list of local information
 my_nics = ::Nic.nics
@@ -168,7 +168,7 @@ my_nics.each do |nic|
 end
 
 found = []
-node[:crowbar][:dhcp][:networks].each do |name, net|
+node[:rebar][:dhcp][:networks].each do |name, net|
   router = net["router"]["address"]
   net_pools = net["ranges"].select{|range|["dhcp","host"].include? range["name"]}
   subnet = IP.coerce(net_pools[0]["first"])

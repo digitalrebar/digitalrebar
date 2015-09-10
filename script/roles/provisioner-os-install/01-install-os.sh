@@ -1,14 +1,14 @@
 #!/bin/bash
 
-[[ -x /etc/init.d/crowbar_join.sh || \
-    -x /etc/init.d/crowbar_join || \
-    -x /etc/init.d/crowbar || \
-    -x /usr/sbin/crowbar ]] && exit 0
+[[ -x /etc/init.d/rebar_join.sh || \
+    -x /etc/init.d/rebar_join || \
+    -x /etc/init.d/rebar || \
+    -x /usr/sbin/rebar ]] && exit 0
 
 set -x
 set +e
 
-webserver="$(read_attribute "crowbar/provisioner/server/webservers/0/url")"
+webserver="$(read_attribute "rebar/provisioner/server/webservers/0/url")"
 
 # Nuke it all.
 declare vg pv maj min blocks name

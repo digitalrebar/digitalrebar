@@ -563,21 +563,21 @@ cp -f /etc/skel/.bash* /root/
 # Blacklist i2c_piix4 module for VirtualBox so it does not create kernel errors
 [[ $(virt-what) = "virtualbox" ]] && echo "blacklist i2c_piix4" > /etc/modprobe.d/blacklist-i2c-piix4.conf
 
-# Set up OpenCrowbar Callback mechanism
+# Set up DigitalRebar Callback mechanism
 mkdir -p /root/.ssh
 cat >/root/.ssh/authorized_keys <<EOF
 <%= @keys %>
 EOF
 
-key_re='crowbar\.install\.key=([^ ]+)'
+key_re='rebar\.install\.key=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
-    export CROWBAR_KEY="${BASH_REMATCH[1]}"
-    echo "$CROWBAR_KEY" >/etc/crowbar.install.key
-elif [[ -f /etc/crowbar.install.key ]]; then
-    export CROWBAR_KEY="$(cat /etc/crowbar.install.key)"
+    export REBAR_KEY="${BASH_REMATCH[1]}"
+    echo "$REBAR_KEY" >/etc/rebar.install.key
+elif [[ -f /etc/rebar.install.key ]]; then
+    export REBAR_KEY="$(cat /etc/rebar.install.key)"
 fi
 
-hostname_re='crowbar\.fqdn=([^ ]+)'
+hostname_re='rebar\.fqdn=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $hostname_re ]]; then
    HOSTNAME=${BASH_REMATCH[1]}
    if [ -f /etc/sysconfig/network ] ; then
@@ -592,7 +592,7 @@ fi
 echo "$HOSTNAME" >/etc/hostname
 hostname "$HOSTNAME"
 
-curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
+curl -u "$REBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
     "<%=@api_server%>/api/v2/nodes/$HOSTNAME"
 
 # Wait for the provisioner to change the bootenv

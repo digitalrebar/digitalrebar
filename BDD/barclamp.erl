@@ -24,7 +24,7 @@ g(Item) ->
     path -> "api/v2/barclamps";
     name -> "bddbarclamp";
     atom -> barclamp1;
-    _ -> crowbar:g(Item)
+    _ -> rebar:g(Item)
   end.
   
 % Common Routine
@@ -41,7 +41,7 @@ validate(JSON) when is_record(JSON, obj) ->
       bdd_utils:is_a(J, dbid, barclamp_id), 
       bdd_utils:is_a(J, string, cfg_data),
       bdd_utils:is_a(J, length, 13),
-      crowbar_rest:validate(J)],
+      rebar_rest:validate(J)],
   bdd_utils:assert(R, debug);
 validate(JSON) -> 
   bdd_utils:log(error, barclamp, validate, "requires #obj record. Got ~p", [JSON]), 
@@ -55,7 +55,7 @@ json(Name, Description, Order) ->
 % Common Routine
 % Returns list of nodes in the system to check for bad housekeeping
 inspector(Config) -> 
-  crowbar_rest:inspector(Config, barclamp).  % shared inspector works here, but may not always
+  rebar_rest:inspector(Config, barclamp).  % shared inspector works here, but may not always
 
 % DEPRICATE!
 step(_Config, B, C) -> bdd_utils:depricate({2013, 8, 1}, barclamp, step, barclamp, step, [B, C]).

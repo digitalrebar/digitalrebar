@@ -27,8 +27,8 @@ before_script:
   - tools/travis_consul.sh
   - cd rails
   - cp config/database.yml.travis config/database.yml
-  - psql -c 'create database opencrowbar_dev;' -U postgres
-  - psql -c 'create database opencrowbar_test;' -U postgres
+  - psql -c 'create database digitalrebar_dev;' -U postgres
+  - psql -c 'create database digitalrebar_test;' -U postgres
   - bundle install
 
 script: 
@@ -39,7 +39,7 @@ script:
   - QUE_WORKER_COUNT=2 QUE_QUEUE=HighPriorityRunner bundle exec rake que:work &
   - QUE_WORKER_COUNT=10 QUE_QUEUE=NodeRoleRunner bundle exec rake que:work &
   - bundle exec rails server -d
-  - '(export CROWBAR_KEY=crowbar:crowbar; cd ..; while ! bin/barclamp_import $PWD; do sleep 10; done)'
+  - '(export REBAR_KEY=rebar:rebar1; cd ..; while ! bin/barclamp_import $PWD; do sleep 10; done)'
   - cd ../BDD 
   - erlc +debug_info *.erl
   - erl -s bdd test travis -s init stop -noshell

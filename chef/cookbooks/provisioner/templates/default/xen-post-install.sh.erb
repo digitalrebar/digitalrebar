@@ -21,15 +21,15 @@ cat > /tmp/root/update_system2.sh <<"EOF"
 #!/bin/bash
 
 set -x
-key_re='crowbar\.install\.key=([^ ]+)'
+key_re='rebar\.install\.key=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
-    export CROWBAR_KEY="${BASH_REMATCH[1]}"
-    echo "$CROWBAR_KEY" >/etc/crowbar.install.key
-elif [[ -f /etc/crowbar.install.key ]]; then
-    export CROWBAR_KEY="$(cat /etc/crowbar.install.key)"
+    export REBAR_KEY="${BASH_REMATCH[1]}"
+    echo "$REBAR_KEY" >/etc/rebar.install.key
+elif [[ -f /etc/rebar.install.key ]]; then
+    export REBAR_KEY="$(cat /etc/rebar.install.key)"
 fi
 
-hostname_re='crowbar\.fqdn=([^ ]+)'
+hostname_re='rebar\.fqdn=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $hostname_re ]]; then
     HOSTNAME=${BASH_REMATCH[1]}
 else
@@ -38,7 +38,7 @@ else
     reboot -f
 fi
 
-curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
+curl -u "$REBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
     "<%=@api_server%>/api/v2/nodes/$HOSTNAME"
 
 # Wait for the provisioner to catch up

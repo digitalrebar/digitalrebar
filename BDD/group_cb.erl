@@ -27,7 +27,7 @@ g(Item) ->
     atom2 -> group2;
     name_node1 -> "group1.node.test";
     atom_node1 -> gnode1;
-    _ -> crowbar:g(Item)
+    _ -> rebar:g(Item)
   end.
 
 validate(JSON) when is_record(JSON, obj) ->
@@ -35,7 +35,7 @@ validate(JSON) when is_record(JSON, obj) ->
   Category = json:keyfind(J, category),
   R = [lists:member(Category,g(categories)), 
        bdd_utils:is_a(J, length, 7),
-       crowbar_rest:validate(J)],
+       rebar_rest:validate(J)],
   bdd_utils:assert(R).
 
 % Common Routine
@@ -48,7 +48,7 @@ get_group_nodes(Group) ->
   URI = eurl:path([g(path),Group, "nodes"]),
   bdd_utils:log(debug, group_cb, get_group_nodes, "get ~p list for ~p path", [Group, URI]),
   {200, JSON} = eurl:get_page(URI, all),
-  Wrapper = crowbar_rest:api_wrapper_raw(JSON),
+  Wrapper = rebar_rest:api_wrapper_raw(JSON),
   Wrapper#list.ids.
   
 % DRY the path creation

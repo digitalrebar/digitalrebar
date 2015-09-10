@@ -23,19 +23,19 @@ class JigModelTest < ActiveSupport::TestCase
                                   description: I18n.t('automatic', :default=>"Created Automatically by System"),
                                   system:      true,
                                   state:       Deployment::COMMITTED)
-    j = Jig.create! :name=>"nodups", :type=>"BarclampCrowbar::Jig", :description=>"unit tests"
+    j = Jig.create! :name=>"nodups", :type=>"BarclampRebar::Jig", :description=>"unit tests"
     e = assert_raise(ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique) { Jig.create!(:name => "nodups") }
     assert_equal "Validation failed: Name Item must be un...", e.message.truncate(42)
     assert_raise(ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique) { b = Node.create! :name => "nodups" }
   end
 
   test "Naming Conventions" do
-    assert_raise(ActiveRecord::RecordInvalid) { Jig.create!(:name=>"1123", :type=>"BarclampCrowbar::Jig")}
-    assert_raise(ActiveRecord::RecordInvalid) { Jig.create!(:name=>"1foo", :type=>"BarclampCrowbar::Jig")}
-    assert_raise(ActiveRecord::RecordInvalid) { Jig.create!(:name=>"Ille!gal", :type=>"BarclampCrowbar::Jig")}
-    assert_raise(ActiveRecord::RecordInvalid) { Jig.create!(:name=>" nospaces", :type=>"BarclampCrowbar::Jig")}
-    assert_raise(ActiveRecord::RecordInvalid) { Jig.create!(:name=>"no spaces", :type=>"BarclampCrowbar::Jig")}
-    assert_raise(ActiveRecord::RecordInvalid) { Jig.create!(:name=>"nospacesatall ", :type=>"BarclampCrowbar::Jig")}
+    assert_raise(ActiveRecord::RecordInvalid) { Jig.create!(:name=>"1123", :type=>"BarclampRebar::Jig")}
+    assert_raise(ActiveRecord::RecordInvalid) { Jig.create!(:name=>"1foo", :type=>"BarclampRebar::Jig")}
+    assert_raise(ActiveRecord::RecordInvalid) { Jig.create!(:name=>"Ille!gal", :type=>"BarclampRebar::Jig")}
+    assert_raise(ActiveRecord::RecordInvalid) { Jig.create!(:name=>" nospaces", :type=>"BarclampRebar::Jig")}
+    assert_raise(ActiveRecord::RecordInvalid) { Jig.create!(:name=>"no spaces", :type=>"BarclampRebar::Jig")}
+    assert_raise(ActiveRecord::RecordInvalid) { Jig.create!(:name=>"nospacesatall ", :type=>"BarclampRebar::Jig")}
   end
 
   test "Must have override object-missing" do
@@ -44,17 +44,17 @@ class JigModelTest < ActiveSupport::TestCase
   end
 
   test "Must have override object - present" do
-     c = Jig.create! :name=>"subclass", :type=>"BarclampCrowbar::Jig"
+     c = Jig.create! :name=>"subclass", :type=>"BarclampRebar::Jig"
      assert_equal false, c.nil?
      assert_equal c.name, "subclass"
-     assert_equal c.type, "BarclampCrowbar::Jig"
+     assert_equal c.type, "BarclampRebar::Jig"
   end
   
   test "Returns correct objective type" do
-    c = Jig.create! :name=>"type_test", :type=>"BarclampCrowbar::Jig"
+    c = Jig.create! :name=>"type_test", :type=>"BarclampRebar::Jig"
     t = Jig.find_by_name "type_test"
     assert_equal c.type, t.type
-    assert_equal t.type, "BarclampCrowbar::Jig"
+    assert_equal t.type, "BarclampRebar::Jig"
     assert_kind_of Jig, c
   end
   

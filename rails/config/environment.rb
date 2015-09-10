@@ -8,4 +8,4 @@ if File.exists?("../chef/cookbooks/barclamp/libraries")
 end
 
 # Initialize the rails application
-Crowbar::Application.initialize!
+Rebar::Application.initialize!

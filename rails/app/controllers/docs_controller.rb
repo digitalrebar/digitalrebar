@@ -16,11 +16,11 @@
 class DocsController < ApplicationController
 
   # no login required for docs!
-  skip_before_filter :crowbar_auth
+  skip_before_filter :rebar_auth
 
   # render licenses details for login
   def eula
-    @file = Rails.configuration.crowbar.eula_base || '../doc/licenses/README.md'
+    @file = Rails.configuration.rebar.eula_base || '../doc/licenses/README.md'
     if File.exist? @file
       @raw = IO.read(@file)
       fix_encoding! unless @raw.valid_encoding?

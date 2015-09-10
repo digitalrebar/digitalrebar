@@ -5,22 +5,22 @@ Feature: Node List
 
   Scenario: UI Node List
     When I go to the "dashboard/list" page
-    Then I should see {bdd:crowbar.i18n.dashboard.list.title}
-      And I should see {lookup:crowbar.node_name}
-      And I should see {bdd:crowbar.i18n.all}
+    Then I should see {bdd:rebar.i18n.dashboard.list.title}
+      And I should see {lookup:rebar.node_name}
+      And I should see {bdd:rebar.i18n.all}
       And there should be no translation errors
 
   Scenario: UI Node List for Deployment
     When I go to the "dashboard/list/system" page
-    Then I should see {bdd:crowbar.i18n.dashboard.list.title}
-      And I should see {lookup:crowbar.node_name}
+    Then I should see {bdd:rebar.i18n.dashboard.list.title}
+      And I should see {lookup:rebar.node_name}
       And I should see "system"
       And there should be no translation errors
 
   Scenario: UI Node List Click to Node
     Given I am on the "dashboard/list" page
-    When I click on the {lookup:crowbar.node_name} link
-    Then I should see {lookup:crowbar.node_name}
+    When I click on the {lookup:rebar.node_name} link
+    Then I should see {lookup:rebar.node_name}
       And there should be no translation errors
 
   Scenario: Filter based on Deployment

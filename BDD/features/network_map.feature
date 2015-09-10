@@ -4,7 +4,7 @@ Feature: Network Maps
 
   Scenario: Network Map UI 
     When I go to the "network_map" page
-    Then I should see a heading {bdd:crowbar.i18n.networks.map.title}
+    Then I should see a heading {bdd:rebar.i18n.networks.map.title}
       And there should be no translation errors
 
   Scenario: Network Map Drill Node

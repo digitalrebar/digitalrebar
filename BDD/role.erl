@@ -24,7 +24,7 @@ g(Item) ->
     path  -> "/api/v2/roles";
     atom  -> bdd_role1;
     name  -> "bdd_role";
-    _     -> crowbar:g(Item)
+    _     -> rebar:g(Item)
   end.
   
 
@@ -50,7 +50,7 @@ validate(JSON) when is_record(JSON, obj) ->
       bdd_utils:is_a(J, dbid,   barclamp_id),
       bdd_utils:is_a(J, string, conflicts),
       bdd_utils:is_a(J, string, provides),
-      crowbar_rest:validate(J)],
+      rebar_rest:validate(J)],
   bdd_utils:assert(R).
 
 % Common Routine

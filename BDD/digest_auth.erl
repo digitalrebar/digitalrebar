@@ -39,7 +39,7 @@
 %% For example:
 %% application:start(crypto).
 %% application:start(inets).
-%% Config = [{user,"crowbar"},{password,"crowbar"}].
+%% Config = [{user,"rebar"},{password,"rebar1"}].
 %% digest_auth:request(Config, get, {URL, []}, [], []).
 %%
 %% Note: You can save time if you add the header to the Config:

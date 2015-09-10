@@ -19,9 +19,9 @@ barclamp:
   display: "DNS"
   description: "Domain Name Service (DNS)"
   version: "2.E"
-  source_url: "https://github.com/opencrowbar/core"
+  source_url: "https://github.com/digitalrebar/core"
   license: "Apache 2"
-  license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
   - name: dns-bind_server
@@ -30,8 +30,8 @@ roles:
       - consul
     attribs:
       - name: dns-forwarders
-        description: 'DNS servers that Crowbar will use for recursive queries'
-        map: 'crowbar/dns/forwarders'
+        description: 'DNS servers that Rebar will use for recursive queries'
+        map: 'rebar/dns/forwarders'
         schema:
           type: seq
           sequence:
@@ -39,7 +39,7 @@ roles:
               pattern: /[0-9a-f:.]*/
       - name: dns-svc-name
         description: 'The name of this service'
-        map: 'crowbar/dns/service_name'
+        map: 'rebar/dns/service_name'
         schema:
           type: str
   - name: dns-service
@@ -48,8 +48,8 @@ roles:
       - service
     attribs:
       - name: dns_servers
-        description: 'DNS servers that all Crowbar clients should use'
-        map: 'crowbar/dns/nameservers'
+        description: 'DNS servers that all Rebar clients should use'
+        map: 'rebar/dns/nameservers'
         schema:
           type: seq
           sequence:
@@ -57,7 +57,7 @@ roles:
               pattern: /[0-9a-f:.]*/
       - name: dns-domain
         description: 'DNS domain name for the cluster'
-        map: 'crowbar/dns/domain'
+        map: 'rebar/dns/domain'
         schema:
           type: str
           required: true
@@ -122,8 +122,8 @@ roles:
       - service
     attribs:
       - name: dns-management-servers
-        description: 'DNS Management servers that all Crowbar admins should use'
-        map: 'crowbar/dns/management_servers'
+        description: 'DNS Management servers that all Rebar admins should use'
+        map: 'rebar/dns/management_servers'
         schema:
           type: seq
           sequence:

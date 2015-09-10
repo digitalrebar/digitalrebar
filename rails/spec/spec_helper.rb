@@ -40,8 +40,8 @@ RSpec.configure do |config|
     DatabaseCleaner.clean_with(:truncation)
 
     FactoryGirl.create(:deployment, name: 'system', system: true, state: Deployment::COMMITTED)
-    u = FactoryGirl.build(:user, username: 'crowbar', password: 'crowbar', is_admin: true)
-    u.digest_password('crowbar')
+    u = FactoryGirl.build(:user, username: 'rebar', password: 'rebar1', is_admin: true)
+    u.digest_password('rebar')
     u.save!
     FactoryGirl.create(:barclamp)
     FactoryGirl.create(:barclamp, name: 'network')

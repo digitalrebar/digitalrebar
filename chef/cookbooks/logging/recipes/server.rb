@@ -17,10 +17,10 @@
 package "rsyslog"
 
 
-external_servers = node[:crowbar][:logging][:external_servers]
-unless node[:crowbar][:logging][:servers] &&
-    node[:crowbar][:logging][:servers].include?(node.address.addr)
-  node.set[:crowbar][:logging][:servers] = [ node.address.addr ]
+external_servers = node[:rebar][:logging][:external_servers]
+unless node[:rebar][:logging][:servers] &&
+    node[:rebar][:logging][:servers].include?(node.address.addr)
+  node.set[:rebar][:logging][:servers] = [ node.address.addr ]
 end
 
 # Disable syslogd in favor of rsyslog on suse (presumably desirable
@@ -64,7 +64,7 @@ directory "/etc/rsyslog.d" do
   action :create
 end
 
-template "/etc/rsyslog.d/10-crowbar-server.conf" do
+template "/etc/rsyslog.d/10-rebar-server.conf" do
   owner "root"
   group "root"
   mode 0644

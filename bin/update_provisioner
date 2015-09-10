@@ -23,7 +23,7 @@ extra_files = []
 
 # Find all the upstream repos and packages we will need.
 
-Dir.glob("/opt/opencrowbar/**/crowbar.yml").each do |prereq_file|
+Dir.glob("/opt/digitalrebar/**/rebar.yml").each do |prereq_file|
   puts("inspecting prereqs from '#{prereq_file}'")
   prereqs = YAML.load(File.open(prereq_file))
   unless prereqs

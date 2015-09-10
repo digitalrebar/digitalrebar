@@ -15,13 +15,13 @@
 #
 # This recipe sets up Apache and TFTP servers.
 
-web_port = node["crowbar"]["provisioner"]["server"]["web_port"]
+web_port = node["rebar"]["provisioner"]["server"]["web_port"]
 
 template "/etc/init.d/sws" do
   mode "0755"
   source "sws-init.erb"
-  variables(:docroot => node["crowbar"]["provisioner"]["server"]["root"],
-            :port => node["crowbar"]["provisioner"]["server"]["web_port"])
+  variables(:docroot => node["rebar"]["provisioner"]["server"]["root"],
+            :port => node["rebar"]["provisioner"]["server"]["web_port"])
   notifies :restart, "service[sws]"
 end
 
@@ -43,7 +43,7 @@ case
 when File.directory?("/usr/lib/systemd/system")
   template "/etc/systemd/system/tftp.service" do
     source "tftp.service.erb"
-    variables tftproot: node["crowbar"]["provisioner"]["server"]["root"]
+    variables tftproot: node["rebar"]["provisioner"]["server"]["root"]
     notifies :restart, "service[tftp]"
   end
 
@@ -65,7 +65,7 @@ when node["platform"] == "suse"
 when ["redhat","centos"].member?(node["platform"])
   template "/etc/xinetd.d/tftp" do
     source "xinetd.tftp.erb"
-    variables(:tftproot => node["crowbar"]["provisioner"]["server"]["root"])
+    variables(:tftproot => node["rebar"]["provisioner"]["server"]["root"])
     mode 0644
     user "root"
     group "root"
@@ -85,7 +85,7 @@ when node["platform"] == "ubuntu"
     group "root"
     variables(
               :address => "0.0.0.0:69",
-              :tftproot => node["crowbar"]["provisioner"]["server"]["root"]
+              :tftproot => node["rebar"]["provisioner"]["server"]["root"]
               )
     notifies :restart, resources(:service => "tftpd-hpa")
   end
@@ -100,7 +100,7 @@ end
 
 ip_addr = (IP.coerce(node["provisioner"]["service_address"]).addr rescue nil)
 
-template "/etc/consul.d/crowbar-provisioner.json" do
+template "/etc/consul.d/rebar-provisioner.json" do
   source "consul-provisioner-server.json.erb"
   mode 0644
   owner "root"

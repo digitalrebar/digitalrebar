@@ -18,9 +18,9 @@ barclamp:
   description: "Consul Service Monitoring and Management"
   display: "Consul"
   version: "2.E"
-  source_url: "https://github.com/opencrowbar/core"
+  source_url: "https://github.com/digitalrebar/core"
   license: "Apache 2"
-  license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
   - name: consul
@@ -113,14 +113,14 @@ roles:
       - name: consul-datacenter
         description: "The name of the datacenter that this Consul instance is running in"
         map: 'consul/datacenter'
-        default: 'opencrowbar'
+        default: 'digitalrebar'
         schema:
           type: str
           required: false
       - name: consul-acl-datacenter
         description: "The name of the datacenter that is authoritative for ACLs"
         map: 'consul/acl_datacenter'
-        default: 'opencrowbar'
+        default: 'digitalrebar'
         schema:
           type: str
           required: false

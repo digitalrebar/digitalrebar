@@ -16,15 +16,15 @@
 action :add do
   raise "Xen broken until it is ported to use the new disk reservation code"
   os = "#{new_resource.distro}-#{new_resource.version}"
-  proxy = node["crowbar"]["proxy"]["servers"].first["url"]
-  repos = node["crowbar"]["provisioner"]["server"]["repositories"][os]
-  params = node["crowbar"]["provisioner"]["server"]["boot_specs"][os]
-  online = node["crowbar"]["provisioner"]["server"]["online"]
-  tftproot = node["crowbar"]["provisioner"]["server"]["root"]
-  provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
-  api_server=node['crowbar']['api']['servers'].first["url"]
-  machine_key = node["crowbar"]["machine_key"]
-  keys = node["crowbar"]["access_keys"].values.sort.join($/)
+  proxy = node["rebar"]["proxy"]["servers"].first["url"]
+  repos = node["rebar"]["provisioner"]["server"]["repositories"][os]
+  params = node["rebar"]["provisioner"]["server"]["boot_specs"][os]
+  online = node["rebar"]["provisioner"]["server"]["online"]
+  tftproot = node["rebar"]["provisioner"]["server"]["root"]
+  provisioner_web = node["rebar"]["provisioner"]["server"]["webservers"].first["url"]
+  api_server=node['rebar']['api']['servers'].first["url"]
+  machine_key = node["rebar"]["machine_key"]
+  keys = node["rebar"]["access_keys"].values.sort.join($/)
   mnode_name = new_resource.name
   mnode_rootdev = new_resource.rootdev
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
@@ -33,7 +33,7 @@ action :add do
   append = "\
        ../#{os}/install/boot/xen.gz dom0_max_vcpus=1-2 dom0_mem=752M,max:752M com1=115200,8n1 \
        console=com1,vga --- ../#{os}/install/boot/vmlinuz \
-       xencons=hvc console=hvc0 console=tty0 crowbar.fqdn=#{mnode_name} crowbar.install.key=#{machine_key} \
+       xencons=hvc console=hvc0 console=tty0 rebar.fqdn=#{mnode_name} rebar.install.key=#{machine_key} \
        answerfile=#{web_path}/compute.ks #{params["kernel_params"]} \
        install --- ../#{os}/install/install.img"
 

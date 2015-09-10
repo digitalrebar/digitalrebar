@@ -15,21 +15,21 @@
 
 action :add do
   os = "#{new_resource.distro}-#{new_resource.version}"
-  proxy = node["crowbar"]["proxy"]["servers"].first["url"]
-  repos = node["crowbar"]["provisioner"]["server"]["repositories"][os]
-  params = node["crowbar"]["provisioner"]["server"]["boot_specs"][os]
-  online = node["crowbar"]["provisioner"]["server"]["online"]
-  tftproot = node["crowbar"]["provisioner"]["server"]["root"]
-  provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
-  api_server=node['crowbar']['api']['servers'].first["url"]
-  ntp_server = "#{node["crowbar"]["ntp"]["servers"].first}"
-  keys = node["crowbar"]["access_keys"].values.sort.join($/)
-  machine_key = node["crowbar"]["machine_key"]
+  proxy = node["rebar"]["proxy"]["servers"].first["url"]
+  repos = node["rebar"]["provisioner"]["server"]["repositories"][os]
+  params = node["rebar"]["provisioner"]["server"]["boot_specs"][os]
+  online = node["rebar"]["provisioner"]["server"]["online"]
+  tftproot = node["rebar"]["provisioner"]["server"]["root"]
+  provisioner_web = node["rebar"]["provisioner"]["server"]["webservers"].first["url"]
+  api_server=node['rebar']['api']['servers'].first["url"]
+  ntp_server = "#{node["rebar"]["ntp"]["servers"].first}"
+  keys = node["rebar"]["access_keys"].values.sort.join($/)
+  machine_key = node["rebar"]["machine_key"]
   mnode_name = new_resource.name
   mnode_rootdev = new_resource.rootdev
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
   web_path = "#{provisioner_web}/nodes/#{mnode_name}"
-  append = "ksdevice=bootif ks=#{web_path}/compute.ks #{params["kernel_params"]} crowbar.fqdn=#{mnode_name} crowbar.install.key=#{machine_key}"
+  append = "ksdevice=bootif ks=#{web_path}/compute.ks #{params["kernel_params"]} rebar.fqdn=#{mnode_name} rebar.install.key=#{machine_key}"
   v4addr = new_resource.address
 
   directory node_dir do
@@ -55,11 +55,11 @@ action :add do
               :web_path => web_path)
   end
 
-  template "#{node_dir}/crowbar_join.sh" do
+  template "#{node_dir}/rebar_join.sh" do
     mode 0644
     owner "root"
     group "root"
-    source "crowbar_join.sh.erb"
+    source "rebar_join.sh.erb"
     variables(:api_server => api_server, :ntp_server => ntp_server, :name => mnode_name)
   end
 

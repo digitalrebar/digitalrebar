@@ -15,8 +15,8 @@
 require 'spec_helper'
 
 describe "node_role annealer" do
-  # make sure that the there's a crowbar deploment (named 'test')
-  include_context "crowbar test deployment"
+  # make sure that the there's a rebar deploment (named 'test')
+  include_context "rebar test deployment"
   # just 2 nodes.
   include_context "2 dummy nodes"
 

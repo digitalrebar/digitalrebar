@@ -24,7 +24,7 @@ from cb2_api.objects import *
 class main():
     
     
-    session = cb2_Api("192.168.124.10", "3000", "crowbar", "crowbar")
+    session = cb2_Api("192.168.124.10", "3000", "rebar", "rebar1")
     
     list_methods ={'get_nodes',
                    'get_deployments',

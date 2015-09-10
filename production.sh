@@ -17,9 +17,9 @@ date
 export RAILS_ENV=production
 
 # Hack to clean out docker container for now.
-rm -rf /etc/yum.repos.d/crowbar-open*
+rm -rf /etc/yum.repos.d/rebar-open*
 
-cd /opt/opencrowbar/core
+cd /opt/digitalrebar/core
 . ./bootstrap.sh
 set -e
 set -o pipefail
@@ -67,7 +67,7 @@ echo "${FQDN#*.}" > /etc/domainname
 
 export FQDN
 
-mkdir -p /var/log/crowbar
+mkdir -p /var/log/rebar
 for stage in boot consul database chef-server core config finish; do
-    "./crowbar-${stage}.sh" 2>&1 |tee "/var/log/crowbar/install-${stage}.log"
+    "./rebar-${stage}.sh" 2>&1 |tee "/var/log/rebar/install-${stage}.log"
 done

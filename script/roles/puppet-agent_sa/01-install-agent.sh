@@ -6,7 +6,7 @@ if ! which puppet; then
     puppet resource user puppet ensure=present gid=puppet shell='/sbin/nologin'
 fi
 
-node_name=$(read_attribute "crowbar/puppet-agent-sa/name")
+node_name=$(read_attribute "rebar/puppet-agent-sa/name")
 echo "Puppet node: $node_name"
 cat > "/etc/puppet/puppet.conf" <<EOF
 [main]

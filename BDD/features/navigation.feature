@@ -18,12 +18,12 @@ Feature: Navigation, Check Core Navigation
       And I should see a menu for "Nodes"
       And I should see a menu for "Utilities"
       And I should see a menu for "Help"
-      And I should see "OpenCrowbar"
+      And I should see "DigitalRebar"
       And I should not see "something went wrong"
       And there should be no translation errors
 
   Scenario: Nodes Nav
     Given I am on the home page
     When I click on the "Nodes" menu item
-    Then I should see a menu for {bdd:crowbar.i18n.nodes.index.title}
+    Then I should see a menu for {bdd:rebar.i18n.nodes.index.title}
       And there should be no translation errors

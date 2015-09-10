@@ -16,5 +16,5 @@
 
 # Run Rails Console 
 
-su -l -c 'cd /opt/opencrowbar/core/rails; bundle exec rails c' crowbar
+su -l -c 'cd /opt/digitalrebar/core/rails; bundle exec rails c' rebar
 

@@ -90,7 +90,7 @@ class BarclampsController < ApplicationController
       @bc.roles.each { |r| roles[r.id] = [] if r.milestone }  # get the available milestones
 
       # milestone for OS assignment
-      cin = Role.find_key 'crowbar-installed-node'
+      cin = Role.find_key 'rebar-installed-node'
       roles[cin] = []
 
       # find nodes and roles

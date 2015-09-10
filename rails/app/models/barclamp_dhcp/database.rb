@@ -54,9 +54,9 @@ class BarclampDhcp::Database < Role
     end
     node_roles.each do |nr|
       nr.with_lock('FOR NO KEY UPDATE') do
-        old_hosts = (nr.sysdata["crowbar"]["dhcp"]["clients"] rescue {})
+        old_hosts = (nr.sysdata["rebar"]["dhcp"]["clients"] rescue {})
         next if hosts == old_hosts
-        nr.update_column("sysdata",{"crowbar" => {"dhcp" => {"clients" => hosts}}})
+        nr.update_column("sysdata",{"rebar" => {"dhcp" => {"clients" => hosts}}})
         to_enqueue << nr
       end
     end

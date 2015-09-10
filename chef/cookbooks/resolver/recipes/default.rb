@@ -18,11 +18,11 @@
 # limitations under the License.
 #
 
-return if node[:crowbar_ohai][:in_docker]
+return if node[:rebar_ohai][:in_docker]
 
-na = (node[:crowbar][:dns][:nameservers].collect { |x| x['address'] } rescue nil)
+na = (node[:rebar][:dns][:nameservers].collect { |x| x['address'] } rescue nil)
 dns_list = (na rescue nil) ||
-  (node[:crowbar][:dns][:server][:forwarders] rescue [])
+  (node[:rebar][:dns][:server][:forwarders] rescue [])
 
 execute "Disable resolvconf" do
   command "resolvconf --disable-updates"
@@ -44,7 +44,7 @@ template "/etc/resolv.conf" do
   owner "root"
   group "root"
   mode 0644
-  variables(:nameservers => dns_list.flatten, :search => (node[:crowbar][:dns][:domain] rescue nil))
+  variables(:nameservers => dns_list.flatten, :search => (node[:rebar][:dns][:domain] rescue nil))
 end
 
 execute "Lock down resolv.conf" do

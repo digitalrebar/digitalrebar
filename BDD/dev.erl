@@ -22,7 +22,7 @@ g(Item)         ->
   case Item of
     node_name -> "sim.cr0wbar.com";
     node_atom -> "sim_admin";
-    _ -> crowbar:g(Item)
+    _ -> rebar:g(Item)
   end.
 
 % create a base system
@@ -34,18 +34,18 @@ pop(ConfigRaw)  ->
   bdd_utils:config_set(inspect, false),
 
   % safety setup 
-  bdd_crud:delete(node:g(path), crowbar:g(node_name)),
+  bdd_crud:delete(node:g(path), rebar:g(node_name)),
   Build = case file:consult(bdd_utils:config(simulator, "dev.config")) of
     {error,enoent} -> bdd_utils:log(error, dev, pop, "missing 'dev.config' initialization file", []), [];
     {ok, B} -> B
   end,
 
   % admin node
-  Admin = node:add_node(g(node_name), "crowbar-admin-node", [{description, "dev" ++ g(description)}, {order, 100}, {admin, "true"}, {ip, "192.168.124.10/24"}], g(node_atom)),
+  Admin = node:add_node(g(node_name), "rebar-admin-node", [{description, "dev" ++ g(description)}, {order, 100}, {admin, "true"}, {ip, "192.168.124.10/24"}], g(node_atom)),
 
   % admin node has to complete
   bdd_utils:log(info, dev, pop, "Admin (~p: ~p) exists, waiting for annealer to catch-up...", [Admin#obj.id, g(node_name)]),
-  crowbar:step([], {step_given, {0, 0}, ["there are no pending Crowbar runs for",node,g(node_name)]}), 
+  rebar:step([], {step_given, {0, 0}, ["there are no pending Rebar runs for",node,g(node_name)]}), 
 
   % turn on the delays in the test jig (the tests turn these off, simulator wants them on)
   %role:step([], {step_given, {0, 1}, ["I set the",role, "test-admin", "property", "test", "to", "true"]}), 
@@ -88,7 +88,7 @@ buildlist(Source, Type) ->
   R.
 
 remove(Atom) ->
-  [{http, Msg, _Code, _URL, _, _, crowbar, _}] = bdd_crud:delete(Atom),
+  [{http, Msg, _Code, _URL, _, _, rebar, _}] = bdd_crud:delete(Atom),
   bdd_utils:log(info, dev, remove, "Removed ~p with status ~p", [Atom, Msg]).
 
 add_node({Atom, Name, Description, Order, Group}) ->
@@ -98,7 +98,7 @@ add_node({Atom, Name, Description, Order, Group}) ->
     "-1" -> O = node:add_node(Name, [{description, Description}, {order, Order}, {group, Group}], Atom),
           bdd_utils:log(info, node, create_node, "Node ~p created (id ~p)", [Name, O#obj.id]),
           % load test data
-          crowbar:step([], {step_given, {0, 1}, ["test loads the","node_discovery","data into",node, Name]}),
+          rebar:step([], {step_given, {0, 1}, ["test loads the","node_discovery","data into",node, Name]}),
           O;
     _  -> bdd_utils:config_set(Atom, Obj),
           bdd_utils:log(info, "Node ~p already exists (~p)", [Name, Obj#obj.id]),
@@ -107,7 +107,7 @@ add_node({Atom, Name, Description, Order, Group}) ->
 
 
 add_deployment({Atom, Name, Extras }) ->
-  JSON = crowbar:json([{name, Name} | Extras]),
+  JSON = rebar:json([{name, Name} | Extras]),
   Path = bdd_restrat:alias(deployment, g, [path]),
   Obj = bdd_crud:read_obj(Path,Name),
   case Obj#obj.id of

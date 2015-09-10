@@ -36,11 +36,11 @@ Feature: Authentication Works
     Given I am on the "my/users/sign_in" page
     When I click on the "License Details" link
     Then I should see "System Licenses"
-      And I should see "Crowbar Framework Licenses"
+      And I should see "Rebar Framework Licenses"
  
   Scenario: Docs Available without Login
     Skip TODO ZEHICLE disable during refactoring
-    When I visit "docs/topic/crowbar/licenses/crowbar/licenses" page without login
+    When I visit "docs/topic/rebar/licenses/rebar/licenses" page without login
     Then I should see "System Licenses"
       And I should not see "You are signed in"
       

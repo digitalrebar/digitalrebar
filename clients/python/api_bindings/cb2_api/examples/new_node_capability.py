@@ -25,8 +25,8 @@ class main():
         #variables
         admin_ip = '192.168.124.10'
         admin_port = '3000'
-        user = 'crowbar'
-        password = 'crowbar'
+        user = 'rebar'
+        password = 'rebar1'
         target_node = "d08-00-27-20-36-b0.test.org"
         deployment_name = 'newTestDeployment'
 

@@ -36,7 +36,7 @@ def setup_interface(switch_config, a_node, conduit, switch_name, interface_id )
     interfaces = a_switch_config["interfaces"]
 
     # Find the conduit associated with the interface
-    a_node["crowbar"]["network"].each do |network_name, network|
+    a_node["rebar"]["network"].each do |network_name, network|
       next if network["conduit"] != conduit
       vlan = network["vlan"]
       unique_vlans[vlan] = network_name
@@ -60,7 +60,7 @@ search(:node, "*:*").each do |a_node|
     # Figure out the config for all switches attached to this one conduit for this one node
     switch_ports = {}
     if_list.each do |intf|
-      sw=a_node["crowbar_ohai"]["switch_config"][intf] rescue {}
+      sw=a_node["rebar_ohai"]["switch_config"][intf] rescue {}
       next if sw.nil?
       next unless sw["switch_name"] && sw["switch_port"] && sw["switch_port_name"]
       next if sw["switch_port"] == -1

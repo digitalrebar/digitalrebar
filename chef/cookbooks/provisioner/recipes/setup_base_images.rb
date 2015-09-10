@@ -16,15 +16,15 @@
 # This recipe sets up the general environmnet needed to PXE boot
 # other servers.
 
-Chef::Log.info("Provisioner: raw server data #{ node["crowbar"]["provisioner"]["server"] }")
+Chef::Log.info("Provisioner: raw server data #{ node["rebar"]["provisioner"]["server"] }")
 
-provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
-api_server=node['crowbar']['api']['servers'].first["url"]
+provisioner_web = node["rebar"]["provisioner"]["server"]["webservers"].first["url"]
+api_server=node['rebar']['api']['servers'].first["url"]
 
-machine_key = node["crowbar"]["machine_key"]
+machine_key = node["rebar"]["machine_key"]
 
 os_token="#{node["platform"]}-#{node["platform_version"]}"
-tftproot =  node["crowbar"]["provisioner"]["server"]["root"]
+tftproot =  node["rebar"]["provisioner"]["server"]["root"]
 discover_dir="#{tftproot}/discovery"
 pxecfg_dir="#{discover_dir}/pxelinux.cfg"
 uefi_dir=discover_dir
@@ -40,18 +40,18 @@ sledge_args << "liveimg"
 sledge_args << "rd_NO_LUKS"
 sledge_args << "rd_NO_MD"
 sledge_args << "rd_NO_DM"
-if node["crowbar"]["provisioner"]["server"]["use_serial_console"]
+if node["rebar"]["provisioner"]["server"]["use_serial_console"]
   sledge_args << "console=tty0 console=ttyS1,115200n8"
 end
 sledge_args << "provisioner.web=#{provisioner_web}"
-sledge_args << "crowbar.web=#{api_server}"
-sledge_args << "crowbar.dns.domain=#{node["crowbar"]["dns"]["domain"]}"
-na = node[:crowbar][:dns][:nameservers].collect { |x| x['address'] }
-sledge_args << "crowbar.dns.servers=#{na.join(',')}"
+sledge_args << "rebar.web=#{api_server}"
+sledge_args << "rebar.dns.domain=#{node["rebar"]["dns"]["domain"]}"
+na = node[:rebar][:dns][:nameservers].collect { |x| x['address'] }
+sledge_args << "rebar.dns.servers=#{na.join(',')}"
 
 
-node.normal["crowbar"]["provisioner"]["server"]["sledgehammer_kernel_params"] = sledge_args.join(" ")
-append_line = node["crowbar"]["provisioner"]["server"]["sledgehammer_kernel_params"]
+node.normal["rebar"]["provisioner"]["server"]["sledgehammer_kernel_params"] = sledge_args.join(" ")
+append_line = node["rebar"]["provisioner"]["server"]["sledgehammer_kernel_params"]
 
 # By default, install the same OS that the admin node is running
 # If the comitted proposal has a defualt, try it.
@@ -66,14 +66,14 @@ EOC
   not_if "ls -adZ #{tftproot} |grep -q public_content_t"
 end
 
-unless default = node["crowbar"]["provisioner"]["server"]["default_os"]
-  node.normal["crowbar"]["provisioner"]["server"]["default_os"] = default = os_token
+unless default = node["rebar"]["provisioner"]["server"]["default_os"]
+  node.normal["rebar"]["provisioner"]["server"]["default_os"] = default = os_token
 end
 
-unless node.normal["crowbar"]["provisioner"]["server"]["repositories"]
-  node.normal["crowbar"]["provisioner"]["server"]["repositories"] = Mash.new
+unless node.normal["rebar"]["provisioner"]["server"]["repositories"]
+  node.normal["rebar"]["provisioner"]["server"]["repositories"] = Mash.new
 end
-node.normal["crowbar"]["provisioner"]["server"]["available_oses"] = Mash.new
+node.normal["rebar"]["provisioner"]["server"]["available_oses"] = Mash.new
 
 directory "#{pxecfg_dir}" do
   action :create
@@ -95,7 +95,7 @@ template "#{pxecfg_dir}/default" do
   owner "root"
   group "root"
   source "default.erb"
-  variables(:append_line => "#{append_line} crowbar.state=discovery crowbar.install.key=#{machine_key}",
+  variables(:append_line => "#{append_line} rebar.state=discovery rebar.install.key=#{machine_key}",
             :install_name => "discovery",
             :initrd => "initrd0.img",
             :machine_key => machine_key,
@@ -108,14 +108,14 @@ template "#{uefi_dir}/elilo.conf" do
   owner "root"
   group "root"
   source "default.elilo.erb"
-  variables(:append_line => "#{append_line} crowbar.state=discovery",
+  variables(:append_line => "#{append_line} rebar.state=discovery",
             :install_name => "discovery",
             :initrd => "initrd0.img",
             :machine_key => machine_key,
             :kernel => "vmlinuz0")
 end
 
-node["crowbar"]["provisioner"]["server"]["supported_oses"].each do |os,params|
+node["rebar"]["provisioner"]["server"]["supported_oses"].each do |os,params|
   web_path = "#{provisioner_web}/#{os}"
   os_install_site = "#{web_path}/install"
   os_dir="#{tftproot}/#{os}"
@@ -127,8 +127,8 @@ node["crowbar"]["provisioner"]["server"]["supported_oses"].each do |os,params|
   # Don't bother for OSes that are not actaully present on the provisioner node.
   next unless File.file?("#{iso_dir}/#{params["iso_file"]}") or
     File.directory?(os_install_dir)
-  node.normal["crowbar"]["provisioner"]["server"]["available_oses"][os] = true
-  node.normal["crowbar"]["provisioner"]["server"]["repositories"][os] = Mash.new
+  node.normal["rebar"]["provisioner"]["server"]["available_oses"][os] = true
+  node.normal["rebar"]["provisioner"]["server"]["repositories"][os] = Mash.new
 
   if os =~ /^(esxi)/
     # Extract esxi iso through rsync - bsdtar messes up the filenames
@@ -148,12 +148,12 @@ losetup -j "#{iso_dir}/#{params["iso_file"]}" | awk -F: '{ print $1 }' | xargs l
 chmod +w "#{os_install_dir}.extracting"/*
 sed -e "s:/::g" -e "3s:^:prefix=/../#{os}/install/\\n:" -i.bak "#{os_install_dir}.extracting"/boot.cfg
 
-touch "#{os_install_dir}.extracting/.#{params["iso_file"]}.crowbar_canary"
+touch "#{os_install_dir}.extracting/.#{params["iso_file"]}.rebar_canary"
 [[ -d "#{os_install_dir}" ]] && rm -rf "#{os_install_dir}"
 mv "#{os_install_dir}.extracting" "#{os_install_dir}"
 EOC
       only_if do File.file?("#{iso_dir}/#{params["iso_file"]}") &&
-          !File.file?("#{os_install_dir}/.#{params["iso_file"]}.crowbar_canary") end
+          !File.file?("#{os_install_dir}/.#{params["iso_file"]}.rebar_canary") end
     end
   else
     # Extract the ISO install image.
@@ -165,12 +165,12 @@ set -e
 [[ -d "#{os_install_dir}.extracting" ]] && rm -rf "#{os_install_dir}.extracting"
 mkdir -p "#{os_install_dir}.extracting"
 (cd "#{os_install_dir}.extracting"; bsdtar -x -f "#{iso_dir}/#{params["iso_file"]}")
-touch "#{os_install_dir}.extracting/.#{params["iso_file"]}.crowbar_canary"
+touch "#{os_install_dir}.extracting/.#{params["iso_file"]}.rebar_canary"
 [[ -d "#{os_install_dir}" ]] && rm -rf "#{os_install_dir}"
 mv "#{os_install_dir}.extracting" "#{os_install_dir}"
 EOC
       only_if do File.file?("#{iso_dir}/#{params["iso_file"]}") &&
-          !File.file?("#{os_install_dir}/.#{params["iso_file"]}.crowbar_canary") end
+          !File.file?("#{os_install_dir}/.#{params["iso_file"]}.rebar_canary") end
     end
   end
 
@@ -205,9 +205,9 @@ set -e
 
 mv repodata/*comps*.xml ./comps.xml
 createrepo -g ./comps.xml .
-touch "repodata/.#{params["iso_file"]}.crowbar_canary"
+touch "repodata/.#{params["iso_file"]}.rebar_canary"
 EOC
-    not_if do File.file?("#{os_install_dir}/repodata/.#{params["iso_file"]}.crowbar_canary") end
+    not_if do File.file?("#{os_install_dir}/repodata/.#{params["iso_file"]}.rebar_canary") end
     only_if do os =~ /^(redhat|centos|fedora)/ end
   end
   
@@ -219,23 +219,23 @@ EOC
             else raise "Unknown OS type #{os}"
             end
   # If we are running in online mode, we need to do a few extra tasks.
-  if node["crowbar"]["provisioner"]["server"]["online"]
+  if node["rebar"]["provisioner"]["server"]["online"]
     # This information needs to be saved much earlier.
-     node["crowbar"]["provisioner"]["barclamps"].each do |bc|
+     node["rebar"]["provisioner"]["barclamps"].each do |bc|
       # Populate our known online repos.
       if bc[pkgtype]
         bc[pkgtype]["repos"].each do |repo|
-          node.normal["crowbar"]["provisioner"]["server"]["repositories"][os]["online"] ||= Mash.new
-          node.normal["crowbar"]["provisioner"]["server"]["repositories"][os]["online"][repo] = true
+          node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["online"] ||= Mash.new
+          node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["online"][repo] = true
         end if bc[pkgtype]["repos"]
         bc[pkgtype][os]["repos"].each do |repo|
-          node.normal["crowbar"]["provisioner"]["server"]["repositories"][os]["online"] ||= Mash.new
-          node.normal["crowbar"]["provisioner"]["server"]["repositories"][os]["online"][repo] = true
+          node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["online"] ||= Mash.new
+          node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["online"][repo] = true
         end if (bc[pkgtype][os]["repos"] rescue nil)
       end
       # Download and create local packages repositories for any raw_pkgs for this OS.
       if (bc[pkgtype][os]["raw_pkgs"] rescue nil)
-        destdir = "#{os_dir}/crowbar-extra/raw_pkgs"
+        destdir = "#{os_dir}/rebar-extra/raw_pkgs"
 
         directory destdir do
           action :create
@@ -278,21 +278,21 @@ EOC
   # Index known barclamp repositories for this OS
   ruby_block "Index the current local package repositories for #{os}" do
     block do
-      if File.exists? "#{os_dir}/crowbar-extra" and File.directory? "#{os_dir}/crowbar-extra"
-        Dir.glob("#{os_dir}/crowbar-extra/*") do |f|
+      if File.exists? "#{os_dir}/rebar-extra" and File.directory? "#{os_dir}/rebar-extra"
+        Dir.glob("#{os_dir}/rebar-extra/*") do |f|
           reponame = f.split("/")[-1]
-          node.normal["crowbar"]["provisioner"]["server"]["repositories"][os][reponame] = Mash.new
+          node.normal["rebar"]["provisioner"]["server"]["repositories"][os][reponame] = Mash.new
           case
           when os =~ /(ubuntu|debian)/
-            bin="deb #{provisioner_web}/#{os}/crowbar-extra/#{reponame} /"
-            src="deb-src #{provisioner_web}/#{os}/crowbar-extra/#{reponame} /"
-            node.normal["crowbar"]["provisioner"]["server"]["repositories"][os][reponame][bin] = true if
-              File.exists? "#{os_dir}/crowbar-extra/#{reponame}/Packages.gz"
-            node.normal["crowbar"]["provisioner"]["server"]["repositories"][os][reponame][src] = true if
-              File.exists? "#{os_dir}/crowbar-extra/#{reponame}/Sources.gz"
+            bin="deb #{provisioner_web}/#{os}/rebar-extra/#{reponame} /"
+            src="deb-src #{provisioner_web}/#{os}/rebar-extra/#{reponame} /"
+            node.normal["rebar"]["provisioner"]["server"]["repositories"][os][reponame][bin] = true if
+              File.exists? "#{os_dir}/rebar-extra/#{reponame}/Packages.gz"
+            node.normal["rebar"]["provisioner"]["server"]["repositories"][os][reponame][src] = true if
+              File.exists? "#{os_dir}/rebar-extra/#{reponame}/Sources.gz"
           when os =~ /(redhat|centos|suse|fedora)/
-            bin="baseurl=#{provisioner_web}/#{os}/crowbar-extra/#{reponame}"
-            node.normal["crowbar"]["provisioner"]["server"]["repositories"][os][reponame][bin] = true
+            bin="baseurl=#{provisioner_web}/#{os}/rebar-extra/#{reponame}"
+            node.normal["rebar"]["provisioner"]["server"]["repositories"][os][reponame][bin] = true
           else
             raise ::RangeError.new("Cannot handle repos for #{os}")
           end
@@ -313,41 +313,41 @@ EOC
   }
 
   # If we were asked to use a serial console, arrange for it.
-  if  node["crowbar"]["provisioner"]["server"]["use_serial_console"]
+  if  node["rebar"]["provisioner"]["server"]["use_serial_console"]
     append << " console=tty0 console=ttyS1,115200n8"
   end
 
   # If we were asked to use a serial console, arrange for it.
-  if  node["crowbar"]["provisioner"]["server"]["use_serial_console"]
+  if  node["rebar"]["provisioner"]["server"]["use_serial_console"]
     append << " console=tty0 console=ttyS1,115200n8"
   end
 
   # Add per-OS base repos that may not have been added above.
 
-  unless node["crowbar"]["provisioner"]["server"]["boot_specs"]
-    node.normal["crowbar"]["provisioner"]["server"]["boot_specs"] = Mash.new
+  unless node["rebar"]["provisioner"]["server"]["boot_specs"]
+    node.normal["rebar"]["provisioner"]["server"]["boot_specs"] = Mash.new
   end
-  unless node["crowbar"]["provisioner"]["server"]["boot_specs"][os]
-    node.normal["crowbar"]["provisioner"]["server"]["boot_specs"][os] = Mash.new
+  unless node["rebar"]["provisioner"]["server"]["boot_specs"][os]
+    node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os] = Mash.new
   end
-  node.normal["crowbar"]["provisioner"]["server"]["boot_specs"][os]["kernel"] = "../#{os}/install/#{kernel}"
-  node.normal["crowbar"]["provisioner"]["server"]["boot_specs"][os]["initrd"] = "../#{os}/install/#{initrd}"
-  node.normal["crowbar"]["provisioner"]["server"]["boot_specs"][os]["os_install_site"] = os_install_site
-  node.normal["crowbar"]["provisioner"]["server"]["boot_specs"][os]["kernel_params"] = append
+  node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["kernel"] = "../#{os}/install/#{kernel}"
+  node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["initrd"] = "../#{os}/install/#{initrd}"
+  node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["os_install_site"] = os_install_site
+  node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["kernel_params"] = append
 
   ruby_block "Set up local base OS install repos for #{os}" do
     block do
       case
       when (/^ubuntu/ =~ os and File.exists?("#{tftproot}/#{os}/install/dists"))
-        node.normal["crowbar"]["provisioner"]["server"]["repositories"][os]["base"] = { "#{provisioner_web}/#{os}/install" => true }
+        node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["base"] = { "#{provisioner_web}/#{os}/install" => true }
       when /^(suse)/ =~ os
-        node.normal["crowbar"]["provisioner"]["server"]["repositories"][os]["base"] = { "baseurl=#{provisioner_web}/#{os}/install" => true }
+        node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["base"] = { "baseurl=#{provisioner_web}/#{os}/install" => true }
       when /^(redhat|centos|fedora)/ =~ os
         # Add base OS install repo for redhat/centos
         if ::File.exists? "#{tftproot}/#{os}/install/repodata"
-          node.normal["crowbar"]["provisioner"]["server"]["repositories"][os]["base"] = { "baseurl=#{provisioner_web}/#{os}/install" => true }
+          node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["base"] = { "baseurl=#{provisioner_web}/#{os}/install" => true }
         elsif ::File.exists? "#{tftproot}/#{os}/install/Server/repodata"
-          node.normal["crowbar"]["provisioner"]["server"]["repositories"][os]["base"] = { "baseurl=#{provisioner_web}/#{os}/install/Server" => true }
+          node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["base"] = { "baseurl=#{provisioner_web}/#{os}/install/Server" => true }
         end
       end
     end

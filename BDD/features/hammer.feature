@@ -14,7 +14,7 @@ Feature: Hammers API
 
   Scenario: Hammers UI Page
     When I go to the "hammers" page
-    Then I should see a heading {bdd:crowbar.i18n.hammers.index.title}
+    Then I should see a heading {bdd:rebar.i18n.hammers.index.title}
       And I should see "root"
       And I should see "ssh"
       And there should be no translation errors
@@ -23,12 +23,12 @@ Feature: Hammers API
     Given I am on the "hammers" page
     When I click on the "ssh" link
     Then I should see a heading "ssh on (.*)"
-      And I should see {bdd:crowbar.i18n.hammers.show.hammer}
+      And I should see {bdd:rebar.i18n.hammers.show.hammer}
       And there should be no translation errors
 
   Scenario: Available Hammers UI Page
     When I go to the "available_hammers" page
-    Then I should see a heading {bdd:crowbar.i18n.available_hammers.index.title}
+    Then I should see a heading {bdd:rebar.i18n.available_hammers.index.title}
       And I should see "ssh"
       And there should be no translation errors
 
@@ -37,7 +37,7 @@ Feature: Hammers API
     When I click on the "ssh" link
     Then I should see a heading "ssh"
       And I should see "SecureShellHammer"
-      And I should see heading {bdd:crowbar.i18n.available_hammers.show.hammers}
+      And I should see heading {bdd:rebar.i18n.available_hammers.show.hammers}
       And there should be no translation errors
 
   Scenario: I get a list of hammers for a node
@@ -55,14 +55,14 @@ Feature: Hammers API
 
   Scenario: Hammers gives 501 for invalid option
     Given REST creates the {object:node} "hammer.r501.com"
-      And there are no pending Crowbar runs for {o:node} "hammer.r501.com"
+      And there are no pending Rebar runs for {o:node} "hammer.r501.com"
     When REST tells {object:node} "hammer.r501.com" to "get_funky"    
     Then I get a "501" error
     Finally REST removes the {object:node} "hammer.r501.com"
 
   Scenario: Hammers works for reboot
     Given REST creates the {object:node} "hammer.works.rbt"
-      And there are no pending Crowbar runs for {o:node} "hammer.works.rbt"
+      And there are no pending Rebar runs for {o:node} "hammer.works.rbt"
     When REST tells {object:node} "hammer.works.rbt" to "reboot"
     Then Array key "action" matches "reboot"
       And I get a "200" result

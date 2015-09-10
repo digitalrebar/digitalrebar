@@ -1,9 +1,9 @@
 name             'dhcp'
-maintainer       "OpenCrowbar team"
-maintainer_email "opencrowbar@googlegroups.com"
+maintainer       "DigitalRebar team"
+maintainer_email "digitalrebar@googlegroups.com"
 license          "Apache 2.0"
-description      "Maintains DHCP server for Crowbar"
-long_description "Maintains DHCP server for Crowbar"
+description      "Maintains DHCP server for Rebar"
+long_description "Maintains DHCP server for Rebar"
 version          "1.0.0"
 depends           "utils"
 depends           "bind9"

@@ -79,7 +79,7 @@
     <keep_install_network config:type="boolean">true</keep_install_network>
     <dns>
       <dhcp_hostname config:type="boolean">true</dhcp_hostname>
-      <domain>crowbar.site</domain>
+      <domain>rebar.site</domain>
       <resolv_conf_policy>auto</resolv_conf_policy>
       <write_hostname config:type="boolean">false</write_hostname>
     </dns>
@@ -101,7 +101,7 @@
         <script>
             <chrooted config:type="boolean">false</chrooted>
             <debug config:type="boolean">true</debug>
-            <filename>crowbar_post</filename>
+            <filename>rebar_post</filename>
             <source>
 <![CDATA[
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
@@ -109,12 +109,12 @@ HTTP_SERVER="<%= @admin_node_ip %>:<%= @web_port %>"
 IP="<%= @admin_node_ip %>"
 HOSTNAME=$(hostname)
 
-key_re='crowbar\.install\.key=([^ ]+)'
+key_re='rebar\.install\.key=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
-export CROWBAR_KEY="${BASH_REMATCH[1]}"
-echo "$CROWBAR_KEY" >/mnt/etc/crowbar.install.key
-elif [[ -f /mnt/etc/crowbar.install.key ]]; then
-export CROWBAR_KEY="$(cat /mnt/etc/crowbar.install.key)"
+export REBAR_KEY="${BASH_REMATCH[1]}"
+echo "$REBAR_KEY" >/mnt/etc/rebar.install.key
+elif [[ -f /mnt/etc/rebar.install.key ]]; then
+export REBAR_KEY="$(cat /mnt/etc/rebar.install.key)"
 fi
 
 post_state() {
@@ -122,8 +122,8 @@ local curlargs=(-o "/var/log/$1-$2.json" --connect-timeout 60 -s \
   -L -X POST --data-binary "{ \"name\": \"$1\", \"state\": \"$2\" }" \
   -H "Accept: application/json" -H "Content-Type: application/json" \
   --max-time 240)
-[[ $CROWBAR_KEY ]] && curlargs+=(-u "$CROWBAR_KEY" --digest --anyauth)
-curl "${curlargs[@]}" "http://$IP:3000/crowbar/crowbar/1.0/transition/default"
+[[ $REBAR_KEY ]] && curlargs+=(-u "$REBAR_KEY" --digest --anyauth)
+curl "${curlargs[@]}" "http://$IP:3000/rebar/rebar/1.0/transition/default"
 }
 
 mkdir -p /mnt/root/.ssh
@@ -137,8 +137,8 @@ else
     rm -f /mnt/root/.ssh/authorized_keys.wget
 fi
 
-curl -s -o /mnt/usr/local/sbin/crowbar_join.sh <%= @crowbar_join %>
-chmod +x /mnt/usr/local/sbin/crowbar_join.sh
+curl -s -o /mnt/usr/local/sbin/rebar_join.sh <%= @rebar_join %>
+chmod +x /mnt/usr/local/sbin/rebar_join.sh
 
 while true; do
       curl -s -f -L -o /tmp/bootstate "<%=@provisioner_web%>/nodes/$HOSTNAME/bootstate" && \
@@ -158,8 +158,8 @@ sync
     </chroot-scripts>
     <init-scripts config:type="list">
       <script>
-        <filename>crowbar_join</filename>
-        <location>file:///usr/local/sbin/crowbar_join.sh</location>
+        <filename>rebar_join</filename>
+        <location>file:///usr/local/sbin/rebar_join.sh</location>
       </script>
     </init-scripts>
   </scripts>

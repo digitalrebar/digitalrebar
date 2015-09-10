@@ -1,0 +1,835 @@
+# Copyright 2014, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+barclamp:
+  name: "core"
+  description: "Core DigitalRebar functionality"
+  display: "Core"
+  version: "2.E"
+  source_url: "https://github.com/digitalrebar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
+
+rebar:
+  layout: 2.0
+
+os_support:
+  - ubuntu-12.04
+  - ubuntu-14.04
+  - ubuntu-15.04
+  - redhat-6.5
+  - redhat-6.6
+  - centos-6.5
+  - centos-6.6
+  - centos-7.1.1503
+  - opensuse-13.1
+  - fedora-20
+  - debian-7.8.0
+  - debian-8.1.0
+  - xenserver-6.5
+  - esxi-5.5
+  - fuel-6.0    
+
+jigs:
+  - name: script
+    class: 'BarclampRebar::Jig'
+    description: 'Run arbitrary scripts on nodes via SSH'
+  - name: noop
+    class: NoopJig
+    description: "Jig used when roles have no action to run"
+  - name: test
+    description: 'Test jig for exercising jig and noderole operations.'
+    class: 'BarclampTest::Jig'
+  - name: chef
+    class: 'BarclampChef::Jig'
+    description: "Allow Rebar to manage nodes using Chef"
+    implementor: chef-client
+  - name: chef-solo
+    class: 'BarclampChef::SoloJig'
+    description: "Allow Rebar to manage nodes using chef-solo"
+    implementor: chef-solo
+  - name: puppet-sa
+    class: 'BarclampPuppet::SaJig'
+    description: "Puppet jig for using standalone puppet agent"
+  - name: role-provided
+    class: 'BarclampRebar::RoleProvidedJig'
+    description: "Jig that delegates back to a role-provided do_transition method"
+
+extra_files:
+  - http://downloads.sourceforge.net/project/elilo/elilo/elilo-3.16/elilo-3.16-all.tar.gz
+  - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
+  - http://storage.core-os.net/coreos/amd64-generic/38.0.0/pkgs/sys-apps/dmidecode-2.10.tbz2
+
+debs:
+  ubuntu-12.04.3:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef_11.12.8-1_amd64.deb
+    repos:
+      - deb http://us.archive.ubuntu.com/ubuntu/ precise main restricted universe multiverse
+      - deb-src http://us.archive.ubuntu.com/ubuntu/ precise main restricted universe multiverse
+      - deb http://us.archive.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse
+      - deb-src http://us.archive.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse
+      - deb http://us.archive.ubuntu.com/ubuntu/ precise-backports main restricted universe multiverse
+      - deb-src http://us.archive.ubuntu.com/ubuntu/ precise-backports main restricted universe multiverse
+      - deb http://archive.canonical.com/ubuntu precise partner
+      - deb-src http://archive.canonical.com/ubuntu precise partner
+      - deb http://extras.ubuntu.com/ubuntu precise main
+      - deb-src http://extras.ubuntu.com/ubuntu precise main
+      - deb http://security.ubuntu.com/ubuntu precise-security main restricted universe multiverse
+      - deb-src http://security.ubuntu.com/ubuntu precise-security main restricted universe multiverse
+      - deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main
+      - deb http://ppa.launchpad.net/saltstack/salt/ubuntu precise main
+      - deb http://download.draios.com/stable/deb stable-amd64/
+    pkgs:
+      - rpcbind
+  ubuntu-12.04:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef_11.12.8-1_amd64.deb
+    repos:
+      - deb http://us.archive.ubuntu.com/ubuntu/ precise main restricted universe multiverse
+      - deb-src http://us.archive.ubuntu.com/ubuntu/ precise main restricted universe multiverse
+      - deb http://us.archive.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse
+      - deb-src http://us.archive.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse
+      - deb http://us.archive.ubuntu.com/ubuntu/ precise-backports main restricted universe multiverse
+      - deb-src http://us.archive.ubuntu.com/ubuntu/ precise-backports main restricted universe multiverse
+      - deb http://archive.canonical.com/ubuntu precise partner
+      - deb-src http://archive.canonical.com/ubuntu precise partner
+      - deb http://extras.ubuntu.com/ubuntu precise main
+      - deb-src http://extras.ubuntu.com/ubuntu precise main
+      - deb http://security.ubuntu.com/ubuntu precise-security main restricted universe multiverse
+      - deb-src http://security.ubuntu.com/ubuntu precise-security main restricted universe multiverse
+      - deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main
+      - deb http://ppa.launchpad.net/saltstack/salt/ubuntu precise main
+      - deb http://download.draios.com/stable/deb stable-amd64/
+    pkgs:
+      - rpcbind
+  ubuntu-14.04:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef_11.14.2-1_amd64.deb
+    repos:
+      - deb http://us.archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse
+      - deb-src http://us.archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse
+      - deb http://us.archive.ubuntu.com/ubuntu/ trusty-updates main restricted universe multiverse
+      - deb-src http://us.archive.ubuntu.com/ubuntu/ trusty-updates main restricted universe multiverse
+      - deb http://archive.canonical.com/ubuntu trusty partner
+      - deb-src http://archive.canonical.com/ubuntu trusty partner
+      - deb http://extras.ubuntu.com/ubuntu trusty main
+      - deb-src http://extras.ubuntu.com/ubuntu trusty main
+      - deb http://security.ubuntu.com/ubuntu trusty-security main restricted universe multiverse
+      - deb-src http://security.ubuntu.com/ubuntu trusty-security main restricted universe multiverse
+      - deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main
+      - deb http://get.docker.io/ubuntu docker main
+      - deb http://ppa.launchpad.net/saltstack/salt/ubuntu trusty main
+      - deb http://download.draios.com/stable/deb stable-amd64/
+    pkgs:
+      - rpcbind
+  ubuntu-15.04:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef_11.14.2-1_amd64.deb
+    repos:
+      - deb http://us.archive.ubuntu.com/ubuntu/ vivid main restricted universe multiverse
+      - deb-src http://us.archive.ubuntu.com/ubuntu/ vivid main restricted universe multiverse
+      - deb http://us.archive.ubuntu.com/ubuntu/ vivid-updates main restricted universe multiverse
+      - deb-src http://us.archive.ubuntu.com/ubuntu/ vivid-updates main restricted universe multiverse
+      - deb http://archive.canonical.com/ubuntu vivid partner
+      - deb-src http://archive.canonical.com/ubuntu vivid partner
+      #- deb http://extras.ubuntu.com/ubuntu vivid main
+      #- deb-src http://extras.ubuntu.com/ubuntu vivid main
+      - deb http://security.ubuntu.com/ubuntu vivid-security main restricted universe multiverse
+      - deb-src http://security.ubuntu.com/ubuntu vivid-security main restricted universe multiverse
+      #- deb http://apt.postgresql.org/pub/repos/apt/ vivid-pgdg main
+      - deb http://get.docker.io/ubuntu docker main
+      - deb http://ppa.launchpad.net/saltstack/salt/ubuntu vivid main
+      - deb http://download.draios.com/stable/deb stable-amd64/
+    pkgs:
+      - rpcbind
+  debian-7.8.0:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/debian/6/x86_64/chef_11.14.2-1_amd64.deb
+    repos:
+      - deb http://ftp.us.debian.org/debian wheezy main contrib non-free
+      - deb-src http://ftp.us.debian.org/debian wheezy main contrib non-free
+      - deb http://security.debian.org/ wheezy/updates main contrib non-free
+      - deb-src http://security.debian.org/ wheezy/updates main contrib non-free
+      - deb http://ftp.us.debian.org/debian wheezy-updates main contrib non-free
+      - deb-src http://ftp.us.debian.org/debian wheezy-updates main contrib non-free
+      - deb http://ftp.us.debian.org/debian wheezy-backports main contrib non-free
+      - deb-src http://ftp.us.debian.org/debian wheezy-backports main contrib non-free
+      - deb http://download.draios.com/stable/deb stable-amd64/
+    pkgs:
+      - rpcbind
+  debian-8.1.0:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/debian/6/x86_64/chef_11.14.2-1_amd64.deb
+    repos:
+      - deb http://ftp.us.debian.org/debian jessie main contrib non-free
+      - deb-src http://ftp.us.debian.org/debian jessie main contrib non-free
+      - deb http://security.debian.org/ jessie/updates main contrib non-free
+      - deb-src http://security.debian.org/ jessie/updates main contrib non-free
+      - deb http://ftp.us.debian.org/debian jessie-updates main contrib non-free
+      - deb-src http://ftp.us.debian.org/debian jessie-updates main contrib non-free
+      - deb http://ftp.us.debian.org/debian jessie-backports main contrib non-free
+      - deb-src http://ftp.us.debian.org/debian jessie-backports main contrib non-free
+      - deb http://download.draios.com/stable/deb stable-amd64/
+    pkgs:
+      - rpcbind
+  required_pkgs:
+    - build-essential
+    - curl
+    - kwalify
+    - libpq-dev
+    - libxml2-dev
+    - libxslt1-dev
+    - postgresql-9.3
+    - postgresql-client-9.3
+    - postgresql-contrib-9.3
+    - ruby1.9.1
+    - ruby1.9.1-dev
+    - sudo
+    - vim
+    - zlib1g-dev
+    # openssh stuff
+    - openssh-client
+    - openssh-server
+    - less
+    - efibootmgr
+    - iputils-ping
+    # Package mangling stuff
+    - createrepo
+    - dpkg-dev
+    # To let us extract ISO images without loopback mounting them.
+    - bsdtar
+    - git
+  build_pkgs:
+    - bison
+    - flex
+    - make
+  pkgs:
+    # build-essential stuff
+    - build-essential
+    - binutils-doc
+    - autoconf
+    - flex
+    - bison
+    - patch
+    # rebar stuff
+    - curl
+    - postgresql-9.3
+    - postgresql-client-9.3
+    - postgresql-contrib-9.3
+    - libpq-dev
+    - kwalify
+    - libcurl4-gnutls-dev
+    # minicom stuff
+    - minicom
+    # openldap stuff
+    - libnss-ldap
+    - libpam-ldap
+    - ldap-utils
+    - db4.8-util
+    - slapd
+    # SaltStack
+    - salt-master
+    - salt-minion
+    # rabbitmq stuff
+    - rabbitmq-server
+    # ruby stuff
+    - ruby1.9.1
+    - ruby1.9.1-dev
+    # runit stuff
+    - runit
+    # sudo stuff
+    #- sudo
+    # java stuff
+    #- sun-java6-jdk
+    #- sun-java6-jre
+    - dpkg-dev
+    - screen
+    - tcpdump
+    - alien
+    - graphviz
+    - vim
+    # for nokogiri
+    - libxslt1.1
+    # provisioner
+    - dhcp3-server
+    - nfs-common
+    - nfs-kernel-server
+    - ipmitool
+    - syslinux
+    - tftpd-hpa
+    - efibootmgr
+    # apache stuff
+    - apache2
+    - apache2-prefork-dev
+    - libapache2-mod-fcgid
+    - libapache2-mod-wsgi   
+    # dns
+    - bind9
+    - bind9utils
+    # ntp
+    - ntp
+
+rpms:
+  redhat-6.5:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
+    repos:
+      - rpm http://mirrors.kernel.org/fedora-epel/6/x86_64/epel-release-6-8.noarch.rpm
+      - rpm http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-redhat93-9.3-1.noarch.rpm
+      - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
+      - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/RedHat_RHEL-6/
+      - bare openwsman 20 http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
+      - bare draios 20 http://download.draios.com/stable/rpm/x86_64
+    build_pkgs:
+      - libcurl-devel
+      - yum-plugin-downloadonly
+      - createrepo
+      - libxml2-devel
+      - zlib-devel
+      - tar
+    required_pkgs:
+      # ruby stuff
+      - ruby
+      # openssh stuff
+      - openssh-clients
+      - openssh-server
+      - openssl-devel
+      - gecode
+      - gecode-devel
+      - iproute
+      - ipmitool
+      - swig
+      - openwsman-devel
+      - bzip2
+    pkgs:
+      # openldap stuff
+      - openldap
+      - openldap-servers
+      - openldap-clients
+      - krb5-workstation
+      - vim-enhanced
+      # SaltStack
+      - salt-master
+      - salt-minion
+      # network
+      - vconfig
+      - iptables-ipv6
+      # provisioner
+      - rpcbind
+      - ipmitool
+      - dhclient
+      - nfs-utils
+      - tftp-server
+      # apache stuff
+      - httpd
+      - httpd-devel
+      - mod_fcgid
+      - mod_ssl
+      - mod_wsgi
+  redhat-6.6:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
+    repos:
+      - rpm http://mirrors.kernel.org/fedora-epel/6/x86_64/epel-release-6-8.noarch.rpm
+      - rpm http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-redhat93-9.3-1.noarch.rpm
+      - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
+      - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/RedHat_RHEL-6/
+      - bare openwsman 20 http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
+      - bare draios 20 http://download.draios.com/stable/rpm/x86_64
+    build_pkgs:
+      - libcurl-devel
+      - yum-plugin-downloadonly
+      - createrepo
+      - libxml2-devel
+      - zlib-devel
+      - tar
+    required_pkgs:
+      # ruby stuff
+      - ruby
+      # openssh stuff
+      - openssh-clients
+      - openssh-server
+      - openssl-devel
+      - gecode
+      - gecode-devel
+      - iproute
+      - ipmitool
+      - swig
+      - openwsman-devel
+      - bzip2
+    pkgs:
+      # openldap stuff
+      - openldap
+      - openldap-servers
+      - openldap-clients
+      - krb5-workstation
+      - vim-enhanced
+      # SaltStack
+      - salt-master
+      - salt-minion
+      # network
+      - vconfig
+      - iptables-ipv6
+      # provisioner
+      - rpcbind
+      - ipmitool
+      - dhclient
+      - nfs-utils
+      - tftp-server
+      # apache stuff
+      - httpd
+      - httpd-devel
+      - mod_fcgid
+      - mod_ssl
+      - mod_wsgi
+  centos-6.5:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
+    repos:
+      - rpm http://mirrors.kernel.org/fedora-epel/6/x86_64/epel-release-6-8.noarch.rpm
+      - rpm http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-redhat93-9.3-1.noarch.rpm
+      - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
+      - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/CentOS_CentOS-6/
+      - bare openwsman 20 http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
+      - bare draios 20 http://download.draios.com/stable/rpm/x86_64
+#      - bare pdns 20 http://www.monshouwer.eu/download/3rd_party/pdns/el6/x86_64
+#      - bare pdnsrecursor 20 http://www.monshouwer.eu/download/3rd_party/pdns-recursor/el6/x86_64
+    build_pkgs:
+      - libcurl-devel
+      - yum-plugin-downloadonly
+      - yum-plugin-priorities
+      - createrepo
+      - libxml2-devel
+      - zlib-devel
+      - tar
+    required_pkgs:
+      # ruby stuff
+      - ruby
+      # openssh stuff
+      - openssh-clients
+      - openssh-server
+      - openssl-devel
+      - gecode
+      - gecode-devel
+      - iproute
+      - squid
+      - perl-devel
+      - perl-CPAN
+      - perl-DBD-Pg
+      - swig
+      - openwsman-devel
+      - git
+      - mercurial
+      - subversion
+      - bzip2
+    pkgs:
+      # openldap stuff
+      - openldap
+      - openldap-servers
+      - openldap-clients
+      - krb5-workstation
+      - vim-enhanced
+      # SaltStack
+      - salt-master
+      - salt-minion
+      # network
+      - vconfig
+      - iptables-ipv6
+      # provisioner
+      - rpcbind
+      - ipmitool
+      - dhclient
+      - nfs-utils
+      - tftp-server
+      # apache stuff
+      - httpd
+      - httpd-devel
+      - mod_fcgid
+      - mod_ssl
+      - ipmitool
+  centos-6.6:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
+    repos:
+      - rpm http://mirrors.kernel.org/fedora-epel/6/x86_64/epel-release-6-8.noarch.rpm
+      - rpm http://yum.postgresql.org/9.3/redhat/rhel-6-x86_64/pgdg-redhat93-9.3-1.noarch.rpm
+      - bare bsdtar 20 http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
+      - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/CentOS_CentOS-6/
+      - bare openwsman 20 http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
+      - bare draios 20 http://download.draios.com/stable/rpm/x86_64
+#      - bare pdns 20 http://www.monshouwer.eu/download/3rd_party/pdns/el6/x86_64
+#      - bare pdnsrecursor 20 http://www.monshouwer.eu/download/3rd_party/pdns-recursor/el6/x86_64
+    build_pkgs:
+      - libcurl-devel
+      - yum-plugin-downloadonly
+      - yum-plugin-priorities
+      - createrepo
+      - libxml2-devel
+      - zlib-devel
+      - tar
+    required_pkgs:
+      # ruby stuff
+      - ruby
+      # openssh stuff
+      - openssh-clients
+      - openssh-server
+      - openssl-devel
+      - gecode
+      - gecode-devel
+      - iproute
+      - squid
+      - perl-devel
+      - perl-CPAN
+      - perl-DBD-Pg
+      - swig
+      - openwsman-devel
+      - git
+      - mercurial
+      - subversion
+      - bzip2
+    pkgs:
+      # openldap stuff
+      - openldap
+      - openldap-servers
+      - openldap-clients
+      - krb5-workstation
+      - vim-enhanced
+      # SaltStack
+      - salt-master
+      - salt-minion
+      # network
+      - vconfig
+      - iptables-ipv6
+      # provisioner
+      - rpcbind
+      - ipmitool
+      - dhclient
+      - nfs-utils
+      - tftp-server
+      # apache stuff
+      - httpd
+      - httpd-devel
+      - mod_fcgid
+      - mod_ssl
+      - ipmitool
+  centos-7.1.1503:
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
+    repos:
+      - rpm http://yum.postgresql.org/9.3/redhat/rhel-7-x86_64/pgdg-centos93-9.3-1.noarch.rpm
+      - rpm http://mirrors.kernel.org/fedora-epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+      - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/CentOS_7/
+      - bare draios 20 http://download.draios.com/stable/rpm/x86_64
+#      - bare pdns 20 http://www.monshouwer.eu/download/3rd_party/pdns/el7/x86_64
+#      - bare pdnsrecursor 20 http://www.monshouwer.eu/download/3rd_party/pdns-recursor/el7/x86_64
+    build_pkgs:
+      - libcurl-devel
+      - yum-plugin-downloadonly
+      - yum-plugin-priorities
+      - createrepo
+      - libxml2-devel
+      - zlib-devel
+      - tar
+    required_pkgs:
+      # ruby stuff
+      - ruby
+      - ruby-devel
+      - rubygems
+      # openssh stuff
+      - openssh-clients
+      - openssh-server
+      - openssl-devel
+      - gecode
+      - gecode-devel
+      - iproute
+      - squid
+      - perl-devel
+      - perl-CPAN
+      - perl-DBD-Pg
+      - bzip2
+    pkgs:
+      # openldap stuff
+      - openldap
+      - openldap-servers
+      - openldap-clients
+      - krb5-workstation
+      - vim-enhanced
+      # network
+      - vconfig
+      - iptables-ipv6
+      # provisioner
+      - rpcbind
+      - ipmitool
+      - dhclient
+      - nfs-utils
+      - tftp-server
+      # apache stuff
+      - httpd
+      - httpd-devel
+      - mod_fcgid
+      - mod_ssl
+  fedora-20:
+    repos:
+      - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/Fedora_20/
+      - bare draios 20 http://download.draios.com/stable/rpm/x86_64
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
+    required_pkgs:
+      # ruby stuff
+      - ruby
+      - ruby-devel
+      - sudo
+      # openssh stuff
+      - openssh-clients
+      - openssh-server
+      - openssl-devel
+    build_pkgs:
+      - libcurl-devel
+      - yum-plugin-priorities
+      - createrepo
+      - libxml2-devel
+      - zlib-devel
+      - openssl-devel
+    pkgs:
+      # SaltStack
+      - salt-master
+      - salt-minion
+      # openldap stuff
+      - openldap
+      - openldap-servers
+      - openldap-clients
+      - krb5-workstation
+      - vim-enhanced
+      # provisioner
+      - rpcbind
+      - ipmitool
+      - dhclient
+      - nfs-utils
+      - tftp-server
+      # apache stuff
+      - httpd
+      - httpd-devel
+      - mod_fcgid
+      - mod_ssl
+      - mod_wsgi
+    raw_pkgs:
+      - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
+  opensuse-13.1:
+    raw_pkgs:
+      # openSUSE native packages would be nice
+      - http://opscode-omnibus-packages.s3.amazonaws.com/el/6/x86_64/chef-11.16.4-1.el6.x86_64.rpm
+    repos:
+      - repo http://download.opensuse.org/repositories/server:/database:/postgresql/openSUSE_13.1/ postgresql
+      - repo http://download.opensuse.org/repositories/devel:/tools/openSUSE_13.1/ devel-libs
+      - repo http://download.opensuse.org/update/13.1/ update-oss
+      - bare vbernat 20 http://download.opensuse.org/repositories/home:/vbernat/openSUSE_13.2/
+    required_pkgs:
+      - libecpg6
+      - libopenssl-devel
+      - libossp-uuid16
+      - libpq5
+      - libxml2-2
+      - libxml2-devel
+      - libxslt-devel
+      - libxslt-tools
+      - libxslt1
+      - postgresql93
+      - postgresql93-contrib
+      - postgresql93-devel
+      - postgresql93-server
+      - ruby20
+      - ruby20-devel
+      - autoconf
+      - sudo
+      - zlib-devel
+      - createrepo
+      # openssh stuff
+      - openssh
+    build_pkgs:
+      - libcurl-devel
+      - libxml2-devel
+      - zlib-devel
+      - tar
+    pkgs:
+      # openldap stuff
+      - openldap2
+      - openldap2-client
+      - krb5-client
+      - openssl
+      - libssh-devel
+      - vim
+      # SaltStack
+      - salt-master
+      - salt-minion
+      # network
+      - vlan
+      # provisioner
+      - nfs-client
+      - nfs-kernel-server
+      - dhcp-client
+      - tftp
+      - apache2
+      - apache2-devel
+  required_pkgs:
+    - acl
+    - cmake
+    - curl
+    - efibootmgr
+    - gcc
+    - gcc-c++
+    - git
+    - jq
+    - libc-devel
+    - libcurl-devel
+    - libxml2-devel
+    - make
+    - make
+    - openssl-devel
+    - ruby
+    - ruby-devel
+    - sblim-sfcc-devel
+    - swig
+    - tcpdump
+    - vim
+    - zlib-devel
+    - mercurial
+    - screen
+    - policycoreutils-python
+    # postgresql 93 stuff
+    - postgresql93
+    - postgresql93-devel
+    - postgresql93-contrib
+    - postgresql93-server
+    - libxml2-devel
+    - libpq5
+    - libossp-uuid16
+    - libecpg6
+    - sudo
+    # Repo and iso mangling stuff
+    - createrepo
+    - dpkg-devel
+    # To extract ISO images without needing a loopback mount.
+    - bsdtar
+    - git
+    - patch
+  build_pkgs:
+    - make
+    - gcc
+    - glibc-devel
+    - kernel-devel
+    - flex
+    - bison
+  pkgs:
+    # build-essential stuff
+    - gcc
+    - gcc-c++
+    - kernel-devel
+    - make
+    - autoconf
+    - flex
+    - bison
+    - patch
+    # rebar stuff
+    - curl
+    - createrepo
+    # minicom stuff
+    - minicom
+    # rabbitmq stuff
+    # sudo stuff
+    - sudo
+    - screen
+    - graphviz
+    # openssh stuff
+    - openssh
+    # network
+    - bridge-utils
+    - dhcp
+    - iptables
+    - tcpdump
+    # provisioner
+    - dhcp
+    - syslinux
+    - xinetd
+    - efibootmgr
+    # dns
+    - bind9
+    - bind9utils
+    # ntp
+    - ntp
+    # loggins
+    - rsyslog
+gems:
+  required_pkgs:
+    - bundler
+    - net-http-digest_auth
+    - json
+    - cstruct
+    - builder
+    - berkshelf
+    - yard
+  pkgs:
+    - active_scaffold
+    - amqp
+    - maruku
+    - builder
+    - bundler-(~>1.3.0)
+    - bunny-(<0.8.0)
+    - cancan
+    - coveralls
+    - chef-(~>11.6.4)
+    - cstruct
+    - database_cleaner
+    - devise-(~>3.0.0)
+    - email_spec
+    - formtastic
+    - haml
+    - highline
+    - i18n
+    - jquery-rails
+    - json-(~>1.8.0)
+    - kwalify
+    - launchy
+    - libxml-ruby
+    - ruby-shadow
+    - net-http-digest_auth
+    - net-ssh
+    - net-ssh-multi
+    - puma
+    - pg
+    - railroad
+    - rails-(~>3.2.13)
+    - rails_config
+    - ledermann-rails-settings
+    - rails-erd
+    - rake
+    #- rcov
+    - rdoc
+    - rest-client
+    # Pinned to not interfere with chefspec.
+    - rspec-rails-(=2.11.4)
+    - sass
+    - sass-rails-(~>3.2.3)
+    - sendfile
+    - simplecov
+    - simple-navigation
+    - state_machine
+    - syslogger
+    - xml-simple
+    - factory_girl_rails-(~>1.7.0)
+    - delayed_job_active_record
+    - delayed_job
+    - daemons
+    - diplomat-(~>0.2.1)

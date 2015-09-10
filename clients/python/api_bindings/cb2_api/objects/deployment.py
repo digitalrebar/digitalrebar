@@ -17,7 +17,7 @@ from apiobject import ApiObject
 
 class DeploymentEP(EndPoint):    
     '''
-    https://github.com/opencrowbar/core/blob/master/doc/devguide/api/deployment.md
+    https://github.com/digitalrebar/core/blob/master/doc/devguide/api/deployment.md
     '''
     __endpoint   = "/api/v2/deployments"      
     __apiObjectType = "Deployment"

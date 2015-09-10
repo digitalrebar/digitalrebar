@@ -20,7 +20,7 @@
 g(Item) ->
   case Item of
     path -> "network_ranges";
-    _ -> crowbar:g(Item)
+    _ -> rebar:g(Item)
   end.
 
 % Common Routine
@@ -40,7 +40,7 @@ validate(JSON) when is_record(JSON, obj) ->
       bdd_utils:is_a(J, integer, team_mode),
       bdd_utils:is_a(J, boolnull, use_team),
       bdd_utils:is_a(J, boolean, overlap),
-      crowbar_rest:validate_core(J)],
+      rebar_rest:validate_core(J)],
   bdd_utils:assert(R);
 validate(JSON) -> 
   bdd_utils:log(error, range, validate, "requires #obj record. Got ~p", [JSON]), 
@@ -49,7 +49,7 @@ validate(JSON) ->
 path(Network, Range) -> eurl:path([network:g(path), Network, g(path), Range]).
 
 json(Name, _Description, _Order) ->
- crowbar:json([{name, Name}, {first, "10.10.10.1/24"}, {last, "10.10.10.254/24"}]).
+ rebar:json([{name, Name}, {first, "10.10.10.1/24"}, {last, "10.10.10.254/24"}]).
 
 step(_Global, {step_setup, _N, _}) -> true;
 

@@ -53,9 +53,9 @@ class BarclampProvisioner::DockerSetup < Role
       end
 
       nr.with_lock('FOR NO KEY UPDATE') do
-        old_hosts = (nr.sysdata["crowbar"]["docker"]["clients"] rescue {})
+        old_hosts = (nr.sysdata["rebar"]["docker"]["clients"] rescue {})
         next if old_hosts  == hosts
-        nr.update_column("sysdata",{"crowbar" => {"docker" => {"clients" => hosts}}})
+        nr.update_column("sysdata",{"rebar" => {"docker" => {"clients" => hosts}}})
         to_enqueue << nr
       end
     end

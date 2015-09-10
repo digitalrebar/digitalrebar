@@ -1,5 +1,5 @@
 #!/bin/bash
-export OCB_SESSION="opencrowbar"
+export OCB_SESSION="digitalrebar"
 if [[ ! $TMUX && $SESSION != $OCB_SESSION ]]; then
     if !which tmux &>/dev/null; then
         echo "Docker-slaves needs tmux installed!"

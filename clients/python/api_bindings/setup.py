@@ -16,8 +16,8 @@ from setuptools import setup
 
 setup(name='cb2_api',
     version='0.0.3',
-    description='Python opencrowbar api bindings',
-    url='https://github.com/opencrowbar',
+    description='Python digitalrebar api bindings',
+    url='https://github.com/digitalrebar',
     license='Apache2',
     packages=['cb2_api', 'cb2_api.objects', 'cb2_api.examples'],
     install_requires=[

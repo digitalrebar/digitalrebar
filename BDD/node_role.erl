@@ -25,7 +25,7 @@ g(Item) ->
     path  -> "/api/v2/node_roles";
     atom  -> bdd_node_role1;
     name  -> "bdd_node_role";
-    _     -> crowbar:g(Item)
+    _     -> rebar:g(Item)
   end.
   
 
@@ -45,7 +45,7 @@ validate(JSON) when is_record(JSON, obj) ->
       bdd_utils:is_a(J, string, status),
       bdd_utils:is_a(J, boolean, available),
       bdd_utils:is_a(J, boolean, node_error),
-      crowbar_rest:validate_core(J)],
+      rebar_rest:validate_core(J)],
   bdd_utils:assert(R).
 
 % Common Routine
@@ -67,7 +67,7 @@ bind(Node, Role, Deployment) ->
 % specialized function
 
 available_os(AdminNode, OS) -> 
-  attrib_set(AdminNode, "provisioner-base-images", json:output([{data,[{crowbar,[{provisioner, [{server, [{available_oses, [{K, true} || K <- OS]}]}]}]}]}])).
+  attrib_set(AdminNode, "provisioner-base-images", json:output([{data,[{rebar,[{provisioner, [{server, [{available_oses, [{K, true} || K <- OS]}]}]}]}]}])).
 
 attrib_set(Node, Attrib, ValueJSON) ->
   bdd_utils:log(debug, node_role, attrib_set, "Calling with node ~p attrib ~p set ~p", [Node, Attrib, ValueJSON]),

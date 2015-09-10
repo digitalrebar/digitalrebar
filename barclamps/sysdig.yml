@@ -19,9 +19,9 @@ barclamp:
   display: "Sysdig"
   description: "Sysdig evaluation tools"
   version: "2.E"
-  source_url: "https://github.com/opencrowbar/core"
+  source_url: "https://github.com/digitalrebar/core"
   license: "Apache 2"
-  license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
   - name: sysdig
@@ -30,6 +30,6 @@ roles:
       - milestone
     requires:
       - provisioner-repos
-      - crowbar-installed-node
+      - rebar-installed-node
     description: 'Provides the sysdig tool'
 

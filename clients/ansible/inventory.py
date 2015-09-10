@@ -18,18 +18,18 @@ import requests, json, argparse
 from requests.auth import HTTPDigestAuth
   
 '''
-https://github.com/opencrowbar/core/blob/master/doc/devguide/api.md
+https://github.com/digitalrebar/core/blob/master/doc/devguide/api.md
 '''
     
 def main():
 
-    # change these values to match your OpenCrowbar installation
+    # change these values to match your DigitalRebar installation
     addr = "http://127.0.0.1:3000"
-    user = "crowbar"
-    password = "crowbar"
+    user = "rebar"
+    password = "rebar1"
 
     # Argument parsing 
-    parser = argparse.ArgumentParser(description="Ansible dynamic inventory via OpenCrowbar")
+    parser = argparse.ArgumentParser(description="Ansible dynamic inventory via DigitalRebar")
     parser.add_argument("--list", help="Ansible inventory of all of the deployments", 
         action="store_true", dest="list_inventory")
     parser.add_argument("--host",

@@ -13,9 +13,9 @@ Feature: Deployments
     
   Scenario: The Deployment UI page renders
     Given I am on the "deployments" page
-    Then I should see a heading {bdd:crowbar.i18n.deployments.index.title}
+    Then I should see a heading {bdd:rebar.i18n.deployments.index.title}
       And I should see "system"
-      And I should see {apply:crowbar.i18n.deployments.index.parent}
+      And I should see {apply:rebar.i18n.deployments.index.parent}
       And there are no localization errors
 
   Scenario: The system deployment has the system flag true

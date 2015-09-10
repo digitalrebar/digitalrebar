@@ -204,7 +204,7 @@ class Network < ActiveRecord::Base
     if (v6prefix == V6AUTO)
       Role.logger.info("Network: Creating automatic IPv6 prefix for #{name}")
       user = User.admin.first
-      # this config code really needs to move to Crowbar base
+      # this config code really needs to move to Rebar base
       cluster_prefix = user.settings(:network).v6prefix[name]
       if cluster_prefix.nil? or cluster_prefix.eql? V6AUTO
         cluster_prefix = Network.make_global_v6prefix
@@ -246,47 +246,47 @@ class Network < ActiveRecord::Base
                          :barclamp_id => bc.id,
                          :name => "#{role_name}_addresses",
                          :description => "#{name} network addresses assigned to a node",
-                         :map => "crowbar/network/#{name}/addresses")
+                         :map => "rebar/network/#{name}/addresses")
         Attrib.create!(:role_id => r.id,
                          :barclamp_id => bc.id,
                          :name => "#{role_name}_targets",
                          :description => "#{name} network addresses to be used as ping test targets",
-                         :map => "crowbar/network/#{name}/targets")
+                         :map => "rebar/network/#{name}/targets")
         Attrib.create!(:role_id => r.id,
                          :barclamp_id => bc.id,
                          :name => "#{role_name}_conduit",
                          :description => "#{name} network conduit map for this node",
-                         :map => "crowbar/network/#{name}/conduit")
+                         :map => "rebar/network/#{name}/conduit")
         Attrib.create!(:role_id => r.id,
                          :barclamp_id => bc.id,
                          :name => "#{role_name}_resolved_conduit",
                          :description => "#{name} network interfaces used on this node",
-                         :map => "crowbar/network/#{name}/resolved_interfaces")
+                         :map => "rebar/network/#{name}/resolved_interfaces")
         Attrib.create!(:role_id => r.id,
                          :barclamp_id => bc.id,
                          :name => "#{role_name}_vlan",
                          :description => "#{name} network vlan tag",
-                         :map => "crowbar/network/#{name}/vlan")
+                         :map => "rebar/network/#{name}/vlan")
         Attrib.create!(:role_id => r.id,
                          :barclamp_id => bc.id,
                          :name => "#{role_name}_team_mode",
                          :description => "#{name} network bonding mode",
-                         :map => "crowbar/network/#{name}/team_mode")
+                         :map => "rebar/network/#{name}/team_mode")
         Attrib.create!(:role_id => r.id,
                          :barclamp_id => bc.id,
                          :name => "#{role_name}_use_vlan",
                          :description => "Whether the #{name} network should use a tagged VLAN interface",
-                         :map => "crowbar/network/#{name}/use_vlan")
+                         :map => "rebar/network/#{name}/use_vlan")
         Attrib.create!(:role_id => r.id,
                          :barclamp_id => bc.id,
                          :name => "#{role_name}_use_team",
                          :description => "Whether the #{name} network should bond its interfaces",
-                         :map => "crowbar/network/#{name}/use_team")
+                         :map => "rebar/network/#{name}/use_team")
         Attrib.create!(:role_id => r.id,
                          :barclamp_id => bc.id,
                          :name => "#{role_name}_use_bridge",
                          :description => "Whether #{name} network should create a bridge for other barclamps to use",
-                         :map => "crowbar/network/#{name}/use_bridge")
+                         :map => "rebar/network/#{name}/use_bridge")
         # attributes for hints
         # These belong to the barclamp, not the role.
         Attrib.create!(:barclamp_id => bc.id,

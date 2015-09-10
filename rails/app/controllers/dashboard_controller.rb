@@ -135,7 +135,7 @@ class DashboardController < ApplicationController
       end
 
       # milestone for OS assignment
-      ready = Role.find_key 'crowbar-installed-node'
+      ready = Role.find_key 'rebar-installed-node'
       ready.add_to_deployment d
       ready_network = Role.find_key "network-#{ready_name}"
       ready_network.add_to_deployment d

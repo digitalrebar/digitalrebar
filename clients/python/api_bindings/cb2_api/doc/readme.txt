@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-Opencrowbar :
-        https://github.com/opencrowbar
+Openrebar :
+        https://github.com/digitalrebar
 
 Installation :
         python setup.py install
@@ -21,8 +21,8 @@ Installation :
 
 Session management.
 
-        cb2_api manages the authentication, you need to create a session instance for your crowbar admin node
-                session = cb2_Api("192.168.124.10", "3000", "crowbar", "crowbar")
+        cb2_api manages the authentication, you need to create a session instance for your rebar admin node
+                session = cb2_Api("192.168.124.10", "3000", "rebar", "rebar1")
 
         You can update/get/delete.. objects in a number of ways. The
         following illustrate the methods available, we're using a
@@ -93,7 +93,7 @@ Some object have 'special' methods, those are available either through the sessi
 Wokflow example
 
    #create an api session
-    session = cb2_Api("192.168.124.10", "3000", "crowbar", "crowbar")
+    session = cb2_Api("192.168.124.10", "3000", "rebar", "rebar1")
 
     #create a new deployment
     deploy = Deployment()

@@ -17,7 +17,7 @@ from apiobject import ApiObject
 
 class GroupEP(EndPoint):    
     '''
-    https://github.com/opencrowbar/core/blob/master/doc/devguide/api/group.md
+    https://github.com/digitalrebar/core/blob/master/doc/devguide/api/group.md
     '''
     __endpoint   = "/api/v2/groups"      
     __apiObjectType = "Group"

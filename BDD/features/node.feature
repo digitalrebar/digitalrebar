@@ -4,7 +4,7 @@ Feature: Nodes
   wants to be able to check the status of nodes
 
   Scenario: Admin Node working & defaults
-    When REST gets the {object:node} {lookup:crowbar.node_name}
+    When REST gets the {object:node} {lookup:rebar.node_name}
     Then the {object:node} is properly formatted
       And key "deployment_id" should be "1"
       And key "admin" should be "true"
@@ -13,14 +13,14 @@ Feature: Nodes
 
   Scenario: UI Node List
     When I go to the "nodes" page
-    Then I should see {bdd:crowbar.i18n.nodes.index.title}
-      And I should see {lookup:crowbar.node_name}
+    Then I should see {bdd:rebar.i18n.nodes.index.title}
+      And I should see {lookup:rebar.node_name}
       And there should be no translation errors
 
   Scenario: UI Node List Click to Node
     Given I am on the "nodes" page
-    When I click on the {lookup:crowbar.node_name} link
-    Then I should see {lookup:crowbar.node_name}
+    When I click on the {lookup:rebar.node_name} link
+    Then I should see {lookup:rebar.node_name}
       And there should be no translation errors
 
   Scenario: Nodes List
@@ -33,18 +33,18 @@ Feature: Nodes
     
   Scenario: REST Can Delete
     Given REST creates the {object:node} "going.going.gone"
-      And there are no pending Crowbar runs for {o:node} "going.going.gone"
+      And there are no pending Rebar runs for {o:node} "going.going.gone"
     When REST deletes the {object:node} "going.going.gone"
     Then I get a {integer:200} result
-      And there are no pending Crowbar runs for {o:node} "going.going.gone"
+      And there are no pending Rebar runs for {o:node} "going.going.gone"
       And there is not a {object:node} "going.going.gone"
 
   Scenario: REST Can Delete Committed
     Given REST creates and commits the {object:node} "going.committed.gone"
-      And there are no pending Crowbar runs for {o:node} "going.committed.gone"
+      And there are no pending Rebar runs for {o:node} "going.committed.gone"
     When REST deletes the {object:node} "going.committed.gone"
     Then I get a {integer:200} result
-      And there are no pending Crowbar runs for {o:node} "going.committed.gone"
+      And there are no pending Rebar runs for {o:node} "going.committed.gone"
       And there is not a {object:node} "going.committed.gone"
   
   Scenario: REST Get 404
@@ -56,14 +56,14 @@ Feature: Nodes
     When REST gets the {object:node} list
     Then the list should have an object with key "name" value "bdd-node-list.example.com"
       And the list should have an object with key "name" value "bdd1.example.com"
-      And the list should have an object with key "name" value {lookup:crowbar.node_name}
+      And the list should have an object with key "name" value {lookup:rebar.node_name}
     Finally REST removes the {object:node} "bdd-node-list.example.com"
     
   Scenario: Node Page Checkout
     Given there is a {object:node} "bdd-node-page.example.com" marked alive
     When I go to the "nodes/bdd-node-page.example.com" page 
-    Then I should see {bdd:crowbar.i18n.common.bootenv.local}
-      And I should not see {bdd:crowbar.i18n.common.bootenv.sledgehammer}
+    Then I should see {bdd:rebar.i18n.common.bootenv.local}
+      And I should not see {bdd:rebar.i18n.common.bootenv.sledgehammer}
       And there should be no translation errors
     Finally REST removes the {object:node} "bdd-node-page.example.com"
 
@@ -107,14 +107,14 @@ Feature: Nodes
   Scenario: Node UI shows alive
     Given there is a {object:node} "bdd-alive-ui.example.com"
     When I go to the "nodes/bdd-alive-ui.example.com" page 
-    Then I should see {bdd:crowbar.i18n.common.state.alive}
+    Then I should see {bdd:rebar.i18n.common.state.alive}
       And there should be no translation errors
     Finally REST removes the {object:node} "bdd-alive-ui.example.com"
 
   Scenario: Nodes UI shows alive
     Given there is a {object:node} "bdd-alive-ui.example.com"
     When I go to the "nodes" page 
-    Then I should see {bdd:crowbar.i18n.common.state.alive}
+    Then I should see {bdd:rebar.i18n.common.state.alive}
       And there should be no translation errors
     Finally REST removes the {object:node} "bdd-alive-ui.example.com"
 
@@ -122,7 +122,7 @@ Feature: Nodes
     Given there is a {object:node} "bdd-reserved-ui.example.com"
       And REST sets the {object:node} "bdd-reserved-ui.example.com" {atom:available} state to be "false"
     When I go to the "nodes/bdd-reserved-ui.example.com" page 
-    Then I should see {bdd:crowbar.i18n.common.state.reserved}
+    Then I should see {bdd:rebar.i18n.common.state.reserved}
       And there should be no translation errors
     Finally REST removes the {object:node} "bdd-reserved-ui.example.com"
 
@@ -130,7 +130,7 @@ Feature: Nodes
     Given there is a {object:node} "bdd-reserved-ui1.example.com"
       And REST sets the {object:node} "bdd-reserved-ui1.example.com" {atom:available} state to be "false"
     When I go to the "nodes" page 
-    Then I should see {bdd:crowbar.i18n.common.state.reserved}
+    Then I should see {bdd:rebar.i18n.common.state.reserved}
       And there should be no translation errors
     Finally REST removes the {object:node} "bdd-reserved-ui1.example.com"
 
@@ -174,10 +174,10 @@ Feature: Nodes
       And there is a hint "mac" with "f6:f5:f4:f3:f2:f1"
       And there is a {object:node} "bdd-hint-ip4.data.edu" hinted
       And process "delayed" returns "delayed_job.([0..9])"
-      And there are no pending Crowbar runs for {o:node} {lookup:crowbar.node_name}
-      And there are no pending Crowbar runs for {o:node} "bdd-hint-ip4.data.edu"
+      And there are no pending Rebar runs for {o:node} {lookup:rebar.node_name}
+      And there are no pending Rebar runs for {o:node} "bdd-hint-ip4.data.edu"
     When REST requests the "/api/v2/dhcp/bdd-hint-ip4.data.edu" page
     Then Array key "mac_addresses" matches "f6:f5:f4:f3:f2:f1"
       And Array key "v4addr" matches "192.168.124.\\d{1,3}\/\\d{1,2}"
-    Finally there are no pending Crowbar runs for {o:node} "bdd-hint-ip4.data.edu"
+    Finally there are no pending Rebar runs for {o:node} "bdd-hint-ip4.data.edu"
       And REST removes the {object:node} "bdd-hint-ip4.data.edu"

@@ -1,7 +1,7 @@
 class Chef
   class Node
     # All information about configured nets is stored in
-    # self[:crowbar_wall][:network][:nets] as rows in a matrix.
+    # self[:rebar_wall][:network][:nets] as rows in a matrix.
     # Each row has the following entries:
     # row[0] = The name of the network.
     # row[1] = The name of the range within that network.
@@ -12,7 +12,7 @@ class Chef
     # row[4] = The category of the network (use this instead of name)
     def addresses(cat="admin",type=::IP,range=nil)
       res = []
-      (self[:crowbar_wall][:network][:nets] || [] rescue []).each do |row|
+      (self[:rebar_wall][:network][:nets] || [] rescue []).each do |row|
         next unless cat.nil? || row[4] == cat
         next unless range.nil? || row[1] == range
         res << ::IP.coerce(row[2])
@@ -25,12 +25,12 @@ class Chef
     def address(cat="admin",type=::IP,range=nil,exact=false)
       res = self.addresses(cat,type,range).first
       return res if res || exact
-      (::IP.coerce("#{self[:crowbar][:network][cat][:address]}/#{self[:crowbar][:network][cat][:netmask]}") rescue nil) ||
+      (::IP.coerce("#{self[:rebar][:network][cat][:address]}/#{self[:rebar][:network][cat][:netmask]}") rescue nil) ||
         ::IP.coerce(self[:ipaddress])
     end
     def interfaces(cat="admin",range=nil)
       res = nil
-      (self[:crowbar_wall][:network][:nets] || [] rescue []).each do |row|
+      (self[:rebar_wall][:network][:nets] || [] rescue []).each do |row|
         next unless cat.nil? || row[4] == cat
         next unless range.nil? || row[1] == range
         ifs = row[3].map{|n|::Nic.new(n)}

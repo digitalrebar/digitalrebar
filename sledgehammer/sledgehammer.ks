@@ -2,7 +2,7 @@ lang en_US.UTF-8
 keyboard us
 timezone US/Eastern
 auth --useshadow --enablemd5
-# crowbar
+# rebar
 rootpw --iscrypted $1$H6F/NLec$Fps2Ut0zY4MjJtsa1O2yk0
 selinux --disabled
 firewall --disabled

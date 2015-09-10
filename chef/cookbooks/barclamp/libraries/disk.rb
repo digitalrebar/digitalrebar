@@ -10,13 +10,13 @@ class Disk
                      /\/wwn-/,
                      /\/usb-/ ]
   def self.update(node)
-    node.set[:crowbar_wall] = {} unless node[:crowbar_wall]
-    node.set[:crowbar_wall][:reservations] = {} unless node[:crowbar_wall][:reservations]
+    node.set[:rebar_wall] = {} unless node[:rebar_wall]
+    node.set[:rebar_wall][:reservations] = {} unless node[:rebar_wall][:reservations]
     present_disks = all.sort.map do |ent|
       ent.to_hash
     end
     Chef::Log.info("Current disks: #{present_disks.inspect}")
-    recorded_disks = node[:crowbar_wall][:reservations][:disks] || []
+    recorded_disks = node[:rebar_wall][:reservations][:disks] || []
     Chef::Log.info("Recorded disks: #{recorded_disks.inspect}")
     disks = {}
     # Record the current set of disks
@@ -43,12 +43,12 @@ class Disk
         val["current"]
       end
     end
-    node.set[:crowbar_wall][:reservations][:disks] = new_disks
-    claims = node[:crowbar_wall][:reservations][:claimed_disks]
+    node.set[:rebar_wall][:reservations][:disks] = new_disks
+    claims = node[:rebar_wall][:reservations][:claimed_disks]
     if claims && !claims.empty?
       claims = claims.to_hash
       claims.delete_if{|k,v|!new_disks.any?{|d|d['unique_name'] == k}}
-      node.set[:crowbar_wall][:reservations][:claimed_disks] = claims
+      node.set[:rebar_wall][:reservations][:claimed_disks] = claims
     end
   end
 
@@ -157,24 +157,24 @@ class Disk
   end
 
   def owner(node)
-    (node[:crowbar_wall][:reservations][:claimed_disks][unique_name] || nil) rescue nil
+    (node[:rebar_wall][:reservations][:claimed_disks][unique_name] || nil) rescue nil
   end
 
   def own(node,claimant)
-    node.set[:crowbar_wall] = {} unless node[:crowbar_wall]
-    node.set[:crowbar_wall][:reservations] = {} unless node[:crowbar_wall][:reservations]
-    h = node[:crowbar_wall][:reservations][:claimed_disks] ? node[:crowbar_wall][:reservations][:claimed_disks].to_hash : {}
+    node.set[:rebar_wall] = {} unless node[:rebar_wall]
+    node.set[:rebar_wall][:reservations] = {} unless node[:rebar_wall][:reservations]
+    h = node[:rebar_wall][:reservations][:claimed_disks] ? node[:rebar_wall][:reservations][:claimed_disks].to_hash : {}
     h[unique_name] = claimant
-    node.set[:crowbar_wall][:reservations][:claimed_disks] = h
+    node.set[:rebar_wall][:reservations][:claimed_disks] = h
   end
 
   def disown(node)
-    node.set[:crowbar_wall] = {} unless node[:crowbar_wall]
-    node.set[:crowbar_wall][:reservations] = {} unless node[:crowbar_wall][:reservations]
-    node.set[:crowbar_wall][:reservations][:claimed_disks] = {} unless node[:crowbar_wall][:reservations][:claimed_disks]
-    disks = node[:crowbar_wall][:reservations][:claimed_disks].to_hash
+    node.set[:rebar_wall] = {} unless node[:rebar_wall]
+    node.set[:rebar_wall][:reservations] = {} unless node[:rebar_wall][:reservations]
+    node.set[:rebar_wall][:reservations][:claimed_disks] = {} unless node[:rebar_wall][:reservations][:claimed_disks]
+    disks = node[:rebar_wall][:reservations][:claimed_disks].to_hash
     disks.reject!{|k,v| k == unique_name}
-    node.set[:crowbar_wall][:reservations][:claimed_disks] = disks
+    node.set[:rebar_wall][:reservations][:claimed_disks] = disks
   end
 
   protected

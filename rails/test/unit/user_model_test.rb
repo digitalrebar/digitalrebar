@@ -18,7 +18,7 @@ require 'digest/md5'
 class UserModelTest < ActiveSupport::TestCase
 
   test "Realm did not change" do
-    assert_equal User::DIGEST_REALM, "Crowbar"
+    assert_equal User::DIGEST_REALM, "Rebar"
   end
 
   test "Verify Password Works" do

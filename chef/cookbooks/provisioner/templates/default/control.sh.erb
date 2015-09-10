@@ -69,7 +69,7 @@ EOF
 
 # Mark us as alive.
 # Mark the node as alive.
-curl -g --digest -u "$CROWBAR_KEY" \
+curl -g --digest -u "$REBAR_KEY" \
     -X PUT "$api_server/api/v2/nodes/$HOSTNAME" \
     -d 'alive=true'
 

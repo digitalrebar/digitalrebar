@@ -18,9 +18,9 @@ barclamp:
   display: "Saltstack"
   description: "SaltStack CMDB DevOps Framework"
   version: "2.E"
-  source_url: "https://github.com/opencrowbar/core"
+  source_url: "https://github.com/digitalrebar/core"
   license: "Apache 2"
-  license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 wizard:
   version: 1
@@ -39,7 +39,7 @@ roles:
     flags:
       - cluster
     requires:
-      - crowbar-installed-node
+      - rebar-installed-node
     attribs:
       - name: saltstack-master_ip
         description: 'IP that minions should use to talk to the SaltStack Master'
@@ -66,7 +66,7 @@ roles:
     description: 'Provides a saltstack-minion.'
     requires:
       - saltstack-master
-      - crowbar-installed-node
+      - rebar-installed-node
     flags:
       - implicit
     attribs:

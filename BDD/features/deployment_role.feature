@@ -9,7 +9,7 @@ Feature: DeploymentRole
       
   Scenario: The Deployment Role List page renders
     Given I am on the "deployment_roles" page
-    Then I should see a heading {bdd:crowbar.i18n.deployment_roles.index.title}
+    Then I should see a heading {bdd:rebar.i18n.deployment_roles.index.title}
       And there are no localization errors
 
   Scenario: Add Role into Test Deployment
@@ -20,6 +20,6 @@ Feature: DeploymentRole
 
   Scenario: Deployment Role network-server page renders
     Given I am on the "deployment_roles/network-server?deployment=system" page
-    Then I should see a heading {bdd:crowbar.i18n.deployment_roles.show.attribs}
+    Then I should see a heading {bdd:rebar.i18n.deployment_roles.show.attribs}
       And I should see "network-server"
       And there are no localization errors
