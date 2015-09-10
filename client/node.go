@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/VictorLowther/crowbar-api/datatypes"
+	"github.com/digitalrebar/rebar-api/datatypes"
 )
 
 // Node wraps datatypes.Node to provide the client API.

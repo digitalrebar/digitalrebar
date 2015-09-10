@@ -26,7 +26,7 @@ type Network struct {
 	Description string `json:"description"`
 	// The IPv6 prefix this network should use to hand out IPv6 addresses.
 	// If empty, no IPv6 addresses will be allocated.  If the address is not in CIDR
-	// form, Crowbar will assume it is a /64 subnet.
+	// form, Rebar will assume it is a /64 subnet.
 	V6Prefix null.String `json:"v6prefix"`
 	// The conduit that this Network should run over.  A Conduit
 	// defnintion is a comma-seperated list of abstract interface

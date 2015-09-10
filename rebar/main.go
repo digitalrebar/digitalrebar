@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/VictorLowther/crowbar-api/client"
-	"github.com/VictorLowther/crowbar-api/datatypes"
 	"github.com/VictorLowther/jsonpatch"
+	"github.com/digitalrebar/rebar-api/client"
+	"github.com/digitalrebar/rebar-api/datatypes"
 	"github.com/spf13/cobra"
 )
 
@@ -19,8 +19,8 @@ var (
 	endpoint           = "http://127.0.0.1:3000"
 	username, password string
 	app                = &cobra.Command{
-		Use:   "crowbar",
-		Short: "A CLI application for interacting with the Crowbar API",
+		Use:   "rebar",
+		Short: "A CLI application for interacting with the Rebar API",
 	}
 )
 
@@ -39,29 +39,29 @@ func prettyJSON(o interface{}) (res string) {
 }
 
 func init() {
-	if ep := os.Getenv("CROWBAR_ENDPOINT"); ep != "" {
+	if ep := os.Getenv("REBAR_ENDPOINT"); ep != "" {
 		endpoint = ep
 	}
-	if kv := os.Getenv("CROWBAR_KEY"); kv != "" {
+	if kv := os.Getenv("REBAR_KEY"); kv != "" {
 		key := strings.SplitN(kv, ":", 2)
 		if len(key) < 2 {
-			log.Fatal("CROWBAR_KEY does not contain a username:password pair!")
+			log.Fatal("REBAR_KEY does not contain a username:password pair!")
 		}
 		if key[0] == "" || key[1] == "" {
-			log.Fatal("CROWBAR_KEY contains an invalid username:password pair!")
+			log.Fatal("REBAR_KEY contains an invalid username:password pair!")
 		}
 		username = key[0]
 		password = key[1]
 	}
 	app.PersistentFlags().StringVarP(&endpoint,
 		"endpoint", "E", endpoint,
-		"The Crowbar API endpoint to talk to")
+		"The Rebar API endpoint to talk to")
 	app.PersistentFlags().StringVarP(&username,
 		"username", "U", username,
-		"Name of the Crowbar user to talk to")
+		"Name of the Rebar user to talk to")
 	app.PersistentFlags().StringVarP(&password,
 		"password", "P", password,
-		"Password of the Crowbar user")
+		"Password of the Rebar user")
 	app.PersistentFlags().BoolVarP(&debug,
 		"debug", "d", false,
 		"Whether the CLI should run in debug mode")
@@ -229,17 +229,17 @@ func makeCommandTree(singularName string,
 
 func main() {
 	app.PersistentPreRun = func(c *cobra.Command, a []string) {
-		d("Talking to Crowbar with %v (%v:%v)", endpoint, username, password)
+		d("Talking to Rebar with %v (%v:%v)", endpoint, username, password)
 		if err := client.Session(endpoint, username, password); err != nil {
-			log.Fatalf("Could not connect to Crowbar: %v\n", err.Error())
+			log.Fatalf("Could not connect to Rebar: %v\n", err.Error())
 		}
 	}
 
 	ping := &cobra.Command{
 		Use:   "ping",
-		Short: "Test to see if we can connect to the Crowbar API endpoint",
+		Short: "Test to see if we can connect to the Rebar API endpoint",
 		Run: func(cmd *cobra.Command, args []string) {
-			log.Printf("Able to connect to Crowbar at %v (user: %v)", endpoint, username)
+			log.Printf("Able to connect to Rebar at %v (user: %v)", endpoint, username)
 		},
 	}
 
@@ -255,7 +255,7 @@ func main() {
 				allActive := true
 				for _, nodeRole := range nodeRoles {
 					if nodeRole.State == datatypes.NodeRoleError {
-						log.Fatalln("Crowbar could not converge")
+						log.Fatalln("Rebar could not converge")
 					}
 					if nodeRole.State != datatypes.NodeRoleActive {
 						allActive = false

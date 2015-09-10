@@ -2,7 +2,7 @@ package datatypes
 
 import "github.com/guregu/null"
 
-// Deployments are the main tool that Crowbar provides to group
+// Deployments are the main tool that Rebar provides to group
 // related nodes together.  They carry Deployment-specific
 // configuration information (in the form of DeploymentRoles), Nodes
 // (a node belongs to exactly one Deployment at any given point in

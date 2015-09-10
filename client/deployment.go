@@ -4,7 +4,7 @@ import (
 	"errors"
 	"path"
 
-	"github.com/VictorLowther/crowbar-api/datatypes"
+	"github.com/digitalrebar/rebar-api/datatypes"
 )
 
 // Deployment wraps datatypes.Deployment to provide client API functionality

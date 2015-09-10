@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/VictorLowther/crowbar-api/client"
+	"github.com/digitalrebar/rebar-api/client"
 	"github.com/guregu/null"
 	"github.com/spf13/cobra"
 )
@@ -123,7 +123,7 @@ func init() {
 	cmds := []*cobra.Command{
 		&cobra.Command{
 			Use:   "import [json]",
-			Short: "Import a network + optional ranges and routers into Crowbar",
+			Short: "Import a network + optional ranges and routers into Rebar",
 			Run: func(c *cobra.Command, args []string) {
 				if len(args) != 1 {
 					log.Fatalf("%v requires 1 argument\n", c.UseLine())
@@ -190,7 +190,7 @@ func init() {
 				}
 				node := &client.Node{}
 				if err := client.Fetch(node, args[0]); err != nil {
-					log.Fatalln("Unable to fetch node from Crowbar\n%v\n", err)
+					log.Fatalln("Unable to fetch node from Rebar\n%v\n", err)
 				}
 				netRange := &client.NetworkRange{}
 				if err := client.SetId(netRange, args[4]); err != nil {
@@ -198,7 +198,7 @@ func init() {
 					vals["name"] = args[4]
 					network := &client.Network{}
 					if err := client.Fetch(network, args[2]); err != nil {
-						log.Fatalln("Unable to fetch network from Crowbar\n%v\n", err)
+						log.Fatalln("Unable to fetch network from Rebar\n%v\n", err)
 					}
 					vals["network_id"] = network.ID
 					netRanges := []*client.NetworkRange{}

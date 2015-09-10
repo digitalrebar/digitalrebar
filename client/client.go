@@ -33,30 +33,30 @@ type challenge struct {
 	NonceCount int
 }
 
-type ocbClient struct {
+type rebarClient struct {
 	*http.Client
 	Challenge *challenge
 	URL       string
 }
 
-// The Crowbar API is exposed over a digest authenticated HTTP(s)
+// The Rebar API is exposed over a digest authenticated HTTP(s)
 // connection.  This file implements all of the basic REST and HTTP
-// operations that Crowbar uses.
+// operations that Rebar uses.
 
 // OCB assumes global session created with NewClient
-var session *ocbClient
+var session *rebarClient
 
 const (
-	// The Crowbar API to call.  This will be prepended to every
+	// The Rebar API to call.  This will be prepended to every
 	// url passed to one of the request functions.
 	API_PATH = "/api/v2"
 )
 
-// Session establishes a new connection to Crowbar.  You must call
-// this function before using any other functions in the crowbar
+// Session establishes a new connection to Rebar.  You must call
+// this function before using any other functions in the rebar
 // package.  Session stores its information in a private global variable.
 func Session(URL, User, Password string) error {
-	c := &ocbClient{URL: URL, Client: &http.Client{}, Challenge: &challenge{}}
+	c := &rebarClient{URL: URL, Client: &http.Client{}, Challenge: &challenge{}}
 	// retrieve the digest info from the 301 message
 	resp, e := c.Head(c.URL + path.Join(API_PATH, "digest"))
 	if e != nil {
@@ -76,7 +76,7 @@ func Session(URL, User, Password string) error {
 	return nil
 }
 
-func (c *ocbClient) basicRequest(method, uri string, objIn []byte) (resp *http.Response, err error) {
+func (c *rebarClient) basicRequest(method, uri string, objIn []byte) (resp *http.Response, err error) {
 	var body io.Reader
 
 	if objIn != nil {
@@ -109,13 +109,13 @@ func (c *ocbClient) basicRequest(method, uri string, objIn []byte) (resp *http.R
 	return nil, err
 }
 
-// Request makes a general call to the Crowbar API.
+// Request makes a general call to the Rebar API.
 // method is the raw HTTP method to use
 // uri is the section of the API to call.
 // objIn is the raw data to be passed in the request body
 // objOut is the raw request body (if any)
 // err is the error of any occurred.
-func (c *ocbClient) request(method, uri string, objIn []byte) (objOut []byte, err error) {
+func (c *rebarClient) request(method, uri string, objIn []byte) (objOut []byte, err error) {
 	resp, err := c.basicRequest(method, uri, objIn)
 	if err != nil {
 		return nil, err
@@ -141,7 +141,7 @@ func (c *ocbClient) request(method, uri string, objIn []byte) (objOut []byte, er
 }
 
 // list is a helper specialized to get lists of objects.
-func (c *ocbClient) list(res interface{}, uri ...string) (err error) {
+func (c *rebarClient) list(res interface{}, uri ...string) (err error) {
 	buf, err := c.request("GET", path.Join(uri...), nil)
 	if err != nil {
 		return err
@@ -149,7 +149,7 @@ func (c *ocbClient) list(res interface{}, uri ...string) (err error) {
 	return json.Unmarshal(buf, &res)
 }
 
-func (c *ocbClient) match(vals map[string]interface{}, res interface{}, uri ...string) (err error) {
+func (c *rebarClient) match(vals map[string]interface{}, res interface{}, uri ...string) (err error) {
 	inbuf, err := json.Marshal(vals)
 	buf, err := c.request("POST",
 		path.Join(path.Join(uri...), "match"),

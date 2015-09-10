@@ -9,9 +9,9 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/VictorLowther/crowbar-api/client"
-	"github.com/VictorLowther/crowbar-api/datatypes"
 	"github.com/VictorLowther/yaml"
+	"github.com/digitalrebar/rebar-api/client"
+	"github.com/digitalrebar/rebar-api/datatypes"
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +33,7 @@ func init() {
 					log.Fatalf("Error probing %v\n%v\n", toLoad, err)
 				}
 				if info.IsDir() {
-					toLoad = path.Join(toLoad, "crowbar.yml")
+					toLoad = path.Join(toLoad, "rebar.yml")
 					continue
 				}
 				if !info.Mode().IsRegular() {
@@ -43,8 +43,8 @@ func init() {
 			}
 
 			dir, f := path.Split(toLoad)
-			if f != "crowbar.yml" {
-				log.Fatalf("%v is not the location of a crowbar.yml file!", args[0])
+			if f != "rebar.yml" {
+				log.Fatalf("%v is not the location of a rebar.yml file!", args[0])
 			}
 
 			loadPaths := []string{toLoad}

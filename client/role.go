@@ -3,7 +3,7 @@ package client
 import (
 	"path"
 
-	"github.com/VictorLowther/crowbar-api/datatypes"
+	"github.com/digitalrebar/rebar-api/datatypes"
 )
 
 // Role wraps datatypes.Role to provide the client API.

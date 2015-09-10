@@ -1,18 +1,18 @@
 package datatypes
 
-// Node represents a system (real or virtual) that Crowbar can manage.
+// Node represents a system (real or virtual) that Rebar can manage.
 type Node struct {
 	NameID
 	// The description of this Node.
 	Description string `json:"description"`
-	// Whether this node can coordinate and act on behalf of Crowbar.
-	// Any node that runs the Crowbar API should have this set.
+	// Whether this node can coordinate and act on behalf of Rebar.
+	// Any node that runs the Rebar API should have this set.
 	Admin bool `json:"admin"`
-	// Whether the node is powered on and reachable by Crowbar.
+	// Whether the node is powered on and reachable by Rebar.
 	Alive bool `json:"alive"`
 	// I do not remember what this flag is used for.
 	Allocated bool `json:"allocated"`
-	// Whether the node is available to the rest of the Crowbar infrastructure.
+	// Whether the node is available to the rest of the Rebar infrastructure.
 	// Nodes that are not alive and available will not have jobs run on them.
 	Available bool `json:"available"`
 	// The current environment that the node should boot into.
