@@ -94,7 +94,7 @@
   
   
     <dt class="r2 last">Defined in:</dt>
-    <dd class="r2 last">crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb</dd>
+    <dd class="r2 last">rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb</dd>
   
 </dl>
 <div class="clear"></div>
@@ -573,7 +573,7 @@
       
         &mdash;
         <div class='inline'>
-<p>A Crowbar node object.</p>
+<p>A Rebar node object.</p>
 </div>
       
     </li>
@@ -626,7 +626,7 @@
 450</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 446</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 446</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span><span class='id identifier rubyid_logger'>logger</span><span class='comma'>,</span><span class='id identifier rubyid_params'>params</span><span class='rparen'>)</span>
   <span class='ivar'>@node</span> <span class='op'>=</span> <span class='id identifier rubyid_node'>node</span>
@@ -729,7 +729,7 @@ foriegn configuration from the controller.</p>
 500</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 498</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 498</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_clear_controller_config'>clear_controller_config</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span> <span class='id identifier rubyid_config_type'>config_type</span> <span class='op'>=</span> <span class='symbol'>:all</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Exception</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>MUST IMPLEMENT THIS</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -801,7 +801,7 @@ foriegn configuration from the controller.</p>
 471</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 469</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 469</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_controllers'>controllers</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Exception</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>MUST IMPLEMENT THIS</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -945,7 +945,7 @@ If unset, will prefer “sas”.</p>
 546</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 544</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 544</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_create_vd'>create_vd</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span> <span class='id identifier rubyid_volume'>volume</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Exception</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>MUST IMPLEMENT THIS</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -1019,7 +1019,7 @@ If unset, will prefer “sas”.</p>
 552</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 550</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 550</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delete_vd'>delete_vd</span><span class='lparen'>(</span><span class='id identifier rubyid_volume'>volume</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Exception</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>MUST IMPLEMENT THIS</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -1111,7 +1111,7 @@ If unset, will prefer “sas”.</p>
 477</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 475</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 475</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_disks'>disks</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Exception</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>MUST IMPLEMENT THIS</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -1210,7 +1210,7 @@ capture the key and the value</p>
 580</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 577</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 577</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_extract_value'>extract_value</span><span class='lparen'>(</span><span class='id identifier rubyid_line'>line</span><span class='comma'>,</span> <span class='id identifier rubyid_re'>re</span> <span class='op'>=</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>([^:]*):(.+)$</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span>
   <span class='id identifier rubyid_re'>re</span><span class='period'>.</span><span class='id identifier rubyid_match'>match</span><span class='lparen'>(</span><span class='id identifier rubyid_line'>line</span><span class='period'>.</span><span class='id identifier rubyid_strip'>strip</span><span class='rparen'>)</span>
@@ -1252,7 +1252,7 @@ capture the key and the value</p>
 460</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 458</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 458</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_inspect'>inspect</span>
   <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='period'>.</span><span class='id identifier rubyid_to_s'>to_s</span>
@@ -1285,7 +1285,7 @@ capture the key and the value</p>
 624</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 619</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 619</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_log'>log</span><span class='lparen'>(</span> <span class='id identifier rubyid_msg'>msg</span><span class='comma'>,</span> <span class='id identifier rubyid_sev'>sev</span><span class='op'>=</span><span class='symbol'>:DEBUG</span><span class='rparen'>)</span>
   <span class='kw'>case</span> <span class='id identifier rubyid_sev'>sev</span>
@@ -1329,7 +1329,7 @@ capture the key and the value</p>
 455</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 453</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 453</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_name'>name</span>
   <span class='ivar'>@params</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>name</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
@@ -1392,7 +1392,7 @@ capture the key and the value</p>
 491</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 487</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 487</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_refresh_controller'>refresh_controller</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='rparen'>)</span>
   <span class='ivar'>@logger</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> refreshed\n</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='ivar'>@logger</span>
@@ -1440,7 +1440,7 @@ capture the key and the value</p>
 611</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 604</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 604</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_run_command'>run_command</span><span class='lparen'>(</span><span class='id identifier rubyid_cmd'>cmd</span><span class='comma'>,</span> <span class='id identifier rubyid_success'>success</span><span class='comma'>,</span> <span class='id identifier rubyid_error'>error</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_log'>log</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>will execute </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_cmd'>cmd</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
@@ -1477,7 +1477,7 @@ capture the key and the value</p>
 617</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 613</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 613</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_run_tool'>run_tool</span><span class='lparen'>(</span><span class='id identifier rubyid_success'>success</span><span class='comma'>,</span> <span class='id identifier rubyid_error'>error</span><span class='comma'>,</span> <span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='ivar'>@params</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>executable</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rbracket'>]</span>
@@ -1554,7 +1554,7 @@ possible for more than one volume to be marked as bootable in the system.</p>
 560</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 558</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 558</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_set_boot'>set_boot</span><span class='lparen'>(</span><span class='id identifier rubyid_volume'>volume</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Exception</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>MUST IMPLEMENT THIS</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -1660,7 +1660,7 @@ before the first match of re will be ignored.</p>
 599</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 587</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 587</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_split_lines_on'>split_lines_on</span><span class='lparen'>(</span><span class='id identifier rubyid_lines'>lines</span><span class='comma'>,</span><span class='id identifier rubyid_re'>re</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_sections'>sections</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
@@ -1737,7 +1737,7 @@ before the first match of re will be ignored.</p>
 466</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 464</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 464</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_useable?'>useable?</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Exception</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>MUST IMPLEMENT THIS</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -1829,7 +1829,7 @@ before the first match of re will be ignored.</p>
 483</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 481</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 481</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_volumes'>volumes</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raise'>raise</span> <span class='const'>Exception</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>MUST IMPLEMENT THIS</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>

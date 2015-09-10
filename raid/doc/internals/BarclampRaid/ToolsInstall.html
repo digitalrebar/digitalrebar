@@ -96,7 +96,7 @@
   
   
     <dt class="r2 last">Defined in:</dt>
-    <dd class="r2 last">crowbar_engine/barclamp_raid/app/models/barclamp_raid/tools_install.rb</dd>
+    <dd class="r2 last">rebar_engine/barclamp_raid/app/models/barclamp_raid/tools_install.rb</dd>
   
 </dl>
 <div class="clear"></div>
@@ -196,7 +196,7 @@ under the License.</p>
 25</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/tools_install.rb', line 18</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/tools_install.rb', line 18</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_active'>on_active</span><span class='lparen'>(</span><span class='id identifier rubyid_nr'>nr</span><span class='rparen'>)</span>
   <span class='kw'>unless</span> <span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_hammers'>hammers</span><span class='period'>.</span><span class='id identifier rubyid_find_by'>find_by</span><span class='lparen'>(</span><span class='label'>type:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>BarclampRaid::RaidHammer</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>

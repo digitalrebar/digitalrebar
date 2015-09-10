@@ -19,7 +19,7 @@ require 'xmlsimple'
 require 'yaml'
 require 'json'
 
-class Crowbar
+class Rebar
 class BIOS
 class WSMAN
   attr :host

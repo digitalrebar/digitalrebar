@@ -252,7 +252,7 @@ iDRAC.Embedded.1#IPv4.1#DNS1 DCIM_iDRACCardString false "0.0.0.0" 1 16
 iDRAC.Embedded.1#IPv4.1#DNS2 DCIM_iDRACCardString false "0.0.0.0" 1 16
 iDRAC.Embedded.1#Users.1#UserName DCIM_iDRACCardString true "" 1 16
 iDRAC.Embedded.1#Users.2#UserName DCIM_iDRACCardString false "root" 1 16
-iDRAC.Embedded.1#Users.3#UserName DCIM_iDRACCardString false "crowbar" 1 16
+iDRAC.Embedded.1#Users.3#UserName DCIM_iDRACCardString false "rebar" 1 16
 iDRAC.Embedded.1#Users.4#UserName DCIM_iDRACCardString false "" 1 16
 iDRAC.Embedded.1#Users.5#UserName DCIM_iDRACCardString false "" 1 16
 iDRAC.Embedded.1#Users.6#UserName DCIM_iDRACCardString false "" 1 16

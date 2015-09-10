@@ -22,7 +22,7 @@ require "wsman"
 
 CHANGE_BOOT_ORDER_CMD = "ChangeBootOrderByInstanceID"
 
-class Crowbar
+class Rebar
   class BIOS
 
 class WSMANAttributes
@@ -257,10 +257,10 @@ class WSMANAttributes
     attrs << h
     attrs = attrs.flatten!
 
-    node["crowbar_wall"] = {} unless node["crowbar_wall"]
-    node["crowbar_wall"]["bios"] = {} unless node["crowbar_wall"]["bios"]
-    node["crowbar_wall"]["bios"]["settings"] = {} unless node["crowbar_wall"]["bios"]["settings"]
-    hash = node["crowbar_wall"]["bios"]["settings"]
+    node["rebar_wall"] = {} unless node["rebar_wall"]
+    node["rebar_wall"]["bios"] = {} unless node["rebar_wall"]["bios"]
+    node["rebar_wall"]["bios"]["settings"] = {} unless node["rebar_wall"]["bios"]["settings"]
+    hash = node["rebar_wall"]["bios"]["settings"]
     attrs.each do | item |
       hash[item.instance_id] = item.current_value
     end
@@ -445,10 +445,10 @@ class WSMANAttributes
   end
 
   def log_action(action, node)
-    node["crowbar_wall"] = {} unless node["crowbar_wall"]
-    node["crowbar_wall"]["bios"] = {} unless node["crowbar_wall"]["bios"]
-    node["crowbar_wall"]["bios"]["actions"] = [] unless node["crowbar_wall"]["bios"]["actions"]
-    node["crowbar_wall"]["bios"]["actions"] << action
+    node["rebar_wall"] = {} unless node["rebar_wall"]
+    node["rebar_wall"]["bios"] = {} unless node["rebar_wall"]["bios"]
+    node["rebar_wall"]["bios"]["actions"] = [] unless node["rebar_wall"]["bios"]["actions"]
+    node["rebar_wall"]["bios"]["actions"] << action
   end
 
   #
@@ -518,13 +518,13 @@ class WSMANAttributes
 end # WSMAN_Attributes
 
 end # BIOS
-end # Crowbar
+end # Rebar
 
 #######################################################
 
 def test_build_config_json(opts)
-  wsman = Crowbar::WSMAN.new(opts)
-  wsman_attributes = Crowbar::BIOS::WSMANAttributes.new(wsman)
+  wsman = Rebar::WSMAN.new(opts)
+  wsman_attributes = Rebar::BIOS::WSMANAttributes.new(wsman)
   attrs = []
   h = wsman_attributes.attributes("DCIM_BIOSEnumeration")
   attrs << h
@@ -577,8 +577,8 @@ def test_build_config_json(opts)
 end
 
 def test_set_attributes(attrs, opts)
-  wsman = Crowbar::WSMAN.new(opts)
-  wsman_attributes = Crowbar::BIOS::WSMANAttributes.new(wsman)
+  wsman = Rebar::WSMAN.new(opts)
+  wsman_attributes = Rebar::BIOS::WSMANAttributes.new(wsman)
 
   node = {}
   ret, message = wsman_attributes.update_attributes(attrs, { :node => node })

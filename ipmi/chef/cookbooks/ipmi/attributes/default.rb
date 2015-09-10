@@ -17,8 +17,8 @@
 default[:ipmi][:config] = {}
 default[:ipmi][:config][:environment] = "bios-config-default"
 
-default[:ipmi][:bmc_user] = "crowbar"
-default[:ipmi][:bmc_password] = "crowbar"
+default[:ipmi][:bmc_user] = "rebar"
+default[:ipmi][:bmc_password] = "rebar"
 default[:ipmi][:bmc_enable] = true
 default[:ipmi][:debug] = true
 

@@ -30,7 +30,7 @@ LOOKUP_STRS    = {DRIVER_PACK_ID => "Driver Pack",
                   DIAGS_COMP_ID  => "Diagnostics Package",
                   LC_COMP_ID     => "Lifecycle Controller"}
 
-class Crowbar
+class Rebar
 class BIOS
 
 class WSMANUpdate
@@ -502,8 +502,8 @@ def test_update(opts)
     puts "Failed to find sys"
     exit 1
   end
-  wsman = Crowbar::WSMAN.new(opts)
-  wsman_update = Crowbar::BIOS::WSMANUpdate.new(wsman)
+  wsman = Rebar::WSMAN.new(opts)
+  wsman_update = Rebar::BIOS::WSMANUpdate.new(wsman)
 
   list = wsman_update.software_inventory
   list2 = wsman_update.find_software_inventory_items(list, {"Status" => "Installed"})

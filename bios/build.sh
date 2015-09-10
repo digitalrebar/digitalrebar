@@ -14,12 +14,12 @@
 # limitations under the License.
 #
 
-[[ $BC_CACHE ]] || export BC_CACHE="$HOME/.crowbar-build-cache/barclamps/bios"
-[[ $CROWBAR_DIR ]] || export CROWBAR_DIR="$HOME/crowbar"
-[[ $BC_DIR ]] || export BC_DIR="$HOME/crowbar/barclamps/bios"
+[[ $BC_CACHE ]] || export BC_CACHE="$HOME/.rebar-build-cache/barclamps/bios"
+[[ $REBAR_DIR ]] || export REBAR_DIR="$HOME/rebar"
+[[ $BC_DIR ]] || export BC_DIR="$HOME/rebar/barclamps/bios"
 
 echo "Using: BC_CACHE = $BC_CACHE"
-echo "Using: CROWBAR_DIR = $CROWBAR_DIR"
+echo "Using: REBAR_DIR = $REBAR_DIR"
 echo "Using: BC_DIR = $BC_DIR"
 
 bc_needs_build() {
@@ -38,6 +38,6 @@ bc_build() {
     mv Catalog.xml.fix Catalog.xml
     cd -
 
-    "$BC_DIR/extract_packages.rb" "$BC_DIR/crowbar.yml" "$BC_CACHE/files/wsman"
+    "$BC_DIR/extract_packages.rb" "$BC_DIR/rebar.yml" "$BC_CACHE/files/wsman"
 }
 

@@ -45,7 +45,7 @@ def check_version(type,cmd)
   new_ver = new_ver[1] unless new_ver.nil?
   curr_ver = res.match(/Installed version: (.*)/)
   curr_ver = curr_ver[1] unless curr_ver.nil?
-  node["crowbar_wall"]["status"]["bios"] << "#{type} versions: #{curr_ver} new:#{new_ver}"
+  node["rebar_wall"]["status"]["bios"] << "#{type} versions: #{curr_ver} new:#{new_ver}"
   if curr_ver.nil? or new_ver.nil?
     Chef::Log.error("BIOS PACKAGE MISBEHAVING !!! can't parse versions")
     false ## don't attempt to run - we don't know what the versions are
@@ -62,33 +62,33 @@ def cnt_name(type)
 end
 
 def log_action(action)
-  node["crowbar_wall"] = {} unless node["crowbar_wall"]
-  node["crowbar_wall"]["bios"] = {} unless node["crowbar_wall"]["bios"]
-  node["crowbar_wall"]["bios"]["actions"] = [] unless node["crowbar_wall"]["bios"]["actions"]
-  node["crowbar_wall"]["bios"]["actions"] << action
+  node["rebar_wall"] = {} unless node["rebar_wall"]
+  node["rebar_wall"]["bios"] = {} unless node["rebar_wall"]["bios"]
+  node["rebar_wall"]["bios"]["actions"] = [] unless node["rebar_wall"]["bios"]["actions"]
+  node["rebar_wall"]["bios"]["actions"] << action
   node.save
 end
 
 def get_count(type)
   c_name = cnt_name(type)
-  node["crowbar_wall"] = {} unless node["crowbar_wall"]
-  node["crowbar_wall"]["track"] = {} unless node["crowbar_wall"]["track"]
-  node["crowbar_wall"]["track"][c_name] = 0 unless node["crowbar_wall"]["track"][c_name]
-  node["crowbar_wall"]["track"][c_name]
+  node["rebar_wall"] = {} unless node["rebar_wall"]
+  node["rebar_wall"]["track"] = {} unless node["rebar_wall"]["track"]
+  node["rebar_wall"]["track"][c_name] = 0 unless node["rebar_wall"]["track"][c_name]
+  node["rebar_wall"]["track"][c_name]
 end
 
 def set_count(type, val)
   c_name = cnt_name(type)
-  c = node["crowbar_wall"]["track"][c_name] 
-  node["crowbar_wall"]["track"][c_name] = val
+  c = node["rebar_wall"]["track"][c_name] 
+  node["rebar_wall"]["track"][c_name] = val
   node.save
   return val
 end
 
 def up_count(type)
   c_name = cnt_name(type)
-  c = node["crowbar_wall"]["track"][c_name] 
-  node["crowbar_wall"]["track"][c_name] = c+1
+  c = node["rebar_wall"]["track"][c_name] 
+  node["rebar_wall"]["track"][c_name] = c+1
   node.save
   return c+1
 end
@@ -109,8 +109,8 @@ def do_update(type,cmd)
   Chef::Log.info("results: exit #{cmd.exitstatus}, output: #{cmd.stdout}")
   begin
     if (type == "bmc" and cmd.exitstatus == 0)
-      node["crowbar_wall"]["status"]["ipmi"]["user_set"] = false
-      node["crowbar_wall"]["status"]["ipmi"]["address_set"] = false
+      node["rebar_wall"]["status"]["ipmi"]["user_set"] = false
+      node["rebar_wall"]["status"]["ipmi"]["address_set"] = false
       node.save
       Chef::Log.info("Reset CB wall params after update of bmc")
     end
@@ -163,9 +163,9 @@ def wsman_update(product)
   Chef::Log.info("Provisioner IP address is #{address}")
 
   # Get bmc parameters
-  ip = node["crowbar_wall"]["ipmi"]["address"]
-  user = node["ipmi"]["bmc_user"] rescue "crowbar"
-  password = node["ipmi"]["bmc_password"] rescue "crowbar"
+  ip = node["rebar_wall"]["ipmi"]["address"]
+  user = node["ipmi"]["bmc_user"] rescue "rebar"
+  password = node["ipmi"]["bmc_password"] rescue "rebar"
   opts = { :prov_ip => address, :prov_port => web_port,
            :user => user, :password => password, 
            :host => ip, :port => 443, 
@@ -185,8 +185,8 @@ def wsman_update(product)
     set_count("wsman", 0)
     return true
   end
-  wsman = Crowbar::WSMAN.new(opts)
-  wsman_update = Crowbar::BIOS::WSMANUpdate.new(wsman)
+  wsman = Rebar::WSMAN.new(opts)
+  wsman_update = Rebar::BIOS::WSMANUpdate.new(wsman)
 
   list = wsman_update.software_inventory
   list2 = wsman_update.find_software_inventory_items(list, {"Status" => "Installed", "Updateable" => "true"})

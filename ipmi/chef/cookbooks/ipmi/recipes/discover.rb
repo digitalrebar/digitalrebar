@@ -39,8 +39,8 @@ if laninfo.empty?
   return
 end
 Chef::Log.info("BMC on #{node[:fqdn]} is useable, marking it as enabled.")
-node.set[:crowbar_wall] ||= Mash.new
-node.set[:crowbar_wall][:ipmi] ||= Mash.new
-node.set[:crowbar_wall][:ipmi][:bmcinfo] = mcinfo
-node.set[:crowbar_wall][:ipmi][:laninfo] = laninfo
+node.set[:rebar_wall] ||= Mash.new
+node.set[:rebar_wall][:ipmi] ||= Mash.new
+node.set[:rebar_wall][:ipmi][:bmcinfo] = mcinfo
+node.set[:rebar_wall][:ipmi][:laninfo] = laninfo
 node.set[:ipmi][:bmc_enable] = true

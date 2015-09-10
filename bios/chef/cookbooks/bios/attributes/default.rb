@@ -19,4 +19,4 @@ default[:bios][:debug] = false
 default[:bios][:bios_setup_enable] = true 
 default[:bios][:bios_update_enable] = true 
 
-default[:crowbar][:hardware][:bios_set]= "Storage"
+default[:rebar][:hardware][:bios_set]= "Storage"

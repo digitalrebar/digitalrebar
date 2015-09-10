@@ -132,20 +132,20 @@ end
 
 unless ENV['BC_CACHE'] && ENV['BC_DIR']
   STDERR.puts("BC_CACHE and BC_DIR must be set un your environment.")
-  STDERR.puts("If you are running this from outside the crowbar buils system,")
+  STDERR.puts("If you are running this from outside the rebar buils system,")
   STDERR.puts("please invoke legacy_token_map_maker.rb with:")
   STDERR.puts
-  STDERR.puts("BC_CACHE=path/to/crowbar-build-cache/barclamps/bios BC_DIR=path/to/crowbar/barclamps/bios legacy_token_map_maker.rb")
+  STDERR.puts("BC_CACHE=path/to/rebar-build-cache/barclamps/bios BC_DIR=path/to/rebar/barclamps/bios legacy_token_map_maker.rb")
   exit(1)
 end
 
-unless File.exists?("#{ENV['BC_DIR']}/crowbar.yml")
-  STDERR.puts("No crowbar.yml in #{ENV['BC_DIR']}!")
+unless File.exists?("#{ENV['BC_DIR']}/rebar.yml")
+  STDERR.puts("No rebar.yml in #{ENV['BC_DIR']}!")
   exit 1
 end
 
 # Try to find the setupbios tarball
-barclamp_params=YAML.load(File.open("#{ENV['BC_DIR']}/crowbar.yml"))
+barclamp_params=YAML.load(File.open("#{ENV['BC_DIR']}/rebar.yml"))
 setupbios = cache_path = nil
 barclamp_params["extra_files"].each do |k|
   next unless k =~ /setupbios/
@@ -217,18 +217,18 @@ reader.shift
 line = 1
 reader.each do |row|
   line += 1
-  sys_name,token,crowbar_config,setting = row.map{|e|clean_str(e)}
+  sys_name,token,rebar_config,setting = row.map{|e|clean_str(e)}
   unless bios_maps[sys_name]
     STDERR.puts("Unknown system type #{sys_name} on line #{line} of pec-bios-options.csv")
     STDERR.puts("Skipping line #{line}: #{row.join(',')}")
     next
   end
   bios_options[sys_name] ||= {}
-  bios_options[sys_name][crowbar_config] ||= {}
+  bios_options[sys_name][rebar_config] ||= {}
   if token =~ /^0x[0-9a-fA-F]+$/
     STDERR.puts("Line #{line}: Using raw token values depreciated.")
-    bios_options[sys_name][crowbar_config]["raw_tokens"] ||= []
-    bios_options[sys_name][crowbar_config]["raw_tokens"] << token
+    bios_options[sys_name][rebar_config]["raw_tokens"] ||= []
+    bios_options[sys_name][rebar_config]["raw_tokens"] << token
     next
   end
   unless bios_schemas[sys_name].attribute_exists?(token)
@@ -236,11 +236,11 @@ reader.each do |row|
     exit 1
   end
   if (bios_schemas[sys_name].default(token) == setting) &&
-      (crowbar_config == "default")
+      (rebar_config == "default")
     STDERR.puts("Line #{line}: #{token} is being set to its default value.")
     next
   end
-  bios_options[sys_name][crowbar_config][token] = setting
+  bios_options[sys_name][rebar_config][token] = setting
 end
 reader.close
 
@@ -251,15 +251,15 @@ bios_schemas.each do |k,v|
   end
 end
 
-bios_options.each do |sys_name,crowbar_config|
-  crowbar_config.each_key do |cfg|
+bios_options.each do |sys_name,rebar_config|
+  rebar_config.each_key do |cfg|
     next unless set_keys[cfg]
     set_keys[cfg].each do |ccfg|
       out = {
         "id" => "bios-set-#{sys_name}-#{ccfg}",
         "style" => "unified_pec",
         "versions" => supported_bioses[sys_name],
-        "attributes" => crowbar_config[cfg]
+        "attributes" => rebar_config[cfg]
       }
       File.open("#{out['id']}.json","w") do |f|
         f.puts(JSON.pretty_generate(out))

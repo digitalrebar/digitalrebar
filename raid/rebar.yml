@@ -1,0 +1,173 @@
+# Copyright (c) 2013 Dell Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+barclamp:
+  name: raid
+  display: RAID
+  version: "2.E"
+
+rebar:
+  layout: 1
+
+roles:
+  - name: raid-tools-install
+    jig: chef
+    requires:
+      - provisioner-service
+      - rebar-managed-node
+    flags:
+      - implicit
+    attribs:
+      - name: raid-drivers
+        description: 'The backend drivers that the RAID barclamp can use'
+        map: 'raid/drivers'
+        ui_renderer: 'barclamp_raid/attribs/raid_tools_install'
+        schema:
+          type: seq
+          sequence:
+            - type: map
+              mapping:
+                "name": { type: str, required: true }
+                "type": { type: str, required: true }
+                "raid_levels":
+                  type: seq
+                  sequence:
+                    - type: str
+                "executable": { type: str, required: true }
+                "archive": { type: str, required: true }
+                "source": { type: str, required: true }
+                "linux_installcode": { type: str, required: true }
+        default:
+          - "name": "megacli"
+            "type": "BarclampRaid::Lsi_Megacli"
+            "raid_levels":
+              - "jbod"
+              - "raid0"
+              - "raid1"
+              - "raid5"
+              - "raid6"
+              - "raid10"
+              - "raid50"
+              - "raid60"
+            "executable": "/opt/MegaRAID/MegaCli/MegaCli64"
+            "archive": "8.07.14_MegaCLI.zip"
+            "source": "http://www.avagotech.com/support/download-search"
+            "linux_installcode": "pkg=Linux/MegaCli-8.07.14-1.noarch.rpm; unzip -j -o 8.07.14_MegaCLI.zip $pkg && rpm2cpio ${pkg##*/} |(cd /; cpio -idmv)"
+          - "name": "sas2ircu"
+            "type": "BarclampRaid::Lsi_Sas2ircu"
+            "raid_levels":
+              - "jbod"
+              - "raid0"
+              - "raid1"
+              - "raid10"
+            "executable": "/usr/sbin/sas2ircu"
+            "archive": "SAS2IRCU_P19.zip"
+            "source": "http://www.avagotech.com/support/download-search"
+            "linux_installcode": "cd /usr/sbin && unzip -j -o '/tmp/SAS2IRCU_P19.zip' 'SAS2IRCU_P19/sas2ircu_linux_x86_rel/sas2ircu' && chmod 755 sas2ircu"
+    wants-attribs:
+      - provisioner-webservers
+  - name: raid-discover
+    jig: raid
+    flags:
+      - discovery
+      - implicit
+    attaches:
+      - rebar-hardware-configured
+    requires:
+      - raid-tools-install
+    attribs:
+      - name: raid-detected-controllers
+        description: "The RAID controllers that were detected on this node."
+        map: 'rebar_wall/raid/controllers'
+      - name: raid-debug
+        description: "Whether to run the RAID recipes with debugging enabled"
+        map: 'raid/debug'
+  - name: raid-configure
+    jig: raid
+    flags:
+      - implicit
+      - destructive
+    requires:
+      - raid-discover
+    attribs:
+      - name: raid-enable
+        description: "Whether or not to use the RAID controllers on a specific node."
+        map: 'raid/enable'
+        default: true
+        schema:
+          type: bool
+      - name: raid-wanted-volumes
+        description: "How RAID shold be configured on this node."
+        map: 'raid/volumes/wanted'
+        default:
+          - name: "os"
+            raid_level: "jbod"
+            disks: 1
+            size: "min"
+            boot: true
+        schema:
+          type: seq
+          sequence:
+            - type: map
+              mapping:
+                "name": { type: str, required: true }
+                "raid_level":
+                  type: str
+                  required: true
+                  enum:
+                    - jbod
+                    - raid0
+                    - raid1
+                    - raid5
+                    - raid6
+                    - raid00
+                    - raid50
+                    - raid60
+                    - raid10
+                "stripe_size": { type: int }
+                "size": { type: scalar, required: true }
+                "disks": { type: int, required: false }
+                "disks_type":
+                  type: str
+                  enum:
+                    - ssd
+                    - disk
+                  required: false
+                "exclusive": { type: bool, required: false }
+                "boot": { type: bool, required: false }
+                "protocol":
+                  type: str
+                  enum:
+                    - sas
+                    - sata
+                  required: false
+      - name: raid-configured-volumes
+        description: "The current RAID volumes on this node"
+        map: 'raid/volumes/configured'
+  - name: raid-post-configure
+    jig: chef
+    requires:
+      - raid-configure
+    flags:
+      - implicit
+hammers:
+  - name: raid-hammer
+    type: 'BarclampRaid::RaidHammer'
+    priority: 5
+
+jigs:
+  - name: raid
+    description: 'Manage RAID volumes'
+    class: 'BarclampRaid::Jig'
+    implementor: raid-tools-install

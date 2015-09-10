@@ -96,7 +96,7 @@
   
   
     <dt class="r2 last">Defined in:</dt>
-    <dd class="r2 last">crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb</dd>
+    <dd class="r2 last">rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb</dd>
   
 </dl>
 <div class="clear"></div>
@@ -519,7 +519,7 @@
 36</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 24</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 24</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_probe'>probe</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span>
   <span class='comment'># For now, restrict ourselves to running on a Dell IDRAC 7.
@@ -566,7 +566,7 @@
 146</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 143</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 143</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid___perform'>__perform</span><span class='lparen'>(</span><span class='id identifier rubyid_meth'>meth</span><span class='comma'>,</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='id identifier rubyid_send'>send</span><span class='lparen'>(</span><span class='id identifier rubyid_meth'>meth</span><span class='comma'>,</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
@@ -599,7 +599,7 @@
 58</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 54</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 54</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_actions'>actions</span>
   <span class='lbrace'>{</span> <span class='label'>power:</span> <span class='lbracket'>[</span><span class='symbol'>:status</span><span class='comma'>,</span><span class='symbol'>:on?</span><span class='comma'>,</span><span class='symbol'>:on</span><span class='comma'>,</span><span class='symbol'>:off</span><span class='comma'>,</span><span class='symbol'>:cycle</span><span class='comma'>,</span><span class='symbol'>:reset</span><span class='comma'>,</span><span class='symbol'>:halt</span><span class='rbracket'>]</span><span class='comma'>,</span>
@@ -643,7 +643,7 @@
 52</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 38</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 38</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_client'>client</span>
   <span class='kw'>return</span> <span class='ivar'>@client</span> <span class='kw'>if</span> <span class='ivar'>@client</span>
@@ -685,7 +685,7 @@
 82</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 80</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 80</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_cycle'>cycle</span>
   <span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_update!'>update!</span><span class='lparen'>(</span><span class='label'>alive:</span> <span class='kw'>false</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_power_state_to'>power_state_to</span><span class='lparen'>(</span><span class='id identifier rubyid_on?'>on?</span> <span class='op'>?</span> <span class='int'>5</span> <span class='op'>:</span> <span class='int'>2</span><span class='rparen'>)</span>
@@ -719,7 +719,7 @@
 106</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 100</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 100</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_enumerate'>enumerate</span><span class='lparen'>(</span><span class='id identifier rubyid_resource'>resource</span><span class='comma'>,</span><span class='id identifier rubyid_filter'>filter</span><span class='op'>=</span><span class='kw'>nil</span><span class='comma'>,</span><span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='const'>Openwsman</span><span class='op'>::</span><span class='const'>ClientOptions</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_opts'>opts</span><span class='period'>.</span><span class='id identifier rubyid_flags'>flags</span> <span class='op'>=</span> <span class='const'>Openwsman</span><span class='op'>::</span><span class='const'>FLAG_ENUMERATION_OPTIMIZATION</span>
@@ -754,7 +754,7 @@
 111</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 108</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 108</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_enumerate_epr'>enumerate_epr</span><span class='lparen'>(</span><span class='id identifier rubyid_resource'>resource</span><span class='comma'>,</span><span class='id identifier rubyid_filter'>filter</span><span class='op'>=</span><span class='kw'>nil</span><span class='comma'>,</span><span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='const'>Openwsman</span><span class='op'>::</span><span class='const'>ClientOptions</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_opts'>opts</span><span class='period'>.</span><span class='id identifier rubyid_add_option'>add_option</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>EnumerationMode</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>EnumerateEPR</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -786,7 +786,7 @@
 91</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 88</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 88</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_halt'>halt</span>
   <span class='kw'>return</span> <span class='kw'>unless</span> <span class='id identifier rubyid_on?'>on?</span>
@@ -830,7 +830,7 @@
 98</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 94</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 94</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_identify'>identify</span>
   <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='id identifier rubyid_client'>client</span><span class='period'>.</span><span class='id identifier rubyid_identify'>identify</span><span class='lparen'>(</span><span class='const'>Openwsman</span><span class='op'>::</span><span class='const'>ClientOptions</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span>
@@ -888,7 +888,7 @@
 141</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 113</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 113</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_invoke'>invoke</span><span class='lparen'>(</span><span class='id identifier rubyid_resource'>resource</span><span class='comma'>,</span><span class='id identifier rubyid_meth'>meth</span><span class='comma'>,</span><span class='id identifier rubyid_args'>args</span><span class='op'>=</span><span class='kw'>nil</span><span class='comma'>,</span><span class='id identifier rubyid_opts'>opts</span> <span class='op'>=</span> <span class='const'>Openwsman</span><span class='op'>::</span><span class='const'>ClientOptions</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span><span class='rparen'>)</span>
   <span class='comment'># We need to pick the power controller we will use.
@@ -945,7 +945,7 @@
 78</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 75</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 75</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_off'>off</span>
   <span class='kw'>return</span> <span class='kw'>unless</span> <span class='id identifier rubyid_on?'>on?</span>
@@ -977,7 +977,7 @@
 73</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 70</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 70</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on'>on</span>
   <span class='kw'>return</span> <span class='kw'>if</span> <span class='id identifier rubyid_on?'>on?</span>
@@ -1030,7 +1030,7 @@
 68</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 66</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 66</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on?'>on?</span>
   <span class='id identifier rubyid_status'>status</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>on</span><span class='tstring_end'>&quot;</span></span>
@@ -1064,7 +1064,7 @@
 154</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 148</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 148</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_power_state_to'>power_state_to</span><span class='lparen'>(</span><span class='id identifier rubyid_k'>k</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_resource'>resource</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_CSPowerManagementService</span><span class='tstring_end'>&quot;</span></span>
@@ -1098,7 +1098,7 @@
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 84</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 84</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reset'>reset</span>
   <span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_update!'>update!</span><span class='lparen'>(</span><span class='label'>alive:</span> <span class='kw'>false</span><span class='rparen'>)</span> <span class='kw'>if</span> <span class='id identifier rubyid_power_state_to'>power_state_to</span><span class='lparen'>(</span><span class='id identifier rubyid_on?'>on?</span> <span class='op'>?</span> <span class='int'>10</span> <span class='op'>:</span> <span class='int'>2</span><span class='rparen'>)</span>
@@ -1130,7 +1130,7 @@
 64</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 60</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/wsman_hammer.rb', line 60</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_status'>status</span>
   <span class='id identifier rubyid_resource'>resource</span> <span class='op'>=</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_CSAssociatedPowerManagementService</span><span class='tstring_end'>&quot;</span></span>

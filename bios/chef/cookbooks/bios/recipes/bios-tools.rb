@@ -19,7 +19,7 @@
 
 include_recipe "bios::bios-common"
 
-provisioner_server = node[:crowbar][:provisioner][:server][:webservers].first[:url]
+provisioner_server = node[:rebar][:provisioner][:server][:webservers].first[:url]
 
 bmc="bmc-2013-10-22.tgz"
 setupbios="setupbios-2013-10-03.tgz"

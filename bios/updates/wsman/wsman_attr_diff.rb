@@ -15,9 +15,9 @@
 #
 
 #
-# ./wsman_attr_diff.rb <IP> root crowbar \
-# /opt/dell/barclamps/bios/chef/data_bags/crowbar-data/bios-set-PowerEdgeR720xd-default.json \
-# /opt/dell/barclamps/bios/chef/data_bags/crowbar-data/bios-set-PowerEdgeR720xd-Hadoop.json
+# ./wsman_attr_diff.rb <IP> root rebar \
+# /opt/dell/barclamps/bios/chef/data_bags/rebar-data/bios-set-PowerEdgeR720xd-default.json \
+# /opt/dell/barclamps/bios/chef/data_bags/rebar-data/bios-set-PowerEdgeR720xd-Hadoop.json
 #
 
 require 'rubygems'
@@ -93,8 +93,8 @@ def test_value(item, attributes)
 end
 
 def diff_attributes(opts, files)
-  wsman = Crowbar::BIOS::WSMAN.new(opts)
-  wsman_attributes = Crowbar::BIOS::WSMANAttributes.new(wsman)
+  wsman = Rebar::BIOS::WSMAN.new(opts)
+  wsman_attributes = Rebar::BIOS::WSMANAttributes.new(wsman)
 
   # Load files
   test_attrs = {}

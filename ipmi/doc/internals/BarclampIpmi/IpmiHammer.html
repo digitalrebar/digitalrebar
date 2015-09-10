@@ -96,7 +96,7 @@
   
   
     <dt class="r2 last">Defined in:</dt>
-    <dd class="r2 last">crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb</dd>
+    <dd class="r2 last">rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb</dd>
   
 </dl>
 <div class="clear"></div>
@@ -511,7 +511,7 @@ have an ipmi-configure role bound to it that has sucessfully configured.</p>
 26</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 24</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 24</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_probe'>probe</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span>
   <span class='lparen'>(</span><span class='const'>Attrib</span><span class='period'>.</span><span class='id identifier rubyid_get'>get</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>ipmi-configured</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span><span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span> <span class='kw'>rescue</span> <span class='kw'>nil</span><span class='rparen'>)</span>
@@ -550,7 +550,7 @@ have an ipmi-configure role bound to it that has sucessfully configured.</p>
 33</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 28</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 28</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_actions'>actions</span>
   <span class='lbrace'>{</span> <span class='label'>power:</span> <span class='lbracket'>[</span><span class='symbol'>:status</span><span class='comma'>,</span><span class='symbol'>:on?</span><span class='comma'>,</span><span class='symbol'>:on</span><span class='comma'>,</span><span class='symbol'>:off</span><span class='comma'>,</span><span class='symbol'>:cycle</span><span class='comma'>,</span><span class='symbol'>:reset</span><span class='comma'>,</span><span class='symbol'>:halt</span><span class='comma'>,</span><span class='symbol'>:pxeboot</span><span class='comma'>,</span><span class='symbol'>:identify</span><span class='rbracket'>]</span><span class='comma'>,</span>
@@ -597,7 +597,7 @@ just turns it back on.</p>
 66</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 62</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 62</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_cycle'>cycle</span>
   <span class='kw'>return</span> <span class='id identifier rubyid_on'>on</span> <span class='kw'>unless</span> <span class='id identifier rubyid_on?'>on?</span>
@@ -640,7 +640,7 @@ just turns it back on.</p>
 99</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 97</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 97</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_disk'>disk</span>
   <span class='id identifier rubyid_out'>out</span><span class='comma'>,</span><span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='id identifier rubyid_invoke'>invoke</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>chassis bootdev disk options=persistent</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -684,7 +684,7 @@ it will be asked to power the node down.</p>
 82</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 78</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 78</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_halt'>halt</span>
   <span class='kw'>return</span> <span class='kw'>unless</span> <span class='id identifier rubyid_on?'>on?</span>
@@ -728,7 +728,7 @@ blink for 255 seconds.</p>
 105</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 103</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 103</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_identify'>identify</span>
   <span class='id identifier rubyid_invoke'>invoke</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>chassis identify 255</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -762,7 +762,7 @@ blink for 255 seconds.</p>
 113</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 107</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 107</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_invoke'>invoke</span><span class='lparen'>(</span><span class='op'>*</span><span class='id identifier rubyid_args'>args</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_sleep'>sleep</span><span class='lparen'>(</span><span class='int'>5</span><span class='rparen'>)</span> <span class='kw'>unless</span> <span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_quirks'>quirks</span><span class='period'>.</span><span class='id identifier rubyid_member?'>member?</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>ipmi-nodelay</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -809,7 +809,7 @@ chance to clean up.</p>
 58</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 55</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 55</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_off'>off</span>
   <span class='id identifier rubyid_out'>out</span><span class='comma'>,</span><span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='id identifier rubyid_invoke'>invoke</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>chassis power off</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -853,7 +853,7 @@ chance to clean up.</p>
 51</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 47</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 47</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on'>on</span>
   <span class='kw'>return</span> <span class='kw'>if</span> <span class='id identifier rubyid_on?'>on?</span>
@@ -909,7 +909,7 @@ chance to clean up.</p>
 44</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 42</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 42</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on?'>on?</span>
   <span class='id identifier rubyid_status'>status</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>on</span><span class='tstring_end'>&quot;</span></span>
@@ -950,7 +950,7 @@ chance to clean up.</p>
 94</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 92</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 92</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_pxe'>pxe</span>
   <span class='id identifier rubyid_out'>out</span><span class='comma'>,</span><span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='id identifier rubyid_invoke'>invoke</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>chassis bootdev pxe options=persistent</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -993,7 +993,7 @@ powercycled.</p>
 89</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 86</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 86</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_pxeboot'>pxeboot</span>
   <span class='id identifier rubyid_out'>out</span><span class='comma'>,</span><span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='id identifier rubyid_invoke'>invoke</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>chassis bootparam set bootflag force_pxe</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
@@ -1037,7 +1037,7 @@ powercycled.</p>
 73</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 69</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 69</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_reset'>reset</span>
   <span class='kw'>return</span> <span class='id identifier rubyid_on'>on</span> <span class='kw'>unless</span> <span class='id identifier rubyid_on?'>on?</span>
@@ -1081,7 +1081,7 @@ powercycled.</p>
 39</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 36</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_ipmi/app/models/barclamp_ipmi/ipmi_hammer.rb', line 36</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_status'>status</span>
   <span class='id identifier rubyid_out'>out</span><span class='comma'>,</span> <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='id identifier rubyid_invoke'>invoke</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>chassis power status</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>

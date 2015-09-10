@@ -16,8 +16,8 @@
 # Author: andi abes
 #
 name             "bios"
-maintainer       "Opencrowbar Devs"
-maintainer_email "opencrowbar@googlegroups.com"
+maintainer       "Openrebar Devs"
+maintainer_email "digitalrebar@googlegroups.com"
 license          "Apache 2.0"
 description      "Update and configure BIOS "
 long_description  "Update and configure BIOS "

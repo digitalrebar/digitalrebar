@@ -96,7 +96,7 @@
   
   
     <dt class="r2 last">Defined in:</dt>
-    <dd class="r2 last">crowbar_engine/barclamp_bios/app/models/barclamp_bios/dellrseries.rb</dd>
+    <dd class="r2 last">rebar_engine/barclamp_bios/app/models/barclamp_bios/dellrseries.rb</dd>
   
 </dl>
 <div class="clear"></div>
@@ -298,7 +298,7 @@ Dell R series box.</p>
 33</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_bios/app/models/barclamp_bios/dellrseries.rb', line 30</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_bios/app/models/barclamp_bios/dellrseries.rb', line 30</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span>
   <span class='kw'>super</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span>
@@ -364,7 +364,7 @@ Dell R series box.</p>
 115</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_bios/app/models/barclamp_bios/dellrseries.rb', line 85</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_bios/app/models/barclamp_bios/dellrseries.rb', line 85</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_commit'>commit</span>
   <span class='comment'># Clear any pending config job.
@@ -434,7 +434,7 @@ Dell R series box.</p>
 121</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_bios/app/models/barclamp_bios/dellrseries.rb', line 118</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_bios/app/models/barclamp_bios/dellrseries.rb', line 118</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_factory_reset!'>factory_reset!</span>
   <span class='ivar'>@client</span><span class='period'>.</span><span class='id identifier rubyid_invoke'>invoke</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_LCService</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
@@ -521,7 +521,7 @@ Dell R series box.</p>
 83</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_bios/app/models/barclamp_bios/dellrseries.rb', line 36</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_bios/app/models/barclamp_bios/dellrseries.rb', line 36</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_settings'>settings</span>
   <span class='kw'>return</span> <span class='ivar'>@settings</span> <span class='kw'>if</span> <span class='ivar'>@settings</span>
