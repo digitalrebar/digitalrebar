@@ -40,7 +40,7 @@ func init() {
 	flag.StringVar(&config_path, "config_path", "/etc/dns-mgmt.conf", "Path to config file")
 	flag.StringVar(&key_pem, "key_pem", "/etc/dns-mgmt-https-key.pem", "Path to config file")
 	flag.StringVar(&cert_pem, "cert_pem", "/etc/dns-mgmt-https-cert.pem", "Path to config file")
-	flag.StringVar(&data_dir, "data_dir", "/var/cache/ocb-dns-mgmt", "Path to store data")
+	flag.StringVar(&data_dir, "data_dir", "/var/cache/rebar-dns-mgmt", "Path to store data")
 }
 
 func main() {
