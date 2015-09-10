@@ -34,6 +34,6 @@ Domain name is set in the common.env file
   * Convert DHCP style to new API-based DHCP server
   * Convert Prov to cobbler.
   * Cobbler Container: Create volume/mountpoints for isos and files
-    * Provisioner container maps the existing ~/.cache/opencrowbar/tftproot
+    * Provisioner container maps the existing ~/.cache/digitalrebar/tftproot
       directory into place in the provisioner
 

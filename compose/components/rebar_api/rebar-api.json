@@ -1,6 +1,6 @@
 {
   "service": {
-    "name": "crowbar-api-service",
+    "name": "rebar-api-service",
     "tags": [ "system" ],
     "port": 3000,
     "check": {

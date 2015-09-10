@@ -6,7 +6,7 @@ ENV GOPATH /go
 # Set our command
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 
-RUN groupadd -r crowbar && useradd -r -u 1000 -g crowbar -p '$6$afAL.34B$T2WR6zycEe2q3DktVtbH2orOroblhR6uCdo5n3jxLsm47PBm9lwygTbv3AjcmGDnvlh0y83u2yprET8g9/mve.' -m -d /home/crowbar -s /bin/bash crowbar
+RUN groupadd -r rebar && useradd -r -u 1000 -g rebar -p '$6$afAL.34B$T2WR6zycEe2q3DktVtbH2orOroblhR6uCdo5n3jxLsm47PBm9lwygTbv3AjcmGDnvlh0y83u2yprET8g9/mve.' -m -d /home/rebar -s /bin/bash rebar
 
 # Get a good ruby
 RUN apt-get -y install software-properties-common wget \
@@ -31,47 +31,47 @@ RUN dpkg -i /tmp/chef.deb
 RUN rm -f /tmp/chef.deb
 
 # Install the packages we need, clean up after them and us
-RUN /usr/local/go/bin/go get -u github.com/VictorLowther/crowbar-api/crowbar \
-  && cp "$GOPATH/bin/crowbar" /usr/local/bin \
+RUN /usr/local/go/bin/go get -u github.com/digitalrebar/rebar-api/rebar \
+  && cp "$GOPATH/bin/rebar" /usr/local/bin \
   && rm -rf /usr/local/go \
   && rm -rf $GOPATH
 
 # Get Latest OCB
-RUN mkdir -p /opt/opencrowbar
-COPY digitalrebar/ /opt/opencrowbar
+RUN mkdir -p /opt/digitalrebar
+COPY digitalrebar/ /opt/digitalrebar
 
 # Make dirs
-RUN mkdir -p /var/run/crowbar \
-  && mkdir -p /var/cache/crowbar/cookbooks \
-  && mkdir -p /var/cache/crowbar/gems \
-  && mkdir -p /var/cache/crowbar/bin \
-  && mkdir -p /var/log/crowbar \
+RUN mkdir -p /var/run/rebar \
+  && mkdir -p /var/cache/rebar/cookbooks \
+  && mkdir -p /var/cache/rebar/gems \
+  && mkdir -p /var/cache/rebar/bin \
+  && mkdir -p /var/log/rebar \
   && mkdir -p /etc/sudoers.d \
-  && mkdir -p /home/crowbar/.ssh \
-  && chown -R crowbar:crowbar /opt/opencrowbar \
-  && chown -R crowbar:crowbar /var/run/crowbar \
-  && chown -R crowbar:crowbar /var/cache/crowbar \
-  && chown -R crowbar:crowbar /var/log/crowbar \
-  && chown -R crowbar:crowbar /home/crowbar/.ssh \
-  && chmod 755 /home/crowbar/.ssh
+  && mkdir -p /home/rebar/.ssh \
+  && chown -R rebar:rebar /opt/digitalrebar \
+  && chown -R rebar:rebar /var/run/rebar \
+  && chown -R rebar:rebar /var/cache/rebar \
+  && chown -R rebar:rebar /var/log/rebar \
+  && chown -R rebar:rebar /home/rebar/.ssh \
+  && chmod 755 /home/rebar/.ssh
 
 RUN ln -s /usr/bin/swig3.0 /usr/bin/swig
 
 # Build gems
-RUN su -l -c 'cd /opt/opencrowbar/core/rails; bundle install --path /var/cache/crowbar/gems --standalone --binstubs /var/cache/crowbar/bin' crowbar \
-  && ln -s /var/cache/crowbar/bin/puma /usr/bin/puma \
-  && ln -s /var/cache/crowbar/bin/pumactl /usr/bin/pumactl
+RUN su -l -c 'cd /opt/digitalrebar/core/rails; bundle install --path /var/cache/rebar/gems --standalone --binstubs /var/cache/rebar/bin' rebar \
+  && ln -s /var/cache/rebar/bin/puma /usr/bin/puma \
+  && ln -s /var/cache/rebar/bin/pumactl /usr/bin/pumactl
 
 COPY docker-entrypoint.sh /sbin/docker-entrypoint.sh
-COPY crowbar_sudoer /etc/sudoers.d/crowbar
-COPY ssh_config /home/crowbar/.ssh/config
+COPY rebar_sudoer /etc/sudoers.d/rebar
+COPY ssh_config /home/rebar/.ssh/config
 
-RUN chown crowbar:crowbar /home/crowbar/.ssh/config \
-  && chmod 644 /home/crowbar/.ssh/config
+RUN chown rebar:rebar /home/rebar/.ssh/config \
+  && chmod 644 /home/rebar/.ssh/config
 
 RUN mkdir -p /etc/consul.d
-COPY crowbar-api.json /etc/consul.d/crowbar-api.json
-COPY crowbar-runner.json /etc/consul.d/crowbar-runner.json
+COPY rebar-api.json /etc/consul.d/rebar-api.json
+COPY rebar-runner.json /etc/consul.d/rebar-runner.json
 
 # These are the ports being exposed for this system
 # We don't want other systems inheriting this

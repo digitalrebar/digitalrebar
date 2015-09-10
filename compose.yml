@@ -14,16 +14,16 @@
       ignore_errors: yes
 
     - name: Make cache dirs
-      command: mkdir -p .cache/opencrowbar/tftpboot/isos
+      command: mkdir -p .cache/digitalrebar/tftpboot/isos
 
     - name: download ISO [BACKGROUND] (see list https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
-      command: su -c "nohup wget http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.3-server-amd64.iso -nc -O .cache/opencrowbar/tftpboot/isos/ubuntu-14.04.2-server-amd64.iso &"
+      command: su -c "nohup wget http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.3-server-amd64.iso -nc -O .cache/digitalrebar/tftpboot/isos/ubuntu-14.04.2-server-amd64.iso &"
       args:
-        creates: .cache/opencrowbar/tftpboot/isos/ubuntu-14.04.2-server-amd64.iso
+        creates: .cache/digitalrebar/tftpboot/isos/ubuntu-14.04.2-server-amd64.iso
     - name: download ISO [BACKGROUND] (see list https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
-      command: su -c "nohup wget http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso -nc -O .cache/opencrowbar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso &"
+      command: su -c "nohup wget http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso -nc -O .cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso &"
       args:
-        creates: .cache/opencrowbar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
+        creates: .cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
     - name: get code
       synchronize: src=./compose dest=/root rsync_path="rsync"
     - name: setup compose

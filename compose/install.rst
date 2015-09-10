@@ -54,7 +54,7 @@ These steps are for **default** configuration.  Advanced configurations can adap
    - when starting Compose, you will be alerted if there are other `assigned port conflicts <docker-compose-common.yml>`_ .
 - Make sure you have an ssh key [4]_
 - (optional) Enable passwordless sudo [5]_
-- Download at least one ISO from the list in `provisioner.yml <https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml#L135>`_ and copy to ``~/.cache/opencrowbar/tftpboot/isos``
+- Download at least one ISO from the list in `provisioner.yml <https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml#L135>`_ and copy to ``~/.cache/digitalrebar/tftpboot/isos``
 - Install git.
 - Clone RackN Digital Rebar Compose: ``git clone https://https://github.com/rackn/container-install.git compose``
 - Run the ``./setup`` command in that repo

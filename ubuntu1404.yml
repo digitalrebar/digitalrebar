@@ -21,9 +21,9 @@
     - name: noproxy
       command: su -c 'echo export no_proxy="127.0.0.1,[::1],localhost,192.168.124.0/24,172.16.0.0/12" >> /home/vagrant/.bashrc' - vagrant
     - name: make cache directory 
-      command: su -c "mkdir -p /home/vagrant/.cache/opencrowbar/tftpboot/isos" - vagrant
+      command: su -c "mkdir -p /home/vagrant/.cache/digitalrebar/tftpboot/isos" - vagrant
     - name: download ISO [BACKGROUND] (see list https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
-      command: su -c "nohup wget http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.3-server-amd64.iso -nc -O /home/vagrant/.cache/opencrowbar/tftpboot/isos/ubuntu-14.04.2-server-amd64.iso &"
+      command: su -c "nohup wget http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.3-server-amd64.iso -nc -O /home/vagrant/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.2-server-amd64.iso &"
     - name: authorized keys
       command: cp /root/.ssh/authorized_keys -n --no-preserve=all /home/vagrant/.ssh/
     - name: Add groups

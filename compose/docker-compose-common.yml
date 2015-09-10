@@ -49,9 +49,9 @@ goiardi:
 rebar_api:
   image: galthaus/dr_rebar_api
   volumes:
-    - ./components/rebar_api/digitalrebar:/opt/opencrowbar
+    - ./components/rebar_api/digitalrebar:/opt/digitalrebar
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
-    - ./config-dir/api/config:/opt/opencrowbar/core/config
+    - ./config-dir/api/config:/opt/digitalrebar/core/config
     - ./data-dir/node:/node-data
   env_file:
     - ./common.env
@@ -111,7 +111,7 @@ provisioner:
   privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
-    - ~/.cache/opencrowbar/tftpboot:/tftpboot
+    - ~/.cache/digitalrebar/tftpboot:/tftpboot
     - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./common.env
