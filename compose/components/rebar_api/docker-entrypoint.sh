@@ -2,7 +2,7 @@
 set -e
 set -x
 
-chown -R crowbar:crowbar /opt/opencrowbar
+chown -R rebar:rebar /opt/digitalrebar
 
 consul agent --join consul --config-dir /etc/consul.d --data-dir /data &
 
@@ -19,7 +19,7 @@ while [[ $answer != *:8300* ]]; do
   echo "Waiting for consul leader: $answer"
 done
 
-baseurl="http://127.0.0.1:8500/v1/kv/opencrowbar/private/database/opencrowbar"
+baseurl="http://127.0.0.1:8500/v1/kv/digitalrebar/private/database/digitalrebar"
 token="?token=$CONSUL_M_ACL"
 pass=`curl ${baseurl}/password${token}`
 while [ "$pass" == "" ] ; do
@@ -35,18 +35,18 @@ cat > /etc/consul_m_acl.json <<EOF
   "acl_master_token": "${CONSUL_M_ACL}"
 }
 EOF
-chown crowbar:crowbar /etc/consul_m_acl.json
+chown rebar:rebar /etc/consul_m_acl.json
 
-# Make sure crowbar user and ssh are in place
-su -l -c 'ssh-keygen -q -b 2048 -P "" -f /home/crowbar/.ssh/id_rsa' crowbar
+# Make sure rebar user and ssh are in place
+su -l -c 'ssh-keygen -q -b 2048 -P "" -f /home/rebar/.ssh/id_rsa' rebar
 mkdir -p /root/.ssh
 cd /root/.ssh
 touch authorized_keys
-cat authorized_keys /home/crowbar/.ssh/id_rsa.pub >> authorized_keys.new
+cat authorized_keys /home/rebar/.ssh/id_rsa.pub >> authorized_keys.new
 sort -u <authorized_keys.new >authorized_keys
 rm authorized_keys.new
 chmod 600 /root/.ssh/authorized_keys
-cd /opt/opencrowbar/core
+cd /opt/digitalrebar/core
 
 if [[ $DR_DEV ]]; then
 	export RAILS_ENV=development
@@ -57,28 +57,28 @@ else
 	export PUMA_CFG=puma.cfg
 fi
 
-rm -f /opt/opencrowbar/core/rails/Gemfile.lock
-su -l -c 'cd /opt/opencrowbar/core/rails; bundle install --path /var/cache/crowbar/gems --standalone --binstubs /var/cache/crowbar/bin' crowbar
+rm -f /opt/digitalrebar/core/rails/Gemfile.lock
+su -l -c 'cd /opt/digitalrebar/core/rails; bundle install --path /var/cache/rebar/gems --standalone --binstubs /var/cache/rebar/bin' rebar
 
 # Setup database tasks
-/opt/opencrowbar/core/setup/00-crowbar-rake-tasks.install
+/opt/digitalrebar/core/setup/00-rebar-rake-tasks.install
 
 # Start up the code
-/opt/opencrowbar/core/setup/01-crowbar-start.install
+/opt/digitalrebar/core/setup/01-rebar-start.install
 
 # Build initial access keys
-/opt/opencrowbar/core/setup/02-make-machine-key.install
+/opt/digitalrebar/core/setup/02-make-machine-key.install
 
-./crowbar-docker-install.sh
+./rebar-docker-install.sh
 
 # Add provisioner-service after initial converge.
-. /etc/profile.d/crowbar*
-crowbar nodes bind "system-phantom.internal.local" to "provisioner-service"
-crowbar nodes commit "system-phantom.internal.local"
+. /etc/profile.d/rebar*
+rebar nodes bind "system-phantom.internal.local" to "provisioner-service"
+rebar nodes commit "system-phantom.internal.local"
 
 # Copy out stuff to data dir
-cp /etc/profile.d/crowbar* /node-data
+cp /etc/profile.d/rebar* /node-data
 IP=`ip addr show eth0 | grep inet | grep -v inet6 | awk '{ print $2 }' | awk -F/ '{ print $1 }'`
-echo "export CROWBAR_ENDPOINT=http://$IP:3000" >> /node-data/crowbar*
+echo "export REBAR_ENDPOINT=http://$IP:3000" >> /node-data/rebar*
 
-tail -f /var/log/crowbar/*.log
+tail -f /var/log/rebar/*.log

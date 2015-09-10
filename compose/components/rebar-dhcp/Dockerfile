@@ -15,20 +15,20 @@ RUN apt-get update \
   && rm -rf /usr/local/go \
   && tar -C '/usr/local' -zxf /tmp/goball.tgz \
   && rm /tmp/goball.tgz \
-  && /usr/local/go/bin/go get -v github.com/galthaus/ocb-dhcp \
-  && mkdir -p /var/cache/ocb-dhcp \
+  && /usr/local/go/bin/go get -v github.com/rackn/rebar-dhcp \
+  && mkdir -p /var/cache/rebar-dhcp \
   && mkdir -p /etc/consul.d \
-  && chmod 700 /var/cache/ocb-dhcp \
-  && cp $GOPATH/bin/ocb-dhcp /usr/local/bin \
+  && chmod 700 /var/cache/rebar-dhcp \
+  && cp $GOPATH/bin/rebar-dhcp /usr/local/bin \
   && rm -rf $GOPATH /usr/local/go \
   && apt-get -y purge git make build-essential
 
 COPY docker-entrypoint.sh /sbin/docker-entrypoint.sh
 
 COPY dhcp.json /etc/consul.d/dhcp.json
-COPY ocb-dhcp.conf /etc/ocb-dhcp.conf
-COPY database.json /var/cache/ocb-dhcp/database.json
-COPY ocb-dhcp-cert.conf /etc/ocb-dhcp-cert.conf
+COPY rebar-dhcp.conf /etc/rebar-dhcp.conf
+COPY database.json /var/cache/rebar-dhcp/database.json
+COPY rebar-dhcp-cert.conf /etc/rebar-dhcp-cert.conf
 
 # Ports to expose/map
 # EXPOSE 67, 6755

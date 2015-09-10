@@ -17,7 +17,7 @@ while [[ $answer != *:8300* ]]; do
   echo "Waiting for consul leader: $answer"
 done
 
-baseurl="http://127.0.0.1:8500/v1/kv/opencrowbar/private/database/goiardi"
+baseurl="http://127.0.0.1:8500/v1/kv/digitalrebar/private/database/goiardi"
 token="?token=$CONSUL_M_ACL"
 pass=`curl ${baseurl}/password${token}`
 while [ "$pass" == "" ] ; do
@@ -69,16 +69,16 @@ mkdir -p /etc/chef
 
 cd /tmp
 KEYFILE="/tmp/rebar.pem"
-EDITOR=/bin/true knife client create crowbar \
+EDITOR=/bin/true knife client create rebar \
    -s http://localhost:4646 \
    -a --file "$KEYFILE" -u admin \
    -k /etc/goiardi/admin.pem
 
-# Store crowbar pem file.
-baseurl="http://127.0.0.1:8500/v1/kv/opencrowbar/private/chef/system"
+# Store rebar pem file.
+baseurl="http://127.0.0.1:8500/v1/kv/digitalrebar/private/chef/system"
 token="?token=$CONSUL_M_ACL"
 curl --data-binary "$(cat $KEYFILE)" -X PUT ${baseurl}/pem${token}
-curl --data-binary "crowbar" -X PUT ${baseurl}/account${token}
+curl --data-binary "rebar" -X PUT ${baseurl}/account${token}
 curl --data-binary "http" -X PUT ${baseurl}/proto${token}
 
 rm -f $KEYFILE

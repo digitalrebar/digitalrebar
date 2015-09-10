@@ -4,7 +4,7 @@
     "tags": [ "system" ],
     "port": 6755,
     "check": {
-      "script": "pidof ocb-dhcp",
+      "script": "pidof rebar-dhcp",
       "interval": "10s"
     }
   }

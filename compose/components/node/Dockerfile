@@ -14,9 +14,9 @@ RUN apt-get update \
   && rm -rf /usr/local/go \
   && tar -C '/usr/local' -zxf /tmp/goball.tgz \
   && rm /tmp/goball.tgz \
-  && /usr/local/go/bin/go get -u github.com/VictorLowther/crowbar-api/crowbar \
+  && /usr/local/go/bin/go get -u github.com/digitalrebar/rebar-api/rebar \
   && rm -rf $GOPATH/pkg \
-  && cp -r $GOPATH/bin/crowbar /usr/local/bin \
+  && cp -r $GOPATH/bin/rebar /usr/local/bin \
   && rm -rf $GOPATH /usr/local/go \
   && apt-get -y purge git make build-essential \
   && curl -fgL -o '/tmp/chef.deb' 'http://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef_11.12.8-1_amd64.deb' \

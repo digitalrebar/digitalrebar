@@ -4,7 +4,7 @@
     "tags": [ "system" ],
     "port": 6754,
     "check": {
-      "script": "pidof ocb-dns-mgmt",
+      "script": "pidof rebar-dns-mgmt",
       "interval": "10s"
     }
   }

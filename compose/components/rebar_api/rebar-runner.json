@@ -1,6 +1,6 @@
 {
   "service": {
-    "name": "crowbar-job-runner-service",
+    "name": "rebar-job-runner-service",
     "tags": [ "system" ],
     "port": 3000,
     "check": {

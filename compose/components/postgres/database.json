@@ -1,1 +1,1 @@
-{"service": {"name": "crowbar-database", "tags": ["postgres"], "port": 5432}}
+{"service": {"name": "rebar-database", "tags": ["postgres"], "port": 5432}}

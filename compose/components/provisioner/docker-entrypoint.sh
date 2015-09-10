@@ -18,7 +18,7 @@ while [[ $answer != *:8300* ]]; do
 done
 
 # GREG: INIT VARS HERE - allow override
-PROV_SLEDGEHAMMER_SIG="1a85ff3f0d0bedacb2b4cc306d5568510552d48e"
+PROV_SLEDGEHAMMER_SIG="20d2dccd4ea335acd7fb2b9dd5b644518ed3dbcb"
 PROV_SLEDGEHAMMER_URL="http://opencrowbar.s3-website-us-east-1.amazonaws.com/sledgehammer"
 PROV_TFTPROOT="/tftpboot"
 PROV_WEBPORT="8091"
@@ -56,16 +56,16 @@ cd /tftpboot/gemsite
 /opt/chef/embedded/bin/gem generate_index
 cd -
 
-while [[ ! -e /etc/rebar-data/crowbar-key.sh ]] ; do
-  echo "Waiting for crowbar-key.sh to show up"
+while [[ ! -e /etc/rebar-data/rebar-key.sh ]] ; do
+  echo "Waiting for rebar-key.sh to show up"
   sleep 5
 done
 
 # Wait for the webserver to be ready.
-. /etc/rebar-data/crowbar-key.sh
-while ! crowbar ping; do
+. /etc/rebar-data/rebar-key.sh
+while ! rebar ping; do
   sleep 1
-  . /etc/rebar-data/crowbar-key.sh
+  . /etc/rebar-data/rebar-key.sh
 done
 
 service ssh start
@@ -73,7 +73,7 @@ service ssh start
 # This could error if this is the first time.  Ignore it
 #set +e
 # Node id is harcoded here, and that is a Bad Thing
-if blob="$(crowbar deployments get 1 attrib crowbar-access_keys)"; then
+if blob="$(rebar deployments get 1 attrib rebar-access_keys)"; then
   mkdir -p /root/.ssh
   touch /root/.ssh/authorized_keys
   awk -F\" '{ print $4 }' <<<"$blob" >> /root/.ssh/authorized_keys
@@ -89,7 +89,7 @@ fi
 IPADDR="${BASH_REMATCH[1]}"
 echo "Using $IPADDR for this host"
 
-DOMAIN="$(crowbar nodes get "system-phantom.internal.local" attrib dns-domain | jq -r .value)"
+DOMAIN="$(rebar nodes get "system-phantom.internal.local" attrib dns-domain | jq -r .value)"
 if [ $DOMAIN == "null" ] ; then
   echo "Domain must be set to something"
   exit 1
@@ -97,11 +97,11 @@ fi
 
 HOSTNAME=provisioner.$DOMAIN
 
-# Add node to OpenCrowbar
-if ! crowbar nodes show "$HOSTNAME"; then
+# Add node to DigitalRebar
+if ! rebar nodes show "$HOSTNAME"; then
   # Create a new node for us,
   # Let the annealer do its thing.
-  crowbar nodes import "{\"name\": \"$HOSTNAME\", \"admin\": true, \"ip\": \"$IPADDR\", \"bootenv\": \"local\"}"|| {
+  rebar nodes import "{\"name\": \"$HOSTNAME\", \"admin\": true, \"ip\": \"$IPADDR\", \"bootenv\": \"local\"}"|| {
     echo "We could not create a node for ourself!"
     #exit 1
   }
@@ -109,16 +109,16 @@ else
   echo "Node already created, moving on"
 fi
 
-# does the crowbar-joined-role exist?
-if ! crowbar nodes roles $HOSTNAME  |grep -q 'crowbar-joined-node'; then
-  crowbar nodes bind "$HOSTNAME" to 'crowbar-joined-node'
+# does the rebar-joined-role exist?
+if ! rebar nodes roles $HOSTNAME  |grep -q 'rebar-joined-node'; then
+  rebar nodes bind "$HOSTNAME" to 'rebar-joined-node'
   if [ "$THE_LOCAL_NETWORK" != "" ] ; then
-    crowbar nodes bind "$HOSTNAME" to "network-${THE_LOCAL_NETWORK}"
+    rebar nodes bind "$HOSTNAME" to "network-${THE_LOCAL_NETWORK}"
   fi
-  crowbar nodes bind "$HOSTNAME" to 'provisioner-server'
-  crowbar nodes bind "$HOSTNAME" to 'provisioner-database'
-  crowbar nodes bind "$HOSTNAME" to 'provisioner-base-images'
-  crowbar nodes commit "$HOSTNAME" || {
+  rebar nodes bind "$HOSTNAME" to 'provisioner-server'
+  rebar nodes bind "$HOSTNAME" to 'provisioner-database'
+  rebar nodes bind "$HOSTNAME" to 'provisioner-base-images'
+  rebar nodes commit "$HOSTNAME" || {
     echo "We could not commit the node!"
     #exit 1
   }
@@ -127,7 +127,7 @@ else
 fi
 
 # Always make sure we are marking the node alive. It will comeback later.
-crowbar nodes update "$HOSTNAME" "{\"alive\": true, \"bootenv\": \"local\"}"
+rebar nodes update "$HOSTNAME" "{\"alive\": true, \"bootenv\": \"local\"}"
 
 while [ true ] ; do
   sleep 30

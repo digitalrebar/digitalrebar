@@ -5,8 +5,8 @@
   "service_port": 6754,
   "service_tag": "system",
   "keys": {
-    "opencrowbar/private/dns-mgmt/system/cert_pem": "public cert",
-    "opencrowbar/private/dns-mgmt/system/access_name": "Access name",
-    "opencrowbar/private/dns-mgmt/system/access_password": "Access password"
+    "digitalrebar/private/dns-mgmt/system/cert_pem": "public cert",
+    "digitalrebar/private/dns-mgmt/system/access_name": "Access name",
+    "digitalrebar/private/dns-mgmt/system/access_password": "Access password"
   }
 }

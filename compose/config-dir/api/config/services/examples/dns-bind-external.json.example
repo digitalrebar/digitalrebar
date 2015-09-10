@@ -5,6 +5,6 @@
   "service_port": 53,
   "service_tag": "system",
   "keys": {
-    "opencrowbar/private/dns/system/type": "BIND"
+    "digitalrebar/private/dns/system/type": "BIND"
   }
 }

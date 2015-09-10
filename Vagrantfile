@@ -18,7 +18,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #admin.vm.network "forwarded_port", guest: 8500, host: 8585
 
     # avoid redownloading large files      
-    admin.vm.synced_folder "~/.cache/opencrowbar/tftpboot/isos/", "/home/vagrant/.cache/opencrowbar/tftpboot/isos/"
+    admin.vm.synced_folder "~/.cache/digitalrebar/tftpboot/isos/", "/home/vagrant/.cache/digitalrebar/tftpboot/isos/"
 
     admin.vm.provision "ansible" do |ansible|
   		ansible.sudo = true
