@@ -16,6 +16,6 @@ fi
 
 /etc/init.d/rebar start
 # Wait for the webserver to be ready.
-while ! rebar -U rebar -P rebar -E http://127.0.0.1:3000 ping; do
+while ! rebar -U rebar -P rebar1 -E http://127.0.0.1:3000 ping; do
     sleep 1
 done
