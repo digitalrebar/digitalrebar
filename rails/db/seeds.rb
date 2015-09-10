@@ -23,7 +23,7 @@ ActiveRecord::Base.transaction do
 
 
   u = User.find_or_create_by_username!(:username=>'rebar', :password=>'rebar1', :is_admin=>true)
-  u.digest_password('rebar')
+  u.digest_password('rebar1')
   u.save!
 
   if Rails.env.development? or Rails.env.test?
