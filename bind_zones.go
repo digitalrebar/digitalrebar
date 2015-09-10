@@ -127,7 +127,7 @@ func make_serial() string {
 func (di *BindDnsInstance) PatchZone(zones *ZoneTracker, zoneName string, rec Record) (Zone, *backendError) {
 
 	// Rebuild include list
-	file, err := os.Create("/etc/bind/named.conf.crowbar")
+	file, err := os.Create("/etc/bind/named.conf.rebar")
 	defer file.Close()
 	if err != nil {
 		return Zone{}, &backendError{err.Error(), http.StatusInternalServerError}

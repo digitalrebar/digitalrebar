@@ -1,7 +1,7 @@
-# ocb-dns-mgmt
+# rebar-dns-mgmt
 
-This is a micro-service that provides an API for OpenCrowbar to use to
-configure DNS systems.  The service can manage an OpenCrowbar installed
+This is a micro-service that provides an API for DigitalRebar to use to
+configure DNS systems.  The service can manage an DigitalRebar installed
 BIND server or a PowerDNS server through its HTTP API in version 3.4.5 or
 higher.  When managing PowerDNS, it assumes that all domains (including
 reverse domains) are already created.
@@ -64,8 +64,8 @@ Data is in the format:
 
 # Build
 
-go get -u github.com/galthaus/ocb-dns-mgmt
-go install github.com/galthaus/ocb-dns-mgmt
+go get -u github.com/galthaus/rebar-dns-mgmt
+go install github.com/galthaus/rebar-dns-mgmt
 
 # Installing
 
@@ -89,7 +89,7 @@ NOTE: Sometimes certs need addition configuration to deal with names or IPs.
 # Running
 
 ```
-$GOPATH/bin/ocb-dns-mgmt
+$GOPATH/bin/rebar-dns-mgmt
 ```
 
 # Config Syntax
