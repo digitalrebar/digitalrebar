@@ -17,7 +17,7 @@ from apiobject import ApiObject
 
 class UserEP(EndPoint):    
     '''
-    https://github.com/opencrowbar/core/blob/master/doc/devguide/api/users.md
+    https://github.com/digitalrebar/core/blob/master/doc/devguide/api/users.md
     '''
     __endpoint   = "/api/v2/users"      
     __apiObjectType = "User"

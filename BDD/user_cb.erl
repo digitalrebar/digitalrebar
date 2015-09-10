@@ -23,19 +23,19 @@ g(Item) ->
   case Item of
     path -> "/api/v2/users";
     atom1 -> bdd_user1;
-    natural_key -> username; % unlike most crowbar objects, this uses username as the natural key
+    natural_key -> username; % unlike most rebar objects, this uses username as the natural key
     username -> "oscar";
     name -> g(name);
     description -> g(email);
     order -> 100;
     email -> email();
-    domain -> "crowbar.bdd";
+    domain -> "rebar.bdd";
     test_email -> "test@test.com";
     password -> "password";
     password_confirmation -> "password";
     remember_me -> "false";
     is_admin -> "false";
-    _ -> crowbar:g(Item)
+    _ -> rebar:g(Item)
   end.
 
 
@@ -55,7 +55,7 @@ validate(JSON) when is_record(JSON, obj) ->
 % Common Routine
 % Returns list of nodes in the system to check for bad housekeeping
 inspector() -> 
-  crowbar_rest:inspector(user).  % shared inspector works here, but may not always
+  rebar_rest:inspector(user).  % shared inspector works here, but may not always
 
 json(Name, Description, _) ->
   json(Name, Description, g(password), g(password_confirmation), g(remember_me), g(is_admin)).

@@ -1,5 +1,5 @@
 name             'kernel-panic'
-maintainer       "Dell Crowbar Team"
+maintainer       "Dell Rebar Team"
 maintainer_email "openstack@dell.com"
 license          "Apache 2"
 description      "Installs/Configures kernel-panic"

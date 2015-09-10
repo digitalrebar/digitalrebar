@@ -13,7 +13,7 @@ Feature: Role
 
   Scenario: The page renders
     Given I am on the "roles" page
-    Then I should see a heading {bdd:crowbar.i18n.roles.index.title}
+    Then I should see a heading {bdd:rebar.i18n.roles.index.title}
       And I should see "test-admin"
       And there are no localization errors
 
@@ -60,7 +60,7 @@ Feature: Role
     Finally REST removes the {object:role} "BDD_generic"
 
   Scenario: Role class no-override works
-    Given there is a {object:role} "BDD_no_override" in {object:barclamp} "crowbar" for {object:jig} "test"
+    Given there is a {object:role} "BDD_no_override" in {object:barclamp} "rebar" for {object:jig} "test"
     When I go to the "/roles/BDD_no_override" page
     Then I should see "[Role]"
     Finally REST removes the {object:role} "BDD_no_override"

@@ -19,11 +19,11 @@ file "/tmp/.repo_update" do
   action :nothing
 end
 
-repositories = (node[:crowbar][:provisioner][:server][:repositories][os_token] || Hash.new rescue Hash.new)
+repositories = (node[:rebar][:provisioner][:server][:repositories][os_token] || Hash.new rescue Hash.new)
 
-online = node[:crowbar][:provisioner][:server][:online]
-proxy = node[:crowbar][:proxy][:servers].first[:url]
-webserver = node[:crowbar][:provisioner][:server][:webservers].first[:url]
+online = node[:rebar][:provisioner][:server][:online]
+proxy = node[:rebar][:proxy][:servers].first[:url]
+webserver = node[:rebar][:provisioner][:server][:webservers].first[:url]
 
 ["/etc/gemrc","/root/.gemrc"].each do |rcfile|
   template rcfile do
@@ -62,7 +62,7 @@ end
 
 case node["platform"]
 when "ubuntu","debian"
-  cookbook_file "/etc/apt/apt.conf.d/99-crowbar-no-auth" do
+  cookbook_file "/etc/apt/apt.conf.d/99-rebar-no-auth" do
     source "apt.conf"
   end
   file "/etc/apt/sources.list" do
@@ -77,13 +77,13 @@ when "ubuntu","debian"
       end
     when repo =~ /.*online/
       template "/etc/apt/sources.list.d/20-barclamp-#{repo}.list" do
-        source "10-crowbar-extra.list.erb"
+        source "10-rebar-extra.list.erb"
         variables(:urls => urls)
         notifies :create, "file[/tmp/.repo_update]", :immediately
       end
     else
       template "/etc/apt/sources.list.d/10-barclamp-#{repo}.list" do
-        source "10-crowbar-extra.list.erb"
+        source "10-rebar-extra.list.erb"
         variables(:urls => urls)
         notifies :create, "file[/tmp/.repo_update]", :immediately
       end
@@ -109,11 +109,11 @@ when "redhat","centos","fedora"
       not_if "test -f /etc/yum.repos.d/CentOS-Base.repo"
       notifies :create, "file[/tmp/.repo_update]", :immediately
     end
-    file "/etc/yum.repos.d/crowbar-base.repo" do
+    file "/etc/yum.repos.d/rebar-base.repo" do
       action :delete
     end
   else
-    template "/etc/yum.repos.d/crowbar-base.repo" do
+    template "/etc/yum.repos.d/rebar-base.repo" do
       source "yum-base.repo.erb"
       variables(:os_token => os_token, :webserver => webserver)
       notifies :create, "file[/tmp/.repo_update]", :immediately
@@ -130,8 +130,8 @@ when "redhat","centos","fedora"
       bare_sources.each do |source|
         _, name, _, url = source.split
         url = "baseurl=#{url}" if url =~ /^http/
-        template "/etc/yum.repos.d/crowbar-#{repo}-#{name}.repo" do
-          source "crowbar-xtras.repo.erb"
+        template "/etc/yum.repos.d/rebar-#{repo}-#{name}.repo" do
+          source "rebar-xtras.repo.erb"
           variables(:repo => name, :urls => {url => true})
           notifies :create, "file[/tmp/.repo_update]", :immediately
         end
@@ -151,8 +151,8 @@ EOC
         end
       end
     else
-      template "/etc/yum.repos.d/crowbar-#{repo}.repo" do
-        source "crowbar-xtras.repo.erb"
+      template "/etc/yum.repos.d/rebar-#{repo}.repo" do
+        source "rebar-xtras.repo.erb"
         variables(:repo => repo, :urls => urls)
         notifies :create, "file[/tmp/.repo_update]", :immediately
       end

@@ -18,7 +18,7 @@ from requests.auth import HTTPDigestAuth, HTTPBasicAuth
 
 class EndPoint(object):
     '''
-    https://github.com/opencrowbar/core/blob/master/doc/devguide/api.md
+    https://github.com/digitalrebar/core/blob/master/doc/devguide/api.md
     '''
     
     def __init__(self, session):

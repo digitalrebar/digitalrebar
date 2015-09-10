@@ -29,7 +29,7 @@ end
 ip_addr = (IP.coerce(node['rabbitmq']['service_address']).addr rescue nil)
 port = node['rabbitmq']['port'] || 5672
 
-template '/etc/consul.d/crowbar-rabbitmq.json' do
+template '/etc/consul.d/rebar-rabbitmq.json' do
   source 'consul-rabbitmq-server.json.erb'
   mode 0644
   owner 'root'

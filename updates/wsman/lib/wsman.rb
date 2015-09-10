@@ -5,7 +5,7 @@ require 'xmlsimple'
 require 'yaml'
 require 'json'
 
-class Crowbar 
+class Rebar 
  class WSMAN
   attr :host
   attr :user

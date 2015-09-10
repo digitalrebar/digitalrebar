@@ -24,7 +24,7 @@ class BarclampDns::Service < Service
       Rails.logger.debug("DnsServer: #{addr.inspect}")
 
       server_name = s.ServiceTags.first
-      server_type = ConsulAccess.getKey("opencrowbar/private/dns/#{server_name}/type")
+      server_type = ConsulAccess.getKey("digitalrebar/private/dns/#{server_name}/type")
 
       res = { "address" => str_addr,
               "port" => "#{s.ServicePort}",
@@ -32,9 +32,9 @@ class BarclampDns::Service < Service
               "type" => server_type }
 
       if server_type == 'POWERDNS'
-        res['mgmt_port'] = ConsulAccess.getKey("opencrowbar/private/dns/#{server_name}/mgmt_port")
-        res['mgmt_token'] = ConsulAccess.getKey("opencrowbar/private/dns/#{server_name}/mgmt_token")
-        res['mgmt_name'] = (ConsulAccess.getKey("opencrowbar/private/dns/#{server_name}/mgmt_name") rescue 'localhost')
+        res['mgmt_port'] = ConsulAccess.getKey("digitalrebar/private/dns/#{server_name}/mgmt_port")
+        res['mgmt_token'] = ConsulAccess.getKey("digitalrebar/private/dns/#{server_name}/mgmt_token")
+        res['mgmt_name'] = (ConsulAccess.getKey("digitalrebar/private/dns/#{server_name}/mgmt_name") rescue 'localhost')
       end
 
       res

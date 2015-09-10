@@ -25,7 +25,7 @@ class BarclampChef::SoloJig < Jig
     runlist << "recipe[ohai]"
     runlist << "recipe[utils]"
     runlist << "role[#{nr.role.name}]"
-    runlist << "recipe[crowbar-hacks::solo-saver]"
+    runlist << "recipe[rebar-hacks::solo-saver]"
     Rails.logger.info("Chef Solo: discovered run list: #{runlist}")
     return runlist
   end
@@ -36,11 +36,11 @@ class BarclampChef::SoloJig < Jig
 
   def stage_run(nr)
     return {
-      "name" => "crowbar_baserole",
+      "name" => "rebar_baserole",
       "default_attributes" => super(nr),
       "override_attributes" => {},
       "json_class" => "Chef::Role",
-      "description" => "Crowbar role to provide default attribs for this run",
+      "description" => "Rebar role to provide default attribs for this run",
       "chef-type" => "role",
       "run_list" => make_run_list(nr)
     }
@@ -50,7 +50,7 @@ class BarclampChef::SoloJig < Jig
     local_tmpdir = %x{mktemp -d /tmp/local-chefsolo-XXXXXX}.strip
     #remote_tmpdir = %x{mktemp -d /tmp/chefsolo-XXXXXX}.strip
     chef_path = File.join(nr.barclamp.source_path, on_disk_name)
-    role_json = File.join(local_tmpdir,"crowbar_baserole.json")
+    role_json = File.join(local_tmpdir,"rebar_baserole.json")
     node_json = File.join(local_tmpdir,"node.json")
     unless File.directory?(chef_path)
       raise("No Chef data at #{chef_path}")
@@ -69,7 +69,7 @@ class BarclampChef::SoloJig < Jig
     raise("Chef Solo jig run for #{nr.name} failed to make cookbooks dir.\nOut: #{out}\nErr:#{err}") unless ok.success?
 
     Rails.logger.debug("Chef Solo Jig: #{nr.name} scp time start: #{Time.now.to_s}")
-    cookbook_tarball = "/var/cache/crowbar/cookbooks/package.tar.gz"
+    cookbook_tarball = "/var/cache/rebar/cookbooks/package.tar.gz"
     raise("Missing Chef cookbooks in #{cookbook_tarball}") unless File.file?(cookbook_tarball)
     out,err,ok = nr.node.scp_to(cookbook_tarball,"/var/chef/")
     raise("Chef Solo jig run for #{nr.name} failed to scp pacakge.tar.gz.\nOut: #{out}\nErr:#{err}\n") unless ok.success?
@@ -83,7 +83,7 @@ class BarclampChef::SoloJig < Jig
       f.write(JSON.pretty_generate(data))
     end
     File.open(node_json,"w") do |f|
-      JSON.dump({"run_list" => "role[crowbar_baserole]"},f)
+      JSON.dump({"run_list" => "role[rebar_baserole]"},f)
     end
     if nr.role.respond_to?(:jig_role) && !File.exists?("#{chef_path}/roles/#{nr.role.name}.rb")
       # Create a JSON version of the role we will need so that chef solo can pick it up
@@ -93,7 +93,7 @@ class BarclampChef::SoloJig < Jig
       out,err,ok = nr.node.scp_to("#{local_tmpdir}/#{nr.role.name}.json","/var/chef/roles/#{nr.role.name}.json")
       raise("Chef Solo jig: #{nr.name}: failed to copy dynamic role to target\nOut: #{out}\nErr:#{err}") unless ok.success?
     end
-    out,err,ok = nr.node.scp_to(role_json, "/var/chef/roles/crowbar_baserole.json")
+    out,err,ok = nr.node.scp_to(role_json, "/var/chef/roles/rebar_baserole.json")
     raise("Chef Solo jig: #{nr.name}: failed to copy node attribs to target\nOut: #{out}\nErr:#{err}") unless ok.success?
     out,err,ok = nr.node.scp_to(node_json, "/var/chef/node.json")
     raise ("Chef Solo jig: #{nr.name}: failed to copy node to target\nOut: #{out}\nErr:#{err}") unless ok.success?

@@ -16,7 +16,7 @@ require 'spec_helper'
 
 describe "admin create" do
 
-  subject { Node.create! :name=>'rspec-admin.crowbar.com', :admin => true, :deployment => Deployment.system }
+  subject { Node.create! :name=>'rspec-admin.rebar.com', :admin => true, :deployment => Deployment.system }
 
   it {should be_is_admin} 
 
@@ -38,7 +38,7 @@ end
 
 describe "node create" do
 
-  subject { Node.create! :name=>'rspec-node.crowbar.com', :admin => false, :deployment => Deployment.system }
+  subject { Node.create! :name=>'rspec-node.rebar.com', :admin => false, :deployment => Deployment.system }
 
   it "must have implicit roles" do
     rr = FactoryGirl.create(:role, implicit: true, name: 'child')

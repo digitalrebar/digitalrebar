@@ -28,13 +28,13 @@ if [[ $TMUX ]]; then
   echo 'Using TMUX > "export TMUX=false" to disable.'
 fi
 
-cd /opt/opencrowbar/core
+cd /opt/digitalrebar/core
 # setup & load env info
 . ./bootstrap.sh
 
 # install the database
-chef-solo -c /opt/opencrowbar/core/bootstrap/chef-solo.rb -o "${boot_recipes}"
-chef-solo -c /opt/opencrowbar/core/bootstrap/chef-solo.rb -o "${consul_recipes}"
-chef-solo -c /opt/opencrowbar/core/bootstrap/chef-solo.rb -o "${database_recipes}"
+chef-solo -c /opt/digitalrebar/core/bootstrap/chef-solo.rb -o "${boot_recipes}"
+chef-solo -c /opt/digitalrebar/core/bootstrap/chef-solo.rb -o "${consul_recipes}"
+chef-solo -c /opt/digitalrebar/core/bootstrap/chef-solo.rb -o "${database_recipes}"
 
 exec ./run-tests.sh

@@ -19,9 +19,9 @@ barclamp:
   display: "NTP"
   description: "Network Time Protocol (NTP)"
   version: "2.E"
-  source_url: "https://github.com/opencrowbar/core"
+  source_url: "https://github.com/digitalrebar/core"
   license: "Apache 2"
-  license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
   - name: ntp-server
@@ -34,7 +34,7 @@ roles:
     attribs:
       - name: ntp_servers_external
         description: "Addresses of the external NTP servers to use for upstream time synchronization"
-        map: 'crowbar/ntp/external_servers'
+        map: 'rebar/ntp/external_servers'
         default: []
         schema:
           type: seq
@@ -48,7 +48,7 @@ roles:
     attribs:
       - name: ntp_servers
         description: "Addresses of the NTP servers to use for cluster-wide time synchronization"
-        map: 'crowbar/ntp/servers'
+        map: 'rebar/ntp/servers'
         schema:
           type: seq
           sequence:

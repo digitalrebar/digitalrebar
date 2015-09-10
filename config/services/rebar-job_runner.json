@@ -1,0 +1,6 @@
+{
+  "type": "internal",
+  "name": "rebar-job_runner",
+  "has_service": true,
+  "server_role": "rebar-job_runner"
+}

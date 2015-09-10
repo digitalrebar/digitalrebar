@@ -17,7 +17,7 @@ from apiobject import ApiObject
 
 class BarclampEP(EndPoint):    
     '''
-    https://github.com/opencrowbar/core/blob/master/doc/devguide/api/barclamp.md
+    https://github.com/digitalrebar/core/blob/master/doc/devguide/api/barclamp.md
     '''
     __endpoint   = "/api/v2/barclamps"      
     __apiObjectType = "Barclamp"

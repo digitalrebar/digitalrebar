@@ -61,7 +61,7 @@ class ActiveSupport::TestCase
   # base objects that are required!
 
   source_path = File.realpath(File.join(Rails.root,".."))
-  data = YAML.load_file(File.join(source_path,"crowbar.yml"))
+  data = YAML.load_file(File.join(source_path,"rebar.yml"))
   data['barclamp']['source_path'] = source_path
   Barclamp.import_or_update(data)
   Dir.glob(File.join(source_path,"barclamps","*.yml")).each do |yml|

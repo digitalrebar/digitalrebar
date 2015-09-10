@@ -28,7 +28,7 @@ class BarclampProvisioner::Database < Role
   end
 
   def on_active(nr)
-    ents = nr.wall["crowbar_wall"]["provisioner"]["clients"] rescue {}
+    ents = nr.wall["rebar_wall"]["provisioner"]["clients"] rescue {}
     ents.each do |k,v|
       target_node = Node.find_by!(name: k)
       Attrib.set('provisioner-active-bootstate',target_node,v['bootenv'])
@@ -66,9 +66,9 @@ class BarclampProvisioner::Database < Role
     end
     node_roles.each do |nr|
       nr.with_lock('FOR NO KEY UPDATE') do
-        old_hosts = (nr.sysdata["crowbar"]["provisioner"]["clients"] rescue {})
+        old_hosts = (nr.sysdata["rebar"]["provisioner"]["clients"] rescue {})
         next if hosts == old_hosts
-        nr.update_column("sysdata",{"crowbar" => {"provisioner" => {"clients" => hosts}}})
+        nr.update_column("sysdata",{"rebar" => {"provisioner" => {"clients" => hosts}}})
         to_enqueue << nr
       end
     end

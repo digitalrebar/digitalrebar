@@ -5,14 +5,14 @@ Feature: Dashboard GetReady
 
   Scenario: UI Node List
     When I go to the "dashboard/getready" page
-    Then I should see {bdd:crowbar.i18n.dashboard.getready.title}
-      And I should see an input box "deployment" with {bdd:crowbar.i18n.dashboard.getready.default}
-      And I should see an input box "range" with {bdd:crowbar.i18n.dashboard.getready.range_base}
+    Then I should see {bdd:rebar.i18n.dashboard.getready.title}
+      And I should see an input box "deployment" with {bdd:rebar.i18n.dashboard.getready.default}
+      And I should see an input box "range" with {bdd:rebar.i18n.dashboard.getready.range_base}
       And I should see an input box "conduit" with "1g0"
       And I should see an input box "first_ip" with "10.10.10.10/24"
       And I should see an input box "last_ip" with "10.10.10.250/24"
       And I should see {lookup:dashboard_getready.name}
-      And I should not see {lookup:crowbar.node_name}
+      And I should not see {lookup:rebar.node_name}
       And there should be no translation errors
 
   Scenario: UI Node List Click to Node

@@ -42,7 +42,7 @@ class BarclampPuppet::SaJig < Jig
 
     # copy scripts, runner, and modules to local tmp dir
     FileUtils.cp_r(local_scripts,local_tmpdir)
-    FileUtils.cp('/opt/opencrowbar/core/puppet/roles/runner',local_tmpdir)
+    FileUtils.cp('/opt/digitalrebar/core/puppet/roles/runner',local_tmpdir)
     target = File.join(local_tmpdir,"modules")
     FileUtils.mkdir_p(target)
     module_src_dir = File.join nr.barclamp.source_path, 'puppet', 'modules'
@@ -62,7 +62,7 @@ class BarclampPuppet::SaJig < Jig
     die("Stand-alone puppet jig run for #{nr.role.name} on #{nr.node.name} failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?
     nr.update!(runlog: out)
 
-    system("sudo -H chown -R crowbar.crowbar #{local_tmpdir}")
+    system("sudo -H chown -R rebar.rebar #{local_tmpdir}")
     system("sudo rm -rf '#{local_tmpdir}")
     # Clean up after ourselves.
     nr.node.ssh("rm -rf '#{remote_tmpdir}'")

@@ -24,7 +24,7 @@ g(Item) ->
     path  -> "/api/v2/deployment_roles";
     atom  -> bdd_deployment_role1;
     name  -> "bdd_deployment_role";
-    _     -> crowbar:g(Item)
+    _     -> rebar:g(Item)
   end.
   
 
@@ -36,7 +36,7 @@ validate(JSON) when is_record(JSON, obj) ->
       bdd_utils:is_a(J, length, 5),
       bdd_utils:is_a(J, dbid, role_id),
       bdd_utils:is_a(J, dbid, deployment_id),
-      crowbar_rest:validate_core(J)],
+      rebar_rest:validate_core(J)],
   bdd_utils:assert(R).
 
 % Common Routine

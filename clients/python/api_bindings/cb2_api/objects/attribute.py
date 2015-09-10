@@ -17,7 +17,7 @@ from apiobject import ApiObject
 
 class AttributeEP(EndPoint):    
     '''
-    https://github.com/opencrowbar/core/blob/master/doc/devguide/api/attrib.md
+    https://github.com/digitalrebar/core/blob/master/doc/devguide/api/attrib.md
     '''
     __endpoint   = "/api/v2/attribs"      
     __apiObjectType = "Attribute"

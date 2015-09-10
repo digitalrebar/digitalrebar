@@ -26,7 +26,7 @@ g(Item) ->
     atom -> hammer1;
     type -> "BarclampTest::Hammer";
     node_atom -> "global-node.testing.com";
-    _ -> crowbar:g(Item)
+    _ -> rebar:g(Item)
   end.
 
 % Common Routine

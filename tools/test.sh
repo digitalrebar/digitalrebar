@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-echo "REMINDER: you must be running a Crowbar server to run these tests"
+echo "REMINDER: you must be running a Rebar server to run these tests"
 
 # we need erlang!
 if [[ ! -e /usr/bin/erl ]]; then

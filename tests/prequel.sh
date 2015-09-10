@@ -23,7 +23,7 @@ die() {
     exit 1
 }
 
-# Launch an admin node without bringing Crowbar up.
+# Launch an admin node without bringing Rebar up.
 launch_admin() {
     set +e
     if DOCKER_ID="$(core/tools/docker-admin --hostname "$ADMIN_HOSTNAME" --daemon --dont-map-ports centos)"; then
@@ -37,23 +37,23 @@ launch_admin() {
     die "Failed to launch docker admin container"
 }
 
-# Bring Crowbar up.
+# Bring Rebar up.
 run_admin() {
-    docker exec $DOCKER_ID /opt/opencrowbar/core/production.sh "$ADMIN_HOSTNAME" >&2
+    docker exec $DOCKER_ID /opt/digitalrebar/core/production.sh "$ADMIN_HOSTNAME" >&2
 }
 
 clean_up() {
     set +e
     pkill -f kvm-slave
     if [[ $DOCKER_ID ]]; then
-        docker cp "$DOCKER_ID:/var/log/crowbar" .
+        docker cp "$DOCKER_ID:/var/log/rebar" .
         docker kill $DOCKER_ID
         docker rm $DOCKER_ID
     fi &>/dev/null
 }
 
-crowbar() {
-    docker exec $DOCKER_ID crowbar "$@"
+rebar() {
+    docker exec $DOCKER_ID rebar "$@"
 }
 
 [[ -x $PWD/core/tools/docker-admin ]] || \

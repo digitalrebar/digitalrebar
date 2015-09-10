@@ -1,0 +1,9 @@
+{
+  "username": "rebar",
+  "email": "rebar@localhost.localdomain",
+  "password": "rebar",
+  "password_confirmation": "rebar",
+  "remember_me": false,
+  "is_admin": true,
+  "digest": true
+}

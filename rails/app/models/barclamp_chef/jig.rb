@@ -112,7 +112,7 @@ class BarclampChef::Jig < Jig
   private
 
   def node_role_name(n_name)
-    "crowbar-#{n_name.tr(".","_")}"
+    "rebar-#{n_name.tr(".","_")}"
   end
 
   

@@ -12,16 +12,16 @@ Feature: NodeRole
       And there is a {object:node} "bdd-add-me-to-role.cr0wbar.com"
     When I add {object:node} "bdd-add-me-to-role.cr0wbar.com" to {object:deployment} "bdd_deploy_add_role" in {object:role} "test-client"
     Then I get a {integer:200} result
-      And key "state" should be {apply:crowbar.state.proposed}
+      And key "state" should be {apply:rebar.state.proposed}
       And the {object:node_role} is properly formatted
     Finally REST removes the {object:deployment} "bdd_deploy_add_role"
       And REST removes the {object:node} "bdd-add-me-to-role.cr0wbar.com"
 
   Scenario: The page renders
     When I go to the "node_roles" page
-    Then I should see a heading {bdd:crowbar.i18n.node_roles.index.title}
+    Then I should see a heading {bdd:rebar.i18n.node_roles.index.title}
       And I should see "system"
-      And I should see "crowbar-admin-node"
+      And I should see "rebar-admin-node"
       And there are no localization errors
 
   Scenario: UI Index drill to deployment
@@ -32,8 +32,8 @@ Feature: NodeRole
 
   Scenario: UI Index drill to role
     Given I am on the "node_roles" page
-    When I click on the "crowbar-admin-node" link
-    Then I should see a heading "crowbar-admin-node"
+    When I click on the "rebar-admin-node" link
+    Then I should see a heading "rebar-admin-node"
       And there are no localization errors
 
   Scenario: Node_Error false

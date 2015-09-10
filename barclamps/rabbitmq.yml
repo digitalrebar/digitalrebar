@@ -19,9 +19,9 @@ barclamp:
   display: "RabbitMQ"
   description: "Rabbit MQ (AMQP)"
   version: "2.E"
-  source_url: "https://github.com/opencrowbar/core"
+  source_url: "https://github.com/digitalrebar/core"
   license: "Apache 2"
-  license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
   - name: rabbitmq-server
@@ -79,18 +79,18 @@ roles:
                 "conf" : ".*"
                 "write": ".*"
                 "read" : ".*"
-          - "name": "crowbar"
-            "password": "crowbar"
+          - "name": "rebar"
+            "password": "rebar1"
             "tag": "administrator"
             "rights":
-              - "vhost": "/opencrowbar"
+              - "vhost": "/digitalrebar"
                 "conf" : ".*"
                 "write": ".*"
                 "read" : ".*"
       - name: rabbitmq-virtualhosts
         description: "RabbitMQ VirtualHosts to Enable"
         map: 'rabbitmq/virtualhosts'
-        default: [ "/opencrowbar" ]
+        default: [ "/digitalrebar" ]
         schema:
           type: seq
           sequence:
@@ -102,7 +102,7 @@ roles:
     attribs:
       - name: amqp_servers
         description: "Addresses of the AMQP servers to use"
-        map: 'crowbar/amqp/servers'
+        map: 'rebar/amqp/servers'
         schema:
           type: seq
           sequence:

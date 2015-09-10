@@ -25,9 +25,9 @@ class BarclampChef::Service < Service
 
       # TODO: THIS NEEDS TO RUN ON ALL RUNNERS AND API SERVERS
       server_name = s.ServiceTags.first
-      proto = ConsulAccess.getKey("opencrowbar/private/chef/#{server_name}/proto")
-      key = ConsulAccess.getKey("opencrowbar/private/chef/#{server_name}/pem")
-      account = ConsulAccess.getKey("opencrowbar/private/chef/#{server_name}/account")
+      proto = ConsulAccess.getKey("digitalrebar/private/chef/#{server_name}/proto")
+      key = ConsulAccess.getKey("digitalrebar/private/chef/#{server_name}/pem")
+      account = ConsulAccess.getKey("digitalrebar/private/chef/#{server_name}/account")
 
       url = "#{proto}://"
       if addr.v6?
@@ -42,22 +42,22 @@ class BarclampChef::Service < Service
 log_level                :info
 log_location             STDOUT
 node_name                '#{account}'
-client_key               '/home/crowbar/.chef/#{account}.pem'
+client_key               '/home/rebar/.chef/#{account}.pem'
 chef_server_url          '#{url}'
-syntax_check_cache_path  '/home/crowbar/.chef/syntax_check_cache'
+syntax_check_cache_path  '/home/rebar/.chef/syntax_check_cache'
 "
-      system("mkdir -p /home/crowbar/.chef")
-      File.open("/home/crowbar/.chef/knife.rb", 'w', 0600) {|f| f.write(knife_contents) }
-      File.open("/home/crowbar/.chef/#{account}.pem", 'w', 0600) {|f| f.write(key) }
+      system("mkdir -p /home/rebar/.chef")
+      File.open("/home/rebar/.chef/knife.rb", 'w', 0600) {|f| f.write(knife_contents) }
+      File.open("/home/rebar/.chef/#{account}.pem", 'w', 0600) {|f| f.write(key) }
 
       # Make sure chef-server has code
-      system("/opt/opencrowbar/core/bin/chef-cookbook-upload >/tmp/chef-upload.out 2>&1")
+      system("/opt/digitalrebar/core/bin/chef-cookbook-upload >/tmp/chef-upload.out 2>&1")
 
       j = BarclampChef::Jig.where(:name => "chef").first
       j.server = url
       j.client_name = account
       j.active = (Rails.env.development? ? false : true )
-      j.key = "/home/crowbar/.chef/#{account}.pem"
+      j.key = "/home/rebar/.chef/#{account}.pem"
       j.save!
 
       url

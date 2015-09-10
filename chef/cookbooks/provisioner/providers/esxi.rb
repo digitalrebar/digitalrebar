@@ -16,19 +16,19 @@
 action :add do
   raise "ESXi broken until it os ported to use the new disk reservation code"
   os = "#{new_resource.distro}-#{new_resource.version}"
-  params = node["crowbar"]["provisioner"]["server"]["boot_specs"][os]
-  tftproot = node["crowbar"]["provisioner"]["server"]["root"]
-  provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
-  api_server=node['crowbar']['api']['servers'].first["url"]
-  ntp_server = "#{node["crowbar"]["ntp"]["servers"].first}"
-  machine_key = node["crowbar"]["machine_key"]
-  keys = node["crowbar"]["access_keys"].values.sort.join($/)
+  params = node["rebar"]["provisioner"]["server"]["boot_specs"][os]
+  tftproot = node["rebar"]["provisioner"]["server"]["root"]
+  provisioner_web = node["rebar"]["provisioner"]["server"]["webservers"].first["url"]
+  api_server=node['rebar']['api']['servers'].first["url"]
+  ntp_server = "#{node["rebar"]["ntp"]["servers"].first}"
+  machine_key = node["rebar"]["machine_key"]
+  keys = node["rebar"]["access_keys"].values.sort.join($/)
   mnode_name = new_resource.name
   mnode_rootdev = new_resource.rootdev
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
   web_path = "#{provisioner_web}/nodes/#{mnode_name}"
 
-  append = "-c ../#{os}/install/boot.cfg #{params["kernel_params"]} ks=#{web_path}/compute.ks crowbar.install.key=#{machine_key}"
+  append = "-c ../#{os}/install/boot.cfg #{params["kernel_params"]} ks=#{web_path}/compute.ks rebar.install.key=#{machine_key}"
   mac_list = new_resource.address
 
   directory node_dir do
@@ -47,11 +47,11 @@ action :add do
               :rootdev => mnode_rootdev)
   end
 
-  template "#{node_dir}/crowbar_join.sh" do
+  template "#{node_dir}/rebar_join.sh" do
     mode 0644
     owner "root"
     group "root"
-    source "crowbar_join.sh.erb"
+    source "rebar_join.sh.erb"
     variables(:api_server => api_server,
               :ntp_server => ntp_server,
               :name => mnode_name)

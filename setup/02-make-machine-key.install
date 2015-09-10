@@ -1,17 +1,17 @@
 #!/bin/bash
 ## only do this on real installs.
-[[  -d /opt/opencrowbar/core ]] || \
+[[  -d /opt/digitalrebar/core ]] || \
     { echo "Not an admin node, not creating machine key"; exit 0; }
 
-[[ -f /etc/profile.d/crowbar-key.sh ]] && exit 0
-touch "/tmp/.crowbar_in_bootstrap"
+[[ -f /etc/profile.d/rebar-key.sh ]] && exit 0
+touch "/tmp/.rebar_in_bootstrap"
 
 # Add /opt/chef/bin to path for systems that don't have chef-client "normally"
 cat >/etc/profile.d/chef-path.sh <<EOF
 export PATH="\$PATH:/opt/chef/bin"
 EOF
 
-if [[ ! -e /etc/crowbar.install.key ]]; then
+if [[ ! -e /etc/rebar.install.key ]]; then
     # read key rest < <(dd if=/dev/urandom bs=64 count=1 2>/dev/null |sha512sum - 2>/dev/null)
     key=`dd if=/dev/urandom bs=64 count=1 2>/dev/null | sha512sum - 2>/dev/null | awk '{ print $1 }'`
     echo "Creating machine-install user"
@@ -26,13 +26,13 @@ if [[ ! -e /etc/crowbar.install.key ]]; then
   \"digest\": true
 }"
 
-    if ! crowbar -U crowbar -P crowbar -E http://127.0.0.1:3000 users import "$machine_user"; then
+    if ! rebar -U rebar -P rebar -E http://127.0.0.1:3000 users import "$machine_user"; then
         echo "Could not create machine-install user!"
         exit 1
     fi
-    echo "machine-install:$key" >/etc/crowbar.install.key
-    cat >/etc/profile.d/crowbar-key.sh <<EOF
-export CROWBAR_KEY=machine-install:$key
+    echo "machine-install:$key" >/etc/rebar.install.key
+    cat >/etc/profile.d/rebar-key.sh <<EOF
+export REBAR_KEY=machine-install:$key
 EOF
-    rm "/tmp/.crowbar_in_bootstrap"
+    rm "/tmp/.rebar_in_bootstrap"
 fi

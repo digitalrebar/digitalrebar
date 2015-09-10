@@ -1,14 +1,14 @@
 - o = %x[cat /etc/*release]
 - if o =~ /DESCRIPTION/
-  - crowbar_os = o[/DISTRIB_DESCRIPTION="(.*)"/,1]
+  - rebar_os = o[/DISTRIB_DESCRIPTION="(.*)"/,1]
 - else
-  - crowbar_os = o.split("\n")[0]
+  - rebar_os = o.split("\n")[0]
 
 %h1= t '.title_all'
 
 .column_100
   %section.box#details
-    %strong= t('.admin_os') + ": " + crowbar_os
+    %strong= t('.admin_os') + ": " + rebar_os
     %div
 
 %table.data.box

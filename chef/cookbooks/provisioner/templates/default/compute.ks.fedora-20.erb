@@ -4,7 +4,7 @@ install
 url --url <%= @os_install_site %>
 <% if @online -%>
 # Add support for our local proxy.
-repo --name="Crowbar Local"  --baseurl=<%=@os_install_site %> --proxy="<%=@proxy%>" --cost=100
+repo --name="Rebar Local"  --baseurl=<%=@os_install_site %> --proxy="<%=@proxy%>" --cost=100
 <% end %>
 # key --skip
 # Disable geolocation for language and timezone
@@ -13,8 +13,8 @@ repo --name="Crowbar Local"  --baseurl=<%=@os_install_site %> --proxy="<%=@proxy
 timezone --utc UTC
 lang en_US.UTF-8
 keyboard us
-# crowbar
-rootpw --iscrypted <%= node[:crowbar][:provisioner][:server][:default_password_hash] %>
+# rebar
+rootpw --iscrypted <%= node[:rebar][:provisioner][:server][:default_password_hash] %>
 firewall --disabled
 authconfig --enableshadow --enablemd5
 selinux --disabled
@@ -51,15 +51,15 @@ export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 (cd /etc/yum.repos.d && rm *)
 <% end -%>
 
-key_re='crowbar\.install\.key=([^ ]+)'
+key_re='rebar\.install\.key=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
-    export CROWBAR_KEY="${BASH_REMATCH[1]}"
-    echo "$CROWBAR_KEY" >/etc/crowbar.install.key
-elif [[ -f /etc/crowbar.install.key ]]; then
-    export CROWBAR_KEY="$(cat /etc/crowbar.install.key)"
+    export REBAR_KEY="${BASH_REMATCH[1]}"
+    echo "$REBAR_KEY" >/etc/rebar.install.key
+elif [[ -f /etc/rebar.install.key ]]; then
+    export REBAR_KEY="$(cat /etc/rebar.install.key)"
 fi
 
-hostname_re='crowbar\.fqdn=([^ ]+)'
+hostname_re='rebar\.fqdn=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $hostname_re ]]; then
    HOSTNAME=${BASH_REMATCH[1]}
    if [ -f /etc/sysconfig/network ] ; then
@@ -82,9 +82,9 @@ echo "Setting up repositories"
        rpm_sources, bare_sources = @repos[repo].keys.sort.partition{|r|r =~ /^rpm /} -%>
     <% bare_sources.each do |source|
          _, name, _, url = source.split -%>
-cat >/etc/yum.repos.d/crowbar-<%=name%>.repo <<EOF
-[crowbar-<%=name%>]
-name=Crowbar <%=name%> Repo
+cat >/etc/yum.repos.d/rebar-<%=name%>.repo <<EOF
+[rebar-<%=name%>]
+name=Rebar <%=name%> Repo
 baseurl=<%= url %>
 gpgcheck=0
 EOF
@@ -101,9 +101,9 @@ rpm -Uvh '/var/cache/<%=file%>'
     <% end -%>
   <% else
     url = @repos[repo].keys.first -%>
-cat >/etc/yum.repos.d/crowbar-<%=repo%>.repo <<EOF
-[crowbar-<%=repo%>]
-name=Crowbar <%=repo%> Repo
+cat >/etc/yum.repos.d/rebar-<%=repo%>.repo <<EOF
+[rebar-<%=repo%>]
+name=Rebar <%=repo%> Repo
 <%= url %>
 gpgcheck=0
 EOF
@@ -128,12 +128,12 @@ cp /etc/gemrc /root/.gemrc
 rsyslog_dir="/etc/rsyslog.d"
 mkdir -p "$rsyslog_dir"
 echo '$IncludeConfig /etc/rsyslog.d/*.conf' >>/etc/rsyslog.conf
-if [ ! -f "$rsyslog_dir/10-crowbar-client.conf" ]; then
-    echo "*.* @@$<%= @logging_server %>" > "$rsyslog_dir/10-crowbar-client.conf"
-    if ! curl -f -s -o "$rsyslog_dir/00-crowbar-debug.conf" \
-        <%= @provisioner_web %>/rsyslog.d/00-crowbar-debug.conf
+if [ ! -f "$rsyslog_dir/10-rebar-client.conf" ]; then
+    echo "*.* @@$<%= @logging_server %>" > "$rsyslog_dir/10-rebar-client.conf"
+    if ! curl -f -s -o "$rsyslog_dir/00-rebar-debug.conf" \
+        <%= @provisioner_web %>/rsyslog.d/00-rebar-debug.conf
     then
-        rm -f "$rsyslog_dir/00-crowbar-debug.conf"
+        rm -f "$rsyslog_dir/00-rebar-debug.conf"
     fi
 fi
 
@@ -147,32 +147,32 @@ echo "PermitRootLogin without-password" >> /etc/ssh/sshd_config
 # Allow client to pass http proxy environment variables
 echo "AcceptEnv http_proxy https_proxy no_proxy" >> /etc/ssh/sshd_config
 
-# Set up the default crowbar service.
-curl -s -o /usr/sbin/crowbar "<%=@web_path%>/crowbar_join.sh"
-chmod +x /usr/sbin/crowbar
+# Set up the default rebar service.
+curl -s -o /usr/sbin/rebar "<%=@web_path%>/rebar_join.sh"
+chmod +x /usr/sbin/rebar
 
-cat >/etc/systemd/system/crowbar.service <<EOF
+cat >/etc/systemd/system/rebar.service <<EOF
 [Unit]
-Description=Crowbar Node Checkin
-Documentation=http://github.com/opencrowbar
+Description=Rebar Node Checkin
+Documentation=http://github.com/digitalrebar
 After=sshd.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/sbin/crowbar start
+ExecStart=/usr/sbin/rebar start
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-systemctl enable crowbar
+systemctl enable rebar
 
 # The network barclamp is in charge of doing horrible things
 # to the network, not NetworkManager
 chkconfig NetworkManager off || :
 chkconfig network on || :
 
-curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
+curl -u "$REBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
     "<%=@api_server%>/api/v2/nodes/$HOSTNAME"
 
 # Wait for the provisioner to change the bootenv

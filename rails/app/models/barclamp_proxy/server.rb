@@ -29,7 +29,7 @@ class BarclampProxy::Server < Role
 
     {
       "proxy" => { "service_address" => my_addr.to_s },
-      "crowbar" => {
+      "rebar" => {
         "proxy" => {
           "networks" => ranges
         }

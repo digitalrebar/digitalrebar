@@ -18,9 +18,9 @@ barclamp:
   display: "Dhcp"
   description: "Dynamic Host Configuration Protocol (DHCP)"
   version: "2.E"
-  source_url: "https://github.com/opencrowbar/core"
+  source_url: "https://github.com/digitalrebar/core"
   license: "Apache 2"
-  license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
   - name: dhcp-server
@@ -28,20 +28,20 @@ roles:
     attribs:
       - name: dhcp_leasetime
         description: 'Default lease time for the DHCP server'
-        map: 'crowbar/dhcp/lease_time'
+        map: 'rebar/dhcp/lease_time'
         schema:
           type: int
           required: false
       - name: dhcp_options
         description: 'Additional options to send to DHCP clients'
-        map: 'crowbar/dhcp/options'
+        map: 'rebar/dhcp/options'
         schema:
           type: seq
           sequence:
             - type: str
       - name: dhcp_networks
         description: 'Networks to serve DHCP'
-        map: 'crowbar/dhcp/networks'
+        map: 'rebar/dhcp/networks'
     wants-attribs:
       - dns_servers
       - dns-domain
@@ -63,8 +63,8 @@ roles:
       - service
     attribs:
       - name: dhcp_servers
-        description: 'DHCP servers that all Crowbar clients should use'
-        map: 'crowbar/dhcp/servers'
+        description: 'DHCP servers that all Rebar clients should use'
+        map: 'rebar/dhcp/servers'
         schema:
           type: seq
           sequence:

@@ -1,6 +1,6 @@
 #!/bin/bash
-NODE_DIR="$HOME/.cache/opencrowbar/tftpboot/nodes/$1"
-init="$NODE_DIR/crowbar-init"
+NODE_DIR="$HOME/.cache/digitalrebar/tftpboot/nodes/$1"
+init="$NODE_DIR/rebar-init"
 echo "Waiting for $1 to be launchable"
 while [[ ! -x $init ]]; do
     printf '%s' "."

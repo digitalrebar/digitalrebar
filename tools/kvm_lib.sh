@@ -60,7 +60,7 @@ VMID=$$
 # IP address of the node that ends up as the admin node.
 OCB_ADMIN_IP=192.168.124.10/24
 OCB_BRIDGE_IP=192.168.124.1/24
-CROWBAR_KEY="crowbar:crowbar"
+REBAR_KEY="rebar:rebar1"
 
 ADMIN_HOSTNAMES=("cr0wbar.pwns.joo"
     "vltima.ratio.regvm"
@@ -73,9 +73,9 @@ ADMIN_HOSTNAME=${ADMIN_HOSTNAMES[$(($RANDOM % ${#ADMIN_HOSTNAMES[@]}))]}
 #debug "Picked $ADMIN_HOSTNAME"
 export OCB_DOMAIN=${ADMIN_HOSTNAME#*.}
 
-: ${OCB_BRIDGE:="ocb-br"}
+: ${OCB_BRIDGE:="rebar-br"}
 NICS_PER_VM=3
-VM_DIR="$HOME/.cache/opencrowbar/vms"
+VM_DIR="$HOME/.cache/digitalrebar/vms"
 
 mkdir -p "$VM_DIR"
 
@@ -96,7 +96,7 @@ update_vm_status() {
     } 66>"$VM_DIR/.$VMID.status.lck"
 }
 
-make_ocb_bridge() {
+make_rebar_bridge() {
     sudo -n brctl show |grep -q "$OCB_BRIDGE" || \
         sudo -n brctl addbr "$OCB_BRIDGE" || \
         die "Could not create $OCB_BRIDGE bridge!"
@@ -112,7 +112,7 @@ make_ocb_bridge() {
     sudo -n ip addr add "$OCB_BRIDGE_IP" dev "$OCB_BRIDGE"
 }
 
-kill_ocb_bridge() {
+kill_rebar_bridge() {
     sudo -n ip addr flush dev "$OCB_BRIDGE"
     sudo -n ip link set "$OCB_BRIDGE" down
     sudo -n brctl delbr "$OCB_BRIDGE"
@@ -167,9 +167,9 @@ makenics(){
             echo == TO PRECREATE NODE, run these steps on the admin node:
             echo export MY_FQDN="\"\$(hostname)\""
             echo export DOMAINNAME="\${MY_FQDN#*.}"
-            echo crowbar nodes create "\"{\\\"name\\\":\\\"$vm_name.\$DOMAINNAME\\\",\\\"mac\\\":\\\"$MACADDR\\\"}\""
-            echo crowbar roles bind crowbar-managed-node to \"$vm_name.\$DOMAINNAME\"
-            echo crowbar nodes commit \"$vm_name.\$DOMAINNAME\"
+            echo rebar nodes create "\"{\\\"name\\\":\\\"$vm_name.\$DOMAINNAME\\\",\\\"mac\\\":\\\"$MACADDR\\\"}\""
+            echo rebar roles bind rebar-managed-node to \"$vm_name.\$DOMAINNAME\"
+            echo rebar nodes commit \"$vm_name.\$DOMAINNAME\"
         fi
         vm_nics+=("$MACADDR,$nic_name")
     done

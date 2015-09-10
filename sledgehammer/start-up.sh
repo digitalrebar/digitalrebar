@@ -22,29 +22,29 @@ is_suse && {
 # Some useful boot parameter matches
 ip_re='([0-9a-f.:]+/[0-9]+)'
 bootif_re='BOOTIF=([^ ]+)'
-host_re='crowbar\.fqdn=([^ ]+)'
-install_key_re='crowbar\.install\.key=([^ ]+)'
+host_re='rebar\.fqdn=([^ ]+)'
+install_key_re='rebar\.install\.key=([^ ]+)'
 provisioner_re='provisioner\.web=([^ ]+)'
-crowbar_re='crowbar\.web=([^ ]+)'
-domain_re='crowbar\.dns\.domain=([^ ]+)'
-dns_server_re='crowbar\.dns\.servers=([^ ]+)'
+rebar_re='rebar\.web=([^ ]+)'
+domain_re='rebar\.dns\.domain=([^ ]+)'
+dns_server_re='rebar\.dns\.servers=([^ ]+)'
 
 # Grab the boot parameters we should always be passed
 
 # install key first
-export CROWBAR_KEY="$(get_param "$install_key_re")"
+export REBAR_KEY="$(get_param "$install_key_re")"
 
-# Provisioner and Crowbar web endpoints next
+# Provisioner and Rebar web endpoints next
 export PROVISIONER_WEB="$(get_param "$provisioner_re")"
-export CROWBAR_WEB="$(get_param "$crowbar_re")"
+export REBAR_WEB="$(get_param "$rebar_re")"
 export DOMAIN="$(get_param "$domain_re")"
 export DNS_SERVERS="$(get_param "$dns_server_re")"
 
 # Test to see if we got everything we must have.
 # Die horribly otherwise.
-if ! [[ $CROWBAR_KEY && $PROVISIONER_WEB && $CROWBAR_WEB && \
+if ! [[ $REBAR_KEY && $PROVISIONER_WEB && $REBAR_WEB && \
     $DOMAIN && $DNS_SERVERS ]]; then
-    echo "Sledgehammer was not booted off a Crowbar 2 provisioner."
+    echo "Sledgehammer was not booted off a Rebar 2 provisioner."
     echo "This cannot happen"
     exit 1
 fi

@@ -23,6 +23,6 @@ case platform
   @@ubuntu = true
 end
 
-@@is_admin = node["crowbar"]["admin_node"] rescue false
+@@is_admin = node["rebar"]["admin_node"] rescue false
 
 log("running on OS:[#{platform}] on #{(node[:dmi][:system][:product_name] rescue "virtual")} hardware #{@@is_admin ? 'admin': ''}") { level :info}

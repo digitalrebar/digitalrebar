@@ -5,11 +5,11 @@ require "#{`pwd`.strip}/lib/consul_access.rb"
 require 'httpclient'
 Faraday.default_adapter = :httpclient
 
-db = ConsulAccess.getService('crowbar-database')
+db = ConsulAccess.getService('rebar-database')
 
-username = ConsulAccess.getKey('opencrowbar/private/database/opencrowbar/username')
-password = ConsulAccess.getKey('opencrowbar/private/database/opencrowbar/password')
-database = ConsulAccess.getKey('opencrowbar/private/database/opencrowbar/database')
+username = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/username')
+password = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/password')
+database = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/database')
 host = db.ServiceAddress 
 host = db.Address if host.nil? or host.empty?
 host = "database" if host.nil? or host.empty?

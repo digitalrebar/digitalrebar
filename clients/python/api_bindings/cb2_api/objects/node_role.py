@@ -17,7 +17,7 @@ from apiobject import ApiObject
 
 class Node_RoleEP(EndPoint):    
     '''
-    https://github.com/opencrowbar/core/blob/master/doc/devguide/api/node_roles.md
+    https://github.com/digitalrebar/core/blob/master/doc/devguide/api/node_roles.md
     '''
     __endpoint   = "/api/v2/node_roles"      
     __apiObjectType = "Node_Role"

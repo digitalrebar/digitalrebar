@@ -20,7 +20,7 @@ class BarclampNtp::Server < Role
   # used generically by the update_template
   # must match the name of the key
   def external_servers(value)
-    { :"crowbar"=> { :"ntp" => { :"external_servers" => value } }}
+    { :"rebar"=> { :"ntp" => { :"external_servers" => value } }}
   end
 
   def sysdata(nr)

@@ -1,5 +1,5 @@
 Feature: Support UI
-  In order to support the Crowbar framework
+  In order to support the Rebar framework
   The system operator, Oscar
   wants to be able to do administration like export
 
@@ -21,7 +21,7 @@ Feature: Support UI
     
   Scenario: Localization from Regular Step
     When I go to the "barclamps" page
-    Then I should see {bdd:crowbar.i18n.barclamps.index.title}
+    Then I should see {bdd:rebar.i18n.barclamps.index.title}
     
   Scenario: Find Mark in Log
     While local
@@ -33,7 +33,7 @@ Feature: Support UI
 
   Scenario: Settings Page
     When I go to the "utils/settings" page 
-    Then I should see a heading {bdd:crowbar.i18n.support.settings.title}
+    Then I should see a heading {bdd:rebar.i18n.support.settings.title}
       And there are no localization errors
     
   Scenario: Settings Change False
@@ -61,12 +61,12 @@ Feature: Support UI
     Skip until Rob can help figure out what busted here.
     Given I set {object:user} setting "debug" to "false"
     When I go to the "docs/development-guides/README.md" page
-    Then I should not see heading {bdd:crowbar.i18n.debug}
+    Then I should not see heading {bdd:rebar.i18n.debug}
       And I should see heading "Development Guide"
 
   Scenario: Settings Change Visible On
     Skip until Rob can help figure out what busted here.
     Given I set {object:user} setting "debug" to "true"
     When I go to the "docs/development-guides/README.md" page
-    Then I should see heading {bdd:crowbar.i18n.debug}
+    Then I should see heading {bdd:rebar.i18n.debug}
       And I should see heading "Development Guide"

@@ -97,7 +97,7 @@ class FixNullDescriptions < ActiveRecord::Migration
                                                                   and family(a.address::inet) = 4
                                  inner join networks net on a.network_id = net.id and net.category = 'admin'
                                  inner join node_roles nr on nr.node_id = n.id
-                                 inner join roles r on nr.role_id = r.id and r.name = 'crowbar-managed-node'
+                                 inner join roles r on nr.role_id = r.id and r.name = 'rebar-managed-node'
                                  where json_extract_path(n.hint,'admin_macs') is not null
                                  or json_extract_path(n.discovery,'ohai','network','interfaces') is not null"
 
@@ -111,7 +111,7 @@ class FixNullDescriptions < ActiveRecord::Migration
                                                                   and family(a.address::inet) = 4
                                  inner join networks net on a.network_id = net.id and net.category = 'admin'
                                  inner join node_roles nr on nr.node_id = n.id
-                                 inner join roles r on nr.role_id = r.id and r.name = 'crowbar-managed-node'
+                                 inner join roles r on nr.role_id = r.id and r.name = 'rebar-managed-node'
                                  where json_extract_path(n.hint,'admin_macs') is not null
                                  or json_extract_path(n.discovery,'ohai','network','interfaces') is not null"
 
@@ -123,7 +123,7 @@ class FixNullDescriptions < ActiveRecord::Migration
                                 inner join node_roles nr on nr.node_id = n.id
                                 inner join roles r on nr.role_id = r.id
                                 where net.category = 'admin'
-                                and r.name = 'crowbar-docker-node'"
+                                and r.name = 'rebar-docker-node'"
 
     create_view :dns_database, "select n.name as name,
                                        a.address as address,

@@ -32,32 +32,32 @@ prefix_r=('recipe[barclamp]'
           'recipe[ohai]'
           'recipe[utils]')
 
-boot_r=('recipe[crowbar-bootstrap::boot]'
-        'recipe[crowbar-bootstrap::ssh]'
-        'recipe[crowbar-bootstrap::crowbar-user]'
-        'recipe[crowbar-bootstrap::wsman]'
-        'recipe[crowbar-bootstrap::sledgehammer]'
-        'recipe[crowbar-bootstrap::gemstuff]'
-        'recipe[crowbar-bootstrap::go]'
-        'recipe[crowbar-bootstrap::goiardi-build]'
-        'recipe[crowbar-bootstrap::sws-build]'
-        'recipe[crowbar-bootstrap::dns-mgmt-build]'
-        'recipe[crowbar-bootstrap::consul]'
+boot_r=('recipe[rebar-bootstrap::boot]'
+        'recipe[rebar-bootstrap::ssh]'
+        'recipe[rebar-bootstrap::rebar-user]'
+        'recipe[rebar-bootstrap::wsman]'
+        'recipe[rebar-bootstrap::sledgehammer]'
+        'recipe[rebar-bootstrap::gemstuff]'
+        'recipe[rebar-bootstrap::go]'
+        'recipe[rebar-bootstrap::goiardi-build]'
+        'recipe[rebar-bootstrap::sws-build]'
+        'recipe[rebar-bootstrap::dns-mgmt-build]'
+        'recipe[rebar-bootstrap::consul]'
         'recipe[consul::install]'
         'recipe[consul::ui]')
 
-node_r=('recipe[crowbar-bootstrap::ssh]'
-        'recipe[crowbar-bootstrap::crowbar-user]')
+node_r=('recipe[rebar-bootstrap::ssh]'
+        'recipe[rebar-bootstrap::rebar-user]')
 
-database_r=('recipe[crowbar-bootstrap::consul]'
-            'recipe[crowbar-bootstrap::postgresql]')
-chef_server_r=('recipe[crowbar-bootstrap::consul]'
-               'recipe[crowbar-bootstrap::goiardi]')
+database_r=('recipe[rebar-bootstrap::consul]'
+            'recipe[rebar-bootstrap::postgresql]')
+chef_server_r=('recipe[rebar-bootstrap::consul]'
+               'recipe[rebar-bootstrap::goiardi]')
 proxy_r=("${prefix_r[@]}"
-         'recipe[crowbar-squid::client]')
-consul_r=('recipe[crowbar-bootstrap::consul]'
+         'recipe[rebar-squid::client]')
+consul_r=('recipe[rebar-bootstrap::consul]'
           'recipe[consul::start-service]'
-          'recipe[crowbar-bootstrap::consul-post]')
+          'recipe[rebar-bootstrap::consul-post]')
 
 make_recipes() {
     local res="$(printf "%s," "$@")"
@@ -72,7 +72,7 @@ proxy_recipes="$(make_recipes "${proxy_r[@]}")"
 consul_recipes="$(make_recipes "${consul_r[@]}")"
 node_recipes="$(make_recipes "${node_r[@]}")"
 
-cd /opt/opencrowbar/core
+cd /opt/digitalrebar/core
 # Figure out what we are running on.
 if [[ -f /etc/system-release ]]; then
     read DISTRIB_ID _t DISTRIB_RELEASE rest < /etc/system-release

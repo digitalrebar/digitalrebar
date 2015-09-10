@@ -17,7 +17,7 @@ require 'test_helper'
 class BarclampModelTest < ActiveSupport::TestCase
 
   def setup
-    @bc = Barclamp.find_by_name "crowbar"
+    @bc = Barclamp.find_by_name "rebar"
   end
   
   test "Unique Name" do
@@ -36,7 +36,7 @@ class BarclampModelTest < ActiveSupport::TestCase
   end
 
   test "Versions" do
-    b = Barclamp.find_or_create_by(:name=>"crowbar")
+    b = Barclamp.find_or_create_by(:name=>"rebar")
     assert_not_nil b
     assert_equal 0.0, b.version.to_f
   end

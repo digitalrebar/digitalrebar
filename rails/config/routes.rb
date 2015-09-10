@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-Crowbar::Application.routes.draw do
+Rebar::Application.routes.draw do
 
   # UI scope
 
@@ -321,7 +321,7 @@ Crowbar::Application.routes.draw do
   end # json
 
   # Install route from each root barclamp (should be done last so CB gets priority).
-  Dir.glob("/opt/opencrowbar/**/crowbar_engine/barclamp_*/config/routes.rb") do |routefile|
+  Dir.glob("/opt/digitalrebar/**/rebar_engine/barclamp_*/config/routes.rb") do |routefile|
     bc = routefile.split('/')[-3].partition('_')[2]
     bc_engine = "#{routefile.split('/')[-3].camelize}::Engine"
     bc_mount = "mount #{bc_engine}, at: '#{bc}'"

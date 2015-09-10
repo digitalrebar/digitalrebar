@@ -16,14 +16,14 @@
 # Note : This script runs on both the admin and compute nodes.
 # It intentionally ignores the bios->enable node data flag.
 
-nets = node[:crowbar][:network] || return
+nets = node[:rebar][:network] || return
 nets[:bmc] && nets[:admin] || return
 bmc_subnet    = nets[:bmc][:subnet]
 bmc_netmask   = nets[:bmc][:netmask]
 admin_subnet  = nets[:admin][:subnet]
 admin_netmask = nets[:admin][:netmask]
 nat_node = search(:node, "roles:bmc-nat-router")[0] rescue return
-nat_address = nat_node[:crowbar][:network][:admin][:address]
+nat_address = nat_node[:rebar][:network][:admin][:address]
 
 return if admin_subnet == bmc_subnet && admin_netmask == bmc_netmask
 

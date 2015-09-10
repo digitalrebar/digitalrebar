@@ -16,7 +16,7 @@ require 'faker'
 
 FactoryGirl.define do
   factory :barclamp do |f|
-    f.name 'crowbar'
+    f.name 'rebar'
     f.cfg_data ''
   end
 end

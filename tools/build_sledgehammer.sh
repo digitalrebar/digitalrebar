@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Build a sledgehammer image for Crowbar and put it in the build cache.
+# Build a sledgehammer image for Rebar and put it in the build cache.
 
 # Copyright 2011, Dell
 #
@@ -30,16 +30,16 @@ readonly currdir="$PWD"
 export PATH="$PATH:/sbin:/usr/sbin:/usr/local/sbin"
 
 # Location for caches that should not be erased between runs
-[[ $CACHE_DIR ]] || CACHE_DIR="$HOME/.cache/opencrowbar/sledgehammer"
-[[ $SLEDGEHAMMER_PXE_DIR ]] || SLEDGEHAMMER_PXE_DIR="$HOME/.cache/opencrowbar/tftpboot/discovery"
-[[ $SLEDGEHAMMER_ARCHIVE ]] || SLEDGEHAMMER_ARCHIVE="$HOME/.cache/opencrowbar/tftpboot/sledgehammer"
+[[ $CACHE_DIR ]] || CACHE_DIR="$HOME/.cache/digitalrebar/sledgehammer"
+[[ $SLEDGEHAMMER_PXE_DIR ]] || SLEDGEHAMMER_PXE_DIR="$HOME/.cache/digitalrebar/tftpboot/discovery"
+[[ $SLEDGEHAMMER_ARCHIVE ]] || SLEDGEHAMMER_ARCHIVE="$HOME/.cache/digitalrebar/tftpboot/sledgehammer"
 [[ $CHROOT ]] || CHROOT="$CACHE_DIR/chroot"
 [[ $SLEDGEHAMMER_LIVECD_CACHE ]] || SLEDGEHAMMER_LIVECD_CACHE="$CACHE_DIR/livecd_cache"
 [[ $SYSTEM_TFTPBOOT_DIR ]] || SYSTEM_TFTPBOOT_DIR="/mnt/tftpboot"
 
-CROWBAR_DIR="${0%/*}/.."
+REBAR_DIR="${0%/*}/.."
 
-signature=$(sha1sum < <(cat "$0" "$CROWBAR_DIR/sledgehammer/"*) |awk '{print $1}')
+signature=$(sha1sum < <(cat "$0" "$REBAR_DIR/sledgehammer/"*) |awk '{print $1}')
 SLEDGEHAMMER_IMAGE_DIR="$SLEDGEHAMMER_ARCHIVE/$signature"
 
 sudo rm -rf "$CHROOT"
@@ -277,7 +277,7 @@ setup_sledgehammer_chroot() {
 }
 
 setup_sledgehammer_chroot
-sudo cp "$CROWBAR_DIR/sledgehammer/"* "$CHROOT/mnt"
+sudo cp "$REBAR_DIR/sledgehammer/"* "$CHROOT/mnt"
 in_chroot mkdir -p /mnt/cache
 sudo mount --bind "$SLEDGEHAMMER_LIVECD_CACHE" "$CHROOT/mnt/cache"
 in_chroot touch /mnt/make_sledgehammer

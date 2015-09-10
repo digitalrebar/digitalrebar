@@ -19,9 +19,9 @@ barclamp:
   display: "Proxy"
   description: "Caching Web Proxy"
   version: "2.E"
-  source_url: "https://github.com/opencrowbar/core"
+  source_url: "https://github.com/digitalrebar/core"
   license: "Apache 2"
-  license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
   - name: proxy-server
@@ -31,14 +31,14 @@ roles:
     attribs:
       - name: proxy-upstream_proxy
         description: "The upstream Web proxy that the proxy on the system will use"
-        map: 'crowbar/proxy/server/upstream_proxy'
+        map: 'rebar/proxy/server/upstream_proxy'
         schema:
           type: str
           required: true
           pattern: '/\Ahttp:\/\/.+\z/'
       - name: proxy-port
         description: "The port to use as the basis for our proxy"
-        map: 'crowbar/proxy/server/port'
+        map: 'rebar/proxy/server/port'
         schema:
           type: int
   - name: proxy-service
@@ -47,8 +47,8 @@ roles:
       - service
     attribs:
       - name: proxy-servers
-        description: 'Proxy servers that all Crowbar clients should use'
-        map: 'crowbar/proxy/servers'
+        description: 'Proxy servers that all Rebar clients should use'
+        map: 'rebar/proxy/servers'
         schema:
           type: seq
           sequence:

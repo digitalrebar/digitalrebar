@@ -242,15 +242,15 @@ d-i live-installer/net-image string <%=@os_install_site%>/install/filesystem.squ
 #d-i passwd/root-password-crypted password [MD5 hash]
 
 # To create a normal user account.
-d-i passwd/user-fullname string <%= node[:crowbar][:provisioner][:server][:default_user] %>
-d-i passwd/username string <%= node[:crowbar][:provisioner][:server][:default_user] %>
-<% if node[:crowbar][:provisioner][:server][:default_password_hash].nil? -%>
+d-i passwd/user-fullname string <%= node[:rebar][:provisioner][:server][:default_user] %>
+d-i passwd/username string <%= node[:rebar][:provisioner][:server][:default_user] %>
+<% if node[:rebar][:provisioner][:server][:default_password_hash].nil? -%>
 # Normal user's password, either in clear text
-d-i passwd/user-password password <%= node[:crowbar][:provisioner][:server][:default_password] %>
-d-i passwd/user-password-again password <%= node[:crowbar][:provisioner][:server][:default_password] %>
+d-i passwd/user-password password <%= node[:rebar][:provisioner][:server][:default_password] %>
+d-i passwd/user-password-again password <%= node[:rebar][:provisioner][:server][:default_password] %>
 <% else -%>
 # or encrypted using an MD5 hash.
-d-i passwd/user-password-crypted password <%= node[:crowbar][:provisioner][:server][:default_password_hash] %>
+d-i passwd/user-password-crypted password <%= node[:rebar][:provisioner][:server][:default_password_hash] %>
 <% end -%>
 # Create the first user with the specified UID instead of the default.
 #d-i passwd/user-uid string 1010

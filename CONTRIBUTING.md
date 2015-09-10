@@ -1,14 +1,14 @@
-# OpenCrowbar Project
+# DigitalRebar Project
 
 Contributor License Agreement ("Agreement") V1.0
 
-https://github.com/opencrowbar/core/tree/master/doc/licenses
+https://github.com/digitalrebar/core/tree/master/doc/licenses
 
 
 This license is based on the Apache Foundations Individual Contributor License Agreement V2.0
 http://www.apache.org/licenses/
 
-Thank you for your interest in OpenCrowbar Project (the "Project"). In order to clarify the intellectual property license granted with Contributions from any person or entity, the Project must have a Contributor License Agreement ("CLA") on file that has been signed by each Contributor, indicating agreement to the license terms below. This license is for your protection as a Contributor as well as the protection of the Project and its users; it does not change your rights to use your own Contributions for any other purpose.
+Thank you for your interest in DigitalRebar Project (the "Project"). In order to clarify the intellectual property license granted with Contributions from any person or entity, the Project must have a Contributor License Agreement ("CLA") on file that has been signed by each Contributor, indicating agreement to the license terms below. This license is for your protection as a Contributor as well as the protection of the Project and its users; it does not change your rights to use your own Contributions for any other purpose.
  
 Please read this document carefully before signing and keep a copy for your records.
 

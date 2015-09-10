@@ -22,7 +22,7 @@
 g(Item) ->
   case Item of
     setting -> "utils/settings";
-    _ -> crowbar:g(Item)
+    _ -> rebar:g(Item)
   end.
 
 step(_Global, {step_given, {_Scenario, _N}, ["I set",user,"setting",Key,"to",Value]}) -> 

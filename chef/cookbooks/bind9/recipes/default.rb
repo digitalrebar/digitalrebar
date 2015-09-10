@@ -17,7 +17,7 @@ include_recipe 'utils'
 directory '/etc/bind'
 
 ip_addr = (IP.coerce(node['dns']['service_address']).addr rescue nil)
-server_name = node['crowbar']['dns']['service_name']
+server_name = node['rebar']['dns']['service_name']
 
 case node[:platform]
 when 'redhat','centos'
@@ -64,11 +64,11 @@ end
 
 # If we don't have a local named.conf.local, create one.
 # We keep this around to let local users add stuff to
-# DNS that Crowbar will not manage.
-# We also create a named.conf.crowbar if it does not exist to
+# DNS that Rebar will not manage.
+# We also create a named.conf.rebar if it does not exist to
 # keep bind happy before we start creating nodes.
 
-%w[local crowbar].each do |z|
+%w[local rebar].each do |z|
   bash "/etc/bind/named.conf.#{z}" do
     code "touch /etc/bind/named.conf.#{z}"
     not_if { ::File.exists? "/etc/bind/named.conf.#{z}" }
@@ -84,7 +84,7 @@ template '/etc/named.conf' do
   when 'ubuntu','debian' then group 'bind'
   when 'centos','redhat','suse','opensuse' then group 'named'
   end
-  variables(:forwarders => node[:crowbar][:dns][:forwarders])
+  variables(:forwarders => node[:rebar][:dns][:forwarders])
   notifies :restart, 'service[bind9]', :immediately
 end
 
@@ -110,7 +110,7 @@ bash "Create dns #{server_name} Server ACL" do
     echo '{
       "Name": "DNS #{server_name} Server ACL",
       "Type": "client",
-      "Rules": "key \\"opencrowbar/private\\" { policy = \\"deny\\" }\\nkey \\"opencrowbar/private/dns/#{server_name}\\" { policy = \\"write\\" }"
+      "Rules": "key \\"digitalrebar/private\\" { policy = \\"deny\\" }\\nkey \\"digitalrebar/private/dns/#{server_name}\\" { policy = \\"write\\" }"
     }' > /tmp/tmp_cred.json
     curl -X PUT --data-binary @/tmp/tmp_cred.json http://localhost:8500/v1/acl/create?token=#{master_acl_token}
   rm -f /tmp/tmp_cred.json
@@ -138,7 +138,7 @@ end
 
 bash "Add dns server #{server_name} keys to consul" do
   code <<EOC
-    curl -X PUT -d 'BIND' http://127.0.0.1:8500/v1/kv/opencrowbar/private/dns/#{server_name}/type?token=#{master_acl_token}
+    curl -X PUT -d 'BIND' http://127.0.0.1:8500/v1/kv/digitalrebar/private/dns/#{server_name}/type?token=#{master_acl_token}
 EOC
   # GREG: Make this conditional
 end
@@ -148,7 +148,7 @@ bash 'reload consul' do
   action :nothing
 end
 
-template '/etc/consul.d/crowbar-dns.json' do
+template '/etc/consul.d/rebar-dns.json' do
   source 'consul-dns-server.json.erb'
   mode 0644
   owner 'root'

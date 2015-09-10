@@ -19,7 +19,7 @@
 
 g(Item) ->
   case Item of
-    _ -> crowbar:g(Item)
+    _ -> rebar:g(Item)
   end.
                                                             
 step(_Global, {step_setup, _N, _}) -> 

@@ -22,8 +22,8 @@ ActiveRecord::Base.transaction do
                                 state:       Deployment::COMMITTED)
 
 
-  u = User.find_or_create_by_username!(:username=>'crowbar', :password=>'crowbar', :is_admin=>true)
-  u.digest_password('crowbar')
+  u = User.find_or_create_by_username!(:username=>'rebar', :password=>'rebar1', :is_admin=>true)
+  u.digest_password('rebar')
   u.save!
 
   if Rails.env.development? or Rails.env.test?
@@ -86,7 +86,7 @@ ActiveRecord::Base.transaction do
   Nav.find_or_create_by(item: 'scaffold_dns_name_entries',  parent_item: 'scaffold', name: 'nav.scaffold.dns_name_entries',  path: "scaffolds_dns_name_entries_path", order: 2090, development: true)
 end
 
-Dir.glob("/opt/opencrowbar/**/crowbar_engine/barclamp_*/db/seeds.rb") do |seedfile|
+Dir.glob("/opt/digitalrebar/**/rebar_engine/barclamp_*/db/seeds.rb") do |seedfile|
   ActiveRecord::Base.transaction do
     "#{seedfile.split('/')[-3].camelize}::Engine".constantize.load_seed
   end

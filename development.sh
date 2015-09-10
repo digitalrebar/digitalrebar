@@ -23,7 +23,7 @@ if [[ $TMUX ]]; then
   echo 'Using TMUX > "export TMUX=false" to disable.'
 fi
 
-cd /opt/opencrowbar/core
+cd /opt/digitalrebar/core
 
 # cleanup logs
 if [ -f rails/log/development.log ]; then
@@ -38,7 +38,7 @@ if [[ $http_proxy && !$upstream_proxy ]] && ! pidof squid; then
 fi
 
 # for dev environment, we force the FQDN
-FQDN="devadmin.opencrowbar.org"
+FQDN="devadmin.digitalrebar.org"
 hostname $FQDN
 
 # Fix CentOs/RedHat Hostname
@@ -49,11 +49,11 @@ fi
 echo "${FQDN#*.}" > /etc/domainname
 export FQDN
 
-./crowbar-boot.sh
-./crowbar-consul.sh
-./crowbar-database.sh
-./crowbar-core.sh "$RAILS_ENV"
+./rebar-boot.sh
+./rebar-consul.sh
+./rebar-database.sh
+./rebar-core.sh "$RAILS_ENV"
 
-# Make sure that Crowbar is running with the proper environment variables
-service crowbar stop
-service crowbar start
+# Make sure that Rebar is running with the proper environment variables
+service rebar stop
+service rebar start

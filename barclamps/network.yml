@@ -20,9 +20,9 @@ barclamp:
   display: "Network"
   description: "Network Configuration"
   version: "2.E"
-  source_url: "https://github.com/opencrowbar/core"
+  source_url: "https://github.com/digitalrebar/core"
   license: "Apache 2"
-  license_url: "https://github.com/opencrowbar/core/blob/develop/doc/licenses/README.md"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 
 
@@ -33,7 +33,7 @@ roles:
     attribs:
       - name: network_interface_maps
         description: 'The global set of interface maps that should be used to figure out nic ordering.'
-        map: 'crowbar/interface_map'
+        map: 'rebar/interface_map'
         ui_renderer: 'barclamp_network/attribs/interface_map'
         schema:
           type: seq
@@ -101,15 +101,15 @@ roles:
 attribs:
   - name: 'nics'
     description: 'Ethernet Interface Ports'
-    map: 'ohai/crowbar_ohai/detected/network'
+    map: 'ohai/rebar_ohai/detected/network'
   - name: 'switches'
     description: 'Connected Networking Switches'
-    map: 'ohai/crowbar_ohai/switch_config'
+    map: 'ohai/rebar_ohai/switch_config'
   - name: network-current-config
-    description: 'The current networking configuration Crowbar has on the node.'
-    map: 'crowbar_wall/network'
+    description: 'The current networking configuration Rebar has on the node.'
+    map: 'rebar_wall/network'
     type: 'BarclampNetwork::Attrib::CurrentConfig'
   - name: network-wanted-config
     description: 'The entire desired network config for this node'
-    map: 'crowbar/network'
+    map: 'rebar/network'
     type: 'BarclampNetwork::Attrib::AllConfig'

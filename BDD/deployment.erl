@@ -27,7 +27,7 @@ g(Item) ->
     resource -> "deployments";
     d_name -> "bravo_delta";
     d_atom -> deployment_bdd;
-    _ -> crowbar:g(Item)
+    _ -> rebar:g(Item)
   end.
 
 % Common Routine
@@ -40,7 +40,7 @@ validate(JSON) when is_record(JSON, obj) ->
       bdd_utils:is_a(J, dbid, parent_id),
       bdd_utils:is_a(J, integer, state),
       bdd_utils:is_a(J, string, description),
-      crowbar_rest:validate(J)],
+      rebar_rest:validate(J)],
   bdd_utils:assert(R);
 validate(JSON) -> 
   bdd_utils:log(error, deployment, validate, "requires #obj record. Got ~p", [JSON]), 
@@ -61,7 +61,7 @@ inspector(Deployment) ->
 % Common Routine
 % Creates JSON used for POST/PUT requests
 json(Name, Description, Order) ->
-  crowbar:json([{name, Name}, {description, Description}, {order, Order}]).
+  rebar:json([{name, Name}, {description, Description}, {order, Order}]).
 
 % specialized function
 

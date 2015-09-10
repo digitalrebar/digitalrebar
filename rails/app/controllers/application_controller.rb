@@ -22,7 +22,7 @@ require 'json'
 # Likewise, all the methods added will be available for all controllers.
 class ApplicationController < ActionController::Base
 
-  before_filter :crowbar_auth
+  before_filter :rebar_auth
   after_filter  :filter_json
 
   # Basis for the reflection/help system.
@@ -115,20 +115,20 @@ class ApplicationController < ActionController::Base
   # creates the content type for a consistent API
   def cb_content_type(type, form="list", type_override=nil)
     type = type_override || type2name(type)
-    "application/vnd.crowbar.#{type}.#{form}+json; version=2.0"
+    "application/vnd.rebar.#{type}.#{form}+json; version=2.0"
   end
 
   def api_not_found(e)
     json = {}
     json[:status] = 404
-    if e.crowbar_key
-      json[:message]=I18n.t('api.not_found', :id=>e.crowbar_key, :type=>type2name(e.crowbar_model))
+    if e.rebar_key
+      json[:message]=I18n.t('api.not_found', :id=>e.rebar_key, :type=>type2name(e.rebar_model))
     else
       json[:message]=e.message
       json[:backtrace]=e.backtrace
     end
     { :json => json,
-      :content_type=>cb_content_type(e.crowbar_key, "error"),
+      :content_type=>cb_content_type(e.rebar_key, "error"),
       :status => :not_found
     }
   end
@@ -194,13 +194,13 @@ class ApplicationController < ActionController::Base
   end
 
   # formats API json output 
-  # used for json output that is not mapped to a Crowbar model
+  # used for json output that is not mapped to a Rebar model
   def api_result(json)
     return {json: json, content_type: cb_content_type("json", "result") }
   end
 
   # formats API json output 
-  # used for json results output that is not mapped to a Crowbar model
+  # used for json results output that is not mapped to a Rebar model
   def api_array(json)
     return {:json=>json, :content_type=>cb_content_type("json", "array") }
   end
@@ -337,15 +337,15 @@ class ApplicationController < ActionController::Base
   end
 
   #return true if we digest signed in
-  def crowbar_auth
+  def rebar_auth
     case
     when current_user then authenticate_user!
     when digest_request? then digest_auth!
     when (request.local? ||
           (/^::ffff:127\.0\.0\.1$/ =~ request.remote_ip)) &&
-        File.exists?("/tmp/.crowbar_in_bootstrap") &&
-        (File.stat("/tmp/.crowbar_in_bootstrap").uid == 0)
-      @current_user = User.find_by(username: "crowbar")
+        File.exists?("/tmp/.rebar_in_bootstrap") &&
+        (File.stat("/tmp/.rebar_in_bootstrap").uid == 0)
+      @current_user = User.find_by(username: "rebar")
       true
     else
       do_auth!

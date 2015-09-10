@@ -13,12 +13,12 @@
 # limitations under the License.
 #
 
-# login to Crowbar Example
+# login to Rebar Example
 
 import urllib2
 
 URL      = 'http://127.0.0.1:3000'
-Realm    = 'Crowbar'
+Realm    = 'Rebar'
 Username = 'developer'
 Password = 'Cr0wbar!'
 

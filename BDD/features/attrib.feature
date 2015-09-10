@@ -6,7 +6,7 @@ Feature: Attrib(utes)
 
   Scenario: UI Attrib List
     When I go to the "attribs" page
-    Then I should see {bdd:crowbar.i18n.attribs.index.title}
+    Then I should see {bdd:rebar.i18n.attribs.index.title}
       And I should see "test-random"
       And there should be no translation errors
 
@@ -52,9 +52,9 @@ Feature: Attrib(utes)
   Scenario: attrib_ method missing works in UI pass without data
     Given REST creates the {object:node} "bdd-attrib-missing.cr0wbar.com"
     When I go to the "nodes/bdd-attrib-missing.cr0wbar.com" page
-    Then I should see {bdd:crowbar.i18n.nodes.show.bdd_marker} in section "column_50 last"
+    Then I should see {bdd:rebar.i18n.nodes.show.bdd_marker} in section "column_50 last"
       And I should not see "foofoofoo" in section "column_50 last"
-      And I should see {bdd:crowbar.i18n.ignore} in section "column_50 last"
+      And I should see {bdd:rebar.i18n.ignore} in section "column_50 last"
     Finally REST removes the {object:node} "bdd-attrib-missing.cr0wbar.com"
 
   Scenario: attrib_ method missing works in UI
@@ -70,7 +70,7 @@ Feature: Attrib(utes)
     Given there is a {object:node} "bdd-attrib1.data.edu"
       Given test loads the "node_discovery" data into {object:node} "bdd-attrib1.data.edu"
     When I go to the "nodes/bdd-attrib1.data.edu/attribs/os" page
-    Then I should see "crowbar"
+    Then I should see "rebar"
       And I should see a link to "bdd-attrib1.data.edu"
       And I should see "os"
       And I should see "ohai/platform"

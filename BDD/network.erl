@@ -22,7 +22,7 @@ g(Item) ->
   case Item of
     path -> "/api/v2/networks";
     ipath -> "/api/v2/interfaces";
-    _ -> crowbar:g(Item)
+    _ -> rebar:g(Item)
   end.
 
 % Common Routine
@@ -41,16 +41,16 @@ validate(JSON) when is_record(JSON, obj) ->
       bdd_utils:is_a(J, string, category),
       bdd_utils:is_a(J, string, group),
       bdd_utils:is_a(J, "null|([a-f0-9]){1,4}:([a-f0-9]){1,4}:([a-f0-9]){1,4}:([a-f0-9]){1,4}", v6prefix),
-      crowbar_rest:validate(J)],
+      rebar_rest:validate(J)],
   bdd_utils:assert(R);
 validate(JSON) -> 
   bdd_utils:log(error, network, validate, "requires #obj record. Got ~p", [JSON]), 
   false.
 
 json(Name, Description, Order) ->
- crowbar:json([{name, Name}, {description, Description}, {order, Order}, {conduit, "1g0"}, {deployment, "system"}]).
+ rebar:json([{name, Name}, {description, Description}, {order, Order}, {conduit, "1g0"}, {deployment, "system"}]).
 
-% creates the core crowbar network using the bootstraping UI path
+% creates the core rebar network using the bootstraping UI path
 make_admin() ->
   Test = eurl:get_http(eurl:path([g(path),"admin"])),
   if Test#http.code == 404 ->
@@ -62,20 +62,20 @@ make_admin() ->
   end.
 
 step(_Global, {step_given, {_Scenario, _N}, ["I add an Interface",Interface,"with map",Map]}) -> 
- JSON = crowbar:json([{pattern, Interface}, {bus_order, Map}]),
+ JSON = rebar:json([{pattern, Interface}, {bus_order, Map}]),
  bdd_utils:log(debug, network, step, "creating interface ~p map ~p with JSON ~p", [Interface, Map, JSON]),
  eurl:put_post(g(ipath), JSON, post);
 
 step(_Given, {step_when, {Scenario, _N}, ["I use the Network API to create",Network,"with range",Range,"from",First,"to",Last]}) -> 
   step(_Given, {step_given, {Scenario, _N}, ["I use the Network API to create",Network,"with range",Range,"from",First,"to",Last]});
 step(_Global, {step_given, {Scenario, _N}, ["I use the Network API to create",Network,"with range",Range,"from",First,"to",Last]}) -> 
- JSON = crowbar:json([{name, Network}, {description, g(description)}, {order, g(order)}, {conduit, "1g0"}, {deployment, "system"},
+ JSON = rebar:json([{name, Network}, {description, g(description)}, {order, g(order)}, {conduit, "1g0"}, {deployment, "system"},
       {ranges, [{0, [{name, Range}, {first, First}, {last, Last}] }] } ]),
  bdd_utils:log(debug, network, step, "creating network ~p on range ~p [~p to ~p] with JSON ~p", [Network, Range, First, Last, JSON]),
  bdd_restrat:create(g(path), JSON, network, Scenario);
 
 step(_Global, {step_when, {Scenario, _N}, ["I use the Network API to create",Network,"with v6prefix of",V6Prefix]}) -> 
- JSON = crowbar:json([{name, Network}, {description, g(description)}, {order, g(order)}, {conduit, "1g0"}, {deployment, "system"},
+ JSON = rebar:json([{name, Network}, {description, g(description)}, {order, g(order)}, {conduit, "1g0"}, {deployment, "system"},
       {v6prefix, V6Prefix} ]),
  bdd_utils:log(debug, network, step, "creating network ~p with v6 ~p with JSON ~p", [Network, V6Prefix, JSON]),
  bdd_restrat:create(g(path), JSON, network, Scenario);

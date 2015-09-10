@@ -26,7 +26,7 @@ g(Item) ->
     atom -> jig1;
     type -> "BarclampTest::Jig";
     node_atom -> "global-node.testing.com";
-    _ -> crowbar:g(Item)
+    _ -> rebar:g(Item)
   end.
 
 % Common Routine
@@ -40,7 +40,7 @@ validate(JSON) when is_record(JSON, obj) ->
       bdd_utils:is_a(J, string, client_name),
       bdd_utils:is_a(J, string, key),
       bdd_utils:is_a(J, boolean, active),
-      crowbar_rest:validate(J)],
+      rebar_rest:validate(J)],
   bdd_utils:assert(R, debug);
 validate(JSON) -> 
   bdd_utils:log(error, barclamp, validate, "requires #obj record. Got ~p", [JSON]), 

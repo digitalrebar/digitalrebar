@@ -81,7 +81,7 @@ class InventoryController < ApplicationController
       @inventory["_meta"] = { hostvars: hostvars } if hostvars.length > 0
     end
 
-    render json: @inventory, content_type: "application/vnd.crowbar.inventory+json; version=2.0"
+    render json: @inventory, content_type: "application/vnd.rebar.inventory+json; version=2.0"
   end
 
 end

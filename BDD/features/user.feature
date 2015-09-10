@@ -14,13 +14,13 @@ Feature: User
   Scenario: %Create User 
     Given I am on the "manage_users" page
     When I fill in {fields:username=test_user_1&password=password&password_confirmation=password} and submit using the "Add User" button
-    Then I should see {bdd:crowbar.i18n.user.create_success}
+    Then I should see {bdd:rebar.i18n.user.create_success}
     Finally REST deletes the {object:user} "test_user_1"
     
   Scenario: %Sample Form to demo only - remove
     Given I am on the "node/bdd1.example.com/edit" page
     When I fill in {fields:alias=foo&description=bar} and submit using the "Save" button
-    Then I should see {bdd:crowbar.i18n.nodes.edit.save_node_success}
+    Then I should see {bdd:rebar.i18n.nodes.edit.save_node_success}
       
   Scenario: %View Add User Form
     Given I am on the "manage_users" page
@@ -84,16 +84,16 @@ Feature: User
     Given there is not a user "foo"
     Given I am on the "users/create" page
     When I fill in {fields:username=foo&password=bar} and submit using the "Add User" button
-    Then I should see {bdd:crowbar.i18n.user.create.success}
+    Then I should see {bdd:rebar.i18n.user.create.success}
     
   Scenario: %Sample Form to demo only - remove
     Given I am on the "node/bdd1.example.com/edit" page
     When I fill in {fields:alias=foo&description=bar} and submit using the "Save" button
-    Then I should see {bdd:crowbar.i18n.nodes.edit.save_node_success}
+    Then I should see {bdd:rebar.i18n.nodes.edit.save_node_success}
     
   Scenario: REST get user list
     When REST gets the {object:user} list
-    Then the list should have an object with key "username" value "crowbar"
+    Then the list should have an object with key "username" value "rebar"
       And the list should have an object with key "username" value "developer"
      
   Scenario: REST user

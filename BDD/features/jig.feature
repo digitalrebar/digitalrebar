@@ -14,7 +14,7 @@ Feature: Jigs API
 
   Scenario: Jigs UI Page
     When I go to the "jigs" page
-    Then I should see a heading {bdd:crowbar.i18n.jigs.index.title}
+    Then I should see a heading {bdd:rebar.i18n.jigs.index.title}
       And I should see "noop"
       And I should see "script"
       And there should be no translation errors

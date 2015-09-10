@@ -1,8 +1,8 @@
 name              'bmc-nat'
-maintainer       "OpenCrowbar team"
-maintainer_email "opencrowbar@googlegroups.com"
+maintainer       "DigitalRebar team"
+maintainer_email "digitalrebar@googlegroups.com"
 license           "Apache 2.0"
-description       "Manages BMC-NET for Crowbar"
-long_description  "Manages BMC-NET for Crowbar"
+description       "Manages BMC-NET for Rebar"
+long_description  "Manages BMC-NET for Rebar"
 version           "0.1.0"
 

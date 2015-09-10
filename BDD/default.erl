@@ -19,5 +19,5 @@
 
 % this should map to your default
 step(_Config, _Input, _Step) ->
-  crowbar:step(_Config, _Input, _Step).
+  rebar:step(_Config, _Input, _Step).
 

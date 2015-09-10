@@ -1,4 +1,4 @@
-# Managed by Crowbar.
+# Managed by Rebar.
 # Do not edit.
 <% iface = @interfaces[@nic.name] -%>
 <% v4addrs, v6addrs = iface["addresses"].map{|a|::IP.coerce(a)}.partition{|a|a.v4?} -%>

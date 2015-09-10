@@ -16,7 +16,7 @@
 
 class SupportController < ApplicationController
 
-  skip_before_filter :crowbar_auth, :only => :digest
+  skip_before_filter :rebar_auth, :only => :digest
   before_filter :digest_auth!, :only => :digest
 
   def eula
@@ -51,14 +51,14 @@ class SupportController < ApplicationController
 
   # Legacy Support (UI version moved to loggin barclamp)
   def logs
-    @file = "crowbar-logs-#{ctime}.tar.bz2"
+    @file = "rebar-logs-#{ctime}.tar.bz2"
     system("sudo -i /opt/dell/bin/gather_logs.sh #{@file}")
     redirect_to "/export/#{@file}"
   end
   
   def get_cli
     system("sudo -i /opt/dell/bin/gather_cli.sh #{request.env['SERVER_ADDR']} #{request.env['SERVER_PORT']}")
-    redirect_to "/crowbar-cli.tar.gz"
+    redirect_to "/rebar-cli.tar.gz"
   end
 
   def import
@@ -74,11 +74,11 @@ class SupportController < ApplicationController
         next # ignore rest of loop
       elsif f =~ /^KEEP_THIS.*/
         next # ignore rest of loop
-      elsif f =~ /^crowbar-logs-.*/
+      elsif f =~ /^rebar-logs-.*/
         @exports[:logs] << f 
-      elsif f =~ /^crowbar-cli-.*/
+      elsif f =~ /^rebar-cli-.*/
         @exports[:cli] << f
-      elsif f =~ /^crowbar-chef-.*/
+      elsif f =~ /^rebar-chef-.*/
         @exports[:chef] << f 
       elsif f =~ /(.*).import.log$/
         @exports[:bc_import] << f 
@@ -99,10 +99,10 @@ class SupportController < ApplicationController
 
     if request.put?
       if params[:raw] == 'json'
-        ConsulAccess::setKey(Rails.configuration.crowbar.bootstrap_key, params[:data])
+        ConsulAccess::setKey(Rails.configuration.rebar.bootstrap_key, params[:data])
       else
         yaml = params.key? :yaml
-        @config = JSON.parse(ConsulAccess::getKey(Rails.configuration.crowbar.bootstrap_key))
+        @config = JSON.parse(ConsulAccess::getKey(Rails.configuration.rebar.bootstrap_key))
         @config["domain"] = params["domain"]
         @config["net_to_join"] = params["net_to_join"].split(",")
         bootstrap_update yaml, "networks", @config, params 
@@ -116,12 +116,12 @@ class SupportController < ApplicationController
           @config["ssh_keys"][params["ssh_keys|new_name"]] = params["ssh_keys|new_data"]
         end
         # now save it
-        ConsulAccess::setKey(Rails.configuration.crowbar.bootstrap_key, JSON.pretty_generate(@config))
+        ConsulAccess::setKey(Rails.configuration.rebar.bootstrap_key, JSON.pretty_generate(@config))
  
       end
     end
 
-    @config = JSON.parse(ConsulAccess::getKey(Rails.configuration.crowbar.bootstrap_key))
+    @config = JSON.parse(ConsulAccess::getKey(Rails.configuration.rebar.bootstrap_key))
 
     respond_to do |format|
       format.html # index.html.haml
@@ -157,7 +157,7 @@ class SupportController < ApplicationController
       @init = true
       render
     elsif params[:id].eql? "in_process"
-      %x[sudo bluepill crowbar-webserver restart] unless Rails.env == 'development'
+      %x[sudo bluepill rebar-webserver restart] unless Rails.env == 'development'
       render :json=>false
     elsif params[:id].eql? SERVER_PID
       render :json=>false

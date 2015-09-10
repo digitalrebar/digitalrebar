@@ -15,7 +15,7 @@
 # Extend RecordNotFound to let us attach some useful error to the exception.
 module ActiveRecord
   class RecordNotFound < ActiveRecordError
-    attr_accessor :crowbar_model, :crowbar_column, :crowbar_key
+    attr_accessor :rebar_model, :rebar_column, :rebar_key
   end
 end
 
@@ -42,7 +42,7 @@ module ActionDispatch
 end
 
 # This class AUTOMATICALLY extends the ActiveRecord base class 
-# so that we can add AR helpers for Crowbar
+# so that we can add AR helpers for Rebar
 module ApiHelper
 #/lib/api_helper.rb
 
@@ -60,9 +60,9 @@ module ApiHelper
       begin
         find_by!(col => key)
       rescue ActiveRecord::RecordNotFound => e
-        e.crowbar_model = self
-        e.crowbar_column = col
-        e.crowbar_key = key
+        e.rebar_model = self
+        e.rebar_column = col
+        e.rebar_key = key
         raise e
       end
     end

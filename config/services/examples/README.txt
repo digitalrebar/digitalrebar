@@ -11,7 +11,7 @@ Internal variables -
      "attrname": "value"
   }
 External variables -
-  "datacenter": "opencrowbar",
+  "datacenter": "digitalrebar",
   "node_name": "external",
   "service_ip": "1.1.1.1",
   "service_port": 3535,
@@ -22,8 +22,8 @@ External variables -
 }
 
 
-type/internal - means that open crowbar will run a server of this name. 
-type/external - means that open crowbar will add the service to consul.
+type/internal - means that open rebar will run a server of this name. 
+type/external - means that open rebar will add the service to consul.
 
 name should have one of the following values.  Additional values will
 attempt to be built from a set of rules.
@@ -35,8 +35,8 @@ Known services:
   amqp
   proxy
   provisioner
-  crowbar-api
-  crowbar-job_runner
+  rebar-api
+  rebar-job_runner
 
 has-service is a boolean value that indicates if a service should be
 started for the server.  This defaults to true.

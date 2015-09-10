@@ -17,7 +17,7 @@
 # In the development environment your application's code is reloaded on
 # every request.  This slows down response time but is perfect for development
 # since you don't have to restart the webserver when you make code changes.
-Crowbar::Application.configure do
+Rebar::Application.configure do
   config.cache_classes = false
 
   # Show full error reports and disable caching
@@ -33,5 +33,5 @@ Crowbar::Application.configure do
   # Enable threaded mode
   # config.threadsafe! unless $rails_rake_task
   config.log_level = :debug
-  config.crowbar.version = '2.dev'
+  config.rebar.version = '2.dev'
 end

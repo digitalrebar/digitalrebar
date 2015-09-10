@@ -608,8 +608,8 @@
                "shell":"/usr/sbin/nologin",
                "gecos":""
             },
-            "crowbar":{
-               "dir":"/home/crowbar",
+            "rebar":{
+               "dir":"/home/rebar",
                "gid":1000,
                "uid":1000,
                "shell":"/bin/bash",
@@ -700,7 +700,7 @@
             "adm":{
                "gid":4,
                "members":[
-                  "crowbar"
+                  "rebar"
                ]
             },
             "tty":{
@@ -778,7 +778,7 @@
             "cdrom":{
                "gid":24,
                "members":[
-                  "crowbar"
+                  "rebar"
                ]
             },
             "floppy":{
@@ -796,7 +796,7 @@
             "sudo":{
                "gid":27,
                "members":[
-                  "crowbar"
+                  "rebar"
                ]
             },
             "audio":{
@@ -808,7 +808,7 @@
             "dip":{
                "gid":30,
                "members":[
-                  "crowbar"
+                  "rebar"
                ]
             },
             "www-data":{
@@ -880,7 +880,7 @@
             "plugdev":{
                "gid":46,
                "members":[
-                  "crowbar"
+                  "rebar"
                ]
             },
             "staff":{
@@ -949,7 +949,7 @@
 
                ]
             },
-            "crowbar":{
+            "rebar":{
                "gid":1000,
                "members":[
 
@@ -958,13 +958,13 @@
             "lpadmin":{
                "gid":108,
                "members":[
-                  "crowbar"
+                  "rebar"
                ]
             },
             "sambashare":{
                "gid":109,
                "members":[
-                  "crowbar"
+                  "rebar"
                ]
             },
             "ssl-cert":{
@@ -1401,7 +1401,7 @@
       },
       "recipes":[
          "barclamp",
-         "crowbar-hacks",
+         "rebar-hacks",
          "ohai",
          "kernel-panic",
          "network",
@@ -1418,7 +1418,7 @@
          "provisioner::update_nodes"
       ],
       "roles":[
-         "crowbar-admin_crowbar_com",
+         "rebar-admin_rebar_com",
          "deployer-client",
          "network-admin",
          "dns-server",
@@ -1430,7 +1430,7 @@
          "provisioner-repos",
          "provisioner-dhcp-database"
       ],
-      "crowbar_ohai":{
+      "rebar_ohai":{
          "switch_config":{
             "eth0":{
                "interface":"eth0",

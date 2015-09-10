@@ -17,7 +17,7 @@ from apiobject import ApiObject
 
 class DHCPdbEP(EndPoint):    
     '''
-    https://github.com/opencrowbar/core/blob/master/doc/devguide/api/dhcp_database.md
+    https://github.com/digitalrebar/core/blob/master/doc/devguide/api/dhcp_database.md
     '''
     __endpoint   = "/api/v2/dhcp"      
     __apiObjectType = "DHCPDatabase"

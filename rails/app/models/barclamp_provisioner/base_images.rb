@@ -17,7 +17,7 @@ class BarclampProvisioner::BaseImages < Role
 
   def sysdata(nr)
     return {
-      "crowbar" => {
+      "rebar" => {
         "provisioner" => {
           "barclamps" => Barclamp.all.map{|bc|bc.cfg_data}
         }

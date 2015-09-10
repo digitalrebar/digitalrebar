@@ -68,12 +68,12 @@ end
 # to use digest auth in cli unit tests
 gem 'net-http-digest_auth'
 
-#Install gems from each barclamp.  The crowbar_path variable is
+#Install gems from each barclamp.  The rebar_path variable is
 #needed by Gemfile.d/*.gemfile so that they can determine the correct
 # path at run-time rather than having to hard-code a path at
 # install-time which may be different and therefore incorrect.
 
-Dir.glob("/opt/opencrowbar/**/crowbar_engine/barclamp_*/*.gemspec") do |gemfile|
+Dir.glob("/opt/digitalrebar/**/rebar_engine/barclamp_*/*.gemspec") do |gemfile|
   gemname = gemfile.split('/')[-2]
   gemdir = File.join(*gemfile.split('/')[1...-1])
   gemdef = "gem '#{gemname}', :path => '/#{gemdir}'"

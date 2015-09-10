@@ -13,22 +13,22 @@ get_param() {
 # Some useful boot parameter matches
 ip_re='([0-9a-f.:]+/[0-9]+)'
 bootif_re='BOOTIF=([^ ]+)'
-host_re='crowbar\.fqdn=([^ ]+)'
-install_key_re='crowbar\.install\.key=([^ ]+)'
+host_re='rebar\.fqdn=([^ ]+)'
+install_key_re='rebar\.install\.key=([^ ]+)'
 provisioner_re='provisioner\.web=([^ ]+)'
-crowbar_re='crowbar\.web=([^ ]+)'
-domain_re='crowbar\.dns\.domain=([^ ]+)'
-dns_server_re='crowbar\.dns\.servers=([^ ]+)'
+rebar_re='rebar\.web=([^ ]+)'
+domain_re='rebar\.dns\.domain=([^ ]+)'
+dns_server_re='rebar\.dns\.servers=([^ ]+)'
 netname_re='"network":"([^ ]+)"'
 
 # Grab the boot parameters we should always be passed
 
 # install key first
-export CROWBAR_KEY="$(get_param "$install_key_re")"
+export REBAR_KEY="$(get_param "$install_key_re")"
 
-# Provisioner and Crowbar web endpoints next
+# Provisioner and Rebar web endpoints next
 export PROVISIONER_WEB="$(get_param "$provisioner_re")"
-export CROWBAR_WEB="$(get_param "$crowbar_re")"
+export REBAR_WEB="$(get_param "$rebar_re")"
 export DOMAIN="$(get_param "$domain_re")"
 export DNS_SERVERS="$(get_param "$dns_server_re")"
 
@@ -75,8 +75,8 @@ if ! [[ $(cat /proc/cmdline) =~ $host_re ]]; then
     export HOSTNAME="d${MAC//:/-}.${DOMAIN}"
 
     # does the node exist?
-    exists=$(curl -s -o /dev/null -w "%{http_code}" --digest -u "$CROWBAR_KEY" \
-      -X GET "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME")
+    exists=$(curl -s -o /dev/null -w "%{http_code}" --digest -u "$REBAR_KEY" \
+      -X GET "$REBAR_WEB/api/v2/nodes/$HOSTNAME")
     if [[ $exists == 404 ]]; then
         # Get IP for create suggestion
         IP=""
@@ -88,11 +88,11 @@ if ! [[ $(cat /proc/cmdline) =~ $host_re ]]; then
         # Create a new node for us,
         # Add the default noderoles we will need, and
         # Let the annealer do its thing.
-        curl -f -g --digest -u "$CROWBAR_KEY" -X POST \
+        curl -f -g --digest -u "$REBAR_KEY" -X POST \
           -d "name=$HOSTNAME" \
           -d "mac=$MAC" \
           -d "ip=$IP" \
-          "$CROWBAR_WEB/api/v2/nodes/" || {
+          "$REBAR_WEB/api/v2/nodes/" || {
             echo "We could not create a node for ourself!"
             exit 1
         }
@@ -100,16 +100,16 @@ if ! [[ $(cat /proc/cmdline) =~ $host_re ]]; then
         echo "Node already created, moving on"
     fi
 
-    # does the crowbar-managed-role exist?
-    managed=$(curl -s -o /dev/null -w "%{http_code}" --digest -u "$CROWBAR_KEY" \
-      -X GET "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME/node_roles/crowbar-managed-node")
+    # does the rebar-managed-role exist?
+    managed=$(curl -s -o /dev/null -w "%{http_code}" --digest -u "$REBAR_KEY" \
+      -X GET "$REBAR_WEB/api/v2/nodes/$HOSTNAME/node_roles/rebar-managed-node")
     if [[ $managed == 404 ]]; then
-        curl -f -g --digest -u "$CROWBAR_KEY" -X POST \
+        curl -f -g --digest -u "$REBAR_KEY" -X POST \
           -d "node=$HOSTNAME" \
-          -d "role=crowbar-managed-node" \
-          "$CROWBAR_WEB/api/v2/node_roles/" && \
-        curl -f -g --digest -u "$CROWBAR_KEY" -X PUT \
-          "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME/commit" || {
+          -d "role=rebar-managed-node" \
+          "$REBAR_WEB/api/v2/node_roles/" && \
+        curl -f -g --digest -u "$REBAR_KEY" -X PUT \
+          "$REBAR_WEB/api/v2/nodes/$HOSTNAME/commit" || {
             echo "We could not commit the node!"
             exit 1
         }
@@ -117,14 +117,14 @@ if ! [[ $(cat /proc/cmdline) =~ $host_re ]]; then
         echo "Node already committed, moving on"
     fi
 else
-    # Let Crowbar know that we are back, and booted into Sledgehammer.
+    # Let Rebar know that we are back, and booted into Sledgehammer.
     export HOSTNAME="${BASH_REMATCH[1]}"
     echo "Node is back."
 fi
 
 # Always make sure we are marking the node not alive. It will comeback later.
-curl -f -g --digest -u "$CROWBAR_KEY" \
-    -X PUT "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME" \
+curl -f -g --digest -u "$REBAR_KEY" \
+    -X PUT "$REBAR_WEB/api/v2/nodes/$HOSTNAME" \
     -d 'alive=false' \
     -d 'bootenv=sledgehammer'
 echo "Set node not alive - will be set in control.sh!"
@@ -132,8 +132,8 @@ echo "Set node not alive - will be set in control.sh!"
 
 # Figure out the admin network name
 the_netname=""
-netnameline=$(curl -f -g --digest -u "$CROWBAR_KEY" \
-    -X GET "$CROWBAR_WEB/api/v2/nodes/$HOSTNAME/addresses?category=admin")
+netnameline=$(curl -f -g --digest -u "$REBAR_KEY" \
+    -X GET "$REBAR_WEB/api/v2/nodes/$HOSTNAME/addresses?category=admin")
 netnames=(${netnameline//,/ })
 for netname in "${netnames[@]}"; do
     [[ $netname =~ $netname_re ]] || continue
@@ -143,12 +143,12 @@ done
 echo "Using network name: $the_netname"
 
 # Figure out what IP addresses we should have.
-netline=$(curl -f -g --digest -u "$CROWBAR_KEY" \
-    -X GET "$CROWBAR_WEB/api/v2/networks/${the_netname}/allocations" \
+netline=$(curl -f -g --digest -u "$REBAR_KEY" \
+    -X GET "$REBAR_WEB/api/v2/networks/${the_netname}/allocations" \
     -d "node=$HOSTNAME")
 
-routerline=$(curl -f -g --digest -u "$CROWBAR_KEY" \
-    -X GET "$CROWBAR_WEB/api/v2/networks/${the_netname}/network_routers/1" \
+routerline=$(curl -f -g --digest -u "$REBAR_KEY" \
+    -X GET "$REBAR_WEB/api/v2/networks/${the_netname}/network_routers/1" \
     -d "node=$HOSTNAME")
 
 # Bye bye to DHCP.
@@ -218,7 +218,7 @@ curl -s -f -L -o /tmp/control.sh "$PROVISIONER_WEB/nodes/$HOSTNAME/control.sh" &
 }
 chmod 755 /tmp/control.sh
 
-export CROWBAR_KEY PROVISIONER_WEB CROWBAR_WEB
+export REBAR_KEY PROVISIONER_WEB REBAR_WEB
 export MAC BOOTDEV DOMAIN HOSTNAME
 
 echo "transfer from start-up to control script"

@@ -237,7 +237,7 @@ class NodeRole < ActiveRecord::Base
       r.on_node_bind(res)
     end
 
-    # We only call on_node_change when the node is available to prevent Crowbar
+    # We only call on_node_change when the node is available to prevent Rebar
     # from noticing changes it should not notice yet.
     # on_node_bind is specific callback for the adding node.  Let the other roles
     # know that the node has changed.
@@ -490,8 +490,8 @@ class NodeRole < ActiveRecord::Base
       end
       # Add information about the resource reservations this node has in place
       if node.discovery["reservations"]
-        res["crowbar_wall"] ||= Hash.new
-        res["crowbar_wall"]["reservations"] = node.discovery["reservations"]
+        res["rebar_wall"] ||= Hash.new
+        res["rebar_wall"]["reservations"] = node.discovery["reservations"]
       end
       # Add any hints.
       res["hints"] = node.hint

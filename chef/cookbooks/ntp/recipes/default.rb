@@ -18,9 +18,9 @@ package "ntp" do
 end unless Kernel.system("which ntpd")
 
 if node["roles"].include?("ntp-server")
-  ntp_servers = node[:crowbar][:ntp][:external_servers]
+  ntp_servers = node[:rebar][:ntp][:external_servers]
 else
-  ntp_servers = node[:crowbar][:ntp][:servers]
+  ntp_servers = node[:rebar][:ntp][:servers]
 end
 
 user "ntp"
@@ -63,7 +63,7 @@ if node["roles"].include?("ntp-server")
 
  ip_addr = IP.coerce(node["ntp"]["service_address"]).addr
 
-  template "/etc/consul.d/crowbar-ntp.json" do
+  template "/etc/consul.d/rebar-ntp.json" do
     source "consul-ntp-server.json.erb"
     mode 0644
     owner "root"

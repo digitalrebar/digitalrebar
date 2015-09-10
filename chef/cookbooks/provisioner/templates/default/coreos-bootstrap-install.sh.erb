@@ -5,12 +5,12 @@ sudo http_proxy="<%=@proxy%>" coreos-install -d /dev/<%= @rootdev %> -c cloud-co
 
 sudo mount -o subvol=root /dev/<%= @rootdev %>-part9 /mnt/
 
-key_re='crowbar\.install\.key=([^ ]+)'
+key_re='rebar\.install\.key=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
-   export CROWBAR_KEY="${BASH_REMATCH[1]}"
-   echo "$CROWBAR_KEY" >/mnt/etc/crowbar.install.key
-elif [[ -f /etc/crowbar.install.key ]]; then
-    export CROWBAR_KEY="$(cat /etc/crowbar.install.key)"
+   export REBAR_KEY="${BASH_REMATCH[1]}"
+   echo "$REBAR_KEY" >/mnt/etc/rebar.install.key
+elif [[ -f /etc/rebar.install.key ]]; then
+    export REBAR_KEY="$(cat /etc/rebar.install.key)"
 fi
 
 # Setup root keys the same as core keys
@@ -23,24 +23,24 @@ cat > /mnt/root/.ssh/authorized_keys <<EOF
 EOF
 sudo chmod 600 /mnt/root/.ssh/authorized_keys
 
-# Add crowbar join startup scripts
-sudo mkdir -p /mnt/opt/opencrowbar/bin
-sudo curl -s -f -L -o /mnt/opt/opencrowbar/bin/crowbar_join.sh "<%=@provisioner_web%>/nodes/$HOSTNAME/crowbar_join.sh"
-sudo chmod +x /mnt/opt/opencrowbar/bin/crowbar_join.sh
+# Add rebar join startup scripts
+sudo mkdir -p /mnt/opt/digitalrebar/bin
+sudo curl -s -f -L -o /mnt/opt/digitalrebar/bin/rebar_join.sh "<%=@provisioner_web%>/nodes/$HOSTNAME/rebar_join.sh"
+sudo chmod +x /mnt/opt/digitalrebar/bin/rebar_join.sh
 
 # Make sure the ssh script jig will work correctly.
 sudo echo "AcceptEnv http_proxy https_proxy no_proxy PATH" >> /mnt/etc/ssh/sshd_config
 sudo echo "PermitUserEnvironment yes" >> /mnt/etc/ssh/sshd_config
 sudo chmod 600 /mnt/etc/ssh/sshd_config
 
-sudo echo "PATH=/usr/bin:/bin:/usr/sbin:/sbin:/opt/bin:/opt/chef/bin:/opt/opencrowbar/core/bin" >> /mnt/root/.ssh/environment
+sudo echo "PATH=/usr/bin:/bin:/usr/sbin:/sbin:/opt/bin:/opt/chef/bin:/opt/digitalrebar/core/bin" >> /mnt/root/.ssh/environment
 sudo chmod 600 /mnt/root/.ssh/environment
 
 sudo umount /mnt
 
 HOSTNAME=$(hostname -f)
 
-curl -u "$CROWBAR_KEY" --digest -L -X PUT -d "bootenv=local" "<%=@api_server%>/api/v2/nodes/$HOSTNAME"
+curl -u "$REBAR_KEY" --digest -L -X PUT -d "bootenv=local" "<%=@api_server%>/api/v2/nodes/$HOSTNAME"
 
 # Wait for the provisioner to catch up
 while true; do

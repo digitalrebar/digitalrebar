@@ -1,0 +1,261 @@
+# Copyright 2013, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+barclamp:
+  name: "rebar"
+  parent: "core"
+  display: "Rebar"
+  description: "Foundational Roles"
+  version: "2.E"
+  source_url: "https://github.com/digitalrebar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
+
+roles:
+  # Rebar  Core
+  - name: rebar-admin-node
+    description: "Core Rebar Services Bundle"
+    jig: noop
+    flags:
+      - milestone
+      - implicit
+    requires:
+      - rebar-access
+      - network-server
+      - network-lldpd
+      - rebar-installed-node
+  - name: rebar-managed-node
+    description: "Rebar Node Service Bundle"
+    jig: noop
+    flags:
+      - milestone
+      - implicit
+      - powersave
+    requires:
+      - rebar-access
+      - deployer-client
+      - dns-client
+      - logging-client
+      - ntp-client
+      - network-lldpd
+  - name: rebar-hardware-configured
+    description: "Rebar Hardware Configured Checkpoint"
+    jig: noop
+    flags:
+      - implicit
+      - milestone
+      - powersave
+    requires:
+      - rebar-managed-node
+  - name: rebar-installed-node
+    description: "Rebar Node Ready Checkpoint"
+    jig: noop
+    flags:
+      - milestone
+      - implicit
+      - powersave
+    requires:
+      - rebar-hardware-configured
+      - provisioner-os-install
+  - name: rebar-docker-node
+    description: "Docker Node Ready Checkpoint"
+    jig: noop
+    flags:
+      - milestone
+      - implicit
+    requires:
+      - provisioner-repos
+      - provisioner-docker-setup
+      - rebar-access
+    provides:
+      - rebar-managed-node
+      - rebar-installed-node
+  - name: rebar-access
+    description: "Rebar Access Keys"
+    flags:
+      - implicit
+    jig: script
+    attribs:
+      - name: rebar-machine_key
+        description: 'The username and password that managed nodes should use to talk to the Rebar API'
+        map: 'rebar/machine_key'
+        schema:
+          type: str
+          required: true
+      - name: rebar-access_keys
+        description: 'The SSH public keys that should allow password-less root access on managed nodes.'
+        map: 'rebar/access_keys'
+        schema:
+          type: map
+          mapping:
+            =:
+              type: str
+  - name: rebar-build-root-key
+    description: "Build or Gather the root public key for this node"
+    jig: chef
+    flags:
+      - implicit
+    attribs:
+      - name: rebar-root-public-key
+        description: 'The username and password that managed nodes should use to talk to the Rebar API'
+        map: 'rebar/root_public_key'
+        schema:
+          type: str
+          required: true
+  - name: rebar-api_server
+    jig: chef
+    wants-attribs:
+      - consul-acl-master-token
+    requires:
+      - consul
+  - name: rebar-api_service
+    jig: role-provided
+    flags:
+      - service
+    attribs:
+      - name: rebar-api-servers
+        description: "IP:Port pairs of the Rebar API servers"
+        map: 'rebar/api/servers'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/
+  - name: rebar-job_runner
+    jig: chef
+    wants-attribs:
+      - consul-acl-master-token
+    requires:
+      - consul
+  - name: rebar-job_runner_service
+    jig: role-provided
+    flags:
+      - service
+    attribs:
+      - name: rebar-job-runners
+        description: "Addresses of the Rebar Job Runners"
+        map: 'rebar/api/runners'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/
+  - name: rebar-joined-node
+    description: "Joined Node Ready Checkpoint"
+    jig: noop
+    flags:
+      - milestone
+      - implicit
+    requires:
+      - rebar-access
+    conflicts:
+      - rebar-managed-node
+    provides:
+      - rebar-installed-node
+      - rebar-managed-node
+      - deployer-client
+
+hammers:
+  - name: 'ssh'
+    type: 'SecureShellHammer'
+    priority: 0
+
+attribs:
+  # Rebar Core
+  - name: asset_tag
+    map: 'ohai/dmi/base_board/asset_tag'
+    description: 'BIOS configured system identifier'
+  - name: system_serial_number
+    description: 'System Serial Number'
+    map: 'ohai/dmi/system/serial_number'
+  - name: 'system_product'
+    description: 'System Product Name'
+    map: 'ohai/dmi/system/product_name'
+  - name: 'system_manufacturer'
+    description: 'System Vendor'
+    map: 'ohai/dmi/system/manufacturer'
+  - name: chassis_serial_number
+    description: 'Chassis Serial Number'
+    map: 'ohai/dmi/chassis/serial_number'
+  - name: 'chassis_product'
+    description: 'Chassis Product Name'
+    map: 'ohai/dmi/chassis/product_name'
+  - name: 'chassis_manufacturer'
+    description: 'Chassis Vendor'
+    map: 'ohai/dmi/chassis/manufacturer'
+  - name: 'kernel'
+    description: 'Kernel Name'
+    map: 'ohai/kernel/name'
+  - name: 'kernel_version'
+    description: 'Kernel Version'
+    map: 'ohai/kernel/version'
+  - name: 'os'
+    description: 'O/S Name'
+    map: 'ohai/platform'
+  - name: 'os_version'
+    description: 'O/S Version'
+    map: 'ohai/platform_version'
+  - name: 'os_description'
+    description: 'O/S Description'
+    map: 'ohai/lsb/description'
+  - name: 'memory'
+    description: 'System Memory'
+    map: 'ohai/memory/total'
+  - name: 'cpu'
+    description: 'System Processor'
+    map: 'ohai/cpu/0/model_name'
+  - name: 'cpu_count'
+    description: 'Number of Processors'
+    map: 'ohai/cpu/total'
+  - name: 'number_of_drives'
+    description: 'RAID set'
+    map: 'ohai/block_device'
+  - name: stay_on
+    map: 'rebar/stay_on'
+    description: 'Leave the node powered on when there is nothing to do'
+    schema:
+      type: bool
+      required: false
+  # Node specific hints.
+  - name: 'hint-admin-macs'
+    description: 'Hint for Admin MAC addresses'
+    map: 'admin_macs'
+    schema:
+      type: seq
+      required: true
+      sequence:
+        - type: str
+          pattern: '/([0-9a-fA-F]{2}:){5}[0-9a-fA-F]/'
+  - name: 'ports'
+    description: 'The ports present in the system'
+    map: 'reservations/ports'
+  - name: 'disks'
+    description: 'The disks present in the system'
+    map: 'reservations/disks'
+  - name: 'claimed-disks'
+    description: 'The disks that have been claimed by roles on a node'
+    map: 'reservations/claimed_disks'
+    schema:
+      type: map
+      required: true
+      mapping:
+        =:
+          type: str
+  - name: operating-system-disk
+    description: 'The unique name of the disk that the operating system is installed on'
+    map: 'rebar/operating_system_disk'
+    schema:
+      type: str
+      required: false

@@ -25,14 +25,14 @@ class BarclampNetwork::Role < Role
   # Our template == the template that our matching network definition has.
   # For now, just hashify the stuff we care about[:ranges]
   def template
-    { "crowbar" => { "network" => { network.name => network.to_template } }  }
+    { "rebar" => { "network" => { network.name => network.to_template } }  }
   end
 
   def jig_role(nr)
     { "name" => nr.role.name,
       "chef_type" => "role",
       "json_class" => "Chef::Role",
-      "description" => I18n.t('automatic_item_by', :item=>nr.role.name, :name=>"Crowbar"),
+      "description" => I18n.t('automatic_item_by', :item=>nr.role.name, :name=>"Rebar"),
       "run_list" => ["recipe[network]"]}
   end
 
@@ -61,7 +61,7 @@ class BarclampNetwork::Role < Role
       }
     end
 
-    res = { "crowbar" =>
+    res = { "rebar" =>
       { "network" =>
         { "addresses" => addrs,
           network.name => {
@@ -73,7 +73,7 @@ class BarclampNetwork::Role < Role
     # Pick targets for ping testing.
     target = node_roles.partition{|tnr|tnr.id != nr.id}.flatten.detect{|tnr|tnr.active?}
     if target
-      res["crowbar"]["network"][network.name]["targets"] = network.node_allocations(target.node).map{|a|a.to_s}
+      res["rebar"]["network"][network.name]["targets"] = network.node_allocations(target.node).map{|a|a.to_s}
     end
     res
   end

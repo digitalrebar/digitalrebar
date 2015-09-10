@@ -37,21 +37,21 @@ str_addr = s.ServiceAddress
 str_addr = s.Address if str_addr.nil? or str_addr.empty?
 addr = IP.coerce(str_addr)
 hash = {}
-hash[:user] = 'crowbar'
-hash[:pass] = 'crowbar'
+hash[:user] = 'rebar'
+hash[:pass] = 'rebar1'
 if addr.v6?
   hash[:host] = "[#{addr.addr}]"
 else
   hash[:host] = addr.addr
 end
-hash[:vhost] = '/opencrowbar'
+hash[:vhost] = '/digitalrebar'
 hash[:port] = s.ServicePort.to_i
 
 conn = Bunny.new(hash)
 conn.start
 
 ch  = conn.create_channel
-x   = ch.topic("opencrowbar")
+x   = ch.topic("digitalrebar")
 q   = ch.queue("")
 
 ARGV.each do |severity|

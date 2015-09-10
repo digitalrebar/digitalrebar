@@ -2,14 +2,14 @@
   require 'uri'
   node ||= @node
   name = @name || node.name.split('.')[0]
-  unless node[:crowbar].nil? or node[:crowbar][:network].nil? or node[:crowbar][:network][:admin].nil?
-    ip = node[:crowbar][:network][:admin][:address] || "unknown"
+  unless node[:rebar].nil? or node[:rebar][:network].nil? or node[:rebar][:network][:admin].nil?
+    ip = node[:rebar][:network][:admin][:address] || "unknown"
   else
     ip = node[:ipaddress] || "unknown"
   end
   icon = node.state
   show_switch=false
-  unless node[:crowbar].nil? or node.crowbar_ohai[:switch_config].nil?
+  unless node[:rebar].nil? or node.rebar_ohai[:switch_config].nil?
     show_switch=true
     sw_port = node.switch_port
     sw_unit = node.switch_unit

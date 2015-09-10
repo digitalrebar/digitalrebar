@@ -19,7 +19,7 @@ class BarclampDns::BindServer < Role
   def template
     # this is a workable solution for now, we use the admin node to determine domain (except when non-exists!)
     domain = Node.admin.first.name.split(".",2)[1] rescue I18n.t('not_set')
-    {"crowbar" => {     "dns" => {
+    {"rebar" => {     "dns" => {
                         "domain" => domain,
                         "contact" => "support@localhost.localdomain",
                         "forwarders" =>  [],
@@ -45,7 +45,7 @@ class BarclampDns::BindServer < Role
     my_addr = nr.node.addresses(:v4_only).first
     raise "No address for the DNS Server" unless my_addr
     { "dns" => { "service_address" => my_addr.to_s },
-      "crowbar" => {
+      "rebar" => {
         "dns" => {
           "nameservers" => nr.node.addresses.flatten.sort.map{|a|a.addr}
         }

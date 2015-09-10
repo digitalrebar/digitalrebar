@@ -16,7 +16,7 @@
 
 action :add do
   nodeaddr = sprintf("%08X",new_resource.address.address)
-  tftproot = node["crowbar"]["provisioner"]["server"]["root"]
+  tftproot = node["rebar"]["provisioner"]["server"]["root"]
   discover_dir="#{tftproot}/discovery"
   uefi_dir=discover_dir
   pxecfg_dir="#{discover_dir}/pxelinux.cfg"
@@ -47,7 +47,7 @@ end
 
 action :remove do
   nodeaddr = sprintf("%08X",new_resource.address.address)
-  tftproot = node["crowbar"]["provisioner"]["server"]["root"]
+  tftproot = node["rebar"]["provisioner"]["server"]["root"]
   discover_dir="#{tftproot}/discovery"
   uefi_dir=discover_dir
   pxecfg_dir="#{discover_dir}/pxelinux.cfg"

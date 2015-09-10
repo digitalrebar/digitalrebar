@@ -26,7 +26,7 @@ g(Item) ->
     atom  -> attrib1;
     map   -> 'bdd/rocks';
     value -> 'bravo';
-    _ -> crowbar:g(Item)
+    _ -> rebar:g(Item)
   end.
   
 % Common Routine
@@ -41,13 +41,13 @@ validate(JSON) when is_record(JSON, obj) ->
       bdd_utils:is_a(J, string, schema), 
       bdd_utils:is_a(J, string, ui_renderer), 
       bdd_utils:is_a(J, length, 13),
-      crowbar_rest:validate(J)],
+      rebar_rest:validate(J)],
   bdd_utils:assert(R).
  
 % Common Routine
 % Creates JSON used for POST/PUT requests
 json(Name, Description, Order) -> 
-  crowbar:json([{name, Name}, {description, Description}, {order, Order}]).
+  rebar:json([{name, Name}, {description, Description}, {order, Order}]).
 
 % Common Routine
 % Returns list of nodes in the system to check for bad housekeeping
@@ -58,7 +58,7 @@ set_attrib(Type, Name, Attrib, Value) ->
   bdd_utils:log(debug, attrib, set_attrib, " Attribu Update ~p on ~p to ~p", [Type, Name, Value]),
   Path = eurl:path([apply(Type, g, [path]), Name, "attribs", Attrib]),
   % this ASSUMES that the Value is valid JSON
-  JSON = crowbar:json([{value, Value}]),
+  JSON = rebar:json([{value, Value}]),
   bdd_utils:log(debug, attrib, set_attrib, "~p PUTS ~p", [Path, JSON]),
   % now update 
   Result = eurl:put_post(Path, JSON, put),
@@ -68,11 +68,11 @@ set_attrib(Type, Name, Attrib, Value) ->
 % Common Routine
 
 step(_Global, {step_given, {Scenario, _N}, ["REST creates the", attrib, Name, "with map",Map]}) -> 
-  JSON = crowbar:json([{name, Name}, {description, g(description)}, {barclamp, 'test'}, {order, g(order)}, {writable, true}, {map, Map}]),
+  JSON = rebar:json([{name, Name}, {description, g(description)}, {barclamp, 'test'}, {order, g(order)}, {writable, true}, {map, Map}]),
   bdd_restrat:create(g(path), JSON, attrib, Scenario);
 
 step(_Global, {step_given, {Scenario, _N}, ["REST creates the", attrib, Name, "with barclamp",Barclamp]}) -> 
-  JSON = crowbar:json([{name, Name}, {description, g(description)}, {barclamp, Barclamp}, {order, g(order)}, {writable, true}]),
+  JSON = rebar:json([{name, Name}, {description, g(description)}, {barclamp, Barclamp}, {order, g(order)}, {writable, true}]),
   bdd_restrat:create(g(path), JSON, attrib, Scenario);
 
 step(_Given, {step_given, {_Scenario, _N}, ["REST sets the node", Attrib, "on", Node, "to", Value]}) -> 

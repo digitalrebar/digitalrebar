@@ -107,7 +107,7 @@
       var node = ev.originalEvent.dataTransfer.getData("Text");
       var group = $(this).attr('id');
       // console.debug(node + ' into ' + group );
-      $.ajax({url:'/2.0/crowbar/2.0/group/'+group+'/node/'+node, dataType:'json', type:"PUT",
+      $.ajax({url:'/2.0/rebar/2.0/group/'+group+'/node/'+node, dataType:'json', type:"PUT",
         statusCode: { 200: function(data) { location.href = '#{dashboard_path}/'+selected; }}
       });
     });
@@ -118,7 +118,7 @@
   }
 
   function remove_group(id) {
-    $.ajax({url:'/2.0/crowbar/2.0/group/'+id, type:"DELETE", dataType: 'json',
+    $.ajax({url:'/2.0/rebar/2.0/group/'+id, type:"DELETE", dataType: 'json',
       statusCode: { 200: function(data) { $('#group_'+id).remove(); } }
     });
   }
@@ -131,7 +131,7 @@
     if (new_group.match(valid_group_regex)) {
       // Create the group json and post it
       var group_data = {'name': new_group, 'description': new_group, 'category': 'ui'}
-      $.ajax({url:"/2.0/crowbar/2.0/group", data:group_data, type:'POST', dataType:'json',
+      $.ajax({url:"/2.0/rebar/2.0/group", data:group_data, type:'POST', dataType:'json',
         success:function(data) {
           // on success, add to the UI
           var id = data['id']

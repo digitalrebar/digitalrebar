@@ -90,9 +90,9 @@ class Node < ActiveRecord::Base
     begin
       find_by!(col => key)
     rescue ActiveRecord::RecordNotFound => e
-      e.crowbar_model = self
-      e.crowbar_column = col
-      e.crowbar_key = key
+      e.rebar_model = self
+      e.rebar_column = col
+      e.rebar_key = key
       raise e
     end
   end
@@ -327,7 +327,7 @@ class Node < ActiveRecord::Base
       reload
       update!(alive: true,
               bootenv: "sledgehammer",
-              target: Role.find_by!(:name => "crowbar-managed-node"))
+              target: Role.find_by!(:name => "rebar-managed-node"))
     end
     power.reboot
   end
@@ -351,7 +351,7 @@ class Node < ActiveRecord::Base
     #
     is_docker_node = false
     node_roles.each do |nr|
-      if nr.role.name == "crowbar-joined-node"
+      if nr.role.name == "rebar-joined-node"
         is_docker_node = true
         break
       end
@@ -418,7 +418,7 @@ class Node < ActiveRecord::Base
         return self
       elsif r.kind_of?(Role) &&
           roles.member?(r) &&
-          r.barclamp.name == "crowbar" &&
+          r.barclamp.name == "rebar" &&
           r.jig.name == "noop"
         old_alive = self.alive
         self.alive = false
@@ -498,14 +498,14 @@ class Node < ActiveRecord::Base
   def after_commit_handler
     Rails.logger.debug("Node: after_commit hook called")
     Rails.logger.info("Node: calling all role on_node_change hooks for #{name}")
-    # the line belowrequires a crowbar deployment to which the status attribute is tied
+    # the line belowrequires a rebar deployment to which the status attribute is tied
     Group.transaction do
       if groups.count == 0
         groups << Group.find_or_create_by(name: 'not_set',
                                           description: I18n.t('not_set', :default=>'Not Set'))
       end
     end
-    # We only call on_node_change when the node is available to prevent Crowbar
+    # We only call on_node_change when the node is available to prevent Rebar
     # from noticing changes it should not notice yet.
     Role.all_cohorts.each do |r|
       Rails.logger.debug("Node: Calling #{r.name} on_node_change for #{self.name}")

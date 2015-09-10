@@ -4,7 +4,7 @@
 
 require File.expand_path('../config/application', __FILE__)
 
-Crowbar::Application.load_tasks
+Rebar::Application.load_tasks
 
 
 desc "this task simulates the commands executed on the travis CI testing"
@@ -24,6 +24,6 @@ end
 
 namespace :switch do
   task :map => :environment do
-    OcbSwitch.map
+    RebarSwitch.map
   end
 end

@@ -17,8 +17,8 @@ require 'test_helper'
 class NodeModelTest < ActiveSupport::TestCase
 
   def setup
-    @crowbar = Barclamp.find_by_name("crowbar") 
-    assert_not_nil @crowbar
+    @rebar = Barclamp.find_by_name("rebar") 
+    assert_not_nil @rebar
     d = Deployment.find_or_create_by(name: 'system', description: 'automatic')
     assert_not_nil d, 'we need at least 1 Deployment'
     #  We need a system deployment to create default proposals in.

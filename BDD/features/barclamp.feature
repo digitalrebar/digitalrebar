@@ -5,8 +5,8 @@ Feature: Barclamp UI
 
   Scenario: Basic Screen
     When I go to the "barclamps" page
-    Then I should see a heading {bdd:crowbar.i18n.barclamps.index.title}
-      And I should see "crowbar"
+    Then I should see a heading {bdd:rebar.i18n.barclamps.index.title}
+      And I should see "rebar"
       And I should see "test"
       And I should see "network"
       And I should see "deployer"
@@ -15,21 +15,21 @@ Feature: Barclamp UI
       
   Scenario: Barclamps List
     When REST gets the {object:barclamp} list
-    Then the list should have an object with key "name" value "crowbar"
+    Then the list should have an object with key "name" value "rebar"
       And the list should have an object with key "name" value "provisioner"
       And the list should have an object with key "name" value "network"
 
   Scenario: REST JSON check
-    When REST gets the {object:barclamp} "crowbar"
+    When REST gets the {object:barclamp} "rebar"
     Then the {object:barclamp} is properly formatted
     
   Scenario: REST Cannot Delete
-    When REST deletes the {object:barclamp} "crowbar"
+    When REST deletes the {object:barclamp} "rebar"
     Then I get a {integer:405} error
   
   Scenario: REST Can Update
     Skip Write a scratch barclamp to load
-    When REST updates the {object:barclamp} "crowbar"
+    When REST updates the {object:barclamp} "rebar"
     Then I get a {integer:405} error
 
   Scenario: REST Get 404

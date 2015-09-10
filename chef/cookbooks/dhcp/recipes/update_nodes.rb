@@ -13,13 +13,13 @@
 # limitations under the License.
 #
 
-provisioner_addr = node['crowbar']['provisioner']['server']['webservers'].first["address"]
-node.normal['crowbar_wall'] ||= Mash.new
-node.normal['crowbar_wall']['dhcp'] ||= Mash.new
-node.normal['crowbar_wall']['dhcp']['clients'] ||= Mash.new
+provisioner_addr = node['rebar']['provisioner']['server']['webservers'].first["address"]
+node.normal['rebar_wall'] ||= Mash.new
+node.normal['rebar_wall']['dhcp'] ||= Mash.new
+node.normal['rebar_wall']['dhcp']['clients'] ||= Mash.new
 new_clients = {}
 
-(node['crowbar']['dhcp']['clients'] || {} rescue {}).each do |mnode_name,dhcp_info|
+(node['rebar']['dhcp']['clients'] || {} rescue {}).each do |mnode_name,dhcp_info|
   # Build DHCP, PXE, and ELILO config files for each system
   v4addr = IP.coerce(dhcp_info['v4addr'])
   nodeaddr = sprintf('%X',v4addr.address)
@@ -58,8 +58,8 @@ new_clients = {}
 end
 
 # Now that we have handled any updates we care about, delete any info about nodes we have deleted.
-(node['crowbar_wall']['dhcp']['clients'].keys - new_clients.keys).each do |old_node_name|
-  old_node = node['crowbar_wall']['dhcp']['clients'][old_node_name]
+(node['rebar_wall']['dhcp']['clients'].keys - new_clients.keys).each do |old_node_name|
+  old_node = node['rebar_wall']['dhcp']['clients'][old_node_name]
   mac_list = old_node['mac_addresses']
   mac_list.each_index do |idx|
     a = dhcp_host "#{old_node_name}-#{idx}" do
@@ -72,4 +72,4 @@ end
   end
 end
 
-node.normal['crowbar_wall']['dhcp']['clients']=new_clients
+node.normal['rebar_wall']['dhcp']['clients']=new_clients

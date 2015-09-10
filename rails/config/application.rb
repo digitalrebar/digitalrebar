@@ -24,15 +24,15 @@ if defined?(Bundler)
   # Bundler.require(:default, :assets, Rails.env)
 end
 
-module Crowbar
+module Rebar
   class Application < Rails::Application
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
-    config.crowbar = ActiveSupport::OrderedOptions.new 
-    config.crowbar.version = '2.x'
-    config.crowbar.docs = "https://github.com/digitalrebar/doc/blob/master/README.rst"
-    config.crowbar.bootstrap_key = 'opencrowbar/private/bootstrap'
+    config.rebar = ActiveSupport::OrderedOptions.new 
+    config.rebar.version = '2.x'
+    config.rebar.docs = "https://github.com/digitalrebar/doc/blob/master/README.rst"
+    config.rebar.bootstrap_key = 'digitalrebar/private/bootstrap'
 
     # Custom directories with classes and modules you want to be autoloadable.
     config.autoload_paths += %W(#{config.root}/lib)
@@ -84,8 +84,8 @@ module Crowbar
     # Run "rake -D time" for a list of tasks for finding time zone names.
     config.time_zone = 'UTC'
 
-    config.cache_store                   = [ :file_store, "/var/cache/crowbar/rails-cache/" ]
-    config.assets.cache_store            = [ :file_store, "/var/cache/crowbar/rails-cache/assets/#{Rails.env}/" ]
+    config.cache_store                   = [ :file_store, "/var/cache/rebar/rails-cache/" ]
+    config.assets.cache_store            = [ :file_store, "/var/cache/rebar/rails-cache/assets/#{Rails.env}/" ]
 
     # The default locale is :en and all translations from config/locales/*.rb,yml are auto loaded.
     config.i18n.load_path += Dir[Rails.root.join('config', 'locales', '*.{rb,yml}').to_s]

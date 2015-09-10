@@ -13,25 +13,25 @@
 # limitations under the License.
 #
 
-api_server = node['crowbar']['api']['servers'].first['url']
-proxy = node['crowbar']['proxy']['servers'].first['url']
-tftproot = node["crowbar"]["provisioner"]["server"]["root"]
+api_server = node['rebar']['api']['servers'].first['url']
+proxy = node['rebar']['proxy']['servers'].first['url']
+tftproot = node["rebar"]["provisioner"]["server"]["root"]
 node_dir="#{tftproot}/nodes"
-node.normal["crowbar_wall"] ||= Mash.new
-node.normal["crowbar_wall"]["docker"] ||= Mash.new
-node.normal["crowbar_wall"]["docker"]["clients"] ||= Mash.new
+node.normal["rebar_wall"] ||= Mash.new
+node.normal["rebar_wall"]["docker"] ||= Mash.new
+node.normal["rebar_wall"]["docker"]["clients"] ||= Mash.new
 
 # Split out the v4 addresses
-v4dns, v6dns = node["crowbar"]["dns"]["nameservers"].collect{|a|IP.coerce(a['address'])}.partition{|a|a.v4?}
+v4dns, v6dns = node["rebar"]["dns"]["nameservers"].collect{|a|IP.coerce(a['address'])}.partition{|a|a.v4?}
 v4addresses = v4dns.collect{|a|a.addr}
 
-(node["crowbar"]["docker"]["clients"] || {} rescue {}).each do |name,info|
-  # Generate an appropriate crowbar init for the system
+(node["rebar"]["docker"]["clients"] || {} rescue {}).each do |name,info|
+  # Generate an appropriate rebar init for the system
   directory "#{node_dir}/#{name}" do
     action :create
     recursive true
   end
-  template "#{node_dir}/#{name}/crowbar-init" do
+  template "#{node_dir}/#{name}/rebar-init" do
     source "docker-node.sh.erb"
     mode 0755
     variables(:addresses => info["addresses"],
@@ -39,8 +39,8 @@ v4addresses = v4dns.collect{|a|a.addr}
               :dns_servers => v4addresses,
               :name => name,
               :proxy => proxy,
-              :keys => (node["crowbar"]["access_keys"] rescue Hash.new).values.sort.join($/),
-              :machine_key => node["crowbar"]["machine_key"],
+              :keys => (node["rebar"]["access_keys"] rescue Hash.new).values.sort.join($/),
+              :machine_key => node["rebar"]["machine_key"],
               :admin_url => api_server
               )
   end

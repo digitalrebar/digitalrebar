@@ -25,7 +25,7 @@ class CreateProvisionerDatabase < ActiveRecord::Migration
                                                                   and family(a.address::inet) = 4
                                  inner join networks net on a.network_id = net.id and net.name = 'admin'
                                  inner join node_roles nr on nr.node_id = n.id
-                                 inner join roles r on nr.role_id = r.id and r.name = 'crowbar-managed-node'
+                                 inner join roles r on nr.role_id = r.id and r.name = 'rebar-managed-node'
                                  where json_extract_path(n.hint,'admin_macs') is not null
                                  or json_extract_path(n.discovery,'ohai','network','interfaces') is not null"
   end

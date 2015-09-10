@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -x
+
+[[ -f /etc/init.d/rebar ]] || \
+    cp etc/init.d/rebar /etc/init.d/rebar
+
+if which chkconfig; then
+    chkconfig rebar on
+else
+    for i in 2 3 4 5; do
+        [[ -d /etc/rc$i.d ]] || continue
+        ln -sf /etc/init.d/rebar "/etc/rc$i.d/S99rebar"
+    done
+fi
+
+/etc/init.d/rebar start
+# Wait for the webserver to be ready.
+while ! rebar -U rebar -P rebar -E http://127.0.0.1:3000 ping; do
+    sleep 1
+done

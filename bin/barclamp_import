@@ -26,12 +26,12 @@ $port = 3000
 $url = nil
 $data = ""
 $timeout = 500
-$key = if ENV["CROWBAR_KEY"]
-         $key = ENV["CROWBAR_KEY"]
-       elsif File.file?("/etc/crowbar.install.key")
-         IO.read("/etc/crowbar.install.key")
+$key = if ENV["REBAR_KEY"]
+         $key = ENV["REBAR_KEY"]
+       elsif File.file?("/etc/rebar.install.key")
+         IO.read("/etc/rebar.install.key")
        else
-         raise "No crowbar install key, will not install barclamps!"
+         raise "No rebar install key, will not install barclamps!"
        end
 $username, $password = $key.strip.split(':',2)
 
@@ -53,7 +53,7 @@ def maybe_json_die(json,code)
 end
 
 # Common REST functions.  They are in their own class
-# to prevent being polluted by CrowbarProxy specific things.
+# to prevent being polluted by RebarProxy specific things.
 class REST
 
   # Handle digest authentication.
@@ -132,10 +132,10 @@ class REST
   end
 end
 
-# The base class for all Crowbar commandline providers.
+# The base class for all Rebar commandline providers.
 # They will wind up being roughly grouped by controller or
 # barclamp name.
-class CrowbarProxy
+class RebarProxy
 
   def self.apiname
     "#{name.downcase.split("::").last}s"
@@ -237,15 +237,15 @@ class CrowbarProxy
   end
 end
 
-class Barclamp < CrowbarProxy
+class Barclamp < RebarProxy
   def self.install(path)
-    if path.split("/")[-1] == "crowbar.yml"
+    if path.split("/")[-1] == "rebar.yml"
       yml = path
       path = File.join(*path.split("/")[0..-2])
     else
-      yml = File.join(path,"crowbar.yml")
+      yml = File.join(path,"rebar.yml")
     end
-    raise "No crowbar.yml at #{path}" unless File.exists?(yml)
+    raise "No rebar.yml at #{path}" unless File.exists?(yml)
     settings = YAML.load_file(yml)
     settings['barclamp']['source_path'] = File.realpath(path)
     return {} if settings['barclamp']['parent']

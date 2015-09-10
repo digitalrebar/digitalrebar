@@ -16,12 +16,12 @@
 action :add do
   raise "Fuel Broken for now until it is ported to use the new disk reservation code!"
   os = "#{new_resource.distro}-#{new_resource.version}"
-  params = node["crowbar"]["provisioner"]["server"]["boot_specs"][os]
-  tftproot = node["crowbar"]["provisioner"]["server"]["root"]
-  provisioner_web = node["crowbar"]["provisioner"]["server"]["webservers"].first["url"]
-  ntp_server = "#{node["crowbar"]["ntp"]["servers"].first}"
-  machine_key = node["crowbar"]["machine_key"]
-  keys = node["crowbar"]["access_keys"].values.sort.join($/)
+  params = node["rebar"]["provisioner"]["server"]["boot_specs"][os]
+  tftproot = node["rebar"]["provisioner"]["server"]["root"]
+  provisioner_web = node["rebar"]["provisioner"]["server"]["webservers"].first["url"]
+  ntp_server = "#{node["rebar"]["ntp"]["servers"].first}"
+  machine_key = node["rebar"]["machine_key"]
+  keys = node["rebar"]["access_keys"].values.sort.join($/)
   os_dir = "#{tftproot}/#{os}"
   install_dir = "#{os_dir}/install"
   mnode_name = new_resource.name
@@ -32,7 +32,7 @@ action :add do
   #
   # GREG: Fill in ip params
   #
-  append = "ksdevice=#{my_intf} forceformat=yes installdrive=sda repo=nfs:#{provisioner_addr}:#{install_dir} ks=#{web_path}/compute.ks hostname=#{mnode_name} #{params["kernel_params"]} crowbar.install.key=#{machine_key} crowbar.fqdn=#{mnode_name}"
+  append = "ksdevice=#{my_intf} forceformat=yes installdrive=sda repo=nfs:#{provisioner_addr}:#{install_dir} ks=#{web_path}/compute.ks hostname=#{mnode_name} #{params["kernel_params"]} rebar.install.key=#{machine_key} rebar.fqdn=#{mnode_name}"
   mac_list = new_resource.address
 
   directory node_dir do
@@ -51,11 +51,11 @@ action :add do
               :rootdev => mnode_rootdev)
   end
 
-  template "#{node_dir}/crowbar_join.sh" do
+  template "#{node_dir}/rebar_join.sh" do
     mode 0644
     owner "root"
     group "root"
-    source "crowbar_join.sh.erb"
+    source "rebar_join.sh.erb"
     variables(:api_server => provisioner_addr, :ntp_server => ntp_server, :name => mnode_name)
   end
 
