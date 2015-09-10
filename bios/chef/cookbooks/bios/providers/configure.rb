@@ -22,24 +22,24 @@ end
 
 def get_count(type)
   c_name = cnt_name(type)
-  node["crowbar_wall"] = {} unless node["crowbar_wall"]
-  node["crowbar_wall"]["track"] = {} unless node["crowbar_wall"]["track"]
-  node["crowbar_wall"]["track"][c_name] = 0 unless node["crowbar_wall"]["track"][c_name]
-  node["crowbar_wall"]["track"][c_name]
+  node["rebar_wall"] = {} unless node["rebar_wall"]
+  node["rebar_wall"]["track"] = {} unless node["rebar_wall"]["track"]
+  node["rebar_wall"]["track"][c_name] = 0 unless node["rebar_wall"]["track"][c_name]
+  node["rebar_wall"]["track"][c_name]
 end
 
 def set_count(type, val)
   c_name = cnt_name(type)
-  c = node["crowbar_wall"]["track"][c_name]
-  node["crowbar_wall"]["track"][c_name] = val
+  c = node["rebar_wall"]["track"][c_name]
+  node["rebar_wall"]["track"][c_name] = val
   node.save
   return val
 end
 
 def up_count(type)
   c_name = cnt_name(type)
-  c = node["crowbar_wall"]["track"][c_name] 
-  node["crowbar_wall"]["track"][c_name] = c+1
+  c = node["rebar_wall"]["track"][c_name] 
+  node["rebar_wall"]["track"][c_name] = c+1
   node.save
   return c+1
 end
@@ -59,12 +59,12 @@ end
 def wsman_configure(product, attrs)
   require 'wsman'
   # Get bmc parameters
-  ip = node["crowbar_wall"]["ipmi"]["address"]
-  user = node["ipmi"]["bmc_user"] rescue "crowbar"
-  password = node["ipmi"]["bmc_password"] rescue "crowbar"
+  ip = node["rebar_wall"]["ipmi"]["address"]
+  user = node["ipmi"]["bmc_user"] rescue "rebar"
+  password = node["ipmi"]["bmc_password"] rescue "rebar"
 
   opts = { :user => user, :password => password, :host => ip, :port => 443, :debug_time => false }
-  wsman = Crowbar::WSMAN.new(opts)
+  wsman = Rebar::WSMAN.new(opts)
 
   ## Seen issues on 11G where pending config jobs seem to be left behind...
   ## if updates go through all jobs are cleared out...else clear_all_jobs isn't called prior
@@ -92,7 +92,7 @@ def wsman_configure(product, attrs)
   end
 
   # Do the attr updates
-  wsman_attributes = Crowbar::BIOS::WSMANAttributes.new(wsman)
+  wsman_attributes = Rebar::BIOS::WSMANAttributes.new(wsman)
   opts = { :node => node }
   ret, reboot = wsman_attributes.update_attributes(attrs, opts)
   Chef::Log.info("WSMAN update attributes: #{ret} #{reboot}")

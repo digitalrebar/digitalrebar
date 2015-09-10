@@ -1,4 +1,4 @@
-system,token,crowbar_config,setting
+system,token,rebar_config,setting
 C6100,0x4022,default,"Force PXE boot before any other boot devices"
 C6100,0x4823,default,"Force the BMC to use the dedicated NIC"
 C6100,0x4825,default,"Force the BMC to use DHCP"

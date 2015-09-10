@@ -96,7 +96,7 @@
   
   
     <dt class="r2 last">Defined in:</dt>
-    <dd class="r2 last">crowbar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb</dd>
+    <dd class="r2 last">rebar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb</dd>
   
 </dl>
 <div class="clear"></div>
@@ -348,7 +348,7 @@ output log.</p>
 27</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb', line 18</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb', line 18</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_drivers'>drivers</span><span class='lparen'>(</span><span class='id identifier rubyid_candidate_node'>candidate_node</span><span class='comma'>,</span> <span class='id identifier rubyid_logger'>logger</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
@@ -385,7 +385,7 @@ output log.</p>
 31</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb', line 29</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb', line 29</span>
 
 <span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_probe'>probe</span><span class='lparen'>(</span><span class='id identifier rubyid_candidate_node'>candidate_node</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_drivers'>drivers</span><span class='lparen'>(</span><span class='id identifier rubyid_candidate_node'>candidate_node</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
@@ -450,7 +450,7 @@ output log.</p>
 56</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb', line 54</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb', line 54</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_actions'>actions</span>
   <span class='lbrace'>{</span> <span class='label'>raid:</span> <span class='lbracket'>[</span><span class='symbol'>:detect</span><span class='comma'>,</span> <span class='symbol'>:converge</span><span class='rbracket'>]</span> <span class='rbrace'>}</span>
@@ -591,7 +591,7 @@ output log.</p>
 139</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb', line 76</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb', line 76</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_converge'>converge</span><span class='lparen'>(</span><span class='id identifier rubyid_nr'>nr</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_logger'>logger</span> <span class='op'>=</span> <span class='const'>StringIO</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
@@ -712,7 +712,7 @@ output log.</p>
 69</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb', line 61</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb', line 61</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_detect'>detect</span><span class='lparen'>(</span><span class='id identifier rubyid_nr'>nr</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_logger'>logger</span> <span class='op'>=</span> <span class='const'>StringIO</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
@@ -748,7 +748,7 @@ output log.</p>
 35</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb', line 33</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb', line 33</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_drivers'>drivers</span><span class='lparen'>(</span><span class='id identifier rubyid_logger'>logger</span><span class='rparen'>)</span>
   <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_drivers'>drivers</span><span class='lparen'>(</span><span class='id identifier rubyid_node'>node</span><span class='comma'>,</span> <span class='id identifier rubyid_logger'>logger</span><span class='rparen'>)</span>
@@ -848,7 +848,7 @@ output log.</p>
 49</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb', line 42</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/raid_hammer.rb', line 42</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_same_volume'>same_volume</span><span class='lparen'>(</span><span class='id identifier rubyid_cv'>cv</span><span class='comma'>,</span> <span class='id identifier rubyid_wv'>wv</span><span class='rparen'>)</span>
   <span class='kw'>return</span> <span class='kw'>false</span> <span class='kw'>unless</span> <span class='id identifier rubyid_cv'>cv</span>

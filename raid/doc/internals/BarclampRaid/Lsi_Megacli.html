@@ -96,7 +96,7 @@
   
   
     <dt class="r2 last">Defined in:</dt>
-    <dd class="r2 last">crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb</dd>
+    <dd class="r2 last">rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb</dd>
   
 </dl>
 <div class="clear"></div>
@@ -609,7 +609,7 @@ systems, disks should be identified using an empty string for enclosure.</p>
 359</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 351</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 351</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid__set_boot'>_set_boot</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span> <span class='id identifier rubyid_volume_id'>volume_id</span><span class='rparen'>)</span>
   <span class='ivar'>@logger</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>setting boot volume on </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> for </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_volume_id'>volume_id</span><span class='embexpr_end'>}</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='ivar'>@logger</span>
@@ -657,7 +657,7 @@ systems, disks should be identified using an empty string for enclosure</p>
 121</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 119</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 119</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_clean_enclosure'>clean_enclosure</span><span class='lparen'>(</span><span class='id identifier rubyid_s'>s</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_s'>s</span> <span class='op'>==</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>N/A</span><span class='tstring_end'>&#39;</span></span> <span class='op'>?</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_end'>&#39;</span></span> <span class='op'>:</span> <span class='id identifier rubyid_s'>s</span>
@@ -696,7 +696,7 @@ systems, disks should be identified using an empty string for enclosure</p>
 376</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 365</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 365</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_clear_controller_config'>clear_controller_config</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span> <span class='id identifier rubyid_type'>type</span><span class='rparen'>)</span>
   <span class='ivar'>@logger</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>clearing controller config for </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='ivar'>@logger</span>
@@ -749,7 +749,7 @@ systems, disks should be identified using an empty string for enclosure</p>
 114</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 98</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 98</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_controllers'>controllers</span>
   <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
@@ -870,7 +870,7 @@ systems, disks should be identified using an empty string for enclosure</p>
 340</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 261</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 261</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_create_vd'>create_vd</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span> <span class='id identifier rubyid_volume'>volume</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_cid'>cid</span>         <span class='op'>=</span> <span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span>
@@ -934,7 +934,7 @@ systems, disks should be identified using an empty string for enclosure</p>
 </span>  <span class='id identifier rubyid_vdline'>vdline</span> <span class='op'>=</span> <span class='id identifier rubyid_run_tool'>run_tool</span><span class='lparen'>(</span><span class='int'>0</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_cmd'>cmd</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_detect'>detect</span><span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_l'>l</span><span class='op'>|</span><span class='id identifier rubyid_l'>l</span> <span class='op'>=~</span> <span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>Created VD</span><span class='regexp_end'>/</span></span><span class='rbrace'>}</span>
   <span class='id identifier rubyid_vol_id'>vol_id</span> <span class='op'>=</span> <span class='id identifier rubyid_vdline'>vdline</span><span class='period'>.</span><span class='id identifier rubyid_match'>match</span><span class='lparen'>(</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>Created VD (\d+)</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span><span class='lbracket'>[</span><span class='int'>1</span><span class='rbracket'>]</span>
   <span class='comment'># Now, name the volume and disable PD caching.
-</span>  <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>-Name </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='op'>||</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>ocb_vol_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_vol_id'>vol_id</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>DisDskCache</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_param'>param</span><span class='op'>|</span>
+</span>  <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>-Name </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_name'>name</span><span class='op'>||</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>rebar_vol_</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_vol_id'>vol_id</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>DisDskCache</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_param'>param</span><span class='op'>|</span>
     <span class='id identifier rubyid_cmd'>cmd</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>-LDSetProp</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
            <span class='id identifier rubyid_param'>param</span><span class='comma'>,</span>
            <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>-L</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_vol_id'>vol_id</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
@@ -982,7 +982,7 @@ systems, disks should be identified using an empty string for enclosure</p>
 349</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 342</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 342</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delete_vd'>delete_vd</span><span class='lparen'>(</span><span class='id identifier rubyid_volume'>volume</span><span class='rparen'>)</span>
   <span class='ivar'>@logger</span> <span class='op'>&lt;&lt;</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>Delete VD on </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_volume'>volume</span><span class='period'>.</span><span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'> for </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_volume'>volume</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='embexpr_end'>}</span><span class='tstring_content'>\n</span><span class='tstring_end'>&quot;</span></span> <span class='kw'>if</span> <span class='ivar'>@logger</span>
@@ -1017,7 +1017,7 @@ systems, disks should be identified using an empty string for enclosure</p>
 170</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 168</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 168</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_disks'>disks</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_parse_disks'>parse_disks</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span><span class='id identifier rubyid_run_tool'>run_tool</span><span class='lparen'>(</span><span class='int'>0</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>-PDlist</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>-a</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='rparen'>)</span>
@@ -1080,7 +1080,7 @@ systems, disks should be identified using an empty string for enclosure</p>
 86</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 51</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 51</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_parse_cntl_info'>parse_cntl_info</span><span class='lparen'>(</span><span class='id identifier rubyid_cid'>cid</span><span class='comma'>,</span> <span class='id identifier rubyid_lines'>lines</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_res'>res</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
@@ -1167,7 +1167,7 @@ systems, disks should be identified using an empty string for enclosure</p>
 162</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 136</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 136</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_parse_disk'>parse_disk</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span><span class='id identifier rubyid_lines'>lines</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_disk'>disk</span> <span class='op'>=</span> <span class='const'>Hash</span><span class='period'>.</span><span class='id identifier rubyid_new'>new</span>
@@ -1221,7 +1221,7 @@ systems, disks should be identified using an empty string for enclosure</p>
 166</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 164</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 164</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_parse_disks'>parse_disks</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span><span class='id identifier rubyid_lines'>lines</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_split_lines_on'>split_lines_on</span><span class='lparen'>(</span><span class='id identifier rubyid_lines'>lines</span><span class='comma'>,</span><span class='tstring'><span class='regexp_beg'>/</span><span class='tstring_content'>Enclosure Device ID:</span><span class='regexp_end'>/</span></span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_d'>d</span><span class='op'>|</span><span class='id identifier rubyid_parse_disk'>parse_disk</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span><span class='id identifier rubyid_d'>d</span><span class='rparen'>)</span><span class='rbrace'>}</span>
@@ -1316,7 +1316,7 @@ systems, disks should be identified using an empty string for enclosure</p>
 251</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 184</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 184</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_parse_volume'>parse_volume</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span><span class='id identifier rubyid_lines'>lines</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_volume_lines'>volume_lines</span> <span class='op'>=</span> <span class='lbracket'>[</span><span class='rbracket'>]</span>
@@ -1411,7 +1411,7 @@ systems, disks should be identified using an empty string for enclosure</p>
 255</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 253</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 253</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_parse_volumes'>parse_volumes</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span><span class='id identifier rubyid_lines'>lines</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_split_lines_on'>split_lines_on</span><span class='lparen'>(</span><span class='id identifier rubyid_lines'>lines</span><span class='comma'>,</span><span class='cvar'>@@vol_re</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span><span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_v'>v</span><span class='op'>|</span><span class='id identifier rubyid_parse_volume'>parse_volume</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span><span class='id identifier rubyid_v'>v</span><span class='rparen'>)</span><span class='rbrace'>}</span>
@@ -1441,7 +1441,7 @@ systems, disks should be identified using an empty string for enclosure</p>
 363</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 361</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 361</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_set_boot'>set_boot</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span> <span class='id identifier rubyid_volume'>volume</span><span class='rparen'>)</span>
   <span class='id identifier rubyid__set_boot'>_set_boot</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span><span class='id identifier rubyid_volume'>volume</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='rparen'>)</span>
@@ -1499,7 +1499,7 @@ systems, disks should be identified using an empty string for enclosure</p>
 96</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 88</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 88</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_useable?'>useable?</span>
   <span class='kw'>begin</span>
@@ -1535,7 +1535,7 @@ systems, disks should be identified using an empty string for enclosure</p>
 259</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 257</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/lsi_megacli.rb', line 257</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_volumes'>volumes</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_parse_volumes'>parse_volumes</span><span class='lparen'>(</span><span class='id identifier rubyid_controller'>controller</span><span class='comma'>,</span><span class='id identifier rubyid_run_tool'>run_tool</span><span class='lparen'>(</span><span class='int'>0</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>-ldpdinfo</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>-a</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_controller'>controller</span><span class='period'>.</span><span class='id identifier rubyid_id'>id</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='rparen'>)</span>

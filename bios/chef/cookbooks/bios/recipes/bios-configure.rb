@@ -17,10 +17,10 @@
 include_recipe "bios::bios-common"
 
 def get_bag_item_safe (name, descr)
-  data_bag_item("crowbar-data", name)
+  data_bag_item("rebar-data", name)
 rescue
   Chef::Log.error("couldn't find #{descr} named #{name}")
-  node["crowbar_wall"]["status"]["bios"] << "Could not find #{descr} named #{name}"
+  node["rebar_wall"]["status"]["bios"] << "Could not find #{descr} named #{name}"
   nil
 end
 
@@ -58,7 +58,7 @@ else
   ## try to get the per-role set name.
   ## look for role+platform specific, and if not found, use role only.
   ## if neither found, use just defualts.
-  bios_set_name = node[:crowbar][:hardware][:bios_set]
+  bios_set_name = node[:rebar][:hardware][:bios_set]
   setname = "bios-set-#{product}-#{bios_set_name}"
   bios_over = get_bag_item_safe(setname, " overrides for #{setname} ")
   if bios_over.nil?
@@ -118,12 +118,12 @@ else
   when "unified_pec"
     need_reboot = false
     all_tokens_set = true
-    node[:crowbar_wall] ||= Mash.new
-    node[:crowbar_wall][:bios] ||= Mash.new
-    node[:crowbar_wall][:bios][:pec_symbolic_change_map] ||= Mash.new
-    node[:crowbar_wall][:bios][:pec_raw_change_map] ||= Mash.new
-    symbolic_change_map = node[:crowbar_wall][:bios][:pec_symbolic_change_map].to_hash
-    raw_change_map = node[:crowbar_wall][:bios][:pec_raw_change_map].to_hash
+    node[:rebar_wall] ||= Mash.new
+    node[:rebar_wall][:bios] ||= Mash.new
+    node[:rebar_wall][:bios][:pec_symbolic_change_map] ||= Mash.new
+    node[:rebar_wall][:bios][:pec_raw_change_map] ||= Mash.new
+    symbolic_change_map = node[:rebar_wall][:bios][:pec_symbolic_change_map].to_hash
+    raw_change_map = node[:rebar_wall][:bios][:pec_raw_change_map].to_hash
     # Split out raw tokens from symbolic tokens for the values we want to set.
     raw_tokens = []
     symbolic_tokens = {}
@@ -185,15 +185,15 @@ else
         code "#{pgmname} set #{tok}"
       end
     end
-    node[:crowbar_wall][:bios][:pec_symbolic_change_map] = symbolic_change_map
-    node[:crowbar_wall][:bios][:pec_raw_change_map] = raw_change_map
+    node[:rebar_wall][:bios][:pec_symbolic_change_map] = symbolic_change_map
+    node[:rebar_wall][:bios][:pec_raw_change_map] = raw_change_map
     if need_reboot
       IO.popen("#{pgmname} list_tokens",'r') do |f|
-        unless node[:crowbar_wall][:bios][:initial_raw_tokens]
-          node[:crowbar_wall][:bios][:initial_raw_tokens] = f.readlines
+        unless node[:rebar_wall][:bios][:initial_raw_tokens]
+          node[:rebar_wall][:bios][:initial_raw_tokens] = f.readlines
         else
-          node[:crowbar_wall][:bios][:current_raw_tokens] ||= []
-          node[:crowbar_wall][:bios][:current_raw_tokens] << f.readlines
+          node[:rebar_wall][:bios][:current_raw_tokens] ||= []
+          node[:rebar_wall][:bios][:current_raw_tokens] << f.readlines
         end
       end
       bash "Reboot to apply BIOS settings" do

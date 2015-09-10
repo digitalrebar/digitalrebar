@@ -98,7 +98,7 @@
   
   
     <dt class="r2 last">Defined in:</dt>
-    <dd class="r2 last">crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb</dd>
+    <dd class="r2 last">rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb</dd>
   
 </dl>
 <div class="clear"></div>
@@ -502,7 +502,7 @@ physical disk information.</p>
 208</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 200</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 200</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_initialize'>initialize</span><span class='lparen'>(</span><span class='id identifier rubyid_h'>h</span> <span class='op'>=</span> <span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span>
   <span class='kw'>super</span><span class='lparen'>(</span><span class='id identifier rubyid_h'>h</span><span class='rparen'>)</span>
@@ -566,7 +566,7 @@ physical disk information.</p>
 168</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 166</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 166</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_driver'>driver</span>
   <span class='ivar'>@driver</span>
@@ -637,7 +637,7 @@ to the appropriate driver.</p>
 337</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 335</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 335</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_clear_config'>clear_config</span><span class='lparen'>(</span><span class='id identifier rubyid_config_type'>config_type</span> <span class='op'>=</span> <span class='symbol'>:all</span><span class='rparen'>)</span>
   <span class='ivar'>@driver</span><span class='period'>.</span><span class='id identifier rubyid_clear_controller_config'>clear_controller_config</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span><span class='id identifier rubyid_config_type'>config_type</span><span class='rparen'>)</span>
@@ -717,7 +717,7 @@ appropriate driver.</p>
 330</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 328</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 328</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_create_vd'>create_vd</span><span class='lparen'>(</span><span class='id identifier rubyid_volume'>volume</span><span class='rparen'>)</span>
   <span class='ivar'>@driver</span><span class='period'>.</span><span class='id identifier rubyid_create_vd'>create_vd</span><span class='lparen'>(</span><span class='kw'>self</span><span class='comma'>,</span><span class='id identifier rubyid_volume'>volume</span><span class='rparen'>)</span>
@@ -779,7 +779,7 @@ appropriate controller.</p>
 344</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 342</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 342</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_delete_vd'>delete_vd</span><span class='lparen'>(</span><span class='id identifier rubyid_volume'>volume</span><span class='rparen'>)</span>
   <span class='ivar'>@driver</span><span class='period'>.</span><span class='id identifier rubyid_delete_vd'>delete_vd</span><span class='lparen'>(</span><span class='id identifier rubyid_volume'>volume</span><span class='rparen'>)</span>
@@ -951,7 +951,7 @@ that all chosen disks are of the same time and approximately the same size.</p>
 323</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 234</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 234</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_find_candidates'>find_candidates</span><span class='lparen'>(</span><span class='id identifier rubyid_volume'>volume</span><span class='rparen'>)</span>
   <span class='id identifier rubyid_raid_level'>raid_level</span>  <span class='op'>=</span> <span class='id identifier rubyid_volume'>volume</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>raid_level</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span>
@@ -1080,7 +1080,7 @@ irrelavent detail.</p>
 196</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 194</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 194</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_inspect'>inspect</span>
   <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>&lt;</span><span class='embexpr_beg'>#{</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_class'>class</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>: </span><span class='embexpr_beg'>#{</span><span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>&gt;</span><span class='tstring_end'>&quot;</span></span>
@@ -1122,7 +1122,7 @@ controllers.</p>
 190</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 188</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 188</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_name'>name</span>
   <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='embexpr_beg'>#{</span><span class='ivar'>@driver</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_content'>:</span><span class='embexpr_beg'>#{</span><span class='kw'>self</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>id</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span>
@@ -1163,7 +1163,7 @@ controllers.</p>
 221</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 219</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 219</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_unused_disks'>unused_disks</span>
   <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_disks'>disks</span> <span class='op'>-</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_used_disks'>used_disks</span>
@@ -1207,7 +1207,7 @@ you which volumes the disks are members of.</p>
 216</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 212</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/driver.rb', line 212</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_used_disks'>used_disks</span>
   <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_volumes'>volumes</span><span class='period'>.</span><span class='id identifier rubyid_reduce'>reduce</span><span class='lparen'>(</span><span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_memo'>memo</span><span class='comma'>,</span><span class='id identifier rubyid_obj'>obj</span><span class='op'>|</span>

@@ -15,7 +15,7 @@
 
 include_recipe "bios::bios-common"
 
-provisioner_server = node[:crowbar][:provisioner][:server][:webservers].first[:url]
+provisioner_server = node[:rebar][:provisioner][:server][:webservers].first[:url]
 
 include_recipe "bios::bios-tools"
 

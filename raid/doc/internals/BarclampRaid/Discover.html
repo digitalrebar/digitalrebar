@@ -96,7 +96,7 @@
   
   
     <dt class="r2 last">Defined in:</dt>
-    <dd class="r2 last">crowbar_engine/barclamp_raid/app/models/barclamp_raid/discover.rb</dd>
+    <dd class="r2 last">rebar_engine/barclamp_raid/app/models/barclamp_raid/discover.rb</dd>
   
 </dl>
 <div class="clear"></div>
@@ -228,20 +228,20 @@ under the License.</p>
 39</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/discover.rb', line 22</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/discover.rb', line 22</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_active'>on_active</span><span class='lparen'>(</span><span class='id identifier rubyid_nr'>nr</span><span class='rparen'>)</span>
   <span class='comment'># Do nothing unless we discovered RAID controllers we can manage on this node.
-</span>  <span class='id identifier rubyid_controllers'>controllers</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_wall'>wall</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>crowbar_wall</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>raid</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>controllers</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='kw'>rescue</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+</span>  <span class='id identifier rubyid_controllers'>controllers</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_wall'>wall</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>rebar_wall</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>raid</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>controllers</span><span class='tstring_end'>&quot;</span></span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='kw'>rescue</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span>
   <span class='kw'>if</span> <span class='id identifier rubyid_controllers'>controllers</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
     <span class='const'>Rails</span><span class='period'>.</span><span class='id identifier rubyid_logger'>logger</span><span class='period'>.</span><span class='id identifier rubyid_info'>info</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>No RAID controllers on </span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_node'>node</span><span class='period'>.</span><span class='id identifier rubyid_name'>name</span><span class='embexpr_end'>}</span><span class='tstring_end'>&quot;</span></span><span class='rparen'>)</span>
     <span class='kw'>return</span>
   <span class='kw'>end</span>
 
   <span class='comment'># Since we have detected controllers we can manage, go ahead and bind the
-</span>  <span class='comment'># raid-configure and crowbar-hardware-configured roles to this node.
+</span>  <span class='comment'># raid-configure and rebar-hardware-configured roles to this node.
 </span>  <span class='id identifier rubyid_rcr_role'>rcr_role</span> <span class='op'>=</span> <span class='const'>Role</span><span class='period'>.</span><span class='id identifier rubyid_find_by!'>find_by!</span><span class='lparen'>(</span><span class='label'>name:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>raid-configure</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_chc_role'>chc_role</span> <span class='op'>=</span> <span class='const'>Role</span><span class='period'>.</span><span class='id identifier rubyid_find_by!'>find_by!</span><span class='lparen'>(</span><span class='label'>name:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>crowbar-hardware-configured</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_chc_role'>chc_role</span> <span class='op'>=</span> <span class='const'>Role</span><span class='period'>.</span><span class='id identifier rubyid_find_by!'>find_by!</span><span class='lparen'>(</span><span class='label'>name:</span> <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>rebar-hardware-configured</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
   <span class='const'>NodeRole</span><span class='period'>.</span><span class='id identifier rubyid_transaction'>transaction</span> <span class='kw'>do</span>
     <span class='id identifier rubyid_rcr_noderole'>rcr_noderole</span> <span class='op'>=</span> <span class='id identifier rubyid_rcr_role'>rcr_role</span><span class='period'>.</span><span class='id identifier rubyid_add_to_node'>add_to_node</span><span class='lparen'>(</span><span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span>
     <span class='id identifier rubyid_chc_noderole'>chc_noderole</span> <span class='op'>=</span> <span class='id identifier rubyid_chc_role'>chc_role</span><span class='period'>.</span><span class='id identifier rubyid_add_to_node'>add_to_node</span><span class='lparen'>(</span><span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_node'>node</span><span class='rparen'>)</span>
@@ -273,10 +273,10 @@ under the License.</p>
 20</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'crowbar_engine/barclamp_raid/app/models/barclamp_raid/discover.rb', line 18</span>
+      <pre class="code"><span class="info file"># File 'rebar_engine/barclamp_raid/app/models/barclamp_raid/discover.rb', line 18</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_on_proposed'>on_proposed</span><span class='lparen'>(</span><span class='id identifier rubyid_nr'>nr</span><span class='rparen'>)</span>
-  <span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_add_child'>add_child</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>crowbar-managed-node</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_nr'>nr</span><span class='period'>.</span><span class='id identifier rubyid_add_child'>add_child</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>rebar-managed-node</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
 <span class='kw'>end</span></pre>
     </td>
   </tr>

@@ -13,8 +13,8 @@
 # limitations under the License.
 #
 name             "raid"
-maintainer       "Opencrowbar Devs"
-maintainer_email "opencrowbar@googlegroups.com"
+maintainer       "Openrebar Devs"
+maintainer_email "digitalrebar@googlegroups.com"
 license          "Apache 2.0"
 description      "Installs RAID management tools."
 long_description "Installs RAID Management Tools"

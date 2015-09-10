@@ -21,10 +21,10 @@ unless node[:ipmi][:bmc_enable]
   return
 end
 
-node.set["crowbar_wall"] ||= Mash.new
-node.set["crowbar_wall"]["status"] ||= Mash.new
-node.set["crowbar_wall"]["status"]["ipmi"] ||= Mash.new
-node.set["crowbar_wall"]["status"]["ipmi"]["messages"] ||= []
+node.set["rebar_wall"] ||= Mash.new
+node.set["rebar_wall"]["status"] ||= Mash.new
+node.set["rebar_wall"]["status"]["ipmi"] ||= Mash.new
+node.set["rebar_wall"]["status"]["ipmi"]["messages"] ||= []
 
 ipmiinfo = IPMI.mc_info(node)
 lan_current_cfg = IPMI.laninfo(node)
@@ -45,8 +45,8 @@ ruby_block "Signal success in setting user creds" do
   block do
     salt = rand(65536)
     hash = Digest::SHA1.new.base64digest("#{salt}:#{bmc_user}:#{bmc_password}")
-    node.set["crowbar_wall"]["status"]["ipmi"]["user_salt"] = salt
-    node.set["crowbar_wall"]["status"]["ipmi"]["user_hash"] = hash
+    node.set["rebar_wall"]["status"]["ipmi"]["user_salt"] = salt
+    node.set["rebar_wall"]["status"]["ipmi"]["user_hash"] = hash
   end
   action :nothing
 end
@@ -68,9 +68,9 @@ ruby_block "Set IPMI credentials and enable LAN channel access" do
   end
   notifies :create, "ruby_block[Signal success in setting user creds]"
   not_if {
-    salt = (node["crowbar_wall"]["status"]["ipmi"]["user_salt"] || 0 rescue 0)
+    salt = (node["rebar_wall"]["status"]["ipmi"]["user_salt"] || 0 rescue 0)
     hash = Digest::SHA1.new.base64digest("#{salt}:#{bmc_user}:#{bmc_password}")
-    hash == (node["crowbar_wall"]["status"]["ipmi"]["user_hash"] || "" rescue "")
+    hash == (node["rebar_wall"]["status"]["ipmi"]["user_hash"] || "" rescue "")
   }
 end
 
@@ -106,7 +106,7 @@ else
     break
   end
   unless address
-    node.set["crowbar_wall"]["status"]["ipmi"]["messages"] <<= "Bad IP address specifications (#{address.inspect})"
+    node.set["rebar_wall"]["status"]["ipmi"]["messages"] <<= "Bad IP address specifications (#{address.inspect})"
     Chef::Log.error("Invalid IPv4 address #{address.inspect}")
     return
   end

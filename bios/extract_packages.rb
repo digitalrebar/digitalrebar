@@ -306,10 +306,10 @@ end
 
 ###### Script part here #####
 
-crowbar_yml_file=ARGV[0]
+rebar_yml_file=ARGV[0]
 files_dir=ARGV[1]
 
-crowbar_yml = YAML.load_file(crowbar_yml_file)
+rebar_yml = YAML.load_file(rebar_yml_file)
 callback = BundleCatalogCallbacks.new
 parser = XML::SaxParser.file("#{files_dir}/Catalog.xml")
 parser.callbacks = callback
@@ -317,7 +317,7 @@ parser.parse
 
 # Build list of bundles that match the yml list.
 bundles = {}
-crowbar_yml["supported_platforms"].each do |p|
+rebar_yml["supported_platforms"].each do |p|
   parts = p.split(" ")
   callback.bundles.each do |b|
     next unless b.is_win_bundle # Only get bundles that work with WSMAN

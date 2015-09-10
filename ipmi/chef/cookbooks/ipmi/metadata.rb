@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 name             "ipmi"
-maintainer       "Opencrowbar Team"
-maintainer_email "opencrowbar@googlegroups.com"
+maintainer       "Openrebar Team"
+maintainer_email "digitalrebar@googlegroups.com"
 license          "Apache 2.0"
 description      "Configures IPMI/BMC parameters for management access"
 long_description  "Configures IPMI/BMC parameters for management access"
