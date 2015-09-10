@@ -17,10 +17,10 @@ type Config struct {
 var config_path, key_pem, cert_pem, data_dir string
 
 func init() {
-	flag.StringVar(&config_path, "config_path", "/etc/ocb-dhcp.conf", "Path to config file")
+	flag.StringVar(&config_path, "config_path", "/etc/rebar-dhcp.conf", "Path to config file")
 	flag.StringVar(&key_pem, "key_pem", "/etc/dhcp-https-key.pem", "Path to key file")
 	flag.StringVar(&cert_pem, "cert_pem", "/etc/dhcp-https-cert.pem", "Path to cert file")
-	flag.StringVar(&data_dir, "data_dir", "/var/cache/ocb-dhcp", "Path to store data")
+	flag.StringVar(&data_dir, "data_dir", "/var/cache/rebar-dhcp", "Path to store data")
 }
 
 func main() {
