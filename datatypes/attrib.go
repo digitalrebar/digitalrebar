@@ -24,7 +24,7 @@ import "github.com/guregu/null"
 // proposed bucket is copied over to the committed bucket.
 //
 // The third bucket is the system bucket.  This bucket contains
-// information that the Crowbar framework maintains internally for the
+// information that the Rebar framework maintains internally for the
 // logic that the Roles implement to use.
 //
 // The fourth bucket is the wall.  It contains the values of attribs
@@ -34,7 +34,7 @@ import "github.com/guregu/null"
 // The fifth bucket is the notes.  Notes do not participate in the
 // annealing process, and are inteded to be used by users for
 // attaching arbitrary data that they need to remember but that
-// Crowbar does not need to care about.
+// Rebar does not need to care about.
 //
 // Additionally, each Attrib has a default value, which is used if
 // there is no Attrib value from any of the other buckets.
@@ -52,7 +52,7 @@ type Attrib struct {
 	// If RoleID is 0, then the attrib does not belong to a role.
 	RoleID null.Int `json:"role_id"`
 	// The custom type of the Attrib, if any.  This is used by
-	// Crowbar internally to allow for Attribs to have nonstandard
+	// Rebar internally to allow for Attribs to have nonstandard
 	// get and set semantics.
 	Type null.String `json:"type"`
 	// Whether the Attrib can be written to.  An attrib must have

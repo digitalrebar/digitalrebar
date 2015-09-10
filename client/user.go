@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/VictorLowther/crowbar-api/datatypes"
+	"github.com/digitalrebar/rebar-api/datatypes"
 	"golang.org/x/crypto/nacl/box"
 )
 

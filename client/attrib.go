@@ -5,7 +5,7 @@ import (
 	"log"
 	"path"
 
-	"github.com/VictorLowther/crowbar-api/datatypes"
+	"github.com/digitalrebar/rebar-api/datatypes"
 )
 
 // Attrib wraps datatypes.Attrib with the needed functionality for the
@@ -100,7 +100,7 @@ func Propose(o Attriber) error {
 }
 
 // Commit makes the values set on the Attriber via SetAttrib visible
-// to the rest of the Crowbar infrastructure.
+// to the rest of the Rebar infrastructure.
 func Commit(o Attriber) error {
 	outbuf, err := session.request("PUT", urlFor(o, "commit"), nil)
 	if err != nil {

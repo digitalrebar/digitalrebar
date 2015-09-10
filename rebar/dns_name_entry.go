@@ -1,6 +1,6 @@
 package main
 
-import "github.com/VictorLowther/crowbar-api/client"
+import "github.com/digitalrebar/rebar-api/client"
 
 func init() {
 	maker := func() client.Crudder { return &client.DnsNameEntry{} }

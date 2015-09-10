@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/VictorLowther/crowbar-api/client"
+	"github.com/digitalrebar/rebar-api/client"
 	"github.com/spf13/cobra"
 )
 

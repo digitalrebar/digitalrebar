@@ -1,6 +1,6 @@
 package client
 
-import "github.com/VictorLowther/crowbar-api/datatypes"
+import "github.com/digitalrebar/rebar-api/datatypes"
 
 // Barclamp wraps datatypes.Barclamp to provide client API
 // functionality

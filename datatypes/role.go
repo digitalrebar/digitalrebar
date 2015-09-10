@@ -23,10 +23,10 @@ type Role struct {
 	// Roles that exist only tp provide non node specific
 	// configuration information are Abstract.
 	Abstract bool `json:"abstract"`
-	// Whether this role is needed to bootstrap a working Crowbar cluster.
+	// Whether this role is needed to bootstrap a working Rebar cluster.
 	Bootstrap bool `json:"bootstrap"`
 	// Whether this role should implement default clustering
-	// behaviour.  In Crowbar terms, this flag changes how a
+	// behaviour.  In Rebar terms, this flag changes how a
 	// NodeRole binding for this Role gets bound into the noderole
 	// graph to ensure that all nodes with this Role in the same
 	// deployment become Active before allowing any downstream
@@ -46,13 +46,13 @@ type Role struct {
 	// Milestone indicates that this Role is important enough to
 	// be shown in the UI by default.
 	Milestone bool `json:"milestone"`
-	// Powersave indicates that Crowbar may power the node off
+	// Powersave indicates that Rebar may power the node off
 	// after a NodeRole binding with this node has transitioned to
 	// Active and there are no children of the NodeRole in the
 	// node role graph.
 	Powersave bool `json:"powersave"`
 	// Service indicates that this Role is a proxy for an external
-	// service that Crowbar should rely on.
+	// service that Rebar should rely on.
 	Service bool `json:"service"`
 	// Cohort is the maximum number of hops there is between this
 	// role and a root in the role graph.  It is used for ordering
