@@ -12,6 +12,7 @@
       - ruby-devel
       - make
       - curl
+      - wget
       - gcc
       - psmisc
   - name: gem install kvm slaves
