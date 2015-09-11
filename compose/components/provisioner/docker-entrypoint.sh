@@ -18,7 +18,7 @@ while [[ $answer != *:8300* ]]; do
 done
 
 # GREG: INIT VARS HERE - allow override
-PROV_SLEDGEHAMMER_SIG="bc72393476e91ff9b6cc2e0ca5f039a8354d6633"
+PROV_SLEDGEHAMMER_SIG="1ba2f9b0dc02983bb1db50ba58f10a57267020c7"
 PROV_SLEDGEHAMMER_URL="http://opencrowbar.s3-website-us-east-1.amazonaws.com/sledgehammer"
 PROV_TFTPROOT="/tftpboot"
 PROV_WEBPORT="8091"
