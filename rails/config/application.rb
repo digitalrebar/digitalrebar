@@ -43,7 +43,7 @@ module Rebar
     config.log_level = :debug
     config.paths['log'] = "/var/log/rebar/#{Rails.env}.log"
 
-    config.crowbar = ActiveSupport::OrderedOptions.new 
+    config.rebar = ActiveSupport::OrderedOptions.new 
     config.rebar.version = '2.E'
     config.rebar.docs = "https://github.com/digitalrebar/doc/blob/master/README.rst"
     config.rebar.bootstrap_key = 'digitalrebar/private/bootstrap'
