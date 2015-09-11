@@ -109,6 +109,7 @@ screen -d -m -S sledgehammer-bootstrap -t 'Sledgehammer Bootstrap' \
 EOF_initscript
 
 /sbin/chkconfig --level 35 iptables off
+/sbin/chkconfig --level 35 ip6tables off
 /sbin/chkconfig --add openstack-start-up
 
 EOF_post
