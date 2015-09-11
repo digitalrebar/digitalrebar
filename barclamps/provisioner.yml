@@ -58,7 +58,7 @@ roles:
       - name: provisioner-default-password-hash
         description: "The default password hash for the default user"
         map: 'rebar/provisioner/server/default_password_hash'
-        default: '$1$BDC3UwFr$/VqOWN1Wi6oM0jiMOjaPb.'
+        default: '$1$GAT8F5cU$5KfBh7eq6S9hM6DWulb9L0'
         schema:
           type: str
       - name: provisioner-server-http-port
