@@ -2,9 +2,15 @@
 
 The following documentation will setup a complete running Digital Rebar system for test purposes.
 
+*PRO TIP:* Playbooks can be _localhost_ applied to run local setups!
+
 Available playbooks:
-  * [ubuntu1404.yml](https://github.com/rackn/digitalrebar-deploy/blob/master/ubuntu1404.yml)
-  * [compose.yml](https://github.com/rackn/digitalrebar-deploy/blob/master/compose.yml)
+  * [compose.yml](compose.yml) generic install based on Docker Compose
+  * [vagrant.yml](vagrant.yml) Vagrant specific steps
+  * Supporting playbooks
+    * [docker.yml](tasks/docker.yml) Installs Docker & Compose
+    * [ubuntu1404-base.yml](tasks/ubuntu1404-base.yml) Ubuntu Pre-reqs
+    * [centos07-base.yml](tasks/centos07-base.yml) Centos Pre-reqs
 
 ## Prereqs
 
@@ -27,7 +33,7 @@ On your local workstation:
 
 ## Install Process
 
-> There is no need to connect to the remote system via SSH.  All steps are performed from your workstation by Ansibile.
+> There is no need to connect to the remote system via SSH.  All steps are performed from your workstation by Ansible.
 
 From your workstation:
 
@@ -40,14 +46,10 @@ Note: It will take additional time after the playbook completes before Digital R
 
 ### What's installed?
 
-  * `vagrant` user
-    * same authorized keys as root user
-    * passwordless SUDO
   * all pre-requists including latest Docker with correct permissions
   * latest Digital Rebar code from develop branch
-  * latest Kubernetes workload from RackN
   * Node target operating systems:
-    * Ubuntu 14.04 ISO
+    * Ubuntu 14.04 and Centos 7 ISO
   * Default IP maps for Digital Rebar: 
     * internal address of 192.168.124.10
     * port mapping of UI (:3000), Consul (:8500) and Chef (:443)
@@ -67,16 +69,3 @@ From the `~/core` directory
   * Stop: `for j in 1 2 3; do kill %$j ; done`
 
 See [kvm slaves](https://github.com/digitalrebar/doc/blob/master/development/advanced-install/kvm-slaves.rst) doc
-
-### Attaching to networks (to boot metal)
-
-> Select the interface you want to use for DHCP/Discovery.
-
-`sudo brtcl addif docker0 [external interface]`
-
-### Update the Digital Rebar code:
-
-  * Find the Admin container: `docker ps`
-  * Kill the Admin container: `docker kill [container id]`
-  * Update the code in core: `cd core` then `git pull`
-  * Restart the container: `home/vagrant/core/tools/docker-admin --daemon centos ./production.sh admin.rebar.digital`
