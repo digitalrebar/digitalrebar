@@ -1,0 +1,49 @@
+--- 
+- name: Install Digital Rebar by RackN 2015
+  # based on https://github.com/digitalrebar/doc
+  hosts: all
+  sudo: yes
+  tasks:
+    - include: tasks/centos07-base.yml
+      when: ansible_os_family == "RedHat"
+    - include: tasks/ubuntu1404-base.yml
+      when: ansible_os_family == "Debian"
+    - include: tasks/docker.yml
+
+    - name: network mapping (set default admin IP)
+      command: sudo ip addr add 192.168.124.10/24 dev docker0
+      ignore_errors: yes
+    - name: network bridge (expose admin to host network)
+      command: sudo brctl addif docker0 eth1
+      ignore_errors: yes
+
+    - name: Make cache dirs
+      command: mkdir -p .cache/digitalrebar/tftpboot/isos
+      ignore_errors: yes
+    - name: download Ubuntu ISO [BACKGROUND] (see list https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
+      command: su -c "nohup wget http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.3-server-amd64.iso -nc -O ubuntu-14.04.2-server-amd64.iso &"
+      args:
+        creates: ubuntu-14.04.2-server-amd64.iso
+        chdir: .cache/digitalrebar/tftpboot/isos
+    - name: download Centos ISO [BACKGROUND] (see list https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
+      command: su -c "nohup wget http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso -nc &"
+      args:
+        creates: CentOS-7-x86_64-Minimal-1503-01.iso
+        chdir: .cache/digitalrebar/tftpboot/isos
+
+    - name: get code
+      synchronize: src=./compose dest=~ rsync_path="rsync"
+    - name: setup compose
+      command: ./setup.sh
+      args:
+        chdir: /home/vagrant/compose
+        creates: compose/components/rebar_api/digitalrebar/core
+      ignore_errors: yes
+    - name: Pull Digital Rebar Images [SLOW]
+      command: /usr/local/bin/docker-compose pull
+      args:
+        chdir: /home/vagrant/compose
+    - name: Compose up Digital Rebar Infrastructre
+      command: /usr/local/bin/docker-compose up -d
+      args:
+        chdir: /home/vagrant/compose
