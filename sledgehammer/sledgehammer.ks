@@ -2,8 +2,8 @@ lang en_US.UTF-8
 keyboard us
 timezone US/Eastern
 auth --useshadow --enablemd5
-# rebar
-rootpw --iscrypted $1$H6F/NLec$Fps2Ut0zY4MjJtsa1O2yk0
+# rebar1
+rootpw --iscrypted $1$UwJdGUMy$ORqjDQIW//wt7sWY.xG9M0
 selinux --disabled
 firewall --disabled
 
@@ -108,6 +108,7 @@ screen -d -m -S sledgehammer-bootstrap -t 'Sledgehammer Bootstrap' \
 
 EOF_initscript
 
+/sbin/chkconfig --level 35 iptables off
 /sbin/chkconfig --add openstack-start-up
 
 EOF_post
