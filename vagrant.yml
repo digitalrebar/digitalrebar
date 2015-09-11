@@ -40,10 +40,10 @@
         creates: compose/components/rebar_api/digitalrebar/core
       ignore_errors: yes
     - name: Pull Digital Rebar Images [SLOW]
-      command: /usr/local/bin/docker-compose pull
+      command: docker-compose pull
       args:
         chdir: /home/vagrant/compose
     - name: Compose up Digital Rebar Infrastructre
-      command: /usr/local/bin/docker-compose up -d
+      command: docker-compose up -d
       args:
         chdir: /home/vagrant/compose
