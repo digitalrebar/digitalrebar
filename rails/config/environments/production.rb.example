@@ -1,4 +1,4 @@
-# Copyright 2013, Dell
+# Copyright 2015, RackN Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ Rebar::Application.configure do
 
   # See everything in the log (default is :info)
   config.log_level = :debug
-  config.paths['log'] = "/var/log/rebar/#{Rails.env}.log"
 
   # Use a different logger for distributed setups
 
@@ -43,6 +42,5 @@ Rebar::Application.configure do
 
   # Disable delivery errors, bad email addresses will be ignored
   # config.action_mailer.raise_delivery_errors = false
-  config.rebar.version = '2.E'
-  config.rebar.docs = "https://github.com/digitalrebar/core/tree/develop/doc"
+  config.rebar.version = '2.custom'
 end

@@ -43,6 +43,7 @@ erl_crash.dump
 /rails/log/
 /rails/delayed_job.log
 /rails/coverage
+/rails/config/environments/production.rb
 /rails/db/schema.rb
 /rails/db/structure.sql
 /rails/db/migrate/*_create_delayed_jobs.rb
