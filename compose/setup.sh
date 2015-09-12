@@ -17,6 +17,7 @@ while [[ $1 ]]; do
     rackn)
       for wl in kubernetes hardware ceph; do
         ./workload.sh rackn ${wl}
+      done
       shift;;
     *)
       echo "$1 is not known, use `./workload [organization] [repo]` to install"
