@@ -84,13 +84,11 @@ elasticsearch:
   extends:
     file: docker-compose-common.yml
     service: elasticsearch
-  build: components/elasticsearch
 
 logstash:
   extends:
     file: docker-compose-common.yml
     service: logstash
-  build: components/logstash
   links:
     - elasticsearch:elasticsearch
 
@@ -98,7 +96,6 @@ kibana:
   extends:
     file: docker-compose-common.yml
     service: kibana
-  build: components/kibana
   links:
     - elasticsearch:elasticsearch
 
@@ -107,7 +104,6 @@ logspout:
   extends:
     file: docker-compose-common.yml
     service: logspout
-  build: components/logspout
 
 cadvisor:
   extends:

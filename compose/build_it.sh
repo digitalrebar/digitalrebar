@@ -9,10 +9,6 @@ declare -a containers=('consul'
             'dns'
             'dhcp'
             'provisioner'
-            'elasticsearch'
-            'logstash'
-            'kibana'
-            'logspout'
             'node')
 #            'cobbler'
 

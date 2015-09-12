@@ -18,8 +18,9 @@ install-*.log
 
 /compose/config-dir/api/config/final.json
 /compose/config-dir/api/config/processed.json
-/compose/data-dir/node/crowbar-key.sh
 /compose/config-dir/api/config/ssh_keys/*
+/compose/data-dir/node/rebar-key.sh
+/compose/data-dir/elasticsearch/elasticsearch
 
 .idea
 Berksfile.lock
