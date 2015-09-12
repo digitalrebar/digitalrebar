@@ -23,6 +23,9 @@ You need a target system:
 
 On your local workstation:
 
+  * Clone the Digital Rebar Deploy repo (this one)
+    * Use `compose/setup.sh` to do this automatically
+    * checkout out additional workloads (`compose/setup.sh rackn` will get all)
   * Ansible installed
     *  Ubuntu (`sudo apt-get install ansible`)
     *  Centos (`yum install ansible`)
