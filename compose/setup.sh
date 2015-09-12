@@ -1,6 +1,10 @@
 #!/bin/bash
 # Copyright 2015, RackN Inc
 
+if [[ ! -e workload.sh ]]; then
+  cd compose
+fi
+
 ./workload.sh digitalrebar core
 
 while [[ $1 ]]; do
