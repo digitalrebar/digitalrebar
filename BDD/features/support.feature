@@ -37,36 +37,16 @@ Feature: Support UI
       And there are no localization errors
     
   Scenario: Settings Change False
-    Given I set {object:user} setting "doc_sources" to "false"
+    Given I set {object:user} setting "edge" to "false"
     When I go to the "utils/settings" page
-    Then I should see an unchecked check box "doc_sources"
+    Then I should see an unchecked check box "edge"
 
   Scenario: Settings Change True
-    Given I set {object:user} setting "doc_sources" to "true"
+    Given I set {object:user} setting "edge" to "true"
     When I go to the "utils/settings" page
-    Then I should see a checked check box "doc_sources"
+    Then I should see a checked check box "edge"
 
   Scenario: Settings Change not True
-    Given I set {object:user} setting "doc_sources" to "foo"
+    Given I set {object:user} setting "edge" to "foo"
     When I go to the "utils/settings" page
-    Then I should see an unchecked check box "doc_sources"
-
-  Scenario: Settings Change omitted
-    Skip until Rob can help figure out what busted here.
-    Given I set {object:user} setting "anything_else" to "true"
-    When I go to the "utils/settings" page
-    Then I should see an unchecked check box "doc_sources"
-
-  Scenario: Settings Change Visible Off
-    Skip until Rob can help figure out what busted here.
-    Given I set {object:user} setting "debug" to "false"
-    When I go to the "docs/development-guides/README.md" page
-    Then I should not see heading {bdd:rebar.i18n.debug}
-      And I should see heading "Development Guide"
-
-  Scenario: Settings Change Visible On
-    Skip until Rob can help figure out what busted here.
-    Given I set {object:user} setting "debug" to "true"
-    When I go to the "docs/development-guides/README.md" page
-    Then I should see heading {bdd:rebar.i18n.debug}
-      And I should see heading "Development Guide"
+    Then I should see an unchecked check box "edge"
