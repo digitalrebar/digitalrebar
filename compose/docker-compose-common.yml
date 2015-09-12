@@ -120,33 +120,38 @@ provisioner:
     - "8091:8091"
 
 elasticsearch:
-  image: galthaus/dr_elasticsearch
+  image: elasticsearch
+  volumes:
+    - ./config-dir/elasticsearch:/usr/share/elasticsearch/config
+    - ./data-dir/elasticsearch:/usr/share/elasticsearch/data
   ports:
     - "9200:9200"
     - "9300:9300"
 
 logstash:
-  image: galthaus/dr_logstash
+  image: logstash
   ports:
     - "5000:5000"
     - "5000:5000/udp"
+  volumes:
+    - ./config-dir/logstash/logstash.conf:/etc/logstash.conf
   environment:
     # otherwise logstash will keep sending its own logs to itself over and
     # over... not fun
-    LOGSPOUT: ignore 
-  command: -f /etc/logstash.sample.conf
+    LOGSPOUT: ignore
+  command: -f /etc/logstash.conf
 
 kibana:
-  image: galthaus/dr_kibana
+  image: kibana
+  volumes:
+    - ./config-dir/kibana/kibana.yml:/tmp/kibana-4.1.1-linux-x64/config/kibana.yml
   ports:
     - "5601:5601"
 
 logspout:
-  image: galthaus/dr_logspout
-  environment:
-    DEBUG: true
+  image: gliderlabs/logspout
   volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
+    - /var/run/docker.sock:/tmp/docker.sock
   command: syslog://localhost:5000
 
 cadvisor:
