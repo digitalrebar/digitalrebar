@@ -81,7 +81,7 @@ en:
   error:
     title: "We're sorry, but something is fuzzy about that request."
     logfile: "Please check the URL you're trying to reach and check the applications logs."
-    filebug: "We encourage you to visit the Rebar site for more information or to submit a bug report."
+    filebug: "We encourage you to visit the Digital Rebar site for more information or to submit a bug report."
     details: "Error Details for '%{message}'"
     backtrace: "Error Backtrace"
 
