@@ -30,4 +30,4 @@ en:
       error_hints:
         raid-tools-install: "You may need to download missing RAID utilties to correct this error"
       error_links:
-        raid-tools-install: "https://github.com/digitalrebar/hardware/blob/master/doc/README.md"
+        raid-tools-install: "https://github.com/rackn/hardware/blob/master/doc/README.md"
