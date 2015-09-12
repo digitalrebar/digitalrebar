@@ -7,4 +7,4 @@ The DigitalRebar Framework (https://github.com/digitalrebar/core)
 
 * This functonality of this barclamp DOES NOT stand alone, the DigitalRebar Framework is required * 
 
-Please review material in the [[/doc/README.md]] file for more details about using this code
+Please review material in the (doc)[/doc/README.md] file for more details about using this code
