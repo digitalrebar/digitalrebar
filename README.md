@@ -2,7 +2,7 @@
 
 The *Digital Rebar Project* is a container-ready hardware provisioning platform that delivers the best of software deployment automation and orchestration without locking you into a single hardware platform or operating system.  Our mission is to embrace the heterogenous nature of data center operations.
 
-While it's been completly rebuilt by DevOps artisans, Digital Rebar history includes years of battle-tested ops learnings by the [Rebar Project](http://github.com/rebar) founders.
+While it's been completely rebuilt by DevOps artisans, Digital Rebar history includes years of battle-tested ops learnings by the [Crowbar Project](http://github.com/crowbar) founders.
 
 ## Getting Started & Documentation
 
@@ -10,11 +10,12 @@ Documentation is maintained in the [**doc** repository](https://github.com/digit
 
 ## Help & Community
 
-* [Live Weekly Planning and Design Meetings](http://bit.ly/digitalrebarcalendar)
-* [Mailing List](http://bit.ly/digitalrebarlist)
-* Chat
+* Help & Chat
   * Gitter: [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/digitalrebar/core?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
   * IRC: #digitalrebar channel on [Freenode](https://webchat.freenode.net/) (try Gitter first)
+* [Live Weekly Planning and Design Meetings](http://bit.ly/digitalrebarcalendar)
+* [Mailing List](http://bit.ly/digitalrebarlist)
+* [Defects and Roadmap](https://waffle.io/digitalrebar/core) on Github managed via Waffle
 
 Commercial support for Digital Rebar is available from [RackN Inc](http://rackn.com).
 
