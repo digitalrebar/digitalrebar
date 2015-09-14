@@ -1,7 +1,9 @@
 
+# -recursor=dns
+
 consul:
-  image: galthaus/dr_consul
-  command: --server --bootstrap
+  image: progrium/consul
+  command: -config-dir=/etc/consul.d -data-dir=/tmp/consul -server -bootstrap -ui-dir /ui 
   volumes:
     - ./config-dir/consul/server-default.json:/etc/consul.d/default.json
   env_file:
@@ -17,11 +19,20 @@ consul:
     - "8600:8600"
     - "8600/udp:8600/udp"
 
+#registrator:
+#  image: gliderlabs/registrator
+#  command: consul://consul:8500
+#  volumes:
+#    - /var/run/docker.sock:/tmp/docker.sock
+
 postgres:
   image: galthaus/dr_postgres
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/postgres/initdb.d:/docker-entrypoint-initdb.d
+#  environment:
+#    SERVICE_NAME: rebar-database
+#    SERVICE_TAGS: postgres
   env_file:
     - ./common.env
   ports:

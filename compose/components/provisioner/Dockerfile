@@ -1,5 +1,14 @@
-#FROM ubuntu:14.04
-FROM compose_consul
+FROM ubuntu:14.04
+
+RUN apt-get update && apt-get install -y curl unzip \
+  && mkdir -p /tmp/consul /ui \
+  && curl -fL -o consul.zip https://dl.bintray.com/mitchellh/consul/0.5.2_linux_amd64.zip \
+  && curl -fL -o consul_ui.zip https://dl.bintray.com/mitchellh/consul/0.5.2_web_ui.zip \
+  && unzip consul.zip -d /usr/local/bin \
+  && unzip consul_ui.zip -d /ui \
+  && rm consul.zip consul_ui.zip \
+  && mkdir -p /etc/consul.d \
+  && apt-get purge -y unzip
 
 ENV GOPATH /go
 
@@ -29,8 +38,6 @@ COPY docker-entrypoint.sh /sbin/docker-entrypoint.sh
 COPY tftpd.conf /etc/default/tftpd-hpa
 
 RUN mkdir -p /etc/consul.d
-#COPY rebar-prov-web.json /etc/consul.d/rebar-prov-web.json
-#COPY rebar-prov-api.json /etc/consul.d/rebar-prov-api.json
 
 # These are the ports being exposed for this system
 # We don't want other systems inheriting this
