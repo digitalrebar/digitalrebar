@@ -49,6 +49,8 @@ RUN /usr/local/go/bin/go get -u github.com/digitalrebar/rebar-api/rebar \
 RUN mkdir -p /opt/digitalrebar
 COPY digitalrebar/ /opt/digitalrebar
 
+RUN [ -d /opt/digitalrebar/core ] || git clone https://github.com/digitalrebar/core /opt/digitalrebar/core
+
 # Make dirs
 RUN mkdir -p /var/run/rebar \
   && mkdir -p /var/cache/rebar/cookbooks \
