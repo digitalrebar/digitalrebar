@@ -3,7 +3,13 @@ consul:
   extends:
     file: docker-compose-common.yml
     service: consul
-  build: components/consul
+
+#registrator:
+#  extends:
+#    file: docker-compose-common.yml
+#    service: registrator
+#  links:
+#    - consul:consul
 
 postgres:
   extends:
