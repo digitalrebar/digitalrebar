@@ -26,7 +26,7 @@ consul:
 #    - /var/run/docker.sock:/tmp/docker.sock
 
 postgres:
-  image: galthaus/dr_postgres
+  image: digitalrebar/dr_postgres
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/postgres/initdb.d:/docker-entrypoint-initdb.d
@@ -39,7 +39,7 @@ postgres:
     - "5432:5432"
 
 webproxy:
-  image: galthaus/dr_webproxy
+  image: digitalrebar/dr_webproxy
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
@@ -49,7 +49,7 @@ webproxy:
     - "8123:3128"
 
 goiardi:
-  image: galthaus/dr_goiardi
+  image: digitalrebar/dr_goiardi
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
@@ -58,7 +58,7 @@ goiardi:
     - "4646:4646"
 
 rebar_api:
-  image: galthaus/dr_rebar_api
+  image: digitalrebar/dr_rebar_api
   volumes:
     - ./components/rebar_api/digitalrebar:/opt/digitalrebar
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
@@ -70,7 +70,7 @@ rebar_api:
     - "3000:3000"
 
 ntp:
-  image: galthaus/dr_ntp
+  image: digitalrebar/dr_ntp
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/ntp/ntp.conf:/etc/ntp.conf
@@ -81,7 +81,7 @@ ntp:
     - "123/udp:123/udp"
 
 dns:
-  image: galthaus/dr_dns
+  image: digitalrebar/dr_dns
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/bind/named.conf:/etc/named.conf
@@ -94,7 +94,7 @@ dns:
     - "6754:6754"
 
 dhcp:
-  image: galthaus/dr_dhcp
+  image: digitalrebar/dr_dhcp
   privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
@@ -106,7 +106,7 @@ dhcp:
     - "6755:6755"
 
 #cobbler:
-#  image: galthaus/dr_cobbler
+#  image: digitalrebar/dr_cobbler
 #  volumes:
 #    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
 #  env_file:
@@ -118,7 +118,7 @@ dhcp:
 #    - "25151:25151"
 
 provisioner:
-  image: galthaus/dr_provisioner
+  image: digitalrebar/dr_provisioner
   privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
@@ -176,7 +176,7 @@ cadvisor:
     - "8080:8080"
 
 node:
-  image: galthaus/dr_node
+  image: digitalrebar/dr_node
   volumes:
     - ./data-dir/node:/etc/rebar-data
 
