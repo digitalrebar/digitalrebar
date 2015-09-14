@@ -42,9 +42,9 @@ Feature: Support UI
     Then I should see an unchecked check box "edge"
 
   Scenario: Settings Change True
-    Given I set {object:user} setting "edge" to "true"
+    Given I set {object:user} setting "test" to "true"
     When I go to the "utils/settings" page
-    Then I should see a checked check box "edge"
+    Then I should see a checked check box "test"
 
   Scenario: Settings Change not True
     Given I set {object:user} setting "edge" to "foo"
