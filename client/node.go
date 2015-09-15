@@ -62,6 +62,17 @@ func (o *Node) ActiveBootstate() string {
 	}
 }
 
+// Redeploy has a node redeploy itself from scratch.  This includes wiping out the
+// filesystems, reconfiguring hardware, and reinstalling the OS and all roles.
+func (o *Node) Redeploy() error {
+	uri := urlFor(o, "redeploy")
+	buf, err := session.request("PUT", uri, nil)
+	if err != nil {
+		return err
+	}
+	return unmarshal(uri, buf, o)
+}
+
 // Satisfy salient interfaces
 func (o *Node) attribs()            {}
 func (o *Node) deploymentRoles()    {}
