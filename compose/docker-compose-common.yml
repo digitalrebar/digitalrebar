@@ -9,15 +9,7 @@ consul:
   env_file:
     - ./common.env
   ports:
-    - "8300:8300"
-    - "8301:8301"
-    - "8301/udp:8301/udp"
-    - "8302:8302"
-    - "8302/udp:8302/udp"
-    - "8400:8400"
     - "8500:8500"
-    - "8600:8600"
-    - "8600/udp:8600/udp"
 
 #registrator:
 #  image: gliderlabs/registrator
@@ -35,8 +27,6 @@ postgres:
 #    SERVICE_TAGS: postgres
   env_file:
     - ./common.env
-  ports:
-    - "5432:5432"
 
 webproxy:
   image: digitalrebar/dr_webproxy
@@ -45,8 +35,6 @@ webproxy:
   env_file:
     - ./common.env
   # GREG: Think about this.
-  ports:
-    - "8123:3128"
 
 goiardi:
   image: digitalrebar/dr_goiardi
@@ -54,8 +42,6 @@ goiardi:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
-  ports:
-    - "4646:4646"
 
 rebar_api:
   image: digitalrebar/dr_rebar_api
@@ -76,9 +62,6 @@ ntp:
     - ./config-dir/ntp/ntp.conf:/etc/ntp.conf
   env_file:
     - ./common.env
-  ports:
-    - "123:123"
-    - "123/udp:123/udp"
 
 dns:
   image: digitalrebar/dr_dns
@@ -88,10 +71,6 @@ dns:
     - ./config-dir/bind/named.conf:/etc/bind/named.conf
   env_file:
     - ./common.env
-  ports:
-    - "53:53"
-    - "53/udp:53/udp"
-    - "6754:6754"
 
 dhcp:
   image: digitalrebar/dr_dhcp
@@ -101,9 +80,6 @@ dhcp:
     - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./common.env
-  ports:
-    - "67/udp:67/udp"
-    - "6755:6755"
 
 #cobbler:
 #  image: digitalrebar/dr_cobbler
@@ -126,24 +102,15 @@ provisioner:
     - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./common.env
-  ports:
-    - "69/udp:69/udp"
-    - "8091:8091"
 
 elasticsearch:
   image: elasticsearch
   volumes:
     - ./config-dir/elasticsearch:/usr/share/elasticsearch/config
     - ./data-dir/elasticsearch:/usr/share/elasticsearch/data
-  ports:
-    - "9200:9200"
-    - "9300:9300"
 
 logstash:
   image: logstash
-  ports:
-    - "5000:5000"
-    - "5000:5000/udp"
   volumes:
     - ./config-dir/logstash/logstash.conf:/etc/logstash.conf
   environment:
