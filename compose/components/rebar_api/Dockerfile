@@ -24,7 +24,7 @@ RUN apt-get -y install software-properties-common wget \
   && add-apt-repository "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" \
   && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - \
   && apt-get -y update \
-  && apt-get -y install ruby2.1 ruby2.1-dev git make cmake curl swig3.0 libcimcclient0-dev libxml2-dev libcurl4-openssl-dev libssl-dev build-essential jq sudo libopenwsman-dev postgresql-9.4 postgresql-client-9.4 libpq5 libpq-dev autoconf \
+  && apt-get -y install ruby2.1 ruby2.1-dev git make cmake curl swig3.0 libcimcclient0-dev libxml2-dev libcurl4-openssl-dev libssl-dev build-essential jq sudo libopenwsman-dev postgresql-9.4 postgresql-client-9.4 libpq5 libpq-dev autoconf uuid-runtime \
   && gem install bundler \
   && gem install net-http-digest_auth \
   && gem install berkshelf
