@@ -42,9 +42,9 @@ Feature: Support UI
     Then I should see an unchecked check box "edge"
 
   Scenario: Settings Change True
-    Given I set {object:user} setting "test" to "true"
+    Given I set {object:user} setting "fast_refresh" to "true"
     When I go to the "utils/settings" page
-    Then I should see a checked check box "test"
+    Then I should see a checked check box "fast_refresh"
 
   Scenario: Settings Change not True
     Given I set {object:user} setting "edge" to "foo"
