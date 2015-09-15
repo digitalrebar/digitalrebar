@@ -68,6 +68,14 @@ func GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, err error) {
 	return res, unmarshal(uri, outbuf, res)
 }
 
+// FetchAttrib behaves the same as GetAttrib, but accepts the name of an
+// attrib instead of an attrib.
+func FetchAttrib(o Attriber, attr, bucket string) (res *Attrib, err error) {
+	res = &Attrib{}
+	res.SetId(attr)
+	return GetAttrib(o, res, bucket)
+}
+
 // SetAttrib sets the value of an attrib in the context of
 // an attriber in the passed bucket.  Valid buckets are:
 //
