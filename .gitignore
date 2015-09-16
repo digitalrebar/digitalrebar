@@ -35,9 +35,6 @@ erl_crash.dump
 /config/final.json
 /config/processed.json
 
-# Docs Index
-/doc/README.md.new
-
 # Rails chaff (especially from dev mode)
 /rails/tmp/
 /rails/log/
