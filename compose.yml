@@ -24,6 +24,7 @@
       command: wget http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso -nc -O .cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
       args:
         creates: .cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
+
     - name: get code
       synchronize: src=./compose dest=/root rsync_path="rsync"
     - name: setup compose
@@ -31,11 +32,6 @@
       args:
         chdir: compose
         creates: compose/components/rebar_api/digitalrebar/core
-    - name: Stop ntp
-      service: name=ntp state=stopped
-    - name: Stop dnsmasq
-      command: killall dnsmasq
-      ignore_errors: yes
     - name: Run compose
       command: /usr/local/bin/docker-compose up -d
       args:
