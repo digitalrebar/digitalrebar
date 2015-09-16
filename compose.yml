@@ -35,7 +35,7 @@
     - name: Create rebar group
       group: name=rebar gid=1000
     - name: Create rebar user
-      user: name=rebar groups=rebar,system shell=/bin/bash uid=1000
+      user: name=rebar group=rebar shell=/bin/bash uid=1000
     - name: Set files to those permissions
       command: chown -R rebar:rebar compose/components/rebar_api/digitalrebar
     - name: Run compose
