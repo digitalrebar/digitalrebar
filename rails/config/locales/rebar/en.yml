@@ -155,7 +155,6 @@ en:
       roles: "Roles"
       deployments: "Deployments"
       menus: "Menu Items"
-      docs: "Doc Topics"
       jigs: "Jigs"
 
     error: Render Error
@@ -333,27 +332,6 @@ en:
       save: "Update"
       propose: "Propose"
       commit: "Commit"
-  docs:
-    missing: "Topics"
-    index:
-      title: "Documentation"
-      framework_display: "Rebar Framework"
-      framework_description: "The core Rebar system"
-      barclamps_display: "Barclamps"
-      barclamps_description: "Rebar add-ons"
-      toc_title: "Jump to:"
-      export_show: Show export
-      export_hide: Hide
-      export_export: Export
-    show:
-      nav_prev: "previous page"
-      nav_next: "next page"
-      nav_up: "up"
-      edit_this_page: "Edit this page on GitHub"
-      children: "Child Topics"
-    topic:
-      topic_error: "Error processing doc request!"
-      topic_missing: "Topic not found!"
   groups:
     index:
       title: "Groups"
