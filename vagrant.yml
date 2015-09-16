@@ -10,13 +10,6 @@
       when: ansible_os_family == "Debian"
     - include: tasks/docker.yml
 
-    - name: network mapping (set default admin IP)
-      command: sudo ip addr add 192.168.124.10/24 dev docker0
-      ignore_errors: yes
-    - name: network bridge (expose admin to host network)
-      command: sudo brctl addif docker0 eth1
-      ignore_errors: yes
-
     - name: Make cache dirs
       command: mkdir -p .cache/digitalrebar/tftpboot/isos
       ignore_errors: yes
@@ -47,3 +40,5 @@
       command: docker-compose up -d
       args:
         chdir: /home/vagrant/compose
+    - name: wait until service is up (1 to 10 minutes)
+      wait_for: port=3000 delay=60 timeout=600

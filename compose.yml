@@ -36,7 +36,13 @@
     - name: Stop dnsmasq
       command: killall dnsmasq
       ignore_errors: yes
-    - name: Run compose
+    - name: Pull compose images [SLOW]
+      command: /usr/local/bin/docker-compose pull
+      args:
+        chdir: compose
+    - name: Compose up containers
       command: /usr/local/bin/docker-compose up -d
       args:
         chdir: compose
+    - name: wait until Digital Rebar service is up [1 upto 5 minutes]
+      wait_for: port=3000 delay=60 timeout=300
