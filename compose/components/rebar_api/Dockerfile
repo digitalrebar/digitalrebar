@@ -21,7 +21,6 @@ RUN groupadd -r rebar && useradd -r -u 1000 -g rebar -p '$6$afAL.34B$T2WR6zycEe2
   && mkdir -p /etc/sudoers.d \
   && mkdir -p /home/rebar/.ssh
 
-COPY digitalrebar/ /opt/digitalrebar
 COPY docker-entrypoint.sh /sbin/docker-entrypoint.sh
 COPY rebar_sudoer /etc/sudoers.d/rebar
 COPY ssh_config /home/rebar/.ssh/config
