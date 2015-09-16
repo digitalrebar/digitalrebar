@@ -17,6 +17,9 @@ fi
 
 if [[ $http_proxy ]] && ! pidof squid; then
     export upstream_proxy=$http_proxy
+else
+    rm /etc/profile.d/proxy.sh
+    unset http_proxy https_proxy no_proxy
 fi
 
 if [[ $1 = --no-shell ]]; then
