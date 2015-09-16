@@ -5,7 +5,7 @@
 
 NODENAME=$1
 if [ "$NODENAME" == "" ] ; then
-  NODENAME="$USER1"
+  NODENAME="${USER}1"
 fi
 
 PROJ_ID=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects | jq -r ".projects[].id"`
