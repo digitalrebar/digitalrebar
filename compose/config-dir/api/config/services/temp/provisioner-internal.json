@@ -1,6 +1,0 @@
-{
-  "type": "internal",
-  "name": "provisioner",
-  "has_service": true,
-  "server_role": "provisioner-server, provisioner-database, provisioner-repos, provisioner-docker-setup"
-}

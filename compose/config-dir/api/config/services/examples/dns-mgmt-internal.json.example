@@ -1,8 +1,0 @@
-{
-  "type": "internal",
-  "name": "dns-mgmt",
-  "has_service": true,
-  "attributes": {
-    "dns-management-name": "system"
-  }
-}
