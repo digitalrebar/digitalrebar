@@ -13,5 +13,4 @@
       = render :partial => 'settingsCb', :locals=>{ :name=>'debug', :value=>current_user.settings(:ui).debug } #boolean
       = render :partial => 'settingsCb', :locals=>{ :name=>'milestone_roles', :value=>current_user.settings(:ui).milestone_roles } #boolean
       = render :partial => 'settingsCb', :locals=>{ :name=>'expand', :value=>current_user.settings(:errors).expand } #boolean
-      = render :partial => 'settingsCb', :locals=>{ :name=>'doc_sources', :value=>current_user.settings(:docs).sources } #boolean
   %input.button{:type => "submit", :value => t('update')}

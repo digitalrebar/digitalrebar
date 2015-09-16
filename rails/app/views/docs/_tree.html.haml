@@ -1,6 +1,0 @@
-%li{:id=>tree.id.to_s}
-  %input{:type=>'checkbox', :class=>'doc-export-checkbox', :value=>tree.id.to_s}
-  = link_to tree.description, doc_path(tree.id)
-- if tree.level < 2
-  %ul
-    = render partial: 'tree', collection: tree.children.sort

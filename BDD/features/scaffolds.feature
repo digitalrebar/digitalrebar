@@ -100,19 +100,6 @@ Scenario: Available Hammers
       And I should see "Create New"
       And there should be no translation errors  
       
-  Scenario: Docs
-    When I go to the "utils/scaffolds/docs?limit=1" page
-    Then I should see heading "Docs"
-      And I should see "Description"
-      And I should see "Order"
-      And I should see "Parent"
-      And I should see "Children"
-      And I should see "Created At"
-      And I should see "Updated At"
-      And I should see "Search"
-      And I should see "Create New"
-      And there should be no translation errors  
-      
   Scenario: Deployments
     When I go to the "utils/scaffolds/deployments?limit=1" page
     Then I should see heading "Deployments"

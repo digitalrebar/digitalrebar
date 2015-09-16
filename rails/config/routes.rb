@@ -49,7 +49,6 @@ Rebar::Application.routes.draw do
 
   get "monitor(/:id)" => "deployments#monitor", :as => :monitor
   get 'docs/eula' => 'docs#eula', as: :eula
-  resources :docs, constraints: {id: /[^\?]*/}
 
   resources :groups
   resources :hammers
@@ -99,7 +98,6 @@ Rebar::Application.routes.draw do
       resources :attribs do as_routes end
       resources :available_hammers do as_routes end
       resources :barclamps do as_routes end
-      resources :docs do as_routes end
       resources :deployment_roles do as_routes end
       resources :deployments do as_routes end
       resources :groups do as_routes end

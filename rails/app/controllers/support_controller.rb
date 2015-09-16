@@ -180,7 +180,6 @@ class SupportController < ApplicationController
     current_user.settings(:ui).debug = params[:debug].eql?('true') rescue false
     current_user.settings(:ui).milestone_roles = params[:milestone_roles].eql?('true') rescue false
     current_user.settings(:errors).expand = params[:expand].eql?('true') rescue false
-    current_user.settings(:docs).sources = params[:doc_sources].eql?('true') rescue false
     current_user.save!
     #render :json=>true
     redirect_to :action => :settings
