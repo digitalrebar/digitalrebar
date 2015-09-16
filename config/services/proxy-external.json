@@ -1,5 +1,5 @@
 {
-  "type": "internal",
+  "type": "external",
   "name": "proxy",
   "has_service": true
 }
