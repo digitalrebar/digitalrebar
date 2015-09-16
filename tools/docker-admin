@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2014, Dell
+# Copyright 2015, RackN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,6 +24,11 @@ if ! which docker &>/dev/null; then
     exit 1
 fi
 
+if ! which docker-compose &>/dev/null; then
+    echo "Please install docker-compose!"
+    exit 1
+fi
+
 if [[ $0 = /* ]]; then
     mountdir="$0"
 elif [[ $0 = .*  || $0 = */* ]]; then
@@ -32,97 +37,47 @@ else
     echo "Cannot figure out where core is!"
     exit 1
 fi
+
 # This gets us to core
 mountdir="${mountdir%/tools/docker-admin}"
 # This gets us to the parent directory of core, where presumably the rest of our repos are checked out
 mountdir="${mountdir%/*}"
 
-docker_args=(-t -i -w /opt/digitalrebar/core -v "$mountdir:/opt/digitalrebar")
-
-MAP_PORTS=1
-while [[ $1 ]]; do
-    case "$1" in
-        --dont-map-ports)
-            MAP_PORTS=0
-            shift;;
-        --hostname)
-            docker_args+=(-h "$2")
-            shift
-            shift;;
-        --daemon)
-            DAEMON=true
-            shift;;
-        *)
-            break;;
-    esac
-done
-
-declare -A image_map
-#image_map["ubuntu"]="ubuntu:precise"
-image_map["ubuntu"]="opencrowbar/ubuntu:12.04-4"
-image_map["centos-base"]="centos:centos6.6"
-image_map["centos"]="digitalrebar/admin"
-image_map["centos7"]="centos:centos7"
-image_map["opensuse"]="mmckeen/opensuse-13-1:latest"
-image_map["fedora"]="fedora:20"
-image_map["debian"]="debian:jessie"
-image="${image_map[$1]}"
-tftproot="/tftpboot"
-if [[ ! $image ]]; then
-    echo "$1 is not an image we can run on!"
-    printf "Try one of: "
-    printf "%s " "${!image_map[@]}"
-    echo
-    exit 1
+# Clone the deploy repo to a known location, if we don't already have it.
+if [[ ! -d $mountdir/deploy ]]; then
+    # Clone the deploy repo to a known location.
+    git clone https://github.com/rackn/digitalrebar-deploy "$mountdir/deploy"
+elif [[ ! -d $mountdir/deploy/compose/components/rebar_api ]]; then
+    echo "$mountdir/deploy does not contain a checkout of the digitalrebar container deployer!"
+elif [[ ! -L  $mountdir/deploy/compose/components/rebar_api/digitalrebar ]]; then
+     ln -s "$mountdir" \
+        $mountdir/deploy/compose/components/rebar_api/digitalrebar
 fi
-shift
 
 mkdir -p "$HOME/.cache/digitalrebar/tftpboot"
 
-docker_args+=(-v "$HOME/.cache/digitalrebar/tftpboot:$tftproot")
-docker_args+=(-e "OUTER_UID=$(id -u)")
-docker_args+=(-e "OUTER_GID=$(id -g)")
-if [[ -f $HOME/.ssh/id_rsa.pub ]]; then
-    docker_args+=(-e "SSH_PUBKEY=$(cat "$HOME/.ssh/id_rsa.pub")")
-else
-    docker_args+=(-e "SSH_PUBKEY=")
-fi
-if [ "$MAP_PORTS" == "1" ] ; then
-    docker_args+=(-p "3000:3000")   # Rebar Rails web server
-    docker_args+=(-p "8500:8500")   # Consul Server
-    docker_args+=(-p "443:443")     # Chef Server
-fi
 bridge="docker0"
 bridge_re='-b=([^ ])'
 bridge_addr_re='inet ([0-9.]+)/'
 # If we told Docker to use a custom bridge, here is where it is at.
 [[ $(ps -C docker -o 'command=') =~ $bridge_re ]] && \
     bridge="${BASH_REMATCH[1]}"
-# Capture the IP of the bridge for later when we are hacking up
-# proxies.
-[[ $(ip -o -4 addr show dev $bridge) =~ $bridge_addr_re ]] && \
-    bridge_ip="${BASH_REMATCH[1]}"
-# Make sure the container knows about our proxies, if applicable.
-. "$mountdir/core/tools/proxy_lib.sh"
-mangle_proxies "$bridge_ip"
-for proxy in "${!mangled_proxies[@]}"; do
-    docker_args+=(-e "$proxy=${mangled_proxies[$proxy]}")
-done
-
-# since 0.8.1 we need to run in privileged mode so we can change the networking
-docker_args+=("--privileged")
-# Run whatever we specified to run inside a container.
-sudo rm -rf "$HOME/.cache/digitalrebar/tftpboot/nodes"
-if [[ $DAEMON ]]; then
-    id=$(docker run -d "${docker_args[@]}" "$image" /opt/digitalrebar/core/tools/docker-init.sh "$@")
-    while ! docker exec $id test -f /root/.ssh/authorized_keys &>/dev/null; do
-        sleep 1
-    done
-    echo $id
-else
-    docker run "${docker_args[@]}" "$image" /opt/digitalrebar/core/tools/docker-init.sh "$@"
-
-    # helpful reminder for docker hygene
-    echo "now may be a good time to run: docker ps -q -a | xargs docker rm"
-    exit $?
+if ! [[ -f $mountdir/core/config/networks/the_admin.json ]]; then
+    echo "Cannot find the_admin.json to get the address we should add to the Docker bridge!"
+    exit 1
 fi
+bridge_router_ip="$(jq -r '.router.address' < "$mountdir/core/config/networks/the_admin.json")"
+
+if ! fgrep -q "$bridge_router_ip" < <(ip addr show dev "$bridge"); then
+    sudo ip addr add "$bridge_router_ip" dev "$bridge"
+fi
+
+sudo rm -rf "$HOME/.cache/digitalrebar/tftpboot/nodes"
+
+cd "$mountdir/deploy/compose"
+docker-compose up -d
+echo "Bringing containers up.  Exiting the shell will kill and remove the containers"
+export PS1="(docker-compose) $PS1"
+/bin/bash -i
+docker-compose kill
+docker-compose rm -f
