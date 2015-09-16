@@ -248,7 +248,6 @@ class Barclamp < RebarProxy
     raise "No rebar.yml at #{path}" unless File.exists?(yml)
     settings = YAML.load_file(yml)
     settings['barclamp']['source_path'] = File.realpath(path)
-    return {} if settings['barclamp']['parent']
     bc, res = REST.get("#{self.path}/#{settings['barclamp']['name']}")
     if res >= 400
       bc = create_Json({'value' => settings})
