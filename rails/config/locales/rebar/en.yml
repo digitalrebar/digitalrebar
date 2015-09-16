@@ -160,6 +160,14 @@ en:
 
     error: Render Error
 
+  # hints for node_role errors
+  node_roles:
+    show:
+      error_hints:
+        network-the_admin: "For troubleshooting hints, visit the FAQ for this role"
+      error_links:
+        network-the_admin: "https://github.com/digitalrebar/doc/blob/master/faq/role_error_network-the_admin"
+
   # Models  
   user:
     sign_in: Sign In
