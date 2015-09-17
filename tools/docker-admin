@@ -47,11 +47,11 @@ mountdir="${mountdir%/*}"
 if [[ ! -d $mountdir/deploy ]]; then
     # Clone the deploy repo to a known location.
     git clone https://github.com/rackn/digitalrebar-deploy "$mountdir/deploy"
-elif [[ ! -d $mountdir/deploy/compose/components/rebar_api ]]; then
+elif [[ ! -d $mountdir/deploy/compose ]]; then
     echo "$mountdir/deploy does not contain a checkout of the digitalrebar container deployer!"
-elif [[ ! -L  $mountdir/deploy/compose/components/rebar_api/digitalrebar ]]; then
+elif [[ ! -L  $mountdir/deploy/compose/digitalrebar ]]; then
      ln -s "$mountdir" \
-        $mountdir/deploy/compose/components/rebar_api/digitalrebar
+        $mountdir/deploy/compose/digitalrebar
 fi
 
 mkdir -p "$HOME/.cache/digitalrebar/tftpboot"
