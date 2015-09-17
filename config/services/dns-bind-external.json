@@ -1,5 +1,5 @@
 {
-  "type": "internal",
+  "type": "external",
   "name": "dns",
   "has_service": true,
   "server_role": "dns-bind_server",

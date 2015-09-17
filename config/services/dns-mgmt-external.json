@@ -1,5 +1,5 @@
 {
-  "type": "internal",
+  "type": "external",
   "name": "dns-mgmt",
   "has_service": true,
   "attributes": {
