@@ -22,7 +22,3 @@
     command: sudo service apparmor teardown
   - name: remove apparmor
     command: sudo update-rc.d -f apparmor remove
-  - name: no dns servers
-    command: sudo killall dnsmasq
-    ignore_errors: yes
-

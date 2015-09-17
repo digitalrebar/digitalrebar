@@ -31,6 +31,8 @@
     - name: allow docker access after reboot
       command: sudo usermod -a -G docker vagrant
 
+    - name: Set files to those permissions
+      command: chown -R vagrant:vagrant /home/vagrant/compose/components/rebar_api/digitalrebar
     - name: get code from local system
       synchronize: src=./compose dest=~ rsync_path="rsync"
     - name: remove rebar-key file
@@ -42,6 +44,7 @@
         chdir: /home/vagrant/compose
         creates: compose/components/rebar_api/digitalrebar/core
       ignore_errors: yes
+
     - name: Pull Digital Rebar Images [SLOW]
       command: docker-compose pull
       args:

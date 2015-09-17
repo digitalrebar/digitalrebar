@@ -24,18 +24,20 @@
       command: wget http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso -nc -O .cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
       args:
         creates: .cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
+
     - name: get code
       synchronize: src=./compose dest=/root rsync_path="rsync"
     - name: setup compose
-      command: ./setup.sh
+      command: ./setup.sh kubernetes
       args:
         chdir: compose
         creates: compose/components/rebar_api/digitalrebar/core
-    - name: Stop ntp
-      service: name=ntp state=stopped
-    - name: Stop dnsmasq
-      command: killall dnsmasq
-      ignore_errors: yes
+    - name: Create rebar group
+      group: name=rebar gid=1000
+    - name: Create rebar user
+      user: name=rebar group=rebar shell=/bin/bash uid=1000
+    - name: Set files to those permissions
+      command: chown -R rebar:rebar compose/components/rebar_api/digitalrebar
     - name: Pull compose images [SLOW]
       command: /usr/local/bin/docker-compose pull
       args:
