@@ -16,14 +16,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     admin.vm.network "private_network", ip: ADMIN_IP, auto_config: true
     admin.vm.network "private_network", ip: "10.10.10.10", auto_config: false
 
-    #admin.vm.network "forwarded_port", guest: 3000, host: 3030
-    #admin.vm.network "forwarded_port", guest: 8500, host: 8585
-
     # avoid redownloading large files      
-    admin.vm.synced_folder "~/.cache/digitalrebar/tftpboot/isos/", "/home/vagrant/.cache/digitalrebar/tftpboot/isos/"
+    Files.mkdir "~/.cache/digitalrebar/tftpboot" rescue nil
+    admin.vm.synced_folder "~/.cache/digitalrebar/tftpboot", "/home/vagrant/.cache/digitalrebar/tftpboot"
 
     admin.vm.provider "virtualbox" do |vb|
-      vb.memory = "4096"
+      vb.memory = "8192"
+      vb.cpus = 2
     end
 
     admin.vm.provision "ansible" do |ansible|
