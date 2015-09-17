@@ -28,7 +28,7 @@
     - name: get code
       synchronize: src=./compose dest=/root rsync_path="rsync"
     - name: setup compose
-      command: ./setup.sh
+      command: ./setup.sh kubernetes
       args:
         chdir: compose
         creates: compose/components/rebar_api/digitalrebar/core
@@ -38,7 +38,13 @@
       user: name=rebar group=rebar shell=/bin/bash uid=1000
     - name: Set files to those permissions
       command: chown -R rebar:rebar compose/components/rebar_api/digitalrebar
-    - name: Run compose
+    - name: Pull compose images [SLOW]
+      command: /usr/local/bin/docker-compose pull
+      args:
+        chdir: compose
+    - name: Compose up containers
       command: /usr/local/bin/docker-compose up -d
       args:
         chdir: compose
+    - name: wait until Digital Rebar service is up [1 upto 5 minutes]
+      wait_for: port=3000 delay=60 timeout=300

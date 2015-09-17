@@ -10,13 +10,6 @@
       when: ansible_os_family == "Debian"
     - include: tasks/docker.yml
 
-    - name: network mapping (set default admin IP)
-      command: sudo ip addr add 192.168.124.10/24 dev docker0
-      ignore_errors: yes
-    - name: network bridge (expose admin to host network)
-      command: sudo brctl addif docker0 eth1
-      ignore_errors: yes
-
     - name: Make cache dirs
       command: mkdir -p .cache/digitalrebar/tftpboot/isos
       ignore_errors: yes
@@ -31,14 +24,27 @@
         creates: CentOS-7-x86_64-Minimal-1503-01.iso
         chdir: .cache/digitalrebar/tftpboot/isos
 
-    - name: get code
+    - name: attach docker to eth1
+      command: sudo brctl addif docker0 eth1
+      ignore_errors: yes
+
+    - name: allow docker access after reboot
+      command: sudo usermod -a -G docker vagrant
+
+    - name: Set files to those permissions
+      command: chown -R vagrant:vagrant /home/vagrant/compose/components/rebar_api/digitalrebar
+    - name: get code from local system
       synchronize: src=./compose dest=~ rsync_path="rsync"
+    - name: remove rebar-key file
+      file: path=/home/vagrant/compose/data-dir/rebar-key.sh state=absent
+
     - name: setup compose
       command: ./setup.sh
       args:
         chdir: /home/vagrant/compose
         creates: compose/components/rebar_api/digitalrebar/core
       ignore_errors: yes
+
     - name: Pull Digital Rebar Images [SLOW]
       command: docker-compose pull
       args:
@@ -47,3 +53,10 @@
       command: docker-compose up -d
       args:
         chdir: /home/vagrant/compose
+
+    - name: wait until service is up (1 to 10 minutes)
+      wait_for: port=3000 delay=60 timeout=600
+    - name: wait for rebar-key (1 to 10 minutes)
+      wait_for: path=/home/vagrant/compose/data-dir/rebar-key.sh state=present delay=30 timeout=600
+    - name: copy rebar key to shared area
+      file: src=/home/vagrant/compose/data-dir/rebar-key.sh dest=/vagrant/rebar-key.sh force=yes
