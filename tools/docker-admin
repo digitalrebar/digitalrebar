@@ -75,9 +75,12 @@ fi
 sudo rm -rf "$HOME/.cache/digitalrebar/tftpboot/nodes"
 
 cd "$mountdir/deploy/compose"
+docker-compose pull
 docker-compose up -d
 echo "Bringing containers up.  Exiting the shell will kill and remove the containers"
 export PS1="(docker-compose) $PS1"
+export REBAR_ENDPOINT="http://127.0.0.1:3000"
+export REBAR_KEY="rebar:rebar1"
 /bin/bash -i
 docker-compose kill
 docker-compose rm -f
