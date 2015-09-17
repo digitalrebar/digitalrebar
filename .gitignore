@@ -9,7 +9,7 @@
 # limitations under the License.
 
 /.vagrant/
-/compose/components/rebar_api/digitalrebar
+/compose/digitalrebar
 
 .#*
 *~

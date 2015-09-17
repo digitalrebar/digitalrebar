@@ -1,7 +1,6 @@
 #!/bin/bash
 
-declare -a containers=('consul'
-            'postgres'
+declare -a containers=('postgres'
             'webproxy'
             'goiardi'
             'rebar_api'
@@ -10,7 +9,6 @@ declare -a containers=('consul'
             'dhcp'
             'provisioner'
             'node')
-#            'cobbler'
 
 # Clean tagged containers
 echo "Removing tagged containers"
