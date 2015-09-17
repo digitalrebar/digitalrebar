@@ -1,7 +1,0 @@
-{
-  "type": "external",
-  "name": "ntp",
-  "service_ip": "pool.ntp.org",
-  "service_port": 123,
-  "service_tag": "system"
-}

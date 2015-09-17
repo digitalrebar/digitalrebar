@@ -1,7 +1,0 @@
-{
-  "type": "external",
-  "name": "amqp",
-  "service_ip": "1.1.1.1",
-  "service_port": 5672,
-  "service_tag": "system"
-} 
