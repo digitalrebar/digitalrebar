@@ -46,7 +46,7 @@ goiardi:
 rebar_api:
   image: digitalrebar/dr_rebar_api
   volumes:
-    - ./components/rebar_api/digitalrebar:/opt/digitalrebar
+    - ./digitalrebar:/opt/digitalrebar
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./data-dir/node:/node-data
   env_file:
