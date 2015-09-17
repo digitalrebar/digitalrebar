@@ -327,7 +327,14 @@ class NodeRole < ActiveRecord::Base
   def _add_child(new_child, cluster_recurse=true)
     NodeRole.transaction do
       if new_child.is_a?(String)
-        new_child = self.node.node_roles.find_by!(role_id: Role.find_by!(name: new_child))
+        nc = self.node.node_roles.find_by(role_id: Role.find_by!(name: new_child))
+        unless nc
+          nc = NodeRole.find_by!("node_id = ? AND role_id in
+                                 (select id from roles where ? = ANY(provides))",
+                                self.node.id,
+                                new_child)
+        end
+        new_child = nc
       end
       unless children.any?{|c| c.id == new_child.id}
         children << new_child
