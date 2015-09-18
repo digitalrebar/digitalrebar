@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 set -x
 date
 
@@ -29,10 +30,12 @@ while read bc; do
   /opt/digitalrebar/core/bin/barclamp_import "$bc"
 done < <(find /opt/digitalrebar -name rebar.yml |grep -v '/core/')
 
+# We absolutely have to have an unmanaged-internal network, and there can
+# really only be one of them, so leave this hardcoded for now.
 unmanaged_net='
 {
-  "name": "unmanaged",
   "category": "unmanaged",
+  "group": "internal",
   "deployment": "system",
   "conduit": "?1g0",
   "configure": false,
@@ -53,32 +56,7 @@ unmanaged_net='
 }'
 
 # Create the catch all network
-rebar networks show 'unmananged' >/dev/null 2>&1 || rebar networks import "$unmanaged_net"
-
-# Build a map of keys in the /root/.ssh/authorized_keys
-# Record the machine key as well. -- THIS IS NOT GREAT
-#
-# This is after the join to make sure that the rebar-access
-# role is added to the system deployment.
-#
-if [ -e /root/.ssh/authorized_keys ] ; then
-    count=1
-    rm -f /tmp/key_list
-    echo "{ \"value\": {" > /tmp/key_list
-    COMMA=""
-    cat /root/.ssh/authorized_keys | while read line; do
-        echo "$line" > config/ssh_keys/"admin-$count.key"
-        echo "$COMMA \"admin-$count\": \"$line\"" >> /tmp/key_list
-        count=`expr $count + 1`
-        COMMA=","
-    done
-    echo "} }" >> /tmp/key_list
-    rebar deployments bind system to rebar-access >/dev/null 2>&1 || true
-    rebar deployments set system attrib rebar-access_keys to "`cat /tmp/key_list`"
-    rebar deployments set system attrib rebar-machine_key to "{ \"value\": \"`cat /etc/rebar.install.key`\" }"
-    rebar deployments commit system
-    rm -rf /tmp/key_list
-fi
+rebar networks show 'unmanaged-internal' >/dev/null 2>&1 || rebar networks import "$unmanaged_net"
 
 DOMAINNAME=$BASE_DOMAINNAME
 echo "{ \"domain\": \"$DOMAINNAME\" }" > config/domain.json
@@ -91,6 +69,8 @@ echo "{ \
   \"matcher\": \"net.category == \\\"admin\\\"\", \
   \"service\": \"system\" \
 }" > config/filters/admin-default.json
+
+cp /home/rebar/.ssh/id_rsa.pub config/ssh_keys/admin-0.key
 
 ./rebar-build-json.rb > config/final.json
 
@@ -109,8 +89,13 @@ admin_nets=()
 network_count=`jq ".networks | length" config/processed.json`
 for ((i=0; i < network_count; i++)) ; do
   network=`jq ".networks[$i]" config/processed.json`
-  name=`jq -r ".networks[$i].name" config/processed.json`
+  group=`jq -r ".networks[$i].group" config/processed.json`
   category=`jq -r ".networks[$i].category" config/processed.json`
+  if ! [[ $category && $group ]]; then
+      echo "Network must have a category and a group defined!"
+      exit 1
+  fi
+  name="$category-$group"
   if rebar networks show $name >/dev/null 2>&1 ; then
     rebar networks update $name "$network"
   else
@@ -290,6 +275,8 @@ rebar nodes commit "system-phantom.internal.local"
 rebar deployments bind system to rebar-access
 keys=`jq -r .ssh_keys config/processed.json`
 rebar deployments set system attrib rebar-access_keys to "{ \"value\": $keys }"
+rebar deployments set system attrib rebar-machine_key to "{ \"value\": \"`cat /etc/rebar.install.key`\" }"
+
 rebar deployments commit system
 
 # Add/Update DNS Filters into the system

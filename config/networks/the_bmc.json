@@ -1,5 +1,4 @@
 {
-  "name": "the_bmc",
   "deployment": "system",
   "category": "bmc",
   "group": "internal",
