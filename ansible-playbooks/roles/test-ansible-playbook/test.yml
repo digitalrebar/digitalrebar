@@ -1,0 +1,9 @@
+--- 
+- name: Install Digital Rebar by RackN 2015
+  hosts: all
+  sudo: yes
+  tasks:
+    - name: Make cache dirs
+      command: mkdir -p /root/digitalrebar/tftpboot/isos
+    - name: Debug stuff
+      debug: msg="{{ all['delay'] }}"

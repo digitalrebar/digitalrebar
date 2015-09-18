@@ -1,0 +1,16 @@
+#
+# Ansible Playbook Role
+#
+
+---
+# This defines where to get the playbook to cache
+# https, http defines a git repo location
+# otherwise path to playbook (relative to this directory)
+playbook_src_path: .
+
+# Directory in src containing the playbook
+playbook_path: .
+
+# The playbook file
+playbook_file: test.yml
+

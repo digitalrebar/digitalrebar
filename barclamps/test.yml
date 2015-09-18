@@ -24,6 +24,20 @@ barclamp:
   license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
+  - name: test-ansible-playbook
+    jig: ansible-playbook
+    attribs:
+      - name: test-ansible-playbook-delay
+        map: 'all/delay'
+        description: 'A test attrib'
+        default: 3
+  - name: test-ansible
+    jig: ansible
+    attribs:
+      - name: test-ansible-delay
+        map: 'all/delay'
+        description: 'A test attrib'
+        default: 6
   - name: test-admin
     jig: test
     flags:

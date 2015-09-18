@@ -1,0 +1,10 @@
+#
+# Ansible Role
+#
+
+---
+# The module to run
+module: command
+# The module to args
+module_args: date
+
