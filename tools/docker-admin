@@ -51,7 +51,7 @@ elif [[ ! -d $mountdir/deploy/compose ]]; then
     echo "$mountdir/deploy does not contain a checkout of the digitalrebar container deployer!"
 elif [[ ! -L  $mountdir/deploy/compose/digitalrebar ]]; then
      ln -s "$mountdir" \
-        $mountdir/deploy/compose/digitalrebar
+        "$mountdir/deploy/compose/digitalrebar"
 fi
 
 mkdir -p "$HOME/.cache/digitalrebar/tftpboot"
