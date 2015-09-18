@@ -84,3 +84,4 @@ export REBAR_KEY="rebar:rebar1"
 /bin/bash -i
 docker-compose kill
 docker-compose rm -f
+sudo rm -rf "$mountdir/deploy/compose/data-dir"
