@@ -163,10 +163,8 @@ en:
   node_roles:
     show:
       error_hints:
-        network-the_admin: "For troubleshooting hints, visit the FAQ for this role"
         chef-client: "You may be having network issues, please visit FAQ for more help"
       error_links:
-        network-the_admin: "https://github.com/digitalrebar/doc/blob/master/faq/role_error_network-the_admin"
         chef-client: "https://github.com/digitalrebar/doc/blob/master/faq/role_error_chef-client.rst"
 
   # Models  

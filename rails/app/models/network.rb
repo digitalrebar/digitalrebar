@@ -51,7 +51,7 @@ class Network < ActiveRecord::Base
         return n if r === addr
       end
     end
-    Network.find_by!(name: "unmanaged")
+    Network.find_by!(name: "unmanaged-internal")
   end
 
   def self.address(params)

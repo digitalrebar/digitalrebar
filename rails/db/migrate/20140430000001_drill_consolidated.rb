@@ -309,6 +309,8 @@ class DrillConsolidated < ActiveRecord::Migration
       t.text        :group,       null: false, default: 'default'  # 20150418154100
       t.text        :pbr,         null: true      # 2015070101600
     end
+    # required constraint
+    add_index(:networks, [:category, :group], unique: true)
 
     create_table "network_routers" do |t|
       t.references   :network,    null: false

@@ -73,6 +73,9 @@ if ! fgrep -q "$bridge_router_ip" < <(ip addr show dev "$bridge"); then
 fi
 
 sudo rm -rf "$HOME/.cache/digitalrebar/tftpboot/nodes"
+if [[ -f $HOME/.ssh/id_rsa.pub ]]; then
+    cp "$HOME/.ssh/id_rsa.pub" "$mountdir/core/config/ssh_keys/$USER-0.key"
+fi
 
 cd "$mountdir/deploy/compose"
 docker-compose pull

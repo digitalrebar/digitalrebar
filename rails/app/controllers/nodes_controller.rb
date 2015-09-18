@@ -211,7 +211,7 @@ class NodesController < ApplicationController
         # Keep suport for mac and ip hints in short form around for legacy Sledgehammer purposes
         if params[:ip]
           default_net = Network.lookup_network(params[:ip]) ||
-                        Network.find_by_name("unmanaged")
+                        Network.find_by!(name: "unmanaged-internal")
           Attrib.set("hint-#{default_net.name}-v4addr",@node,params[:ip]) if default_net
           Attrib.set("hint-admin-macs", @node, [params[:mac]]) if params[:mac]
         end

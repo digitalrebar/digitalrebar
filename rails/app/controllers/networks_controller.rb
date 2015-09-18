@@ -78,12 +78,16 @@ class NetworksController < ::ApplicationController
     params[:configure] = true unless params.key?(:configure)
     params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
     params[:deployment_id] ||= 1
-    params.require(:name)
+    params[:group] ||= "default"
+    params.require(:category)
+    params.require(:group)
     params.require(:conduit)
     params.require(:deployment_id)
+    params[:name] = "#{params[:category]}-#{params[:group]}"
     Network.transaction do
       @network = Network.create! params.permit(:name,
                                                :conduit,
+                                               :description,
                                                :deployment_id,
                                                :vlan,
                                                :use_vlan,
@@ -181,7 +185,6 @@ class NetworksController < ::ApplicationController
 
   def destroy
     @network = Network.find_key(params[:id])
-    return api_not_supported("delete",@network) if @network.name == "admin"
     @network.destroy
     render api_delete @network
   end
