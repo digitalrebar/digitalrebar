@@ -24,17 +24,13 @@
         creates: CentOS-7-x86_64-Minimal-1503-01.iso
         chdir: .cache/digitalrebar/tftpboot/isos
 
-    - name: attach docker to eth1
-      command: sudo brctl addif docker0 eth1
-      ignore_errors: yes
-
     - name: allow docker access after reboot
       command: sudo usermod -a -G docker vagrant
 
     - name: get code from local system
       synchronize: src=./compose dest=~ rsync_path="rsync"
     - name: remove rebar-key file
-      file: path=/home/vagrant/compose/data-dir/rebar-key.sh state=absent
+      file: path=/home/vagrant/compose/data-dir/node/rebar-key.sh state=absent
 
     - name: setup compose
       command: ./setup.sh
@@ -54,7 +50,7 @@
 
     - name: wait until service is up (1 to 10 minutes)
       wait_for: port=3000 delay=60 timeout=600
-    - name: wait for rebar-key (1 to 10 minutes)
-      wait_for: path=/home/vagrant/compose/data-dir/rebar-key.sh state=present delay=30 timeout=600
+    - name: wait for rebar-key (1 to 20 minutes)
+      wait_for: path=/home/vagrant/compose/data-dir/node/rebar-key.sh state=present delay=60 timeout=1200
     - name: copy rebar key to shared area
-      file: src=/home/vagrant/compose/data-dir/rebar-key.sh dest=/vagrant/rebar-key.sh force=yes
+      file: src=/home/vagrant/compose/data-dir/node/rebar-key.sh dest=/vagrant/rebar-key.sh force=yes
