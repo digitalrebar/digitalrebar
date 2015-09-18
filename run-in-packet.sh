@@ -8,9 +8,11 @@ if [ "$NODENAME" == "" ] ; then
   NODENAME="${USER}1"
 fi
 
+TSTAMP=`date +%H%M`
+
 PROJ_ID=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects | jq -r ".projects[].id"`
 
-echo "My projects: $PROJ_ID"
+echo "My projects: ${PROJ_ID} will be called ${NODENAME}_at_${TSTAMP}"
 
 #curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/plans | jq .
 #curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/operating-systems | jq .
@@ -19,7 +21,7 @@ node="{
   \"facility\": \"ewr1\",
   \"plan\": \"baremetal_1\",
   \"operating_system\": \"ubuntu_14_04\",
-  \"hostname\": \"$NODENAME\"
+  \"hostname\": \"${NODENAME}${TSTAMP}\"
 }"
 
 DEVICE_ID=`curl -H "Content-Type: application/json" -X POST --data "$node" -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices | jq -r .id`
