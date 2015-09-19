@@ -68,6 +68,12 @@ jigs:
   - name: role-provided
     class: 'BarclampRebar::RoleProvidedJig'
     description: "Jig that delegates back to a role-provided do_transition method"
+  - name: ansible-playbook
+    class: 'BarclampRebar::AnsiblePlaybookJig'
+    description: "Allow Rebar to run an Ansible playbook against a node"
+  - name: ansible
+    class: 'BarclampRebar::AnsibleJig'
+    description: "Allow Rebar to run an Ansible command/module against a node"
 
 extra_files:
   - http://downloads.sourceforge.net/project/elilo/elilo/elilo-3.16/elilo-3.16-all.tar.gz
