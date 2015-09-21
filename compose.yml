@@ -12,7 +12,10 @@
     - name: network mapping
       command: sudo ip addr add 192.168.124.10/24 dev docker0
       ignore_errors: yes
-
+    - name: create SSH key for host to access slaves
+      command: ssh-keygen -t rsa -f '.ssh/id_rsa' -P ''
+      args:
+        creates: .ssh/id_rsa.pub
     - name: Make cache dirs
       command: mkdir -p .cache/digitalrebar/tftpboot/isos
 
@@ -32,6 +35,9 @@
       args:
         chdir: compose
         creates: compose/digitalrebar/core
+    - name: copy user ssh public key to rebar
+      file: src=.ssh/id_rsa.pub dest=compose/digitalrebar/core/config/ssh_keys/setup-0.key
+
     - name: Create rebar group
       group: name=rebar gid=1000
     - name: Create rebar user

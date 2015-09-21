@@ -24,6 +24,8 @@ node="{
   \"hostname\": \"${NODENAME}${TSTAMP}\"
 }"
 
+date
+
 DEVICE_ID=`curl -H "Content-Type: application/json" -X POST --data "$node" -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices | jq -r .id`
 
 STATE=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .state`
@@ -32,6 +34,8 @@ while [ "$STATE" != "active" ] ; do
   sleep 5
   STATE=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .state`
 done
+
+date
 
 # Get Public IP - HACK - should look it up
 IP=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .ip_addresses[0].address`
@@ -47,3 +51,4 @@ echo "$IP ansible_ssh_user=root" > run-in-hosts
 export ANSIBLE_HOST_KEY_CHECKING=False
 ansible-playbook -i run-in-hosts compose.yml
 
+date
