@@ -29,6 +29,11 @@ if ! which docker-compose &>/dev/null; then
     exit 1
 fi
 
+if ! which jq &>/dev/null; then
+    echo "Please install jq!"
+    exit 1
+fi
+
 if [[ $0 = /* ]]; then
     mountdir="$0"
 elif [[ $0 = .*  || $0 = */* ]]; then
