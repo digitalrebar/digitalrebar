@@ -78,6 +78,10 @@ if [[ -f $HOME/.ssh/id_rsa.pub ]]; then
 fi
 
 cd "$mountdir/deploy/compose"
+if which chcon &>/dev/null; then
+    chcon -Rt svirt_sandbox_file_t config-dir/
+    chcon -Rt svirt_sandbox_file_t "$HOME/.cache/digitalrebar/tftpboot"
+fi
 docker-compose pull
 docker-compose up -d
 echo "Bringing containers up.  Exiting the shell will kill and remove the containers"
