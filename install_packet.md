@@ -1,6 +1,6 @@
-# Running on Packet.net
+# Running on [Packet.net](http://packet.net)
 
-The following instructions require that you have an account at Packet.net.  They could be adapted to work for other hosting providers since the Ansible script used is generic.
+The following instructions require that you have an account at [Packet.net](https://app.packet.net/#/registration).  They could be adapted to work for other hosting providers since the Ansible script used is generic.
 
 1. Create an account at Packet.net
   1. Note your API key
