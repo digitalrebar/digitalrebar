@@ -27,17 +27,10 @@ else
 fi
 
 # This gets us to core
-mountdir="${mountdir%/tools/docker-admin}"
+mountdir="${mountdir%/tools/docker-admin-up}"
 # This gets us to the parent directory of core, where presumably the rest of our repos are checked out
 mountdir="${mountdir%/*}"
 
 . "$mountdir/core/tools/da-lib.sh"
 
 bring_up_admin_containers
-
-echo "Bringing containers up.  Exiting the shell will kill and remove the containers"
-export PS1="(docker-compose) $PS1"
-export REBAR_ENDPOINT="http://127.0.0.1:3000"
-export REBAR_KEY="rebar:rebar1"
-/bin/bash -i
-tear_down_admin_containers
