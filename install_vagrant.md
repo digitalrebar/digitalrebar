@@ -4,7 +4,9 @@
 
 The following documentation will setup a complete running Digital Rebar admin node for test purposes.
 
-> Behind the scenes, this process uses the [Ansible playbook](install_ansible.md) install.
+> Behind the scenes, this process uses an [Ansible playbook](install_ansible.md) install.
+
+> You cannot run a local docker-compose instance of Digital Rebar and do Vagrant installs at the same time.
 
 ## Prereqs
 

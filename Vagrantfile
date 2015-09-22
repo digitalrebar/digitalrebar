@@ -7,6 +7,10 @@ ADMIN_IP = "192.168.124.10"
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
+  puts "======================="
+  puts "WARNING > EXPERIMENTAL!"
+  puts "======================="
+
   config.vm.define "admin", primary: true do |admin|
   
     admin.vm.box = BASE_OS_BOX
@@ -22,7 +26,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     admin.vm.provider "virtualbox" do |vb|
       vb.memory = "8192"
-      vb.cpus = 2
+      vb.cpus = 4
     end
 
     admin.vm.provision "ansible" do |ansible|

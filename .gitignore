@@ -25,4 +25,8 @@ install-*.log
 .idea
 Berksfile.lock
 
+# Used by run-in-packet.sh
 run-in-hosts
+
+# Used by Vagrant 
+rebar-key.sh

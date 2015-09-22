@@ -1,5 +1,5 @@
 --- 
-- name: Install Digital Rebar by RackN 2015
+- name: Vagrant Install Digital Rebar by RackN 2015
   # based on https://github.com/digitalrebar/doc
   hosts: all
   sudo: yes
@@ -26,6 +26,10 @@
 
     - name: allow docker access after reboot
       command: sudo usermod -a -G docker vagrant
+    - name: create SSH key for host to access slaves
+      command: ssh-keygen -t rsa -f '.ssh/id_rsa' -P ''
+      args:
+        creates: .ssh/id_rsa.pub
 
     - name: get code from local system
       synchronize: src=./compose dest=~ rsync_path="rsync"
@@ -38,6 +42,10 @@
         chdir: /home/vagrant/compose
         creates: compose/digitalrebar/core
       ignore_errors: yes
+    - name: copy user ssh public key to rebar
+      command: cp .ssh/id_rsa.pub compose/digitalrebar/core/config/ssh_keys/setup-0.key
+      args:
+        creates: compose/digitalrebar/core/config/ssh_keys/setup-0.key
 
     - name: Pull Digital Rebar Images [SLOW]
       command: docker-compose pull
@@ -50,7 +58,9 @@
 
     - name: wait until service is up (1 to 10 minutes)
       wait_for: port=3000 delay=60 timeout=600
-    - name: wait for rebar-key (1 to 20 minutes)
-      wait_for: path=/home/vagrant/compose/data-dir/node/rebar-key.sh state=present delay=60 timeout=1200
+    - name: wait for rebar-key (1 to 30 minutes)
+      wait_for: path=/home/vagrant/compose/data-dir/node/rebar-key.sh state=present delay=60 timeout=1800
     - name: copy rebar key to shared area
-      file: src=/home/vagrant/compose/data-dir/node/rebar-key.sh dest=/vagrant/rebar-key.sh force=yes
+      command: cp /home/vagrant/compose/data-dir/node/rebar-key.sh /vagrant/rebar-key.sh
+      args:
+        creates: /vagrant/rebar-key.sh
