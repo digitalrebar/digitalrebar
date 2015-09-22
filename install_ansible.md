@@ -1,4 +1,4 @@
-# Using the Ansible Playbook
+# Using the [Ansible](http://ansible.com) Playbook
 
 The following documentation will setup a complete running Digital Rebar system for test purposes.
 
