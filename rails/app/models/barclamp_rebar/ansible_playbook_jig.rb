@@ -59,19 +59,23 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     FileUtils.mkdir_p(cache_dir)
     role_cache_dir = "#{cache_dir}/#{nr.role.name}"
 
-    unless File.exists?("#{role_cache_dir}")
-      if role_yaml['playbook_src_path'] =~ /^http/
-        # Load the git cache
-        out, err, status = exec_cmd("git clone #{role_yaml['playbook_src_path']} #{role_cache_dir}")
-        die "Failed to get @ #{role_file}: #{out} #{err}" unless status.success?
+    File.open("#{cache_dir}/lock", File::RDWR|File::CREAT, 0644) do |f1|
+      f1.flock(File::LOCK_EX)
+
+      unless File.exists?("#{role_cache_dir}")
+        if role_yaml['playbook_src_path'] =~ /^http/
+          # Load the git cache
+          out, err, status = exec_cmd("git clone #{role_yaml['playbook_src_path']} #{role_cache_dir}")
+          die "Failed to get @ #{role_file}: #{out} #{err}" unless status.success?
+        else
+          FileUtils.cp_r("#{local_scripts}/#{role_yaml['playbook_src_path']}/.", "#{role_cache_dir}")
+        end
       else
-        FileUtils.cp_r("#{local_scripts}/#{role_yaml['playbook_src_path']}/.", "#{role_cache_dir}")
-      end
-    else
-      if role_yaml['playbook_src_path'] =~ /^http/
-        # Update git repos??
-      else
-        FileUtils.cp_r("#{local_scripts}/#{role_yaml['playbook_src_path']}/.", "#{role_cache_dir}")
+        if role_yaml['playbook_src_path'] =~ /^http/
+          # Update git repos??
+        else
+          FileUtils.cp_r("#{local_scripts}/#{role_yaml['playbook_src_path']}/.", "#{role_cache_dir}")
+        end
       end
     end
 
