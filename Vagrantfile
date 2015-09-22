@@ -35,10 +35,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       ansible.playbook = "vagrant.yml"
     end
 
-  end
+    puts "To monitor > http://#{ADMIN_IP}:8500 (Consul) and http://#{ADMIN_IP}:3000 (Digital Rebar)"
+    puts "After the system is up, you can start the nodes using `vagrant up /node[1-3]/`"
 
-  puts "To monitor #{ADMIN_IP}:8500 (Consul) and #{ADMIN_IP}:3000 (Digital Rebar)"
-  puts "After the system is up, you can start the nodes using `vagrant up /node[1-3]/`"
+  end
 
   config.vm.define "node1", autostart:false do |slave|
 
