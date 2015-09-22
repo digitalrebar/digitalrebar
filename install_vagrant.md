@@ -1,4 +1,6 @@
-# Vagrant Install of Digital Rebar
+# [Vagrant](https://www.vagrantup.com/) Install of Digital Rebar
+
+*WARNING: EXPERIMENTAL*
 
 The following documentation will setup a complete running Digital Rebar admin node for test purposes.
 
