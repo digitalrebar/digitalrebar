@@ -23,10 +23,10 @@ On your local workstation:
 
 From your workstation:
 
-  * put the `Vagrantfile` and `ubuntu1404.yml` files in a directory (cloning this repo is recommended)
-  * go to that directory
-  * start Vagrant: `vagrant up`
-  * watch and wait (could take a long time depending on your system and connection)
+  * clone this repo: `git clone https://github.com/rackn/digitalrebar-deploy.git deploy`
+  * go to that `cd deploy`
+  * start Vagrant: `vagrant up admin`  (you must include admin)
+  * watch and wait (could take a long time depending on your system and connection).  First time is slow but many items are cached for next time.
   * you can attach to the Admin container using SSH root@192.168.124.10 or with `docker attach [id]` from the vagrant box (use `vagrant ssh`) 
 
 Note: It will take additional time after the playbook completes before Digital Rebar is available.

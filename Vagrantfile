@@ -11,7 +11,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   puts "WARNING > EXPERIMENTAL!"
   puts "======================="
 
-  config.vm.define "admin", primary: true do |admin|
+  config.vm.define "admin", autostart:false do |admin|
   
     admin.vm.box = BASE_OS_BOX
 
