@@ -68,3 +68,7 @@ export ANSIBLE_HOST_KEY_CHECKING=False
 ansible-playbook -i run-in-hosts compose.yml
 
 date
+
+echo "SSH access: ssh -X root@${IP}"
+echo "Consul UI        http://${IP}:8500"
+echo "Digital Rebar UI http://${IP}:3000"
