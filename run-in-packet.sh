@@ -65,10 +65,12 @@ ssh -o StrictHostKeyChecking=no root@$IP date
 echo "$IP ansible_ssh_user=root" > run-in-hosts
 
 export ANSIBLE_HOST_KEY_CHECKING=False
-ansible-playbook -i run-in-hosts compose.yml
+ansible-playbook -i run-in-hosts packet.yml
 
 date
 
+echo "=== HELPFUL COMMANDS ==="
+echo "repeat Ansible run: ansible-playbook -i run-in-hosts packet.yml"
 echo "SSH access: ssh -X root@${IP}"
 echo "Consul UI        http://${IP}:8500"
 echo "Digital Rebar UI http://${IP}:3000"
