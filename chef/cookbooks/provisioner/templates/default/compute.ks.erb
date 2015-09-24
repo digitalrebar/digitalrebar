@@ -145,6 +145,17 @@ cat >/root/.ssh/authorized_keys <<EOF
 <%= @keys %>
 EOF
 
+# Setup a proxy for the environment
+echo "http_proxy=<%=@proxy%>" >> /etc/environment
+echo "https_proxy=<%=@proxy%>" >> /etc/environment
+echo "no_proxy=127.0.0.1,localhost,::1" >> /etc/environment
+
+# Setup bash proxy env
+mkdir -p /etc/profile.d
+echo "http_proxy=<%=@proxy%>" >> /etc/profile.d/proxy.sh
+echo "https_proxy=<%=@proxy%>" >> /etc/profile.d/proxy.sh
+echo "no_proxy=127.0.0.1,localhost,::1" >> /etc/profile.d/proxy.sh
+
 echo "PermitRootLogin without-password" >> /etc/ssh/sshd_config
 
 # Allow client to pass http proxy environment variables

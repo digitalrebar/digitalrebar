@@ -29,7 +29,17 @@ when "centos"
   service_name = "lldpad" if node[:platform_version] == "6.5"
 end
 
-package package_name unless system("which #{service_name}")
+unless system("which #{service_name}")
+  case node[:platform]
+  when 'ubuntu','debian'
+    package package_name do
+          action :install
+          options '--force-yes'
+    end
+  else
+    package package_name
+  end
+end
 
 service service_name do
   action [ :enable, :start ]
