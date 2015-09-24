@@ -1,0 +1,11 @@
+--- 
+- name: Install Digital Rebar by RackN 2015
+  hosts: all
+  sudo: yes
+  tasks:
+    - include: tasks/centos07-base.yml
+      when: ansible_os_family == "RedHat"
+    - include: tasks/ubuntu1404-base.yml
+      when: ansible_os_family == "Debian"
+    - include: tasks/docker.yml
+    - include: tasks/compose.yml
