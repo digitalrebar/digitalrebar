@@ -58,6 +58,7 @@ roles:
     description: 'Provides a chef client.'
     requires:
       - chef-service
+      - proxy-client
     flags:
       - implicit
     attribs:

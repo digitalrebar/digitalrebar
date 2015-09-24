@@ -55,7 +55,7 @@ roles:
             - type: str
               pattern: '/\Ahttp:\/\/.+\z/'
   - name: proxy-client
-    jig: chef
+    jig: script
     flags:
       - implicit
     wants-attribs:
