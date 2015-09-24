@@ -43,7 +43,11 @@ https_proxy=$proxy_str
 no_proxy=$no_proxy
 EOF
 
-cp /etc/environment /etc/profile.d/proxy.sh
+cat >/etc/profile.d/proxy.sh <<EOF
+export http_proxy=$proxy_str
+export https_proxy=$proxy_str
+export no_proxy=$no_proxy
+EOF
 
 if [ -e /etc/yum.repos.d ] ; then
   if [ -e /etc/os-release ] ; then
