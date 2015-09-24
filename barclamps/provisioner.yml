@@ -133,47 +133,14 @@ roles:
                 "online_mirror": { type: str, required: false }
                 "codename": { type: str, required: false }
         default:
-          "xenserver-6.5":
-            "initrd": ""
-            "kernel": "boot/pxelinux/mboot.c32"
-            "iso_file": "XenServer-6.5.0-xenserver.org-install-cd.iso"
-            "codename": "xenserver"
-          "esxi-5.5":
-            "initrd": ""
-            "kernel": "mboot.c32"
-            "iso_file": "VMware-VMvisor-Installer-5.5.0.update02-2068190.x86_64.iso"
-            "codename": "esxi"
-          "fuel-6.0":
-            "initrd": "isolinux/initrd.img"
-            "kernel": "isolinux/vmlinuz"
-            "iso_file": "MirantisOpenStack-6.0.iso"
-            "append": "biosdevname=0 showmenu=no"
-            "example_holder": "biosdevname=0 ks=nfs:10.20.0.1:/var/lib/tftpboot/fuel/ks.cfg repo=nfs:10.20.0.1:/var/lib/tftpboot/fuel ip=10.20.0.2 netmask=255.255.255.0 gw=10.20.0.1 dns1=10.20.0.1 hostname=fuel.mirantis.com showmenu=no"
-            "codename": "fuel"
-          "ubuntu-12.04":
-            "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz"
-            "kernel": "install/netboot/ubuntu-installer/amd64/linux"
-            "append": "debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --"
-            "online_mirror": "http://us.archive.ubuntu.com/ubuntu/"
-            "iso_mirror": "http://mirrors.kernel.org/ubuntu-releases/precise/ubuntu-12.04.5-server-amd64.iso"
-            "iso_file": "ubuntu-12.04.5-server-amd64.iso"
-            "codename": "precise"
-          "ubuntu-12.04.3":
-            "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz"
-            "kernel": "install/netboot/ubuntu-installer/amd64/linux"
-            "append": "debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --"
-            "online_mirror": "http://us.archive.ubuntu.com/ubuntu/"
-            "iso_mirror": "http://mirrors.kernel.org/ubuntu-releases/precise/ubuntu-12.04.3-server-amd64.iso"
-            "iso_file": "ubuntu-12.04.3-server-amd64.iso"
-            "codename": "precise"
-          "ubuntu-15.04":
-            "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz"
-            "kernel": "install/netboot/ubuntu-installer/amd64/linux"
-            "append": "debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --"
-            "online_mirror": "http://us.archive.ubuntu.com/ubuntu/"
-            "iso_mirror": "http://mirrors.kernel.org/ubuntu-releases/vivid/ubuntu-15.04-server-amd64.iso"
-            "iso_file": "ubuntu-15.04-server-amd64.iso"
-            "codename": "vivid"
+          # primary supported OSes
+          "centos-7.1.1503":
+            "initrd": "images/pxeboot/initrd.img"
+            "kernel": "images/pxeboot/vmlinuz"
+            "append": "method=%os_install_site% inst.geoloc=0"
+            "iso_mirror": "http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso"
+            "iso_file": "CentOS-7-x86_64-Minimal-1503-01.iso"
+            "online_mirror": "http://mirrors.kernel.org/centos/7/"
           "ubuntu-14.04":
             "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz"
             "kernel": "install/netboot/ubuntu-installer/amd64/linux"
@@ -182,22 +149,15 @@ roles:
             "iso_mirror": "http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.2-server-amd64.iso"
             "iso_file": "ubuntu-14.04.2-server-amd64.iso"
             "codename": "trusty"
-          "debian-7.8.0":
-            "initrd": "initrd.gz"
-            "kernel": "linux"
-            "append": "priority=critical console-tools/archs=at console-setup/charmap=UTF-8 console-keymaps-at/keymap=us popularity-contest/participate=false passwd/root-login=false keyboard-configuration/xkb-keymap=us netcfg/get_domain=unassigned-domain console-setup/ask_detect=false debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --"
-            "online_mirror": "http://ftp.us.debian.org/debian/"
-            "iso_file": "debian-7.8.0-mini-amd64.iso"
-            "iso_mirror": "http://mirrors.kernel.org/debian/dists/wheezy/main/installer-amd64/current/images/netboot/mini.iso"
-            "codename": "wheezy"
-          "debian-8.1.0":
-            "initrd": "initrd.gz"
-            "kernel": "linux"
-            "append": "priority=critical console-tools/archs=at console-setup/charmap=UTF-8 console-keymaps-at/keymap=us popularity-contest/participate=false passwd/root-login=false keyboard-configuration/xkb-keymap=us netcfg/get_domain=unassigned-domain console-setup/ask_detect=false debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --"
-            "online_mirror": "http://ftp.us.debian.org/debian/"
-            "iso_mirror": "http://mirrors.kernel.org/debian/dists/jessie/main/installer-amd64/current/images/netboot/mini.iso"
-            "iso_file": "debian-8.1.0-mini-amd64.iso"
-            "codename": "jessie"
+          "ubuntu-15.04":
+            "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz"
+            "kernel": "install/netboot/ubuntu-installer/amd64/linux"
+            "append": "debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --"
+            "online_mirror": "http://us.archive.ubuntu.com/ubuntu/"
+            "iso_mirror": "http://mirrors.kernel.org/ubuntu-releases/vivid/ubuntu-15.04-server-amd64.iso"
+            "iso_file": "ubuntu-15.04-server-amd64.iso"
+            "codename": "vivid"
+          # legacy OSes
           "redhat-6.5":
             "initrd": "images/pxeboot/initrd.img"
             "kernel": "images/pxeboot/vmlinuz"
@@ -216,18 +176,61 @@ roles:
             "iso_mirror": "http://mirrors.kernel.org/centos/6.6/isos/x86_64/CentOS-6.6-x86_64-bin-DVD1.iso"
             "iso_file": "CentOS-6.6-x86_64-bin-DVD1.iso"
             "online_mirror": "http://mirrors.kernel.org/centos/6/"
+          "ubuntu-12.04":
+            "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz"
+            "kernel": "install/netboot/ubuntu-installer/amd64/linux"
+            "append": "debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --"
+            "online_mirror": "http://us.archive.ubuntu.com/ubuntu/"
+            "iso_mirror": "http://mirrors.kernel.org/ubuntu-releases/precise/ubuntu-12.04.5-server-amd64.iso"
+            "iso_file": "ubuntu-12.04.5-server-amd64.iso"
+            "codename": "precise"
+          "ubuntu-12.04.3":
+            "initrd": "install/netboot/ubuntu-installer/amd64/initrd.gz"
+            "kernel": "install/netboot/ubuntu-installer/amd64/linux"
+            "append": "debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --"
+            "online_mirror": "http://us.archive.ubuntu.com/ubuntu/"
+            "iso_mirror": "http://mirrors.kernel.org/ubuntu-releases/precise/ubuntu-12.04.3-server-amd64.iso"
+            "iso_file": "ubuntu-12.04.3-server-amd64.iso"
+            "codename": "precise"
+          # experimental/community support
           "redhat-7.0":
             "initrd": "images/pxeboot/initrd.img"
             "kernel": "images/pxeboot/vmlinuz"
             "iso_file": "rhel-server-7.0-x86_64-dvd.iso"
             "append": "method=%os_install_site% inst.geoloc=0"
-          "centos-7.1.1503":
-            "initrd": "images/pxeboot/initrd.img"
-            "kernel": "images/pxeboot/vmlinuz"
-            "append": "method=%os_install_site% inst.geoloc=0"
-            "iso_mirror": "http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso"
-            "iso_file": "CentOS-7-x86_64-Minimal-1503-01.iso"
-            "online_mirror": "http://mirrors.kernel.org/centos/7/"
+          "xenserver-6.5":
+            "initrd": ""
+            "kernel": "boot/pxelinux/mboot.c32"
+            "iso_file": "XenServer-6.5.0-xenserver.org-install-cd.iso"
+            "codename": "xenserver"
+          "esxi-5.5":
+            "initrd": ""
+            "kernel": "mboot.c32"
+            "iso_file": "VMware-VMvisor-Installer-5.5.0.update02-2068190.x86_64.iso"
+            "codename": "esxi"
+          "fuel-6.0":
+            "initrd": "isolinux/initrd.img"
+            "kernel": "isolinux/vmlinuz"
+            "iso_file": "MirantisOpenStack-6.0.iso"
+            "append": "biosdevname=0 showmenu=no"
+            "example_holder": "biosdevname=0 ks=nfs:10.20.0.1:/var/lib/tftpboot/fuel/ks.cfg repo=nfs:10.20.0.1:/var/lib/tftpboot/fuel ip=10.20.0.2 netmask=255.255.255.0 gw=10.20.0.1 dns1=10.20.0.1 hostname=fuel.mirantis.com showmenu=no"
+            "codename": "fuel"
+          "debian-7.8.0":
+            "initrd": "initrd.gz"
+            "kernel": "linux"
+            "append": "priority=critical console-tools/archs=at console-setup/charmap=UTF-8 console-keymaps-at/keymap=us popularity-contest/participate=false passwd/root-login=false keyboard-configuration/xkb-keymap=us netcfg/get_domain=unassigned-domain console-setup/ask_detect=false debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --"
+            "online_mirror": "http://ftp.us.debian.org/debian/"
+            "iso_file": "debian-7.8.0-mini-amd64.iso"
+            "iso_mirror": "http://mirrors.kernel.org/debian/dists/wheezy/main/installer-amd64/current/images/netboot/mini.iso"
+            "codename": "wheezy"
+          "debian-8.1.0":
+            "initrd": "initrd.gz"
+            "kernel": "linux"
+            "append": "priority=critical console-tools/archs=at console-setup/charmap=UTF-8 console-keymaps-at/keymap=us popularity-contest/participate=false passwd/root-login=false keyboard-configuration/xkb-keymap=us netcfg/get_domain=unassigned-domain console-setup/ask_detect=false debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto root=/dev/ram rw quiet --"
+            "online_mirror": "http://ftp.us.debian.org/debian/"
+            "iso_mirror": "http://mirrors.kernel.org/debian/dists/jessie/main/installer-amd64/current/images/netboot/mini.iso"
+            "iso_file": "debian-8.1.0-mini-amd64.iso"
+            "codename": "jessie"
           "fedora-20":
             "initrd": "images/pxeboot/initrd.img"
             "kernel": "images/pxeboot/vmlinuz"
@@ -246,7 +249,6 @@ roles:
             "initrd": "coreos/cpio.gz"
             "kernel": "coreos/vmlinuz"
             "iso_file": "coreos_production_iso_image.iso"
-
 
   - name: provisioner-database
     jig: chef
