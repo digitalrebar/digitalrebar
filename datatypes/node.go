@@ -30,6 +30,14 @@ type Node struct {
 	// If it is 0, then the annealer will try to converge all the roles bound to the node.
 	TargetRoleID int64    `json:"target_role_id"`
 	Quirks       []string `json:"quirks"`
+	// The variety of node this is.  Defaults to "metal", which is the only type we know
+	// about right now.
+	Variant string `json:"variant"`
+	// The architecture of the node.  Roughly analogous to the ISA
+	Arch string `json:"arch"`
+	// The type of operating system the node is running. Should be something like
+	// "linux", "freebsd", "windows", etc.
+	OsFamily string `json:"os_family"`
 }
 
 func (o *Node) ApiName() string {
