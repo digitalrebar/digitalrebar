@@ -16,6 +16,26 @@ if ! which docker-compose &>/dev/null; then
     exit 1
 fi
 
+rebar() {
+    docker exec compose_rebar_api_1 rebar -E http://127.0.0.1:3000 -U rebar -P rebar1 "$@"
+}
+
+retry_until() {
+    # $1 = seconds to wait
+    # $2 = message to print on timeout
+    # rest = command to retry
+    local count="$1" msg="$2"
+    shift 2
+    while ! "$@" &>/dev/null; do
+        count=$((count - 1))
+        if ((count == 0)); then
+            echo "$msg" >&2
+            return 1
+        fi
+        sleep 1
+    done
+}
+
 bridge="docker0"
 bridge_re='-b=([^ ])'
 bridge_addr_re='inet ([0-9.]+)/'
@@ -61,6 +81,22 @@ bring_up_admin_containers() {
     docker-compose up -d
 }
 
+wait_for_admin_containers() {
+    echo "Waiting on API to start (up to 240 seconds)"
+    retry_until 240 \
+                "Took too long for rebar container to come up" \
+                rebar ping || exit 1
+    echo "Waiting for the provisioner (up to 480 seconds)"
+    retry_until 480 \
+                "Took too long for the provisioner to come up" \
+                rebar nodes show provisioner.local.neode.org || exit 1
+    sleep 5
+    echo "Waiting for rebar to converge (up to 10 minutes)"
+    if ! rebar converge; then
+        echo "Rebar failed to converge!"
+        exit 1
+    fi
+}
 
 tear_down_admin_containers() {
     cd "$mountdir/deploy/compose"

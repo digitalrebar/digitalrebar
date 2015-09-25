@@ -172,10 +172,7 @@ class DrillConsolidated < ActiveRecord::Migration
       t.timestamps
     end
     add_index(:role_require_attribs, [:role_id, :attrib_name], :unique => true)
-    # Create a view that allows us to recursively get all the parents
-    # and children of a given role.  Holes in the graph will have NULL
-    # in place of parent_id.
-
+    
     create_table :nodes do |t|
       t.text        :name,           limit: 255,     null: false
       t.text        :description,    null: false, default: ''
@@ -183,6 +180,9 @@ class DrillConsolidated < ActiveRecord::Migration
       t.boolean     :admin,          default: false
       t.integer     :target_role_id, null: true, foreign_key: { references: :roles }
       t.belongs_to  :deployment,     null: false
+      t.text        :variant,        null: false,   default: "metal"
+      t.text        :arch,           null: false,   default: "x86_64"
+      t.text        :os_family,      null: false,   default: "linux"
       t.json        :discovery,      null: false,   default: { expr: "'{}'::json" }
       t.json        :hint,           null: false,   default: { expr: "'{}'::json" }
       t.boolean     :allocated,      null: false,   default: false

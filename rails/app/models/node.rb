@@ -548,12 +548,28 @@ class Node < ActiveRecord::Base
   end
 
   def on_create_hooks
-    # Call all role on_node_create hooks with self.
-   # These should happen synchronously.
-    # do the low cohorts first
-    if !self.is_system?
-      Hammer.bind(manager_name: "ssh", username: "root", node: self)
+    # Handle node creation as needed
+    case
+    when self.variant == "metal"
+      # No seperate node creation steps needed
+      true
+    else
+      raise "Cannot handle node create for node #{node.name} variant #{node.variant}"
     end
+    # Handle binding the default hammers for this node.
+    case
+    when self.is_system?
+      # System nodes do not actually exist, so they do not get default hammers.
+      true
+    when self.os_family == "linux"
+      # Linux systems start off with the ssh hammer.
+      Hammer.bind(manager_name: "ssh", username: "root", node: self)
+    else
+      raise "No idea which hammer to bind by default"
+    end
+    # Call all role on_node_create hooks with self.
+    # These should happen synchronously.
+    # do the low cohorts first
     Rails.logger.info("Node: calling all role on_node_create hooks for #{name}")
     Role.all_cohorts.each do |r|
       Rails.logger.info("Node: Calling #{r.name} on_node_create for #{self.name}")
