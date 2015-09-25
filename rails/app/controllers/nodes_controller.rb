@@ -195,8 +195,15 @@ class NodesController < ApplicationController
     else
       params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
       params[:deployment_id] ||= Deployment.system
+      params[:variant] ||= "metal"
+      params[:arch] ||= "x86_64"
+      params[:os_family] ||= "linux"
       params.require(:name)
       params.require(:deployment_id)
+      params.require(:variant)
+      params.require(:arch)
+      params.require(:os_family)
+      hints = params[:hints] || {}
       default_net = nil
       Node.transaction do
         @node = Node.create!(params.permit(:name,
@@ -207,13 +214,20 @@ class NodesController < ApplicationController
                                            :alive,
                                            :system,
                                            :available,
-                                           :bootenv))
+                                           :bootenv,
+                                           :variant,
+                                           :arch,
+                                           :os_family))
         # Keep suport for mac and ip hints in short form around for legacy Sledgehammer purposes
         if params[:ip]
           default_net = Network.lookup_network(params[:ip]) ||
                         Network.find_by!(name: "unmanaged-internal")
-          Attrib.set("hint-#{default_net.name}-v4addr",@node,params[:ip]) if default_net
-          Attrib.set("hint-admin-macs", @node, [params[:mac]]) if params[:mac]
+          hints["hint-#{default_net.name}-v4addr"] = params[:ip]
+        end
+        hints["hint-admin-macs"] = [params[:mac]] if params[:mac]
+        # Set any hints we got with node creation.
+        hints.each do |k,v|
+          Attrib.set(k,@node,v)
         end
       end
       default_net.make_node_role(@node) if default_net

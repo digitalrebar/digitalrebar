@@ -92,6 +92,9 @@ if ! [[ $(cat /proc/cmdline) =~ $host_re ]]; then
           -d "name=$HOSTNAME" \
           -d "mac=$MAC" \
           -d "ip=$IP" \
+          -d "variant=metal" \
+          -d "os_family=linux" \
+          -d "arch=$(uname -m)" \
           "$REBAR_WEB/api/v2/nodes/" || {
             echo "We could not create a node for ourself!"
             exit 1
@@ -126,9 +129,11 @@ fi
 curl -f -g --digest -u "$REBAR_KEY" \
     -X PUT "$REBAR_WEB/api/v2/nodes/$HOSTNAME" \
     -d 'alive=false' \
-    -d 'bootenv=sledgehammer'
+    -d 'bootenv=sledgehammer' \
+    -d "variant=metal" \
+    -d "os_family=linux" \
+    -d "arch=$(uname -m)"
 echo "Set node not alive - will be set in control.sh!"
-
 
 # Figure out the admin network name
 the_netname=""
