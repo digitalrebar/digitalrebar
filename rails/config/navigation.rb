@@ -29,24 +29,24 @@ SimpleNavigation::Configuration.run do |navigation|
             # render menu items from the database
             item.children.each do |nav|
               if nav.path and nav.path.starts_with? 'http'
-                secondary.item nav.item.to_sym, t(nav.name), nav.path.to_s, {:title=>t(nav.description, :default=>t(nav.name)), :link => { :target => "_blank" } } 
+                secondary.item nav.item.to_sym, t(nav.name), nav.path.to_s, :html => {:title=>t(nav.description, :default=>t(nav.name)), :link => { :target => "_blank" } } 
               elsif nav.item.starts_with? 'wizard_'
-                secondary.item nav.item.to_sym, nav.name, nav.path.to_s, {:title=>nav.description} 
+                secondary.item nav.item.to_sym, nav.name, nav.path.to_s, :html => {:title=>nav.description} 
               elsif nav.path =~ /(.*)_path/ 
                 if nav.development 
                   next unless current_user and current_user.settings(:ui).edge
-                  secondary.item nav.item.to_sym, "[#{t(nav.name)}]", eval(nav.path), {:title=>"Dev Mode: #{t(nav.description, :default=>t(nav.name))}"} 
+                  secondary.item nav.item.to_sym, "[#{t(nav.name)}]", eval(nav.path), :html => {:title=>"Dev Mode: #{t(nav.description, :default=>t(nav.name))}"} 
                 else
-                    secondary.item nav.item.to_sym, t(nav.name), eval(nav.path), {:title=>t(nav.description, :default=>t(nav.name))}  do |tertiary|
+                    secondary.item nav.item.to_sym, t(nav.name), eval(nav.path), :html => {:title=>t(nav.description, :default=>t(nav.name))}  do |tertiary|
                       # deployments helper
                     begin
                       if nav.name.eql? 'nav.deployments'
                         Deployment.all.each do |d|
-                          tertiary.item nav.item.to_sym, d.name, deployment_path(d.id), {:title=>d.description }
+                          tertiary.item nav.item.to_sym, d.name, deployment_path(d.id), :html => {:title=>d.description }
                         end
                       elsif nav.name.eql? 'nav.monitor'
                         Deployment.all.each do |d|
-                          tertiary.item nav.item.to_sym, d.name, monitor_path(d.id), {:title=>d.description }
+                          tertiary.item nav.item.to_sym, d.name, monitor_path(d.id), :html => {:title=>d.description }
                         end
                       end            
                     rescue
@@ -58,12 +58,12 @@ SimpleNavigation::Configuration.run do |navigation|
             end
           end
         rescue StandardError => e
-          primary.item :menu_error, "#{t 'nav.error'}: #{item.item}", '', {:title=>e.inspect}
+          primary.item :menu_error, "#{t 'nav.error'}: #{item.item}", '', :html => {:title=>e.inspect}
           Rails.logger.error "navigation: #{e.inspect}" 
         end
       end
     end
     # add link to help
-    primary.item :help, t('nav.help'), Rails.configuration.rebar.docs, {:title=>t('name.help_description')}
+    primary.item :help, t('nav.help'), Rails.configuration.rebar.docs, :html => {:title=>t('nav.help_description')}, :link_html => {:target=>"_blank"}
   end
 end

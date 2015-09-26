@@ -129,7 +129,7 @@ en:
     barclamps_description: "Provisioning and Operations Modules "
 
     help: Help
-    help_description: Help
+    help_description: "Online Documentation"
 
     sign_out: "Sign Out"
     sign_out_description: "End the current session"
