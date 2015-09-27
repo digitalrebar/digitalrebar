@@ -145,8 +145,12 @@ step(_Global, {step_given, _N, ["REST creates the",Object,Name]}) ->
 
 step(_Given, {step_when, {ScenarioID, _N}, ["REST creates the",Object,Name]}) -> 
   bdd_utils:log(debug, bdd_restrat, step, "REST creates the ~p ~p", [alias(Object), Name]),
-  JSON = alias(Object, json, [Name, alias(Object, g, [description]), alias(Object, g, [order])]),
   Path = alias(Object, g, [path]),
+  Sample_Path = eurl:path([alias(Object, g, [path]), "sample"]),
+  Sample = eurl:get_http(Sample_Path),
+  {obj, rebar, _, Sample_JSON, _, _} = get_object(Sample),
+  New_JSON = json:parse(alias(Object, json, [Name, alias(Object, g, [description]), alias(Object, g, [order])])),
+  JSON = json:output(bdd_utils:json_merge(Sample_JSON, New_JSON)),
   create(Path, JSON, Object, ScenarioID);
 
 step(_Given, {step_when, _N, ["REST updates the",Object,Name]}) when is_atom(Object) -> 
