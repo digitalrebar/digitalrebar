@@ -36,6 +36,8 @@
     - name: remove rebar-key file
       file: path=/home/vagrant/compose/data-dir/node/rebar-key.sh state=absent
 
+    - name: make sure there's no digitalrebar directory
+      command: sudo rm -rf compose/digitalrebar
     - name: setup compose
       command: ./setup.sh
       args:

@@ -21,8 +21,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     admin.vm.network "private_network", ip: "10.10.10.10", auto_config: false
 
     # avoid redownloading large files      
-    Files.mkdir "~/.cache/digitalrebar/tftpboot" rescue nil
-    admin.vm.synced_folder "~/.cache/digitalrebar/tftpboot", "/home/vagrant/.cache/digitalrebar/tftpboot"
+    FileUtils.mkdir_p "~/.cache/digitalrebar/vagrant"
+    admin.vm.synced_folder "~/.cache/digitalrebar/tftpboot", "/home/vagrant/.cache/digitalrebar/vagrant"
 
     admin.vm.provider "virtualbox" do |vb|
       vb.memory = "8192"
