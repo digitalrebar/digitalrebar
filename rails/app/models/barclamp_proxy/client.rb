@@ -20,4 +20,18 @@ class BarclampProxy::Client < Role
     { :proxy => { :admin_addrs => admin_addrs } }
   end
 
+  # If the nodes networking changes, then we need to rerun the role
+  def on_network_allocation_create(na)
+    nr = NodeRoles.peers_by_node_and_role(na.node, self).first rescue nil
+    if nr
+      Run.enqueue(nr)
+    end
+  end
+
+  def on_network_allocation_delete(na)
+    nr = NodeRoles.peers_by_node_and_role(na.node, self).first rescue nil
+    if nr
+      Run.enqueue(nr)
+    end
+  end
 end
