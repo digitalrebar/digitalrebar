@@ -5,12 +5,13 @@ The following documentation will setup a complete running Digital Rebar system f
 *PRO TIP:* Playbooks can be _localhost_ applied to run local setups!
 
 Available playbooks:
-  * [compose.yml](compose.yml) generic install based on Docker Compose
+  * [digitalrebar.yml](digitalrebar.yml) generic install based on Docker Compose
   * [vagrant.yml](vagrant.yml) Vagrant specific steps
   * Supporting playbooks
     * [docker.yml](tasks/docker.yml) Installs Docker & Compose
     * [ubuntu1404-base.yml](tasks/ubuntu1404-base.yml) Ubuntu Pre-reqs
     * [centos07-base.yml](tasks/centos07-base.yml) Centos Pre-reqs
+    * [packet.yml](packet.yml) Added optimizations for Packet.net
 
 ## Prereqs
 
@@ -23,7 +24,7 @@ You need a target system:
 
 On your local workstation:
 
-  * Clone the Digital Rebar Deploy repo (this one)
+  * Clone the [Digital Rebar Deploy](https://github.com/rackn/digitalrebar-deploy.git) repo - this one!
     * Use `compose/setup.sh` to do this automatically
     * checkout out additional workloads (`compose/setup.sh rackn` will get all)
   * Ansible installed
@@ -40,7 +41,7 @@ On your local workstation:
 
 From your workstation:
 
-  * run the selected playbook: `ansible-playbook [ubuntu1404.yml]`
+  * run the selected playbook: `ansible-playbook [digitalrebar.yml]`
     * include `-u root` if you did _not_ specific an ssh user in inventory
   * watch and wait
   * visit the Digital Rebar UI: http://[system address]:3000

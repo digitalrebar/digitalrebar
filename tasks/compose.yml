@@ -1,0 +1,48 @@
+--- 
+  - name: network mapping
+    command: sudo ip addr add 192.168.124.10/24 dev docker0
+    ignore_errors: yes
+  - name: create SSH key for host to access slaves
+    command: ssh-keygen -t rsa -f '.ssh/id_rsa' -P ''
+    args:
+      creates: .ssh/id_rsa.pub
+  - name: Make cache dirs
+    command: mkdir -p .cache/digitalrebar/tftpboot/isos
+
+  - name: download Ubuntu ISO (SLOW, see https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
+    command: wget http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.3-server-amd64.iso -nc -O .cache/digitalrebar/tftpboot/isos/ubuntu-14.04.2-server-amd64.iso
+    args:
+      creates: .cache/digitalrebar/tftpboot/isos/ubuntu-14.04.2-server-amd64.iso
+  - name: download Centos ISO (SLOW, see https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
+    command: wget http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso -nc -O .cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
+    args:
+      creates: .cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
+
+  - name: get code
+    synchronize: src=./compose dest=/root rsync_path="rsync"
+  - name: setup compose
+    command: ./setup.sh kubernetes
+    args:
+      chdir: compose
+      creates: compose/digitalrebar/core
+  - name: copy user ssh public key to rebar
+    command: cp .ssh/id_rsa.pub compose/digitalrebar/core/config/ssh_keys/setup-0.key
+    args:
+      creates: compose/digitalrebar/core/config/ssh_keys/setup-0.key
+
+  - name: Create rebar group
+    group: name=rebar gid=1000
+  - name: Create rebar user
+    user: name=rebar group=rebar shell=/bin/bash uid=1000
+  - name: Set files to those permissions
+    command: chown -R rebar:rebar compose/digitalrebar
+  - name: Pull compose images [SLOW]
+    command: /usr/local/bin/docker-compose pull
+    args:
+      chdir: compose
+  - name: Compose up containers
+    command: /usr/local/bin/docker-compose up -d
+    args:
+      chdir: compose
+  - name: wait until Digital Rebar service is up [1 upto 5 minutes]
+    wait_for: port=3000 delay=60 timeout=300
