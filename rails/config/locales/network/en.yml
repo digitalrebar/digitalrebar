@@ -66,6 +66,7 @@ en:
     index:
       title: "Installed Networks"
       add: "Add Network"
+      generated: "[category]-[group]"
       <<: *network_common
     show:
       <<: *network_common

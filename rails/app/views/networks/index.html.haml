@@ -33,7 +33,7 @@
   %tfoot
     = form_for :network, :'data-remote' => true, :url => networks_path(), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
       %tr
-        %td= text_field_tag :name, t('default'), :size=>6
+        %td= t('.generated')
         %td= text_field_tag :description, "", :size=>20
         %td= text_field_tag :category, 'general', :size=>10
         %td= text_field_tag :group, 'default', :size=>10
