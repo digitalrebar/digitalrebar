@@ -51,7 +51,7 @@ func main() {
 	}
 
 	// Turn on masquerading
-	ipt.AppendUnique("nat", "POSTROUTING", "-j", "MASQUERADE")
+	ipt.AppendUnique("nat", "POSTROUTING", "-o", "eth0", "-j", "MASQUERADE")
 	if err != nil {
 		log.Printf("Add Masquerade failed: %v\n", err)
 	}
@@ -115,7 +115,6 @@ func main() {
 
 				sport := fmt.Sprintf("%d", service.ServicePort)
 
-				// iptables -t nat -A PREROUTING -p tcp -i eth0 --dport 3000 -j DNAT --to-destination $WEB_HOST:3000
 				err = ipt.AppendUnique("nat", "PREROUTING",
 					"-p", "tcp",
 					"-m", "tcp",
@@ -128,7 +127,6 @@ func main() {
 					log.Printf("Failed to add first rule: %v\n", err)
 				}
 
-				// iptables -A FORWARD -p tcp -d $WEB_HOST --dport 3000 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 				err = ipt.AppendUnique("filter", "FORWARD",
 					"-p", "tcp",
 					"-i", "eth0",
@@ -140,7 +138,6 @@ func main() {
 					log.Printf("Failed to add second rule: %v\n", err)
 				}
 
-				// iptables -t nat -A PREROUTING -p udp -i eth0 --dport 3000 -j DNAT --to-destination $WEB_HOST:3000
 				err = ipt.AppendUnique("nat", "PREROUTING",
 					"-p", "udp",
 					"-m", "udp",
@@ -153,7 +150,6 @@ func main() {
 					log.Printf("Failed to add first rule: %v\n", err)
 				}
 
-				// iptables -A FORWARD -p udp -d $WEB_HOST --dport 3000 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 				err = ipt.AppendUnique("filter", "FORWARD",
 					"-p", "udp",
 					"-i", "eth0",
