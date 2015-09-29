@@ -1,4 +1,12 @@
 #!/bin/bash
+chef_url="$(read_attribute "chefjig/server/url")"
+chef_client="$(read_attribute "chefjig/client/name")"
+chef_key="$(read_attribute "chefjig/client/key")"
+
+if ! [[ $chef_url && $chef_client && $chef_key ]]; then
+    echo "Missing required attribs!"
+    exit 1
+fi
 
 if [[ -f /etc/os-release ]]; then
   . /etc/os-release
@@ -31,7 +39,7 @@ EOF
     elif [[ -d /etc/apt ]]; then
         cd /tmp
         # Stick with 11.x for now.
-        curl -O http://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/10.04/x86_64/chef_11.18.12-1_amd64.deb
+        curl -fgLO http://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/10.04/x86_64/chef_11.18.12-1_amd64.deb
         dpkg -i chef_11.18.12-1_amd64.deb
     elif [[ -f /etc/SuSE-release ]]; then
         zypper install -y -l chef
@@ -54,14 +62,12 @@ EOF
 fi
 
 mkdir -p "/etc/chef"
-url=$(read_attribute "chefjig/server/url")
-clientname=$(read_attribute "chefjig/client/name")
 cat > "/etc/chef/client.rb" <<EOF
 log_level       :info
 log_location    STDOUT
-node_name       '$clientname'
-chef_server_url '$url'
+node_name       '$chef_client'
+chef_server_url '$chef_url'
 client_key      '/etc/chef/client.pem'
 EOF
 
-read_attribute "chefjig/client/key" > "/etc/chef/client.pem"
+printf '%s' "$chef_key" > "/etc/chef/client.pem"
