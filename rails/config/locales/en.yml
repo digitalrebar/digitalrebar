@@ -71,6 +71,7 @@ en:
   prev: "Previous"
   export: "Export"
   default: "Default"
+  generated: "[generated]"
   useradded: "Created by user '%{user}'"
   automatic: "Created Automatically by System"
   automatic_by: "Created Automatically by %{name}"
