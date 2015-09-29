@@ -272,7 +272,7 @@ func updatePaths(p string, val interface{}) {
 	for i := 0; i < v.Len(); i++ {
 		o, ok := v.Index(i).Interface().(Crudder)
 		if !ok {
-			log.Panicf("%#v is not a Crudder", v.Index(i).Interface())
+			return
 		}
 
 		id, err := o.Id()
