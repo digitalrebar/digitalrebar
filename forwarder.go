@@ -6,23 +6,34 @@ import (
 	"github.com/coreos/go-iptables/iptables"
 	"github.com/hashicorp/consul/api"
 	"log"
+	"net"
+	"os/exec"
 	"strings"
 	"time"
 )
 
-var myIP, datacenter string
+var myIPsubnet string
 
 func init() {
-	flag.StringVar(&myIP, "ip", "192.168.124.11", "IP to register services as")
-	flag.StringVar(&datacenter, "dc", "digitalrebar", "Datacenter to use")
+	flag.StringVar(&myIPsubnet, "ip", "192.168.124.11/24", "IP to register services as")
 }
 
 func main() {
 	flag.Parse()
 
-	config := api.DefaultConfig()
-	config.Datacenter = datacenter
-	client, err := api.NewClient(config)
+	myIP, _, err := net.ParseCIDR(myIPsubnet)
+	if err != nil {
+		log.Fatal("Failed to parse ip: ", myIPsubnet, " ", err)
+	}
+
+	// Make sure IP is on the eth0 interface
+	exec.Command("ip", "addr", "del", myIPsubnet, "dev", "eth0").Run()
+	err = exec.Command("ip", "addr", "add", myIPsubnet, "dev", "eth0").Run()
+	if err != nil {
+		log.Fatal("Failed to add IP: ", myIPsubnet, " ", err)
+	}
+
+	client, err := api.NewClient(api.DefaultConfig())
 	if err != nil {
 		log.Fatal("Failed to attach to consul agent: ", err)
 	}
@@ -95,7 +106,7 @@ func main() {
 					Name:    strings.TrimPrefix(service.ServiceName, "internal-"),
 					Tags:    service.ServiceTags,
 					Port:    service.ServicePort,
-					Address: myIP,
+					Address: myIP.String(),
 				}
 				err = agent.ServiceRegister(&asr)
 				if err != nil {
@@ -107,46 +118,46 @@ func main() {
 
 				// iptables -t nat -A PREROUTING -p tcp -i eth0 --dport 3000 -j DNAT --to-destination $WEB_HOST:3000
 				err = ipt.AppendUnique("nat", "PREROUTING",
-					"-j", "DNAT",
-					"--to-destination", saddrport,
-					"--dport", sport,
+					"-p", "tcp",
 					"-i", "eth0",
-					"-p", "tcp")
+					"--dport", sport,
+					"-j", "DNAT",
+					"--to-destination", saddrport)
 				if err != nil {
 					log.Printf("Failed to add first rule: %v\n", err)
 				}
 
 				// iptables -A FORWARD -p tcp -d $WEB_HOST --dport 3000 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 				err = ipt.AppendUnique("filter", "FORWARD",
-					"-j", "ACCEPT",
+					"-p", "tcp",
 					"-d", service.Address,
 					"--dport", sport,
 					"-m", "state",
 					"--state", "NEW,ESTABLISHED,RELATED",
-					"-p", "tcp")
+					"-j", "ACCEPT")
 				if err != nil {
 					log.Printf("Failed to add second rule: %v\n", err)
 				}
 
 				// iptables -t nat -A PREROUTING -p udp -i eth0 --dport 3000 -j DNAT --to-destination $WEB_HOST:3000
 				err = ipt.AppendUnique("nat", "PREROUTING",
-					"-j", "DNAT",
-					"--to-destination", saddrport,
-					"--dport", sport,
+					"-p", "udp",
 					"-i", "eth0",
-					"-p", "udp")
+					"--dport", sport,
+					"-j", "DNAT",
+					"--to-destination", saddrport)
 				if err != nil {
 					log.Printf("Failed to add first rule: %v\n", err)
 				}
 
 				// iptables -A FORWARD -p udp -d $WEB_HOST --dport 3000 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 				err = ipt.AppendUnique("filter", "FORWARD",
-					"-j", "ACCEPT",
+					"-p", "udp",
 					"-d", service.Address,
 					"--dport", sport,
 					"-m", "state",
 					"--state", "NEW,ESTABLISHED,RELATED",
-					"-p", "udp")
+					"-j", "ACCEPT")
 				if err != nil {
 					log.Printf("Failed to add second rule: %v\n", err)
 				}
