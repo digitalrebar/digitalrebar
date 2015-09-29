@@ -10,16 +10,19 @@ import (
 	"time"
 )
 
-var myIP string
+var myIP, datacenter string
 
 func init() {
 	flag.StringVar(&myIP, "ip", "192.168.124.11", "IP to register services as")
+	flag.StringVar(&datacenter, "dc", "digitalrebar", "Datacenter to use")
 }
 
 func main() {
 	flag.Parse()
 
-	client, err := api.NewClient(api.DefaultConfig())
+	config := api.DefaultConfig()
+	config.Datacenter = datacenter
+	client, err := api.NewClient(config)
 	if err != nil {
 		log.Fatal("Failed to attach to conul agent: ", err)
 	}
