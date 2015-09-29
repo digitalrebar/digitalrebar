@@ -262,13 +262,17 @@ func UpdateJSON(o Crudder, toMerge []byte) error {
 
 func updatePaths(p string, val interface{}) {
 	v := reflect.ValueOf(val)
+	for v.Kind() == reflect.Ptr {
+		v = reflect.Indirect(v)
+	}
 	if v.Kind() != reflect.Slice {
+		log.Panic("val must be a Slice")
 		return
 	}
 	for i := 0; i < v.Len(); i++ {
 		o, ok := v.Index(i).Interface().(Crudder)
 		if !ok {
-			return
+			log.Panicf("%#v is not a Crudder", v.Index(i).Interface())
 		}
 
 		id, err := o.Id()

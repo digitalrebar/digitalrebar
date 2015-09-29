@@ -28,15 +28,8 @@ func (o *Node) PowerActions() ([]string, error) {
 // Move moves a Node from its current deployment to a new one.  It is
 // guaranteed to be atomic.
 func (o *Node) Move(depl *Deployment) error {
-	old_deployment_id := o.DeploymentID
-	tgt := fmt.Sprintf("%v?old_deployment_id=%v", urlFor(o), o.DeploymentID)
 	o.DeploymentID = depl.ID
-	inbuf, err := json.Marshal(o)
-	_, err = session.request("PUT", tgt, inbuf)
-	if err != nil {
-		o.DeploymentID = old_deployment_id
-	}
-	return err
+	return Update(o)
 }
 
 // Power performs a power management action for the node.
