@@ -24,7 +24,7 @@ func main() {
 	config.Datacenter = datacenter
 	client, err := api.NewClient(config)
 	if err != nil {
-		log.Fatal("Failed to attach to conul agent: ", err)
+		log.Fatal("Failed to attach to consul agent: ", err)
 	}
 
 	agent := client.Agent()
@@ -50,18 +50,18 @@ func main() {
 		fmt.Println("Reading services")
 		services, meta, err := catalog.Services(&q)
 		if err != nil {
-			log.Fatal("Failed to get service catalog from conul agent: ", err)
+			log.Fatal("Failed to get service catalog from consul agent: ", err)
 		}
 
 		// We need to talk the services and see what has and hasn't been sent out
-		todo := make([]string, 10)
+		todo := make([]string, 0)
 		for k, _ := range services {
 			if strings.HasPrefix(k, "internal-") {
 				todo = append(todo, k)
 			}
 		}
 
-		done := make(map[string]string, 10)
+		done := make(map[string]string, 0)
 		for _, svc := range todo {
 			for k, _ := range services {
 				if "internal-"+k == svc {
@@ -75,7 +75,7 @@ func main() {
 
 			svc_data, _, err := catalog.Service(k, "", nil)
 			if err != nil {
-				log.Fatal("Failed to get service entry from conul agent: ", err)
+				log.Fatal("Failed to get service entry from consul agent: ", err)
 			}
 			for _, service := range svc_data {
 				fmt.Println("  Node: ", service.Node)
@@ -99,7 +99,7 @@ func main() {
 				}
 				err = agent.ServiceRegister(&asr)
 				if err != nil {
-					log.Fatal("Failed to register service entry from conul agent: ", err)
+					log.Fatal("Failed to register service entry from consul agent: ", err)
 				}
 
 				saddrport := fmt.Sprintf("%s:%d", service.Address, service.ServicePort)
