@@ -113,16 +113,17 @@ func main() {
 					log.Fatal("Failed to register service entry from consul agent: ", err)
 				}
 
-				saddrport := fmt.Sprintf("%s:%d", service.Address, service.ServicePort)
 				sport := fmt.Sprintf("%d", service.ServicePort)
 
 				// iptables -t nat -A PREROUTING -p tcp -i eth0 --dport 3000 -j DNAT --to-destination $WEB_HOST:3000
 				err = ipt.AppendUnique("nat", "PREROUTING",
 					"-p", "tcp",
+					"-m", "tcp",
 					"-i", "eth0",
+					"-d", myIP.String(),
 					"--dport", sport,
 					"-j", "DNAT",
-					"--to-destination", saddrport)
+					"--to-destination", service.Address)
 				if err != nil {
 					log.Printf("Failed to add first rule: %v\n", err)
 				}
@@ -130,10 +131,10 @@ func main() {
 				// iptables -A FORWARD -p tcp -d $WEB_HOST --dport 3000 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 				err = ipt.AppendUnique("filter", "FORWARD",
 					"-p", "tcp",
+					"-i", "eth0",
 					"-d", service.Address,
 					"--dport", sport,
-					"-m", "state",
-					"--state", "NEW,ESTABLISHED,RELATED",
+					"-m", "tcp",
 					"-j", "ACCEPT")
 				if err != nil {
 					log.Printf("Failed to add second rule: %v\n", err)
@@ -142,10 +143,12 @@ func main() {
 				// iptables -t nat -A PREROUTING -p udp -i eth0 --dport 3000 -j DNAT --to-destination $WEB_HOST:3000
 				err = ipt.AppendUnique("nat", "PREROUTING",
 					"-p", "udp",
+					"-m", "udp",
 					"-i", "eth0",
+					"-d", myIP.String(),
 					"--dport", sport,
 					"-j", "DNAT",
-					"--to-destination", saddrport)
+					"--to-destination", service.Address)
 				if err != nil {
 					log.Printf("Failed to add first rule: %v\n", err)
 				}
@@ -153,10 +156,10 @@ func main() {
 				// iptables -A FORWARD -p udp -d $WEB_HOST --dport 3000 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 				err = ipt.AppendUnique("filter", "FORWARD",
 					"-p", "udp",
+					"-i", "eth0",
 					"-d", service.Address,
 					"--dport", sport,
-					"-m", "state",
-					"--state", "NEW,ESTABLISHED,RELATED",
+					"-m", "udp",
 					"-j", "ACCEPT")
 				if err != nil {
 					log.Printf("Failed to add second rule: %v\n", err)
