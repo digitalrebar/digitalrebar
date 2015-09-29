@@ -1,7 +1,7 @@
 class BarclampChef::Client < Role
 
   # create the right private key for chef-client and registers it with the server
-  def on_todo(nr)
+  def on_proposed(nr)
     # Create chef metadata if needed.
     d = (nr.sysdata["chefjig"]["client"]["key"] rescue nil)
     return if d
