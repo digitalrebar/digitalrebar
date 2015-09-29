@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/coreos/go-iptables/iptables"
 	"github.com/hashicorp/consul/api"
@@ -9,7 +10,15 @@ import (
 	"time"
 )
 
+var myIP string
+
+func init() {
+	flag.StringVar(&myIP, "ip", "192.168.124.11", "IP to register services as")
+}
+
 func main() {
+	flag.Parse()
+
 	client, err := api.NewClient(api.DefaultConfig())
 	if err != nil {
 		log.Fatal("Failed to attach to conul agent: ", err)
@@ -41,8 +50,25 @@ func main() {
 			log.Fatal("Failed to get service catalog from conul agent: ", err)
 		}
 
-		for k, v := range services {
-			fmt.Println("k: ", k, " v:", v)
+		// We need to talk the services and see what has and hasn't been sent out
+		todo := make([]string, 10)
+		for k, _ := range services {
+			if strings.HasPrefix(k, "internal-") {
+				todo = append(todo, k)
+			}
+		}
+
+		done := make(map[string]string, 10)
+		for _, svc := range todo {
+			for k, _ := range services {
+				if "internal-"+k == svc {
+					done["internal-"+k] = k
+				}
+			}
+		}
+
+		for _, k := range todo {
+			fmt.Println("Working with service: ", k)
 
 			svc_data, _, err := catalog.Service(k, "", nil)
 			if err != nil {
@@ -56,17 +82,17 @@ func main() {
 				fmt.Println("  SvAd: ", service.ServiceAddress)
 				fmt.Println("  SvPt: ", service.ServicePort)
 
-				if strings.HasPrefix(k, "f-rebar-") && !first {
+				if !first && done[k] == strings.TrimPrefix(k, "internal-") {
 					log.Println("Skipping service: ", k)
 					continue
 				}
 
 				log.Println("registering service: ", k)
 				asr := api.AgentServiceRegistration{
-					Name:    "f-rebar-" + service.ServiceName,
+					Name:    strings.TrimPrefix(service.ServiceName, "internal-"),
 					Tags:    service.ServiceTags,
 					Port:    service.ServicePort,
-					Address: "192.168.124.10",
+					Address: myIP,
 				}
 				err = agent.ServiceRegister(&asr)
 				if err != nil {
