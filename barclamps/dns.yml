@@ -62,7 +62,7 @@ roles:
           type: str
           required: true
   - name: dns-client
-    jig: chef
+    jig: script
     flags:
       - implicit
     requires:
