@@ -44,13 +44,6 @@ rebar_api:
     - postgres:database
     - goiardi:goiardi
 
-ntp:
-  extends:
-    file: docker-compose-common.yml
-    service: ntp
-  links:
-    - consul:consul
-
 dns:
   extends:
     file: docker-compose-common.yml
@@ -108,6 +101,13 @@ cadvisor:
   extends:
     file: docker-compose-common.yml
     service: cadvisor
+
+forwarder:
+  extends:
+    file: docker-compose-common.yml
+    service: forwarder
+  links:
+    - consul:consul
 
 node:
   extends:
