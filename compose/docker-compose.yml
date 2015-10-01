@@ -41,6 +41,7 @@ rebar_api:
     - consul:consul
     - postgres:database
     - goiardi:goiardi
+    - forwarder:forwarder
 
 dns:
   extends:

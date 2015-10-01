@@ -44,6 +44,7 @@ goiardi:
 
 rebar_api:
   image: digitalrebar/dr_rebar_api
+  privileged: true
   volumes:
     - ./digitalrebar:/opt/digitalrebar
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
@@ -142,6 +143,7 @@ forwarder:
 
 node:
   image: digitalrebar/dr_node
+  privileged: true
   volumes:
     - ./data-dir/node:/etc/rebar-data
 
