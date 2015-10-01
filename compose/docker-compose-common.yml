@@ -106,7 +106,8 @@ elasticsearch:
   image: elasticsearch
   volumes:
     - ./config-dir/elasticsearch:/usr/share/elasticsearch/config
-    - ./data-dir/elasticsearch:/usr/share/elasticsearch/data
+# MAC OS ISSUE WITH THIS ONE!
+#    - ./data-dir/elasticsearch:/usr/share/elasticsearch/data
 
 logstash:
   image: logstash
@@ -139,7 +140,7 @@ cadvisor:
     - /sys:/sys:ro
     - /var/lib/docker/:/var/lib/docker:ro
   ports:
-    - "8080:8080"
+    - "8080:8181"
 
 node:
   image: digitalrebar/dr_node
