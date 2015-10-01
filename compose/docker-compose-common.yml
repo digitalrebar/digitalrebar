@@ -140,7 +140,7 @@ cadvisor:
     - /sys:/sys:ro
     - /var/lib/docker/:/var/lib/docker:ro
   ports:
-    - "8080:8181"
+    - "8181:8080"
 
 node:
   image: digitalrebar/dr_node
