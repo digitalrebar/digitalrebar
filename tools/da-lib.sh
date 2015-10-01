@@ -77,7 +77,9 @@ bring_up_admin_containers() {
         sudo chcon -Rt svirt_sandbox_file_t "$HOME/.cache/digitalrebar/tftpboot"
     fi
     
-    docker-compose pull
+    if [ "$NO_PULL" == "" ] ; then
+      docker-compose pull
+    fi
     docker-compose up -d
 }
 

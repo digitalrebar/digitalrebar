@@ -26,6 +26,11 @@ else
     exit 1
 fi
 
+if [ "$1" == "--no-pull" ] ; then
+  export NO_PULL="Y"
+  shift
+fi
+
 # This gets us to core
 mountdir="${mountdir%/tools/docker-admin-up}"
 # This gets us to the parent directory of core, where presumably the rest of our repos are checked out
