@@ -4,7 +4,10 @@ NODE_DIR="$HOME/.cache/digitalrebar/tftpboot/nodes"
 if [[ $0 = /* ]]; then
     tools="${0}"
 elif [[ $0 = .*  || $0 = */* ]]; then
-    tools="$(readlink -f "$PWD/$0")"
+    tools="$(readlink "$PWD/$0")"
+    if [ "$tools" == "" ] ; then
+        tools="$PWD/$0"
+    fi
 else
     echo "Cannot figure out where our tools are!"
     exit 1

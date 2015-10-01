@@ -248,7 +248,11 @@ setup_sledgehammer_chroot() {
         # Seventh, fix up the chroot so that it is fully functional.
         sudo cp /etc/resolv.conf "$CHROOT/etc/resolv.conf"
         for d in /proc /sys /dev /dev/pts /dev/shm; do
-            [[ -L $d ]] && d="$(readlink -f "$d")"
+            nd=""
+            [[ -L $d ]] && nd="$(readlink "$d")"
+            if [ "$nd" != "" ] ; then
+                d=$nd
+            fi
             mkdir -p "${CHROOT}$d"
             sudo mount --bind "$d" "${CHROOT}$d"
         done
