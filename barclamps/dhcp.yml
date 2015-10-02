@@ -32,6 +32,7 @@ roles:
         schema:
           type: int
           required: false
+        value: 600
       - name: dhcp_options
         description: 'Additional options to send to DHCP clients'
         map: 'rebar/dhcp/options'
