@@ -46,7 +46,6 @@ if ! [[ -f $mountdir/core/config/networks/the_admin.json ]]; then
     echo "Cannot find the_admin.json to get the address we should add to the Docker bridge!"
     exit 1
 fi
-bridge_router_ip="$(jq -r '.router.address' < "$mountdir/core/config/networks/the_admin.json")"
 
 bring_up_admin_containers() {
     # Clone the deploy repo to a known location, if we don't already have it.
@@ -61,10 +60,6 @@ bring_up_admin_containers() {
     fi
     
     mkdir -p "$HOME/.cache/digitalrebar/tftpboot"
-    
-    if ! fgrep -q "$bridge_router_ip" < <(ip addr show dev "$bridge"); then
-        sudo ip addr add "$bridge_router_ip" dev "$bridge"
-    fi
     
     sudo rm -rf "$HOME/.cache/digitalrebar/tftpboot/nodes"
     if [[ -f $HOME/.ssh/id_rsa.pub ]]; then
@@ -105,5 +100,4 @@ tear_down_admin_containers() {
     docker-compose kill
     docker-compose rm -f
     sudo rm -rf "$mountdir/deploy/compose/data-dir"
-    sudo ip addr del "$bridge_router_ip" dev "$bridge" || :
 }
