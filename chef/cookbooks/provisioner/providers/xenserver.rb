@@ -17,6 +17,7 @@ action :add do
   raise "Xen broken until it is ported to use the new disk reservation code"
   os = "#{new_resource.distro}-#{new_resource.version}"
   proxy = node["rebar"]["proxy"]["servers"].first["url"]
+  proxy_addr = node["rebar"]["proxy"]["servers"].first["address"]
   repos = node["rebar"]["provisioner"]["server"]["repositories"][os]
   params = node["rebar"]["provisioner"]["server"]["boot_specs"][os]
   online = node["rebar"]["provisioner"]["server"]["online"]
@@ -53,6 +54,7 @@ action :add do
               :name => mnode_name,
               :rootdev => mnode_rootdev,
               :proxy => proxy,
+              :proxy_addr => proxy_addr,
               :repos => repos,
               :provisioner_web => provisioner_web,
               :source => "#{provisioner_web}/#{os}/install",

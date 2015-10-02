@@ -16,6 +16,7 @@
 action :add do
   os = "#{new_resource.distro}-#{new_resource.version}"
   proxy = node["rebar"]["proxy"]["servers"].first["url"]
+  proxy_addr = node["rebar"]["proxy"]["servers"].first["address"]
   repos = node["rebar"]["provisioner"]["server"]["repositories"][os]
   params = node["rebar"]["provisioner"]["server"]["boot_specs"][os]
   online = node["rebar"]["provisioner"]["server"]["online"]
@@ -52,6 +53,7 @@ action :add do
               :provisioner_web => provisioner_web,
               :web_path => web_path,
               :proxy => proxy,
+              :proxy_addr => proxy_addr,
               :rootdev => mnode_rootdev)
   end
 
@@ -69,6 +71,7 @@ action :add do
               :provisioner_web => provisioner_web,
               :logging_server => api_server, # XXX: FIX this with logging service.
               :proxy => proxy,
+              :proxy_addr => proxy_addr,
               :web_path => web_path)
   end
 
