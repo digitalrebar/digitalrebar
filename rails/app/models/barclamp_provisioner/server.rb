@@ -15,6 +15,11 @@
 
 class BarclampProvisioner::Server < Role
 
+  def on_todo(nr)
+    # Make sure that the provisioner is setup.
+    system("/opt/digitalrebar/core/bin/update_provisioner #{nr.node.address.addr} > /tmp/up-server.out 2>&1")
+  end
+
   def sysdata(nr)
     my_addr = nr.node.addresses(:v4_only).first
     raise "No address for the Provisioner Server" unless my_addr

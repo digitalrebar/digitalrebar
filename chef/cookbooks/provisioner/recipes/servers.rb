@@ -107,3 +107,10 @@ template "/etc/consul.d/rebar-provisioner.json" do
   variables(:web_port => web_port, :ip_addr => ip_addr)
   notifies :run, "bash[reload consul provisioner]", :immediately
 end
+template "/etc/consul.d/rebar-provisioner-tftp.json" do
+  source "consul-provisioner-tftp-server.json.erb"
+  mode 0644
+  owner "root"
+  variables(:web_port => web_port, :ip_addr => ip_addr)
+  notifies :run, "bash[reload consul provisioner]", :immediately
+end
