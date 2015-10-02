@@ -96,7 +96,8 @@ func main() {
 
 	// Turn on masquerading for all internal -> external connections
 	for _, addr := range internalAddrs {
-		ipt.AppendUnique("nat", "POSTROUTING", "-s", addr, "-j", "MASQUERADE")
+		// What we want: ipt.AppendUnique("nat", "POSTROUTING", "-s", addr, "-j", "MASQUERADE")
+		ipt.AppendUnique("nat", "POSTROUTING", "-o", "eth0", "-j", "MASQUERADE")
 		if err != nil {
 			log.Printf("Add Masquerade failed: %v\n", err)
 		}
