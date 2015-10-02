@@ -3,34 +3,76 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/coreos/go-iptables/iptables"
-	"github.com/hashicorp/consul/api"
 	"log"
 	"net"
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/coreos/go-iptables/iptables"
+	"github.com/hashicorp/consul/api"
 )
 
-var myIPsubnet string
+var myIPsubnet, myIface string
 
 func init() {
 	flag.StringVar(&myIPsubnet, "ip", "192.168.124.11/24", "IP to register services as")
+	flag.StringVar(&myIface, "iface", "eth0", "Network interface to use")
+}
+
+func ClearChains(ipt *iptables.IPTables) {
+	chains := []string{"nat", "PREROUTING", "nat", "POSTROUTING",
+		"filter", "INPUT", "filter", "OUTPUT", "filter", "FORWARD"}
+	for i := 0; i < len(chains); i = i + 2 {
+		if err := ipt.ClearChain(chains[i], chains[i+1]); err != nil {
+			log.Fatalf("Error clearing chain %v %v\n", chains[i], chains[i+1])
+		}
+	}
 }
 
 func main() {
 	flag.Parse()
 
-	myIP, _, err := net.ParseCIDR(myIPsubnet)
+	myIP, myIPNet, err := net.ParseCIDR(myIPsubnet)
 	if err != nil {
 		log.Fatal("Failed to parse ip: ", myIPsubnet, " ", err)
 	}
 
-	// Make sure IP is on the eth0 interface
-	exec.Command("ip", "addr", "del", myIPsubnet, "dev", "eth0").Run()
-	err = exec.Command("ip", "addr", "add", myIPsubnet, "dev", "eth0").Run()
+	iface, err := net.InterfaceByName(myIface)
 	if err != nil {
-		log.Fatal("Failed to add IP: ", myIPsubnet, " ", err)
+		log.Fatalf("Interface %s does not exist.", myIface)
+	}
+
+	addrs, err := iface.Addrs()
+	if err != nil {
+		log.Fatalf("Failed to retrieve addresses for %s", myIface)
+	}
+
+	haveOurIP := false
+	internalAddrs := make([]string, 0, len(addrs))
+	for _, addr := range addrs {
+		thisIP, thisIPNet, _ := net.ParseCIDR(addr.String())
+		// Only care about addresses that are not link-local.
+		if !thisIP.IsGlobalUnicast() {
+			continue
+		}
+		// Only deal with IPv4 for now.
+		if thisIP.To4() == nil {
+			continue
+		}
+		if thisIPNet.String() == myIPNet.String() {
+			haveOurIP = true
+		} else {
+			internalAddrs = append(internalAddrs, thisIPNet.String())
+		}
+	}
+
+	if !haveOurIP {
+		// Make sure IP is on the proper interface
+		err = exec.Command("ip", "addr", "add", myIPsubnet, "dev", myIface).Run()
+		if err != nil {
+			log.Fatal("Failed to add IP: ", myIPsubnet, " ", err)
+		}
 	}
 
 	client, err := api.NewClient(api.DefaultConfig())
@@ -49,122 +91,160 @@ func main() {
 	if err != nil {
 		log.Fatalf("New failed:Fatalf %v", err)
 	}
+	// Clear out chains we will be messing with.
+	ClearChains(ipt)
 
-	// Turn on masquerading
-	ipt.AppendUnique("nat", "POSTROUTING", "-o", "eth0", "-j", "MASQUERADE")
-	if err != nil {
-		log.Printf("Add Masquerade failed: %v\n", err)
+	// Turn on masquerading for all internal -> external connections
+	for _, addr := range internalAddrs {
+		ipt.AppendUnique("nat", "POSTROUTING", "-s", addr)
+		if err != nil {
+			log.Printf("Add Masquerade failed: %v\n", err)
+		}
 	}
 
-	first := true
+	knownServices := make(map[string]*api.CatalogService)
 	for {
 		fmt.Println("Reading services")
 		services, meta, err := catalog.Services(&q)
 		if err != nil {
 			log.Fatal("Failed to get service catalog from consul agent: ", err)
 		}
-
-		// We need to talk the services and see what has and hasn't been sent out
-		todo := make([]string, 0)
-		for k, _ := range services {
-			if strings.HasPrefix(k, "internal-") {
-				todo = append(todo, k)
+		wantedServices := make(map[string]*api.CatalogService)
+		toRemoveServices := make(map[string]*api.CatalogService)
+		untouchedServices := make(map[string]*api.CatalogService)
+		for svcName := range services {
+			if !strings.HasPrefix(svcName, "internal-") {
+				continue
 			}
-		}
-
-		done := make(map[string]string, 0)
-		for _, svc := range todo {
-			for k, _ := range services {
-				if "internal-"+k == svc {
-					done["internal-"+k] = k
-				}
-			}
-		}
-
-		for _, k := range todo {
-			fmt.Println("Working with service: ", k)
-
-			svc_data, _, err := catalog.Service(k, "", nil)
+			svcCatalog, _, err := catalog.Service(svcName, "", nil)
 			if err != nil {
 				log.Fatal("Failed to get service entry from consul agent: ", err)
 			}
-			for _, service := range svc_data {
-				fmt.Println("  Node: ", service.Node)
-				fmt.Println("  Addr: ", service.Address)
-				fmt.Println("  SvID: ", service.ServiceID)
-				fmt.Println("  SvNm: ", service.ServiceName)
-				fmt.Println("  SvAd: ", service.ServiceAddress)
-				fmt.Println("  SvPt: ", service.ServicePort)
-
-				if !first && done[k] == strings.TrimPrefix(k, "internal-") {
-					log.Println("Skipping service: ", k)
-					continue
+			if len(svcCatalog) == 0 {
+				continue
+			}
+			svc := svcCatalog[0]
+			// Bucketize the services we want to forward
+			if knownSvc, ok := knownServices[svcName]; ok {
+				if knownSvc.Address == svc.Address &&
+					knownSvc.ServiceAddress == svc.ServiceAddress &&
+					knownSvc.ServicePort == svc.ServicePort {
+					// Nothing changed, it goes in the untouched bucket.
+					untouchedServices[svcName] = knownSvc
+				} else {
+					// Something changed, it goes in the toRemove and
+					// wanted buckets
+					toRemoveServices[svcName] = knownSvc
+					wantedServices[svcName] = knownSvc
 				}
-
-				log.Println("registering service: ", k)
-				asr := api.AgentServiceRegistration{
-					Name:    strings.TrimPrefix(service.ServiceName, "internal-"),
-					Tags:    service.ServiceTags,
-					Port:    service.ServicePort,
-					Address: myIP.String(),
-				}
-				err = agent.ServiceRegister(&asr)
-				if err != nil {
-					log.Fatal("Failed to register service entry from consul agent: ", err)
-				}
-
-				sport := fmt.Sprintf("%d", service.ServicePort)
-
-				err = ipt.AppendUnique("nat", "PREROUTING",
-					"-p", "tcp",
-					"-m", "tcp",
-					"-i", "eth0",
-					"-d", myIP.String(),
-					"--dport", sport,
-					"-j", "DNAT",
-					"--to-destination", service.Address)
-				if err != nil {
-					log.Printf("Failed to add first rule: %v\n", err)
-				}
-
-				err = ipt.AppendUnique("filter", "FORWARD",
-					"-p", "tcp",
-					"-i", "eth0",
-					"-d", service.Address,
-					"--dport", sport,
-					"-m", "tcp",
-					"-j", "ACCEPT")
-				if err != nil {
-					log.Printf("Failed to add second rule: %v\n", err)
-				}
-
-				err = ipt.AppendUnique("nat", "PREROUTING",
-					"-p", "udp",
-					"-m", "udp",
-					"-i", "eth0",
-					"-d", myIP.String(),
-					"--dport", sport,
-					"-j", "DNAT",
-					"--to-destination", service.Address)
-				if err != nil {
-					log.Printf("Failed to add first rule: %v\n", err)
-				}
-
-				err = ipt.AppendUnique("filter", "FORWARD",
-					"-p", "udp",
-					"-i", "eth0",
-					"-d", service.Address,
-					"--dport", sport,
-					"-m", "udp",
-					"-j", "ACCEPT")
-				if err != nil {
-					log.Printf("Failed to add second rule: %v\n", err)
-				}
-
+			} else {
+				// New service, it goes in the wanted bucket
+				wantedServices[svcName] = svc
 			}
 		}
-
-		first = false
+		// Any known services that are not in the wanted or untouched bucket
+		// need to be removed.
+		for svcName, svc := range knownServices {
+			if _, ok := wantedServices[svcName]; ok {
+				continue
+			}
+			if _, ok := untouchedServices[svcName]; ok {
+				continue
+			}
+			toRemoveServices[svcName] = svc
+		}
+		// Delete services we no longer care about
+		for svcName, svc := range toRemoveServices {
+			// Whack service registration
+			agentSvcs, err := agent.Services()
+			if err == nil {
+				agentSvc, ok := agentSvcs[strings.Trim(svcName, "internal-")]
+				if ok {
+					agent.ServiceDeregister(agentSvc.ID)
+				}
+			}
+			svcAddr := svc.ServiceAddress
+			if svcAddr == "" {
+				svcAddr = svc.Address
+			}
+			svcPort := fmt.Sprintf("%d", svc.ServicePort)
+			// Whack DNAT + forwarding rules
+			// We don't particularly care if they fail.
+			ipt.Delete("nat", "PREROUTING",
+				"-p", "udp",
+				"-m", "udp",
+				"-d", myIP.String(),
+				"--dport", svcPort,
+				"-j", "DNAT",
+				"--to-destination", svcAddr)
+			ipt.Delete("nat", "PREROUTING",
+				"-p", "tcp",
+				"-m", "tcp",
+				"-d", myIP.String(),
+				"--dport", svcPort,
+				"-j", "DNAT",
+				"--to-destination", svcAddr)
+			ipt.Delete("filter", "FORWARD",
+				"-p", "tcp",
+				"-m", "tcp",
+				"-d", myIP.String(),
+				"--dport", svcPort,
+				"-j", "ACCEPT")
+			ipt.Delete("filter", "FORWARD",
+				"-p", "udp",
+				"-m", "udp",
+				"-d", myIP.String(),
+				"--dport", svcPort,
+				"-j", "ACCEPT")
+		}
+		// Add new services we do care about
+		for svcName, svc := range wantedServices {
+			svcAddr := svc.ServiceAddress
+			if svcAddr == "" {
+				svcAddr = svc.Address
+			}
+			svcPort := fmt.Sprintf("%d", svc.ServicePort)
+			// Add DNAT + forwarding rules
+			ipt.AppendUnique("nat", "PREROUTING",
+				"-p", "udp",
+				"-m", "udp",
+				"-d", myIP.String(),
+				"--dport", svcPort,
+				"-j", "DNAT",
+				"--to-destination", svcAddr)
+			ipt.AppendUnique("nat", "PREROUTING",
+				"-p", "tcp",
+				"-m", "tcp",
+				"-d", myIP.String(),
+				"--dport", svcPort,
+				"-j", "DNAT",
+				"--to-destination", svcAddr)
+			ipt.AppendUnique("filter", "FORWARD",
+				"-p", "tcp",
+				"-m", "tcp",
+				"-d", myIP.String(),
+				"--dport", svcPort,
+				"-j", "ACCEPT")
+			ipt.AppendUnique("filter", "FORWARD",
+				"-p", "udp",
+				"-m", "udp",
+				"-d", myIP.String(),
+				"--dport", svcPort,
+				"-j", "ACCEPT")
+			log.Println("registering service: ", svcName)
+			asr := api.AgentServiceRegistration{
+				Name:    strings.TrimPrefix(svc.ServiceName, "internal-"),
+				Tags:    svc.ServiceTags,
+				Port:    svc.ServicePort,
+				Address: myIP.String(),
+			}
+			err = agent.ServiceRegister(&asr)
+			if err != nil {
+				log.Fatal("Failed to register service entry from consul agent: ", err)
+			}
+			untouchedServices[svcName] = svc
+		}
+		knownServices = untouchedServices
 		q.WaitIndex = meta.LastIndex
 	}
 
