@@ -39,12 +39,6 @@ hammers:
     type: 'BarclampIpmi::WsmanHammer'
 
 roles:
-  - name: ipmi-master
-    jig: chef
-    attaches:
-      - rebar-admin-node
-    flags:
-      - bootstrap
   - name: ipmi-discover
     jig: chef
     attaches:
@@ -254,7 +248,6 @@ roles:
     jig: chef
     requires:
       - ipmi-discover
-      - ipmi-master
     wants-attribs:
       - ipmi-enable
       - ipmi-detected-params
