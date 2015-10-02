@@ -43,7 +43,6 @@ cat > /etc/gemrc <<EOF
 <% if @online -%>
 - http://rubygems.org/
 <% end -%>
-- ${provisioner}/gemsite/
 gem: --no-ri --no-rdoc --bindir /usr/local/bin --http-proxy $http_proxy
 EOF
 
