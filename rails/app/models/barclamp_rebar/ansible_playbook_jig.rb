@@ -85,6 +85,12 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
       die "Did not create rundir for some reason! (#{err})"
     end
 
+    # Remap additional varabiles
+    role_yaml['attribute_map'].each do |am|
+      value = get_value(data, am['name'])
+      set_value(data, am['path'], value)
+    end if role_yaml['attribute_map']
+
     File.open("#{rundir}/rebar.json","w") do |f|
       JSON.dump(data,f)
     end
@@ -140,6 +146,53 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
   def delete_node(node)
     # Nothing to do, we build the inventory/all_vars files on the fly
     Rails.logger.info("AnsiblePlaybookJig Deleting node: #{node.name}")
+  end
+
+private
+
+  # Data is a hash that will become JSON at some point.
+  # Path is a / separated set of strings that index into hash and lists.
+  def get_value(data, path)
+    pieces = path.split('/')
+    pieces.each do |p|
+      return nil unless data
+      if p.include? '['
+        p = p.split(/[\]\[]/)
+
+        data = data[p[0]][p[1].to_i]
+      else
+        data = data[p]
+      end
+    end
+    data
+  end
+
+  # Data is a hash that will become JSON at some point.
+  # Path is a / separated set of strings that index into hash and lists.
+  # Value is what should be set at that path location
+  def set_value(data, path, value)
+    pieces = path.split('/')
+    if pieces.size >= 2
+      pieces[0..-1].each do |p|
+        return unless data
+        if p.include? '['
+          p = p.split(/[\]\[]/)
+
+          data = data[p[0]][p[1].to_i]
+        else
+          data = data[p]
+        end
+      end
+    end
+
+    p = pieces.last
+    if p.include? '['
+      p = p.split(/[\]\[]/)
+
+      data[p[0]][p[1].to_i] = value
+    else
+      data[p] = value
+    end
   end
 
 end
