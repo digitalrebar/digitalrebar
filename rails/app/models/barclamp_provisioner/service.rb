@@ -29,9 +29,6 @@ class BarclampProvisioner::Service < Service
         url << addr.addr
       end
 
-      # Make sure that the provisioner is setup.
-      system("/opt/digitalrebar/core/bin/update_provisioner #{addr.addr} > /tmp/up.out 2>&1")
-
       url << ":#{s.ServicePort}"
       { "address" => str_addr,
         "port" => "#{s.ServicePort}",

@@ -24,7 +24,7 @@ cp /usr/share/zoneinfo/GMT /etc/localtime
 
 export http_proxy="<%=@proxy%>"
 export https_proxy="$http_proxy"
-export no_proxy="localhost,127.0.0.1,localaddress,.<%=@domain%>"
+export no_proxy="localhost,127.0.0.1,localaddress,.<%=@domain%>,<%=@provisioner_addr%>"
 provisioner="<%=@provisioner_web%>"
 api_server="<%=@api_server%>"
 chef_rpm=chef-11.16.4-1.el6.x86_64.rpm
