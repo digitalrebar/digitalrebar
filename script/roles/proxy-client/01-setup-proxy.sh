@@ -14,8 +14,9 @@
 #
 
 proxy_str="$(read_attribute "rebar/proxy/servers/0/url")"
+proxy_addr="$(read_attribute "rebar/proxy/servers/0/address")"
 
-no_proxy="127.0.0.1,localhost,::1,/var/run/docker.sock"
+no_proxy="127.0.0.1,localhost,::1,/var/run/docker.sock,$proxy_addr"
 # Read json array of admin addresses
 admin_addrs=$(read_attribute "proxy/admin_addrs")
 if [ "$admin_addrs" != "" ] ; then
