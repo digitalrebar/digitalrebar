@@ -30,6 +30,7 @@ postgres:
 
 webproxy:
   image: digitalrebar/dr_webproxy
+  privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
