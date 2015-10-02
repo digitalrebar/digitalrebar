@@ -34,7 +34,6 @@ webproxy:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
-  # GREG: Think about this.
 
 goiardi:
   image: digitalrebar/dr_goiardi
@@ -53,14 +52,6 @@ rebar_api:
     - ./common.env
   ports:
     - "3000:3000"
-
-ntp:
-  image: digitalrebar/dr_ntp
-  volumes:
-    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
-    - ./config-dir/ntp/ntp.conf:/etc/ntp.conf
-  env_file:
-    - ./common.env
 
 dns:
   image: digitalrebar/dr_dns
@@ -141,6 +132,14 @@ cadvisor:
     - /var/lib/docker/:/var/lib/docker:ro
   ports:
     - "8181:8080"
+
+forwarder:
+  image: digitalrebar/dr_forwarder
+  privileged: true
+  volumes:
+    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+  env_file:
+    - ./common.env
 
 node:
   image: digitalrebar/dr_node
