@@ -80,13 +80,13 @@ EOF
 # Setup a proxy for the environment
 echo "http_proxy=<%=@proxy%>" >> /target/etc/environment
 echo "https_proxy=<%=@proxy%>" >> /target/etc/environment
-echo "no_proxy=127.0.0.1,localhost,::1" >> /target/etc/environment
+echo "no_proxy=127.0.0.1,localhost,::1,<%=@proxy_addr%>" >> /target/etc/environment
 
 # Setup bash proxy env
 mkdir -p /target/etc/profile.d
-echo "http_proxy=<%=@proxy%>" >> /target/etc/profile.d/proxy.sh
-echo "https_proxy=<%=@proxy%>" >> /target/etc/profile.d/proxy.sh
-echo "no_proxy=127.0.0.1,localhost,::1" >> /target/etc/profile.d/proxy.sh
+echo "export http_proxy=<%=@proxy%>" >> /target/etc/profile.d/proxy.sh
+echo "export https_proxy=<%=@proxy%>" >> /target/etc/profile.d/proxy.sh
+echo "export no_proxy=127.0.0.1,localhost,::1,<%=@proxy_addr%>" >> /target/etc/profile.d/proxy.sh
 
 mount /proc /target/proc
 

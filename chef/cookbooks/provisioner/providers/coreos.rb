@@ -16,6 +16,7 @@
 action :add do
   os = "coreos"
   proxy = node["rebar"]["proxy"]["servers"].first["url"]
+  proxy_addr = node["rebar"]["proxy"]["servers"].first["address"]
   params = node["rebar"]["provisioner"]["server"]["boot_specs"][os]
   tftproot = node["rebar"]["provisioner"]["server"]["root"]
   api_server=node['rebar']['api']['servers'].first["url"]
@@ -44,6 +45,7 @@ action :add do
               :api_server => api_server,
               :keys => keys,
               :proxy => proxy,
+              :proxy_addr => proxy_addr,
               :rootdev => mnode_rootdev,
               :provisioner_web => provisioner_web)
   end
@@ -58,6 +60,7 @@ action :add do
               :keys => keys,
               :provisioner_web => provisioner_web,
               :proxy => proxy,
+              :proxy_addr => proxy_addr,
               :web_path => web_path)
   end
 
