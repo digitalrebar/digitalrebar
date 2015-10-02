@@ -24,6 +24,7 @@ webproxy:
     service: webproxy
   links:
     - consul:consul
+    - forwarder:forwarder
 
 goiardi:
   extends:
@@ -49,6 +50,7 @@ dns:
     service: dns
   links:
     - consul:consul
+    - forwarder:forwarder
 
 dhcp:
   extends:
@@ -56,6 +58,7 @@ dhcp:
     service: dhcp
   links:
     - consul:consul
+    - forwarder:forwarder
 
 #cobbler:
 #  extends:
@@ -70,6 +73,7 @@ provisioner:
     service: provisioner
   links:
     - consul:consul
+    - forwarder:forwarder
 
 elasticsearch:
   extends:
@@ -115,3 +119,4 @@ node:
     service: node
   links:
     - rebar_api:rebar_api
+    - forwarder:forwarder
