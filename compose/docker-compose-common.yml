@@ -52,8 +52,6 @@ rebar_api:
     - ./data-dir/node:/node-data
   env_file:
     - ./common.env
-  ports:
-    - "3000:3000"
 
 dns:
   image: digitalrebar/dr_dns
@@ -142,6 +140,8 @@ forwarder:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
+  ports:
+    - "3000:3000"
 
 node:
   image: digitalrebar/dr_node
