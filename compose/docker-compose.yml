@@ -24,6 +24,7 @@ webproxy:
     service: webproxy
   links:
     - consul:consul
+    - forwarder:forwarder
 
 goiardi:
   extends:
@@ -41,13 +42,7 @@ rebar_api:
     - consul:consul
     - postgres:database
     - goiardi:goiardi
-
-ntp:
-  extends:
-    file: docker-compose-common.yml
-    service: ntp
-  links:
-    - consul:consul
+    - forwarder:forwarder
 
 dns:
   extends:
@@ -55,6 +50,7 @@ dns:
     service: dns
   links:
     - consul:consul
+    - forwarder:forwarder
 
 dhcp:
   extends:
@@ -62,6 +58,7 @@ dhcp:
     service: dhcp
   links:
     - consul:consul
+    - forwarder:forwarder
 
 #cobbler:
 #  extends:
@@ -76,6 +73,7 @@ provisioner:
     service: provisioner
   links:
     - consul:consul
+    - forwarder:forwarder
 
 elasticsearch:
   extends:
@@ -107,9 +105,17 @@ cadvisor:
     file: docker-compose-common.yml
     service: cadvisor
 
+forwarder:
+  extends:
+    file: docker-compose-common.yml
+    service: forwarder
+  links:
+    - consul:consul
+
 node:
   extends:
     file: docker-compose-common.yml
     service: node
   links:
     - rebar_api:rebar_api
+    - forwarder:forwarder
