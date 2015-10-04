@@ -40,17 +40,6 @@ retry_until() {
     done
 }
 
-bridge="docker0"
-bridge_re='-b=([^ ])'
-bridge_addr_re='inet ([0-9.]+)/'
-# If we told Docker to use a custom bridge, here is where it is at.
-[[ $(ps -C docker -o 'command=') =~ $bridge_re ]] && \
-    bridge="${BASH_REMATCH[1]}"
-if ! [[ -f $mountdir/core/config/networks/the_admin.json ]]; then
-    echo "Cannot find the_admin.json to get the address we should add to the Docker bridge!"
-    exit 1
-fi
-
 bring_up_admin_containers() {
     # Clone the deploy repo to a known location, if we don't already have it.
     if [[ ! -d $mountdir/deploy ]]; then
