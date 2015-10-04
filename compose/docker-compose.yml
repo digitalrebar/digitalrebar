@@ -111,7 +111,6 @@ forwarder:
     service: forwarder
   links:
     - consul:consul
-    - dhcp:dhcp
 
 node:
   extends:
