@@ -235,3 +235,26 @@ service "dhcp3-server" do
   supports :restart => true, :status => true, :reload => true
   action [ :enable, :start ]
 end
+
+script "restart consul" do
+  interpreter "bash"
+  action :nothing
+  code "/usr/local/bin/consul reload"
+end
+
+file "/etc/consul.d/dhcp.json" do
+  content <<EOC
+{
+  "service": {
+    "name": "dhcp",
+    "tags": [ "system" ],
+    "check": {
+      "script": "pgrep dhcpd",
+      "interval": "10s"
+    }
+  }
+}
+EOC
+  action :create
+  notifies :run, "script[restart consul]"
+end
