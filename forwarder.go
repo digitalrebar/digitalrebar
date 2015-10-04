@@ -169,34 +169,72 @@ func main() {
 				svcAddr = svc.Address
 			}
 			svcPort := fmt.Sprintf("%d", svc.ServicePort)
+
 			// Whack DNAT + forwarding rules
 			// We don't particularly care if they fail.
-			ipt.Delete("nat", "PREROUTING",
-				"-p", "udp",
-				"-m", "udp",
-				"-d", myIP.String(),
-				"--dport", svcPort,
-				"-j", "DNAT",
-				"--to-destination", svcAddr)
-			ipt.Delete("nat", "PREROUTING",
-				"-p", "tcp",
-				"-m", "tcp",
-				"-d", myIP.String(),
-				"--dport", svcPort,
-				"-j", "DNAT",
-				"--to-destination", svcAddr)
-			ipt.Delete("filter", "FORWARD",
-				"-p", "tcp",
-				"-m", "tcp",
-				"-d", myIP.String(),
-				"--dport", svcPort,
-				"-j", "ACCEPT")
-			ipt.Delete("filter", "FORWARD",
-				"-p", "udp",
-				"-m", "udp",
-				"-d", myIP.String(),
-				"--dport", svcPort,
-				"-j", "ACCEPT")
+			strs := make([]string, 0)
+			strs = append(strs, "-p")
+			strs = append(strs, "udp")
+			strs = append(strs, "-m")
+			strs = append(strs, "udp")
+			if svcPort != "3000" {
+				strs = append(strs, "-d")
+				strs = append(strs, myIP.String())
+			}
+			strs = append(strs, "--dport")
+			strs = append(strs, svcPort)
+			strs = append(strs, "-j")
+			strs = append(strs, "DNAT")
+			strs = append(strs, "--to-destination")
+			strs = append(strs, svcAddr)
+			ipt.Delete("nat", "PREROUTING", strs...)
+
+			strs = make([]string, 0)
+			strs = append(strs, "-p")
+			strs = append(strs, "tcp")
+			strs = append(strs, "-m")
+			strs = append(strs, "tcp")
+			if svcPort != "3000" {
+				strs = append(strs, "-d")
+				strs = append(strs, myIP.String())
+			}
+			strs = append(strs, "--dport")
+			strs = append(strs, svcPort)
+			strs = append(strs, "-j")
+			strs = append(strs, "DNAT")
+			strs = append(strs, "--to-destination")
+			strs = append(strs, svcAddr)
+			ipt.Delete("nat", "PREROUTING", strs...)
+
+			strs = make([]string, 0)
+			strs = append(strs, "-p")
+			strs = append(strs, "tcp")
+			strs = append(strs, "-m")
+			strs = append(strs, "tcp")
+			if svcPort != "3000" {
+				strs = append(strs, "-d")
+				strs = append(strs, myIP.String())
+			}
+			strs = append(strs, "--dport")
+			strs = append(strs, svcPort)
+			strs = append(strs, "-j")
+			strs = append(strs, "ACCEPT")
+			ipt.Delete("filter", "FORWARD", strs...)
+
+			strs = make([]string, 0)
+			strs = append(strs, "-p")
+			strs = append(strs, "udp")
+			strs = append(strs, "-m")
+			strs = append(strs, "udp")
+			if svcPort != "3000" {
+				strs = append(strs, "-d")
+				strs = append(strs, myIP.String())
+			}
+			strs = append(strs, "--dport")
+			strs = append(strs, svcPort)
+			strs = append(strs, "-j")
+			strs = append(strs, "ACCEPT")
+			ipt.Delete("filter", "FORWARD", strs...)
 		}
 		// Add new services we do care about
 		for svcName, svc := range wantedServices {
@@ -205,33 +243,72 @@ func main() {
 				svcAddr = svc.Address
 			}
 			svcPort := fmt.Sprintf("%d", svc.ServicePort)
+
 			// Add DNAT + forwarding rules
-			ipt.AppendUnique("nat", "PREROUTING",
-				"-p", "udp",
-				"-m", "udp",
-				"-d", myIP.String(),
-				"--dport", svcPort,
-				"-j", "DNAT",
-				"--to-destination", svcAddr)
-			ipt.AppendUnique("nat", "PREROUTING",
-				"-p", "tcp",
-				"-m", "tcp",
-				"-d", myIP.String(),
-				"--dport", svcPort,
-				"-j", "DNAT",
-				"--to-destination", svcAddr)
-			ipt.AppendUnique("filter", "FORWARD",
-				"-p", "tcp",
-				"-m", "tcp",
-				"-d", myIP.String(),
-				"--dport", svcPort,
-				"-j", "ACCEPT")
-			ipt.AppendUnique("filter", "FORWARD",
-				"-p", "udp",
-				"-m", "udp",
-				"-d", myIP.String(),
-				"--dport", svcPort,
-				"-j", "ACCEPT")
+			strs := make([]string, 0)
+			strs = append(strs, "-p")
+			strs = append(strs, "udp")
+			strs = append(strs, "-m")
+			strs = append(strs, "udp")
+			if svcPort != "3000" {
+				strs = append(strs, "-d")
+				strs = append(strs, myIP.String())
+			}
+			strs = append(strs, "--dport")
+			strs = append(strs, svcPort)
+			strs = append(strs, "-j")
+			strs = append(strs, "DNAT")
+			strs = append(strs, "--to-destination")
+			strs = append(strs, svcAddr)
+			ipt.AppendUnique("nat", "PREROUTING", strs...)
+
+			strs = make([]string, 0)
+			strs = append(strs, "-p")
+			strs = append(strs, "tcp")
+			strs = append(strs, "-m")
+			strs = append(strs, "tcp")
+			if svcPort != "3000" {
+				strs = append(strs, "-d")
+				strs = append(strs, myIP.String())
+			}
+			strs = append(strs, "--dport")
+			strs = append(strs, svcPort)
+			strs = append(strs, "-j")
+			strs = append(strs, "DNAT")
+			strs = append(strs, "--to-destination")
+			strs = append(strs, svcAddr)
+			ipt.AppendUnique("nat", "PREROUTING", strs...)
+
+			strs = make([]string, 0)
+			strs = append(strs, "-p")
+			strs = append(strs, "tcp")
+			strs = append(strs, "-m")
+			strs = append(strs, "tcp")
+			if svcPort != "3000" {
+				strs = append(strs, "-d")
+				strs = append(strs, myIP.String())
+			}
+			strs = append(strs, "--dport")
+			strs = append(strs, svcPort)
+			strs = append(strs, "-j")
+			strs = append(strs, "ACCEPT")
+			ipt.AppendUnique("filter", "FORWARD", strs...)
+
+			strs = make([]string, 0)
+			strs = append(strs, "-p")
+			strs = append(strs, "udp")
+			strs = append(strs, "-m")
+			strs = append(strs, "udp")
+			if svcPort != "3000" {
+				strs = append(strs, "-d")
+				strs = append(strs, myIP.String())
+			}
+			strs = append(strs, "--dport")
+			strs = append(strs, svcPort)
+			strs = append(strs, "-j")
+			strs = append(strs, "ACCEPT")
+			ipt.AppendUnique("filter", "FORWARD", strs...)
+
 			log.Println("registering service: ", svcName)
 			asr := api.AgentServiceRegistration{
 				Name:    strings.TrimPrefix(svc.ServiceName, "internal-"),
