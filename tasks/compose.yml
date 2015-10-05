@@ -1,7 +1,6 @@
 --- 
-  - name: network mapping
-    command: sudo ip addr add 192.168.124.10/24 dev docker0
-    ignore_errors: yes
+  - name: Load tftp nat module
+    modprobe: name=nf_nat_tftp state=present
   - name: create SSH key for host to access slaves
     command: ssh-keygen -t rsa -f '.ssh/id_rsa' -P ''
     args:
