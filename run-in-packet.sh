@@ -1,13 +1,13 @@
 #!/bin/bash
 # Copyright 2015, RackN Inc
 
+# Include Project API Key in Packet
+. ~/.dr_info
+
 if [ "$API_KEY" == "" ] ; then
     echo "You must define API_KEY (can be added to ~/.dr_info)"
     exit 1
 fi
-
-# Include Project API Key in Packet
-. ~/.dr_info
 
 if ! which ansible &>/dev/null; then
     echo "Please install Ansible!"
