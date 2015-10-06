@@ -91,12 +91,14 @@ roles:
       - name: rebar-machine_key
         description: 'The username and password that managed nodes should use to talk to the Rebar API'
         map: 'rebar/machine_key'
+        ui_renderer: 'barclamp_rebar/attribs/rebar_access'
         schema:
           type: str
           required: true
       - name: rebar-access_keys
         description: 'The SSH public keys that should allow password-less root access on managed nodes.'
         map: 'rebar/access_keys'
+        ui_renderer: 'barclamp_provisioner/attribs/package_repos'
         schema:
           type: map
           mapping:
