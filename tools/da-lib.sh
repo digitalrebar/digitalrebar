@@ -1,19 +1,21 @@
 #!/bin/bash
 
+die() {
+    printf '%s\n' "$@"
+    exit 1
+}
+
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 if ! which docker &>/dev/null; then
-    echo "Please install Docker!"
-    exit 1
+    die "Please install Docker!"
 fi
 
 if (which selinuxenabled && selinuxenabled) &>/dev/null; then
-    echo "SELinux is enabled!  It does not play nice with some of our containers, please disable it."
-    exit 1
+    die "SELinux is enabled!  It does not play nice with some of our containers, please disable it."
 fi
 
 if ! which docker-compose &>/dev/null; then
-    echo "Please install docker-compose!"
-    exit 1
+    die "Please install docker-compose!"
 fi
 
 # Make sure that the tftp conntrack modules are loaded
