@@ -2,6 +2,8 @@
 
 set -e
 
+startdir="$PWD"
+
 if [[ $0 = /* ]]; then
     mountdir="$0"
 elif [[ $0 = .*  || $0 = */* ]]; then
@@ -29,6 +31,8 @@ cleanup() {
     res=$?
     set +e
     pkill kvm-slave
+    mkdir -p "$startdir/rebar"
+    (cd "$mountdir/deploy/compose"; docker-compose logs > "$startdir/rebar/compose.log")
     tear_down_admin_containers
     exit $res
 }
