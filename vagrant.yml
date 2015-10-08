@@ -63,6 +63,6 @@
     - name: wait for rebar-key (1 to 30 minutes)
       wait_for: path=/home/vagrant/compose/data-dir/node/rebar-key.sh state=present delay=60 timeout=1800
     - name: copy rebar key to shared area
-      command: cp /home/vagrant/compose/data-dir/node/rebar-key.sh /vagrant/rebar-key.sh
+      command: cp /home/vagrant/compose/data-dir/node/rebar-key.sh . /vagrant/compose/data-dir/node/rebar-key.sh
       args:
-        creates: /vagrant/rebar-key.sh
+        creates: /vagrant/compose/data-dir/node/rebar-key.sh
