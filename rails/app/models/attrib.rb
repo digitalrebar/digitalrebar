@@ -287,10 +287,7 @@ class Attrib < ActiveRecord::Base
       when to.is_a?(NodeRole)
         case target
         when :note then to.note_update(to_merge)
-        when :system
-          val = self.get(to,:all,true)
-          to.sysdata_update(to_merge)
-          poke(to) unless val == self.get(to,:all,true)
+        when :system then to.sysdata_update(to_merge)
         when :user,:hint then to.data_update(to_merge)
         when :wall
           to.wall_update(to_merge)
