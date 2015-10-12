@@ -7,10 +7,10 @@ import (
 	"net"
 )
 
-func RunDhcpHandler(dhcpInfo *DataTracker, intf net.Interface, myIp *net.Addr) {
-	log.Println("Starting on interface: ", intf.Name, " with server ip: ", *myIp)
+func RunDhcpHandler(dhcpInfo *DataTracker, intf net.Interface, myIp string) {
+	log.Println("Starting on interface: ", intf.Name, " with server ip: ", myIp)
 
-	serverIP, _, _ := net.ParseCIDR((*myIp).String())
+	serverIP, _, _ := net.ParseCIDR(myIp)
 	serverIP = serverIP.To4()
 	handler := &DHCPHandler{
 		ip:   serverIP,
@@ -20,13 +20,11 @@ func RunDhcpHandler(dhcpInfo *DataTracker, intf net.Interface, myIp *net.Addr) {
 	log.Fatal(dhcp.ListenAndServeIf(intf.Name, handler))
 }
 
-func StartDhcpHandlers(dhcpInfo *DataTracker) error {
+func StartDhcpHandlers(dhcpInfo *DataTracker, serverIp string) error {
 	intfs, err := net.Interfaces()
 	if err != nil {
 		return err
 	}
-	var serverIp *net.Addr
-	serverIp = nil
 	for _, intf := range intfs {
 		if (intf.Flags & net.FlagLoopback) == net.FlagLoopback {
 			continue
@@ -34,12 +32,12 @@ func StartDhcpHandlers(dhcpInfo *DataTracker) error {
 		if (intf.Flags & net.FlagUp) != net.FlagUp {
 			continue
 		}
-		if serverIp == nil {
+		if serverIp == "" {
 			addrs, err := intf.Addrs()
 			if err != nil {
 				return err
 			}
-			serverIp = &addrs[0]
+			serverIp = addrs[0].String()
 		}
 		go RunDhcpHandler(dhcpInfo, intf, serverIp)
 	}
@@ -82,6 +80,11 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 				break
 			}
 		}
+
+                if subnet == nil {
+                    // We didn't find a subnet for the interface.  Look for the assigned server IP
+		    subnet = h.info.FindSubnet(h.ip)
+                }
 	}
 
 	if subnet == nil {
