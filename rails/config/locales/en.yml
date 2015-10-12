@@ -78,6 +78,7 @@ en:
   automatic_item_by: "%{item}: Created Automatically by %{name}"
   version: "Version %{version}"
   debug: "Debug Info"
+  commit_required: "You must commit the role (%{role}) for attrib changes to take effect."
 
   error:
     title: "We're sorry, but something is fuzzy about that request."
