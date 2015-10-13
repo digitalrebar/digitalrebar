@@ -31,7 +31,7 @@ module Rebar
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
 
-    # defaults are producction
+    # defaults are production
     config.cache_classes = true
     config.action_controller.perform_caching             = true
     config.action_view.cache_template_loading            = true

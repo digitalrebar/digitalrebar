@@ -125,6 +125,7 @@ class AttribsController < ApplicationController
         params.require(:value)
 
         target.attribs.find(attrib.id).set(target,params[:value], bucket)
+        flash[:notice] = I18n.t('commit_required', :role => target.name)
         ret = attrib.as_json
         ret["value"] = params[:value]
       end
