@@ -1,6 +1,6 @@
 {
   "service": {
-    "name": "internal-provisioner-service",
+    "name": "<%= @internal ? "internal-" : "" %>provisioner-service",
     "tags": [ "system" ],
     <% if @ip_addr -%>
     "address": "<%=@ip_addr%>",
