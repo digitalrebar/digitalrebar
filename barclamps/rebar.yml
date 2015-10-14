@@ -260,6 +260,23 @@ attribs:
     schema:
       type: str
       required: false
+  - name: provider-create-hint
+    description: 'Extra parameters to be passed to the provider at node create time'
+    map: 'provider/create_hints'
+    default: {}
+    schema:
+      type: map
+      mapping:
+        =:
+          type: any
+  - name: provider-node-id
+    description: 'The node ID as understood by the remote provider'
+    map: 'provider/node_id'
+  - name: node-control-address
+    description: 'The network address that should be used to control the node.  Will be used if no other address is reachable.'
+    map: 'provider/control_address'
+    schema:
+      type: str
 
 providers:
   - name: phantom

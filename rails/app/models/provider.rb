@@ -18,6 +18,10 @@ class Provider < ActiveRecord::Base
   audited
   has_many :nodes
 
+  def as_json(args = nil)
+    super(args).merge("type" => self.type.to_s)
+  end
+
   def create_node(obj)
     true
   end

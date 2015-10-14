@@ -165,11 +165,13 @@ class Node < ActiveRecord::Base
         end
       end
     end
+    control_address = Attrib.get('node-control-address',self)
+    res << IP.coerce(control_address) if control_address
     res.flatten
   end
 
   def address(filter = :all, networks = ["admin","unmanaged"])
-    res = addresses(filter,networks).detect{|a|a.reachable?}
+    res = addresses(filter,networks).detect{|a|a.reachable?} || Attrib.get('node-control-address',self)
     Rails.logger.warn("Node #{name} did not have any reachable addresses in networks #{networks.inspect}") unless res
     res
   end
