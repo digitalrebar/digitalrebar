@@ -38,6 +38,8 @@ type Node struct {
 	// The type of operating system the node is running. Should be something like
 	// "linux", "freebsd", "windows", etc.
 	OsFamily string `json:"os_family"`
+	// The ID of the provider that is responsible for node provisioning.
+	ProviderID int64 `json:"provider_id"`
 }
 
 func (o *Node) ApiName() string {
