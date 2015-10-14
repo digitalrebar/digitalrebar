@@ -172,6 +172,14 @@ class DrillConsolidated < ActiveRecord::Migration
       t.timestamps
     end
     add_index(:role_require_attribs, [:role_id, :attrib_name], :unique => true)
+
+    create_table :providers do |t|
+      t.text        :name,           null: false, unique: true
+      t.text        :type
+      t.text        :description,    null: false, default: "An undescribed provider"
+      t.json        :auth_details,   null: false, default: { expr: "'{}'::json" }
+      t.timestamps
+    end
     
     create_table :nodes do |t|
       t.text        :name,           limit: 255,     null: false
@@ -180,6 +188,7 @@ class DrillConsolidated < ActiveRecord::Migration
       t.boolean     :admin,          default: false
       t.integer     :target_role_id, null: true, foreign_key: { references: :roles }
       t.belongs_to  :deployment,     null: false
+      t.belongs_to  :provider,       null: false
       t.text        :variant,        null: false,   default: "metal"
       t.text        :arch,           null: false,   default: "x86_64"
       t.text        :os_family,      null: false,   default: "linux"

@@ -151,6 +151,7 @@ class Deployment < ActiveRecord::Base
                  admin: false,
                  system: true,
                  alive: true,
+                 variant: "phantom",
                  deployment_id: self.id,
                  bootenv: "local")
   end

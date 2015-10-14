@@ -57,15 +57,26 @@ class DeploymentsController < ApplicationController
   end
 
   def create
-    if params[:parent] || params[:parent_id]
-      @parent = Deployment.find_key(params[:parent] || params[:parent_id])
+    if ! params[:system]
+      if params[:parent] || params[:parent_id]
+        @parent = Deployment.find_key(params[:parent] || params[:parent_id])
+      elsif !params[:system]
+        @parent = Deployment.system
+      end
+      params[:parent_id] = @parent.id
+      permits = [:name,:parent_id,:description]
+    elsif Deployment.find_by(system: true)
+      raise "Only one system deployment permitted"
     else
-      @parent = Deployment.system
+      permits = [:name,:system,:description]
     end
-    params[:parent_id] = @parent.id
     params.require(:name)
-    params.require(:parent_id)
-    @deployment = Deployment.create!(params.permit(:name,:parent_id,:description))
+    Deployment.transaction do
+      @deployment = Deployment.create!(params.permit(*permits))
+      if params[:system]
+        @deployment.update_attributes!(state: Deployment::COMMITTED)
+      end
+    end
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment.id)}
       format.json { render api_show @deployment }
