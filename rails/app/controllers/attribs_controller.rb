@@ -123,7 +123,7 @@ class AttribsController < ApplicationController
       else
         params[:value] = params[:attrib][:value] if params[:attrib]
         params.require(:value)
-
+        params[:value] = params[:value].to_i if attrib.schema['type'] == 'int'
         target.attribs.find(attrib.id).set(target,params[:value], bucket)
         flash[:notice] = I18n.t('commit_required', :role => target.name)
         ret = attrib.as_json
