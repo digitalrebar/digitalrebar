@@ -90,7 +90,7 @@
   };
 
   function update() {
-    $.getJSON("/monitor/#{@deployment.id}", function(data, err) {
+    $.getJSON("/monitor/#{@deployment.id}.json", function(data, err) {
       var newCount = 0;
       //update role list if unloaded or more roles added
       if(!hasLoaded || roles.length != data.roles.length) {
