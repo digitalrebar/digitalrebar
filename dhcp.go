@@ -5,6 +5,7 @@ import (
 	dhcp "github.com/krolaw/dhcp4"
 	"log"
 	"net"
+	"strings"
 )
 
 func RunDhcpHandler(dhcpInfo *DataTracker, intf net.Interface, myIp string) {
@@ -32,14 +33,38 @@ func StartDhcpHandlers(dhcpInfo *DataTracker, serverIp string) error {
 		if (intf.Flags & net.FlagUp) != net.FlagUp {
 			continue
 		}
-		if serverIp == "" {
-			addrs, err := intf.Addrs()
-			if err != nil {
-				return err
-			}
-			serverIp = addrs[0].String()
+		if strings.HasPrefix(intf.Name, "veth") {
+			continue
 		}
-		go RunDhcpHandler(dhcpInfo, intf, serverIp)
+		var sip string
+		addrs, err := intf.Addrs()
+		if err != nil {
+			return err
+		}
+
+		for _, addr := range addrs {
+			thisIP, _, _ := net.ParseCIDR(addr.String())
+			// Only care about addresses that are not link-local.
+			if !thisIP.IsGlobalUnicast() {
+				continue
+			}
+			// Only deal with IPv4 for now.
+			if thisIP.To4() == nil {
+				continue
+			}
+
+			if serverIp != "" && serverIp == addr.String() {
+				sip = addr.String()
+				break
+			}
+		}
+
+		if sip == "" {
+			continue
+		}
+		// Only run the first one that matches
+		go RunDhcpHandler(dhcpInfo, intf, sip)
+		break
 	}
 	return nil
 }
@@ -81,10 +106,10 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			}
 		}
 
-                if subnet == nil {
-                    // We didn't find a subnet for the interface.  Look for the assigned server IP
-		    subnet = h.info.FindSubnet(h.ip)
-                }
+		if subnet == nil {
+			// We didn't find a subnet for the interface.  Look for the assigned server IP
+			subnet = h.info.FindSubnet(h.ip)
+		}
 	}
 
 	if subnet == nil {
