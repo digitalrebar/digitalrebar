@@ -20,6 +20,9 @@
 
 :javascript
 
+  $.ajaxSetup
+    cache: false
+
   var refreshRate = #{current_user.settings(:ui).fast_refresh};
   var hasLoaded = false;
   var roles = [];
