@@ -29,7 +29,7 @@ class ProvidersController < ApplicationController
       format.json { render api_index Provider, objs }
     end
   end
-  
+
   # API GET /api/v2/providers
   def index
     @providers = if params.has_key?(:node_id)
@@ -38,7 +38,7 @@ class ProvidersController < ApplicationController
       Provider.all
     end
     respond_to do |format|
-      format.html { } 
+      format.html { }
       format.json { render api_index Provider, @providers }
     end
   end
@@ -76,5 +76,5 @@ class ProvidersController < ApplicationController
   def destroy
     render api_delete Provider
   end
-  
+
 end
