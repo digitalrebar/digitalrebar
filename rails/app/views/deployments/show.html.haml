@@ -53,6 +53,9 @@
               - name = dr.role.name_safe.html_safe
               = link_to name, deployment_role_path(dr.id), :title=>dr.role.description
     %tbody
+      - nodes = @nodes.sort{|a,b| a.name <=> b.name}
+      - admins = nodes.select{|n| n.admin?}
+      - @nodes = admins + (nodes - admins)
       - @nodes.each do |node|
         - working = true
         - node_led = 'on'
@@ -66,7 +69,7 @@
           %td
             - unless working
               = image_tag "icons/led/#{node_led}.png", {title: t(node_led, scope: "common.state")}
-          %td.nodename
+          %td.nodename{style: node.admin? ? 'font-weight: bold' : ''}
             = link_to node.name, node_path(node.id), :title=>node.description
             - unless node.deployment_id == @deployment.id
               = "("

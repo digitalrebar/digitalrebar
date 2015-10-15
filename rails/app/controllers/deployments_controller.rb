@@ -131,7 +131,6 @@ class DeploymentsController < ApplicationController
       }
     end
 
-
     render api_array out.to_json
   end
 
