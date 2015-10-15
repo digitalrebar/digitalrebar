@@ -18,16 +18,8 @@ class MetalProvider < Provider
   audited
   has_many :nodes
 
-  def create_node(obj)
-    true
-  end
-
   def reboot_node(obj)
     obj.power.reboot
-  end
-
-  def delete_node(obj)
-    true
   end
 
 end
