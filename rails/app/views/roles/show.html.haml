@@ -55,7 +55,7 @@
         %th= t '.map'
     %tbdoy
       - @role.attribs.each do |a|
-        %tr
+        %tr{ :class => cycle(:odd, :even) }
           %td= link_to a.name, attrib_path(a.id)
           %td= a.description
           %td= a.default["value"] 
@@ -74,7 +74,7 @@
         %th= "Provided By"
     %tbdoy
       - @role.wanted_attribs.each do |a|
-        %tr
+        %tr{ :class => cycle(:odd, :even) }
           %td= link_to a.name, attrib_path(a.id)
           %td= a.description
           %td= link_to a.role.name, role_path(a.role.name)
