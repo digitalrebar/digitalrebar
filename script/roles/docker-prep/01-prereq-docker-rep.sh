@@ -1,6 +1,15 @@
 #!/bin/bash
 
-# this only works on Ubuntu for now
-
-# Docker needs these items before it can be installed
-sudo apt-get install apparmor cgroup-lite lxc -y
+# docker installed?
+if ! which docker &>/dev/null; then
+	# install docker using download script
+	curl -sSL https://get.docker.com/ -o /tmp/docker.sh
+	sudo chmod +7 /tmp/docker.sh
+	sudo /tmp/docker.sh
+else
+	echo "docker already installed, skipping"
+fi
+# bounce to be safe
+sudo service docker restart
+# make Docker work without reboot
+sudo chmod 666 /var/run/docker.sock

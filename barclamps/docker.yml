@@ -23,7 +23,8 @@ barclamp:
   license: "Apache 2"
   license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
-
+wizard:
+  version: 1
 
 roles:
   - name: docker-prep
