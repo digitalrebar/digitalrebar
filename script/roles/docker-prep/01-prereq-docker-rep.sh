@@ -14,7 +14,13 @@ curl https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
 python /tmp/get-pip.py
 pip install docker-py
 
+# setup proxy
+mkdir /etc/systemd/system/docker.service.d
+echo "[Service]" > /etc/systemd/system/docker.service.d/http-proxy.conf
+echo "Environment=\"HTTP_PROXY=${http_proxy}\"" >> /etc/systemd/system/docker.service.d/http-proxy.conf
+sudo systemctl daemon-reload
+
 # bounce to be safe
-sudo service docker restart
+sudo systemctl restart docker
 # make Docker work without reboot
 sudo chmod 666 /var/run/docker.sock
