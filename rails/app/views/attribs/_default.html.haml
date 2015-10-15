@@ -3,7 +3,12 @@
   %tr.node{ :class => cycle(:odd, :even) }
     %td= link_to attrib.name_i18n, attrib_path(attrib.id), :title=>attrib.description
     - if editable and attrib.writable
-      %td= text_field_tag :value, value, :size => 40
+      %td
+        - case attrib.schema['type'] #handle schema types so integers are actually valid
+        - when 'int'
+          =number_field_tag :value, value, :size => 40
+        - else
+          =text_field_tag :value, value, :size => 40
       %td{:align=>"right"}
         %input.button{:type => "submit", :name => "save", :value => t('save')}
     -else
