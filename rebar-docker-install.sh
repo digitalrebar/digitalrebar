@@ -30,6 +30,10 @@ while read bc; do
   /opt/digitalrebar/core/bin/barclamp_import "$bc"
 done < <(find /opt/digitalrebar -name rebar.yml |grep -v '/core/')
 
+# Create the system deployment
+# We always need a system deployment
+if ! rebar deployments create '{"name": "system", "description": "Created Automatically by System","system": true}'; then cat /var/log/rebar/production.log; exit 1; fi
+
 # We absolutely have to have an unmanaged-internal network, and there can
 # really only be one of them, so leave this hardcoded for now.
 unmanaged_net='

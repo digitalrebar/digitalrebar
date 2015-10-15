@@ -43,6 +43,8 @@ class NodesController < ApplicationController
               Role.find_key(params[:role_id]).nodes
             when params.has_key?(:deployment_role_id)
               DeploymentRole.find_key(params[:deployment_role_id]).nodes
+            when params.has_key?(:provider_id)
+              Provider.find_key(params[:provider_id]).nodes
             else
               Node.all
             end
@@ -195,7 +197,7 @@ class NodesController < ApplicationController
     else
       params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
       params[:deployment_id] ||= Deployment.system
-      params[:variant] ||= "metal"
+      params[:variant] ||= "phantom"
       params[:arch] ||= "x86_64"
       params[:os_family] ||= "linux"
       params.require(:name)

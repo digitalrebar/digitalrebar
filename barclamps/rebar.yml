@@ -261,3 +261,9 @@ attribs:
     schema:
       type: str
       required: false
+
+providers:
+  - name: phantom
+    class: Provider
+    description: "Provide basic provicer services for phantom nodes."
+    auth_details: {}

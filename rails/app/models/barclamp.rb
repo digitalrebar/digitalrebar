@@ -116,6 +116,13 @@ class Barclamp < ActiveRecord::Base
                                :client_role_name => jig_client_role)
       end if bc["jigs"]
 
+      bc['providers'].each do |provider|
+        Rails.logger.info("Importing provider #{provider['name']} for #{barclamp.name}")
+        p_obj = provider['class'].constantize.find_or_create_by!(name: provider['name'],
+                                                                 description: provider['description'])
+        p_obj.update_attributes!(auth_details: provider['auth_details']) if provider['auth_details']
+      end if bc['providers']
+
       # iterate over the roles in the yml file and load them all.
       # Jigs are now late-bound, so we just load everything.
       bc['roles'].each do |role|

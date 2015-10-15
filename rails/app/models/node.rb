@@ -21,12 +21,13 @@ class Node < ActiveRecord::Base
   audited
 
   before_validation :default_population
-  before_destroy :before_destroy_handler
-  after_update :bootenv_change_handler
-  after_update :deployment_change_handler
-  after_commit :on_create_hooks, on: :create
-  after_commit :after_commit_handler, on: :update
-  after_commit :on_destroy_hooks, on: :destroy
+  before_destroy    :before_destroy_handler
+  after_update      :bootenv_change_handler
+  after_update      :deployment_change_handler
+  before_create     :before_create_hooks
+  after_commit      :after_create_hooks, on: :create
+  after_commit      :after_commit_handler, on: :update
+  after_commit      :on_destroy_hooks, on: :destroy
 
   # Make sure we have names that are legal
   # requires at least three domain elements "foo.bar.com", cause the admin node shouldn't
@@ -52,6 +53,7 @@ class Node < ActiveRecord::Base
   has_many    :network_allocations,:dependent => :destroy
   has_many    :hammers,            :dependent => :destroy
   belongs_to  :deployment
+  belongs_to  :provider
   belongs_to  :target_role,        :class_name => "Role", :foreign_key => "target_role_id"  # used to troubleshoot problem nodes (see API doc)
 
   alias_attribute :ips,            :network_allocations
@@ -329,7 +331,7 @@ class Node < ActiveRecord::Base
               bootenv: "sledgehammer",
               target: Role.find_by!(:name => "rebar-managed-node"))
     end
-    power.reboot
+    provider.reboot
   end
 
   def undebug
@@ -339,7 +341,7 @@ class Node < ActiveRecord::Base
               bootenv: "local",
               target: nil)
     end
-    power.reboot
+    provider.reboot
   end
 
   def is_docker_node?
@@ -547,15 +549,13 @@ class Node < ActiveRecord::Base
     end
   end
 
-  def on_create_hooks
+  def before_create_hooks
     # Handle node creation as needed
-    case
-    when self.variant == "metal"
-      # No seperate node creation steps needed
-      true
-    else
-      raise "Cannot handle node create for node #{node.name} variant #{node.variant}"
-    end
+    self.provider = Provider.find_by!(name: self.variant)
+  end
+
+  def after_create_hooks
+    self.provider.create_node(self)
     # Handle binding the default hammers for this node.
     case
     when self.is_system?
@@ -588,7 +588,7 @@ class Node < ActiveRecord::Base
       node_roles.order("cohort DESC").each do |nr|
         return false unless nr.destroy
       end
-      return true
+      self.provider.delete_node(self)
     end
   end
 

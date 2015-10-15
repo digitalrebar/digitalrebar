@@ -15,12 +15,6 @@
 # This file should contain all the record creation needed to seed the database with its default values.
 # The data can then be loaded with the rake db:seed (or created alongside the db with db:setup).
 ActiveRecord::Base.transaction do
-  # We always need a system deployment
-  Deployment.find_or_create_by!(name:        "system",
-                                description: I18n.t('automatic', :default=>"Created Automatically by System"),
-                                system:      true,
-                                state:       Deployment::COMMITTED)
-
 
   u = User.find_or_create_by_username!(:username=>'rebar', :password=>'rebar1', :is_admin=>true)
   u.digest_password('rebar1')

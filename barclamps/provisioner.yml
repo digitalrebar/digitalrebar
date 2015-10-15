@@ -379,3 +379,9 @@ attribs:
    description: 'The bootstate that the provisioner last configured the node to use'
    map: 'rebar/provisioner/active_bootstate'
    default: "unknown"
+
+providers:
+  - name: metal
+    class: MetalProvider
+    description: "Provide basic node services for bare-metal nodes."
+    auth_details: {}

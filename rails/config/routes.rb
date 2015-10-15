@@ -168,6 +168,13 @@ Rebar::Application.routes.draw do
               post 'match'
             end
           end
+          resources :providers do
+            collection do
+              get 'sample'
+              post 'match'
+            end
+            resources :nodes
+          end
           resources :deployment_roles do
             collection do
               get 'sample'
