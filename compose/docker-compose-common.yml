@@ -1,6 +1,4 @@
 
-# -recursor=dns
-
 consul:
   image: progrium/consul
   command: -config-dir=/etc/consul.d -data-dir=/tmp/consul -server -bootstrap -ui-dir /ui 
@@ -11,20 +9,11 @@ consul:
   ports:
     - "8500:8500"
 
-#registrator:
-#  image: gliderlabs/registrator
-#  command: consul://consul:8500
-#  volumes:
-#    - /var/run/docker.sock:/tmp/docker.sock
-
 postgres:
   image: digitalrebar/dr_postgres
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/postgres/initdb.d:/docker-entrypoint-initdb.d
-#  environment:
-#    SERVICE_NAME: rebar-database
-#    SERVICE_TAGS: postgres
   env_file:
     - ./common.env
 
@@ -53,6 +42,13 @@ rebar_api:
   env_file:
     - ./common.env
 
+ntp:
+  image: digitalrebar/dr_ntp
+  volumes:
+    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+  env_file:
+    - ./common.env
+
 dns:
   image: digitalrebar/dr_dns
   volumes:
@@ -63,25 +59,13 @@ dns:
     - ./common.env
 
 dhcp:
-  image: digitalrebar/dr_dhcp
+  image: digitalrebar/dr_rebar_dhcp
   privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./common.env
-
-#cobbler:
-#  image: digitalrebar/dr_cobbler
-#  volumes:
-#    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
-#  env_file:
-#    - ./common.env
-#  ports:
-#    - "69/udp:69/udp"
-#    - "80:80"
-#    - "443:443"
-#    - "25151:25151"
 
 provisioner:
   image: digitalrebar/dr_provisioner
@@ -97,8 +81,6 @@ elasticsearch:
   image: elasticsearch
   volumes:
     - ./config-dir/elasticsearch:/usr/share/elasticsearch/config
-# MAC OS ISSUE WITH THIS ONE!
-#    - ./data-dir/elasticsearch:/usr/share/elasticsearch/data
 
 logstash:
   image: logstash
