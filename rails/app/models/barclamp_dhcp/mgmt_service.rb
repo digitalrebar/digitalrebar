@@ -84,7 +84,7 @@ class BarclampDhcp::MgmtService < Service
     r = network.ranges.find_by(name: "dhcp")
     r = network.ranges.find_by(name: "host") unless r
     return unless r
-   
+
     start_ip = r.first.addr
     end_ip = r.last.addr
     subnet = r.first.network.to_s
@@ -102,11 +102,26 @@ class BarclampDhcp::MgmtService < Service
     end
     Rails.logger.fatal("GREG: Missing next_server") unless next_server
 
-    # GREG: base options
+    options = {}
     # Option 6 - name servers
     # Option 15 - domain name
+    dns_server = nil
+    dns_domain = nil
+    BarclampDns::Service.all.each do |role|
+      role.node_roles.each do |nr|
+        services = Attrib.get('dns_servers', nr)
+        next unless services
 
-    options = {}
+        dns_server = services[0]['address']
+        dns_domain = Attrib.get('dns-domain', nr)
+        break
+      end
+      break if dns_server
+    end
+    Rails.logger.fatal("GREG: Missing dns_server") unless dns_server
+    options[6] = dns_server
+    options[15] = dns_domain
+
     # Option 3 - gateway
     options[3] = network.network_router.address.addr if network and network.network_router
     # GREG: One day this needs to be selectable by arch
