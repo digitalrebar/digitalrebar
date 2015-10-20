@@ -49,7 +49,7 @@ dhcp:
   extends:
     file: docker-compose-common.yml
     service: dhcp
-  net: "forwarder"
+  net: "container:forwarder"
   links:
     - consul:consul
     - forwarder:forwarder
