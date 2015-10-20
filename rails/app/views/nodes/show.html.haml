@@ -69,20 +69,7 @@
       %th= t '.value'
   %tbody
     - @node.attribs.order("name ASC").each do |a|
-      - v = a.get(@node) rescue nil          
-      %tr{:class => "shrunk " + cycle("even","odd")}
-        %td.name= link_to a.name, attrib_path(a.id), :title => a.description
-        %td.value{:style=>"vertical-align: top;"}
-          - unless v.nil?
-            - if v.class == Hash
-              - data = JSON.pretty_generate(v)
-              - trunc = data[0..(data.length>8&&10||data.length)]+"..."
-              %pre{:onclick=>"expand($(this))",:flat=>"false",:content=>data,:trunc=>trunc}
-                = trunc
-            - else
-              = v
-          - else
-            %em= t('not_set')
+      = render :partial =>a.ui_renderer, :locals => { :attrib => a, :obj_type => Node, :editable => false, :obj => @node }
 
 :javascript
   function expand(element) {
