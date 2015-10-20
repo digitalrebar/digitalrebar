@@ -31,13 +31,16 @@ module Rebar
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
 
-    # defaults are production
-    config.cache_classes = true
-    config.action_controller.perform_caching             = true
-    config.action_view.cache_template_loading            = true
-    config.active_support.deprecation = :notify
-    config.action_controller.allow_forgery_protection    = true
-    config.eager_load = true
+    # do not load if dev file exists
+    unless File.exists? '/tmp/development.txt'
+      # defaults are producction
+      config.cache_classes = true
+      config.action_controller.perform_caching             = true
+      config.action_view.cache_template_loading            = true
+      config.active_support.deprecation = :notify
+      config.action_controller.allow_forgery_protection    = true
+      config.eager_load = true
+    end
 
     # See everything in the log (default is :info)
     config.log_level = :debug

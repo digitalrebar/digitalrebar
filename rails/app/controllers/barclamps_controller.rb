@@ -75,7 +75,7 @@ class BarclampsController < ApplicationController
   def wizard
     @bc = Barclamp.find_key params[:barclamp_id]
     if request.get?
-      @roles = @bc.roles.keep_if { |r| r.milestone }
+      @roles = @bc.roles.keep_if{ |r| r.milestone }.sort_by { |r| r.cohort }
       @nodes = Deployment.system.nodes.where(:admin=>false, :system=>false)
     elsif request.post?
 
@@ -102,6 +102,9 @@ class BarclampsController < ApplicationController
           nodes[nid] = params["wizard"]["node_#{nid}_os"] if params["wizard"] # we only want to do the node stuff once
         end
       end
+
+      # we need to do this in cohort order!
+      roles = roles.sort_by { |r, n| Role.find(r).cohort }
 
       # set the roles
       roles.each do |rid, nodes|
