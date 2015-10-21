@@ -1,0 +1,12 @@
+{
+  "type": "external",
+  "name": "dns-mgmt",
+  "service_ip": "1.1.1.1",
+  "service_port": 6754,
+  "service_tag": "system",
+  "keys": {
+    "digitalrebar/private/dns-mgmt/system/cert_pem": "public cert",
+    "digitalrebar/private/dns-mgmt/system/access_name": "Access name",
+    "digitalrebar/private/dns-mgmt/system/access_password": "Access password"
+  }
+}

@@ -6,6 +6,7 @@ consul:
     - ./config-dir/consul/server-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
+    - ./access.env
   ports:
     - "8500:8500"
 
@@ -16,6 +17,7 @@ postgres:
     - ./config-dir/postgres/initdb.d:/docker-entrypoint-initdb.d
   env_file:
     - ./common.env
+    - ./access.env
 
 webproxy:
   image: digitalrebar/dr_webproxy
@@ -24,6 +26,7 @@ webproxy:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
+    - ./access.env
 
 goiardi:
   image: digitalrebar/dr_goiardi
@@ -31,6 +34,7 @@ goiardi:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
+    - ./access.env
 
 rebar_api:
   image: digitalrebar/dr_rebar_api
@@ -38,9 +42,11 @@ rebar_api:
   volumes:
     - ./digitalrebar:/opt/digitalrebar
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./config-dir/api/config:/opt/digitalrebar/core/config
     - ./data-dir/node:/node-data
   env_file:
     - ./common.env
+    - ./access.env
 
 ntp:
   image: digitalrebar/dr_ntp
@@ -48,6 +54,7 @@ ntp:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
+    - ./access.env
 
 dns:
   image: digitalrebar/dr_dns
@@ -57,6 +64,7 @@ dns:
     - ./config-dir/bind/named.conf:/etc/bind/named.conf
   env_file:
     - ./common.env
+    - ./access.env
 
 dhcp:
   image: digitalrebar/dr_rebar_dhcp
@@ -66,6 +74,7 @@ dhcp:
     - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./common.env
+    - ./access.env
 
 provisioner:
   image: digitalrebar/dr_provisioner
@@ -76,6 +85,7 @@ provisioner:
     - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./common.env
+    - ./access.env
 
 elasticsearch:
   image: elasticsearch
@@ -122,6 +132,7 @@ forwarder:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
+    - ./access.env
   ports:
     - "3000:3000"
 
@@ -130,4 +141,6 @@ node:
   privileged: true
   volumes:
     - ./data-dir/node:/etc/rebar-data
+  env_file:
+    - ./access.env
 

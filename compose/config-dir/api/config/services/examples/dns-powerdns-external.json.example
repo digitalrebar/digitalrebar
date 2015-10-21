@@ -1,0 +1,13 @@
+{
+  "type": "external",
+  "name": "dns",
+  "service_ip": "1.1.1.1",
+  "service_port": 53,
+  "service_tag": "system",
+  "keys": {
+    "digitalrebar/private/dns/system/type": "POWERDNS",
+    "digitalrebar/private/dns/system/mgmt_port": 8081,
+    "digitalrebar/private/dns/system/mgmt_name": "localhost",
+    "digitalrebar/private/dns/system/mgmt_token": "accesstoken"
+  }
+}
