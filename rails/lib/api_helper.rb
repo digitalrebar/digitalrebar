@@ -19,28 +19,6 @@ module ActiveRecord
   end
 end
 
-# deep_munge turns empty arrays into nils in the parameters.
-# Problem is that it is fine to pass an empty array in several
-# parts of our API.
-# So disable that functionality.
-# This should be removed if we migrate to rails 4.2
-module ActionDispatch
-  class Request < Rack::Request
-    def deep_munge(hash)
-      hash.each do |k, v|
-        case v
-        when Array
-          v.grep(Hash) { |x| deep_munge(x) }
-          v.compact!
-        when Hash
-          deep_munge(v)
-        end
-      end
-      hash
-    end
-  end
-end
-
 # This class AUTOMATICALLY extends the ActiveRecord base class 
 # so that we can add AR helpers for Rebar
 module ApiHelper
