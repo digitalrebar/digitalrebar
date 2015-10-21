@@ -45,9 +45,9 @@
         creates: compose/digitalrebar/core
       ignore_errors: yes
     - name: copy user ssh public key to rebar
-      command: cp .ssh/id_rsa.pub compose/digitalrebar/core/config/ssh_keys/setup-0.key
+      command: cp .ssh/id_rsa.pub compose/config-dir/api/config/ssh_keys/setup-0.key
       args:
-        creates: compose/digitalrebar/core/config/ssh_keys/setup-0.key
+        creates: compose/config-dir/api/config/ssh_keys/setup-0.key
 
     - name: Pull Digital Rebar Images [SLOW]
       command: docker-compose pull

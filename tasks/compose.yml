@@ -25,9 +25,9 @@
       chdir: compose
       creates: compose/digitalrebar/core
   - name: copy user ssh public key to rebar
-    command: cp .ssh/id_rsa.pub compose/digitalrebar/core/config/ssh_keys/setup-0.key
+    command: cp .ssh/id_rsa.pub compose/config-dir/api/config/ssh_keys/setup-0.key
     args:
-      creates: compose/digitalrebar/core/config/ssh_keys/setup-0.key
+      creates: compose/config-dir/api/config/ssh_keys/setup-0.key
 
   - name: Create rebar group
     group: name=rebar gid=1000
