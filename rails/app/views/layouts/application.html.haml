@@ -36,6 +36,8 @@
                 %span#error_heartbeat= ""
                 = image_tag('icons/led/wait.png', :id=>"elasped_led", :title=>"session seconds timer", :style=>"#{(current_user.settings(:ui).edge ? 'display:inline' : 'display:none')}")
                 %span#elapsed_heartbeat{:style=>"#{(current_user.settings(:ui).edge ? 'display:inline' : 'display:none')}"}= "-1"
+              %a{:href=>Rails.configuration.rebar.chat_link, :target=>"_blank"}
+                = image_tag('icons/chat.png', :id=>"chat", :title=>t("user.chatlink"), :style=>"display:inline")
             %nav
               = render_navigation :expand_all => true, :skip_if_empty => true
           - else

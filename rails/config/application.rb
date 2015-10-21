@@ -49,6 +49,7 @@ module Rebar
     config.rebar = ActiveSupport::OrderedOptions.new 
     config.rebar.version = '2.E'
     config.rebar.docs = "https://github.com/digitalrebar/doc/blob/master/README.rst"
+    config.rebar.chat_link = "https://gitter.im/digitalrebar/core"
     config.rebar.bootstrap_key = 'digitalrebar/private/bootstrap'
 
     # Custom directories with classes and modules you want to be autoloadable.
