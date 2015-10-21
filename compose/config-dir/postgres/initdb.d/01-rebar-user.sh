@@ -1,4 +1,3 @@
-set -x
 set -e
 
 # Set up area protection

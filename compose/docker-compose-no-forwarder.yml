@@ -17,7 +17,8 @@ webproxy:
     service: webproxy
   links:
     - consul:consul
-    - forwarder:forwarder
+  ports:
+    - "3128:3128"
 
 goiardi:
   extends:
@@ -26,6 +27,8 @@ goiardi:
   links:
     - consul:consul
     - postgres:database
+  ports:
+    - "4646:4646"
 
 rebar_api:
   extends:
@@ -35,7 +38,18 @@ rebar_api:
     - consul:consul
     - postgres:database
     - goiardi:goiardi
-    - forwarder:forwarder
+  ports:
+    - "3000:3000"
+
+ntp:
+  extends:
+    file: docker-compose-common.yml
+    service: ntp
+  links:
+    - consul:consul
+  ports:
+    - "123/udp:123/udp"
+    - "123:123"
 
 dns:
   extends:
@@ -43,16 +57,16 @@ dns:
     service: dns
   links:
     - consul:consul
-    - forwarder:forwarder
+  ports:
+    - "53/udp:53/udp"
 
 dhcp:
   extends:
     file: docker-compose-common.yml
     service: dhcp
-  net: "container:forwarder"
   links:
     - consul:consul
-    - forwarder:forwarder
+  net: "host"
 
 provisioner:
   extends:
@@ -60,7 +74,9 @@ provisioner:
     service: provisioner
   links:
     - consul:consul
-    - forwarder:forwarder
+  ports:
+    - "69/udp:69/udp"
+    - "8091:8091"
 
 elasticsearch:
   extends:
@@ -92,17 +108,9 @@ cadvisor:
     file: docker-compose-common.yml
     service: cadvisor
 
-forwarder:
-  extends:
-    file: docker-compose-common.yml
-    service: forwarder
-  links:
-    - consul:consul
-
 node:
   extends:
     file: docker-compose-common.yml
     service: node
   links:
     - rebar_api:rebar_api
-    - forwarder:forwarder

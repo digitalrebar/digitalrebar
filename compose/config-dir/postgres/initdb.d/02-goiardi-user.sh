@@ -1,4 +1,3 @@
-set -x
 set -e
 
 password=fred # GREG: SecureRandom.base64.gsub('=','3')
