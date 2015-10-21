@@ -65,7 +65,7 @@ bring_up_admin_containers() {
     
     sudo rm -rf "$HOME/.cache/digitalrebar/tftpboot/nodes"
     if [[ -f $HOME/.ssh/id_rsa.pub ]]; then
-        cp "$HOME/.ssh/id_rsa.pub" "$mountdir/core/config/ssh_keys/$USER-0.key"
+        cp "$HOME/.ssh/id_rsa.pub" "$mountdir/deploy/compose/config-dir/api/config/ssh_keys/$USER-0.key"
     fi
     
     cd "$mountdir/deploy/compose"

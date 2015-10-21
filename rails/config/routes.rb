@@ -92,8 +92,6 @@ Rebar::Application.routes.draw do
     get 'fail'          => "support#fail"
     get 'settings'      => "support#settings", :as => :utils_settings
     put 'settings(/:id/:value)' => "support#settings_put", :as => :utils_settings_put
-    get "bootstrap"     => "support#bootstrap", :as => :bootstrap
-    put "bootstrap"     => "support#bootstrap"
     namespace :scaffolds do
       resources :attribs do as_routes end
       resources :available_hammers do as_routes end

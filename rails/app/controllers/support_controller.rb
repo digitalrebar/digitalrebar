@@ -95,40 +95,6 @@ class SupportController < ApplicationController
     end
   end
 
-  def bootstrap
-
-    if request.put?
-      if params[:raw] == 'json'
-        ConsulAccess::setKey(Rails.configuration.rebar.bootstrap_key, params[:data])
-      else
-        yaml = params.key? :yaml
-        @config = JSON.parse(ConsulAccess::getKey(Rails.configuration.rebar.bootstrap_key))
-        @config["domain"] = params["domain"]
-        @config["net_to_join"] = params["net_to_join"].split(",")
-        bootstrap_update yaml, "networks", @config, params 
-        bootstrap_update yaml, "filters", @config, params 
-        bootstrap_update yaml, "services", @config, params 
-        bootstrap_update yaml, "users", @config, params 
-        @config["ssh_keys"].each_key do |k|
-          @config["ssh_keys"][k] = params["ssh_keys|#{k}"]
-        end
-        if params["ssh_keys|new_data"].starts_with? "ssh-rsa"
-          @config["ssh_keys"][params["ssh_keys|new_name"]] = params["ssh_keys|new_data"]
-        end
-        # now save it
-        ConsulAccess::setKey(Rails.configuration.rebar.bootstrap_key, JSON.pretty_generate(@config))
- 
-      end
-    end
-
-    @config = JSON.parse(ConsulAccess::getKey(Rails.configuration.rebar.bootstrap_key))
-
-    respond_to do |format|
-      format.html # index.html.haml
-      format.json { render :json => @config }
-    end
-  end
-
   # used by BDD to create Admin node
   def bootstrap_post
     # only create if no other netwroks

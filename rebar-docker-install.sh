@@ -17,6 +17,8 @@ export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 set -x
 date
 
+BUILT_CFG_FILE=/tmp/final.json
+
 . /etc/profile
 cd /opt/digitalrebar/core
 
@@ -76,25 +78,15 @@ echo "{ \
 
 cp /home/rebar/.ssh/id_rsa.pub config/ssh_keys/admin-0.key
 
-./rebar-build-json.rb > config/final.json
-
-curl -X PUT --data-binary @config/final.json http://127.0.0.1:8500/v1/kv/digitalrebar/private/bootstrap?token=$CONSUL_M_ACL
-
-[[ $FQDN ]] || export FQDN="$(hostname)"
-
-HOSTNAME=${FQDN%%.*}
-
-# Get config file from consul
-CONSUL_MACL=$CONSUL_M_ACL
-curl "http://127.0.0.1:8500/v1/kv/digitalrebar/private/bootstrap?token=$CONSUL_MACL&raw" > config/processed.json
+./rebar-build-json.rb > ${BUILT_CFG_FILE}
 
 # Process networks
 admin_nets=()
-network_count=`jq ".networks | length" config/processed.json`
+network_count=`jq ".networks | length" ${BUILT_CFG_FILE}`
 for ((i=0; i < network_count; i++)) ; do
-  network=`jq ".networks[$i]" config/processed.json`
-  group=`jq -r ".networks[$i].group" config/processed.json`
-  category=`jq -r ".networks[$i].category" config/processed.json`
+  network=`jq ".networks[$i]" ${BUILT_CFG_FILE}`
+  group=`jq -r ".networks[$i].group" ${BUILT_CFG_FILE}`
+  category=`jq -r ".networks[$i].category" ${BUILT_CFG_FILE}`
   if ! [[ $category && $group ]]; then
       echo "Network must have a category and a group defined!"
       exit 1
@@ -117,30 +109,18 @@ function contains () {
   [[ "${#arr[@]}" != "${#marr[@]}" ]]
 }
 
-# join networks
-network_count=`jq ".networks_to_join | length" config/processed.json`
-for ((i=0; i < network_count; i++)) ; do
-  network=`jq -r ".networks_to_join[$i]" config/processed.json`
-  rebar networks add $network to "$FQDN"
-
-  if contains $network $admin_nets ; then
-    admin_net_name=$network
-  fi
-done
-
-
 # Process services/servers
-service_count=`jq ".services | length" config/processed.json`
+service_count=`jq ".services | length" ${BUILT_CFG_FILE}`
 for ((i=0; i < service_count; i++)) ; do
-  service_type=`jq -r ".services[$i].type" config/processed.json`
-  service_name=`jq -r ".services[$i].name" config/processed.json`
+  service_type=`jq -r ".services[$i].type" ${BUILT_CFG_FILE}`
+  service_name=`jq -r ".services[$i].name" ${BUILT_CFG_FILE}`
 
-  has_service=`jq -r ".services[$i].has_service" config/processed.json`
+  has_service=`jq -r ".services[$i].has_service" ${BUILT_CFG_FILE}`
   if [ "$has_service" == "false" ] ; then
     continue
   fi
 
-  service_role=`jq -r ".services[$i].service_role" config/processed.json`
+  service_role=`jq -r ".services[$i].service_role" ${BUILT_CFG_FILE}`
   if [ "$service_role" == "null" ] ; then
     if [[ $service_name == *"-"* ]] ; then
       service_role="${service_name}_service"
@@ -154,14 +134,14 @@ for ((i=0; i < service_count; i++)) ; do
 done
 for ((i=0; i < service_count; i++)) ; do
   # Add external servers.
-  service_type=`jq -r ".services[$i].type" config/processed.json`
-  service_name=`jq -r ".services[$i].name" config/processed.json`
+  service_type=`jq -r ".services[$i].type" ${BUILT_CFG_FILE}`
+  service_name=`jq -r ".services[$i].name" ${BUILT_CFG_FILE}`
 
   if [ "$service_type" == "external" ] ; then
     continue
   fi
 
-  server_role=`jq -r ".services[$i].server_role" config/processed.json`
+  server_role=`jq -r ".services[$i].server_role" ${BUILT_CFG_FILE}`
   if [ "$server_role" == "null" ] ; then
     if [[ $service_name == *"-"* ]] ; then
       server_role="${service_name}_server"
@@ -175,20 +155,20 @@ for ((i=0; i < service_count; i++)) ; do
     rebar nodes bind "$FQDN" to $k
   done
 
-  attrs=`jq ".services[$i].attributes" config/processed.json`
+  attrs=`jq ".services[$i].attributes" ${BUILT_CFG_FILE}`
   if [ "$attrs" != "null" ] ; then
-    count=`jq ".services[$i].attributes|keys|length" config/processed.json`
+    count=`jq ".services[$i].attributes|keys|length" ${BUILT_CFG_FILE}`
     for ((k=0; k < count; k++)) ; do
-      kname=`jq -r ".services[$i].attributes|keys|.[$k]" config/processed.json`
-      kvalue=`jq ".services[$i].attributes[\"$kname\"]" config/processed.json`
+      kname=`jq -r ".services[$i].attributes|keys|.[$k]" ${BUILT_CFG_FILE}`
+      kvalue=`jq ".services[$i].attributes[\"$kname\"]" ${BUILT_CFG_FILE}`
 
       rebar nodes set "$FQDN" attrib $kname to "{ \"value\": $kvalue }"
     done
   fi
 done
 for ((i=0; i < service_count; i++)) ; do
-  service_type=`jq -r ".services[$i].type" config/processed.json`
-  service_name=`jq -r ".services[$i].name" config/processed.json`
+  service_type=`jq -r ".services[$i].type" ${BUILT_CFG_FILE}`
+  service_name=`jq -r ".services[$i].name" ${BUILT_CFG_FILE}`
 
   if [ "$service_type" == "internal" ] ; then
     continue
@@ -200,18 +180,18 @@ for ((i=0; i < service_count; i++)) ; do
     service_name="${service_name}-service"
   fi
 
-  datacenter=`jq -r ".services[$i].datacenter" config/processed.json`
+  datacenter=`jq -r ".services[$i].datacenter" ${BUILT_CFG_FILE}`
   if [ "$datacenter" == "null" ] ; then
     datacenter="digitalrebar"
   fi
-  node_name=`jq -r ".services[$i].node_name" config/processed.json`
+  node_name=`jq -r ".services[$i].node_name" ${BUILT_CFG_FILE}`
   if [ "$node_name" == "null" ] ; then
     node_name="External"
   fi
 
-  service_ip=`jq -r ".services[$i].service_ip" config/processed.json`
-  service_port=`jq -r ".services[$i].service_port" config/processed.json`
-  service_tag=`jq -r ".services[$i].service_tag" config/processed.json`
+  service_ip=`jq -r ".services[$i].service_ip" ${BUILT_CFG_FILE}`
+  service_port=`jq -r ".services[$i].service_port" ${BUILT_CFG_FILE}`
+  service_tag=`jq -r ".services[$i].service_tag" ${BUILT_CFG_FILE}`
   if [ "$service_tag" == "null" ] ; then
     service_tag="system"
   fi
@@ -219,14 +199,14 @@ for ((i=0; i < service_count; i++)) ; do
 # GREG: External service should already exist
 #  curl -X PUT -d "{\"Datacenter\": \"$datacenter\", \"Node\": \"$node_name\", \"Address\": \"$service_ip\", \"Service\": {\"Service\": \"$service_name\", \"Port\": $service_port, \"Address\": \"$service_ip\", \"Tags\": [ \"$service_tag\" ]} }" http://127.0.0.1:8500/v1/catalog/register
 
-  attrs=`jq ".services[$i].keys" config/processed.json`
+  attrs=`jq ".services[$i].keys" ${BUILT_CFG_FILE}`
   if [ "$attrs" != "null" ] ; then
     CONSUL_MACL=$(jq .acl_master_token </etc/consul.d/default.json | awk -F\" '{ print $2 }')
 
-    count=`jq ".services[$i].keys|keys|length" config/processed.json`
+    count=`jq ".services[$i].keys|keys|length" ${BUILT_CFG_FILE}`
     for ((k=0; k < count; k++)) ; do
-      kname=`jq -r ".services[$i].keys|keys|.[$k]" config/processed.json`
-      kvalue=`jq -r ".services[$i].keys[\"$kname\"]" config/processed.json`
+      kname=`jq -r ".services[$i].keys|keys|.[$k]" ${BUILT_CFG_FILE}`
+      kvalue=`jq -r ".services[$i].keys[\"$kname\"]" ${BUILT_CFG_FILE}`
 
       curl -X PUT -d "$kvalue" http://127.0.0.1:8500/v1/kv/$kname?token=$CONSUL_MACL
     done
@@ -234,10 +214,10 @@ for ((i=0; i < service_count; i++)) ; do
 done
 
 # Deployments
-deployment_count=`jq ".deployments | length" config/processed.json`
+deployment_count=`jq ".deployments | length" ${BUILT_CFG_FILE}`
 for ((i=0; i < deployment_count; i++)) ; do
-  name=`jq -r ".deployments[$i].deployment.name" config/processed.json`
-  deployment=`jq ".deployments[$i].deployment" config/processed.json`
+  name=`jq -r ".deployments[$i].deployment.name" ${BUILT_CFG_FILE}`
+  deployment=`jq ".deployments[$i].deployment" ${BUILT_CFG_FILE}`
 
   # Create or update the deployment
   if rebar deployments show $name >/dev/null 2>&1 ; then
@@ -247,18 +227,18 @@ for ((i=0; i < deployment_count; i++)) ; do
   fi
 
   # Add roles
-  dr_count=`jq ".deployments[$i].roles | length" config/processed.json`
+  dr_count=`jq ".deployments[$i].roles | length" ${BUILT_CFG_FILE}`
   for ((dri=0; dri < dr_count; dri++)) ; do
-    dr_role=`jq -r ".deployments[$i].roles[$dri]" config/processed.json`
+    dr_role=`jq -r ".deployments[$i].roles[$dri]" ${BUILT_CFG_FILE}`
 
     rebar deployments bind $name to $dr_role 2>/dev/null || true
   done
 
   # Update attributes
-  count=`jq ".deployments[$i].attributes|keys|length" config/processed.json`
+  count=`jq ".deployments[$i].attributes|keys|length" ${BUILT_CFG_FILE}`
   for ((k=0; k < count; k++)) ; do
-    kname=`jq -r ".deployments[$i].attributes|keys|.[$k]" config/processed.json`
-    kvalue=`jq ".deployments[$i].attributes[\"$kname\"]" config/processed.json`
+    kname=`jq -r ".deployments[$i].attributes|keys|.[$k]" ${BUILT_CFG_FILE}`
+    kvalue=`jq ".deployments[$i].attributes[\"$kname\"]" ${BUILT_CFG_FILE}`
 
     rebar deployments set $name attrib $kname to "{ \"value\": $kvalue }"
   done
@@ -271,23 +251,19 @@ rebar nodes propose "system-phantom.internal.local"
 rebar nodes set "system-phantom.internal.local" attrib dns-domain to "{ \"value\": \"$DOMAINNAME\" }"
 rebar nodes commit "system-phantom.internal.local"
 
-# Add the now mostly empty admin-node
-# GREG: rebar nodes bind "$FQDN" to rebar-build-root-key
-# GREG: rebar nodes bind "$FQDN" to rebar-admin-node
-
 # Add keys into the system
 rebar deployments bind system to rebar-access
-keys=`jq -r .ssh_keys config/processed.json`
+keys=`jq -r .ssh_keys ${BUILT_CFG_FILE}`
 rebar deployments set system attrib rebar-access_keys to "{ \"value\": $keys }"
 rebar deployments set system attrib rebar-machine_key to "{ \"value\": \"`cat /etc/rebar.install.key`\" }"
 
 rebar deployments commit system
 
 # Add/Update DNS Filters into the system
-filter_count=`jq ".filters | length" config/processed.json`
+filter_count=`jq ".filters | length" ${BUILT_CFG_FILE}`
 for ((i=0; i < filter_count; i++)) ; do
-  dnf=`jq ".filters[$i]" config/processed.json`
-  name=`jq -r ".filters[$i].name" config/processed.json`
+  dnf=`jq ".filters[$i]" ${BUILT_CFG_FILE}`
+  name=`jq -r ".filters[$i].name" ${BUILT_CFG_FILE}`
   if rebar dnsnamefilters show $name >/dev/null 2>&1 ; then
     rebar dnsnamefilters update $name "$dnf"
   else
@@ -296,10 +272,10 @@ for ((i=0; i < filter_count; i++)) ; do
 done
 
 # Add/Update users into the system
-user_count=`jq ".users | length" config/processed.json`
+user_count=`jq ".users | length" ${BUILT_CFG_FILE}`
 for ((i=0; i < user_count; i++)) ; do
-  user=`jq ".users[$i]" config/processed.json`
-  name=`jq -r ".users[$i].username" config/processed.json`
+  user=`jq ".users[$i]" ${BUILT_CFG_FILE}`
+  name=`jq -r ".users[$i].username" ${BUILT_CFG_FILE}`
   if rebar users show $name >/dev/null 2>&1 ; then
     rebar users update $name "$user"
   else

@@ -1,7 +1,0 @@
-{
-  "type": "internal",
-  "name": "network",
-  "has_service": true,
-  "service_role": "network-server",
-  "no_server": true
-}

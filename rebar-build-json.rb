@@ -13,8 +13,6 @@ answer = {}
 
 records = Dir.glob("config/*.json")
 records.each do |r|
-  next if r == "config/final.json"
-  next if r == "config/processed.json"
   b = JSON.parse( IO.read(r) )
   answer = answer.deep_merge(b)
 end
