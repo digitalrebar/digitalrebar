@@ -1,0 +1,2 @@
+# There is nothing to do other than configure your external DHCP server to direct
+# nodes to this admin node's provisioner.
