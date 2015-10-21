@@ -128,9 +128,9 @@ class DashboardController < ApplicationController
     elsif request.post?
       ready_name = params[:deployment]
       throw "Deployment Name is required" unless ready_name
-      d = Deployment.find_or_create_by_name! :name=>ready_name, :parent=>Deployment.system
+      d = Deployment.find_or_create_by!(name: ready_name, parent: Deployment.system)
       if params[:conduit]
-        n = Network.find_or_create_by_name! :name=>ready_name, :conduit=>params[:conduit], :deployment=>d, :v6prefix=>Network::V6AUTO
+        n = Network.find_or_create_by!(name: ready_name, conduit: params[:conduit], deployment: d, v6prefix: Network::V6AUTO)
         NetworkRange.create! :name=>params[:range], :network=>n, :first=>params[:first_ip], :last=>params[:last_ip] if n.ranges.count < 2
       end
 

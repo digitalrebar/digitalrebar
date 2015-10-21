@@ -12,7 +12,7 @@
         = render :partial => 'show'
       - else
         %p= t(".status_empty") % Node.count
-        %div{ :class=>'group', :draggable=>'true', :id=>Group.find_or_create_by_name_and_category('not_set', 'ui').id }
+        %div{ :class=>'group', :draggable=>'true', :id=>Group.find_or_create_by!(name: 'not_set', category: 'ui').id }
           =t('.drag_hint').html_safe
 
 #nodes
