@@ -98,19 +98,24 @@ bash "reload consul provisioner" do
   action :nothing
 end
 
+internal=true
 ip_addr = (IP.coerce(node["provisioner"]["service_address"]).addr rescue nil)
+if ENV['FORWARDER_IP'] == ''
+    ip_addr = ENV['EXTERNAL_IP'].split('/')[0]
+    internal=false
+end
 
 template "/etc/consul.d/rebar-provisioner.json" do
   source "consul-provisioner-server.json.erb"
   mode 0644
   owner "root"
-  variables(:web_port => web_port, :ip_addr => ip_addr)
+  variables(:web_port => web_port, :ip_addr => ip_addr, :internal => internal)
   notifies :run, "bash[reload consul provisioner]", :immediately
 end
 template "/etc/consul.d/rebar-provisioner-tftp.json" do
   source "consul-provisioner-tftp-server.json.erb"
   mode 0644
   owner "root"
-  variables(:web_port => web_port, :ip_addr => ip_addr)
+  variables(:web_port => web_port, :ip_addr => ip_addr, :internal => internal)
   notifies :run, "bash[reload consul provisioner]", :immediately
 end

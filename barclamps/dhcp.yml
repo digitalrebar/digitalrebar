@@ -23,41 +23,6 @@ barclamp:
   license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
-  - name: dhcp-server
-    jig: chef
-    attribs:
-      - name: dhcp_leasetime
-        description: 'Default lease time for the DHCP server'
-        map: 'rebar/dhcp/lease_time'
-        schema:
-          type: int
-          required: false
-        value: 600
-      - name: dhcp_options
-        description: 'Additional options to send to DHCP clients'
-        map: 'rebar/dhcp/options'
-        schema:
-          type: seq
-          sequence:
-            - type: str
-      - name: dhcp_networks
-        description: 'Networks to serve DHCP'
-        map: 'rebar/dhcp/networks'
-    wants-attribs:
-      - dns_servers
-      - dns-domain
-      - provisioner-webservers
-    requires:
-      - dns-service
-      - provisioner-service
-  - name: dhcp-database
-    jig: chef
-    wants-attribs:
-      - dns_servers
-      - provisioner-webservers
-    requires:
-      - dhcp-server
-      - provisioner-service
   - name: dhcp-service
     jig: role-provided
     flags:
@@ -71,3 +36,21 @@ roles:
           sequence:
             - type: str
               pattern: /[0-9a-f:.]*/
+  - name: dhcp-mgmt_service
+    jig: role-provided
+    requires:
+      - provisioner-service
+    flags:
+      - service
+    attribs:
+      - name: dhcp-management-servers
+        description: 'DHCP Management servers that all Rebar admins should use'
+        map: 'rebar/dhcp/management_servers'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/
+    wants-attribs:
+      - provisioner-webservers
+

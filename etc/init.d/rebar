@@ -54,7 +54,7 @@ que_worker() {
     workers="$1"
     shift
     for ((i=0; i < workers; i++)) ; do
-        cmd="QUE_WORKER_COUNT=1 QUE_QUEUE=$queue bundle exec rake que:work"
+        cmd="bundle exec que -q $queue -w 1 -l info ./config/environment.rb"
         as_rebar "$cmd" </dev/zero 2>&1 &>> "/var/log/rebar/$queue.$i.log" &
     done
 }

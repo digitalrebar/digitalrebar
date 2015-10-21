@@ -75,9 +75,9 @@ bring_up_admin_containers() {
     fi
     
     if [ "$NO_PULL" == "" ] ; then
-      docker-compose pull
+      docker-compose $COMPOSE_ARGS pull
     fi
-    docker-compose up -d
+    docker-compose $COMPOSE_ARGS up -d
 }
 
 wait_for_admin_containers() {
@@ -99,7 +99,7 @@ wait_for_admin_containers() {
 
 tear_down_admin_containers() {
     cd "$mountdir/deploy/compose"
-    docker-compose kill
-    docker-compose rm -f
+    docker-compose $COMPOSE_ARGS kill
+    docker-compose $COMPOSE_ARGS rm -f
     sudo rm -rf "$mountdir/deploy/compose/data-dir"
 }

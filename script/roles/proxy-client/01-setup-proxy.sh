@@ -38,7 +38,7 @@ if [ "$proxy_str" == "" ] ; then
   exit 0
 fi
 
-cat >/etc/environment <<EOF
+cat >>/etc/environment <<EOF
 http_proxy=$proxy_str
 https_proxy=$proxy_str
 no_proxy=$no_proxy

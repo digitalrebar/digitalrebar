@@ -1,6 +1,0 @@
-# Configured by Rebar.  
-# Do not edit.
-<% unless @interfaces.empty? -%>
-DHCPD_INTERFACE="<%= @interfaces.collect! {|i| "#{i}" }.join(" ") %>"
-<% end -%>
-

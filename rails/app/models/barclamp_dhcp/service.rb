@@ -16,7 +16,7 @@
 class BarclampDhcp::Service < Service
 
   def do_transition(nr, data)
-    internal_do_transition(nr, data, "dhcp-service", "dhcp_servers")
+    internal_do_transition(nr, data, "dhcp", "dhcp_servers")
   end
 
 end

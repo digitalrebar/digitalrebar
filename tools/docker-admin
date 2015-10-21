@@ -34,6 +34,12 @@ if [ "$1" == "--no-pull" ] ; then
   shift
 fi
 
+export COMPOSE_ARGS=""
+if [ "$1" == "--no-forwarder" ] ; then
+  export COMPOSE_ARGS="-f docker-compose-no-forwarder.yml"
+  shift
+fi
+
 # This gets us to core
 mountdir="${mountdir%/tools/docker-admin}"
 # This gets us to the parent directory of core, where presumably the rest of our repos are checked out
