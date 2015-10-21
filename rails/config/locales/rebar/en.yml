@@ -163,6 +163,7 @@ en:
 
   # Models  
   user:
+    chatlink: "Interactive Support"
     sign_in: Sign In
     sign_out: Sign Out
     sign_up: "Sign up"
@@ -175,7 +176,7 @@ en:
 #    provider: "Sign in with %{provider}"
     license: License Details
     license_accept: "By signing in, you are accepting the relevant licenses"
-    options: Options
+    options: "Options:"
 
   deployment:
     commit:
@@ -190,6 +191,9 @@ en:
     cannot_edit_data: "NodeRole data can only be edited in the Proposed state"
     state:
       <<: *node_role_states
+
+  devise:
+    signup: "Create User"
 
   # Layout / Views
   layouts:
