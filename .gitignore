@@ -28,13 +28,6 @@ erl_crash.dump
 # Coverage 
 /core/rails/coverage/
 
-# Config files
-/config/ssh_keys/*.key
-/config/filters/*.json
-/config/domain.json
-/config/final.json
-/config/processed.json
-
 # Rails chaff (especially from dev mode)
 /rails/tmp/
 /rails/log/

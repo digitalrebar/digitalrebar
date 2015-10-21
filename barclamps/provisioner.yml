@@ -285,6 +285,7 @@ roles:
       - service
     requires:
       - proxy-service
+      - chef-service
     attribs:
       - name: provisioner-webservers
         description: 'The URL that managed nodes should use to contact the provisioner webserver.'
