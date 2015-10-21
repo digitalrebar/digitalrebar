@@ -221,91 +221,90 @@ class Network < ActiveRecord::Base
   # every network needs to have a matching role and auto v6 range
   def add_role
     role_name = "network-#{name}"
-    unless Role.exists?(name: role_name)
-      Rails.logger.info("Network: Adding role and attribs for #{role_name}")
-      bc = Barclamp.find_key "network"
-      Role.transaction do
-        create_auto_v6_range
-        r = Role.find_or_create_by!(name: role_name,
-                                    type: "BarclampNetwork::Role",   # force
-                                    jig_name: Rails.env.production? ? "chef" : "test",
-                                    barclamp_id: bc.id,
-                                    description: I18n.t('automatic_by', :name=>name),
-                                    library: false,
-                                    implicit: true,
-                                    milestone: true,    # may need more logic later, this is safest for first pass
-                                    bootstrap: false,   # don't bootstrap networks anymore.
-                                    discovery: false  ) # don't discovery networks anymore.
-        RoleRequire.create!(:role_id => r.id, :requires => "network-server")
-        # The admin net must be bound before any other network can be bound.
-        RoleRequireAttrib.create!(role_id: r.id, attrib_name: 'network_interface_maps')
-        RoleRequireAttrib.create!(role_id: r.id, attrib_name: 'network-current-config')
-        RoleRequireAttrib.create!(role_id: r.id, attrib_name: 'network-wanted-config')
-        # attributes for jig configuraiton
-        Attrib.create!(:role_id => r.id,
-                         :barclamp_id => bc.id,
-                         :name => "#{role_name}_addresses",
-                         :description => "#{name} network addresses assigned to a node",
-                         :map => "rebar/network/#{name}/addresses")
-        Attrib.create!(:role_id => r.id,
-                         :barclamp_id => bc.id,
-                         :name => "#{role_name}_targets",
-                         :description => "#{name} network addresses to be used as ping test targets",
-                         :map => "rebar/network/#{name}/targets")
-        Attrib.create!(:role_id => r.id,
-                         :barclamp_id => bc.id,
-                         :name => "#{role_name}_conduit",
-                         :description => "#{name} network conduit map for this node",
-                         :map => "rebar/network/#{name}/conduit")
-        Attrib.create!(:role_id => r.id,
-                         :barclamp_id => bc.id,
-                         :name => "#{role_name}_resolved_conduit",
-                         :description => "#{name} network interfaces used on this node",
-                         :map => "rebar/network/#{name}/resolved_interfaces")
-        Attrib.create!(:role_id => r.id,
-                         :barclamp_id => bc.id,
-                         :name => "#{role_name}_vlan",
-                         :description => "#{name} network vlan tag",
-                         :map => "rebar/network/#{name}/vlan")
-        Attrib.create!(:role_id => r.id,
-                         :barclamp_id => bc.id,
-                         :name => "#{role_name}_team_mode",
-                         :description => "#{name} network bonding mode",
-                         :map => "rebar/network/#{name}/team_mode")
-        Attrib.create!(:role_id => r.id,
-                         :barclamp_id => bc.id,
-                         :name => "#{role_name}_use_vlan",
-                         :description => "Whether the #{name} network should use a tagged VLAN interface",
-                         :map => "rebar/network/#{name}/use_vlan")
-        Attrib.create!(:role_id => r.id,
-                         :barclamp_id => bc.id,
-                         :name => "#{role_name}_use_team",
-                         :description => "Whether the #{name} network should bond its interfaces",
-                         :map => "rebar/network/#{name}/use_team")
-        Attrib.create!(:role_id => r.id,
-                         :barclamp_id => bc.id,
-                         :name => "#{role_name}_use_bridge",
-                         :description => "Whether #{name} network should create a bridge for other barclamps to use",
-                         :map => "rebar/network/#{name}/use_bridge")
-        # attributes for hints
-        # These belong to the barclamp, not the role.
-        Attrib.create!(:barclamp_id => bc.id,
-                       :name => "hint-#{name}-v4addr",
-                       :description => "Hint for #{name} network to assign v4 IP address",
-                       :map => "#{name}-v4addr",
-                       :schema => {
-                         "type" => "str",
-                         "required" => true,
-                         "pattern" => '/([0-9]{1,3}\.){3}[0-9]{1,3}/'})
-        Attrib.create!(:barclamp_id => bc.id,
-                       :name => "hint-#{name}-v6addr",
-                       :description => "Hint for #{name} network to assign v6 IP address",
-                       :map => "#{name}-v6addr",
-                       :schema => {
-                         "type" => "str",
-                         "required" => true,
-                         "pattern" => '/[0-9a-f:]+/'})
-      end
+    return if Role.exists?(name: role_name)
+    Rails.logger.info("Network: Adding role and attribs for #{role_name}")
+    bc = Barclamp.find_key "network"
+    Role.transaction do
+      create_auto_v6_range
+      r = Role.find_or_create_by!(name: role_name,
+                                  type: "BarclampNetwork::Role",   # force
+                                  jig_name: Rails.env.production? ? "chef" : "test",
+                                  barclamp_id: bc.id,
+                                  description: I18n.t('automatic_by', :name=>name),
+                                  library: false,
+                                  implicit: true,
+                                  milestone: true,    # may need more logic later, this is safest for first pass
+                                  bootstrap: false,   # don't bootstrap networks anymore.
+                                  discovery: false  ) # don't discovery networks anymore.
+      RoleRequire.create!(:role_id => r.id, :requires => "network-server")
+      # The admin net must be bound before any other network can be bound.
+      RoleRequireAttrib.create!(role_id: r.id, attrib_name: 'network_interface_maps')
+      RoleRequireAttrib.create!(role_id: r.id, attrib_name: 'network-current-config')
+      RoleRequireAttrib.create!(role_id: r.id, attrib_name: 'network-wanted-config')
+      # attributes for jig configuraiton
+      Attrib.create!(:role_id => r.id,
+                     :barclamp_id => bc.id,
+                     :name => "#{role_name}_addresses",
+                     :description => "#{name} network addresses assigned to a node",
+                     :map => "rebar/network/#{name}/addresses")
+      Attrib.create!(:role_id => r.id,
+                     :barclamp_id => bc.id,
+                     :name => "#{role_name}_targets",
+                     :description => "#{name} network addresses to be used as ping test targets",
+                     :map => "rebar/network/#{name}/targets")
+      Attrib.create!(:role_id => r.id,
+                     :barclamp_id => bc.id,
+                     :name => "#{role_name}_conduit",
+                     :description => "#{name} network conduit map for this node",
+                     :map => "rebar/network/#{name}/conduit")
+      Attrib.create!(:role_id => r.id,
+                     :barclamp_id => bc.id,
+                     :name => "#{role_name}_resolved_conduit",
+                     :description => "#{name} network interfaces used on this node",
+                     :map => "rebar/network/#{name}/resolved_interfaces")
+      Attrib.create!(:role_id => r.id,
+                     :barclamp_id => bc.id,
+                     :name => "#{role_name}_vlan",
+                     :description => "#{name} network vlan tag",
+                     :map => "rebar/network/#{name}/vlan")
+      Attrib.create!(:role_id => r.id,
+                     :barclamp_id => bc.id,
+                     :name => "#{role_name}_team_mode",
+                     :description => "#{name} network bonding mode",
+                     :map => "rebar/network/#{name}/team_mode")
+      Attrib.create!(:role_id => r.id,
+                     :barclamp_id => bc.id,
+                     :name => "#{role_name}_use_vlan",
+                     :description => "Whether the #{name} network should use a tagged VLAN interface",
+                     :map => "rebar/network/#{name}/use_vlan")
+      Attrib.create!(:role_id => r.id,
+                     :barclamp_id => bc.id,
+                     :name => "#{role_name}_use_team",
+                     :description => "Whether the #{name} network should bond its interfaces",
+                     :map => "rebar/network/#{name}/use_team")
+      Attrib.create!(:role_id => r.id,
+                     :barclamp_id => bc.id,
+                     :name => "#{role_name}_use_bridge",
+                     :description => "Whether #{name} network should create a bridge for other barclamps to use",
+                     :map => "rebar/network/#{name}/use_bridge")
+      # attributes for hints
+      # These belong to the barclamp, not the role.
+      Attrib.create!(:barclamp_id => bc.id,
+                     :name => "hint-#{name}-v4addr",
+                     :description => "Hint for #{name} network to assign v4 IP address",
+                     :map => "#{name}-v4addr",
+                     :schema => {
+                       "type" => "str",
+                       "required" => true,
+                       "pattern" => '/([0-9]{1,3}\.){3}[0-9]{1,3}/'})
+      Attrib.create!(:barclamp_id => bc.id,
+                     :name => "hint-#{name}-v6addr",
+                     :description => "Hint for #{name} network to assign v6 IP address",
+                     :map => "#{name}-v6addr",
+                     :schema => {
+                       "type" => "str",
+                       "required" => true,
+                       "pattern" => '/[0-9a-f:]+/'})
     end
   end
 
@@ -371,6 +370,8 @@ class Network < ActiveRecord::Base
     # Call all role on_network_create hooks with self.
     # These should happen synchronously.
     # do the low cohorts first
+    return if @after_create
+    @after_create = true
     Rails.logger.info("Network: calling all role on_network_create hooks for #{name}")
     Role.all_cohorts.each do |r|
       Rails.logger.info("Network: Calling #{r.name} on_network_create for #{self.name}")

@@ -555,7 +555,9 @@ class Node < ActiveRecord::Base
   end
 
   def after_create_hooks
-    self.provider.create_node(self)
+    return if @after_create
+    @after_create = true
+    self.provider.create_node(self) 
     # Handle binding the default hammers for this node.
     case
     when self.is_system?

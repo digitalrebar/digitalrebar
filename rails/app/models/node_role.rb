@@ -772,6 +772,8 @@ class NodeRole < ActiveRecord::Base
   end
 
   def bind_cluster_children
+    return if @after_create
+    @after_create = true
     NodeRole.transaction do
       if self.role.cluster?
         # If I am a cluster role, I also get any children of my peers.

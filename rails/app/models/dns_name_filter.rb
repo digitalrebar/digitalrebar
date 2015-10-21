@@ -117,6 +117,8 @@ class DnsNameFilter < ActiveRecord::Base
   end
 
   def on_create_hooks
+    return if @after_create
+    @after_create = true
     NetworkAllocation.all.each do |na|
       DnsNameFilter.transaction do
         claim_and_update(na)

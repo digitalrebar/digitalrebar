@@ -31,6 +31,8 @@ class DnsNameEntry < ActiveRecord::Base
   end
 
   def on_create_hooks
+    return if @after_create
+    @after_create = true
     BarclampDns::MgmtService.add_ip_address(self)
   end
 
