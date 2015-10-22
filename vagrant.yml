@@ -53,6 +53,11 @@
       command: docker-compose pull
       args:
         chdir: /home/vagrant/compose
+    - name: Initialize compose files
+      command: ./init_files.sh
+      args:
+        chdir: /home/vagrant/compose
+        creates: compose/docker-compose.yml
     - name: Compose up Digital Rebar Infrastructre
       command: docker-compose up -d
       args:

@@ -1,0 +1,29 @@
+
+dhcp:
+  extends:
+    file: docker-compose-common.yml
+    service: dhcp
+  links:
+    - consul:consul
+{{ START ACCESS_MODE==FORWARDER }}
+  net: "container:forwarder"
+{{ END ACCESS_MODE==FORWARDER }}
+{{ START ACCESS_MODE==HOST }}
+  net: "host"
+{{ END ACCESS_MODE==HOST }}
+
+provisioner:
+  extends:
+    file: docker-compose-common.yml
+    service: provisioner
+  links:
+    - consul:consul
+{{ START ACCESS_MODE==FORWARDER }}
+    - forwarder:forwarder
+{{ END ACCESS_MODE==FORWARDER }}
+{{ START ACCESS_MODE==HOST }}
+  ports:
+    - "69/udp:69/udp"
+    - "8091:8091"
+{{ END ACCESS_MODE==HOST }}
+

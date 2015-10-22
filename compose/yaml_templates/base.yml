@@ -17,8 +17,13 @@ webproxy:
     service: webproxy
   links:
     - consul:consul
+{{ START ACCESS_MODE==FORWARDER }}
+    - forwarder:forwarder
+{{ END ACCESS_MODE==FORWARDER }}
+{{ START ACCESS_MODE==HOST }}
   ports:
     - "3128:3128"
+{{ END ACCESS_MODE==HOST }}
 
 goiardi:
   extends:
@@ -27,8 +32,13 @@ goiardi:
   links:
     - consul:consul
     - postgres:database
+{{ START ACCESS_MODE==FORWARDER }}
+    - forwarder:forwarder
+{{ END ACCESS_MODE==FORWARDER }}
+{{ START ACCESS_MODE==HOST }}
   ports:
     - "4646:4646"
+{{ END ACCESS_MODE==HOST }}
 
 rebar_api:
   extends:
@@ -38,9 +48,38 @@ rebar_api:
     - consul:consul
     - postgres:database
     - goiardi:goiardi
+{{ START ACCESS_MODE==FORWARDER }}
+    - forwarder:forwarder
+{{ END ACCESS_MODE==FORWARDER }}
+{{ START ACCESS_MODE==HOST }}
   ports:
     - "3000:3000"
+{{ END ACCESS_MODE==HOST }}
 
+dns:
+  extends:
+    file: docker-compose-common.yml
+    service: dns
+  links:
+    - consul:consul
+{{ START ACCESS_MODE==FORWARDER }}
+    - forwarder:forwarder
+{{ END ACCESS_MODE==FORWARDER }}
+{{ START ACCESS_MODE==HOST }}
+  ports:
+    - "53/udp:53/udp"
+{{ END ACCESS_MODE==HOST }}
+
+{{ START ACCESS_MODE==FORWARDER }}
+forwarder:
+  extends:
+    file: docker-compose-common.yml
+    service: forwarder
+  links:
+    - consul:consul
+{{ END ACCESS_MODE==FORWARDER }}
+
+{{ START ACCESS_MODE==HOST }}
 ntp:
   extends:
     file: docker-compose-common.yml
@@ -50,67 +89,5 @@ ntp:
   ports:
     - "123/udp:123/udp"
     - "123:123"
+{{ END ACCESS_MODE==HOST }}
 
-dns:
-  extends:
-    file: docker-compose-common.yml
-    service: dns
-  links:
-    - consul:consul
-  ports:
-    - "53/udp:53/udp"
-
-dhcp:
-  extends:
-    file: docker-compose-common.yml
-    service: dhcp
-  links:
-    - consul:consul
-  net: "host"
-
-provisioner:
-  extends:
-    file: docker-compose-common.yml
-    service: provisioner
-  links:
-    - consul:consul
-  ports:
-    - "69/udp:69/udp"
-    - "8091:8091"
-
-elasticsearch:
-  extends:
-    file: docker-compose-common.yml
-    service: elasticsearch
-
-logstash:
-  extends:
-    file: docker-compose-common.yml
-    service: logstash
-  links:
-    - elasticsearch:elasticsearch
-
-kibana:
-  extends:
-    file: docker-compose-common.yml
-    service: kibana
-  links:
-    - elasticsearch:elasticsearch
-
-logspout:
-  net: container:logstash
-  extends:
-    file: docker-compose-common.yml
-    service: logspout
-
-cadvisor:
-  extends:
-    file: docker-compose-common.yml
-    service: cadvisor
-
-node:
-  extends:
-    file: docker-compose-common.yml
-    service: node
-  links:
-    - rebar_api:rebar_api

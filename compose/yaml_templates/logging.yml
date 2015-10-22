@@ -1,0 +1,26 @@
+
+elasticsearch:
+  extends:
+    file: docker-compose-common.yml
+    service: elasticsearch
+
+logstash:
+  extends:
+    file: docker-compose-common.yml
+    service: logstash
+  links:
+    - elasticsearch:elasticsearch
+
+kibana:
+  extends:
+    file: docker-compose-common.yml
+    service: kibana
+  links:
+    - elasticsearch:elasticsearch
+
+logspout:
+  net: container:logstash
+  extends:
+    file: docker-compose-common.yml
+    service: logspout
+
