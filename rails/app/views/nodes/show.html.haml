@@ -69,20 +69,20 @@
       %th= t '.value'
   %tbody
     - @node.attribs.order("name ASC").each do |a|
-      - v = a.get(@node) rescue nil          
-      %tr{:class => "shrunk " + cycle("even","odd")}
-        %td.name= link_to a.name, attrib_path(a.id), :title => a.description
-        %td.value{:style=>"vertical-align: top;"}
-          - unless v.nil?
-            - if v.class == Hash
-              - data = JSON.pretty_generate(v)
-              - trunc = data[0..(data.length>8&&10||data.length)]+"..."
-              %pre{:onclick=>"expand($(this))",:flat=>"false",:content=>data,:trunc=>trunc}
-                = trunc
-            - else
-              = v
-          - else
-            %em= t('not_set')
+      - begin
+        - if params.key? :raw
+          = render :partial => Attrib::UI_RENDERER, :locals => {:obj=>@node, :obj_type => Node, :attrib=>a, :editable=>false, :flag=>:raw }
+        - else
+          = render :partial => a.ui_renderer, :locals => {:obj=>@node, :obj_type => Node, :attrib=>a, :editable=>false, :flag=>:ok }
+      - rescue StandardError => e
+        - if current_user and current_user.settings(:ui).debug 
+          %tr.node{ :class => cycle(:odd, :even) }
+            %td= t '.error'
+            %td= e.message
+            %td= t 'debug'
+            %td= a.ui_renderer rescue t 'not_set'
+        - else
+          = render :partial => Attrib::UI_RENDERER, :locals => {:obj=>@node, :obj_type => Node, :attrib=>a, :editable=>false, :flag=>:error, :error=>e.message }  
 
 :javascript
   function expand(element) {

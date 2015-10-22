@@ -91,7 +91,6 @@ roles:
       - name: rebar-machine_key
         description: 'The username and password that managed nodes should use to talk to the Rebar API'
         map: 'rebar/machine_key'
-        ui_renderer: 'barclamp_provisioner/attribs/package_repos'
         schema:
           type: str
           required: true
