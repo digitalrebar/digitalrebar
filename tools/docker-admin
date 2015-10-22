@@ -29,16 +29,52 @@ else
     exit 1
 fi
 
-if [ "$1" == "--no-pull" ] ; then
-  export NO_PULL="Y"
-  shift
-fi
 
 export COMPOSE_ARGS=""
-if [ "$1" == "--no-forwarder" ] ; then
-  export COMPOSE_ARGS="-f docker-compose-no-forwarder.yml"
-  shift
-fi
+while [ $# -ne 0 ] ; do
+    arg=$1
+
+    case $arg in
+        --clean)
+            shift
+            export COMPOSE_RESET="Y"
+            ;;
+        --no-pull)
+            shift
+            export NO_PULL="Y"
+            ;;
+        --provisioner)
+            shift
+            export COMPOSE_ARGS="$COMPOSE_ARGS $arg"
+            ;;
+        --logging)
+            shift
+            export COMPOSE_ARGS="$COMPOSE_ARGS $arg"
+            ;;
+        --debug)
+            shift
+            export COMPOSE_ARGS="$COMPOSE_ARGS $arg"
+            ;;
+        --node)
+            shift
+            export COMPOSE_ARGS="$COMPOSE_ARGS $arg"
+            ;;
+        --access)
+            shift
+            access=$1
+            shift
+            export COMPOSE_ARGS="$COMPOSE_ARGS --access $access"
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+echo "Running with:"
+echo "  clean : $COMPOSE_RESET"
+echo "  args  : $COMPOSE_ARGS"
+echo "  nopull: $NO_PULL"
 
 # This gets us to core
 mountdir="${mountdir%/tools/docker-admin}"
