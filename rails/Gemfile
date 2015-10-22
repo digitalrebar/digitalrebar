@@ -14,13 +14,13 @@
 
 source 'https://rubygems.org'
 
-gem 'rails', '~> 4.0.13'
+gem 'rails', '~> 4.2.0'
 gem 'audited-activerecord', '~> 4.2.0'
 gem 'pg'
 gem 'haml'
 # Pinned until we fix our stypesheets for sass ~> 3.3.0
 gem 'sass', '~> 3.2.0'
-gem 'sass-rails', '~> 4.0.2'
+gem 'sass-rails'
 gem 'simple-navigation'
 gem 'syslogger'
 # Give us real foriegn keys in idiomatic Rails,
@@ -34,8 +34,8 @@ gem 'bunny'
 gem 'xml-simple'
 gem 'daemons'
 gem 'active_scaffold'
-gem 'devise', "~>3.0.0"
-gem 'rails_config', '~>0.4.2'
+gem 'devise', "~> 3.4.0"
+gem 'config'
 gem 'que'
 gem 'ledermann-rails-settings', :require => 'rails-settings'
 gem 'jquery-rails'
@@ -51,6 +51,8 @@ gem 'berkshelf'
 gem 'json-patch'
 # For password change via the API
 gem 'rbnacl-libsodium'
+# For talking to JSONRPC 2.0 servers via HTTP
+gem 'jsonrpc-client'
 
 group :development, :test do
   gem 'coveralls'

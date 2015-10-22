@@ -69,6 +69,8 @@ class NetworkAllocation < ActiveRecord::Base
     # Call all role on_network_allocation_create hooks with self.
     # These should happen synchronously.
     # do the low cohorts first
+    return if @after_create
+    @after_create = true
     Rails.logger.info("Node: calling all role on_network_allocation_create hooks for #{self}")
     Role.all_cohorts.each do |r|
       Rails.logger.info("Node: Calling #{r.name} on_network_allocation_create for #{self}")

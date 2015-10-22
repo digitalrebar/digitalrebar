@@ -82,7 +82,7 @@ class BarclampsController < ApplicationController
       wiz_name = params[:deployment]
       throw "Deployment Name is required" unless wiz_name
 
-      d = Deployment.find_or_create_by_name! :name=>wiz_name, :parent=>Deployment.system
+      d = Deployment.find_or_create_by!(name: wiz_name, parent: Deployment.system)
 
       # track nodes
       nodes = {}

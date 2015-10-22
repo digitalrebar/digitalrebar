@@ -16,12 +16,12 @@
 # The data can then be loaded with the rake db:seed (or created alongside the db with db:setup).
 ActiveRecord::Base.transaction do
 
-  u = User.find_or_create_by_username!(:username=>'rebar', :password=>'rebar1', :is_admin=>true)
+  u = User.find_or_create_by!(username: 'rebar', is_admin: true)
   u.digest_password('rebar1')
   u.save!
 
   if Rails.env.development? or Rails.env.test?
-    u = User.find_or_create_by_username!(:username=>'developer', :password=>'replace!me', :is_admin=>true)
+    u = User.find_or_create_by!(username: 'developer', is_admin: true)
     u.digest_password('d1g1t@l')
     u.save!
   end

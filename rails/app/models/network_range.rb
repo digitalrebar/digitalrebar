@@ -221,6 +221,8 @@ class NetworkRange < ActiveRecord::Base
   # Call the on_network_change hooks.
   def on_change_hooks
     # do the low cohorts last
+    return if @after_create
+    @after_create = true
     Rails.logger.info("NetworkRange: calling all role on_network_change hooks for #{network.name}")
     Role.all_cohorts_desc.each do |r|
       begin
