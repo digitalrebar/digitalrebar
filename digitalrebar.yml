@@ -3,7 +3,7 @@
   hosts: all
   sudo: yes
   tasks:
-    - include: tasks/centos07-base.yml
+    - include: tasks/centos-base.yml
       when: ansible_os_family == "RedHat"
     - include: tasks/ubuntu1404-base.yml
       when: ansible_os_family == "Debian"
