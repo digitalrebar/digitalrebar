@@ -70,6 +70,14 @@ while [ $# -ne 0 ] ; do
     esac
 done
 
+#
+# For backwards compat, if no options are given, then
+# include the provisioner and access mode to FORWARDER 
+#
+if [ "$COMPOSE_ARGS" == "" ] ; then
+    export COMPOSE_ARGS="--provisioner --access FORWARDER"
+fi
+
 echo "Running with:"
 echo "  clean : $COMPOSE_RESET"
 echo "  args  : $COMPOSE_ARGS"

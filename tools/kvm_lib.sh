@@ -1,5 +1,10 @@
 #!/bin/bash
 
+die() {
+    printf '%s\n' "$@"
+    exit 1
+}
+
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 # Commands we have to run under sudo -n
 SUDO_CMDS="/sbin/brctl ip umount mount"
