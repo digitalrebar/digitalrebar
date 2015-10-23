@@ -10,6 +10,10 @@ function usage {
     echo "  --debug # Adds the cadviser components"
     echo "  --node # Adds the node component"
     echo
+    echo "  --external_ip <CIDR Address, default: 192.168.124.11/24> "
+    echo "  --forwarder_ip <CIDR Address, default: 192.168.124.11/24> "
+    echo "       forwarder_ip is ignored if HOST access mode is used."
+    echo
     echo " If additional arguments are provided, they are passed to docker-compose"
     echo " Otherwise nothing is run and just files are setup."
 }
@@ -37,6 +41,14 @@ while [[ $1 == -* ]] ; do
       ;;
     --access) 
       ACCESS_MODE=$1
+      shift
+      ;;
+    --external_ip) 
+      EXTERNAL_IP=$1
+      shift
+      ;;
+    --forwarder_ip) 
+      FORWARDER_IP=$1
       shift
       ;;
     --provisioner) 
