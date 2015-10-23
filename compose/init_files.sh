@@ -93,7 +93,8 @@ do
     # Fix Access Mode
     sed "/START ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/,/END ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/d" yaml_templates/$i >> docker-compose.yml
 done
-sed -i '' "/ACCESS_MODE==/d" docker-compose.yml
+sed "/ACCESS_MODE==/d" docker-compose.yml > dc.yml
+mv dc.yml docker-compose.yml
 
 # Make access.env for Variables.
 echo "EXTERNAL_IP=$EXTERNAL_IP" > access.env

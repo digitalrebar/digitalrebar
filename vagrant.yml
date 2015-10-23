@@ -49,15 +49,15 @@
       args:
         creates: compose/config-dir/api/config/ssh_keys/setup-0.key
 
-    - name: Pull Digital Rebar Images [SLOW]
-      command: docker-compose pull
-      args:
-        chdir: /home/vagrant/compose
     - name: Initialize compose files
       command: ./init_files.sh
       args:
         chdir: /home/vagrant/compose
         creates: compose/docker-compose.yml
+    - name: Pull Digital Rebar Images [SLOW]
+      command: docker-compose pull
+      args:
+        chdir: /home/vagrant/compose
     - name: Compose up Digital Rebar Infrastructre
       command: docker-compose up -d
       args:

@@ -5,7 +5,7 @@
     args:
       creates: /tmp/docker.sh
   - name: Prep Docker
-    command: sudo chmod +7 /tmp/docker.sh
+    command: sudo chmod 755 /tmp/docker.sh
   - name: Install Docker [SLOW]
     command: sudo /tmp/docker.sh
     args:
