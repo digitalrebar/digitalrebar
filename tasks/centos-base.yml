@@ -19,7 +19,7 @@
     yum: name={{ item }} state=latest
     with_items:
       - rubygems
-    when: (ansible_distribution == "RedHat" or ansibile_distribution == "CentOS") and ansible_distribution_major_version == "6"
+    when: (ansible_distribution == "RedHat" or ansible_distribution == "CentOS") and ansible_distribution_major_version == "6"
   - name: gem install kvm slaves
     command: sudo gem install json net-http-digest_auth
 
