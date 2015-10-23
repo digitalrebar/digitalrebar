@@ -15,8 +15,10 @@
     with_items:
       - docker-selinux
     when: (ansible_distribution == "RedHat" or ansible_distribution == "CentOS") and ansible_distribution_major_version == "7"
+
   - name: restart docker service
-    command: sudo service docker restart
+    service: name=docker state=started
+
   - name: Get Docker Compose
     command: curl -L https://github.com/docker/compose/releases/download/1.4.0/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }} -o /usr/local/bin/docker-compose
     args:
