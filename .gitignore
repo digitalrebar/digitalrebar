@@ -22,6 +22,10 @@ install-*.log
 /compose/data-dir/node/rebar-key.sh
 /compose/data-dir/elasticsearch/elasticsearch
 
+# Dynamically built by init_files.sh
+/compose/access.env
+/compose/docker-compose.yml
+
 .idea
 Berksfile.lock
 

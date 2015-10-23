@@ -11,16 +11,6 @@ Docker container deployment tools
     * ./setup
   * docker-compose up
  
-# Publish Containers
-  * Notes for Greg
-  * Make sure docker and docker-compose are installed on the system.
-    * https://docs.docker.com/installation/
-    * https://docs.docker.com/compose/install/
-  * git clone this repo into compose
-    * git clone https://github.com/rackn/container-install compose
-  * cd compose
-  * ./build_it.sh
-
 # Config Changes
 
 Some configuration can be changed through the config-dir/api/config
@@ -31,7 +21,6 @@ Domain name is set in the common.env file
 
 # ToDo:
   * Convert the logging server to a service.
-  * Convert DHCP style to new API-based DHCP server
   * Convert Prov to cobbler.
   * Cobbler Container: Create volume/mountpoints for isos and files
     * Provisioner container maps the existing ~/.cache/digitalrebar/tftproot

@@ -1,6 +1,4 @@
 --- 
-  - name: Load tftp nat module
-    modprobe: name=nf_nat_tftp state=present
   - name: create SSH key for host to access slaves
     command: ssh-keygen -t rsa -f '.ssh/id_rsa' -P ''
     args:
@@ -24,6 +22,11 @@
     args:
       chdir: compose
       creates: compose/digitalrebar/core
+  - name: init compose files
+    command: ./init_files.sh
+    args:
+      chdir: compose
+      creates: compose/docker-compose.yml
   - name: copy user ssh public key to rebar
     command: cp .ssh/id_rsa.pub compose/config-dir/api/config/ssh_keys/setup-0.key
     args:
