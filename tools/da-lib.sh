@@ -18,10 +18,6 @@ if ! which docker-compose &>/dev/null; then
     die "Please install docker-compose!"
 fi
 
-# Make sure that the tftp conntrack modules are loaded
-sudo modprobe nf_conntrack_tftp
-sudo modprobe nf_nat_tftp
-
 rebar() {
     docker exec compose_rebar_api_1 rebar -E http://127.0.0.1:3000 -U rebar -P rebar1 "$@"
 }
@@ -73,11 +69,18 @@ bring_up_admin_containers() {
         sudo chcon -Rt svirt_sandbox_file_t "$mountdir"
         sudo chcon -Rt svirt_sandbox_file_t "$HOME/.cache/digitalrebar/tftpboot"
     fi
+
+    if [ "$COMPOSE_RESET" == "Y" ] ; then
+        ./init_files.sh --clean
+    fi
+    if [[ ! -f docker-compose.yml ]] ; then
+        ./init_files.sh $COMPOSE_ARGS
+    fi
     
     if [ "$NO_PULL" == "" ] ; then
-      docker-compose $COMPOSE_ARGS pull
+        docker-compose pull
     fi
-    docker-compose $COMPOSE_ARGS up -d
+    docker-compose up -d
 }
 
 wait_for_admin_containers() {
@@ -99,7 +102,7 @@ wait_for_admin_containers() {
 
 tear_down_admin_containers() {
     cd "$mountdir/deploy/compose"
-    docker-compose $COMPOSE_ARGS kill
-    docker-compose $COMPOSE_ARGS rm -f
+    docker-compose kill
+    docker-compose rm -f
     sudo rm -rf "$mountdir/deploy/compose/data-dir"
 }
