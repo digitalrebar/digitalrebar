@@ -1,0 +1,6 @@
+# Try to keep this OS neutral
+---
+  - stat: path=/usr/local/bin/jq
+    register: jq_exe
+  - fail: msg="jq not installed. See:brew install jq"
+    when: jq_exe.stat.exists == False

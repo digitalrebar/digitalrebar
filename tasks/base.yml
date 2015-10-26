@@ -1,0 +1,8 @@
+# Base include for OS prep
+---
+  - include: base-centos.yml
+    when: ansible_os_family == "RedHat"
+  - include: base-ubuntu1404.yml
+    when: ansible_os_family == "Debian"
+  - include: base-darwin.yml
+    when: ansible_os_family == "Darwin"

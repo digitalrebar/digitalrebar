@@ -65,7 +65,7 @@ ssh -o StrictHostKeyChecking=no root@$IP date
 echo "$IP ansible_ssh_user=root" > run-in-hosts
 
 export ANSIBLE_HOST_KEY_CHECKING=False
-ansible-playbook -i run-in-hosts packet.yml
+ansible-playbook -s -i run-in-hosts digitalrebar.yml
 
 date
 

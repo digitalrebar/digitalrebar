@@ -4,9 +4,12 @@ The following documentation will setup a complete running Digital Rebar system f
 
 *PRO TIP:* Playbooks can be _localhost_ applied to run local setups!
 
+Running ansible local:
+  * echo "127.0.0.1" > run-in-hosts
+  * ansible-playbook -i run-in-hosts digitalrebar.yml --connection=local
+
 Available playbooks:
   * [digitalrebar.yml](digitalrebar.yml) generic install based on Docker Compose
-  * [vagrant.yml](vagrant.yml) Vagrant specific steps
   * Supporting playbooks
     * [docker.yml](tasks/docker.yml) Installs Docker & Compose
     * [ubuntu1404-base.yml](tasks/ubuntu1404-base.yml) Ubuntu Pre-reqs
