@@ -88,8 +88,8 @@ wait_for_admin_containers() {
     retry_until 240 \
                 "Took too long for rebar container to come up" \
                 rebar ping || exit 1
-    echo "Waiting for the provisioner (up to 480 seconds)"
-    retry_until 480 \
+    echo "Waiting for the provisioner (up to 600 seconds)"
+    retry_until 600 \
                 "Took too long for the provisioner to come up" \
                 rebar nodes show provisioner.local.neode.org || exit 1
     sleep 5
