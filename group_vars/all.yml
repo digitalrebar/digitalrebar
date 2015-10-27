@@ -92,7 +92,7 @@ dr_services:
 #  - all                # Needs rackn access
 #
 dr_workloads:
-  - all
+  - kubernetes
 
 #
 # Access user/password for rackn repos
