@@ -1,4 +1,8 @@
 --- 
+  - name: Load tftp nat module
+    modprobe: name=nf_nat_tftp state=present
+    when: dr_access_mode == "FORWARDER"
+
   - name: create SSH key for host to access slaves
     command: ssh-keygen -t rsa -f '~/.ssh/id_rsa' -P ''
     args:
@@ -20,12 +24,12 @@
     synchronize: src=./compose dest=~ rsync_path="rsync"
 
   - name: setup compose
-    command: ./setup.sh kubernetes
+    command: ./setup.sh {{ dr_workloads | join(" ") }}
     args:
       chdir: compose
       creates: compose/digitalrebar/core
   - name: init compose files
-    command: ./init_files.sh
+    command: ./init_files.sh --external_ip {{ dr_external_ip }} --forwarder_ip {{ dr_forwarder_ip | default("0.0.0.0/24") }}  --access {{ dr_access_mode }} {{ dr_services | join(" ") }}
     args:
       chdir: compose
       creates: compose/docker-compose.yml
@@ -66,7 +70,7 @@
       chdir: compose
 
   - name: wait until Digital Rebar service is up [1 upto 5 minutes]
-    wait_for: host="{{external_ip | ipaddr('address')}}" port=3000 delay=60 timeout=300
+    wait_for: host="{{dr_external_ip | ipaddr('address')}}" port=3000 delay=60 timeout=300
 
   - name: wait for rebar-key (1 to 30 minutes)
     wait_for: path=compose/data-dir/node/rebar-key.sh state=present delay=60 timeout=1800

@@ -18,6 +18,8 @@ install-*.log
 
 /compose/config-dir/api/config/ssh_keys/*.key
 /compose/config-dir/api/config/filters/*.json
+/compose/config-dir/api/config/networks/the_admin.json
+/compose/config-dir/api/config/networks/the_bmc.json
 /compose/config-dir/api/config/domain.json
 /compose/data-dir/node/rebar-key.sh
 /compose/data-dir/elasticsearch/elasticsearch

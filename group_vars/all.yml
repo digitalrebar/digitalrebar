@@ -3,14 +3,11 @@
 # deployment of DigitalRebar
 #
 
-#
-# Workloads
-#   Value: A list of workloads to include for this installation
-#   Uncomment elements to add.  These are passed to the compose
-#   setup script
-#   Default: provisioner, kubernetes
-#
-#
+# 
+# Services
+#   Value: A list of services to start in the admin node
+#   The items in the list a passed to the init_files.sh script
+#   Default: --provisioner
 # Provisioner - workload that provides the tools to do
 #   node discovery and OS installation.
 #
@@ -31,6 +28,15 @@
 #   be added to DR after installation.
 #  - node
 # 
+dr_services:
+  - --provisioner
+
+#
+# Workloads
+#   Value: A list of workloads to include for this installation
+#   The items in the list a passed to the setup script
+#   Default: kubernetes
+#
 # Kubernetes - Used to deploy a kubernetes cluster
 #   Builds an etcd cluster
 #   A set of kubernetes masters
@@ -82,14 +88,15 @@
 #  - stackengine        # Needs rackn access
 #
 #
-workloads:
-  - provisioner
+dr_workloads:
   - kubernetes
+  - ceph
+  - hardware
 
 #
 # Access keys for repos
 #
-access:
+dr_access:
   rackn:
     user: galthaus
     password: galthaus_password
@@ -112,23 +119,31 @@ access:
 #
 # This is the default that matches original install implementations
 #
-access_mode: FORWARDER
-external_ip: 192.168.124.11/24
-forwarder_ip: 192.168.124.11/24
-
+# Default FORWARDER configuration
+#   IPs are set to match the_admin.json.forwarder file
+#   The admin network is only added if the provisioner is enabled
+dr_access_mode: HOST
+dr_external_ip: 192.168.124.11/24
+dr_forwarder_ip: 192.168.124.11/24
+#
+# Default HOST (Mac environment) configuration
+#   IPs are set to match the_admin.json.mac file
+#   The admin network is only added if the provisioner is enabled
+#dr_access_mode: HOST
+#dr_external_ip: 192.168.99.100/24
 
 # Used to add kvm tools to the host for provisining testing
 # Values:
 #   false - Default - Doesn't put tools in place
 #   true  - ensures that required tools will be installed
 # Not available for MAC Docker environment
-# kvm_tools: true
+# dr_kvm_tools: true
 
 # Interface to bridge to docker0 for remote provisioning
 # Not available for MAC Docker environment
-# bridge_to_docker: eth1
+# dr_bridge_to_docker: eth1
 
 # bridge CIDR IP - This IP will be added to docker0 bridge
 # In some cases, it is good to have a bridge IP to use for accessing the admin network.
-# bridge_ip: 192.168.124.200/24
+# dr_bridge_ip: 192.168.124.200/24
 
