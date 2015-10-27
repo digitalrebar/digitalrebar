@@ -30,6 +30,7 @@ else
 fi
 
 export COMPOSE_ARGS=""
+export COMPOSE_ACCESS="FORWARDER"
 while [ $# -ne 0 ] ; do
     arg=$1
 
@@ -63,6 +64,7 @@ while [ $# -ne 0 ] ; do
             access=$1
             shift
             export COMPOSE_ARGS="$COMPOSE_ARGS --access $access"
+            export COMPOSE_ACCESS=$access
             ;;
         *)
             break
