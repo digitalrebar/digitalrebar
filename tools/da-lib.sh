@@ -18,11 +18,6 @@ if ! which docker-compose &>/dev/null; then
     die "Please install docker-compose!"
 fi
 
-OS_TYPE=`uname -s`
-if [ "$OS_TYPE" != "Darwin" -a "$COMPOSE_ACCESS" == "FORWARDER" ] ; then
-    sudo modprobe nf_nat_tftp
-fi
-
 rebar() {
     docker exec compose_rebar_api_1 rebar -E http://127.0.0.1:3000 -U rebar -P rebar1 "$@"
 }
@@ -48,8 +43,12 @@ while (( $# > 0 )); do
         --clean) export COMPOSE_RESET="Y";;
         --no-pull) export NO_PULL="Y";;
         --access)
-             shift
-             containers["access"]="FORWARDER";;
+            case $2 in
+                HOST|FORWARDER)
+                    containers["access"]="$2"
+                    shift;;
+                *) containers["access"]="FORWARDER";;
+                esac;;
         --*)
             a="${arg#--}"
             is_set=false
@@ -137,6 +136,9 @@ bring_up_admin_containers() {
 
     if [ "$NO_PULL" == "" ] ; then
         docker-compose pull
+    fi
+    if [[ ${containers["access"]} = FORWARDER && $(uname -s) != Darwin ]]; then
+        sudo modprobe nf_nat_tftp
     fi
     docker-compose up -d
 }
