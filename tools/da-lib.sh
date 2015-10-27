@@ -27,6 +27,62 @@ rebar() {
     docker exec compose_rebar_api_1 rebar -E http://127.0.0.1:3000 -U rebar -P rebar1 "$@"
 }
 
+known_containers=(provisioner logging debug node access)
+
+declare -A containers
+
+use_container() {
+    ! [[ ! ${containers[$1]} || ${containers[$1]} == false ]]
+}
+
+docker_admin_default_containers() {
+    [[ ${containers["provisioner"]} ]] || containers["provisioner"]=true
+    [[ ${containers["access"]} ]] || containers["access"]=FORWARDER
+}
+
+args=()
+
+while (( $# > 0 )); do
+    arg="$1"
+    case $arg in
+        --clean) export COMPOSE_RESET="Y";;
+        --no-pull) export NO_PULL="Y";;
+        --access)
+             shift
+             containers["access"]="FORWARDER";;
+        --*)
+            a="${arg#--}"
+            is_set=false
+            for cval in "${known_containers[@]}"; do
+                if [[ $a = $cval ]]; then
+                    containers["$cval"]=true
+                    is_set=true
+                elif [[ $a = no-$cval ]]; then
+                    containers["$cval"]=false
+                    is_set=true
+                fi
+                [[ $is_set = true ]] && break
+            done
+            if [[ $is_set = false ]]; then
+                args+=("$arg")
+            fi;;
+        *) args+=("$arg");;
+    esac
+    shift
+done
+set -- "${args[@]}"
+
+make_compose_args() {
+    REAL_COMPOSE_ARGS="$COMPOSE_ARGS"
+    for c in "${!containers[@]}"; do
+        [[ ${containers["$c"]} && ${containers["$c"]} != false ]] || continue
+        REAL_COMPOSE_ARGS="$REAL_COMPOSE_ARGS --$c"
+        if [[ ${containers["$c"]} != true ]]; then
+            REAL_COMPOSE_ARGS="$REAL_COMPOSE_ARGS ${containers[$c]}"
+        fi
+    done
+}
+
 retry_until() {
     # $1 = seconds to wait
     # $2 = message to print on timeout
@@ -61,27 +117,24 @@ bring_up_admin_containers() {
         ln -s "$mountdir" \
            "$mountdir/deploy/compose/digitalrebar"
     fi
-    
+
     mkdir -p "$HOME/.cache/digitalrebar/tftpboot"
-    
+
     sudo rm -rf "$HOME/.cache/digitalrebar/tftpboot/nodes"
     if [[ -f $HOME/.ssh/id_rsa.pub ]]; then
         cp "$HOME/.ssh/id_rsa.pub" "$mountdir/deploy/compose/config-dir/api/config/ssh_keys/$USER-0.key"
     fi
-    
+
     cd "$mountdir/deploy/compose"
     if (which selinuxenabled && which chcon) &>/dev/null && selinuxenabled; then
         sudo chcon -Rt svirt_sandbox_file_t "$mountdir"
         sudo chcon -Rt svirt_sandbox_file_t "$HOME/.cache/digitalrebar/tftpboot"
     fi
 
-    if [ "$COMPOSE_RESET" == "Y" ] ; then
-        ./init_files.sh --clean
-    fi
-    if [[ ! -f docker-compose.yml ]] ; then
-        ./init_files.sh $COMPOSE_ARGS
-    fi
-    
+    ./init_files.sh --clean
+    make_compose_args
+    ./init_files.sh $REAL_COMPOSE_ARGS
+
     if [ "$NO_PULL" == "" ] ; then
         docker-compose pull
     fi
@@ -93,10 +146,12 @@ wait_for_admin_containers() {
     retry_until 240 \
                 "Took too long for rebar container to come up" \
                 rebar ping || exit 1
-    echo "Waiting for the provisioner (up to 600 seconds)"
-    retry_until 600 \
-                "Took too long for the provisioner to come up" \
-                rebar nodes show provisioner.local.neode.org || exit 1
+    if use_container provisioner; then
+        echo "Waiting for the provisioner (up to 600 seconds)"
+        retry_until 600 \
+                    "Took too long for the provisioner to come up" \
+                    rebar nodes show provisioner.local.neode.org || exit 1
+    fi
     sleep 5
     echo "Waiting for rebar to converge (up to 10 minutes)"
     if ! rebar converge; then

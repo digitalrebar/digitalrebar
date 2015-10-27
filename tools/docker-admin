@@ -29,69 +29,15 @@ else
     exit 1
 fi
 
-
-export COMPOSE_ARGS=""
-export COMPOSE_ACCESS="FORWARDER"
-while [ $# -ne 0 ] ; do
-    arg=$1
-
-    case $arg in
-        --clean)
-            shift
-            export COMPOSE_RESET="Y"
-            ;;
-        --no-pull)
-            shift
-            export NO_PULL="Y"
-            ;;
-        --provisioner)
-            shift
-            export COMPOSE_ARGS="$COMPOSE_ARGS $arg"
-            ;;
-        --logging)
-            shift
-            export COMPOSE_ARGS="$COMPOSE_ARGS $arg"
-            ;;
-        --debug)
-            shift
-            export COMPOSE_ARGS="$COMPOSE_ARGS $arg"
-            ;;
-        --node)
-            shift
-            export COMPOSE_ARGS="$COMPOSE_ARGS $arg"
-            ;;
-        --access)
-            shift
-            access=$1
-            shift
-            export COMPOSE_ARGS="$COMPOSE_ARGS --access $access"
-            export COMPOSE_ACCESS=$access
-            ;;
-        *)
-            break
-            ;;
-    esac
-done
-
-#
-# For backwards compat, if no options are given, then 
-# include the provisioner and access mode to FORWARDER
-#
-if [ "$COMPOSE_ARGS" == "" ] ; then
-    export COMPOSE_ARGS="--provisioner --access FORWARDER"
-fi
-
-echo "Running with:"
-echo "  clean : $COMPOSE_RESET"
-echo "  args  : $COMPOSE_ARGS"
-echo "  nopull: $NO_PULL"
-
 # This gets us to core
 mountdir="${mountdir%/tools/docker-admin}"
 # This gets us to the parent directory of core, where presumably the rest of our repos are checked out
 mountdir="${mountdir%/*}"
 
 . "$mountdir/core/tools/da-lib.sh"
+
+# We always want a provisioner and a forwarder
+docker_admin_default_containers
 
 bring_up_admin_containers
 
