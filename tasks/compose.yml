@@ -25,6 +25,9 @@
 
   - name: setup compose
     command: ./setup.sh {{ dr_workloads | join(" ") }}
+    environment:
+      RACKN_USER: "{{dr_rackn_username|default('')}}"
+      RACKN_PASSWORD: "{{dr_rackn_password|default('')}}"
     args:
       chdir: compose
       creates: compose/digitalrebar/core
@@ -62,7 +65,7 @@
       chdir: compose
 
   - name: remove rebar-key file
-    file: path=compose/data-dir/node/rebar-key.sh state=absent
+    command: sudo rm -f compose/data-dir/node/rebar-key.sh
 
   - name: Compose up containers
     command: /usr/local/bin/docker-compose up -d

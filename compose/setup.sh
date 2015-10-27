@@ -1,6 +1,8 @@
 #!/bin/bash
 # Copyright 2015, RackN Inc
 
+set -e
+
 if [[ ! -e workload.sh ]]; then
   cd compose
 fi
@@ -45,7 +47,7 @@ while [[ $1 ]]; do
       done
       shift;;
     all)
-      for wl in kubernetes hardware ceph packstack docker docker-swarm enterprise mesosphere burnin stackengine; do
+      for wl in kubernetes hardware ceph packstack docker-swarm enterprise mesosphere burnin stackengine; do
         ./workload.sh rackn ${wl}
       done
       shift;;

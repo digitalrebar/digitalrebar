@@ -87,19 +87,18 @@ dr_services:
 #
 #  - stackengine        # Needs rackn access
 #
+# All - will attempt to get all the known repos
+#
+#  - all                # Needs rackn access
 #
 dr_workloads:
-  - kubernetes
-  - ceph
-  - hardware
+  - all
 
 #
-# Access keys for repos
+# Access user/password for rackn repos
 #
-dr_access:
-  rackn:
-    user: galthaus
-    password: galthaus_password
+#dr_rackn_username: galthaus
+#dr_rackn_password: greg_password
 
 #
 # Access Modes
