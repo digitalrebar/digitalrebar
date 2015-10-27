@@ -122,7 +122,7 @@ dr_access:
 # Default FORWARDER configuration
 #   IPs are set to match the_admin.json.forwarder file
 #   The admin network is only added if the provisioner is enabled
-dr_access_mode: HOST
+dr_access_mode: FORWARDER
 dr_external_ip: 192.168.124.11/24
 dr_forwarder_ip: 192.168.124.11/24
 #
