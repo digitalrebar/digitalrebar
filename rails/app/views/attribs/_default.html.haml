@@ -1,7 +1,12 @@
 - value = Attrib.get(attrib.name, obj)
 = form_for :attrib, :remote => true, :url => attribs_api_path(:id=>attrib.id, obj_type=>obj.id, :api_version=>'v2'), :html => { :method=>:put, :'data-type' => 'html',  :class => "formtastic" } do |f|
   %tr.node{ :class => cycle(:odd, :even) }
-    %td= link_to attrib.name_i18n, attrib_path(attrib.id), :title=>attrib.description
+    %td
+      = link_to attrib.name_i18n, attrib_path(attrib.id), :title=>attrib.description
+      - if flag == :error
+        = image_tag('icons/error.png', :title=>error)
+      - if flag == :raw
+        = image_tag('icons/raw.png', :title=>"raw mode")
     - if editable and attrib.writable
       %td
         - case attrib.schema['type'] #handle schema types so integers are actually valid

@@ -2,14 +2,21 @@
 = form_for :attrib, :remote => true, :url => attribs_api_path(:id=>attrib.id, obj_type=>obj.id, :api_version=>'v2'), :html => { :method=>:put, :'data-type' => 'html',  :class => "formtastic" } do |f|
   %tr.node{ :class => cycle(:odd, :even) }
     %td= link_to attrib.name_i18n, attrib_path(attrib.id), :title=>attrib.description
-    %td
-      %ul
-      - value.each do |k,v|
-        %li
-          %b= k
-          = text_field_tag :value, v, :size => 40, :name => "value[#{k}]"
-    %td{:align=>"right"}
-      %input.button{:type => "submit", :name => "save", :value => t('save')}
-
+    - if editable and attrib.writable
+      %td
+        %ul
+        - value.each do |k,v|
+          %li
+            %b= k
+            = text_field_tag :value, v, :size => 40, :name => "value[#{k}]"
+      %td{:align=>"right"}
+        %input.button{:type => "submit", :name => "save", :value => t('save')}
+    - else
+      %td
+        %ul
+          - value.each do |k,v|
+            %li
+              %b= k
+              = v.truncate 60
     - if current_user and current_user.settings(:ui).debug
       %td= attrib.ui_renderer rescue Attrib::UI_RENDERER
