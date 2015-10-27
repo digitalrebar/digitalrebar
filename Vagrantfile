@@ -22,7 +22,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # avoid redownloading large files      
     FileUtils.mkdir_p "#{ENV['HOME']}/.cache/digitalrebar/tftpboot"
-    admin.vm.synced_folder "#{ENV['HOME']}/.cache/digitalrebar/tftpboot", "/home/vagrant/.cache/digitalrebar/tftpboot"
+    admin.vm.synced_folder "#{ENV['HOME']}/.cache/digitalrebar/tftpboot", "/root/.cache/digitalrebar/tftpboot"
 
     admin.vm.provider "virtualbox" do |vb|
       vb.memory = "6144"

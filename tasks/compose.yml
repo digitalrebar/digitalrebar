@@ -42,6 +42,16 @@
     command: sudo usermod -a -G docker vagrant
     when: vagrant_dir_present.stat.exists == True
 
+  - name: Create rebar group
+    group: name=rebar gid=1030
+    when: ansible_os_family != "Darwin"
+  - name: Create rebar user
+    user: name=rebar group=rebar shell=/bin/bash uid=1030
+    when: ansible_os_family != "Darwin"
+  - name: Set files to those permissions
+    command: chown -R rebar:rebar compose/digitalrebar
+    when: ansible_os_family != "Darwin"
+
   - name: Pull compose images [SLOW]
     command: /usr/local/bin/docker-compose pull
     args:
