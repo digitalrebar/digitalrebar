@@ -40,7 +40,6 @@ args=()
 while (( $# > 0 )); do
     arg="$1"
     case $arg in
-        --clean) export COMPOSE_RESET="Y";;
         --no-pull) export NO_PULL="Y";;
         --access)
             case $2 in
