@@ -2,11 +2,6 @@
 
 - error = NodeRole.where(state: NodeRole::ERROR).joins(:node,:role,:deployment).select("node_roles.*, roles.name as role_name, nodes.name as node_name, nodes.alive as node_alive, nodes.available as node_available, deployments.name as deployment_name, roles.jig_name as role_jig_name")
 %h2
-  = t '.error'
-  - if error.length > 0
-    - list = error.map { |nr| nr.id }.join(",")
-    %raw_button{:style => 'float:right'}
-      = link_to_function t('.retry'), "retry_all('#{list}')", :class => 'button'
 = render :partial=>'node_roles/index', :locals => { :list => error }
 
 %h2= t '.transition'
