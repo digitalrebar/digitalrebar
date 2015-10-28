@@ -56,6 +56,15 @@ ntp:
     - ./common.env
     - ./access.env
 
+fogwrap:
+  image: digitalrebar/fog
+  privileged: true
+  volumes:
+    - ./data-dir/node:/etc/rebar-data
+    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+  env_file:
+    - ./common.env
+
 dns:
   image: digitalrebar/dr_dns
   volumes:
