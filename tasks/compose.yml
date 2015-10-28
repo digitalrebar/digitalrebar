@@ -7,6 +7,7 @@
   - name: Stop ntp
     service: name=ntp state=stopped
     when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
+    ignore_errors: yes
   - name: Stop dnsmasq
     command: killall dnsmasq
     ignore_errors: yes
