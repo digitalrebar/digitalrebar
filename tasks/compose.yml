@@ -3,6 +3,15 @@
     modprobe: name=nf_nat_tftp state=present
     when: dr_access_mode == "FORWARDER"
 
+  # Stop services that get in the way of progress.
+  - name: Stop ntp
+    service: name=ntp state=stopped
+    when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
+  - name: Stop dnsmasq
+    command: killall dnsmasq
+    ignore_errors: yes
+    when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
+
   - name: create SSH key for host to access slaves
     command: ssh-keygen -t rsa -f '~/.ssh/id_rsa' -P ''
     args:
