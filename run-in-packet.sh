@@ -73,6 +73,11 @@ date
 IP=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .ip_addresses[0].address`
 CIDR=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .ip_addresses[0].cidr`
 
+EXTRA_VARS=""
+if [ "$HOST_MODE" == "YES" ] ; then
+  EXTRA_VARS="dr_access_mode=HOST dr_external_ip=$IP/$CIDR"
+fi
+
 echo "Device ip = $IP/$CIDR"
 
 ssh-keygen -f "~/.ssh/known_hosts" -R $IP
@@ -80,11 +85,6 @@ ssh -o StrictHostKeyChecking=no root@$IP date
 
 # Build ansible inventory file
 echo "$IP ansible_ssh_user=root" > run-in-hosts
-
-EXTRA_VARS=""
-if [ "$HOST_MODE" == "YES" ] ; then
-  EXTRA_VARS="dr_access_mode=HOST dr_external_ip=$IP/$CIDR"
-fi
 
 export ANSIBLE_HOST_KEY_CHECKING=False
 ansible-playbook -i run-in-hosts --extra-vars "$EXTRA_VARS" digitalrebar.yml
