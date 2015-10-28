@@ -11,6 +11,9 @@
     command: killall dnsmasq
     ignore_errors: yes
     when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
+  - name: Restart Docker (again)
+    service: name=docker state=restarted
+    when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
 
   - name: create SSH key for host to access slaves
     command: ssh-keygen -t rsa -f '~/.ssh/id_rsa' -P ''
@@ -75,6 +78,16 @@
 
   - name: remove rebar-key file
     command: sudo rm -f compose/data-dir/node/rebar-key.sh
+
+  - name: Ensure containers are off
+    command: /usr/local/bin/docker-compose kill
+    args:
+      chdir: compose
+
+  - name: Ensure containers are removed
+    command: /usr/local/bin/docker-compose rm -f
+    args:
+      chdir: compose
 
   - name: Compose up containers
     command: /usr/local/bin/docker-compose up -d
