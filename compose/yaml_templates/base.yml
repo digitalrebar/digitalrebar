@@ -62,8 +62,14 @@ fogwrap:
     service: fogwrap
   links:
     - consul:consul
+{{ START ACCESS_MODE==FORWARDER }}
     - forwarder:forwarder
-
+{{ END ACCESS_MODE==FORWARDER }}
+{{ START ACCESS_MODE==HOST }}
+  ports:
+    - "3030:3030"
+{{ END ACCESS_MODE==HOST }}
+    
 dns:
   extends:
     file: docker-compose-common.yml
