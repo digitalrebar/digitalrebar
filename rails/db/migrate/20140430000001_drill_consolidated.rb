@@ -174,7 +174,7 @@ class DrillConsolidated < ActiveRecord::Migration
     add_index(:role_require_attribs, [:role_id, :attrib_name], :unique => true)
 
     create_table :providers do |t|
-      t.text        :name,           null: false, unique: true
+      t.text        :name,           null: false, index: :unique
       t.text        :type
       t.text        :description,    null: false, default: "An undescribed provider"
       t.json        :auth_details,   null: false, default: { expr: "'{}'::json" }
