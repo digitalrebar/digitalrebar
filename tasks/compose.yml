@@ -24,7 +24,7 @@
     synchronize: src=./compose dest=~ rsync_path="rsync"
 
   - name: setup compose
-    command: ./setup.sh {{ dr_workloads | join(" ") }}
+    command: ./setup.sh {{ dr_workloads | default([]) | join(" ") }}
     environment:
       RACKN_USER: "{{dr_rackn_username|default('')}}"
       RACKN_PASSWORD: "{{dr_rackn_password|default('')}}"
@@ -32,7 +32,7 @@
       chdir: compose
       creates: compose/digitalrebar/core
   - name: init compose files
-    command: ./init_files.sh --external_ip {{ dr_external_ip }} --forwarder_ip {{ dr_forwarder_ip | default("0.0.0.0/24") }}  --access {{ dr_access_mode }} {{ dr_services | join(" ") }}
+    command: ./init_files.sh --external_ip {{ dr_external_ip }} --forwarder_ip {{ dr_forwarder_ip | default("0.0.0.0/24") }}  --access {{ dr_access_mode }} {{ dr_services| default([]) | join(" ") }}
     args:
       chdir: compose
       creates: compose/docker-compose.yml

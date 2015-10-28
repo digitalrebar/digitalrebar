@@ -28,6 +28,8 @@
 #   be added to DR after installation.
 #  - node
 # 
+# If no services are desired, comment out the dr_services: line as well
+#
 dr_services:
   - --provisioner
 
@@ -90,6 +92,8 @@ dr_services:
 # All - will attempt to get all the known repos
 #
 #  - all                # Needs rackn access
+#
+# If no workloads are desired, comment out the dr_workloads: line as well
 #
 dr_workloads:
   - kubernetes

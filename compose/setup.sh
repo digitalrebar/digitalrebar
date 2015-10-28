@@ -54,6 +54,6 @@ while [[ $1 ]]; do
 
     *)
       echo "$1 is not known, use `./workload [organization] [repo]` to install"
-      break;;
+      exit -1;;
   esac
 done
