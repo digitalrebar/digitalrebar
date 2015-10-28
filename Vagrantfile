@@ -22,7 +22,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # avoid redownloading large files      
     FileUtils.mkdir_p "#{ENV['HOME']}/.cache/digitalrebar/tftpboot"
-    admin.vm.synced_folder "#{ENV['HOME']}/.cache/digitalrebar/tftpboot", "/root/.cache/digitalrebar/tftpboot"
+    admin.vm.synced_folder "#{ENV['HOME']}/.cache/digitalrebar/tftpboot",
+          "/root/.cache/digitalrebar/tftpboot",
+          type: 'nfs', nfs_udp: false,
+          bsd__nfs_options: [ 'maproot=root:wheel' ],
+          linux__nfs_options: [ 'maproot=root:wheel' ]
 
     admin.vm.provider "virtualbox" do |vb|
       vb.memory = "6144"
