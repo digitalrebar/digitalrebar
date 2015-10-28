@@ -15,6 +15,9 @@
     service: name=docker state=restarted
     when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
 
+  - name: remove rebar-key file
+    command: sudo rm -f compose/data-dir/node/rebar-key.sh
+
   - name: create SSH key for host to access slaves
     command: ssh-keygen -t rsa -f '~/.ssh/id_rsa' -P ''
     args:
@@ -75,9 +78,6 @@
     command: /usr/local/bin/docker-compose pull
     args:
       chdir: compose
-
-  - name: remove rebar-key file
-    command: sudo rm -f compose/data-dir/node/rebar-key.sh
 
   - name: Ensure containers are off
     command: /usr/local/bin/docker-compose kill
