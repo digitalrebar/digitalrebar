@@ -80,15 +80,17 @@ date
 
 # Get the ssh keys and update authorized_keys
 REBAR_KEY="rebar:rebar1"
-success=$(curl -s -o /tmp/keys -w "%{http_code}" --digest -u "$REBAR_KEY" \
+KEY_FILE1="/tmp/keys.$$"
+KEY_FILE2="/tmp/keys2.$$"
+success=$(curl -s -o $KEY_FILE1 -w "%{http_code}" --digest -u "$REBAR_KEY" \
       -X GET "http://$ADMIN_IP:3000/api/v2/deployments/1/attribs/rebar-access_keys")
 if [[ $success != 200 ]] ; then
     echo "Failed to get keys"
     exit -1
 fi
-jq -r '.value|to_entries[].value' /tmp/keys > /tmp/keys2
-scp /tmp/keys2 root@$IP:keys
-rm -rf /tmp/keys /tmp/keys2
+jq -r '.value|to_entries[].value' $KEY_FILE1 > $KEY_FILE2
+scp $KEY_FILE2 root@$IP:keys
+rm -rf $KEY_FILE1 $KEY_FILE2
 
 scp scripts/join_rebar.sh root@$IP:
 ssh root@$IP /root/join_rebar.sh $ADMIN_IP

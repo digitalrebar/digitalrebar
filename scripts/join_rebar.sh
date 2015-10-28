@@ -7,6 +7,8 @@ shopt -s extglob
 # Make sure that curl and jq are installed.
 
 if [[ -f /etc/redhat-release || -f /etc/centos-release ]]; then
+    yum install -y epel-release
+    yum -y makecache
     yum install -y jq curl
 elif [[ -d /etc/apt ]]; then
     apt-get -y --force-yes install jq curl
@@ -23,7 +25,7 @@ export REBAR_PASSWORD=rebar1
 export REBAR_KEY="$REBAR_USER:$REBAR_PASSWORD"
 export REBAR_WEB="http://$ADMIN_IP:3000"
 
-HOSTNAME=`hostname -f`
+HOSTNAME=`hostname`
 
 # Get the ssh keys and update authorized_keys
 success=$(curl -s -o /tmp/keys -w "%{http_code}" --digest -u "$REBAR_KEY" \
