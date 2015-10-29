@@ -14,11 +14,12 @@ fi
 
 if ! which chef-client; then
     if [[ -f /etc/redhat-release || -f /etc/centos-release ]]; then
-        yum -y makecache
-        yum install -y chef
+        yum install -y glibc.i686
+        curl -fgLO https://opscode-omnibus-packages.s3.amazonaws.com/el/6/i686/chef-11.18.12-1.el6.i686.rpm
+        yum install -y chef-11.18.12-1.el6.i686.rpm
 
         # Fix ohai to work on centos7.1
-        cd /opt/chef/embedded/lib/ruby/gems/1.9.1/gems/ohai-7.4.0/lib/ohai/plugins/linux/
+        cd /opt/chef/embedded/lib/ruby/gems/1.9.1/gems/ohai-7.4.1/lib/ohai/plugins/linux/
         yum install -y patch
         patch <<EOF
 --- platform.rb
