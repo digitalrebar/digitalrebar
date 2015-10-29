@@ -27,6 +27,9 @@ echo "Device ip = $IP/$CIDR"
 
 ssh-keygen -f "~/.ssh/known_hosts" -R $IP
 ssh -o StrictHostKeyChecking=no root@$IP date
+if [ $? -ne 0 ]; then
+    scripts/ssh-copy-id.sh root@$IP
+fi
 
 date
 

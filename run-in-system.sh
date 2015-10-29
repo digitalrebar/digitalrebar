@@ -34,6 +34,12 @@ fi
 
 echo "Device IP = $IP/$CIDR"
 
+ssh-keygen -f "~/.ssh/known_hosts" -R $IP
+ssh -o StrictHostKeyChecking=no root@$IP date
+if [ $? -ne 0 ]; then
+    scripts/ssh-copy-id.sh root@$IP
+fi
+
 EXTRA_VARS=""
 if [ "$HOST_MODE" == "YES" ] ; then
   EXTRA_VARS="dr_access_mode=HOST dr_external_ip=$IP/$CIDR"
