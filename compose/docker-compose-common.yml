@@ -50,6 +50,7 @@ rebar_api:
 
 ntp:
   image: digitalrebar/dr_ntp
+  privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
