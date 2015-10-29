@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/env bash
 # Copyright 2015, RackN
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License
@@ -32,6 +32,15 @@ done
 if [ "$proxy_str" == "" ] ; then
   proxy_str=$http_proxy
 fi
+
+# if we have an internet IP address, then don't use the proxy.
+# This is cheesy, but functional for now.
+addrs=$(ip -o -4 addr show scope global |awk '!/ (10|192\.168|172\.(2[0-9]|1[6-9]|3[0-1]))\./ {print $4}')
+if [[ $addrs ]] ; then
+  echo "Internet addresses only - no proxy"
+  exit 0
+fi
+
 
 # Nothing to do
 if [ "$proxy_str" == "" ] ; then
