@@ -21,7 +21,7 @@ class NodesController < ApplicationController
   def sample
     render api_sample(Node)
   end
-  
+
   def match
     attrs = Node.attribute_names.map{|a|a.to_sym}
     objs = []
@@ -221,11 +221,9 @@ class NodesController < ApplicationController
                                            :arch,
                                            :os_family))
         # Keep suport for mac and ip hints in short form around for legacy Sledgehammer purposes
-        if params[:ip]
-          default_net = Network.lookup_network(params[:ip]) ||
-                        Network.find_by!(name: "unmanaged-internal")
-          hints["hint-#{default_net.name}-v4addr"] = params[:ip]
-        end
+        default_net = Network.lookup_network(params[:ip]) if params[:ip]
+        hints["hint-#{default_net.name}-v4addr"] = params[:ip] if default_net
+        hints["node-control-address"] = params[:ip] if params[:ip]
         hints["hint-admin-macs"] = [params[:mac]] if params[:mac]
         # Set any hints we got with node creation.
         hints.each do |k,v|

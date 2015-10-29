@@ -36,34 +36,6 @@ done < <(find /opt/digitalrebar -name rebar.yml |grep -v '/core/')
 # We always need a system deployment
 if ! rebar deployments create '{"name": "system", "description": "Created Automatically by System","system": true}'; then cat /var/log/rebar/production.log; exit 1; fi
 
-# We absolutely have to have an unmanaged-internal network, and there can
-# really only be one of them, so leave this hardcoded for now.
-unmanaged_net='
-{
-  "category": "unmanaged",
-  "group": "internal",
-  "deployment": "system",
-  "conduit": "?1g0",
-  "configure": false,
-  "ranges": [
-    {
-      "overlap": true,
-      "name": "host",
-      "first": "0.0.0.1/0",
-      "last": "223.255.255.254/0"
-    },
-    {
-      "overlap": true,
-      "name": "host-v6",
-      "first": "::1/0",
-      "last": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:fffe/0"
-    }
-  ]
-}'
-
-# Create the catch all network
-rebar networks show 'unmanaged-internal' >/dev/null 2>&1 || rebar networks import "$unmanaged_net"
-
 DOMAINNAME=$BASE_DOMAINNAME
 echo "{ \"domain\": \"$DOMAINNAME\" }" > config/domain.json
 
