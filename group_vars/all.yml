@@ -1,0 +1,152 @@
+#
+# This file contains initial variable configuration for ansible playbook
+# deployment of DigitalRebar
+#
+
+# 
+# Services
+#   Value: A list of services to start in the admin node
+#   The items in the list a passed to the init_files.sh script
+#   Default: --provisioner
+# Provisioner - workload that provides the tools to do
+#   node discovery and OS installation.
+#
+#  - provisioner
+#
+# Logging - workload that adds containers that do logstach,
+#   elasticsearch, and kibana on the admin containers
+#
+#  - logging
+#
+# Debug - add cadvisor to the admin container set to debug
+#   potential container resource issues.
+#
+#  - debug
+#
+# Node - add the private test node workload.
+#   Allows a container (or set with scale) to
+#   be added to DR after installation.
+#  - node
+# 
+# If no services are desired, comment out the dr_services: line as well
+#
+dr_services:
+  - --provisioner
+
+#
+# Workloads
+#   Value: A list of workloads to include for this installation
+#   The items in the list a passed to the setup script
+#   Default: kubernetes
+#
+# Kubernetes - Used to deploy a kubernetes cluster
+#   Builds an etcd cluster
+#   A set of kubernetes masters
+#   Adds minions.
+#
+#  - kubernetes
+#
+# Ceph - Used to deploy a simple ceph cluster
+#
+#  - ceph
+#
+# Hardware - Provides IPMI, BIOS, and Raid 
+#   configuration tools
+#
+#  - hardware
+#
+# Packstack - creates an RDO-based environment
+#   that allows for running packstack to setup
+#   openstack on provided nodes
+#
+#  - packstack
+#
+# Docker - deploy docker-engine to a node
+#
+#  - docker
+#
+# Docker-swarm - Deploy docker swarm to aggregate
+#   a set of nodes that have docker deployed.
+#
+#  - docker-swarm       # Needs rackn access
+#
+# Enterprise - RackN added branding and additional
+#   features.
+#
+#  - enterprise         # Needs rackn access
+#
+# Mesosphere - Workload to deploy mesosphere
+#
+#  - mesosphere         # Needs rackn access
+#
+# Burnin - RackN provided tools to provide a 
+#   burnin test/stress environment
+#
+#  - burnin             # Needs rackn access
+#
+# StackEngine - RackN provided workloaded that
+#   can deploy a licensed copy of StackEngine.
+#
+#  - stackengine        # Needs rackn access
+#
+# All - will attempt to get all the known repos
+#
+#  - all                # Needs rackn access
+#
+# If no workloads are desired, comment out the dr_workloads: line as well
+#
+dr_workloads:
+  - kubernetes
+
+#
+# Access user/password for rackn repos
+#
+#dr_rackn_username: galthaus
+#dr_rackn_password: greg_password
+
+#
+# Access Modes
+#   The admin containers can be setup to use one of the Host's IP as an access point or
+#   another IP that is local to the host and bridged into other environments.  The latter
+#   case uses a Forwarder to front the other containers.
+#
+# access_mode:  HOST|FORWARDER
+#
+#   Two additional variables are used to define the access points.
+#
+# external_ip = The CIDR IP for the external access point.
+# forwarder_ip = The CIDR IP of the forwarder if forwarding is used.
+#
+#   When using FORWARDER access mode, external_ip should match forwarder_ip and
+#   the forwarder_ip will (but not required) to be on an admin network.
+#
+# This is the default that matches original install implementations
+#
+# Default FORWARDER configuration
+#   IPs are set to match the_admin.json.forwarder file
+#   The admin network is only added if the provisioner is enabled
+dr_access_mode: FORWARDER
+dr_external_ip: 192.168.124.11/24
+dr_forwarder_ip: 192.168.124.11/24
+#
+# Default HOST (Mac environment) configuration
+#   IPs are set to match the_admin.json.mac file
+#   The admin network is only added if the provisioner is enabled
+#dr_access_mode: HOST
+#dr_external_ip: 192.168.99.100/24
+
+# Used to add kvm tools to the host for provisining testing
+# Values:
+#   false - Default - Doesn't put tools in place
+#   true  - ensures that required tools will be installed
+# Not available for MAC Docker environment
+# dr_kvm_tools: true
+
+# Interface to bridge to docker0 for remote provisioning
+# Not available for MAC Docker environment
+# dr_bridge_to_docker: eth1
+
+# bridge CIDR IP - This IP will be added to docker0 bridge
+# In some cases, it is good to have a bridge IP to use for accessing the admin network.
+# dr_bridge_ip: 192.168.124.200/24
+

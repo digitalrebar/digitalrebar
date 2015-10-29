@@ -1,0 +1,10 @@
+# Try to keep this OS neutral
+---
+  - stat: path=/usr/local/bin/docker
+    register: docker_exe
+  - fail: msg="Docker not installed. See https://docs.docker.com/installation/mac"
+    when: docker_exe.stat.exists == False
+  - stat: path=/usr/local/bin/docker-compose
+    register: docker_compose_exe
+  - fail: msg="Docker Compose not installed. See https://docs.docker.com/installation/mac"
+    when: docker_compose_exe.stat.exists == False

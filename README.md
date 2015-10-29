@@ -8,6 +8,12 @@ Items in this repo are used to install and configure [Digital Rebar](https://dig
 
 They are intended as a companion to the [Digital Rebar documentation](https://github.com/digitalrebar/doc).
 
+See ansible group vars:
+
+* group_vars/all.yml for values, defaults. ansible group vars:
+* group_vars/mac.yml for a mac with docker tools ansible group vars:
+* group_vars/vagrant.yml for a vagrant install
+
 ## Deploy Paths
 
 The following deploy approaches are available:

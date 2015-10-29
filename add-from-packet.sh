@@ -9,20 +9,18 @@ if [ "$API_KEY" == "" ] ; then
     exit 1
 fi
 
-if ! which ansible &>/dev/null; then
-    echo "Please install Ansible!"
-    exit 1
-fi
-
 if ! which jq &>/dev/null; then
     echo "Please install jq!"
     exit 1
 fi
 
-HOST_MODE=""
-if [ "$1" == "--host" ] ; then
-  shift
-  HOST_MODE="YES"
+if [ "$1" == "--admin-ip" ] ; then
+    shift
+    ADMIN_IP=$1
+    shift
+else
+    echo "Must specify an Admin IP"
+    exit 1
 fi
 
 if [ "$1" == "--device-id" ] ; then
@@ -73,27 +71,30 @@ date
 IP=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .ip_addresses[0].address`
 CIDR=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .ip_addresses[0].cidr`
 
-EXTRA_VARS=""
-if [ "$HOST_MODE" == "YES" ] ; then
-  EXTRA_VARS="dr_access_mode=HOST dr_external_ip=$IP/$CIDR"
-fi
-
 echo "Device ip = $IP/$CIDR"
 
 ssh-keygen -f "~/.ssh/known_hosts" -R $IP
 ssh -o StrictHostKeyChecking=no root@$IP date
 
-# Build ansible inventory file
-echo "$IP ansible_ssh_user=root" > run-in-hosts
-
-export ANSIBLE_HOST_KEY_CHECKING=False
-ansible-playbook -i run-in-hosts --extra-vars "$EXTRA_VARS" digitalrebar.yml
-
 date
+
+# Get the ssh keys and update authorized_keys
+REBAR_KEY="rebar:rebar1"
+KEY_FILE1="/tmp/keys.$$"
+KEY_FILE2="/tmp/keys2.$$"
+success=$(curl -s -o $KEY_FILE1 -w "%{http_code}" --digest -u "$REBAR_KEY" \
+      -X GET "http://$ADMIN_IP:3000/api/v2/deployments/1/attribs/rebar-access_keys")
+if [[ $success != 200 ]] ; then
+    echo "Failed to get keys"
+    exit -1
+fi
+jq -r '.value|to_entries[].value' $KEY_FILE1 > $KEY_FILE2
+scp $KEY_FILE2 root@$IP:keys
+rm -rf $KEY_FILE1 $KEY_FILE2
+
+scp scripts/join_rebar.sh root@$IP:
+ssh root@$IP /root/join_rebar.sh $ADMIN_IP
 
 echo "=== HELPFUL COMMANDS ==="
 echo "Packet Device ID: $DEVICE_ID"
-echo "repeat Ansible run: ansible-playbook -i run-in-hosts --extra-vars \"$EXTRA_VARS\" digitalrebar.yml"
-echo "SSH access: ssh -X root@${IP}"
-echo "Consul UI        http://${IP}:8500"
-echo "Digital Rebar UI http://${IP}:3000"
+echo "SSH: ssh root@$IP"

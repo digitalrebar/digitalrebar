@@ -21,18 +21,27 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     admin.vm.network "private_network", ip: "10.10.10.10", auto_config: false
 
     # avoid redownloading large files      
-    FileUtils.mkdir_p "~/.cache/digitalrebar/vagrant"
-    admin.vm.synced_folder "~/.cache/digitalrebar/tftpboot", "/home/vagrant/.cache/digitalrebar/vagrant"
+    FileUtils.mkdir_p "#{ENV['HOME']}/.cache/digitalrebar/tftpboot"
+    admin.vm.synced_folder "#{ENV['HOME']}/.cache/digitalrebar/tftpboot",
+          "/root/.cache/digitalrebar/tftpboot",
+          type: 'nfs', nfs_udp: false,
+          bsd__nfs_options: [ 'maproot=root:wheel' ],
+          linux__nfs_options: [ 'maproot=root:wheel' ]
 
     admin.vm.provider "virtualbox" do |vb|
-      vb.memory = "8192"
+      vb.memory = "6144"
       vb.cpus = 4
     end
+
+    #
+    # Admin nodes eat themselves without swap
+    #
+    admin.vm.provision "shell", path: "scripts/increase_swap.sh"
 
     admin.vm.provision "ansible" do |ansible|
   		ansible.sudo = true
   		ansible.sudo_user = "root"
-      ansible.playbook = "vagrant.yml"
+      ansible.playbook = "digitalrebar.yml"
     end
 
     puts "To monitor > http://#{ADMIN_IP}:8500 (Consul) and http://#{ADMIN_IP}:3000 (Digital Rebar)"
