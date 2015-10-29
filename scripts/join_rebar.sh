@@ -26,6 +26,13 @@ export REBAR_KEY="$REBAR_USER:$REBAR_PASSWORD"
 export REBAR_WEB="http://$ADMIN_IP:3000"
 
 HOSTNAME=`hostname`
+if [[ $HOSTNAME == ${HOSTNAME%%.*} ]] ; then
+    HOSTNAME=`hostname -f`
+fi
+if [[ $HOSTNAME == ${HOSTNAME%%.*} ]] ; then
+    echo "Hostname need to be fully qualified"
+    exit 1
+fi
 
 # Get the ssh keys and update authorized_keys
 success=$(curl -s -o /tmp/keys -w "%{http_code}" --digest -u "$REBAR_KEY" \
