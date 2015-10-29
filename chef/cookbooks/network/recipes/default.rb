@@ -285,7 +285,6 @@ node["rebar"]["network"]["addresses"].keys.sort{|a,b|
   network = node["rebar"]["network"]["addresses"][addr]
   # Skip BMC conduits.
   next if network["conduit"] == "bmc"
-  next if network["network"] =~ /^unmanaged-/
   # This will wind up being the interfaces that the address will be bound to.
   net_ifs = Array.new
   # This is the basic interfaces that the conduit definition implies we should use.

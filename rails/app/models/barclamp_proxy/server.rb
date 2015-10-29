@@ -19,8 +19,6 @@ class BarclampProxy::Server < Role
     ranges = []
     NetworkRange.all.each do |r|
       next if r.first.v6?
-      next if r.network.category == "unmanaged"
-
       ranges << r.first.network.to_s
     end
 
