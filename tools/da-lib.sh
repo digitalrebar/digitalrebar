@@ -1,9 +1,13 @@
-#!/bin/bash
+#!/bin/env bash
 
 die() {
     printf '%s\n' "$@"
     exit 1
 }
+
+if [ "${BASH_VERSINFO}" -lt 4 ] ; then
+    die "Must have a bash version of 4 or higher"
+fi
 
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 if ! which docker &>/dev/null; then
