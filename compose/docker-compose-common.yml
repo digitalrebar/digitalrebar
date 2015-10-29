@@ -57,7 +57,7 @@ ntp:
     - ./access.env
 
 fogwrap:
-  image: digitalrebar/fog
+  image: digitalrebar/fogwrap
   privileged: true
   volumes:
     - ./data-dir/node:/etc/rebar-data
