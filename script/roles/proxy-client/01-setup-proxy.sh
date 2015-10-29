@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 # Copyright 2015, RackN
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License
@@ -19,17 +19,17 @@ proxy_addr="$(read_attribute "rebar/proxy/servers/0/address")"
 no_proxy="127.0.0.1,localhost,::1,/var/run/docker.sock,$proxy_addr"
 # Read json array of admin addresses
 admin_addrs=$(read_attribute "proxy/admin_addrs")
-if [ "$admin_addrs" != "" ] ; then
+if [[ $admin_addrs && $admin_addrs != '[]' ]] ; then
   admin_addrs=$(echo "$admin_addrs" | jq -r 'map(. + ",") |add')
-  no_proxy="$admin_addrs$no_proxy"
+  no_proxy="$admin_addrs,$no_proxy"
 fi
 # Process ip -o addr show for IP addresses
-ip -o addr show | grep -v inet6 | awk -F/ '{ print $1 }' | awk '{ print $4 }' | while read line ; do
-  no_proxy="$no_proxy,$line"
-done
+while read line; do
+    no_proxy="$no_proxy,${line%/*}"
+done < <(ip -4 -o addr show | awk '{ print $4 }')
 
 # look for environment variable
-if [ "$proxy_str" == "" ] ; then
+if [[ ! $proxy_str ]] ; then
   proxy_str=$http_proxy
 fi
 
@@ -43,7 +43,7 @@ fi
 
 
 # Nothing to do
-if [ "$proxy_str" == "" ] ; then
+if [[ ! $proxy_str ]] ; then
   exit 0
 fi
 
