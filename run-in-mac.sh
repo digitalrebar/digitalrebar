@@ -91,11 +91,11 @@ echo "This may ask for admin/root password to remove rebar-key."
 echo "This is early in the process."
 echo
 
-echo "127.0.0.1" > run-in-hosts
+echo "127.0.0.1" > /tmp/run-in-hosts.$$
 export ANSIBLE_HOST_KEY_CHECKING=False
-ansible-playbook -i run-in-hosts --extra-vars "$EXTRA_VARS" digitalrebar.yml --connection=local
+ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars "$EXTRA_VARS" digitalrebar.yml --connection=local
 
 echo "=== HELPFUL COMMANDS ==="
-echo "repeat Ansible run: ansible-playbook -i run-in-hosts --extra-vars \"$EXTRA_VARS\" digitalrebar.yml --connection=local"
+echo "repeat Ansible run: ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars \"$EXTRA_VARS\" digitalrebar.yml --connection=local"
 echo "Consul UI        http://${IP}:8500"
 echo "Digital Rebar UI http://${IP}:3000"

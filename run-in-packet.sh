@@ -67,6 +67,9 @@ while [ "$STATE" != "active" ] ; do
   STATE=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .state`
 done
 
+# We sleep here because while the API says up, not all services have started.
+sleep 30
+
 date
 
 # Get Public IP - HACK - should look it up
@@ -84,16 +87,16 @@ ssh-keygen -f "~/.ssh/known_hosts" -R $IP
 ssh -o StrictHostKeyChecking=no root@$IP date
 
 # Build ansible inventory file
-echo "$IP ansible_ssh_user=root" > run-in-hosts
+echo "$IP ansible_ssh_user=root" > /tmp/run-in-hosts.$$
 
 export ANSIBLE_HOST_KEY_CHECKING=False
-ansible-playbook -i run-in-hosts --extra-vars "$EXTRA_VARS" digitalrebar.yml
+ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars "$EXTRA_VARS" digitalrebar.yml
 
 date
 
 echo "=== HELPFUL COMMANDS ==="
 echo "Packet Device ID: $DEVICE_ID"
-echo "repeat Ansible run: ansible-playbook -i run-in-hosts --extra-vars \"$EXTRA_VARS\" digitalrebar.yml"
+echo "repeat Ansible run: ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars \"$EXTRA_VARS\" digitalrebar.yml"
 echo "SSH access: ssh -X root@${IP}"
 echo "Consul UI        http://${IP}:8500"
 echo "Digital Rebar UI http://${IP}:3000"
