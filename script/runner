@@ -77,8 +77,8 @@ install() {
         to_install+=("$(lookup_package "$pkg")")
     done
     case $OS_TYPE in
-        centos|redhat|fedora) yum -y install "${to_install[@]}";;
-        debian|ubuntu) apt-get -y install "${to_install[@]}";;
+        centos|redhat|fedora) yum -y makecache; yum -y install "${to_install[@]}";;
+        debian|ubuntu) apt-get -y update; apt-get -y install "${to_install[@]}";;
         *) echo "No idea how to install packages on $OS_NAME"
            exit 1;;
     esac
