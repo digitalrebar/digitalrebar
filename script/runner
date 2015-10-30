@@ -6,6 +6,112 @@ shopt -s nullglob extglob globstar
 export TMPDIR=$1
 export ROLE=$2
 
+# pkgs and services are hashes with the following format:
+# hash["os-identifier"]="pkg-or-svc-name"
+# os-identifier can be either an OS_TYPE or an OS_NAME
+
+declare -A pkgs svcs
+
+# Figure out what Linux distro we are running on.
+export OS_TYPE= OS_VER= OS_NAME=
+
+if [[ -f /etc/os-release ]]; then
+    . /etc/os-release
+    OS_TYPE=$ID
+    OS_VER=$VERSION_ID   
+else
+    for rel in centos-release fedora-release redhat-release; do
+        [[ -f /etc/$rel ]] || continue
+        OS_TYPE=${rel%%-*}
+        OS_VER="$( egrep -o '[0-9.]+' "/etc/$rel")"
+        break
+    done
+    if [[ ! $OS_TYPE ]]; then
+        echo "Cannot determine Linux version we are running on!"
+        exit 1
+    fi
+fi
+OS_NAME="$OS_TYPE-$OS_VER"
+
+gen_subs() {
+    local res=()
+    res+=("$OS_NAME")
+    case $OS_TYPE in
+        redhat) res+=("centos-$OS_VER" "$OS_TYPE" "centos");;
+        centos) res+=("redhat-$OS_VER" "$OS_TYPE" "redhat");;
+        fedora) res+=("$OS_TYPE" redhat centos);;
+        ubuntu) res+=("$OS_TYPE" debian);;
+        debian) res+=("$OS_TYPE" ubuntu);;
+    esac
+    echo "${res[@]}"
+}
+
+lookup_package() {
+    # $1 = package to try to substitute
+    local res
+    for res in $(gen_subs); do
+        if [[ ${pkgs["$res"]} ]]; then
+            printf '%s' "${pkgs["$res"]}"
+            return
+        fi
+    done
+    printf '%s' "$1"
+}
+
+lookup_service() {
+    # $1 = package to try to substitute
+    local res
+    for res in $(gen_subs); do
+        if [[ ${svcs["$res"]} ]]; then
+            printf '%s' "${svcs["$res"]}"
+            return
+        fi
+    done
+    printf '%s' "$1"
+}
+
+install() {
+    local to_install=()
+    local pkg
+    for pkg in "$@"; do
+        to_install+=("$(lookup_package "$pkg")")
+    done
+    case $OS_TYPE in
+        centos|redhat|fedora) yum -y install "${to_install[@]}";;
+        debian|ubuntu) apt-get -y install "${to_install[@]}";;
+        *) echo "No idea how to install packages on $OS_NAME"
+           exit 1;;
+    esac
+}
+
+service() {
+    # $1 = service name
+    # $2 = action to perform
+    local svc="$(lookup_service $1)"
+    shift
+    if which systemctl &>/dev/null; then
+        systemctl "$1" "$svc.service"
+    elif which chkconfig &>/dev/null; then
+        case $1 in
+            enable) chkconfig "$svc" on;;
+            disable) chkconfig "$svc" off;;
+            *)  command service "$svc" "$@";;
+        esac
+    elif [[ -f /etc/init/$svc.unit ]]; then
+        initctl "$1" "$svc"
+    elif which update-rc.d &>/dev/null; then
+        case $1 in
+            enable|disable) update-rc.d "$svc" "$1";;
+            *) "/etc/init.d/$svc" "$1";;
+        esac
+    elif [[ -x /etc/init.d/$svc ]]; then
+        "/etc/init.d/$svc" "$1"
+    else
+        echo "No idea how to manage services on $OS_NAME"
+        exit 1
+    fi
+}
+
 # To force dpkg on Debian-based distros to play nice.
 export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
 export LC_ALL=C LANGUAGE=C LANG=C
