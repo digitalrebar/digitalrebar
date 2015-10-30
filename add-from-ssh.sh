@@ -1,16 +1,31 @@
 #!/bin/bash
 # Copyright 2015, RackN Inc
 
-if ! which jq &>/dev/null; then
-    echo "Please install jq!"
-    exit 1
-fi
+function usage() {
+      echo "Usage: $0 [--identity <identity_file>] [--clean] [--init-ident <file>] --admin-ip <Admin IP> <CIDR of Node>" >&2
+      exit 1
+}
 
-if [ "$1" == "--admin-ip" ] ; then
-    shift
-    ADMIN_IP=$1
-    shift
-else
+ID_FILE=""
+CLEAN_IT=""
+INIT_ID_FILE=""
+ACCOUNT="--user root"
+SUDO=""
+
+while (( $# > 0 )); do
+  arg="$1"
+  case $arg in
+    --admin-ip) shift; ADMIN_IP=$1; shift;;
+    --clean) shift; CLEAN_IT="--clean";;
+    --identity) shift; ID_FILE="--identiy $1"; shift;;
+    --user) shift; ACCOUNT="--user $1"; shift;;
+    --init-ident) shift; INIT_ID_FILE="-init-ident $1"; shift;;
+    --help|-h) usage;;
+    *) break;;
+  esac
+done
+
+if [ "$ADMIN_IP" == "" ] ; then
     echo "Must specify an Admin IP"
     exit 1
 fi
@@ -23,12 +38,17 @@ if [ "$CIDRIP" == "" ] ; then
     exit 1
 fi
 
+if ! which jq &>/dev/null; then
+    echo "Please install jq!"
+    exit 1
+fi
+
 echo "Device ip = $IP/$CIDR"
 
 ssh-keygen -f "~/.ssh/known_hosts" -R $IP
-ssh -o StrictHostKeyChecking=no root@$IP date
+ssh -oBatchMode=yes -o StrictHostKeyChecking=no root@$IP date
 if [ $? -ne 0 ]; then
-    scripts/ssh-copy-id.sh root@$IP
+    scripts/ssh-copy-id.sh $CLEAN_IT $ID_FILE $ACCOUNT $INIT_ID_FILE root@$IP
 fi
 
 date
