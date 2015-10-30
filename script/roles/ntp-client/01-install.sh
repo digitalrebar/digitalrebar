@@ -1,3 +1,8 @@
+#!/bin/bash
+
+which ntpd || install ntp
+
+cat >/etc/ntp.conf <<EOF
 # /etc/ntp.conf, configuration for ntpd; see ntp.conf(5) for help
 
 driftfile /var/lib/ntp/ntp.drift
@@ -10,17 +15,6 @@ statistics loopstats peerstats clockstats
 filegen loopstats file loopstats type day enable
 filegen peerstats file peerstats type day enable
 filegen clockstats file clockstats type day enable
-
-
-# You do need to talk to an NTP server or two (or three).
-<% if @ntp_servers.nil? or @ntp_servers.empty? -%>
-server 127.127.1.0
-fudge 127.127.1.0 stratum 1
-<% else -%>
-<% @ntp_servers.each do |ntp_server| -%>
-server <%= ntp_server %> iburst minpoll 4
-<% end -%>
-<% end -%>
 
 # Access control configuration; see /usr/share/doc/ntp-doc/html/accopt.html for
 # details.  The web page <http://support.ntp.org/bin/view/Support/AccessRestrictions>
@@ -51,3 +45,17 @@ restrict ::1
 # next lines.  Please do this only if you trust everybody on the network!
 #disable auth
 #broadcastclient
+EOF
+
+ntp_servers="$(read_attribute 'rebar/ntp/servers' |jq -r '.[]')"
+if [[ ! $ntp_servers || $ntp_servers = null ]]; then
+    ntp_servers="0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
+fi
+for server in $ntp_servers; do
+    printf 'server %s iburst minpool 4' >> /etc/ntp.conf
+done
+svcs["centos"]="ntpd"
+svcs["fedora"]="ntpd"
+service ntp stop || :
+service ntp enable || :
+service ntp start

@@ -24,23 +24,6 @@ barclamp:
   license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
-  - name: ntp-server
-    jig: chef
-    provides:
-      - ntp-client
-    requires:
-      - dns-client
-      - consul
-    attribs:
-      - name: ntp_servers_external
-        description: "Addresses of the external NTP servers to use for upstream time synchronization"
-        map: 'rebar/ntp/external_servers'
-        default: []
-        schema:
-          type: seq
-          sequence:
-            - type: str
-              pattern: /[0-9a-f:.]*/
   - name: ntp-service
     jig: role-provided
     flags:
@@ -55,7 +38,7 @@ roles:
             - type: str
               pattern: /[0-9a-f:.]*/
   - name: ntp-client
-    jig: chef
+    jig: script
     requires:
       - dns-client
       - ntp-service

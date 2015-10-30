@@ -1,6 +1,0 @@
-# Config file for openntpd
-# Managed by Rebar.  Do not edit
-listen on *
-<% @ntp_servers.each {|s| -%>
-server <%=s%>
-<% } -%>
