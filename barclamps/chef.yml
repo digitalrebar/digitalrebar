@@ -59,6 +59,7 @@ roles:
     requires:
       - chef-service
       - proxy-client
+      - ntp-client
     flags:
       - implicit
     attribs:
