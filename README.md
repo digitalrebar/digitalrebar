@@ -18,15 +18,19 @@ See the above for all the gory details.
 
 ### Steps
 
-* mkdir digitalrebar
-* cd digitalrebar
-* git clone https://github.com/rackn/digitalrebar-deploy deploy
-* cd deploy/compose
-* ln -s ../../../digitalrebar digitalrebar 
-* cd ..
+```shell
+mkdir digitalrebar
+cd digitalrebar
+git clone https://github.com/rackn/digitalrebar-deploy deploy
+cd deploy/compose
+ln -s ../../../digitalrebar digitalrebar 
+cd ..
+```
 
 For Mac OSX, run (and fix missing items):
-* ./run-in-mac.sh
+```shell
+./run-in-mac.sh
+```
 
 At the end of this process, you will have an admin node running in a virtual box VM as a set of docker containers.  The access mode will be HOST mode and the access address will default to 192.168.99.100/24.  This assumes that your defaults matched our defaults.
 
@@ -35,13 +39,17 @@ At this point, you should be able to create PXE booting VMs or use vagrant boxes
 All Mac OS X questions can be answered [here](https://github.com/digitalrebar/doc/deployment/install/mac.rst).
 
 For Linux OSes (RedHat-based or Debian-Based), run (and fix missing items):
-* ./run-in-system.sh --localhost
+```shell
+./run-in-system.sh --localhost
+```
 
 At the end of this process, you will have an admin node running in containers on the local system.  The access mode will be FORWARDER mode and the default address will be 192.168.124.11/24.  Forwarder mode allows a little easier control of KVM-based systems.
 
 At this point, you should be able to create PXE booting VMs by using the tools/kvm-slave in the core tree with something like:
-* cd digitalrebar/core
-* tools/kvm-slave
+```shell
+cd digitalrebar/core
+tools/kvm-slave
+```
 
 All local Linux-based questions can be answered [here](https://github.com/digitalrebar/doc/deployment/install/local_linux.rst).
 
@@ -52,19 +60,25 @@ At this point for either method, you have a tree that can be used for developmen
 It is sometimes useful to restart or reset the environment.  This can be done as follows.
 
 To stop/clean-up the system, do the following:
-* cd digitalrebar/deploy/compose
-* docker-compose kill
-* docker-compose rm -y
+```shell
+cd digitalrebar/deploy/compose
+docker-compose kill
+docker-compose rm -y
+```
 
 To start the system again, do the following:
-* cd digitalrebar/deploy/compose
-* docker-compose up -d
+```shell
+cd digitalrebar/deploy/compose
+docker-compose up -d
+```
 
-Or to do it development style:
-* cd digitalrebar
-* Edit code to hearts content
-* cd digitablrebar/core
-* tools/docker-admin
+Or to do it development style, described better [here](https://github.com/digitalrebar/doc/deployment/install/local_linux.rst):
+```shell
+cd digitalrebar
+# Edit code to heart's content in subtrees
+cd digitablrebar/core
+tools/docker-admin
+```
 
 This leaves you in a shell that you can run docker-compose commands from.  Exiting the shell will quickly clean up the environment again.
 
