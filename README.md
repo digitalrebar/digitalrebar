@@ -2,24 +2,69 @@
 
 > Maintained by RackN, Inc.
 
-Items in this repo are used to install and configure [Digital Rebar](https://digitalrebar.githib.io) and associated workloads.
+Items in this repo are used to install and configure
+[Digital Rebar](https://digitalrebar.githib.io) and associated workloads.
 
 ## Documentation
 
-They are intended as a companion to the [Digital Rebar documentation](https://github.com/digitalrebar/doc).
+The installation process is documented in the main
+[Digital Rebar documentation](https://github.com/digitalrebar/doc) and the
+[install page](https://github.com/digitalrebar/doc/deployment/install.rst).
 
-See ansible group vars:
+## This Just Might Work Quick Start Helps
 
-* group_vars/all.yml for values, defaults. ansible group vars:
-* group_vars/mac.yml for a mac with docker tools ansible group vars:
-* group_vars/vagrant.yml for a vagrant install
+Here are some stuffs that just might work for a quick start on Mac OSX or Linux.
+See the above for all the gory details.
 
-## Deploy Paths
+### Steps
 
-The following deploy approaches are available:
+* mkdir digitalrebar
+* cd digitalrebar
+* git clone https://github.com/rackn/digitalrebar-deploy deploy
+* cd deploy/compose
+* ln -s ../../../digitalrebar digitalrebar 
+* cd ..
 
-* [Ansible Playbook(s)](install_ansible.md)  <==== STEP-BY-STEP INSTALL
-* [Vagrant Install](install_vagrant.md) runs on your local system
-* [Run In Packet.net](run_in_packet.sh) automatically runs on a hosted metal server (account needed)
+For Mac OSX, run (and fix missing items):
+* ./run-in-mac.sh
 
-> Note: All installs use the same Ansible playbooks.
+At the end of this process, you will have an admin node running in a virtual box VM as a set of docker containers.  The access mode will be HOST mode and the access address will default to 192.168.99.100/24.  This assumes that your defaults matched our defaults.
+
+At this point, you should be able to create PXE booting VMs or use vagrant boxes with a join script to continue playing with the system.
+
+All Mac OS X questions can be answered [here](https://github.com/digitalrebar/doc/deployment/install/mac.rst).
+
+For Linux OSes (RedHat-based or Debian-Based), run (and fix missing items):
+* ./run-in-system.sh --localhost
+
+At the end of this process, you will have an admin node running in containers on the local system.  The access mode will be FORWARDER mode and the default address will be 192.168.124.11/24.  Forwarder mode allows a little easier control of KVM-based systems.
+
+At this point, you should be able to create PXE booting VMs by using the tools/kvm-slave in the core tree with something like:
+* cd digitalrebar/core
+* tools/kvm-slave
+
+All local Linux-based questions can be answered [here](https://github.com/digitalrebar/doc/deployment/install/local_linux.rst).
+
+At this point for either method, you have a tree that can be used for development or just running DigitalRebar.
+
+### Reset Steps
+
+It is sometimes useful to restart or reset the environment.  This can be done as follows.
+
+To stop/clean-up the system, do the following:
+* cd digitalrebar/deploy/compose
+* docker-compose kill
+* docker-compose rm -y
+
+To start the system again, do the following:
+* cd digitalrebar/deploy/compose
+* docker-compose up -d
+
+Or to do it development style:
+* cd digitalrebar
+* Edit code to hearts content
+* cd digitablrebar/core
+* tools/docker-admin
+
+This leaves you in a shell that you can run docker-compose commands from.  Exiting the shell will quickly clean up the environment again.
+
