@@ -36,7 +36,7 @@ At the end of this process, you will have an admin node running in a virtual box
 
 At this point, you should be able to create PXE booting VMs or use vagrant boxes with a join script to continue playing with the system.
 
-All Mac OS X questions can be answered [here](https://github.com/digitalrebar/doc/deployment/install/mac.rst).
+All Mac OS X questions can be answered [here](https://github.com/digitalrebar/doc/deployment/install/mac.md).
 
 For Linux OSes (RedHat-based or Debian-Based), run (and fix missing items):
 ```shell
@@ -51,7 +51,7 @@ cd digitalrebar/core
 tools/kvm-slave
 ```
 
-All local Linux-based questions can be answered [here](https://github.com/digitalrebar/doc/deployment/install/local_linux.rst).
+All local Linux-based questions can be answered [here](https://github.com/digitalrebar/doc/deployment/install/local_linux.md).
 
 At this point for either method, you have a tree that can be used for development or just running DigitalRebar.
 
@@ -72,7 +72,7 @@ cd digitalrebar/deploy/compose
 docker-compose up -d
 ```
 
-Or to do it development style, described better [here](https://github.com/digitalrebar/doc/deployment/install/dev_mode.rst):
+Or to do it development style, described better [here](https://github.com/digitalrebar/doc/deployment/install/dev_mode.md):
 ```shell
 cd digitalrebar
 # Edit code to heart's content in subtrees
