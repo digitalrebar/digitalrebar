@@ -72,7 +72,7 @@ cd digitalrebar/deploy/compose
 docker-compose up -d
 ```
 
-Or to do it development style, described better [here](https://github.com/digitalrebar/doc/deployment/install/local_linux.rst):
+Or to do it development style, described better [here](https://github.com/digitalrebar/doc/deployment/install/dev_mode.rst):
 ```shell
 cd digitalrebar
 # Edit code to heart's content in subtrees
