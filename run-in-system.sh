@@ -2,7 +2,7 @@
 # Copyright 2015, RackN Inc
 
 function usage() {
-  echo "Usage: $0 [--clean] [--identity <file>] [--user <user>] [--init-ident <file>] [--host] CIDRIP"
+  echo "Usage: $0 [--localhost] [--clean] [--identity <file>] [--user <user>] [--init-ident <file>] [--host] CIDRIP"
   exit 1
 }
 
@@ -12,6 +12,7 @@ INIT_ID_FILE=""
 ACCOUNT="--user root"
 SUDO=""
 HOST_MODE=""
+LOCALHOST=""
 
 while (( $# > 0 )); do
   arg="$1"
@@ -21,6 +22,7 @@ while (( $# > 0 )); do
     --user) shift; ACCOUNT="--user $1"; shift;;
     --init-ident) shift; INIT_ID_FILE="-init-ident $1"; shift;;
     --host) shift ; HOST_MODE="YES";;
+    --localhost) shift ; LOCALHOST="--connection=local";;
     --help|-h) usage;;
     *) break;;
   esac
@@ -66,9 +68,9 @@ fi
 
 echo "$IP ansible_ssh_user=root" > /tmp/run-in-hosts.$$
 export ANSIBLE_HOST_KEY_CHECKING=False
-ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars "$EXTRA_VARS" digitalrebar.yml
+ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars "$EXTRA_VARS" digitalrebar.yml $LOCALHOST
 
 echo "=== HELPFUL COMMANDS ==="
-echo "repeat Ansible run: ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars \"$EXTRA_VARS\" digitalrebar.yml"
+echo "repeat Ansible run: ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars \"$EXTRA_VARS\" digitalrebar.yml $LOCALHOST"
 echo "Consul UI        http://${IP}:8500"
 echo "Digital Rebar UI http://${IP}:3000"
