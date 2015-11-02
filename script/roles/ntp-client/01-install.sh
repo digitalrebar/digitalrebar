@@ -52,7 +52,7 @@ if [[ ! $ntp_servers || $ntp_servers = null ]]; then
     ntp_servers="0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org"
 fi
 for server in $ntp_servers; do
-    printf 'server %s iburst minpool 4' >> /etc/ntp.conf
+    printf 'server %s iburst minpool 4' $server >> /etc/ntp.conf
 done
 add_svcalt ntp centos ntpd
 add_svcalt ntp fedora ntpd
