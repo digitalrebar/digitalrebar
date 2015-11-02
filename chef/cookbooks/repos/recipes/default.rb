@@ -60,7 +60,6 @@ else
 fi
 EOC
     end
-  end
   when "coreos"
     # Do nothing
   else
