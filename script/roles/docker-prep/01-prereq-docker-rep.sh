@@ -7,7 +7,7 @@ if ! which docker; then
     if [[ -f /etc/redhat-release || -f /etc/centos-release ]]; then
 		# install docker using download script
 		curl -sSL https://get.docker.com/ -o /tmp/docker.sh
-		chmod +7 /tmp/docker.sh
+		chmod +x /tmp/docker.sh
 		/tmp/docker.sh
     elif [[ -d /etc/apt ]]; then
         # Make need extra repos
@@ -39,7 +39,7 @@ fi
 # setup proxy
 if [[ -f /etc/redhat-release || -f /etc/centos-release ]]; then
 	if [[ ! -f /etc/systemd/system/docker.service.d/http-proxy.conf ]]; then
-		mkdir /etc/systemd/system/docker.service.d
+		mkdir -p /etc/systemd/system/docker.service.d
 		echo "[Service]" > /etc/systemd/system/docker.service.d/http-proxy.conf
 		echo "Environment=\"HTTP_PROXY=${http_proxy}\"" >> /etc/systemd/system/docker.service.d/http-proxy.conf
 		if [[ -f /etc/redhat-release || -f /etc/centos-release ]]; then
