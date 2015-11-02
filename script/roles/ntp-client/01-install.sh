@@ -54,8 +54,9 @@ fi
 for server in $ntp_servers; do
     printf 'server %s iburst minpool 4' >> /etc/ntp.conf
 done
-svcs["centos"]="ntpd"
-svcs["fedora"]="ntpd"
+add_svcalt ntp centos ntpd
+add_svcalt ntp fedora ntpd
+
 service ntp stop || :
 service ntp enable || :
 service ntp start
