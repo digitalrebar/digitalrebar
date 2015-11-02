@@ -34,6 +34,7 @@ roles:
       - implicit
     requires:
       - rebar-installed-node
+      - provisioner-repos
   - name: docker-ready
     description: "Docker Environment"
     jig: noop
