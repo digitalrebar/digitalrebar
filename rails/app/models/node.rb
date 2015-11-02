@@ -171,7 +171,7 @@ class Node < ActiveRecord::Base
   end
 
   def address(filter = :all, networks = ["admin"])
-    res = addresses(filter,networks).detect{|a|a.reachable?} || Attrib.get('node-control-address',self)
+    res = addresses(filter,networks).detect{|a|a.reachable?}
     Rails.logger.warn("Node #{name} did not have any reachable addresses in networks #{networks.inspect}") unless res
     res
   end

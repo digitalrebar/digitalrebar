@@ -6,8 +6,13 @@ shopt -s nullglob extglob globstar
 export TMPDIR=$1
 export ROLE=$2
 
+if ! which jq &>/dev/null; then
+    echo "JQ not installed.  The script jig requires it to function"
+    exit 1
+fi
+
 # pkgs and services are hashes with the following format:
-# hash["os-identifier"]="pkg-or-svc-name"
+# hash["pkg-or-svc-name"]="alt-os-name pkg-or-svc-name\n..."
 # os-identifier can be either an OS_TYPE or an OS_NAME
 
 declare -A pkgs svcs
@@ -33,6 +38,43 @@ else
 fi
 OS_NAME="$OS_TYPE-$OS_VER"
 
+# Add an alternate name for a package based on the OS.
+add_pkgalt() {
+    # $1 = base_pkg_name
+    # $2 = alt OS name
+    # $3 = alt pkg name
+    if [[ ! ${pkgs["$1"]} ]]; then
+        pkgs["$1"]="$2 $3"
+    else
+        local osrel= pkg= pkgline=
+        pkgline="${pkgs[$1]}"
+        while read osrel pkg; do
+            [[ $osrel = $2 && $pkg = $3 ]] && return 0
+        done <<< "$pkgline"
+        pkgline+="$(printf '\n%s %s' "$2" "$3")"
+        pkgs["$1"]="$pkgline"
+    fi
+}
+
+# Add an alternate name for a service based on OS
+add_svcalt() {
+    # $1 = base_svc_name
+    # $2 = alt OS name
+    # $3 = alt svc name
+    if [[ ! ${svcs["$1"]} ]]; then
+        svcs["$1"]="$2 $3"
+    else
+        local osrel= svc= svcline=
+        svcline="${svcs[$1]}"
+        while read osrel svc; do
+            [[ $osrel = $2 && $svc = $3 ]] && return 0
+        done <<< "$svcline"
+        svcline+="$(printf '\n%s %s' "$2" "$3")"
+        svcs["$1"]="$svcline"
+    fi
+}
+
+# Generate valid alternate OS names based on the current OS.
 gen_subs() {
     local res=()
     res+=("$OS_NAME")
@@ -46,24 +88,42 @@ gen_subs() {
     echo "${res[@]}"
 }
 
+# Lookup the proper name of the package for this OS based on the alts.
 lookup_package() {
-    # $1 = package to try to substitute
-    local res
-    for res in $(gen_subs); do
-        if [[ ${pkgs["$res"]} ]]; then
-            printf '%s' "${pkgs["$res"]}"
+    local pkgline="${pkgs[$1]}"
+    if [[ ! $pkgline ]]; then
+        printf '%s' "$1"
+        return
+    fi
+    local -A pkgalts
+    local osrel= alt=
+    while read osrel alt; do
+        pkgalts["$osrel"]="$alt"
+    done <<< "$pkgline"
+    for osrel in $(gen_subs); do
+        if [[ ${pkgalts["$osrel"]} ]]; then
+            printf '%s' "${pkgalts[$osrel]}"
             return
         fi
     done
     printf '%s' "$1"
 }
 
+# Lookup the proper name for the service based on the alts.
 lookup_service() {
-    # $1 = package to try to substitute
-    local res
-    for res in $(gen_subs); do
-        if [[ ${svcs["$res"]} ]]; then
-            printf '%s' "${svcs["$res"]}"
+    local svcline="${svcs[$1]}"
+    if [[ ! $svcline ]]; then
+        printf '%s' "$1"
+        return
+    fi
+    local -A svcalts
+    local osrel= alt=
+    while read osrel alt; do
+        svcalts["$osrel"]="$alt"
+    done <<< "$svcline"
+    for osrel in $(gen_subs); do
+        if [[ ${svcalts["$osrel"]} ]]; then
+            printf '%s' "${svcalts[$osrel]}"
             return
         fi
     done
@@ -79,6 +139,7 @@ if_update_needed() {
     fi
 }
 
+# Install a package
 install() {
     local to_install=()
     local pkg
@@ -97,6 +158,7 @@ install() {
     esac
 }
 
+# Perform service actions.
 service() {
     # $1 = service name
     # $2 = action to perform
