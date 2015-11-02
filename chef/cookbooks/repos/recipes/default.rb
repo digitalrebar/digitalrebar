@@ -25,6 +25,14 @@ online = node[:rebar][:provisioner][:server][:online]
 proxy = node[:rebar][:proxy][:servers].first[:url]
 webserver = node[:rebar][:provisioner][:server][:webservers].first[:url]
 
+# if we have an internet IP address, then don't use the proxy.
+# This is cheesy, but functional for now.
+addrs=%x{ip -o -4 addr show scope global |awk '!/ (10|192\.168|172\.(2[0-9]|1[6-9]|3[0-1]))\./ {print $4}'}
+if addrs != ""
+    # We haven an internet address so no proxy.
+    proxy=""
+end
+
 ["/etc/gemrc","/root/.gemrc"].each do |rcfile|
   template rcfile do
     source "gemrc.erb"
@@ -34,15 +42,16 @@ webserver = node[:rebar][:provisioner][:server][:webservers].first[:url]
   end
 end
 
-case node["platform"]
-when "ubuntu","debian"
-  template "/etc/apt/apt.conf.d/00-proxy" do
-    source "apt-proxy.erb"
-    variables(:proxy => proxy)
-  end
-when "redhat","centos","fedora"
-  bash "add yum proxy" do
-    code <<EOC
+if proxy != ""
+  case node["platform"]
+  when "ubuntu","debian"
+    template "/etc/apt/apt.conf.d/00-proxy" do
+      source "apt-proxy.erb"
+      variables(:proxy => proxy)
+    end
+  when "redhat","centos","fedora"
+    bash "add yum proxy" do
+      code <<EOC
 grep -q -F 'proxy=#{proxy}' /etc/yum.conf && exit 0
 if ! grep -q '^proxy=http' /etc/yum.conf; then
   echo 'proxy=#{proxy}' >> /etc/yum.conf
@@ -50,12 +59,15 @@ else
     sed -i '/^proxy/ s@http://.*@#{proxy}@' /etc/yum.conf
 fi
 EOC
+    end
   end
-when "coreos"
-  # Do nothing
-else
-  raise "Cannot handle configuring the proxy for OS #{node["platform"]}"
+  when "coreos"
+    # Do nothing
+  else
+    raise "Cannot handle configuring the proxy for OS #{node["platform"]}"
+  end
 end
+
 unless repositories
   Chef::Log.info("Provisioner: No repositories for #{os_token}")
 end
