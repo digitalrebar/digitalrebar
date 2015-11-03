@@ -16,7 +16,7 @@ import (
 
 var (
 	debug              = false
-	endpoint           = "http://127.0.0.1:3000"
+	endpoint           = "https://127.0.0.1:3000"
 	username, password string
 	app                = &cobra.Command{
 		Use:   "rebar",
