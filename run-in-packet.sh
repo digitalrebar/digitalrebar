@@ -90,6 +90,7 @@ ssh -o StrictHostKeyChecking=no root@$IP date
 echo "$IP ansible_ssh_user=root" > /tmp/run-in-hosts.$$
 
 export ANSIBLE_HOST_KEY_CHECKING=False
+ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars "$EXTRA_VARS" tasks/packet_isos.yml
 ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars "$EXTRA_VARS" digitalrebar.yml
 
 date
