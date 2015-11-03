@@ -21,8 +21,8 @@ class DrillConsolidated < ActiveRecord::Migration
 
     # 20140122123641
     create_table :settings do |t|
-      t.text       :var,    null: false
-      t.text       :value,  null: false, default: ''
+      t.string     :var,    null: false
+      t.text       :value,  null: false, default: '--- {}'
       t.references :target, null: false, polymorphic: true
       t.timestamps
     end
