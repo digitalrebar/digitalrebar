@@ -75,7 +75,7 @@ class BarclampsController < ApplicationController
   def wizard
     @bc = Barclamp.find_key params[:barclamp_id]
     if request.get?
-      @roles = @bc.roles.keep_if{ |r| r.milestone }.sort_by { |r| r.cohort }
+      @roles = @bc.roles.to_a.keep_if{ |r| r.milestone }.sort_by { |r| r.cohort }
       @nodes = Deployment.system.nodes.where(:admin=>false, :system=>false)
     elsif request.post?
 

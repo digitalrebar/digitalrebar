@@ -7,7 +7,7 @@
     %td
       - if state == Deployment::PROPOSED
         = form_for :add_role, :'data-remote' => true, :url => deployment_roles_path(:deployment_id=>@deployment.id, :api_version=>'v2'), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
-          - aroles = @deployment.available_roles.sort_by{:name}
+          - aroles = @deployment.available_roles.sort_by{:name}.to_a
           - if current_user and current_user.settings(:ui).milestone_roles
             - aroles.keep_if {| r | r.milestone }
           - if aroles.length > 0
