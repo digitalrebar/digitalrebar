@@ -3,7 +3,7 @@
 set -x
 
 [[ -f /etc/init.d/rebar ]] || \
-    cp etc/init.d/rebar /etc/init.d/rebar
+    cp /opt/digitalrebar/core/etc/init.d/rebar /etc/init.d/rebar
 
 if which chkconfig; then
     chkconfig rebar on
