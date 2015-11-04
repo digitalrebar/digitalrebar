@@ -172,7 +172,7 @@ service() {
             disable) chkconfig "$svc" off;;
             *)  command service "$svc" "$@";;
         esac
-    elif [ -x initctl ] && initctl version 2>/dev/null | grep -q upstart ; then
+    elif which initctl &>/dev/null && initctl version 2>/dev/null | grep -q upstart ; then
         /usr/sbin/service "$svc" "$1"
     elif [[ -f /etc/init/$svc.unit ]]; then
         initctl "$1" "$svc"
