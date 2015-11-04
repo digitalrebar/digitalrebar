@@ -33,7 +33,7 @@
           %td= link_to n.name, node_path(n.id)
           - Group.category(@group.category).each do |g|
             - next if g.id == @group.id
-            %td= link_to_function image_tag('icons/add.png'), "move(#{n.id}, #{g.id})"
+            %td= link_to image_tag('icons/add.png'), "javascript:move(#{n.id}, #{g.id})"
 
 
 .clear

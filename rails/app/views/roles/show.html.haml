@@ -85,7 +85,7 @@
   - if inuse.length > 0
     - nrlist = inuse.map { |nr| nr.id }.join(",")
     %raw_button{:style => 'float:right'}
-      = link_to_function t('.reapply'), "retry_all('#{nrlist}')", :class => 'button'
+      = link_to t('.reapply'), "javascript:retry_all('#{nrlist}')", :class => 'button'
 
 - if inuse.length == 0
   =t 'no_items'
