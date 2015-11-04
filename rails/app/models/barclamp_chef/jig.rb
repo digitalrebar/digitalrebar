@@ -149,6 +149,8 @@ class BarclampChef::Jig < Jig
     Chef::Config[:client_key] = key
     Chef::Config[:chef_server_url] = server
     Chef::Config[:node_name] = client_name
+    # Yes, I know this is insecure.  We just have to deal for now.
+    Chef::Config[:ssl_verify_mode] = :verify_none
   end
 
 end # class

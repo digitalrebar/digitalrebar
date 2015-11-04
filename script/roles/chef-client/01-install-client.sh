@@ -69,6 +69,8 @@ log_location    STDOUT
 node_name       '$chef_client'
 chef_server_url '$chef_url'
 client_key      '/etc/chef/client.pem'
+# Yes, this is insecure for now.
+ssl_verify_mode :verify_none
 EOF
 
 printf '%s' "$chef_key" > "/etc/chef/client.pem"
