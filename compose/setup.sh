@@ -12,6 +12,7 @@ fi
 while [[ $1 ]]; do
   case "$1" in
     kubernetes)
+      ./workload.sh rackn docker
       ./workload.sh rackn $1
       shift;;
     hardware)
@@ -27,12 +28,14 @@ while [[ $1 ]]; do
       ./workload.sh rackn $1
       shift;;
     docker-swarm)
+      ./workload.sh rackn docker
       ./workload.sh rackn $1
       shift;;
     enterprise)
       ./workload.sh rackn $1
       shift;;
     mesosphere)
+      ./workload.sh rackn docker
       ./workload.sh rackn $1
       shift;;
     burnin)
@@ -42,12 +45,12 @@ while [[ $1 ]]; do
       ./workload.sh rackn $1
       shift;;
     rackn)
-      for wl in kubernetes hardware ceph; do
+      for wl in docker kubernetes hardware ceph; do
         ./workload.sh rackn ${wl}
       done
       shift;;
     all)
-      for wl in kubernetes hardware ceph packstack docker-swarm enterprise mesosphere burnin stackengine; do
+      for wl in docker kubernetes hardware ceph packstack docker-swarm enterprise mesosphere burnin stackengine; do
         ./workload.sh rackn ${wl}
       done
       shift;;
