@@ -172,6 +172,8 @@ service() {
             disable) chkconfig "$svc" off;;
             *)  command service "$svc" "$@";;
         esac
+    elif [ -x /sbin/initctl ] && /sbin/initctl version 2>/dev/null | grep -q upstart ; then
+        /usr/sbin/service "$svc" "$1"
     elif [[ -f /etc/init/$svc.unit ]]; then
         initctl "$1" "$svc"
     elif which update-rc.d &>/dev/null; then
