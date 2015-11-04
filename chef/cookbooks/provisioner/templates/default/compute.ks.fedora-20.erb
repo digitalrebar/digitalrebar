@@ -51,6 +51,9 @@ export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 (cd /etc/yum.repos.d && rm *)
 <% end -%>
 
+(cd /bin; curl -fgl -O "<%=@provisioner_web%>/files/rebar"; chmod 755 rebar)
+export REBAR_ENDPOINT="<%=@api_server%>"
+
 key_re='rebar\.install\.key=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
     export REBAR_KEY="${BASH_REMATCH[1]}"
@@ -158,8 +161,8 @@ echo "export no_proxy=127.0.0.1,localhost,::1,<%=@proxy_addr%>" >> /etc/profile.
 echo "AcceptEnv http_proxy https_proxy no_proxy" >> /etc/ssh/sshd_config
 
 # Set up the default rebar service.
-curl -s -o /usr/sbin/rebar "<%=@web_path%>/rebar_join.sh"
-chmod +x /usr/sbin/rebar
+curl -s -o /usr/sbin/rebar_join "<%=@web_path%>/rebar_join.sh"
+chmod +x /usr/sbin/rebar_join
 
 cat >/etc/systemd/system/rebar.service <<EOF
 [Unit]
@@ -169,7 +172,7 @@ After=sshd.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/sbin/rebar start
+ExecStart=/usr/sbin/rebar_join start
 
 [Install]
 WantedBy=multi-user.target
@@ -182,13 +185,8 @@ systemctl enable rebar
 chkconfig NetworkManager off || :
 chkconfig network on || :
 
-curl -u "$REBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
-    "<%=@api_server%>/api/v2/nodes/$HOSTNAME"
-
-# Wait for the provisioner to change the bootenv
-while true; do
-      curl -s -f -L -o /tmp/bootstate "<%=@provisioner_web%>/nodes/$HOSTNAME/bootstate" && \
-        [[ -f /tmp/bootstate && $(cat /tmp/bootstate) = local ]] && break
+rebar nodes update "$HOSTNAME" '{"bootenv": "local"}'
+while [[ $(rebar nodes get "$HOSTNAME" attrib provisioner-active-bootstate |jq -r '.value') != local ]]; do
     sleep 1
 done
 

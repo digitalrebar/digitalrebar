@@ -22,7 +22,7 @@ class BarclampRebar::ApiService < Service
       Rails.logger.debug("ApiService: #{s.inspect} #{str_addr}")
       addr = IP.coerce(str_addr)
       Rails.logger.debug("ApiService: #{addr.inspect}")
-      url = "http://"
+      url = "https://"
       if addr.v6?
         url << "[#{addr.addr}]"
       else

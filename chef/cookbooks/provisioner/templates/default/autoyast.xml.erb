@@ -118,12 +118,12 @@ export REBAR_KEY="$(cat /mnt/etc/rebar.install.key)"
 fi
 
 post_state() {
-local curlargs=(-o "/var/log/$1-$2.json" --connect-timeout 60 -s \
+local curlargs=(-k -o "/var/log/$1-$2.json" --connect-timeout 60 -s \
   -L -X POST --data-binary "{ \"name\": \"$1\", \"state\": \"$2\" }" \
   -H "Accept: application/json" -H "Content-Type: application/json" \
   --max-time 240)
 [[ $REBAR_KEY ]] && curlargs+=(-u "$REBAR_KEY" --digest --anyauth)
-curl "${curlargs[@]}" "http://$IP:3000/rebar/rebar/1.0/transition/default"
+curl "${curlargs[@]}" "https://$IP:3000/rebar/rebar/1.0/transition/default"
 }
 
 mkdir -p /mnt/root/.ssh
@@ -141,7 +141,7 @@ curl -s -o /mnt/usr/local/sbin/rebar_join.sh <%= @rebar_join %>
 chmod +x /mnt/usr/local/sbin/rebar_join.sh
 
 while true; do
-      curl -s -f -L -o /tmp/bootstate "<%=@provisioner_web%>/nodes/$HOSTNAME/bootstate" && \
+      curl -k -s -f -L -o /tmp/bootstate "<%=@provisioner_web%>/nodes/$HOSTNAME/bootstate" && \
         [[ -f /tmp/bootstate && $(cat /tmp/bootstate) = local ]] && break
     sleep 1
 done

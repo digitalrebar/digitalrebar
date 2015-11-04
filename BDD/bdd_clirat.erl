@@ -35,7 +35,7 @@ pass_cli(Scenario, Params) ->
   Out.
   
 step(_Global, {step_when, {_Scenario, _N}, ["CURL calls",Path]}) -> 
-  CLI = "curl --digest",
+  CLI = "curl -k --digest",
   Username = " -u '" ++ bdd_utils:config(user, "NOT_GIVEN") ++ ":" ++ bdd_utils:config(password, "NOT_GIVEN") ++ "'",
   URL = " -i '" ++ bdd_utils:config(url, "NOT_GIVEN"),
   FullURL = eurl:path(URL, Path),

@@ -68,9 +68,7 @@ EOF
 
 # Mark us as alive.
 # Mark the node as alive.
-curl -g --digest -u "$REBAR_KEY" \
-    -X PUT "$api_server/api/v2/nodes/$HOSTNAME" \
-    -d 'alive=true'
+rebar nodes update $HOSTNAME '{"alive": true}'
 
 # We are alive, and we should have a host entry created now.  Wait forever to do something.
 # The last line in this script must always be exit 0!!

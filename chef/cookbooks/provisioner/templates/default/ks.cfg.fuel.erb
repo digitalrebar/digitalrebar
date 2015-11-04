@@ -568,6 +568,8 @@ mkdir -p /root/.ssh
 cat >/root/.ssh/authorized_keys <<EOF
 <%= @keys %>
 EOF
+(cd /bin; curl -fgl -O "<%=@provisioner_web%>/files/rebar"; chmod 755 rebar)
+export REBAR_ENDPOINT="<%=@api_server%>"
 
 key_re='rebar\.install\.key=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
@@ -592,13 +594,8 @@ fi
 echo "$HOSTNAME" >/etc/hostname
 hostname "$HOSTNAME"
 
-curl -u "$REBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
-    "<%=@api_server%>/api/v2/nodes/$HOSTNAME"
-
-# Wait for the provisioner to change the bootenv
-while true; do
-      curl -s -f -L -o /tmp/bootstate "<%=@provisioner_web%>/nodes/$HOSTNAME/bootstate" && \
-        [[ -f /tmp/bootstate && $(cat /tmp/bootstate) = local ]] && break
+rebar nodes update "$HOSTNAME" '{"bootenv": "local"}'
+while [[ $(rebar nodes get "$HOSTNAME" attrib provisioner-active-bootstate |jq -r '.value') != local ]]; do
     sleep 1
 done
 
