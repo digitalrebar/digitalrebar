@@ -45,6 +45,7 @@ node_name                '#{account}'
 client_key               '/home/rebar/.chef/#{account}.pem'
 chef_server_url          '#{url}'
 syntax_check_cache_path  '/home/rebar/.chef/syntax_check_cache'
+ssl_verify_mode          :verify_none
 "
       system("mkdir -p /home/rebar/.chef")
       File.open("/home/rebar/.chef/knife.rb", 'w', 0600) {|f| f.write(knife_contents) }
