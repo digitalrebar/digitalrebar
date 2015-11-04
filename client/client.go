@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"crypto/rand"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -56,7 +57,14 @@ const (
 // this function before using any other functions in the rebar
 // package.  Session stores its information in a private global variable.
 func Session(URL, User, Password string) error {
-	c := &rebarClient{URL: URL, Client: &http.Client{}, Challenge: &challenge{}}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	c := &rebarClient{
+		URL:       URL,
+		Client:    &http.Client{Transport: tr},
+		Challenge: &challenge{},
+	}
 	// retrieve the digest info from the 301 message
 	resp, e := c.Head(c.URL + path.Join(API_PATH, "digest"))
 	if e != nil {
