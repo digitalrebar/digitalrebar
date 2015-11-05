@@ -7,7 +7,7 @@
     - if flag == :raw
       = image_tag('icons/raw.png', :title=>"raw mode")
     %td
-      %a.toggle.with_label{:href => "#", :id => "#toggle_#{attrib.id}", :rel => "rawdata_#{attrib.id}" }
+      %span.toggle.with_label{:href => "#", :id => "#toggle_#{attrib.id}", :rel => "rawdata_#{attrib.id}" }
         = truncate value.to_s, :length=>60
       %pre{:id=>"rawdata_#{attrib.id}", :style =>"display:none"}
         = value

@@ -19,7 +19,7 @@
     -else
       - if value.is_a? Hash or value.is_a? Array
         %td
-          %a.toggle.with_label{:href => "#", :id => "#toggle_#{attrib.id}", :rel => "rawdata_#{attrib.id}" }
+          %span.toggle.with_label{:href => "#", :id => "#toggle_#{attrib.id}", :rel => "rawdata_#{attrib.id}" }
             = truncate value.to_s, :length=>120
           %pre{:id=>"rawdata_#{attrib.id}", :style =>"display:none"}
             = JSON.pretty_generate(value)
