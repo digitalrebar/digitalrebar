@@ -1,0 +1,15 @@
+- value = Attrib.get(attrib.name, obj)
+%tr.node{ :class => cycle(:odd, :even) }
+  %td
+    = link_to attrib.name_i18n, attrib_path(attrib.id), :title=>attrib.description
+    - if flag == :error
+      = image_tag('icons/error.png', :title=>error)
+    - if flag == :raw
+      = image_tag('icons/raw.png', :title=>"raw mode")
+    %td
+      %span.toggle.with_label{:href => "#", :id => "#toggle_#{attrib.id}", :rel => "rawdata_#{attrib.id}" }
+        = truncate value.to_s, :length=>60
+      %pre{:id=>"rawdata_#{attrib.id}", :style =>"display:none"}
+        = value
+    - if current_user and current_user.settings(:ui).debug
+      %td= attrib.ui_renderer rescue Attrib::UI_RENDERER

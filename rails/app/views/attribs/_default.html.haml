@@ -17,7 +17,13 @@
       %td{:align=>"right"}
         %input.button{:type => "submit", :name => "save", :value => t('save')}
     -else
-      - if value
+      - if value.is_a? Hash or value.is_a? Array
+        %td
+          %span.toggle.with_label{:href => "#", :id => "#toggle_#{attrib.id}", :rel => "rawdata_#{attrib.id}" }
+            = truncate value.to_s, :length=>120
+          %pre{:id=>"rawdata_#{attrib.id}", :style =>"display:none"}
+            = JSON.pretty_generate(value)
+      - elsif value
         %td= value
       - else
         %td= t('not_set')
