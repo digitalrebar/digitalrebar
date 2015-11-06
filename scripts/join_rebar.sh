@@ -22,7 +22,7 @@ ADMIN_IP=$1
 export REBAR_USER=rebar
 export REBAR_PASSWORD=rebar1
 export REBAR_KEY="$REBAR_USER:$REBAR_PASSWORD"
-export REBAR_WEB="http://$ADMIN_IP:3000"
+export REBAR_WEB="https://$ADMIN_IP:3000"
 
 HOSTNAME=`hostname`
 if [[ $HOSTNAME == ${HOSTNAME%%.*} ]] ; then
@@ -34,8 +34,8 @@ if [[ $HOSTNAME == ${HOSTNAME%%.*} ]] ; then
 fi
 
 # Get the ssh keys and update authorized_keys
-success=$(curl -s -o /tmp/keys -w "%{http_code}" --digest -u "$REBAR_KEY" \
-      -X GET "http://$ADMIN_IP:3000/api/v2/deployments/1/attribs/rebar-access_keys")
+success=$(curl -k -s -o /tmp/keys -w "%{http_code}" --digest -u "$REBAR_KEY" \
+      -X GET "${REBAR_WEB}/api/v2/deployments/1/attribs/rebar-access_keys")
 if [[ $success != 200 ]] ; then
     echo "Failed to get keys"
     exit -1
@@ -46,7 +46,7 @@ cat /tmp/keys2 >> /root/.ssh/authorized_keys
 rm -rf /tmp/keys /tmp/keys2
 
 # does the node exist?
-exists=$(curl -s -o /dev/null -w "%{http_code}" --digest -u "$REBAR_KEY" \
+exists=$(curl -k -s -o /dev/null -w "%{http_code}" --digest -u "$REBAR_KEY" \
       -X GET "$REBAR_WEB/api/v2/nodes/$HOSTNAME")
 if [[ $exists == 404 ]]; then
     # Get IP for create suggestion
@@ -61,7 +61,7 @@ if [[ $exists == 404 ]]; then
     # Create a new node for us,
     # Add the default noderoles we will need, and
     # Let the annealer do its thing.
-    curl -f -g --digest -u "$REBAR_KEY" -X POST \
+    curl -k -f -g --digest -u "$REBAR_KEY" -X POST \
       -d "name=$HOSTNAME" \
       -d "ip=$IP" \
       -d "variant=metal" \
@@ -76,10 +76,10 @@ else
 fi
 
 # does the rebar-joined-role exist?
-joined=$(curl -s -o /dev/null -w "%{http_code}" --digest -u "$REBAR_KEY" \
+joined=$(curl -k -s -o /dev/null -w "%{http_code}" --digest -u "$REBAR_KEY" \
       -X GET "$REBAR_WEB/api/v2/nodes/$HOSTNAME/node_roles/rebar-joined-node")
 if [[ $joined == 404 ]]; then
-    curl -f -g --digest -u "$REBAR_KEY" -X POST \
+    curl -k -f -g --digest -u "$REBAR_KEY" -X POST \
       -d "node=$HOSTNAME" \
       -d "role=rebar-joined-node" \
       "$REBAR_WEB/api/v2/node_roles/" && \
@@ -93,7 +93,7 @@ else
 fi
 
 # Always make sure we are marking the node not alive. It will comeback later.
-curl -f -g --digest -u "$REBAR_KEY" \
+curl -k -f -g --digest -u "$REBAR_KEY" \
     -X PUT "$REBAR_WEB/api/v2/nodes/$HOSTNAME" \
     -d 'alive=false' \
     -d 'bootenv=local' \
@@ -103,7 +103,7 @@ curl -f -g --digest -u "$REBAR_KEY" \
 echo "Set node not alive"
 
 # And then alive
-curl -f -g --digest -u "$REBAR_KEY" \
+curl -k -f -g --digest -u "$REBAR_KEY" \
     -X PUT "$REBAR_WEB/api/v2/nodes/$HOSTNAME" \
     -d 'alive=true' \
     -d 'bootenv=local' \

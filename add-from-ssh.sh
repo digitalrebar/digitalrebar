@@ -54,11 +54,12 @@ fi
 date
 
 # Get the ssh keys and update authorized_keys
+REBAR_ENDPOINT="https://$ADMIN_IP:3000"
 REBAR_KEY="rebar:rebar1"
 KEY_FILE1="/tmp/keys.$$"
 KEY_FILE2="/tmp/keys2.$$"
-success=$(curl -s -o $KEY_FILE1 -w "%{http_code}" --digest -u "$REBAR_KEY" \
-      -X GET "http://$ADMIN_IP:3000/api/v2/deployments/1/attribs/rebar-access_keys")
+success=$(curl -k -s -o $KEY_FILE1 -w "%{http_code}" --digest -u "$REBAR_KEY" \
+      -X GET "${REBAR_ENDPOINT}/api/v2/deployments/1/attribs/rebar-access_keys")
 if [[ $success != 200 ]] ; then
     echo "Failed to get keys"
     exit -1
