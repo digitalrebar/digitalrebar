@@ -39,22 +39,26 @@
   - else
     = dl_item(t('.switch_name'), t('.switch_no_link'))
 
-%table.data.box
-  %thead
-    %tr
-      %th= t ".network"
-      %th= t ".range"
-      %th= t ".address"
-      %th= t ".conduit"
-      %th= t ".vlan"
-  %tbody
-    - @node.network_allocations.order("id ASC").each do |a|
-      %tr{:class => cycle("even", "odd")}
-        %td= link_to a.network.name, network_path(a.network.id)
-        %td= a.network_range.name
-        %td= a.address.to_s
-        %td= a.network_range.conduit
-        %td= a.network_range.use_vlan? ? a.network_range.vlan : t("none")
+- if @node.network_allocations.count > 0
+  %table.data.box
+    %thead
+      %tr
+        %th= t ".network"
+        %th= t ".range"
+        %th= t ".address"
+        %th= t ".conduit"
+        %th= t ".vlan"
+    %tbody
+      - @node.network_allocations.order("id ASC").each do |a|
+        %tr{:class => cycle("even", "odd")}
+          %td= link_to a.network.name, network_path(a.network.id)
+          %td= a.network_range.name
+          %td= a.address.to_s
+          %td= a.network_range.conduit
+          %td= a.network_range.use_vlan? ? a.network_range.vlan : t("none")
+- else
+  %dl
+    = dl_item t('.address'), @node.get_attrib('node-control-address')
 
 %h3= t '.node_roles'
 - node_roles = NodeRole.committed_by_node(@node).order("cohort, id")

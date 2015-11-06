@@ -1,43 +1,42 @@
 - state = @node.state
 
-.column_50.first
-  %dl
-    = dl_item(t('.name'), @node.name)
-    = dl_item(t('.description'), @node.description || (t 'not_set'))
-    %dt= t '.deployment'
-    %dd
-      = form_for :node_deployment, :remote => true, :url => node_path(:id=>@node.id), :html => { :method=>:put, :'data-type' => 'json', :class => "formtastic", :onsubmit=>"location.reload();" } do |f|
-        - deployments = Deployment.all
-        = f.collection_select :deployment_id, deployments, :id, :name, :selected=>@node.deployment.id
-        %input.button{:type => "submit", :name => "update", :value => t('update'), }
-    = dl_item t('.bootenv'), t(".#{@node.bootenv}", :default=>@node.bootenv)
-    %dt= t('.status')
-    %dd
-      = t (@node.alive ? ".alive" : ".dead")
-      = t (@node.available ? ".available" : ".reserved")
-      = NodeRole.state_name(state)
-      = link_to t((@node.available ? '.reserve' : '.release')), node_path(@node.id, :api_version=>'v2', :available=>!@node.available), 
-                    :method=>:put, :class=>'button', :remote=>true, :onclick=>"location.reload();"
-
-.column_50.last
-  %dl
-    = dl_item(t('.vendor'), "#{@node.attrib_system_manufacturer} #{@node.attrib_system_product}")
-    = dl_item(t('.serial'), @node.attrib_system_serial_number)
-    = dl_item(t('.asset_tag'), @node.attrib_asset_tag)
-    = dl_item(t('.hardware'), @node.attrib_hardware)
-    %dt= t('.cpu')
-    %dd
-      - raw =@node.attrib_cpu || t('unknown')
-      - if raw.start_with? "Intel(R)"
-        = image_tag("http://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Intel-logo.svg/293px-Intel-logo.svg.png", height: 16, title:"Intel")
-        - raw = raw.gsub("Intel(R) ",'')
-      - raw = raw.gsub("CPU ", '')
-      = raw
-    = dl_item(t('.memory'), format_memory(@node.attrib_memory))
-    = dl_item(t('.number_of_drives'), "#{@node.attrib_number_of_drives || 0}, #{t('.raid')}: #{t('.'+(@node.attrib_raid_set || 'not_set'))}")
-    = dl_item(t('.operating_system'), "#{@node.attrib_os_description || ((@node.attrib_os || "Unknown") + " " + (@node.attrib_os_version || ""))}")
-    - if Rails.env.development? and Jig.active('test')
-      %dt= t '.bdd_marker'
-      %dd= @node.attrib_bdd_marker || t('ignore')
+%dl
+  %dt= t('.name')
+  %dd
+    = @node.name
     = link_to "Destroy", node_path(@node.id, :api_version=>2), :class => 'button', :method => :delete, data: { confirm: "Are you certain you want to destroy #{@node.name}?" }
+  = dl_item(t('.description'), @node.description || (t 'not_set'))
+  %dt= t '.deployment'
+  %dd
+    = form_for :node_deployment, :remote => true, :url => node_path(:id=>@node.id), :html => { :method=>:put, :'data-type' => 'json', :class => "formtastic", :onsubmit=>"location.reload();" } do |f|
+      - deployments = Deployment.all
+      = f.collection_select :deployment_id, deployments, :id, :name, :selected=>@node.deployment.id
+      %input.button{:type => "submit", :name => "update", :value => t('update'), }
+  = dl_item t('.bootenv'), t(".#{@node.bootenv}", :default=>@node.bootenv)
+  = dl_item t('.address'), @node.get_attrib('node-control-address')
+  %dt= t('.status')
+  %dd
+    = t (@node.alive ? ".alive" : ".dead")
+    = t (@node.available ? ".available" : ".reserved")
+    = NodeRole.state_name(state)
+    = link_to t((@node.available ? '.reserve' : '.release')), node_path(@node.id, :api_version=>'v2', :available=>!@node.available), 
+                  :method=>:put, :class=>'button', :remote=>true, :onclick=>"location.reload();"
+  = dl_item(t('.vendor'), "#{@node.attrib_system_manufacturer} #{@node.attrib_system_product}")
+  = dl_item(t('.serial'), @node.attrib_system_serial_number)
+  = dl_item(t('.asset_tag'), @node.attrib_asset_tag)
+  = dl_item(t('.hardware'), @node.attrib_hardware)
+  %dt= t('.cpu')
+  %dd
+    - raw =@node.attrib_cpu || t('unknown')
+    - if raw.start_with? "Intel(R)"
+      = image_tag("http://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Intel-logo.svg/293px-Intel-logo.svg.png", height: 16, title:"Intel")
+      - raw = raw.gsub("Intel(R) ",'')
+    - raw = raw.gsub("CPU ", '')
+    = raw
+  = dl_item(t('.memory'), format_memory(@node.attrib_memory))
+  = dl_item(t('.number_of_drives'), "#{@node.attrib_number_of_drives || 0}, #{t('.raid')}: #{t('.'+(@node.attrib_raid_set || 'not_set'))}")
+  = dl_item(t('.operating_system'), "#{@node.attrib_os_description || ((@node.attrib_os || "Unknown") + " " + (@node.attrib_os_version || ""))}")
+  - if Rails.env.development? and Jig.active('test')
+    %dt= t '.bdd_marker'
+    %dd= @node.attrib_bdd_marker || t('ignore')
 .clear
