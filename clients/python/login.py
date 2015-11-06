@@ -17,7 +17,7 @@
 
 import urllib2
 
-URL      = 'http://127.0.0.1:3000'
+URL      = 'https://127.0.0.1:3000'
 Realm    = 'Rebar'
 Username = 'developer'
 Password = 'Cr0wbar!'

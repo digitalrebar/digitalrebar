@@ -28,6 +28,8 @@ if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
 elif [[ -f /etc/rebar.install.key ]]; then
     export REBAR_KEY="$(cat /etc/rebar.install.key)"
 fi
+(cd /bin; curl -fgl -O "<%=@provisioner_web%>/files/rebar"; chmod 755 rebar)
+export REBAR_ENDPOINT="<%=@api_server%>"
 
 hostname_re='rebar\.fqdn=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $hostname_re ]]; then
@@ -38,13 +40,8 @@ else
     reboot -f
 fi
 
-curl -u "$REBAR_KEY" --digest -L -X PUT -d "bootenv=local" \
-    "<%=@api_server%>/api/v2/nodes/$HOSTNAME"
-
-# Wait for the provisioner to catch up
-while true; do
-      curl -s -f -L -o /tmp/bootstate "<%=@provisioner_web%>/nodes/$HOSTNAME/bootstate" && \
-        [[ -f /tmp/bootstate && $(cat /tmp/bootstate) = local ]] && break
+rebar nodes update "$HOSTNAME" '{"bootenv": "local"}'
+while [[ $(rebar nodes get "$HOSTNAME" attrib provisioner-active-bootstate |jq -r '.value') != local ]]; do
     sleep 1
 done
 EOF

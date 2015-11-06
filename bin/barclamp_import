@@ -15,7 +15,7 @@
 
 
 require 'rubygems'
-require 'net/http'
+require 'net/https'
 require 'net/http/digest_auth'
 require 'uri'
 require 'json'
@@ -65,7 +65,7 @@ class REST
     uri.user=$username
     uri.password=$password
     res=nil
-    Net::HTTP.start(uri.host, uri.port) {|http|
+    Net::HTTP.start(uri.host, uri.port, use_ssl: true, verify_mode: OpenSSL::SSL::VERIFY_NONE) {|http|
       http.read_timeout = $timeout
       r = req.new(uri.request_uri,request_headers)
       r.body = data if data
@@ -96,7 +96,7 @@ class REST
     if $url
       uri = URI.parse("#{$url}/#{path}" )
     else
-      uri = URI.parse("http://#{$hostname}:#{$port}/#{path}" )
+      uri = URI.parse("https://#{$hostname}:#{$port}/#{path}" )
     end
     # We want to give valid JSON to the API, so if we were
     # handed an array or a hash as the data to be messed with,

@@ -23,7 +23,7 @@ if ! which docker-compose &>/dev/null; then
 fi
 
 rebar() {
-    docker exec compose_rebar_api_1 rebar -E http://127.0.0.1:3000 -U rebar -P rebar1 "$@"
+    docker exec compose_rebar_api_1 rebar -E https://127.0.0.1:3000 -U rebar -P rebar1 "$@"
 }
 
 known_containers=(provisioner logging debug node access)
@@ -116,6 +116,7 @@ bring_up_admin_containers() {
     elif [[ ! -d $mountdir/deploy/compose ]]; then
         echo "$mountdir/deploy does not contain a checkout of the digitalrebar container deployer!"
     elif [[ ! -L  $mountdir/deploy/compose/digitalrebar ]]; then
+        sudo rm -rf "$mountdir/deploy/compose/digitalrebar"
         ln -s "$mountdir" \
            "$mountdir/deploy/compose/digitalrebar"
     fi

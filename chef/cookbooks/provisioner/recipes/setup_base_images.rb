@@ -66,6 +66,11 @@ EOC
   not_if "ls -adZ #{tftproot} |grep -q public_content_t"
 end
 
+remote_file "Copy rebar to the weserver" do
+  path "#{tftproot}/files/rebar"
+  source "file:///usr/local/bin/rebar"
+end
+
 unless default = node["rebar"]["provisioner"]["server"]["default_os"]
   node.normal["rebar"]["provisioner"]["server"]["default_os"] = default = os_token
 end

@@ -38,12 +38,15 @@ if [[ ! -x /rebar-init ]]; then
     docker run "${docker_args[@]}" "$image" /rebar-init
     exit $?
 fi
+
+(cd /bin; curl -fgl -O "<%=@provisioner_web%>/files/rebar"; chmod 755 rebar)
+
 set -x
 export http_proxy='<%=@proxy%>'
 export https_proxy="$http_proxy"
 export REBAR_KEY="<%=@machine_key%>"
 printf '%s' "$REBAR_KEY" >/etc/rebar.install.key
-export REBAR_URL="<%=@admin_url%>"
+export REBAR_ENDPOINT="<%=@admin_url%>"
 <% @addresses.each do |addr| -%>
 ip addr add <%=addr%> dev eth0
 <% end -%>
@@ -117,8 +120,8 @@ mkdir -p /var/run/sshd
 pkill -9 sshd
 $(which sshd)
 
-curl -g -f -u "$REBAR_KEY" --digest -L -X PUT -d 'alive=false' '<%=@admin_url%>/api/v2/nodes/<%=@name%>'
-curl -g -f -u "$REBAR_KEY" --digest -L -X PUT -d 'alive=true' '<%=@admin_url%>/api/v2/nodes/<%=@name%>'
+rebar nodes update <%=@name%> '{"alive": false}'
+rebar nodes update <%=@name%> '{"alive": true}'
 
 hostname <%=@name%>
 

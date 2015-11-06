@@ -37,17 +37,20 @@ if [[ -f /etc/rebar.install.key ]]; then
     export REBAR_KEY="$(cat /etc/rebar.install.key)"
 fi
 
+[[ -x /bin/rebar ]] || (
+    cd /bin
+    curl -fgl -O "<%=@provisioner_web%>/files/rebar"
+    chmod 755 rebar
+)
+export REBAR_ENDPOINT="<%=@api_server%>"
+
 
 put_alive() {
-    echo "Seting node alive=$1"
-    local curlargs=(-f -u "$REBAR_KEY" --digest -L -X PUT -d "alive=$1")
-    if [[ $1 == true ]]; then
-        curlargs+=(-d "bootenv=local")
-    fi
-    while ! curl "${curlargs[@]}" "<%=@api_server%>/api/v2/nodes/<%=@name%>" &>/dev/null; do
+    echo "Setting node alive=$1"
+    HOSTNAME=$(hostname -f)
+    rebar nodes update "$HOSTNAME" "{\"alive\": $1, \"bootenv\": \"local\"}"
+    while [[ $(rebar nodes get "$HOSTNAME" attrib provisioner-active-bootstate |jq -r '.value') != local ]]; do
         sleep 1
-        # Get our hostname - Sometimes it isn't set yet.
-        HOSTNAME=$(hostname -f)
     done
 }
 

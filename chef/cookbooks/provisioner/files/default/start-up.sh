@@ -25,12 +25,15 @@ netname_re='"network":"([^ ]+)"'
 
 # install key first
 export REBAR_KEY="$(get_param "$install_key_re")"
-
+export REBAR_ENDPOINT="$(get_param "$rebar_re")"
 # Provisioner and Rebar web endpoints next
 export PROVISIONER_WEB="$(get_param "$provisioner_re")"
-export REBAR_WEB="$(get_param "$rebar_re")"
 export DOMAIN="$(get_param "$domain_re")"
 export DNS_SERVERS="$(get_param "$dns_server_re")"
+
+# Download the Rebar CLI
+(cd /usr/local/bin; curl -s -f -L -O  "$PROVISIONER_WEB/files/rebar"; chmod 755 rebar)
+export PATH=$PATH:/usr/local/bin
 
 if [[ $(cat /proc/cmdline) =~ $bootif_re ]]; then
     MAC="${BASH_REMATCH[1]//-/:}"
@@ -75,9 +78,7 @@ if ! [[ $(cat /proc/cmdline) =~ $host_re ]]; then
     export HOSTNAME="d${MAC//:/-}.${DOMAIN}"
 
     # does the node exist?
-    exists=$(curl -s -o /dev/null -w "%{http_code}" --digest -u "$REBAR_KEY" \
-      -X GET "$REBAR_WEB/api/v2/nodes/$HOSTNAME")
-    if [[ $exists == 404 ]]; then
+    if ! rebar nodes show $HOSTNAME &>/dev/null; then
         # Get IP for create suggestion
         IP=""
         bootdev_ip_re='inet ([0-9.]+)/([0-9]+)'
@@ -88,14 +89,12 @@ if ! [[ $(cat /proc/cmdline) =~ $host_re ]]; then
         # Create a new node for us,
         # Add the default noderoles we will need, and
         # Let the annealer do its thing.
-        curl -f -g --digest -u "$REBAR_KEY" -X POST \
-          -d "name=$HOSTNAME" \
-          -d "mac=$MAC" \
-          -d "ip=$IP" \
-          -d "variant=metal" \
-          -d "os_family=linux" \
-          -d "arch=$(uname -m)" \
-          "$REBAR_WEB/api/v2/nodes/" || {
+        rebar nodes create "{\"name\": \"$HOSTNAME\",
+                             \"mac\": \"$MAC\",
+                             \"ip\": \"$IP\",
+                             \"variant\": \"metal\",
+                             \"os_family\": \"linux\",
+                             \"arch\": \"$(uname -m)\"}" || {
             echo "We could not create a node for ourself!"
             exit 1
         }
@@ -104,15 +103,9 @@ if ! [[ $(cat /proc/cmdline) =~ $host_re ]]; then
     fi
 
     # does the rebar-managed-role exist?
-    managed=$(curl -s -o /dev/null -w "%{http_code}" --digest -u "$REBAR_KEY" \
-      -X GET "$REBAR_WEB/api/v2/nodes/$HOSTNAME/node_roles/rebar-managed-node")
-    if [[ $managed == 404 ]]; then
-        curl -f -g --digest -u "$REBAR_KEY" -X POST \
-          -d "node=$HOSTNAME" \
-          -d "role=rebar-managed-node" \
-          "$REBAR_WEB/api/v2/node_roles/" && \
-        curl -f -g --digest -u "$REBAR_KEY" -X PUT \
-          "$REBAR_WEB/api/v2/nodes/$HOSTNAME/commit" || {
+    if ! grep -q rebar-managed-node < <(rebar nodes roles $HOSTNAME); then
+        rebar nodes bind $HOSTNAME to rebar-managed-node && \
+            rebar nodes commit $HOSTNAME || {
             echo "We could not commit the node!"
             exit 1
         }
@@ -126,56 +119,27 @@ else
 fi
 
 # Always make sure we are marking the node not alive. It will comeback later.
-curl -f -g --digest -u "$REBAR_KEY" \
-    -X PUT "$REBAR_WEB/api/v2/nodes/$HOSTNAME" \
-    -d 'alive=false' \
-    -d 'bootenv=sledgehammer' \
-    -d "variant=metal" \
-    -d "os_family=linux" \
-    -d "arch=$(uname -m)"
+rebar nodes update $HOSTNAME '{"alive": false}'
 echo "Set node not alive - will be set in control.sh!"
 
-# Figure out the admin network name
-the_netname=""
-netnameline=$(curl -f -g --digest -u "$REBAR_KEY" \
-    -X GET "$REBAR_WEB/api/v2/nodes/$HOSTNAME/addresses?category=admin")
-netnames=(${netnameline//,/ })
-for netname in "${netnames[@]}"; do
-    [[ $netname =~ $netname_re ]] || continue
-    the_netname=${BASH_REMATCH[1]}
-    break
-done
-echo "Using network name: $the_netname"
+# Figure out what our current addresses should be
+addrs="$(rebar nodes networkallocations $HOSTNAME |jq -r '.[] | .address')"
+if [[ ! $addrs ]]; then
+    echo "Could not find local network address allocations"
+    exit 1
+fi
 
-# Figure out what IP addresses we should have.
-netline=$(curl -f -g --digest -u "$REBAR_KEY" \
-    -X GET "$REBAR_WEB/api/v2/networks/${the_netname}/allocations" \
-    -d "node=$HOSTNAME")
-
-routerline=$(curl -f -g --digest -u "$REBAR_KEY" \
-    -X GET "$REBAR_WEB/api/v2/networks/${the_netname}/network_routers/1" \
-    -d "node=$HOSTNAME")
-
-# Bye bye to DHCP.
+network_id="$(rebar nodes networkallocations $HOSTNAME |jq -r '.[0].network_id')"
+network_router="$(rebar networkrouters match "{\"network_id\": $network_id}" |jq -r '.[0].address')"
 killall dhclient || :
-ip addr flush "$BOOTDEV"
-
-# Add our new IP addresses.
-nets=(${netline//,/ })
-for net in "${nets[@]}"; do
-    [[ $net =~ $ip_re ]] || continue
-    net=${BASH_REMATCH[1]}
-    # Make this more complicated and exact later.
-    ip addr add "$net" dev "$BOOTDEV" || :
+ip addr flush scope global dev "$BOOTDEV"
+for addr in $addrs; do
+    ip addr add "$addr" dev "$BOOTDEV"
 done
 
-routers=(${routerline//,/ })
-iponly_re='([0-9a-f.:]+)/[0-9]+'
-for router in "${routers[@]}"; do
-    [[ $router =~ $iponly_re ]] || continue
-    router=${BASH_REMATCH[1]}
-    ip route add default via "$router" || :
-done
+if [[ $network_router ]]; then
+    ip route add default via "${network_router%%/*}"
+fi
 
 # Set our hostname for everything else.
 if is_suse; then
@@ -199,19 +163,11 @@ done
 
 mv -f /etc/resolv.conf.new /etc/resolv.conf
 
-# We gotta have jq
-if ! which jq; then
-    yum -y install jq
-fi
-
 # Force reliance on DNS
 echo '127.0.0.1 localhost' >/etc/hosts
-echo '::1 localhost6' >>/etc/hosts
 
 # Wait until the provisioner has noticed our state change
-while true; do
-    curl -s -f -L -o /tmp/bootstate "$PROVISIONER_WEB/nodes/$HOSTNAME/bootstate" && \
-        [[ -f /tmp/bootstate && $(cat /tmp/bootstate) = sledgehammer ]] && break
+while [[ $(rebar nodes get "$HOSTNAME" attrib provisioner-active-bootstate |jq -r '.value') != sledgehammer ]]; do
     sleep 1
 done
 
@@ -223,7 +179,7 @@ curl -s -f -L -o /tmp/control.sh "$PROVISIONER_WEB/nodes/$HOSTNAME/control.sh" &
 }
 chmod 755 /tmp/control.sh
 
-export REBAR_KEY PROVISIONER_WEB REBAR_WEB
+export REBAR_KEY PROVISIONER_WEB REBAR_ENDPOINT
 export MAC BOOTDEV DOMAIN HOSTNAME
 
 echo "transfer from start-up to control script"

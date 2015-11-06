@@ -26,7 +26,7 @@ if [[ ! -e /etc/rebar.install.key ]]; then
   \"digest\": true
 }"
 
-    if ! rebar -U rebar -P rebar1 -E http://127.0.0.1:3000 users import "$machine_user"; then
+    if ! rebar -U rebar -P rebar1 -E https://127.0.0.1:3000 users import "$machine_user"; then
         echo "Could not create machine-install user!"
         exit 1
     fi
