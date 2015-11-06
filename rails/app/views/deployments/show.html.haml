@@ -122,7 +122,9 @@
       alert(JSON.parse(xhr.responseText)["message"]);
       })
     .bind("ajax:success", function(data, status, xhr){
-      location.reload();
+      setTimeout(function(){
+        location.reload();
+      }, 1000);
       });
 
   // set hover showing

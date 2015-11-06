@@ -34,5 +34,7 @@
       console.log("/api/v2/node_roles/"+id+"/retry");
       $.ajax({url: "/api/v2/node_roles/"+id+"/retry", type: "PUT"})
     };
-    location.reload();
+    setTimeout(function(){
+      location.reload();
+    }, 1000);
   }
