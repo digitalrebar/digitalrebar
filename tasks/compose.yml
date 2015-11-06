@@ -8,6 +8,10 @@
     service: name=ntp state=stopped
     when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
     ignore_errors: yes
+  - name: Stop ntpd
+    service: name=ntpd state=stopped
+    when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
+    ignore_errors: yes
   - name: Stop chronyd
     service: name=chronyd state=stopped
     when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
