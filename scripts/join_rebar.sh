@@ -83,7 +83,7 @@ if [[ $joined == 404 ]]; then
       -d "node=$HOSTNAME" \
       -d "role=rebar-joined-node" \
       "$REBAR_WEB/api/v2/node_roles/" && \
-    curl -f -g --digest -u "$REBAR_KEY" -X PUT \
+    curl -k -f -g --digest -u "$REBAR_KEY" -X PUT \
       "$REBAR_WEB/api/v2/nodes/$HOSTNAME/commit" || {
         echo "We could not commit the node!"
         exit 1
