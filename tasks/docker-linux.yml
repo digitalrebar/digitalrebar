@@ -20,7 +20,7 @@
     service: name=docker state=started
 
   - name: Get Docker Compose
-    command: curl -L https://github.com/docker/compose/releases/download/1.4.0/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }} -o /usr/local/bin/docker-compose
+    command: curl -L https://github.com/docker/compose/releases/download/1.5.0/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }} -o /usr/local/bin/docker-compose
     args:
       creates: /usr/local/bin/docker-compose
   - name: Chmod Docker Compose
