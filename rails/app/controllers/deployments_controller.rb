@@ -120,6 +120,7 @@ class DeploymentsController < ApplicationController
       id: -1,
       state: -1,
       md5: '',
+      nodes: -1,
       status: 'unknown'
     }
 
@@ -128,8 +129,10 @@ class DeploymentsController < ApplicationController
       out[:state] = deployment.state
       out[:status] = Deployment::STATES[deployment.state]
       out[:id] = deployment.id
+      out[:nodes] = deployment.nodes
       deployment.node_roles
     else
+      out[:nodes] = Node.count
       NodeRole.all
     end
       

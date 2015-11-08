@@ -173,10 +173,11 @@ class SupportController < ApplicationController
       session[:start] = Time.now
     end
     elapsed = (Time.now - session[:start]) rescue 0
+    nodes = Node.count
     total = NodeRole.count
     error = NodeRole.where(state: NodeRole::ERROR).count
     active = NodeRole.where(state: NodeRole::ACTIVE).count
-    render :json=>{ :active=>active, :todo=>(total-error-active), :error=>error, :elapsed=>elapsed.to_i } 
+    render :json=>{ :active=>active, :todo=>(total-error-active), :error=>error, :elapsed=>elapsed.to_i, :nodes=>nodes } 
   end
 
   private 

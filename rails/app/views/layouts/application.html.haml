@@ -28,6 +28,8 @@
               = link_to t('user.sign_out'), main_app.destroy_user_session_path(), :method=>'delete' rescue t('error')
               )
               %a{:href=>annealer_path}
+                = image_tag('icons/refresh-off.png', :id=>"refresh_off", :title=>t('ui.manual_refresh'), :style=>"#{(current_user.settings(:ui).edge ? 'display:inline' : 'display:none')}")
+                %span#node_count{:style=>"#{(current_user.settings(:ui).edge ? 'display:inline' : 'display:none')}"}= "-1"
                 = image_tag('icons/led/active.png', :id=>"active_led")
                 %span#active_heartbeat= "?"
                 = image_tag('icons/led/todo.png', :id=>"todo_led", :style=>"display:none")
@@ -91,6 +93,13 @@
             $('span#error_heartbeat').text(data['error']);
             $('img#error_led').attr('style', 'display:inline');
           }
+
+          $('span#node_count').text(data['nodes']);
+          if  (data["nodes"]<#{current_user.settings(:ui).node_refresh})
+            $('img#refresh_off').attr('style', 'display:none');
+          else
+            $('img#refresh_off').attr('style', 'display:inline');
+
         });
 
       } else {
@@ -102,6 +111,7 @@
         $('img#todo_led').attr('style', 'display:none');
         $('img#error_led').attr('style', 'display:none');
         $('img#active_led').attr('style', 'display:none');
+        $('img#refresh_off').attr('style', 'display:inline');
       }
 
       //console.debug($('span#elapsed_heartbeat').text(), elasped < 3600);

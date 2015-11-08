@@ -26,10 +26,13 @@
 :javascript
 
   function update() {
-    $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
-      var elasped = parseInt($('span#elapsed_heartbeat').text());
-      if (elasped < 3600) {
-        location.reload();
+    nodes = parseInt($('span#node_count').text());
+    if (nodes<#{current_user.settings(:ui).node_refresh}) {
+      $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
+        var elasped = parseInt($('span#elapsed_heartbeat').text());
+        if (elasped < 3600) {
+          location.reload();
+        }
       }
     }
 

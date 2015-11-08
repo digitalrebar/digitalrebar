@@ -92,6 +92,7 @@ en:
 
   ui:
     not_supported: "Requested action %{verb} is not supported on %{obj}"
+    manual_refresh: "Node Count High: Automatic Refresh Disabled"
 
   api:
     conflict: "Cannot create object %{item} because one already exists"

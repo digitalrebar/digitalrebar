@@ -103,7 +103,8 @@
 
   function update() {
     $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
-    if (#{state != Deployment::PROPOSED}) {
+    nodes = parseInt($('span#node_count').text());
+    if (#{state != Deployment::PROPOSED} && nodes<#{current_user.settings(:ui).node_refresh}) {
       var elasped = parseInt($('span#elapsed_heartbeat').text());
       if (elasped < 3600) {
         location.reload();
