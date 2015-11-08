@@ -8,6 +8,7 @@
     %tbody
       = render :partial => 'settings', :locals=>{ :name=>'refresh', :value=>current_user.settings(:ui).refresh }
       = render :partial => 'settings', :locals=>{ :name=>'fast_refresh', :value=>current_user.settings(:ui).fast_refresh }
+      = render :partial => 'settings', :locals=>{ :name=>'node_refresh', :value=>current_user.settings(:ui).node_refresh }
       = render :partial => 'settingsCb', :locals=>{ :name=>'edge', :value=>current_user.settings(:ui).edge } #boolean
       = render :partial => 'settingsCb', :locals=>{ :name=>'test', :value=> current_user.settings(:ui).test } #boolean
       = render :partial => 'settingsCb', :locals=>{ :name=>'debug', :value=>current_user.settings(:ui).debug } #boolean

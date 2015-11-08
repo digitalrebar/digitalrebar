@@ -141,6 +141,7 @@ class SupportController < ApplicationController
     # for this reason, missing values are assumed FALSE
     current_user.settings(:ui).refresh = params[:refresh].to_i rescue current_user.settings(:ui).refresh
     current_user.settings(:ui).fast_refresh = params[:fast_refresh].to_i rescue current_user.settings(:ui).fast_refresh
+    current_user.settings(:ui).node_refresh = params[:node_refresh].to_i rescue current_user.settings(:ui).node_refresh
     current_user.settings(:ui).edge = params[:edge].eql?('true') rescue false
     current_user.settings(:ui).test = params[:test].eql?('true') rescue false
     current_user.settings(:ui).debug = params[:debug].eql?('true') rescue false

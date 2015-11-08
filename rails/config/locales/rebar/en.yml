@@ -556,6 +556,7 @@ en:
       title: 'Session Settings'
       refresh: 'Reload Time'
       fast_refresh: 'Fast Reload'
+      node_refresh: 'Screen Refresh Stops At'
       millis: 'milliseconds'
     settingsCb:
       debug: 'Debug Hints'
