@@ -24,7 +24,9 @@
         %th= t('.name')
         - if @roles and @roles.count > 0
           - @roles.each do |r| 
-            %th= r.name
+            %th
+              %input{type: "checkbox", class: "role_check", name:"role_#{r.id}"}
+              = r.name
         %th= t('.os')
         %th= t('.disk')
         %th= t('.mem')
@@ -57,3 +59,12 @@
   %input.button{:type => "submit", :name => "create", :method=>:post, :value => t('.create')}
 
 .clear
+
+:javascript
+
+  $(".role_check").change(function() {
+    if (this.checked)
+      $(":checkbox[id=%" + this.name + "]").attr('checked', true);
+    else
+      $(":checkbox[id=%" + this.name + "]").attr('checked', false);
+  })
