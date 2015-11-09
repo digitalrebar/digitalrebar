@@ -4,7 +4,7 @@
 %h2
   = t '.error'
   - if error.length > 0
-    - list = error.map { |nr| nr.id }.join(",")
+    - list = error.first(current_user.settings(:ui).node_refresh).map { |nr| nr.id }.join(",")
     %raw_button{:style => 'float:right'}
       = link_to t('.retry'), "javascript:retry_all('#{list}')", :class => 'button'
 = render :partial=>'node_roles/index', :locals => { :list => error }
@@ -26,10 +26,13 @@
 :javascript
 
   function update() {
-    $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
-      var elasped = parseInt($('span#elapsed_heartbeat').text());
-      if (elasped < 3600) {
-        location.reload();
+    nodes = parseInt($('span#node_count').text());
+    if (nodes<#{current_user.settings(:ui).node_refresh}) {
+      $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
+        var elasped = parseInt($('span#elapsed_heartbeat').text());
+        if (elasped < 3600) {
+          location.reload();
+        }
       }
     }
 
