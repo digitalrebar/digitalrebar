@@ -23,12 +23,14 @@ barclamp:
   license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
-  - name: consul
+  - name: consul-config
     description: "Consul is our default service monitoring and discovery tool."
-    jig: chef
+    type: 'BarclampConsul::ConsulConfig'
+    jig: noop
+    requires:
+      - rebar-installed-node
     flags:
       - implicit
-      - cluster
     attribs:
       - name: consul-disable-remote-exec
         description: 'Whether Consul is allowed to remotel execute programs'
@@ -36,22 +38,6 @@ roles:
         default: true
         schema:
           type: bool
-      - name: consul-serve-ui
-        description: 'Whether Consul is allowed to serve its Web interface'
-        map: 'consul/serve_ui'
-        default: true
-        schema:
-          type: bool
-      - name: consul-mode
-        description: "The mode that Consul is operating in on a specific node"
-        map: 'consul/service_mode'
-        default: client
-        schema:
-          type: str
-          required: true
-          enum:
-            - server
-            - client
       - name: consul-config-dir
         description: "The location that Consul will store its config data"
         map: 'consul/config_dir'
@@ -87,16 +73,6 @@ roles:
         schema:
           type: str
           required: false
-      - name: consul-servers
-        description: "The addresses of the Consul server nodes"
-        map: 'consul/servers'
-        default: []
-        schema:
-          type: seq
-          required: false
-          sequence:
-            - type: str
-              pattern: /\[?[0-9a-f:.]*\]?:?[0-9]*/
       - name: consul-address
         description: "The address that Consul should use for inter-cluster communications."
         map: 'consul/bind_addr'
@@ -151,11 +127,80 @@ roles:
           enum:
             - allow
             - deny
+  - name: consul-master
+    description: 'Master node for Consul services'
+    jig: chef
+    type: 'BarclampConsul::ConsulMaster'
+    flags:
+      - cluster
+    requires:
+      - consul-config
+    conflicts:
+      - consul-member
+    provides:
+      - consul
+    wants-attribs:
+      - consul-acl-down-policy
+      - consul-acl-default-policy
+      - consul-acl-master-token
+      - consul-acl-datacenter
+      - consul-domain
+      - consul-address
+      - consul-encrypt
+      - consul-ui-dir
+      - consul-install-dir
+      - consul-data-dir
+      - consul-config-dir
+      - consul-disable-remote-exec
+    attribs:
+      - name: consul-serve-ui
+        description: 'Whether Consul is allowed to serve its Web interface'
+        map: 'consul/serve_ui'
+        default: true
+        schema:
+          type: bool
       - name: consul-bootstrap-expect
         description: "The number of servers we expect to have in the datacenter"
         map: 'consul/bootstrap_expect'
         default: 1
         schema:
           type: int
-
+      - name: consul-servers
+        description: "The addresses of the Consul server nodes"
+        map: 'consul/servers'
+        default: []
+        schema:
+          type: seq
+          required: false
+          sequence:
+            - type: str
+              pattern: /\[?[0-9a-f:.]*\]?:?[0-9]*/
+  - name: consul-member
+    description: 'Member node for Consul services'
+    jig: chef
+    type: 'BarclampConsul::ConsulMember'
+    flags:
+      - implicit
+    wants-attribs:
+      - consul-acl-down-policy
+      - consul-acl-default-policy
+      - consul-acl-master-token
+      - consul-acl-datacenter
+      - consul-domain
+      - consul-address
+      - consul-encrypt
+      - consul-ui-dir
+      - consul-install-dir
+      - consul-data-dir
+      - consul-config-dir
+      - consul-disable-remote-exec
+      - consul-servers
+      - consul-bootstrap-expect
+    requires:
+      - consul-config
+      - consul-master
+    conflicts:
+      - consul-master
+    provides:
+      - consul
 

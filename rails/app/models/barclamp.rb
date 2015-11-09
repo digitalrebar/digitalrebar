@@ -129,12 +129,17 @@ class Barclamp < ActiveRecord::Base
         Rails.logger.info("Importing role #{role['name']} for #{barclamp.name}")
         role_name = role["name"]
         role_jig = Jig.find_by!(name: role["jig"])
-        role_type_candidates = []
-        role_type_candidates << role['type'] if role['type']
-        role_type_candidates << "#{bc_namespace}::#{role_name.sub("#{bc_name}-", '').gsub('-','_').camelize}"
-        role_type_candidates << "#{bc_namespace}::Role"
-        role_type_candidates << "Role"
-        role_type = role_type_candidates.detect{|rt| (rt.constantize ? true : false) rescue false}.constantize
+        if ! role['type']
+          role_type_candidates = []
+          rname = role_name.sub("#{bc_name}-",'').gsub('-','_').camelize
+          role_type_candidates << "#{bc_namespace}::#{rname}"
+          role_type_candidates << "#{bc_namespace}::Role"
+          role_type_candidates << "Role"
+          role_type = role_type_candidates.detect{|rt| (rt.constantize ? true : false) rescue false}.constantize
+        else
+          role_type = role['type'].constantize
+        end
+        Rails.logger.info("Role #{role_name} using class #{role_type.name}")
         prerequisites = role['requires'] || []
         if role_jig.client_role_name
           prerequisites << role_jig.client_role_name
