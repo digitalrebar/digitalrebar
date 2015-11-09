@@ -1,6 +1,6 @@
 - state = @deployment.state rescue Deployment::ERROR
 %td{:style=>"width:16px;"}
-  .led{:class => Deployment::STATES[state], :title=>Deployment.state_name(state)}
+  .led{:id => 'systemled', :class => Deployment::STATES[state], :title=>Deployment.state_name(state)}
 %td
   %h2
     - if @deployment.parent

@@ -205,6 +205,8 @@ class DeploymentsController < ApplicationController
 
           n[:roles][roleHash[nr.role_name]] = {
             state: nr.state,
+            status: NodeRole::STATES[nr.state],
+            id: nr.id,
             path: node_role_path(nr.role_id),
           }
         end
