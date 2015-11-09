@@ -6,10 +6,6 @@ shopt -s nullglob extglob globstar
 export TMPDIR=$1
 export ROLE=$2
 
-if ! which jq &>/dev/null; then
-    echo "JQ not installed.  The script jig requires it to function"
-    exit 1
-fi
 
 # pkgs and services are hashes with the following format:
 # hash["pkg-or-svc-name"]="alt-os-name pkg-or-svc-name\n..."
@@ -22,19 +18,26 @@ export OS_TYPE= OS_VER= OS_NAME=
 
 if [[ -f /etc/os-release ]]; then
     . /etc/os-release
-    OS_TYPE=$ID
-    OS_VER=$VERSION_ID   
-else
+    OS_TYPE=${ID,,}
+    OS_VER=${VERSION_ID,,}
+elif [[ -f /etc/lsb-release ]]; then
+    . /etc/lsb-release
+    OS_VER=${DISTRIB_RELEASE,,}
+    OS_TYPE=${DISTRIB_ID,,}
+elif [[ -f /etc/centos-release || -f /etc/fedora-release || -f /etc/redhat-release ]]; then
     for rel in centos-release fedora-release redhat-release; do
         [[ -f /etc/$rel ]] || continue
         OS_TYPE=${rel%%-*}
-        OS_VER="$( egrep -o '[0-9.]+' "/etc/$rel")"
+        OS_VER="$(egrep -o '[0-9.]+' "/etc/$rel")"
         break
     done
     if [[ ! $OS_TYPE ]]; then
         echo "Cannot determine Linux version we are running on!"
         exit 1
     fi
+elif [[ -f /etc/debian_version ]]; then
+    OS_TYPE=debian
+    OS_VER=$(cat /etc/debian_version)
 fi
 OS_NAME="$OS_TYPE-$OS_VER"
 
@@ -245,6 +248,11 @@ write_attribute_file_content() {
     mkdir -p "$loc"
     cp $2 "$loc/wall"
 }
+
+if ! (which jq &>/dev/null || install jq); then
+    echo "JQ not installed and not installable.  The script jig requires it to function"
+    exit 1
+fi
 
 mkdir -p "$TMPDIR/attrs"
 mkdir -p "$TMPDIR/logs"
