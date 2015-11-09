@@ -65,4 +65,21 @@ class JigsController < ApplicationController
     render api_not_supported("post", "jigs")
   end
 
+  def activate
+    jig = Jig.find_key params[:jig_id]
+
+    # if this is test, we remap all external roles to test
+    if jig.name == 'test'
+      Role.all.each do |r|
+        unless Jig::INTERNAL.include? r.jig.name 
+          r.jig = jig
+          r.save!
+        end
+      end
+    end
+    jig.active = true
+    jig.save!
+    render api_show jig
+  end
+
 end

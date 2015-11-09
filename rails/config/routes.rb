@@ -256,6 +256,7 @@ Rebar::Application.routes.draw do
               get 'sample'
               post 'match'
             end
+            put :activate
           end
           resources :nodes do
             collection do

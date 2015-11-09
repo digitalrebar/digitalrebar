@@ -355,6 +355,7 @@ en:
       client: Client
     show:
       roles: "Roles"
+      activate: "Activate"
   nodes:
     index:
       title: "Nodes"
