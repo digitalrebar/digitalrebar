@@ -121,6 +121,15 @@
           $("#systemled").attr("class","led "+data.status);
           $("#systemled").attr("title", data.status);
           
+          for(var i in data.services) {
+            var service = data.services[i];
+            var led = $('.led[title='+service.name+']');
+              if(led.attr("class") != "led "+service.status) {
+                led.attr("class","led "+service.status);
+              }
+
+          }
+
           //iterate through each node
           for(var i in data.nodes) {
             var node = data.nodes[i];
@@ -129,8 +138,10 @@
             for(var j in node.roles) {
               var role = node.roles[j];
               var id = role.id;
-
-              $('.noderole#'+id+' .led').attr("class","led "+node.roles[j].status);
+              var led = $('.noderole#'+id+' .led');
+              if(led.attr("class") != "led "+node.roles[j].status) {
+                led.attr("class","led "+node.roles[j].status);
+              }
             }
           } 
 

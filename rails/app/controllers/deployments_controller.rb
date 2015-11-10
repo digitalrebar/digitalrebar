@@ -163,7 +163,7 @@ class DeploymentsController < ApplicationController
           state = service.state || NodeRole::ERROR
           {
             state: state,
-            status: NodeRole::STATES[state],
+            status: NodeRole::STATES[ state],
             path: node_role_path(service.id),
             name: service.role_name,
           }
