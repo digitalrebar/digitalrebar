@@ -118,8 +118,6 @@
 
           }
 
-          console.log("update :)");
-
           $("#systemled").attr("class","led "+data.status);
           $("#systemled").attr("title", data.status);
           
@@ -131,7 +129,7 @@
             for(var j in node.roles) {
               var role = node.roles[j];
               var id = role.id;
-                
+
               $('.noderole#'+id+' .led').attr("class","led "+node.roles[j].status);
             }
           } 
