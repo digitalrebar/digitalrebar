@@ -122,7 +122,7 @@ class Run < ActiveRecord::Base
 
   serialize :run_data
 
-  scope :runnable,   -> { where(:running => false).where("node_id NOT IN (select node_id from runs where running)").order("id ASC")}
+  scope :runnable,   -> { where("NOT running AND (node_id NOT IN (select node_id from runs where running))").order("id ASC")}
   scope :running,    -> { where(:running => true) }
   scope :running_on, ->(node_id) { running.where(:node_id => node_id) }
 
@@ -142,14 +142,10 @@ class Run < ActiveRecord::Base
     # Nothing is allowed to touch the Runs table while we are moving runs from
     # runnable to running.
     Run.locked_transaction do
-      Run.runnable.each do |r|
-        next if Run.running.find_by(node_id: r.node_id)
-        r.update!(running: true)
-      end
-      Run.running.where(job_id: nil).order("id ASC").lock.each do |r|
-        next if Run.running.find_by(["node_id = ? AND job_id IS NOT NULL", r.node_id])
+      # Pick exactly one runnable run per node
+      Run.find_by_sql("SELECT DISTINCT ON (node_id) * FROM runs where NOT running AND node_id NOT IN (SELECT node_id FROM runs WHERE running) ORDER BY node_id, id ASC").each do |r|
         job = NodeRoleRun.enqueue(r.id, queue: r.queue)
-        r.update!(job_id: job.attrs["job_id"])
+        r.update!(running: true, job_id: job.attrs["job_id"])
       end
     end
     Que.job_stats.each do |j|
@@ -201,7 +197,6 @@ class Run < ActiveRecord::Base
 
   # Run up to maxruns runs, enqueuing runnable noderoles in TODO as it goes.
   def self.run!
-    runs = {}
     # Before we do anything else, perform some preventative maintenance on the
     # run queue to make sure we don't lose runs.
     Run.locked_transaction do
@@ -243,30 +238,34 @@ class Run < ActiveRecord::Base
     # Look for newly-runnable noderoles, and create Runs for them
     # if there is not already something running or runnable on the
     # node for the noderole.
+    handled = 0
     Run.locked_transaction do
       Rails.logger.debug(Run.queue_status("start"))
       # Find any runnable noderoles and see if they can be enqueued.
       # The logic here will only enqueue a noderole of the node does not
       # already have a noderole enqueued.
-      NodeRole.runnable.order("cohort ASC, id ASC").each do |nr|
-        next if Run.exists?(node_id: nr.node_id)
+      # This can be optimized to use a SELECT DISTINCT ON in a similar
+      # fashion to run_runnable, but the resultant sql would be much hairier.
+      NodeRole.runnable.
+        where("node_id NOT IN (select r.node_id FROM runs r)").
+        order("cohort ASC, id ASC").each do |nr|
         Rails.logger.info("Run: Creating new Run for #{nr.name}")
         # Take a snapshot of the data we want to hand to the jig's run
         # method.  We do this so that the jig gets fed data that is
         # consistent for this point in time, as opposed to picking up
         # whatever is lying around when delayed_jobs gets around to
         # actually doing its thing, which may not be what we expect.
-        runs[nr.node_id] = Run.create!(node_id: nr.node_id,
-                                       node_role_id: nr.id,
-                                       queue: "NodeRoleRunner",
-                                       run_data: {"data" => nr.jig.stage_run(nr)})
+        Run.create!(node_id: nr.node_id, node_role_id: nr.id,
+                    queue: "NodeRoleRunner",
+                    run_data: {"data" => nr.jig.stage_run(nr)})
+        handled += 1
       end
     end
     # Second pass through runnable runs, poking freshly-created ones this time.
     Run.run_runnable
-    Rails.logger.info("Run: #{runs.length} handled this pass, #{Run.running.count} in delayed_jobs")
+    Rails.logger.info("Run: #{handled} handled this pass, #{Run.running.count} in delayed_jobs")
     # log queue state
     Rails.logger.debug(Run.queue_status("end"))
-    return runs.length
+    return handled
   end
 end
