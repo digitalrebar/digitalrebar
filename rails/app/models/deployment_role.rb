@@ -19,7 +19,7 @@ class DeploymentRole < ActiveRecord::Base
 
   audited
 
-  after_create :role_create_hook
+  after_commit :role_create_hook, on: :create
   before_destroy  :role_delete_hook
 
   belongs_to :deployment
@@ -128,6 +128,7 @@ class DeploymentRole < ActiveRecord::Base
   private
 
   def role_create_hook
+    Rails.logger.info("Running on_deployment_create hook for #{role.name}")
     role.on_deployment_create(self)
   end
 
