@@ -99,13 +99,57 @@
 
   var height = 100;
 
+
   function update() {
     $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
     nodes = parseInt($('span#node_count').text());
     if (#{state != Deployment::PROPOSED} && nodes<#{current_user.settings(:ui).node_refresh}) {
       var elasped = parseInt($('span#elapsed_heartbeat').text());
       if (elasped < 3600) {
-        location.reload();
+        //location.reload();
+
+        $.getJSON("/monitor/#{@deployment.id}", function(data, err) {
+
+
+          services = data.services;
+          var serviceitems = [];
+          for(var i = 0; i < services.length; i++) {
+            var service = services[i];
+            var name = service.name;
+            var value = service.state;
+
+          }
+
+          $("#systemled").attr("class","led "+data.status);
+          $("#systemled").attr("title", data.status);
+          
+          for(var i in data.services) {
+            var service = data.services[i];
+            var led = $('.led[title='+service.name+']');
+              if(led.attr("class") != "led "+service.status) {
+                led.attr("class","led "+service.status);
+              }
+
+          }
+
+          //iterate through each node
+          for(var i in data.nodes) {
+            var node = data.nodes[i];
+            
+            var items = [];
+            for(var j in node.roles) {
+              var role = node.roles[j];
+              var id = role.id;
+              var led = $('.noderole#'+id+' .led');
+              if(led.attr("class") != "led "+node.roles[j].status) {
+                led.attr("class","led "+node.roles[j].status);
+              }
+            }
+          } 
+
+        });
+
+
       }
     }
   };
