@@ -27,8 +27,6 @@
           = render :partial => 'deployments/buttons', :locals => { :state=>state, :deployment=>@deployment }
           - if state == Deployment::PROPOSED
             = link_to t('.pick'), bulk_edit_path(), :title=>t('.pick_hint'), :class=>'button'
-          - if current_user and current_user.settings(:ui).edge
-            = link_to t('.graph'), deployment_graph_path(@deployment.id), :class => 'button', :method=>:get  
       - if @deployment.system_node and system_roles > 0 and row < system_roles
         - srv_role = @deployment.system_node.node_roles[row]
         %td{:align=>'right'}= link_to srv_role.role.name.html_safe, node_role_path(srv_role.id)
