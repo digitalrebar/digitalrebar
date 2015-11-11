@@ -177,14 +177,7 @@ class Network < ActiveRecord::Base
   end
 
   def make_node_role(node)
-    nr = nil
-    NodeRole.transaction do
-      # do we have an existing NR?
-      nr = NodeRole.where(:node_id => node.id, :role_id => role.id).first
-      # if not, we have to create one
-      nr ||= role.add_to_node(node)
-    end
-    nr
+    role.add_to_node(node)
   end
 
   private

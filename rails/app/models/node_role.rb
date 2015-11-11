@@ -19,7 +19,6 @@ class NodeRole < ActiveRecord::Base
 
   audited
 
-  after_commit :bind_cluster_children, on: [:create]
   after_commit :run_hooks, on: [:update, :create]
   before_destroy :test_if_destroyable
   validate :role_is_bindable, on: :create
@@ -177,48 +176,45 @@ class NodeRole < ActiveRecord::Base
   def self.bind_needed_parents(target_role,target_node,target_dep)
     res = []
     wanted_parents = []
-    NodeRole.transaction do
-      target_role.parents.each do |tp|
-        wanted_parents << tp
-      end
-      target_role.wanted_attribs.each do |wa|
-        wanted_parents << wa.role unless wa.role_id.nil?
-      end
+    transaction do
+      wanted_parents = Role.find_by_sql "SELECT DISTINCT ON (\"roles\".\"id\") \"roles\".* from \"roles\" where \"roles\".\"id\" in (#{target_role.wanted_attribs.select('role_id').to_sql} UNION #{target_role.parents.select('id').to_sql})"
     end
-    wanted_parents.uniq.each do |parent|
-      tenative_parent = nil
-      NodeRole.transaction do
-        tenative_parent = NodeRole.find_by(role_id: parent.id, node_id: target_node.id) ||
-                          NodeRole.find_by("node_id = ? AND role_id in
-                                            (select id from roles where ? = ANY(provides))",
-                                           target_node.id,
-                                           parent.name)
-        unless parent.implicit?
+    wanted_parents.each do |parent|
+      tenative_parents = []
+      transaction do
+        tenative_parents = NodeRole.find_by_sql "SELECT DISTINCT ON (\"node_roles\".\"id\") \"node_roles\".* from \"node_roles\" where \"node_roles\".\"id\" in (#{NodeRole.where(role_id: parent.id, node_id: target_node.id).select('id').to_sql} UNION #{NodeRole.where("node_id = ? AND role_id in (select id from roles where ? = ANY(provides))", target_node.id, parent.name).select('id').to_sql}) LIMIT 1"
+        if tenative_parents.empty? && !parent.implicit?
           cdep = target_dep
-          until tenative_parent || cdep.nil?
-            tenative_parent = NodeRole.find_by(deployment_id: cdep.id, role_id: parent.id)
-            tenative_parent ||= NodeRole.find_by("deployment_id = ? AND role_id in
-                                             (select id from roles where ? = ANY(provides))",
-                                                 cdep.id,
-                                                 parent.name)
+          while tenative_parents.empty? && cdep
+            tenative_parents = NodeRole.find_by_sql "SELECT DISTINCT ON (\"node_roles\".\"id\") \"node_roles\".* from \"node_roles\" where \"node_roles\".\"id\" in (#{NodeRole.where(deployment_id: cdep.id, role_id: parent.id).select('id').to_sql} UNION #{NodeRole.where('deployment_id = ? AND role_id in (select id from roles where ? = ANY(provides))', cdep.id, parent.name).select('id').to_sql}) LIMIT 1"
+            break unless tenative_parents.empty?
             cdep = (cdep.parent rescue nil)
           end
         end
       end
-      if tenative_parent
-        Rails.logger.info("NodeRole safe_create: Found parent noderole #{tenative_parent.name}")
-        res << tenative_parent
+      unless tenative_parents.empty?
+        Rails.logger.info("NodeRole safe_create: Found parent noderole #{tenative_parents[0].name}")
+        res.concat(tenative_parents)
       else
-        r = safe_create!(node_id: target_node.id, role_id: parent.id, deployment_id: target_dep.id)
-        Rails.logger.info("NodeRole safe_create: Created parent noderole #{r.name}")
-        res << r
+        res << safe_create!(node_id: target_node.id,
+                            role_id: parent.id,
+                            deployment_id: target_dep.id)
+        Rails.logger.info("NodeRole safe_create: Created parent noderole #{res[-1].name}")
+      end
+      if parent.cluster?
+        cluster_peers = NodeRole.find_by_sql(['SELECT * from node_roles WHERE id != ? AND role_id = ? AND deployment_id = ?',
+                                              res[-1].id,
+                                              res[-1].role_id,
+                                              res[-1].deployment_id])
+        res.concat(cluster_peers)
       end
     end
     return res
   end
 
   def self.safe_create!(args)
-    res = nil
+    res = find_by(args)
+    return res if res
     r = Role.find_by!(id: args[:role_id])
     n = Node.find_by!(id: args[:node_id])
     d = Deployment.find_by!(id: args[:deployment_id])
@@ -227,12 +223,32 @@ class NodeRole < ActiveRecord::Base
     Rails.logger.info("NodeRole safe_create: Binding role #{r.name} to deployment #{d.name}")
     r.add_to_deployment(d)
     Rails.logger.info("NodeRole safe_create: Binding role #{r.name} to node #{n.name} in deployment #{d.name}")
-    NodeRole.transaction do
-      res = find_or_create_by!(args)
+    # Add all our parent/child links in one go.
+    NodeRole.locked_transaction do
+      res = create!(args)
+      query_parts = []
+      tenative_cohort = 0
       rents.each do |rent|
-        Rails.logger.info("NodeRole safe_create: Setting #{rent.name} as parent for #{res.name}")
-        rent._add_child(res)
+        query_parts << "(#{rent.id}, #{res.id})"
+        tenative_cohort = rent.cohort + 1 if rent.cohort > tenative_cohort
       end
+      unless query_parts.empty?
+        ActiveRecord::Base.connection.execute("INSERT INTO node_role_pcms (parent_id, child_id) VALUES #{query_parts.join(', ')}")
+      end
+      res.cohort = tenative_cohort
+      if res.role.cluster?
+        cluster_peer_children = NodeRole.where('id in (select distinct child_id from node_role_pcms where parent_id in (select id from node_roles where deployment_id = ? AND role_id = ? AND id != ?))',
+                                               res.deployment_id, res.role_id, res.id)
+        unless cluster_peer_children.empty?
+          query_parts = cluster_peer_children.map{|c|"(#{res.id}, #{c.id})"}.join(', ')
+          ActiveRecord::Base.connection.execute("INSERT INTO node_role_pcms (parent_id, child_id) VALUES #{query_parts}")
+          cluster_peer_children.each do |c|
+            next if c.cohort > res.cohort
+            c.update_cohort
+          end
+        end
+      end
+      res.save!
       res.rebind_attrib_parents
       r.on_node_bind(res)
     end
@@ -323,16 +339,15 @@ class NodeRole < ActiveRecord::Base
     end
   end
 
-  # This must only be called directly by safe_create!
-  def _add_child(new_child, cluster_recurse=true)
+  def add_child(new_child, cluster_recurse=true)
     NodeRole.transaction do
       if new_child.is_a?(String)
         nc = self.node.node_roles.find_by(role_id: Role.find_by!(name: new_child))
         unless nc
           nc = NodeRole.find_by!("node_id = ? AND role_id in
                                  (select id from roles where ? = ANY(provides))",
-                                self.node.id,
-                                new_child)
+                                 self.node.id,
+                                 new_child)
         end
         new_child = nc
       end
@@ -340,21 +355,16 @@ class NodeRole < ActiveRecord::Base
         children << new_child
         new_child.update_cohort
       end
-      # If I am a cluster, then my peers are get my children.
+      # If I am a cluster, then my peers get my children.
       if self.role.cluster? && cluster_recurse
         NodeRole.peers_by_role(deployment,role).each do |peer|
           next if peer.id == self.id
-          peer._add_child(new_child,false)
+          peer.add_child(new_child,false)
         end
       end
     end
-    return new_child
-  end
-
-  def add_child(new_child, cluster_recurse=true)
-    NodeRole.transaction do
-      _add_child(new_child,cluster_recurse).rebind_attrib_parents
-    end
+    new_child.rebind_attrib_parents
+    new_child
   end
 
   def add_parent(new_parent)
@@ -769,21 +779,5 @@ class NodeRole < ActiveRecord::Base
 
   def maybe_rebind_attrib_links
     rebind_attrib_parents if deployment_id_changed?
-  end
-
-  def bind_cluster_children
-    return if @after_create
-    @after_create = true
-    NodeRole.transaction do
-      if self.role.cluster?
-        # If I am a cluster role, I also get any children of my peers.
-        NodeRole.peers_by_role(deployment,role).each do |peer|
-          next if peer.id == self.id
-          peer.children.each do |new_child|
-            self.add_child(new_child,false)
-          end
-        end
-      end
-    end
   end
 end
