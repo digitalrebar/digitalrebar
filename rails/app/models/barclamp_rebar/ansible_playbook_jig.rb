@@ -65,7 +65,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
       unless File.exists?("#{role_cache_dir}")
         # If we are told galaxy, then load it into ansible.
         if role_yaml['playbook_src_path'] =~ /^galaxy:/
-          out, err, status = exec_cmd("ansible-galaxy install #{role_yaml['playbook_src_path'].split(":")[1]}")
+          out, err, status = exec_cmd("sudo ansible-galaxy install #{role_yaml['playbook_src_path'].split(":")[1]}")
           die "Failed to get @ #{role_file}: #{out} #{err}" unless status.success?
 
           out, err, status = exec_cmd("mkdir -p #{role_cache_dir}")
@@ -137,7 +137,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
       File.open("#{role_cache_dir}/#{role_yaml['playbook_path']}/cluster.yml", "w") do |f|
         f.write("- hosts: #{role_map[nr.role.name]}\n")
         f.write("  roles:\n");
-        f.write("    - role_map[nr.role.name]\n")
+        f.write("    - #{role_map[nr.role.name]}\n")
       end
     else
       role_file = role_yaml['playbook_file']
@@ -145,8 +145,8 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
     rns = role_map[nr.role.name]
     rns = [ nr.role.name ] unless rns
-    out,err,ok = exec_cmd("cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_yaml['playbook_file']} --tags=#{rns.join(',')}")
-    die("Running: cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_yaml['playbook_file']} --tags=#{rns.join(',')}\nScript jig run for #{nr.role.name} on #{nr.node.name} failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?
+    out,err,ok = exec_cmd("cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} --tags=#{rns.join(',')}")
+    die("Running: cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} --tags=#{rns.join(',')}\nScript jig run for #{nr.role.name} on #{nr.node.name} failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?
     nr.update!(runlog: out)
 
     # Now, we need to suck any written attributes back out.
