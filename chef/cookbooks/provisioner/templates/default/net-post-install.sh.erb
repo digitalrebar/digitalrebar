@@ -32,18 +32,15 @@ exec >>/target/root/post-install.log
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 echo "Acquire::http::Proxy \"<%=@proxy%>\";" >/target/etc/apt/apt.conf.d/00-proxy
 
-<% @repos.keys.sort.each do |repo|
-     @repos[repo].keys.sort.each do |url|
-       case repo
-       when "base" -%>
-echo "deb <%=url%> <%= @os_codename %> main restricted" > \
-    /target/etc/apt/sources.list.d/00-base.list
-<%     else -%>
-echo "<%=url%>" >> \
-    /target/etc/apt/sources.list.d/10-barclamp-<%=repo%>.list
+<% @repos.each do |name,urls|
+       case name
+       when "base-packages" then target = '00-base.list'
+       else target = "10-rebar-#{name}.list"
+       end
+       urls.each do |url| -%>
+echo "<%=url%>" >> "/target/etc/apt/sources.list.d/<%=target%>"
 <%     end
-     end
-   end -%>
+  end -%>
 
 # This is the one we used to bootstrap from.  It is useless to us now.
 rm -f /target/etc/apt/sources.list
@@ -51,19 +48,17 @@ rsyslog_dir="/target/etc/rsyslog.d"
 if [ -d "$rsyslog_dir" ]; then
     if [ ! -f "$rsyslog_dir/10-rebar-client.conf" ]; then
         echo "*.* @@<%= @logging_server %>" > "$rsyslog_dir/10-rebar-client.conf"
-	if ! wget -O "$rsyslog_dir/00-rebar-debug.conf" -q <%=@provisioner_web%>/rsyslog.d/00-rebar-debug.conf
-	then
-	    rm -f "$rsyslog_dir/00-rebar-debug.conf"
-	fi
+        if ! wget -O "$rsyslog_dir/00-rebar-debug.conf" -q <%=@provisioner_web%>/rsyslog.d/00-rebar-debug.conf
+        then
+            rm -f "$rsyslog_dir/00-rebar-debug.conf"
+        fi
     fi
 fi
 
 # Make sure we can install gems
 cat >/target/etc/gemrc <<EOF
 :sources:
-<% if @online -%>
 - http://rubygems.org/
-<% end -%>
 gem: --no-ri --no-rdoc --bindir /usr/local/bin --http-proxy <%=@proxy%>
 EOF
 
@@ -94,6 +89,7 @@ cat > /target/update_system2.sh <<"EOF"
 #!/bin/bash
 
 set -x
+apt-get -y install jq curl
 key_re='rebar\.install\.key=([^ ]+)'
 if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
     export REBAR_KEY="${BASH_REMATCH[1]}"
@@ -138,6 +134,6 @@ done
 EOF
 
 chmod +x /target/etc/init.d/rebar_join
-chmod +x /target/update_system2.sh    
+chmod +x /target/update_system2.sh
 chroot /target /update_system2.sh
 sync

@@ -20,7 +20,6 @@ en:
       provisioner-server: "Provisioner Server (PXE)"
       provisioner-base-images: "Available O/S"
       provisioner-dhcp-server: "DHCP Server"
-      provisioner-repos: "O/S Repo Cache"
       provisioner-dhcp-database: "DHCP Boot Records"
       provisioner-os-install: "Install OS"
       provisioner-docker-setup: "Docker Provisioner"

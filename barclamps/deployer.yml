@@ -31,6 +31,6 @@ roles:
   - name: deployer-client
     jig: chef
     requires:
-      - provisioner-repos
+      - rebar-package-sources
     flags:
       - implicit

@@ -102,10 +102,6 @@ roles:
       - name: provisioner-sledgehammer-kernel-params
         description: 'The kernel parameters passed to Sledgehammer.'
         map: 'rebar/provisioner/server/sledgehammer_kernel_params'
-      - name: provisioner-package-repos
-        description: 'The packages repositories that managed nodes should use to install packages.'
-        map: 'rebar/provisioner/server/repositories'
-        ui_renderer: 'barclamp_provisioner/attribs/package_repos'
       - name: provisioner-default-os
         description: 'The default operating system the provisioner will deploy'
         map: 'rebar/provisioner/server/default_os'
@@ -268,6 +264,7 @@ roles:
       - provisioner-root
       - rebar-machine_key
       - rebar-access_keys
+      - package-repositories
       - provisioner-sledgehammer-kernel-params
       - provisioner-default-password-hash
       - provisioner-default-user
@@ -296,22 +293,6 @@ roles:
             - type: str
               pattern: /[0-9a-f:.]*/
 
-  - name: provisioner-repos
-    jig: chef
-    requires:
-      - provisioner-service
-      - rebar-api_service
-      - provisioner-base-images
-      - proxy-client
-    flags:
-      - implicit
-    wants-attribs:
-      - provisioner-online
-      - provisioner-package-repos
-      - proxy-servers
-      - provisioner-webservers
-      - rebar-api-servers
-
   - name: provisioner-docker-setup
     jig: chef
     conflicts:
@@ -319,7 +300,7 @@ roles:
     requires:
       - provisioner-service
       - rebar-api_service
-      - provisioner-repos
+      - rebar-package-sources
       - rebar-access
       - proxy-client
     wants-attribs:

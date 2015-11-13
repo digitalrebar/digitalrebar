@@ -215,7 +215,7 @@ EOC
     not_if do File.file?("#{os_install_dir}/repodata/.#{params["iso_file"]}.rebar_canary") end
     only_if do os =~ /^(redhat|centos|fedora)/ end
   end
-  
+
   # Figure out what package type the OS takes.  This is relatively hardcoded.
   pkgtype = case
             when os =~ /^(ubuntu|debian)/ then "debs"
@@ -223,59 +223,42 @@ EOC
             when os =~ /^(coreos|fuel|esxi|xenserver)/ then "custom"
             else raise "Unknown OS type #{os}"
             end
-  # If we are running in online mode, we need to do a few extra tasks.
-  if node["rebar"]["provisioner"]["server"]["online"]
-    # This information needs to be saved much earlier.
-     node["rebar"]["provisioner"]["barclamps"].each do |bc|
-      # Populate our known online repos.
-      if bc[pkgtype]
-        bc[pkgtype]["repos"].each do |repo|
-          node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["online"] ||= Mash.new
-          node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["online"][repo] = true
-        end if bc[pkgtype]["repos"]
-        bc[pkgtype][os]["repos"].each do |repo|
-          node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["online"] ||= Mash.new
-          node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["online"][repo] = true
-        end if (bc[pkgtype][os]["repos"] rescue nil)
-      end
-      # Download and create local packages repositories for any raw_pkgs for this OS.
-      if (bc[pkgtype][os]["raw_pkgs"] rescue nil)
-        destdir = "#{os_dir}/rebar-extra/raw_pkgs"
+  # Download and create local packages repositories for any raw_pkgs for this OS.
+  if (bc[pkgtype][os]["raw_pkgs"] rescue nil)
+    destdir = "#{os_dir}/rebar-extra/raw_pkgs"
 
-        directory destdir do
-          action :create
-          recursive true
-        end
+    directory destdir do
+      action :create
+      recursive true
+    end
 
-        bash "Delete #{destdir}/gen_meta" do
-          code "rm -f #{destdir}/gen_meta"
-          action :nothing
-        end
+    bash "Delete #{destdir}/gen_meta" do
+      code "rm -f #{destdir}/gen_meta"
+      action :nothing
+    end
 
-        bash "Update package metadata in #{destdir}" do
-          cwd destdir
-          action :nothing
-          notifies :run, "bash[Delete #{destdir}/gen_meta]", :immediately
-          code case pkgtype
-               when "debs" then "dpkg-scanpackages . |gzip -9 >Packages.gz"
-               when "rpms" then "createrepo ."
-               else raise "Cannot create package metadata for #{pkgtype}"
-               end
-        end
+    bash "Update package metadata in #{destdir}" do
+      cwd destdir
+      action :nothing
+      notifies :run, "bash[Delete #{destdir}/gen_meta]", :immediately
+      code case pkgtype
+           when "debs" then "dpkg-scanpackages . |gzip -9 >Packages.gz"
+           when "rpms" then "createrepo ."
+           else raise "Cannot create package metadata for #{pkgtype}"
+           end
+    end
 
-        file "#{destdir}/gen_meta" do
-          action :nothing
-          notifies :run, "bash[Update package metadata in #{destdir}]", :immediately
-        end
+    file "#{destdir}/gen_meta" do
+      action :nothing
+      notifies :run, "bash[Update package metadata in #{destdir}]", :immediately
+    end
 
-        bc[pkgtype][os]["raw_pkgs"].each do |src|
-          dest = "#{destdir}/#{src.split('/')[-1]}"
-          bash "#{destdir}: Fetch #{src}" do
-            code "curl -fgL -o '#{dest}' '#{src}'"
-            notifies :create, "file[#{destdir}/gen_meta]", :immediately
-            not_if "test -f '#{dest}'"
-          end
-        end
+    bc[pkgtype][os]["raw_pkgs"].each do |src|
+      dest = "#{destdir}/#{src.split('/')[-1]}"
+      bash "#{destdir}: Fetch #{src}" do
+        code "curl -fgL -o '#{dest}' '#{src}'"
+        notifies :create, "file[#{destdir}/gen_meta]", :immediately
+        not_if "test -f '#{dest}'"
       end
     end
   end
@@ -286,18 +269,20 @@ EOC
       if File.exists? "#{os_dir}/rebar-extra" and File.directory? "#{os_dir}/rebar-extra"
         Dir.glob("#{os_dir}/rebar-extra/*") do |f|
           reponame = f.split("/")[-1]
-          node.normal["rebar"]["provisioner"]["server"]["repositories"][os][reponame] = Mash.new
+          node.normal["rebar"]["provisioner"]["server"]["repositories"][os][reponame] = []
           case
           when os =~ /(ubuntu|debian)/
             bin="deb #{provisioner_web}/#{os}/rebar-extra/#{reponame} /"
             src="deb-src #{provisioner_web}/#{os}/rebar-extra/#{reponame} /"
-            node.normal["rebar"]["provisioner"]["server"]["repositories"][os][reponame][bin] = true if
-              File.exists? "#{os_dir}/rebar-extra/#{reponame}/Packages.gz"
-            node.normal["rebar"]["provisioner"]["server"]["repositories"][os][reponame][src] = true if
-              File.exists? "#{os_dir}/rebar-extra/#{reponame}/Sources.gz"
+            if File.exists? "#{os_dir}/rebar-extra/#{reponame}/Packages.gz"
+              node.normal["rebar"]["provisioner"]["server"]["repositories"][os][reponame] << bin
+            end
+            if File.exists? "#{os_dir}/rebar-extra/#{reponame}/Sources.gz"
+              node.normal["rebar"]["provisioner"]["server"]["repositories"][os][reponame] << src
+            end
           when os =~ /(redhat|centos|suse|fedora)/
-            bin="baseurl=#{provisioner_web}/#{os}/rebar-extra/#{reponame}"
-            node.normal["rebar"]["provisioner"]["server"]["repositories"][os][reponame][bin] = true
+            bin="bare #{provisioner_web}/#{os}/rebar-extra/#{reponame}"
+            node.normal["rebar"]["provisioner"]["server"]["repositories"][os][reponame] << bin
           else
             raise ::RangeError.new("Cannot handle repos for #{os}")
           end
@@ -342,19 +327,21 @@ EOC
 
   ruby_block "Set up local base OS install repos for #{os}" do
     block do
-      case
-      when (/^ubuntu/ =~ os and File.exists?("#{tftproot}/#{os}/install/dists"))
-        node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["base"] = { "#{provisioner_web}/#{os}/install" => true }
-      when /^(suse)/ =~ os
-        node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["base"] = { "baseurl=#{provisioner_web}/#{os}/install" => true }
-      when /^(redhat|centos|fedora)/ =~ os
-        # Add base OS install repo for redhat/centos
-        if ::File.exists? "#{tftproot}/#{os}/install/repodata"
-          node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["base"] = { "baseurl=#{provisioner_web}/#{os}/install" => true }
-        elsif ::File.exists? "#{tftproot}/#{os}/install/Server/repodata"
-          node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["base"] = { "baseurl=#{provisioner_web}/#{os}/install/Server" => true }
-        end
-      end
+
+      loc = case
+            when (/^ubuntu/ =~ os and File.exists?("#{tftproot}/#{os}/install/dists/stable"))
+              ["deb #{provisioner_web}/#{os}/install stable main restricted"]
+            when /^(suse)/ =~ os
+              ["bare #{provisioner_web}/#{os}/install"]
+            when /^(redhat|centos|fedora)/ =~ os
+              # Add base OS install repo for redhat/centos
+              if ::File.exists? "#{tftproot}/#{os}/install/repodata"
+                ["bare #{provisioner_web}/#{os}/install"]
+              elsif ::File.exists? "#{tftproot}/#{os}/install/Server/repodata"
+                ["bare #{provisioner_web}/#{os}/install/Server"]
+              end
+            end
+      node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["provisioner"] = loc
     end
   end
 end
@@ -377,6 +364,9 @@ end
 bash "Install elilo as UEFI netboot loader" do
   code <<EOC
 cd #{uefi_dir}
+[[ -f #{tftproot}/files/elilo-3.16-all.tar.gz ]] || \
+    curl -fgL -o '#{tftproot}/files/elilo-3.16-all.tar.gz' \
+         http://downloads.sourceforge.net/project/elilo/elilo/elilo-3.16/elilo-3.16-all.tar.gz
 tar xzf '#{tftproot}/files/elilo-3.16-all.tar.gz'
 mv elilo-3.16-x86_64.efi bootx64.efi
 mv elilo-3.16-ia32.efi bootia32.efi
@@ -400,6 +390,9 @@ while read file; do
 done < <(find . -type f | xargs grep -l 'shell_out("dmidecode")' | grep -v spec)
 mkdir -p /tmp/chef/dmidecode
 cd /tmp/chef/dmidecode
+[[ -f #{tftproot}/files/dmidecode-2.10.tbz2 ]] || \
+    curl -fgL -o '#{tftproot}/files/dmidecode-2.10.tbz2' \
+        http://storage.core-os.net/coreos/amd64-generic/38.0.0/pkgs/sys-apps/dmidecode-2.10.tbz2
 bzip2 -d -c #{tftproot}/files/dmidecode-2.10.tbz2 | tar xf -
 cd /tmp
 tar -zcf #{tftproot}/files/coreos-chef.tgz chef
@@ -413,4 +406,3 @@ bash "Restore selinux contexts for #{tftproot}" do
   code "restorecon -R -F #{tftproot}"
   only_if "which selinuxenabled && selinuxenabled"
 end
-

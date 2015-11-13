@@ -33,6 +33,38 @@ class BarclampProvisioner::BaseImages < Role
     unless oses.empty? or oses.include?(default)
       Attrib.set('provisioner-target_os', Role.find_by(name: 'provisioner-os-install'), oses[0])
     end
+    # Extract repos that the provisioner provides out, decide where to store them, and save things.
+    new_repos = (nr.wall['rebar']['provisioner']['server']['repositories'] rescue nil)
+    Rails.logger.info("base_images: #{new_repos.inspect}")
+    return unless new_repos
+    pkgsrc_role = Role.find_by!(name: 'rebar-package-sources')
+    attr_src = nil
+    deployment = nr.deployment
+    while attr_src.nil? && !deployment.nil?
+      DeploymentRole.find_by(role_id: pkgsrc_role.id, deployment_id: deployment.id)
+      deployment = deployment.parent
+    end
+    attr_src ||= pkgsrc_role
+    raise "Cannot find place to stash repos we need to provide!" unless attr_src
+    repos_to_add={}
+    new_repos.each do |os,repos|
+      repos.each do |name,urls|
+        repos_to_add[name] ||= {
+          'name' => "provisioner-#{name}",
+          'description' => "Repositories provided by the provisioner in #{nr.deployment.name}",
+          'disabled' => false,
+          'oses' => []
+        }
+        repos_to_add[name]['oses'] << {'os' => os, 'repos' => urls}
+      end
+    end
+    Rails.logger.info("base_images: #{repos_to_add.inspect}")
+    attr_src.with_lock do
+      old_repos = Attrib.get('package-repositories',attr_src)
+      old_repos.reject!{|e|repos_to_add.keys.member?(e['name'])}
+      old_repos.concat(repos_to_add.values)
+      Attrib.set('package-repositories',attr_src,old_repos)
+    end
   end
 
 end

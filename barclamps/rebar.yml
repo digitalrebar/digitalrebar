@@ -76,7 +76,7 @@ roles:
       - milestone
       - implicit
     requires:
-      - provisioner-repos
+      - rebar-package-sources
       - provisioner-docker-setup
       - rebar-access
     provides:
@@ -160,6 +160,7 @@ roles:
       - milestone
       - implicit
     requires:
+      - rebar-package-sources
       - rebar-access
     conflicts:
       - rebar-managed-node
@@ -167,6 +168,176 @@ roles:
       - rebar-installed-node
       - rebar-managed-node
       - deployer-client
+  - name: rebar-package-sources
+    description: "Sources that Rebar should install packages from"
+    jig: script
+    flags:
+      - implicit
+    requires:
+      - proxy-client
+    attribs:
+      - name: package-repositories
+        description: 'The repositories that should be used to install packages from by default'
+        map: 'rebar/package_repos'
+        schema:
+          type: seq
+          required: true
+          sequence:
+            - type: map
+              mapping:
+                name:
+                  type: str
+                  required: true
+                description:
+                  type: str
+                  required: true
+                disabled:
+                  type: bool
+                  required: false
+                oses:
+                  type: seq
+                  required: true
+                  sequence:
+                    - type: map
+                      required: true
+                      mapping:
+                        os:
+                          type: str
+                          required: true
+                        repos:
+                          type: seq
+                          required: true
+                          sequence:
+                            - type: str
+        default:
+          - name: epel
+            description: 'Extra Packages for Enterprise Linux'
+            oses:
+              - os: redhat-6
+                repos:
+                  - rpm http://mirrors.kernel.org/fedora-epel/6/x86_64/epel-release-6-8.noarch.rpm
+              - os: centos-6
+                repos:
+                  - rpm http://mirrors.kernel.org/fedora-epel/6/x86_64/epel-release-6-8.noarch.rpm
+              - os: centos-7
+                repos:
+                  - rpm http://mirrors.kernel.org/fedora-epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+          - name: saltstack
+            description: 'Installation source for up-to-date Saltstack binaries'
+            oses:
+              - os: ubuntu-12.04
+                repos:
+                  - deb http://ppa.launchpad.net/saltstack/salt/ubuntu precise main
+              - os: ubuntu-14.04
+                repos:
+                  - deb http://ppa.launchpad.net/saltstack/salt/ubuntu trusty main
+              - os: ubuntu-15.04
+                repos:
+                  - deb http://ppa.launchpad.net/saltstack/salt/ubuntu vivid main
+          - name: openwsman
+            description: 'Installation source for OpenWSMAN binaries'
+            oses:
+              - os: centos-6
+                repos:
+                  - bare http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
+              - os: redhat-6
+                repos:
+                  - bare http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
+          - name: vbernat
+            description: 'vbernat is where we download lldpd for systems that do not have it.'
+            oses:
+              - os: centos-6
+                repos:
+                  - bare http://download.opensuse.org/repositories/home:/vbernat/CentOS_CentOS-6/
+              - os: redhat-6
+                repos:
+                  - bare http://download.opensuse.org/repositories/home:/vbernat/RedHat_RHEL-6/
+              - os: centos-7
+                repos:
+                  - bare http://download.opensuse.org/repositories/home:/vbernat/CentOS_7/
+          - name: bsdtar
+            description: 'bsdtar is our one stop shop for all decompression needs'
+            oses:
+              - os: centos-6
+                repos:
+                  - bare http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
+              - os: redhat-6
+                repos:
+                  - bare http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
+          - name: draios
+            description: 'Up to date Ruby packages'
+            oses:
+              - os: ubuntu
+                repos:
+                  - deb http://download.draios.com/stable/deb stable-amd64/
+              - os: debian
+                repos:
+                  - deb http://download.draios.com/stable/deb stable-amd64/
+              - os: redhat
+                repos:
+                  - bare http://download.draios.com/stable/rpm/x86_64
+              - os: centos
+                repos:
+                  - bare http://download.draios.com/stable/rpm/x86_64
+          - name: base-packages
+            description: 'Basic repositories to install packages from.'
+            oses:
+              - os: ubuntu-12.04
+                repos:
+                  - deb http://us.archive.ubuntu.com/ubuntu/ precise main restricted universe multiverse
+                  - deb-src http://us.archive.ubuntu.com/ubuntu/ precise main restricted universe multiverse
+                  - deb http://us.archive.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse
+                  - deb-src http://us.archive.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse
+                  - deb http://us.archive.ubuntu.com/ubuntu/ precise-backports main restricted universe multiverse
+                  - deb-src http://us.archive.ubuntu.com/ubuntu/ precise-backports main restricted universe multiverse
+                  - deb http://archive.canonical.com/ubuntu precise partner
+                  - deb-src http://archive.canonical.com/ubuntu precise partner
+                  - deb http://extras.ubuntu.com/ubuntu precise main
+                  - deb-src http://extras.ubuntu.com/ubuntu precise main
+                  - deb http://security.ubuntu.com/ubuntu precise-security main restricted universe multiverse
+                  - deb-src http://security.ubuntu.com/ubuntu precise-security main restricted universe multiverse
+              - os: ubuntu-14.04
+                repos:
+                  - deb http://us.archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse
+                  - deb-src http://us.archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse
+                  - deb http://us.archive.ubuntu.com/ubuntu/ trusty-updates main restricted universe multiverse
+                  - deb-src http://us.archive.ubuntu.com/ubuntu/ trusty-updates main restricted universe multiverse
+                  - deb http://archive.canonical.com/ubuntu trusty partner
+                  - deb-src http://archive.canonical.com/ubuntu trusty partner
+                  - deb http://extras.ubuntu.com/ubuntu trusty main
+                  - deb-src http://extras.ubuntu.com/ubuntu trusty main
+                  - deb http://security.ubuntu.com/ubuntu trusty-security main restricted universe multiverse
+                  - deb-src http://security.ubuntu.com/ubuntu trusty-security main restricted universe multiverse
+              - os: ubuntu-15.04
+                repos:
+                  - deb http://us.archive.ubuntu.com/ubuntu/ vivid main restricted universe multiverse
+                  - deb-src http://us.archive.ubuntu.com/ubuntu/ vivid main restricted universe multiverse
+                  - deb http://us.archive.ubuntu.com/ubuntu/ vivid-updates main restricted universe multiverse
+                  - deb-src http://us.archive.ubuntu.com/ubuntu/ vivid-updates main restricted universe multiverse
+                  - deb http://archive.canonical.com/ubuntu vivid partner
+                  - deb-src http://archive.canonical.com/ubuntu vivid partner
+                  - deb http://security.ubuntu.com/ubuntu vivid-security main restricted universe multiverse
+                  - deb-src http://security.ubuntu.com/ubuntu vivid-security main restricted universe multiverse
+              - os: debian-7
+                repos:
+                  - deb http://ftp.us.debian.org/debian wheezy main contrib non-free
+                  - deb-src http://ftp.us.debian.org/debian wheezy main contrib non-free
+                  - deb http://security.debian.org/ wheezy/updates main contrib non-free
+                  - deb-src http://security.debian.org/ wheezy/updates main contrib non-free
+                  - deb http://ftp.us.debian.org/debian wheezy-updates main contrib non-free
+                  - deb-src http://ftp.us.debian.org/debian wheezy-updates main contrib non-free
+                  - deb http://ftp.us.debian.org/debian wheezy-backports main contrib non-free
+                  - deb-src http://ftp.us.debian.org/debian wheezy-backports main contrib non-free
+              - os: debian-8
+                repos:
+                  - deb http://ftp.us.debian.org/debian jessie main contrib non-free
+                  - deb-src http://ftp.us.debian.org/debian jessie main contrib non-free
+                  - deb http://security.debian.org/ jessie/updates main contrib non-free
+                  - deb-src http://security.debian.org/ jessie/updates main contrib non-free
+                  - deb http://ftp.us.debian.org/debian jessie-updates main contrib non-free
+                  - deb-src http://ftp.us.debian.org/debian jessie-updates main contrib non-free
+                  - deb http://ftp.us.debian.org/debian jessie-backports main contrib non-free
+                  - deb-src http://ftp.us.debian.org/debian jessie-backports main contrib non-free
 
 hammers:
   - name: 'ssh'
