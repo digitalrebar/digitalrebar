@@ -160,13 +160,8 @@ class SupportController < ApplicationController
     end
   end
 
-  # return the queue status
-  def queue
-    j = { }
-    render :json=>j
-  end
-
   # supplies UI heartbeat information
+  # /api/status/heartbeat
   def heartbeat
     if session[:marker] != params[:marker]
       session[:marker] = params[:marker]
@@ -174,9 +169,15 @@ class SupportController < ApplicationController
     end
     elapsed = (Time.now - session[:start]) rescue 0
     nodes = Node.count
-    total = NodeRole.count
-    error = NodeRole.where(state: NodeRole::ERROR).count
-    active = NodeRole.where(state: NodeRole::ACTIVE).count
+
+    total = nil
+    error = nil
+    active = nil
+    NodeRole.transaction do   # performance optimization
+      total = NodeRole.count
+      error = NodeRole.where(state: NodeRole::ERROR).count
+      active = NodeRole.where(state: NodeRole::ACTIVE).count
+    end
     render :json=>{ :active=>active, :todo=>(total-error-active), :error=>error, :elapsed=>elapsed.to_i, :nodes=>nodes } 
   end
 

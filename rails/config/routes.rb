@@ -138,7 +138,6 @@ Rebar::Application.routes.draw do
         scope 'status' do
           get "nodes(/:id)" => "nodes#status", :as => :nodes_status
           get "deployments(/:id)" => "deployments#status", :as => :deployments_status
-          get "queue" => "support#queue", :as => :queue_status
           get "heartbeat" => "support#heartbeat", :as => :heartbeat_status
           get "inventory(/:id)" => "inventory#index"
         end

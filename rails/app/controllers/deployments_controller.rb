@@ -112,8 +112,9 @@ class DeploymentsController < ApplicationController
     end
   end
 
+  # GET /api/status/deployments
   def status 
-    deployment = Deployment.find_key params[:id]
+    deployment = Deployment.find_key params[:id] rescue nil
 
     out = {
       node_roles: {},
@@ -124,25 +125,29 @@ class DeploymentsController < ApplicationController
       status: 'unknown'
     }
 
-    nr = if deployment
-      out[:md5] = deployment.node_role_md5
-      out[:state] = deployment.state
-      out[:status] = Deployment::STATES[deployment.state]
-      out[:id] = deployment.id
-      out[:nodes] = deployment.nodes
-      deployment.node_roles
-    else
-      out[:nodes] = Node.count
-      NodeRole.all
-    end
-      
-    nr.each do |role|
-      state = role.state
-      #state = rand(4) #testing random states (for updating)
-      out[:node_roles][role.id] = {
-        status: NodeRole::STATES[state],
-        state: state
-      }
+    NodeRole.transaction do  # performance optimization
+
+      nr = if deployment
+        out[:md5] = deployment.node_role_md5
+        out[:state] = deployment.state
+        out[:status] = Deployment::STATES[deployment.state]
+        out[:id] = deployment.id
+        out[:nodes] = deployment.nodes
+        deployment.node_roles
+      else
+        out[:nodes] = Node.count
+        NodeRole.all
+      end
+        
+      nr.each do |role|
+        state = role.state
+        #state = rand(4) #testing random states (for updating)
+        out[:node_roles][role.id] = {
+          status: NodeRole::STATES[state],
+          state: state
+        }
+      end
+
     end
 
     render api_array out.to_json
