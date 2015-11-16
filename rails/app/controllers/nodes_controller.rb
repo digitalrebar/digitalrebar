@@ -56,31 +56,35 @@ class NodesController < ApplicationController
 
   # API /api/status/nodes(/:id)
   def status
-    nodes = if params[:id]
-      node = Node.find_key params[:id]
-      nodes = Node.where :id=>node.id
-    else
-      nodes = Node.all
-    end
+
     status = {}
-    nodes.each do |n|
-      state = n.state
-      str = [
-        t(n.alive ? "common.state.alive" : "common.state.dead"),
-        t(n.available ? "common.state.available" : "common.state.reserved"),
-        NodeRole.state_name(state)
-      ].join("\n")
-      status[n.id] = {
-        :name => n.name,
-        :state => state,
-        :status => NodeRole::STATES[state],
-        :strStatus => str
-      }
+    Node.transaction do   # performance optimization
+
+      nodes = if params[:id]
+        node = Node.find_key params[:id]
+        nodes = Node.where :id=>node.id
+      else
+        nodes = Node.all
+      end
+      nodes.each do |n|
+        state = n.state
+        str = [
+          t(n.alive ? "common.state.alive" : "common.state.dead"),
+          t(n.available ? "common.state.available" : "common.state.reserved"),
+          NodeRole.state_name(state)
+        ].join("\n")
+        status[n.id] = {
+          :name => n.name,
+          :state => state,
+          :status => NodeRole::STATES[state],
+          :strStatus => str
+        }
+      end
+
     end
 
+    render api_array status.to_json
 
-     render api_array status.to_json
-    #render :text => status.to_json
   end
 
   def show
