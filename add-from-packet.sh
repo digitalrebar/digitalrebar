@@ -45,6 +45,10 @@ echo "My projects: ${PROJ_ID} will be called ${NODENAME}_at_${TSTAMP}"
 #curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/plans | jq .
 #curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/operating-systems | jq .
 
+# Example OS lines for packet
+#  \"operating_system\": \"ubuntu_14_04\",
+#  \"operating_system\": \"centos_7\",
+
 node="{
   \"facility\": \"ewr1\",
   \"plan\": \"baremetal_1\",
