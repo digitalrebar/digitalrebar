@@ -30,7 +30,7 @@ if [[ $HOSTNAME == ${HOSTNAME%%.*} ]] ; then
 fi
 if [[ $HOSTNAME == ${HOSTNAME%%.*} ]] ; then
     echo "Hostname need to be fully qualified"
-    exit 1
+    HOSTNAME=`hostname`.rebar.local
 fi
 
 # Get the ssh keys and update authorized_keys
