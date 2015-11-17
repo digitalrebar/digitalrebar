@@ -14,7 +14,7 @@ import (
 type DataTracker struct {
 	Subnets  map[string]*Subnet // subnet -> SubnetData
 	data_dir string             `json:"-"`
-	Lock     sync.Mutex         `json:"-"`
+	lock     sync.Mutex         `json:"-"`
 }
 
 func NewDataTracker(data_dir string) *DataTracker {
@@ -116,6 +116,7 @@ func (ipnet *MyIPNet) UnmarshalText(text []byte) error {
  * Data storage/retrieval functions
  */
 func (dt *DataTracker) load_data() {
+	dt.lock.Lock()
 	bytes, err := ioutil.ReadFile(dt.data_dir + "/database.json")
 	if err != nil {
 		log.Panic("failed to read file", err.Error())
@@ -125,9 +126,11 @@ func (dt *DataTracker) load_data() {
 	if err != nil {
 		log.Panic("failed to parse file", err.Error())
 	}
+	dt.lock.Unlock()
 }
 
 func (dt *DataTracker) save_data() {
+	dt.lock.Lock()
 	jdata, err := json.Marshal(dt)
 	if err != nil {
 		log.Panic("Failed to marshal data", err.Error())
@@ -136,6 +139,7 @@ func (dt *DataTracker) save_data() {
 	if err != nil {
 		log.Panic("Failed to save data", err.Error())
 	}
+	dt.lock.Unlock()
 }
 
 func (dt *DataTracker) subnetsOverlap(subnet *Subnet) bool {
