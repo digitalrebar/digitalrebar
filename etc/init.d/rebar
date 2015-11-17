@@ -74,21 +74,21 @@ start_workers() {
 }
 
 stop_workers() {
-    pkill -f que:work
+    pkill -f bin/que
     COUNT=0
-    while pgrep -l -f que:work 2>&1 >/dev/null ;
+    while pgrep -l -f bin/que 2>&1 >/dev/null ;
     do
         sleep 1
         COUNT=`expr $COUNT + 1`
         if [[ $COUNT -gt 30 ]] ;
         then
-            pkill -9 -f que:work
+            pkill -9 -f bin/que
         fi
     done
 }
 
 status_workers() {
-    pgrep -l -f que:work
+    pgrep -l -f bin/que
 }
 
 start(){
