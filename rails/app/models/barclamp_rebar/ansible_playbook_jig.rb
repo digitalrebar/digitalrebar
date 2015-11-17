@@ -96,7 +96,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
     # Remap additional varabiles
     role_yaml['attribute_map'].each do |am|
-      value = get_value(data, am['name'])
+      value = get_value(nr, data, am['name'])
       set_value(data, am['path'], value)
     end if role_yaml['attribute_map']
 
@@ -171,9 +171,60 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
 private
 
+  # nr is the node role being operated on.
   # Data is a hash that will become JSON at some point.
-  # Path is a / separated set of strings that index into hash and lists.
-  def get_value(data, path)
+  # Path is string or eval string
+  #    path = a / separated set of strings that index into hash and lists.
+  #
+  #    eval string = eval:<custom string to eval>
+  #       possible custom commands are:
+  #
+  #          ipaddress([all|v4_only|v6_only], attribute).[ifname|cidr]
+  #
+  #
+  # Return value
+  #
+  def get_value(nr, data, path)
+    if path.starts_with?('eval:')
+      answer = nil
+
+      command = path.sub(/^eval:/, '')
+
+      # IPAddress command takes an attribute base to work on.
+      # Returns cidr or ifname
+      if command.starts_with?('ipaddress(')
+        args = command.split(/[\)\(\.\,]/)
+        addr_class = args[1].strip.to_sym
+        attr_cat = args[2].strip
+        ip_part = args[4].strip
+
+        list = ['admin']
+        value = Attrib.get(attr_cat, nr.node)
+        list = [value] if value
+        addresses = nr.node.addresses(addr_class, list)
+
+        answer = addresses[0].to_s if ip_part == 'cidr'
+
+        if ip_part == 'ifname'
+          # check for the address in the detected nic / ip table.
+          data.each do |k,v|
+            next unless v['ips']
+            ips = v['ips']
+            ips.each do |ip_string|
+              if ip_string == addresses[0].to_s
+                answer = k
+                break
+              end
+            end
+            break if answer
+          end
+        end
+      end
+
+      return answer
+    end
+
+    # Assume hash string with possible array indexes
     pieces = path.split('/')
     pieces.each do |p|
       return nil unless data
