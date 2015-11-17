@@ -134,6 +134,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			lease.Ip,
 			lease_time,
 			subnet.Options.SelectOrderOrAll(options[dhcp.OptionParameterRequestList]))
+                log.Println("Discover: Handing out: ", reply.YIAddr(), " to ", reply.CHAddr())
 		return reply
 
 	case dhcp.Request:
@@ -169,6 +170,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 		} else if subnet.NextServer != nil {
 			reply.SetSIAddr(*subnet.NextServer)
 		}
+                log.Println("Request: Handing out: ", reply.YIAddr(), " to ", reply.CHAddr())
 		return reply
 
 	case dhcp.Release, dhcp.Decline:
