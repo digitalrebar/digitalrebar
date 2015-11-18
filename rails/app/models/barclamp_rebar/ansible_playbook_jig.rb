@@ -23,7 +23,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
   def exec_cmd(cmd)
     Rails.logger.debug("Local Running #{cmd}")
     out,err = '',''
-    status = Open4::popen4ext(true,cmd) do |pid,stdin,stdout,stderr|
+    status = Open4::popen4ext(true,cmd) do |_pid,stdin,stdout,stderr|
       stdin.close
       out << stdout.read
       err << stderr.read
@@ -55,17 +55,17 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     role_map = {} unless role_map
 
     # Load/Update cache
-    cache_dir = "/var/cache/rebar/ansible_playbook"
+    cache_dir = '/var/cache/rebar/ansible_playbook'
     FileUtils.mkdir_p(cache_dir)
     role_cache_dir = "#{cache_dir}/#{nr.role.name}"
 
     File.open("#{cache_dir}/lock", File::RDWR|File::CREAT, 0644) do |f1|
       f1.flock(File::LOCK_EX)
 
-      unless File.exists?("#{role_cache_dir}")
+      if !File.exists?(role_cache_dir)
         # If we are told galaxy, then load it into ansible.
         if role_yaml['playbook_src_path'] =~ /^galaxy:/
-          out, err, status = exec_cmd("sudo ansible-galaxy install #{role_yaml['playbook_src_path'].split(":")[1]}")
+          out, err, status = exec_cmd("sudo ansible-galaxy install #{role_yaml['playbook_src_path'].split(':')[1]}")
           die "Failed to get @ #{role_file}: #{out} #{err}" unless status.success?
 
           out, err, status = exec_cmd("mkdir -p #{role_cache_dir}")
@@ -88,24 +88,24 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
       end
     end
 
-    rundir,err,ok = exec_cmd("mktemp -d /tmp/ansible-playbook-jig-XXXXXX")
+    rundir,err,ok = exec_cmd('mktemp -d /tmp/ansible-playbook-jig-XXXXXX')
     rundir.strip!
     if rundir.empty? || !ok.success?
       die "Did not create rundir for some reason! (#{err})"
     end
 
-    # Remap additional varabiles
+    # Remap additional variables
     role_yaml['attribute_map'].each do |am|
       value = get_value(nr, data, am['name'])
       set_value(data, am['path'], value)
     end if role_yaml['attribute_map']
 
-    File.open("#{rundir}/rebar.json","w") do |f|
+    File.open("#{rundir}/rebar.json", 'w') do |f|
       JSON.dump(data,f)
     end
 
     # Build inventory file
-    File.open("#{rundir}/inventory.ini", "w") do |f|
+    File.open("#{rundir}/inventory.ini", 'w') do |f|
       # all = all nodes in deployment
       nr.deployment.nodes.each do |n|
         address = n.address
@@ -134,9 +134,9 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     # We don't have a playbook file, then we need to build one.
     if role_yaml['playbook_file'] == '.'
       role_file = 'cluster.yml'
-      File.open("#{role_cache_dir}/#{role_yaml['playbook_path']}/cluster.yml", "w") do |f|
+      File.open("#{role_cache_dir}/#{role_yaml['playbook_path']}/cluster.yml", 'w') do |f|
         f.write("- hosts: #{role_map[nr.role.name]}\n")
-        f.write("  roles:\n");
+        f.write("  roles:\n")
         f.write("    - #{role_map[nr.role.name]}\n")
       end
     else
@@ -171,57 +171,97 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
 private
 
+  def get_address(node, command, data)
+    args = command.split(/[\)\(\.,]/)
+    addr_class = args[1].strip.to_sym
+    attr_cat = args[2].strip
+    ip_part = args[4].strip
+
+    list = ['admin']
+    value = Attrib.get(attr_cat, node)
+    list = [value] if value
+    addresses = node.addresses(addr_class, list)
+
+    answer = nil
+    answer = addresses[0].to_s if ip_part == 'cidr'
+    answer = addresses[0].addr if ip_part == 'address'
+
+    # This only works if the node is the starting node.  :-( ??
+    if ip_part == 'ifname'
+      # check for the address in the detected nic / ip table.
+      data.each do |k,v|
+        next unless v['ips']
+        ips = v['ips']
+        ips.each do |ip_string|
+          if ip_string == addresses[0].to_s
+            answer = k
+            break
+          end
+        end
+        break if answer
+      end
+    end
+
+    answer
+  end
+
+  def get_nodes(nr, command, data)
+    parts = command.split(/\./,2)
+    new_command = parts[1]
+
+    args = parts[0].split(/[\)\(\.,]/)
+    role_name = args[1].strip
+
+    answer = []
+    NodeRole.peers_by_role(nr.deployment, Role.find_by_name(role_name)).order(:id).each do |tnr|
+      answer << process_command(tnr, new_command, data)
+    end
+
+    answer.join(' ')
+  end
+
+  def get_first_node(nr, command, data)
+    parts = command.split(/\./,2)
+    new_command = parts[1]
+
+    args = parts[0].split(/[\)\(\.,]/)
+    role_name = args[1].strip
+
+    answer = nil
+    tnr = NodeRole.peers_by_role(nr.deployment, Role.find_by_name(role_name)).order(:id).first rescue nil
+    answer = process_command(tnr, new_command, data) if tnr
+
+    answer
+  end
+
+  # possible custom commands are:
+  #   ipaddress([all|v4_only|v6_only], attribute).[ifname|cidr|address]
+  #   nodes_with_role(k8scontrail-master).<command applied to all nodes joined by " ">
+  #   first_node_with_role(k8scontrail-master).<command applied to node>
+  def process_command(nr, command, data)
+    answer = nil
+
+    answer = get_address(nr.node, command, data) if command.starts_with?('ipaddress(')
+    answer = get_nodes(nr, command, data) if command.starts_with?('nodes_with_role(')
+    answer = get_first_node(nr, command, data) if command.starts_with?('first_node_with_role(')
+
+    answer
+  end
+
   # nr is the node role being operated on.
   # Data is a hash that will become JSON at some point.
   # Path is string or eval string
   #    path = a / separated set of strings that index into hash and lists.
   #
   #    eval string = eval:<custom string to eval>
-  #       possible custom commands are:
-  #
-  #          ipaddress([all|v4_only|v6_only], attribute).[ifname|cidr]
-  #
   #
   # Return value
   #
   def get_value(nr, data, path)
+
+    # if it is an eval process the command.
     if path.starts_with?('eval:')
-      answer = nil
-
-      command = path.sub(/^eval:/, '')
-
-      # IPAddress command takes an attribute base to work on.
-      # Returns cidr or ifname
-      if command.starts_with?('ipaddress(')
-        args = command.split(/[\)\(\.\,]/)
-        addr_class = args[1].strip.to_sym
-        attr_cat = args[2].strip
-        ip_part = args[4].strip
-
-        list = ['admin']
-        value = Attrib.get(attr_cat, nr.node)
-        list = [value] if value
-        addresses = nr.node.addresses(addr_class, list)
-
-        answer = addresses[0].to_s if ip_part == 'cidr'
-
-        if ip_part == 'ifname'
-          # check for the address in the detected nic / ip table.
-          data.each do |k,v|
-            next unless v['ips']
-            ips = v['ips']
-            ips.each do |ip_string|
-              if ip_string == addresses[0].to_s
-                answer = k
-                break
-              end
-            end
-            break if answer
-          end
-        end
-      end
-
-      return answer
+      return process_command(nr, path.sub(/^eval:/, ''), data)
     end
 
     # Assume hash string with possible array indexes
