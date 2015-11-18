@@ -54,42 +54,43 @@ EOF
   end
 end
 
-networks = []
 mac_map = {}
-bus_found=false
-logical_name=""
-mac_addr=""
-Dir.foreach("/sys/class/net") do |entry|
+rebar_ohai[:detected] = Mash.new unless rebar_ohai[:detected]
+rebar_ohai[:detected][:network] = Mash.new unless rebar_ohai[:detected][:network]
+Dir.foreach('/sys/class/net') do |entry|
   next if entry =~ /\./
+
   # We only care about actual physical devices.
-  next unless File.exists? "/sys/class/net/#{entry}/device"
+  # or eth devices in containers
+  next unless File.exists? "/sys/class/net/#{entry}/device" or entry =~ /eth/
   #Chef::Log.debug("examining network interface: " + entry)
 
   type = File::open("/sys/class/net/#{entry}/type") do |f|
     f.readline.strip
-  end rescue "0"
+  end rescue '0'
   #Chef::Log.debug("#{entry} is type #{type}")
-  next unless type == "1"
+  next unless type == '1'
 
   s1 = File.readlink("/sys/class/net/#{entry}") rescue ""
-  spath = File.readlink("/sys/class/net/#{entry}/device") rescue "Unknown"
+  spath = File.readlink("/sys/class/net/#{entry}/device") rescue 'Unknown'
   spath = s1 if s1 =~ /pci/
-  spath = spath.gsub(/.*pci/, "").gsub(/\/net\/.*/, "")
+  spath = spath.gsub(/.*pci/, '').gsub(/\/net\/.*/, '')
   #Chef::Log.debug("#{entry} spath is #{spath}")
 
-  rebar_ohai[:detected] = Mash.new unless rebar_ohai[:detected]
-  rebar_ohai[:detected][:network] = Mash.new unless rebar_ohai[:detected][:network]
-  speeds = get_supported_speeds(entry)
-  rebar_ohai[:detected][:network][entry] = { :path => spath, :speeds => speeds }
+  mac_addr = File.open("/sys/class/net/#{entry}/address", "r") do |f|
+    mac_map[entry] = f.gets().strip
+  end rescue ''
 
-  logical_name = entry
-  networks << logical_name
-  f = File.open("/sys/class/net/#{entry}/address", "r")
-  mac_addr = f.gets()
-  mac_map[logical_name] = mac_addr.strip
-  f.close
+  ips = %x{ip addr show #{entry} | grep inet | awk '{ print $2 }'}.split("\n") rescue []
+
+  speed = File::open("/sys/class/net/#{entry}/speed") do |f|
+    f.readline.strip
+  end rescue '0'
+  speeds = [speed]
+  rebar_ohai[:detected][:network][entry] = { :mac => mac_addr, :path => spath, :speeds => speeds, :ips => ips }
+
   #Chef::Log.debug("MAC is #{mac_addr.strip}")
-
+  rebar_ohai[:detected][:mac_map] = mac_map
 end
 
 rebar_ohai[:disks] ||= Mash.new

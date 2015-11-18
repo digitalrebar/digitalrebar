@@ -100,7 +100,7 @@ class BarclampDhcp::MgmtService < Service
       end
       break if next_server
     end
-    Rails.logger.fatal("GREG: Missing next_server") unless next_server
+    Rails.logger.fatal('Missing next_server') unless next_server
 
     options = {}
     # Option 6 - name servers
@@ -118,7 +118,7 @@ class BarclampDhcp::MgmtService < Service
       end
       break if dns_server
     end
-    Rails.logger.fatal("GREG: Missing dns_server") unless dns_server
+    Rails.logger.fatal('Missing dns_server') unless dns_server
     options[6] = dns_server
     options[15] = dns_domain
 
@@ -211,9 +211,6 @@ class BarclampDhcp::MgmtService < Service
     store = OpenSSL::X509::Store.new
     store.add_cert(OpenSSL::X509::Certificate.new(ca_string))
 
-Rails.logger.fatal("GREG: put url  = #{url}")
-Rails.logger.fatal("GREG: put data = #{data.to_json}")
-
     RestClient::Resource.new(
         url,
         :ssl_cert_store =>  store,
@@ -225,9 +222,6 @@ Rails.logger.fatal("GREG: put data = #{data.to_json}")
     store = OpenSSL::X509::Store.new
     store.add_cert(OpenSSL::X509::Certificate.new(ca_string))
 
-Rails.logger.fatal("GREG: post url  = #{url}")
-Rails.logger.fatal("GREG: post data = #{data.to_json}")
-
     RestClient::Resource.new(
         url,
         :ssl_cert_store =>  store,
@@ -238,8 +232,6 @@ Rails.logger.fatal("GREG: post data = #{data.to_json}")
   def self.send_request_delete(url, ca_string)
     store = OpenSSL::X509::Store.new
     store.add_cert(OpenSSL::X509::Certificate.new(ca_string))
-
-Rails.logger.fatal("GREG: delete url  = #{url}")
 
     RestClient::Resource.new(
         url,

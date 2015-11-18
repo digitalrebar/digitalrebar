@@ -63,7 +63,14 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
       f1.flock(File::LOCK_EX)
 
       unless File.exists?("#{role_cache_dir}")
-        if role_yaml['playbook_src_path'] =~ /^http/
+        # If we are told galaxy, then load it into ansible.
+        if role_yaml['playbook_src_path'] =~ /^galaxy:/
+          out, err, status = exec_cmd("sudo ansible-galaxy install #{role_yaml['playbook_src_path'].split(":")[1]}")
+          die "Failed to get @ #{role_file}: #{out} #{err}" unless status.success?
+
+          out, err, status = exec_cmd("mkdir -p #{role_cache_dir}")
+          die "Failed to get @ #{role_file}: #{out} #{err}" unless status.success?
+        elsif role_yaml['playbook_src_path'] =~ /^http/
           # Load the git cache
           out, err, status = exec_cmd("git clone #{role_yaml['playbook_src_path']} #{role_cache_dir}")
           die "Failed to get @ #{role_file}: #{out} #{err}" unless status.success?
@@ -71,7 +78,9 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
           FileUtils.cp_r("#{local_scripts}/#{role_yaml['playbook_src_path']}/.", "#{role_cache_dir}")
         end
       else
-        if role_yaml['playbook_src_path'] =~ /^http/
+        if role_yaml['playbook_src_path'] =~ /^galaxy:/
+          # Update galaxy repos??
+        elsif role_yaml['playbook_src_path'] =~ /^http/
           # Update git repos??
         else
           FileUtils.cp_r("#{local_scripts}/#{role_yaml['playbook_src_path']}/.", "#{role_cache_dir}")
@@ -87,7 +96,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
     # Remap additional varabiles
     role_yaml['attribute_map'].each do |am|
-      value = get_value(data, am['name'])
+      value = get_value(nr, data, am['name'])
       set_value(data, am['path'], value)
     end if role_yaml['attribute_map']
 
@@ -122,10 +131,22 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
       end
     end
 
+    # We don't have a playbook file, then we need to build one.
+    if role_yaml['playbook_file'] == '.'
+      role_file = 'cluster.yml'
+      File.open("#{role_cache_dir}/#{role_yaml['playbook_path']}/cluster.yml", "w") do |f|
+        f.write("- hosts: #{role_map[nr.role.name]}\n")
+        f.write("  roles:\n");
+        f.write("    - #{role_map[nr.role.name]}\n")
+      end
+    else
+      role_file = role_yaml['playbook_file']
+    end
+
     rns = role_map[nr.role.name]
     rns = [ nr.role.name ] unless rns
-    out,err,ok = exec_cmd("cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_yaml['playbook_file']} --tags=#{rns.join(',')}")
-    die("Running: cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_yaml['playbook_file']} --tags=#{rns.join(',')}\nScript jig run for #{nr.role.name} on #{nr.node.name} failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?
+    out,err,ok = exec_cmd("cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} --tags=#{rns.join(',')}")
+    die("Running: cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} --tags=#{rns.join(',')}\nScript jig run for #{nr.role.name} on #{nr.node.name} failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?
     nr.update!(runlog: out)
 
     # Now, we need to suck any written attributes back out.
@@ -150,9 +171,60 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
 private
 
+  # nr is the node role being operated on.
   # Data is a hash that will become JSON at some point.
-  # Path is a / separated set of strings that index into hash and lists.
-  def get_value(data, path)
+  # Path is string or eval string
+  #    path = a / separated set of strings that index into hash and lists.
+  #
+  #    eval string = eval:<custom string to eval>
+  #       possible custom commands are:
+  #
+  #          ipaddress([all|v4_only|v6_only], attribute).[ifname|cidr]
+  #
+  #
+  # Return value
+  #
+  def get_value(nr, data, path)
+    if path.starts_with?('eval:')
+      answer = nil
+
+      command = path.sub(/^eval:/, '')
+
+      # IPAddress command takes an attribute base to work on.
+      # Returns cidr or ifname
+      if command.starts_with?('ipaddress(')
+        args = command.split(/[\)\(\.\,]/)
+        addr_class = args[1].strip.to_sym
+        attr_cat = args[2].strip
+        ip_part = args[4].strip
+
+        list = ['admin']
+        value = Attrib.get(attr_cat, nr.node)
+        list = [value] if value
+        addresses = nr.node.addresses(addr_class, list)
+
+        answer = addresses[0].to_s if ip_part == 'cidr'
+
+        if ip_part == 'ifname'
+          # check for the address in the detected nic / ip table.
+          data.each do |k,v|
+            next unless v['ips']
+            ips = v['ips']
+            ips.each do |ip_string|
+              if ip_string == addresses[0].to_s
+                answer = k
+                break
+              end
+            end
+            break if answer
+          end
+        end
+      end
+
+      return answer
+    end
+
+    # Assume hash string with possible array indexes
     pieces = path.split('/')
     pieces.each do |p|
       return nil unless data
