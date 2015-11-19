@@ -2,10 +2,8 @@
 
 install
 url --url <%= @os_install_site %>
-<% if @online -%>
 # Add support for our local proxy.
 repo --name="Rebar Local"  --baseurl=<%=@os_install_site %> --proxy="<%=@proxy%>" --cost=100
-<% end %>
 # key --skip
 # Disable geolocation for language and timezone
 # Currently broken by https://bugzilla.redhat.com/show_bug.cgi?id=1111717
@@ -47,9 +45,6 @@ tar
 exec > /root/post-install.log 2>&1
 set -x
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
-<% unless @online -%>
-(cd /etc/yum.repos.d && rm *)
-<% end -%>
 
 (cd /bin; curl -fgl -O "<%=@provisioner_web%>/files/rebar"; chmod 755 rebar)
 export REBAR_ENDPOINT="<%=@api_server%>"
@@ -77,41 +72,16 @@ fi
 echo "$HOSTNAME" > /etc/hostname
 hostname "$HOSTNAME"
 
+# epel must be enabled to install jq.
+cat >/etc/yum.repos.d/rebar-epel.repo <<EOF
+[rebar-epel]
+name=Rebar Epel Repo
+baseurl=http://mirrors.kernel.org/fedora-epel/7/x86_64/
+gpgcheck=0
+EOF
+
 echo "proxy=<%=@proxy%>" >> /etc/yum.conf
 sed -i '/^enabled/ s/1/0/' /etc/yum/pluginconf.d/fastestmirror.conf
-echo "Setting up repositories"
-<% @repos.keys.sort.each do |repo| -%>
-  <% if repo == "online"
-       rpm_sources, bare_sources = @repos[repo].keys.sort.partition{|r|r =~ /^rpm /} -%>
-    <% bare_sources.each do |source|
-         _, name, _, url = source.split -%>
-cat >/etc/yum.repos.d/rebar-<%=name%>.repo <<EOF
-[rebar-<%=name%>]
-name=Rebar <%=name%> Repo
-baseurl=<%= url %>
-gpgcheck=0
-EOF
-    <% end -%>
-    <% rpm_sources.each do |repo|
-         url = repo.split(' ',2)[1]
-         file = url.split('/').last
-         file = file << ".rpm" unless file =~ /\.rpm$/ -%>
-(
-export http_proxy=<%=@proxy%>
-curl -o '/var/cache/<%=file%>' -L '<%=url%>'
-rpm -Uvh '/var/cache/<%=file%>'
-)
-    <% end -%>
-  <% else
-    url = @repos[repo].keys.first -%>
-cat >/etc/yum.repos.d/rebar-<%=repo%>.repo <<EOF
-[rebar-<%=repo%>]
-name=Rebar <%=repo%> Repo
-<%= url %>
-gpgcheck=0
-EOF
-  <% end -%>
-<% end -%>
 
 # Install ntpdate
 yum -y install ntpdate jq
@@ -119,9 +89,7 @@ yum -y install ntpdate jq
 # Make sure we can install gems
 cat >/etc/gemrc <<EOF
 :sources:
-<% if @online -%>
 - http://rubygems.org/
-<% end -%>
 gem: --no-ri --no-rdoc --bindir /usr/local/bin --http-proxy <%=@proxy%>
 EOF
 
@@ -184,6 +152,7 @@ systemctl enable rebar
 # to the network, not NetworkManager
 chkconfig NetworkManager off || :
 chkconfig network on || :
+rm /etc/yum.repos.d/rebar-epel.repo
 
 rebar nodes update "$HOSTNAME" '{"bootenv": "local"}'
 while [[ $(rebar nodes get "$HOSTNAME" attrib provisioner-active-bootstate |jq -r '.value') != local ]]; do

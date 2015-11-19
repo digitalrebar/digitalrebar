@@ -1427,7 +1427,7 @@
          "logging-server",
          "provisioner-server",
          "provisioner-dhcp-server",
-         "provisioner-repos",
+         "rebar-package-sources",
          "provisioner-dhcp-database"
       ],
       "rebar_ohai":{

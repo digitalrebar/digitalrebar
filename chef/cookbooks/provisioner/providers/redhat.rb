@@ -17,7 +17,7 @@ action :add do
   os = "#{new_resource.distro}-#{new_resource.version}"
   proxy = node["rebar"]["proxy"]["servers"].first["url"]
   proxy_addr = node["rebar"]["proxy"]["servers"].first["address"]
-  repos = node["rebar"]["provisioner"]["server"]["repositories"][os]
+  repos = Rebar::fetch_repos_for(node,os)
   params = node["rebar"]["provisioner"]["server"]["boot_specs"][os]
   online = node["rebar"]["provisioner"]["server"]["online"]
   tftproot = node["rebar"]["provisioner"]["server"]["root"]

@@ -102,16 +102,15 @@ roles:
       - name: provisioner-sledgehammer-kernel-params
         description: 'The kernel parameters passed to Sledgehammer.'
         map: 'rebar/provisioner/server/sledgehammer_kernel_params'
-      - name: provisioner-package-repos
-        description: 'The packages repositories that managed nodes should use to install packages.'
-        map: 'rebar/provisioner/server/repositories'
-        ui_renderer: 'barclamp_provisioner/attribs/package_repos'
       - name: provisioner-default-os
         description: 'The default operating system the provisioner will deploy'
         map: 'rebar/provisioner/server/default_os'
         default: 'centos-7.1.1503'
         schema:
           type: str
+      - name: provisioner-provided-repos
+        description: 'The repositories that this provisioner provides for OS install purposes'
+        map: 'rebar/provisioner/server/repositories'
       - name: provisioner-available-oses
         description: 'The operating systems that are installable by this provisioner node.'
         map: 'rebar/provisioner/server/available_oses'
@@ -268,6 +267,7 @@ roles:
       - provisioner-root
       - rebar-machine_key
       - rebar-access_keys
+      - package-repositories
       - provisioner-sledgehammer-kernel-params
       - provisioner-default-password-hash
       - provisioner-default-user
@@ -296,22 +296,6 @@ roles:
             - type: str
               pattern: /[0-9a-f:.]*/
 
-  - name: provisioner-repos
-    jig: chef
-    requires:
-      - provisioner-service
-      - rebar-api_service
-      - provisioner-base-images
-      - proxy-client
-    flags:
-      - implicit
-    wants-attribs:
-      - provisioner-online
-      - provisioner-package-repos
-      - proxy-servers
-      - provisioner-webservers
-      - rebar-api-servers
-
   - name: provisioner-docker-setup
     jig: chef
     conflicts:
@@ -319,7 +303,7 @@ roles:
     requires:
       - provisioner-service
       - rebar-api_service
-      - provisioner-repos
+      - rebar-package-sources
       - rebar-access
       - proxy-client
     wants-attribs:
@@ -380,6 +364,10 @@ attribs:
    description: 'The bootstate that the provisioner last configured the node to use'
    map: 'rebar/provisioner/active_bootstate'
    default: "unknown"
+ - name: provisioner-node-id
+   description: 'The node ID that provisioned this node.'
+   map: 'rebar/provisioner/node_id'
+   default: -1
 
 providers:
   - name: metal

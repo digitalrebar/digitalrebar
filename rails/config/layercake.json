@@ -48,7 +48,7 @@
   "packstack-client":"clients",
   "provisioner-os-install":"os",
   "provisioner-server":"core",
-  "provisioner-repos":"core",
+  "rebar-package-sources":"core",
   "provisioner-database":"hide",
   "provisioner-docker-setup":"core",
   "provisioner-base-images":"core",

@@ -34,5 +34,4 @@ class BarclampProvisioner::BaseImages < Role
       Attrib.set('provisioner-target_os', Role.find_by(name: 'provisioner-os-install'), oses[0])
     end
   end
-
 end

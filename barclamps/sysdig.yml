@@ -29,7 +29,7 @@ roles:
     flags:
       - milestone
     requires:
-      - provisioner-repos
+      - rebar-package-sources
       - rebar-installed-node
     description: 'Provides the sysdig tool'
 
