@@ -108,6 +108,9 @@ roles:
         default: 'centos-7.1.1503'
         schema:
           type: str
+      - name: provisioner-provided-repos
+        description: 'The repositories that this provisioner provides for OS install purposes'
+        map: 'rebar/provisioner/server/repositories'
       - name: provisioner-available-oses
         description: 'The operating systems that are installable by this provisioner node.'
         map: 'rebar/provisioner/server/available_oses'
@@ -361,6 +364,10 @@ attribs:
    description: 'The bootstate that the provisioner last configured the node to use'
    map: 'rebar/provisioner/active_bootstate'
    default: "unknown"
+ - name: provisioner-node-id
+   description: 'The node ID that provisioned this node.'
+   map: 'rebar/provisioner/node_id'
+   default: -1
 
 providers:
   - name: metal

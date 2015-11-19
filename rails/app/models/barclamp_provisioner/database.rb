@@ -32,6 +32,7 @@ class BarclampProvisioner::Database < Role
     ents.each do |k,v|
       target_node = Node.find_by!(name: k)
       Attrib.set('provisioner-active-bootstate',target_node,v['bootenv'])
+      Attrib.set('provisioner-node-id',target_node,nr.node.id)
     end
   end
 

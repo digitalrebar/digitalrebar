@@ -21,7 +21,7 @@ class BarclampProvisioner::OsInstall < Role
     node.with_lock('FOR NO KEY UPDATE') do
       disks = Attrib.get('disks',node) || []
       claims = Attrib.get('claimed-disks',node) || {}
-      target_disk = Attrib.get('operating-system-disk',node) 
+      target_disk = Attrib.get('operating-system-disk',node)
       unless target_disk &&
              claims[target_disk] == 'operating system' &&
              disks.any?{|d|d['unique_name'] == target_disk}
@@ -32,6 +32,33 @@ class BarclampProvisioner::OsInstall < Role
         Attrib.set('operating-system-disk',node,target_disk["unique_name"])
         claims[target_disk["unique_name"]] = "operating system"
         Attrib.set('claimed-disks',node,claims)
+      end
+      # Extract repos that the provisioner provides out and add them to this node if needed.
+      provisioner_node_id = Attrib.get('provisioner-node-id',node)
+      if provisioner_node_id > 0
+        provisioner_node = Node.find_by!(id: provisioner_node_id)
+        provisioner_repos = Attrib.get('provisioner-provided-repos',provisioner_node)
+        Rails.logger.info("base_images: #{provisioner_repos.inspect}")
+        if provisioner_repos
+          repos_to_add={}
+          provisioner_repos.each do |os,repos|
+            repos.each do |name,urls|
+              repos_to_add[name] ||= {
+                'name' => "provisioner-#{name}",
+                'description' => "Repositories provided by the provisioner in #{nr.deployment.name}",
+                'disabled' => false,
+                'oses' => []
+              }
+              repos_to_add[name]['oses'] << {'os' => os, 'repos' => urls}
+            end
+          end
+          Rails.logger.info("base_images: #{repos_to_add.inspect}")
+          old_repos = Attrib.get('package-repositories',node)
+          new_repos = old_repos.
+                      reject{|e|repos_to_add.keys.member?(e['name'])}.
+                      concat(repos_to_add.values)
+          Attrib.set('package-repositories',node,new_repos) unless old_repos == new_repos
+        end
       end
       target_os = Attrib.get("provisioner-target_os",nr)
       Rails.logger.info("provisioner-install: Trying to install #{target_os} on #{node.name} (bootenv: #{node.bootenv})")
