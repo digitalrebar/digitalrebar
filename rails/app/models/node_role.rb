@@ -483,7 +483,7 @@ class NodeRole < ActiveRecord::Base
       # Start with the node data.
       node_req_attrs.each do |req_attr|
         Rails.logger.info("NodeRole all_transition_data: Adding node attribute #{req_attr.attrib_name} to attribute blob for #{name} run")
-        v = req_attr.attrib.get(node,:all,true)
+        v = req_attr.attrib.extract(node,:all,true)
         res.deep_merge!(v) unless v.nil?
       end
       # Next, do the same for the attribs we want from a noderole.

@@ -13,6 +13,10 @@
 # limitations under the License
 #
 
+if [[ $(read_attribute 'rebar/providers/use_proxy') = false ]]; then
+    exit 0
+fi
+
 proxy_str="$(read_attribute "rebar/proxy/servers/0/url")"
 proxy_addr="$(read_attribute "rebar/proxy/servers/0/address")"
 
