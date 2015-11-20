@@ -70,6 +70,7 @@ roles:
     wants-attribs:
       - dns_servers
       - dns-domain
+      - use-dns
   - name: dns-mgmt_server
     jig: chef
     requires:
@@ -129,3 +130,12 @@ roles:
           sequence:
             - type: str
               pattern: /[0-9a-f:.]*/
+
+attribs:
+  - name: use-dns
+    description: 'Whether the node should attempt to use the dns service'
+    map: 'rebar/providers/use_dns'
+    default: false
+    schema:
+      type: bool
+      required: true

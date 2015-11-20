@@ -23,7 +23,7 @@
             = truncate value.to_s, :length=>120
           %pre{:id=>"rawdata_#{attrib.id}", :style =>"display:none"}
             = JSON.pretty_generate(value)
-      - elsif value
+      - elsif !value.nil?
         %td= value
       - else
         %td= t('not_set')

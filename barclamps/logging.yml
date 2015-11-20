@@ -51,3 +51,13 @@ roles:
       - logging-server
     wants-attribs:
       - logging_server
+      - use-logging
+
+attribs:
+  - name: use-logging
+    description: 'Whether the node should attempt to use the logging service'
+    map: 'rebar/providers/use_logging'
+    default: true
+    schema:
+      type: bool
+      required: true

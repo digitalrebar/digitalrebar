@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [[ $(read_attribute 'rebar/providers/use_dns') = false ]]; then
+    exit 0
+fi
+
 # If something else has taken control of resolv.conf, stop right now.
 if [[ -f /etc/.resolv.conf.rebar ]]; then
    if ! fgrep -q 'Managed by Rebar' /etc/resolv.conf; then

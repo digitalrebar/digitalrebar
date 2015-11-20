@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [[ $(read_attribute 'rebar/providers/use_ntp') = false ]]; then
+    exit 0
+fi
+
 which ntpd || install ntp
 
 cat >/etc/ntp.conf <<EOF

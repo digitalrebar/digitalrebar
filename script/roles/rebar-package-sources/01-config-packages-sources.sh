@@ -28,7 +28,7 @@ esac
 
 declare -A pkg_sources
 
-if [[ $http_proxy && ! $(ip -o -4 addr show scope global |awk '!/ (10|192\.168|172\.(2[0-9]|1[6-9]|3[0-1]))\./ {print $4}') ]]; then
+if [[ $(read_attribute 'rebar/providers/use_proxy') = true ]]; then
     case $OS_TYPE in
         redhat|fedora|centos)
             if ! grep -F -q "proxy=http" /etc/yum.conf; then
