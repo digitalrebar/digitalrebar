@@ -7,8 +7,6 @@ consul:
   env_file:
     - ./common.env
     - ./access.env
-  ports:
-    - "8500:8500"
 
 postgres:
   image: digitalrebar/dr_postgres
