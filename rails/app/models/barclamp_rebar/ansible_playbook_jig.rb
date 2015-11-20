@@ -190,6 +190,7 @@ private
     if ip_part == 'ifname'
       # check for the address in the detected nic / ip table.
       data.each do |k,v|
+        next unless v.is_a?(Hash)
         next unless v['ips']
         ips = v['ips']
         ips.each do |ip_string|
