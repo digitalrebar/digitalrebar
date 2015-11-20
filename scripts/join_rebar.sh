@@ -19,6 +19,7 @@ else
 fi
 
 ADMIN_IP=$1
+PASSED_IN_IP=$2
 export REBAR_USER=rebar
 export REBAR_PASSWORD=rebar1
 export REBAR_KEY="$REBAR_USER:$REBAR_PASSWORD"
@@ -50,13 +51,15 @@ exists=$(curl -k -s -o /dev/null -w "%{http_code}" --digest -u "$REBAR_KEY" \
       -X GET "$REBAR_WEB/api/v2/nodes/$HOSTNAME")
 if [[ $exists == 404 ]]; then
     # Get IP for create suggestion
-    IP=""
-    ip_re='([0-9a-f.:]+/[0-9]+)'
-    if ! [[ $(ip -4 -o addr show |grep 'scope global' |grep -v ' lo' |grep -v ' dynamic') =~ $ip_re ]]; then
-        echo "Cannot find IP address for the admin node!"
-        exit 1
+    IP="$PASSED_IN_IP"
+    if [ "$IP" == "" ] ; then
+        ip_re='([0-9a-f.:]+/[0-9]+)'
+        if ! [[ $(ip -4 -o addr show |grep 'scope global' |grep -v ' lo' |grep -v ' dynamic') =~ $ip_re ]]; then
+            echo "Cannot find IP address for the admin node!"
+            exit 1
+        fi
+        IP="${BASH_REMATCH[1]}"
     fi
-    IP="${BASH_REMATCH[1]}"
 
     # Create a new node for us,
     # Add the default noderoles we will need, and
