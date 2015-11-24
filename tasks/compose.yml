@@ -109,7 +109,3 @@
   - name: wait for rebar-key (1 to 30 minutes)
     wait_for: path=compose/data-dir/node/rebar-key.sh state=present delay=60 timeout=1800
 
-  # For vagrant environment copy, the rebar key to a shared location.
-  - name: copy rebar key to shared area
-    copy: src=compose/data-dir/node/rebar-key.sh dest=/vagrant/rebar-key.sh
-    when: vagrant_dir_present.stat.exists == True
