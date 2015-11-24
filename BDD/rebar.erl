@@ -127,8 +127,9 @@ wait_for(URL, MatchCode, MatchData, Times, Sleep) ->
 activate_test_jig() -> 
   R = eurl:put(g(test_jig_activate),"{}"),
   case R#http.code of 
-    200 -> true;
-    _   -> bdd_utils:log(info, rebar, activate_test_jig, "Could not activate Test Jig.  Result is ~p",[R]), 
+    200 -> bdd_utils:log(info, rebar, activate_test_jig, "Test Jig Activated.",[]), 
+           true;
+    _   -> bdd_utils:log(warn, rebar, activate_test_jig, "Could not activate Test Jig.  Result is ~p",[R]), 
            false
   end.
 
@@ -141,9 +142,13 @@ step(_Global, {step_setup, {_Scenario, _N}, Test}) ->
   bdd_utils:alias(network_range, range),
   bdd_utils:alias(network_router, router),
   % before we do anything else, we need to create some consul services
-  Services = bdd_utils:config(services, ["dns-service", "ntp-service", "proxy-service", "provisioner-service", "rebar-api-service", "rebar-job-runner-service"]),
-  [true,true,true,true,true,true] = [consul:reg_serv(S) || S <- Services],
-  bdd_utils:log(info, rebar, global_setup, "Consul Registered ~p",[Services]),
+  case bdd_utils:config(consul, false) of
+    true  ->  Services = bdd_utils:config(services, ["dns-service", "ntp-service", "proxy-service", "provisioner-service", "rebar-api-service", "rebar-job-runner-service"]),
+              [true,true,true,true,true,true] = [consul:reg_serv(S) || S <- Services],
+              bdd_utils:log(info, rebar, global_setup, "Consul Registered ~p",[Services]);
+    _ -> bdd_utils:log(info, rebar, global_setup, "Skipped Consul Register",[]),
+         activate_test_jig()
+  end,
   % skip some activity if we're logging at debug level
   case lists:member(debug,get(log)) of
     true -> bdd_utils:log(debug, rebar, global_setup, "Skipping Setup Queue Empty, Make Admin Net & Test Attribs",[]);
