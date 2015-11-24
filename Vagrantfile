@@ -23,7 +23,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Create a private network, which allows host-only access to the machine
     # using a specific IP.
     admin.vm.network "private_network", ip: ADMIN_IP, auto_config: true
-    admin.vm.network "private_network", ip: "10.10.10.10", auto_config: false
 
     # avoid redownloading large files      
     FileUtils.mkdir_p "#{ENV['HOME']}/.cache/digitalrebar/tftpboot"
@@ -34,7 +33,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           linux__nfs_options: [ 'maproot=root:wheel' ]
 
     admin.vm.provider "virtualbox" do |vb|
-      vb.memory = "6144"
+      vb.memory = "4096"
       vb.cpus = 4
     end
 
@@ -44,14 +43,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     admin.vm.provision "shell", path: "scripts/increase_swap.sh"
 
     admin.vm.provision "ansible" do |ansible|
-  		ansible.sudo = true
-  		ansible.sudo_user = "root"
+      ansible.sudo = true
+      ansible.sudo_user = "root"
       ansible.playbook = "digitalrebar.yml"
     end
 
     puts "To monitor > https://#{ADMIN_IP}:3000 (Digital Rebar)"
     puts "After the system is up, you can start the nodes using `vagrant up /node[1-3]/`"
-
   end
 
   config.vm.define "node1", autostart:false do |slave|
