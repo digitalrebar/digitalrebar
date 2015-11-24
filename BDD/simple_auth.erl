@@ -59,10 +59,15 @@
   
 request_action(Method, {URL, Headers, ContentType, Body}, HTTPOptions, Options) ->
   %% prepare information that's common
-  {http, _, _Host, Port, DigestURI, Params} = case http_uri:parse(URL) of
+  {Secure, _, _Host, Port, DigestURI, Params} = case http_uri:parse(URL) of
     {error, no_scheme} -> bdd_utils:log(error, simple_auth, request, "incomplete URL (needs http): ~p",[URL]);
     {ok, X} -> X;   % needed for newer erlang BIF
     X -> X
+  end,
+  case Secure of
+    http -> ok;
+    https -> better;
+    _ -> bdd_utils:log(error, simple_auth, request, "incomplete URL (needs http or https): ~p",[URL])
   end,
   User = bdd_utils:config(user),
   MethodStr = string:to_upper(atom_to_list(Method)),
@@ -85,7 +90,8 @@ request_action(Method, {URL, Headers, ContentType, Body}, HTTPOptions, Options) 
       Headers ++ [{"Authorization", HeaderInjection}];
     _ -> Headers ++ [{"Cookie", AuthField}]
   end,
-  bdd_utils:log(dump, simple_auth, request, "making http request Method ~p URL ~p Headers ~p Opts ~p", [Method, URL, TrialHeaders, HTTPOptions2]),
+
+  bdd_utils:log(dump, simple_auth, request, "making http(s) request Method ~p URL ~p Headers ~p Opts ~p", [Method, URL, TrialHeaders, HTTPOptions2]),
 
   %% try request
   {Status, Result} = request(Method, URL, TrialHeaders, ContentType, Body, HTTPOptions2, Options),
@@ -115,9 +121,11 @@ request_action(Method, {URL, Headers, ContentType, Body}, HTTPOptions, Options) 
     302 ->
       % we have to shoehorn the port number back into the redirect URL - erlang bug?
       Location = proplists:get_value("location", ResponseHeaders),
-      {http, _, NHost, _Port, NURI, _Params} = case http_uri:parse(Location) of
-	{ok, {http, A, B, C, D, E}} -> {http, A, B, C, D, E};
-        {http, A, B, C, D, E} -> {http, A, B, C, D, E}
+      {https, _, NHost, _Port, NURI, _Params} = case http_uri:parse(Location) of
+  {ok, {http, A, B, C, D, E}}  -> {http, A, B, C, D, E};
+	{ok, {https, A, B, C, D, E}} -> {https, A, B, C, D, E};
+        {https, A, B, C, D, E} -> {https, A, B, C, D, E};
+        {http, A, B, C, D, E}  -> {http, A, B, C, D, E}
       end,
       CorrectURL = assemble_url(NHost,Port,NURI),
       request(Method, CorrectURL, TrialHeaders, ContentType, Body, HTTPOptions2, Options);
@@ -170,9 +178,13 @@ request(Method, {URL, Headers, ContentType, Input}, HTTPOptions, Options) ->
 
 request(Method, URL, HTTPOptions, Options) -> request(Method, {URL, [], [], []}, HTTPOptions, Options).
 
-
+% have to allow for https
 assemble_url(Host,Port,Path) ->
-  "http:"++"//"++Host++":"++integer_to_list(Port)++Path .
+  Base = "//"++Host++":"++integer_to_list(Port)++Path,
+  case bdd_utils:config(secure, true) of
+    false ->  "http:" ++ Base;
+    _     ->  "https:" ++ Base
+  end.
 
 
 %% Authenticate and save session_id in config for use by all subsequent test steps

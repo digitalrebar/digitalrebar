@@ -174,6 +174,24 @@ start(Config) ->
         {error, B}   -> log(warn, "Errors Reported: Crypto ~p",[B]);
         B            -> log(warn, "Start Reporting: Crypto ~p",[B])
       end,
+      case application:start(asn1) of
+        ok           -> log(trace, "Started ASN Services",[]);
+        {error,{already_started,asn1}} -> log(trace, "Already Started ASN Services",[]);
+        {error, D}   -> log(warn, "Errors Reported: ASN ~p",[D]);
+        D            -> log(warn, "Start Reporting: ASN ~p",[D])
+      end,
+      case application:start(public_key) of
+        ok           -> log(trace, "Started Key Services",[]);
+        {error,{already_started,public_key}} -> log(trace, "Already Started Key Services",[]);
+        {error, C}   -> log(warn, "Errors Reported: Key ~p",[C]);
+        C            -> log(warn, "Start Reporting: Key ~p",[C])
+      end,
+      case application:start(ssl) of
+        ok           -> log(trace, "Started SSL Services",[]);
+        {error,{already_started,ssl}} -> log(trace, "Already Started SSL Services",[]);
+        {error, E}   -> log(warn, "Errors Reported: SSL ~p",[E]);
+        E            -> log(warn, "Start Reporting: SSL ~p",[E])
+      end,
       AzConfig = bdd_utils:is_site_up(),
       file:write_file("/tmp/inspection.list",io_lib:fwrite("~p.\n",[inspect(AzConfig)])),
       bdd_utils:marker("BDD TEST STARTING"),
@@ -190,6 +208,9 @@ stop(Config) ->
     true -> 
       TearDownConfig = step_run(Config, [], {step_teardown, {-1, 9999}, "Global"}, [Global]),
       is_clean(TearDownConfig),
+      application:stop(ssl),
+      application:stop(ans1),
+      application:stop(public_key),
       application:stop(crypto),
       application:stop(inets),
       bdd_utils:config_unset(auth_field),
