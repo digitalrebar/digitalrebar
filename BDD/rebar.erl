@@ -15,7 +15,7 @@
 % 
 -module(rebar).
 -export([step/2, g/1, state/1, i18n/1, i18n/2, i18n/3, i18n/4, i18n/5, i18n/6, json/1, json/3, parse_object/1]).
--export([json_build/1]).
+-export([activate_test_jig/0, json_build/1]).
 -include("bdd.hrl").
 
 g(Item) when is_list(Item) -> g(list_to_atom(Item));
@@ -26,6 +26,7 @@ g(Item) ->
     version -> "v2";
     test_node_path -> "api/test/nodes";
     queue_status -> "api/status/queue";
+    test_jig_activate -> "api/v2/jigs/test/activate";
     cli     -> bdd_utils:config(cli, "cd ../bin && ./rebar");
     bootenv -> node:g(bootenv);
     natural_key -> name;			% for most rebar objects, this is the natural key.  override if not
@@ -120,6 +121,15 @@ wait_for(URL, MatchCode, MatchData, Times, Sleep) ->
      {true, _} -> true;
      _         -> timer:sleep(Sleep), 
                   wait_for(URL, MatchCode, MatchData, Times-1, Sleep)
+  end.
+
+% push the activate test jig button
+activate_test_jig() -> 
+  R = eurl:put(g(test_jig_activate),"{}"),
+  case R#http.code of 
+    200 -> true;
+    _   -> bdd_utils:log(info, rebar, activate_test_jig, "Could not activate Test Jig.  Result is ~p",[R]), 
+           false
   end.
 
 % global setup
