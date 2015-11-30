@@ -57,12 +57,8 @@ docker_admin_default_containers
 bring_up_admin_containers && wait_for_admin_containers || \
         die "Failed to deploy admin node"
 
-# No party mix until I figure out what is happening with weird ioctls.
-exit 0
-
 PARTY_MIX=(centos-6.6 centos-7.1.1503 debian-7.8.0 debian-8.1.0
-           fedora-20 redhat-6.5 ubuntu-12.04 ubuntu-14.04
-           ubuntu-15.04)
+           redhat-6.5 ubuntu-12.04 ubuntu-14.04 ubuntu-15.04)
 
 START_NODES="$(rebar nodes list |jq 'length')"
 
