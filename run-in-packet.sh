@@ -53,6 +53,7 @@ node="{
   \"operating_system\": \"ubuntu_14_04\",
   \"hostname\": \"${NODENAME}${TSTAMP}\"
 }"
+# future > try centos_7 for os
 
 date
 
@@ -76,9 +77,9 @@ date
 IP=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .ip_addresses[0].address`
 CIDR=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .ip_addresses[0].cidr`
 
-EXTRA_VARS=""
+EXTRA_VARS="packet=true"
 if [ "$HOST_MODE" == "YES" ] ; then
-  EXTRA_VARS="dr_access_mode=HOST dr_external_ip=$IP/$CIDR"
+  EXTRA_VARS="dr_access_mode=HOST dr_external_ip=$IP/$CIDR packet=true"
 fi
 
 echo "Device ip = $IP/$CIDR"
@@ -97,7 +98,7 @@ date
 
 echo "=== HELPFUL COMMANDS ==="
 echo "Packet Device ID: $DEVICE_ID"
+echo "repeat Packet run: ./run-in-packet.sh --device-id ${DEVICE_ID} ${NODE_NAME}"
 echo "repeat Ansible run: ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars \"$EXTRA_VARS\" digitalrebar.yml"
 echo "SSH access: ssh -X root@${IP}"
-echo "Consul UI        http://${IP}:8500"
-echo "Digital Rebar UI http://${IP}:3000"
+echo "Digital Rebar UI https://${IP}:3000"
