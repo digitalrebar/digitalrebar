@@ -113,6 +113,7 @@
 
   - name: Restart Docker (yet again)
     service: name=docker state=restarted
+    sudo: yes
 
   - name: Compose up containers
     command: /usr/local/bin/docker-compose up -d
