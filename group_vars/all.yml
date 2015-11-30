@@ -97,7 +97,7 @@ dr_services:
 #
 dr_workloads:
   - kubernetes
-  - docker-swarm
+#  - docker-swarm
 
 #
 # Access user/password for rackn repos
