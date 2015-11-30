@@ -74,7 +74,9 @@ class ProvidersController < ApplicationController
   end
 
   def destroy
-    render api_delete Provider
+    @provider = Provider.find_key(params[:id])
+    @provider.destroy
+    render api_delete @provider
   end
 
 end
