@@ -66,6 +66,12 @@ EOC
   not_if "ls -adZ #{tftproot} |grep -q public_content_t"
 end
 
+# Make sure that the files directory is on the server
+directory "#{tftproot}/files" do
+  action :create
+  recursive true
+end
+
 remote_file "Copy rebar to the weserver" do
   path "#{tftproot}/files/rebar"
   source "file:///usr/local/bin/rebar"
