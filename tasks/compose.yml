@@ -112,11 +112,11 @@
 
   - name: wait until Digital Rebar service is up [1 upto 5 minutes]
     wait_for: host="{{dr_external_ip | ipaddr('address')}}" port=3000 delay=60 timeout=300
-    when: packet is not defined
+    when: dr_access_mode != "FORWARDER"
 
   - name: Packet Only, wait until Digital Rebar service is up [1 upto 5 minutes]
     wait_for: host="{{ansible_default_ipv4.address}}" port=3000 delay=60 timeout=300
-    when: packet is defined
+    when: dr_access_mode == "FORWARDER"
 
   - name: wait for rebar-key (1 to 30 minutes)
     wait_for: path=compose/data-dir/node/rebar-key.sh state=present delay=60 timeout=1800
