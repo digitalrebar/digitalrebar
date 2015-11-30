@@ -110,11 +110,11 @@
     args:
       chdir: compose
 
-  - name: HOSTMODE: wait until Digital Rebar service is up [1 upto 5 minutes]
+  - name: HOSTMODE wait until Digital Rebar service is up [1 upto 5 minutes]
     wait_for: host="{{dr_external_ip | ipaddr('address')}}" port=3000 delay=60 timeout=300
     when: dr_access_mode != "FORWARDER"
 
-  - name: FORWARDER: wait until Digital Rebar service is up [1 upto 5 minutes]
+  - name: FORWARDER wait until Digital Rebar service is up [1 upto 5 minutes]
     wait_for: host="{{ansible_default_ipv4.address}}" port=3000 delay=60 timeout=300
     when: dr_access_mode == "FORWARDER"
 
