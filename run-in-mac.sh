@@ -97,5 +97,4 @@ ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars "$EXTRA_VARS" digitalrebar
 
 echo "=== HELPFUL COMMANDS ==="
 echo "repeat Ansible run: ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars \"$EXTRA_VARS\" digitalrebar.yml --connection=local"
-echo "Consul UI        http://${IP}:8500"
-echo "Digital Rebar UI http://${IP}:3000"
+echo "Digital Rebar UI https://${IP}:3000"
