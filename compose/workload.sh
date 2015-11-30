@@ -6,12 +6,14 @@ set -e
 mkdir -p digitalrebar
 cd digitalrebar
 
-USERPW=$RACKN_USER
-if [ "$RACKN_PASSWORD" != "" ] ; then
-    USERPW="${USERPW}:${RACKN_PASSWORD}"
-fi
-if [ "$USERPW" != "" ] ; then
-    USERPW="${USERPW}@"
+if [ ! -e "~/.netrc" ] ; then
+	USERPW=$RACKN_USER
+	if [ "$RACKN_PASSWORD" != "" ] ; then
+	    USERPW="${USERPW}:${RACKN_PASSWORD}"
+	fi
+	if [ "$USERPW" != "" ] ; then
+	    USERPW="${USERPW}@"
+	fi
 fi
 
 if [ ! -e $2 ] ; then

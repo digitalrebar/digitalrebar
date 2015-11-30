@@ -47,6 +47,10 @@
   - name: get code
     synchronize: src=./compose dest=~ rsync_path="rsync"
 
+  - name: copy Github .NetRC for restricted repos (if dr_use_netrc enabled)
+    synchronize: src=~/.netrc dest=~ rsync_path="rsync"
+    when: dr_use_netrc is defined
+
   - name: setup compose
     command: ./setup.sh {{ dr_workloads | default([]) | join(" ") }}
     environment:
@@ -98,13 +102,21 @@
     args:
       chdir: compose
 
+  - name: Restart Docker (yet again)
+    service: name=docker state=restarted
+
   - name: Compose up containers
     command: /usr/local/bin/docker-compose up -d
     args:
       chdir: compose
 
-  - name: wait until Digital Rebar service is up [1 upto 5 minutes]
+  - name: HOSTMODE: wait until Digital Rebar service is up [1 upto 5 minutes]
     wait_for: host="{{dr_external_ip | ipaddr('address')}}" port=3000 delay=60 timeout=300
+    when: dr_access_mode != "FORWARDER"
+
+  - name: FORWARDER: wait until Digital Rebar service is up [1 upto 5 minutes]
+    wait_for: host="{{ansible_default_ipv4.address}}" port=3000 delay=60 timeout=300
+    when: dr_access_mode == "FORWARDER"
 
   - name: wait for rebar-key (1 to 30 minutes)
     wait_for: path=compose/data-dir/node/rebar-key.sh state=present delay=60 timeout=1800
