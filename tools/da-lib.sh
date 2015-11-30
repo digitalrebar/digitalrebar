@@ -147,6 +147,13 @@ bring_up_admin_containers() {
     docker-compose up -d
 }
 
+provisioner_finished() {
+    rebar nodes match \
+          '{"name": "provisioner.local.neode.org",
+            "alive": true, "available": true}'  | \
+        grep -F -q provisioner.local.neode.org
+}
+
 wait_for_admin_containers() {
     echo "Waiting on API to start (up to 240 seconds)"
     retry_until 240 \
@@ -156,7 +163,7 @@ wait_for_admin_containers() {
         echo "Waiting for the provisioner (up to 600 seconds)"
         retry_until 600 \
                     "Took too long for the provisioner to come up" \
-                    rebar nodes show provisioner.local.neode.org || exit 1
+                    provisioner_finished || exit 1
     fi
     sleep 5
     echo "Waiting for rebar to converge (up to 10 minutes)"

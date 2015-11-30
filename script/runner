@@ -41,6 +41,12 @@ elif [[ -f /etc/debian_version ]]; then
 fi
 OS_NAME="$OS_TYPE-$OS_VER"
 
+case $OS_TYPE in
+    centos|redhat|fedora) OS_FAMILY="rhel";;
+    debian|ubuntu) OS_FAMILY="debian";;
+    *) OS_FAMILY=$OS_TYPE;;
+esac
+
 # Add an alternate name for a package based on the OS.
 add_pkgalt() {
     # $1 = base_pkg_name
@@ -149,17 +155,24 @@ install() {
     for pkg in "$@"; do
         to_install+=("$(lookup_package "$pkg")")
     done
-    case $OS_TYPE in
-        centos|redhat|fedora)
+    case $OS_FAMILY in
+        rhel)
             if_update_needed yum -y makecache
             yum -y install "${to_install[@]}";;
-        debian|ubuntu)
+        debian)
             if_update_needed apt-get -y update
             apt-get -y install "${to_install[@]}";;
         *) echo "No idea how to install packages on $OS_NAME"
            exit 1;;
     esac
 }
+
+INITSTYLE="sysv"
+if which systemctl &>/dev/null; then
+    INITSTYLE="systemd"
+elif which initctl &>/dev/null; then
+    INITSTYLE="upstart"
+fi
 
 # Perform service actions.
 service() {

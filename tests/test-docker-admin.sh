@@ -30,10 +30,18 @@ cleaned=false
 cleanup() {
     res=$?
     set +e
+    echo "Killing KVM slaves"
     pkill kvm-slave
     mkdir -p "$startdir/rebar"
-    (cd "$mountdir/deploy/compose"; docker-compose logs > "$startdir/rebar/compose.log")
-    tear_down_admin_containers
+    echo "Killing admin containers"
+    (
+        cd "$mountdir/deploy/compose"
+        docker-compose kill
+        for container in $(docker-compose ps | awk '/^compose/ {print $1}'); do
+            docker logs "$container" > "$startdir/rebar/$container.log"
+        done
+        docker-compose rm -f
+    )
     exit $res
 }
 
@@ -43,6 +51,8 @@ die() {
 }
 
 trap cleanup 0 INT QUIT TERM
+
+docker_admin_default_containers
 
 bring_up_admin_containers && wait_for_admin_containers || \
         die "Failed to deploy admin node"
