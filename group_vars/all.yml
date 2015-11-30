@@ -102,7 +102,8 @@ dr_workloads:
 # Access user/password for rackn repos
 #
 # enable this variable if you have a ~/.netrc file with github credentials
-dr_use_netrc: true
+# dr_use_netrc: true
+
 # enable and set these variables to supply a github password directly
 # dr_rackn_username: 
 # dr_rackn_password: 
