@@ -63,7 +63,7 @@ To stop/clean-up the system, do the following:
 ```shell
 cd digitalrebar/deploy/compose
 docker-compose kill
-docker-compose rm -y
+docker-compose rm -f
 ```
 
 To start the system again, do the following:
