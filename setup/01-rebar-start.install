@@ -15,7 +15,7 @@ else
 fi
 
 # If we want to test a new rebar CLI, copy it in place.
-if [[ -x /opt/digitalrebar/rebar ]]; then
+if [[ -f /opt/digitalrebar/rebar && -x /opt/digitalrebar/rebar ]]; then
     cp /opt/digitalrebar/rebar /usr/local/bin
 fi
 # We run over HTTPS now.
