@@ -3,6 +3,8 @@ consul:
   extends:
     file: docker-compose-common.yml
     service: consul
+  ports:
+    - "127.0.0.1:8500:8500"
 
 postgres:
   extends:
