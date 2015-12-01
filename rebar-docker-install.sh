@@ -18,6 +18,7 @@ set -x
 date
 
 BUILT_CFG_FILE=/tmp/final.json
+export REBAR_KEY="$(cat /etc/rebar.install.key)"
 
 . /etc/profile
 cd /opt/digitalrebar/core
@@ -35,6 +36,7 @@ done < <(find /opt/digitalrebar -name rebar.yml |grep -v '/core/')
 # Create the system deployment
 # We always need a system deployment
 if ! rebar deployments create '{"name": "system", "description": "Created Automatically by System","system": true}'; then cat /var/log/rebar/production.log; exit 1; fi
+printf 'export REBAR_KEY="%s"\n' "$REBAR_KEY" >/etc/profile.d/rebar-key.sh
 
 DOMAINNAME=$BASE_DOMAINNAME
 echo "{ \"domain\": \"$DOMAINNAME\" }" > config/domain.json

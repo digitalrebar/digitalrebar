@@ -7,15 +7,17 @@
 touch "/tmp/.rebar_in_bootstrap"
 
 # Add /opt/chef/bin to path for systems that don't have chef-client "normally"
-cat >/etc/profile.d/chef-path.sh <<EOF
+if [[ -d /opt/chef/bin ]]; then
+    cat >/etc/profile.d/chef-path.sh <<EOF
 export PATH="\$PATH:/opt/chef/bin"
 EOF
+fi
 
-if [[ ! -e /etc/rebar.install.key ]]; then
-    # read key rest < <(dd if=/dev/urandom bs=64 count=1 2>/dev/null |sha512sum - 2>/dev/null)
-    key=`dd if=/dev/urandom bs=64 count=1 2>/dev/null | sha512sum - 2>/dev/null | awk '{ print $1 }'`
-    echo "Creating machine-install user"
-    machine_user="
+[[ -e /etc/rebar.install.key ]] && exit 0
+# read key rest < <(dd if=/dev/urandom bs=64 count=1 2>/dev/null |sha512sum - 2>/dev/null)
+key=`dd if=/dev/urandom bs=64 count=1 2>/dev/null | sha512sum - 2>/dev/null | awk '{ print $1 }'`
+echo "Creating machine-install user"
+machine_user="
 {
   \"username\": \"machine-install\",
   \"email\": \"root@localhost.localdomain\",
@@ -26,13 +28,10 @@ if [[ ! -e /etc/rebar.install.key ]]; then
   \"digest\": true
 }"
 
-    if ! rebar -U rebar -P rebar1 -E https://127.0.0.1:3000 users import "$machine_user"; then
-        echo "Could not create machine-install user!"
-        exit 1
-    fi
-    echo "machine-install:$key" >/etc/rebar.install.key
-    cat >/etc/profile.d/rebar-key.sh <<EOF
-export REBAR_KEY=machine-install:$key
-EOF
-    rm "/tmp/.rebar_in_bootstrap"
+if ! rebar -U rebar -P rebar1 -E https://127.0.0.1:3000 users import "$machine_user"; then
+    echo "Could not create machine-install user!"
+    exit 1
 fi
+echo "machine-install:$key" >/etc/rebar.install.key
+rm "/tmp/.rebar_in_bootstrap"
+
