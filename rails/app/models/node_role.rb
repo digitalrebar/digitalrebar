@@ -20,6 +20,7 @@ class NodeRole < ActiveRecord::Base
   audited
 
   after_commit :run_hooks, on: [:update, :create]
+  around_save :run_synchronous_hooks
   before_destroy :test_if_destroyable
   validate :role_is_bindable, on: :create
   validate :validate_conflicts, on: :create
@@ -693,16 +694,34 @@ class NodeRole < ActiveRecord::Base
     end
   end
 
+  def run_synchronous_hooks
+    return yield unless changes['state']
+    begin
+      meth = "sync_on_#{STATES[state]}".to_sym
+      Rails.logger.info("NodeRole: calling hook #{meth} for #{name}")
+      raise "Hook failed" unless role.send(meth,self)
+    rescue StandardError => e
+      Rails.logger.fatal("Error #{e.inspect} in NodeRole run hooks!")
+      Rails.logger.fatal("Backtrace:\n\t#{e.backtrace.join("\n\t")}")
+      self.runlog ||= ""
+      self.runlog << "Error handling hook #{meth.to_s}\n"
+      self.runlog << "Error #{e.inspect} in NodeRole run_synchronous_hooks!\n"
+      self.runlog << "Backtrace:\n\t#{e.backtrace.join("\n\t")}"
+      self.state = ERROR
+    end
+    yield
+  end
+
   def run_hooks
     begin
       meth = "on_#{STATES[state]}".to_sym
       if proposed?
         # on_proposed only runs on initial noderole creation.
-        Rails.logger.debug("NodeRole #{name}: Calling #{meth} hook.")
+        Rails.logger.debug("NodeRole: calling #{meth} hook for #{name}.")
         role.send(meth,self)
         return
       end
-      return unless previous_changes["state"]
+      return unless previous_changes['state']
       if deployment.committed? && available &&
          ((!role.destructive) || (run_count == self.active? ? 1 : 0))
         Rails.logger.debug("NodeRole #{name}: Calling #{meth} hook.")
@@ -711,8 +730,7 @@ class NodeRole < ActiveRecord::Base
       if todo? && runnable?
         Rails.logger.info("NodeRole #{name} is runnable, kicking the annealer.")
         Run.run!
-      end
-      if active?
+      elsif active?
         node.halt_if_bored(self) if role.powersave
         NodeRole.transaction do
           # Immediate children of an ACTIVE node go to TODO

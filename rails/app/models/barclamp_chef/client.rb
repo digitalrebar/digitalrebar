@@ -1,10 +1,10 @@
 class BarclampChef::Client < Role
 
   # create the right private key for chef-client and registers it with the server
-  def on_proposed(nr)
-    # Create chef metadata if needed.
+  def sync_on_todo(nr)
     d = (nr.sysdata["chefjig"]["client"]["key"] rescue nil)
     return if d
+    # Create chef metadata if needed.
     chefjig = Jig.where(:name => "chef").first
     raise "Cannot load Chef Jig" unless chefjig
     # we have a problem is if the chef jig is not active
@@ -25,14 +25,12 @@ class BarclampChef::Client < Role
       raise "No idea how to get the private key!"
     end
     raise "Could not create chef client!" unless private_key && private_key != ""
-    nr.with_lock do
-      nr.sysdata = { "chefjig" =>
-        { "client" => {"key" => private_key, "name" => nr.node.name},
-          "server" => {"url" => chefjig.server}
-        }
-      }
-      nr.save!
-    end
+
+    nr.sysdata = { "chefjig" =>
+                   { "client" => {"key" => private_key, "name" => nr.node.name},
+                     "server" => {"url" => chefjig.server}
+                   }
+                 }
   end
 
   def on_node_delete(node)
