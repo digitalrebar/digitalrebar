@@ -2,10 +2,11 @@
 package main
 
 import (
-	dhcp "github.com/krolaw/dhcp4"
 	"log"
 	"net"
 	"strings"
+
+	dhcp "github.com/krolaw/dhcp4"
 )
 
 func RunDhcpHandler(dhcpInfo *DataTracker, intf net.Interface, myIp string) {
@@ -126,6 +127,11 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			log.Println("Out of IPs for ", subnet.Name, ", ignoring")
 			return nil
 		}
+		// Ignore unknown MAC address
+		if ignore_anonymus && binding == nil {
+			log.Println("Ignoring request from unknown MAC address")
+			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
+		}
 
 		options, lease_time := subnet.build_options(lease, binding)
 
@@ -134,7 +140,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			lease.Ip,
 			lease_time,
 			subnet.Options.SelectOrderOrAll(options[dhcp.OptionParameterRequestList]))
-                log.Println("Discover: Handing out: ", reply.YIAddr(), " to ", reply.CHAddr())
+		log.Println("Discover: Handing out: ", reply.YIAddr(), " to ", reply.CHAddr())
 		return reply
 
 	case dhcp.Request:
@@ -152,6 +158,11 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 		}
 
 		lease, binding := subnet.find_info(h.info, nic)
+		// Ignore unknown MAC address
+		if ignore_anonymus && binding == nil {
+			log.Println("Ignoring request from unknown MAC address")
+			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
+		}
 		if lease == nil || !lease.Ip.Equal(reqIP) {
 			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
 		}
@@ -170,7 +181,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 		} else if subnet.NextServer != nil {
 			reply.SetSIAddr(*subnet.NextServer)
 		}
-                log.Println("Request: Handing out: ", reply.YIAddr(), " to ", reply.CHAddr())
+		log.Println("Request: Handing out: ", reply.YIAddr(), " to ", reply.CHAddr())
 		return reply
 
 	case dhcp.Release, dhcp.Decline:
