@@ -88,10 +88,13 @@ class Role < ActiveRecord::Base
     end
   end
 
-  # Synchronous noderole transition hooks.
-  # These behave the same as the on_* hooks below, except that they happen during the
-  # save transaction.  If they fail, the noderole state will be set to ERROR.
-
+  # Synchronous noderole transition hooks.  These behave the same as
+  # the on_* hooks below, except that they happen during the save
+  # transaction.  If they fail, the noderole state will be set to
+  # ERROR.  Note that these are called from within an around_save just
+  # before save is called if the state of the noderole has changed, so
+  # roles that override these hooks MUST NOT do anything that calls
+  # save on the noderole.
   def sync_on_error(node_role, *args)
     true
   end
