@@ -77,7 +77,10 @@
         %tr{ :class => cycle(:odd, :even) }
           %td= link_to a.name, attrib_path(a.id)
           %td= a.description
-          %td= link_to a.role.name, role_path(a.role.name)
+          - if a.role
+            %td= link_to a.role.name, role_path(a.role.name)
+          - else
+            %td= 'Node'
 
 - inuse = @role.node_roles.sort
 %h3
