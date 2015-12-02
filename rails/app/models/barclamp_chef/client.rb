@@ -3,14 +3,13 @@ class BarclampChef::Client < Role
   # create the right private key for chef-client and registers it with the server
   def sync_on_todo(nr)
     d = (nr.sysdata["chefjig"]["client"]["key"] rescue nil)
-    return if d
+    return true if d
     # Create chef metadata if needed.
     chefjig = Jig.where(:name => "chef").first
     raise "Cannot load Chef Jig" unless chefjig
     # we have a problem is if the chef jig is not active
-    unless chefjig.active
-      Rails.logger.warn "Unexpected: Chef Jig should have been active for Chef Client Role to initialize" unless Rails.env.development?
-      return
+    unless Rails.env.development? || chefjig.active
+      raise "Unexpected: Chef Jig should have been active for Chef Client Role to initialize"
     end
     # creating the node in chef server
     _, _, chef_client = chefjig.create_node(nr.node)
@@ -31,6 +30,7 @@ class BarclampChef::Client < Role
                      "server" => {"url" => chefjig.server}
                    }
                  }
+    return true
   end
 
   def on_node_delete(node)
