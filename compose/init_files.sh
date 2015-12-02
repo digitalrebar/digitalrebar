@@ -36,7 +36,8 @@ while [[ $1 == -* ]] ; do
       exit 0
       ;;
     --clean) 
-      rm -f access.env dc docker-compose.yml config-dir/api/config/networks/the_admin.json config-dir/api/config/networks/the_bmc.json
+        rm -f access.env dc docker-compose.yml config-dir/api/config/networks/the_admin.json config-dir/api/config/networks/the_bmc.json
+        sudo rm -rf data-dir
       exit 0
       ;;
     --access) 
