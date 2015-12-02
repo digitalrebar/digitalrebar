@@ -13,6 +13,8 @@
 # limitations under the License.
 #
 
+require 'json'
+
 class ::BarclampNetwork::Attrib::AllConfig < Attrib
 
   def poke(n)
@@ -28,12 +30,12 @@ class ::BarclampNetwork::Attrib::AllConfig < Attrib
              when from.is_a?(Node)
                res = {}
                from.node_roles.order("cohort ASC").each do |nr|
+                 next unless nr.role.is_a?(BarclampNetwork::Role)
                  Rails.logger.info("#{self.class.name}: 2: #{nr.role.name}")          
-                 next unless nr.role.barclamp_id == self.barclamp_id
                  res.deep_merge!(nr.all_committed_data)
                end
-               Rails.logger.info(res.inspect)
-               res
+               Rails.logger.info(JSON.pretty_generate(res))
+               super(res)
              else
                super
              end

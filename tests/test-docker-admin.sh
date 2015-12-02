@@ -32,13 +32,16 @@ cleanup() {
     set +e
     echo "Killing KVM slaves"
     pkill kvm-slave
+    rm -rf "$startdir/rebar" || :
     mkdir -p "$startdir/rebar"
     echo "Killing admin containers"
     (
         cd "$mountdir/deploy/compose"
         docker-compose kill
         for container in $(docker-compose ps | awk '/^compose/ {print $1}'); do
+            mkdir -p "$startdir/rebar/$container"
             docker logs "$container" > "$startdir/rebar/$container.log"
+            docker cp "$container:/var/log" "$startdir/rebar/$container"
         done
         docker-compose rm -f
     )
@@ -57,37 +60,41 @@ docker_admin_default_containers
 bring_up_admin_containers && wait_for_admin_containers || \
         die "Failed to deploy admin node"
 
-# No party mix until I figure out what is happening with weird ioctls.
-exit 0
-
 PARTY_MIX=(centos-6.6 centos-7.1.1503 debian-7.8.0 debian-8.1.0
-           fedora-20 redhat-6.5 ubuntu-12.04 ubuntu-14.04
-           ubuntu-15.04)
-
-START_NODES="$(rebar nodes list |jq 'length')"
-
-ADDED_NODES=${#PARTY_MIX}
-
-for ((n=0; n<$ADDED_NODES; n++)); do
-    "$mountdir/core/tools/kvm-slave" &
+           redhat-6.5 ubuntu-12.04 ubuntu-14.04 ubuntu-15.04)
+printf "Bringing up slaves for party mix testing: "
+for ((n=0; n<${#PARTY_MIX[@]}; n++)); do
+    printf "."
+    "$mountdir/core/tools/kvm-slave" &>/dev/null &
     sleep 15
 done
+echo " Done"
 
-WANTED_NODES=$((START_NODES + ADDED_NODES))
-
-while (( WANTED_NODES > $(rebar nodes list |jq 'length') )); do
-    sleep 60
+matchstr='{"alive": true,
+           "available": true,
+           "admin": false,
+           "system": false,
+           "bootenv": "sledgehammer"}'
+nodes=()
+printf "Waiting for nodes to become alive: "
+while (( ${#nodes[@]} != ${#PARTY_MIX[@]} )); do
+    sleep 10
+    printf "."
+    nodes=($(rebar nodes match "$matchstr" | jq -r '.[] |.["name"]') )
 done
-
-rebar converge
-
-nodes=( $(rebar nodes list |jq -r 'map(select(.["bootenv"] == "sledgehammer")) | .[] | .["name"]') )
-
-for i in "${!PARTY_MIX[@]}"; do
-    rebar nodes bind "${nodes[i]}" to rebar-installed-node
-    rebar nodes set "${nodes[i]}" attrib provisioner-target_os to "{\"value\": \"${PARTY_MIX[i]}\"}"
-    rebar nodes commit "${nodes[i]}"
-done
+echo " Done"
 
 sleep 10
+
+for i in "${!PARTY_MIX[@]}"; do
+    echo "Setting ${nodes[i]} to install ${PARTY_MIX[i]}"
+    (
+        rebar nodes bind "${nodes[i]}" to rebar-installed-node
+        rebar nodes set "${nodes[i]}" attrib provisioner-target_os to "{\"value\": \"${PARTY_MIX[i]}\"}"
+        rebar nodes commit "${nodes[i]}"
+    ) >&/dev/null
+done
+
+echo "Waiting on OS installation to finish"
 rebar converge
+echo "Finished."

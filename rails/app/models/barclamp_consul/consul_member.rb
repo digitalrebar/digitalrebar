@@ -17,10 +17,10 @@ require 'resolv'
 
 class BarclampConsul::ConsulMember < Role
 
-  def on_todo(nr)
+  def sync_on_todo(nr)
     Attrib.transaction do
       if Attrib.get("consul-address",nr).nil?
-        Attrib.set("consul-address",nr,nr.node.addresses.first.addr)
+        Attrib.set_without_save("consul-address",nr,nr.node.addresses.first.addr)
       end
     end
   end

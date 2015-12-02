@@ -17,10 +17,10 @@ require 'resolv'
 
 class BarclampConsul::ConsulMaster < Role
 
-  def on_todo(nr)
+  def sync_on_todo(nr)
     Attrib.transaction do
       if Attrib.get("consul-address",nr).nil?
-        Attrib.set("consul-address",nr,nr.node.addresses.first.addr)
+        Attrib.set_without_save("consul-address",nr,nr.node.addresses.first.addr)
       end
     end
     DeploymentRole.transaction do
@@ -32,7 +32,7 @@ class BarclampConsul::ConsulMaster < Role
       Rails.logger.info("Updating this Consul's servers: #{to_join.inspect}")
       Attrib.set("consul-servers",nr.deployment_role,servers)
       Attrib.set("consul-bootstrap-expect",nr.deployment_role,servers.length)
-      Attrib.set("consul-servers",nr,to_join)
+      Attrib.set_without_save("consul-servers",nr,to_join)
     end
   end
 end

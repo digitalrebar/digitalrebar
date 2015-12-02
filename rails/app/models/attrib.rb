@@ -156,36 +156,20 @@ class Attrib < ActiveRecord::Base
     template(get(from,hint,committed))
   end
 
-  def note_set(to,value)
-    __set(to,value,:note)
-  end
-  
-  def hint_set(to,value)
-    __set(to,value,:hint)
-  end
-
-  def discovery_set(to,value)
-    __set(to,value,:discovery)
-  end
-
-  def wall_set(to,value)
-    __set(to,value,:wall)
-  end
-
-  def user_set(to,value)
-    __set(to,value,:user)
-  end
-
-  def system_set(to,value)
-    __set(to,value,:system)
+  def set_without_save(to,value,type=:system)
+    __set(to,value,type)
   end
 
   def set(to,value,type=:system)
-    __set(to,value,type)
+    __set_and_save(to,value,type)
   end
 
   def self.set(name, to, value, type=:system)
     Attrib.find_key(name).set(to,value,type)
+  end
+
+  def self.set_without_save(name, to, value, type=:system)
+    Attrib.find_key(name).set_without_save(to,value,type)
   end
 
   class AttribValidationFailed < StandardError
@@ -236,6 +220,11 @@ class Attrib < ActiveRecord::Base
   def make_writable_if_schema
     return if schema.nil? || schema == ""
     update(writable: true)
+  end
+
+  def __set_and_save(to_orig, value, target=:system)
+    to = __set(to_orig, value, target)
+    to.save! unless to.is_a?(Hash)
   end
 
   # Set a new value for this attribute onto the passed object.
@@ -295,8 +284,8 @@ class Attrib < ActiveRecord::Base
         end
       else raise("Cannot write attribute data to #{to.class.to_s}")
       end
-      to.save! unless to.is_a?(Hash)
     end
+    to
   end
 
   protected
