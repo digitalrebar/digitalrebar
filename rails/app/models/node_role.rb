@@ -699,7 +699,12 @@ class NodeRole < ActiveRecord::Base
     begin
       meth = "sync_on_#{STATES[state]}".to_sym
       Rails.logger.info("NodeRole: calling hook #{meth} for #{name}")
-      raise "Hook failed" unless role.send(meth,self)
+      res = role.send(meth,self)
+      unless res
+        self.runlog ||= ""
+        self.runlog << "Hook returned #{res.inspect}"
+        raise "Hook failed"
+      end
     rescue StandardError => e
       Rails.logger.fatal("Error #{e.inspect} in NodeRole run hooks!")
       Rails.logger.fatal("Backtrace:\n\t#{e.backtrace.join("\n\t")}")
