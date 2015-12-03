@@ -359,16 +359,16 @@ for f in syslinux-6.03/bios/com32/elflink/ldlinux/ldlinux.c32 syslinux-6.03/bios
     tar xJf /tmp/syslinux-6.03.tar.xz $f -O >${f##*/}
 done
 EOC
-  not_if 'test -f #{discover_dir}/lpxelinux.0'
+  not_if "test -f '#{discover_dir}/lpxelinux.0'"
 end
 
 bash "Install elilo as UEFI netboot loader" do
   code <<EOC
 cd #{uefi_dir}
 
-tar xzf '/tmp/elilo-3.16-all.tar.gz' elilo-3.16-x86_64.efi
-tar xzf '/tmp/elilo-3.16-all.tar.gz' elilo-3.16-ia32.efi
-tar xzf '/tmp/elilo-3.16-all.tar.gz' elilo-3.16-ia64.efi
+tar xzf '/tmp/elilo-3.16-all.tar.gz' ./elilo-3.16-x86_64.efi
+tar xzf '/tmp/elilo-3.16-all.tar.gz' ./elilo-3.16-ia32.efi
+tar xzf '/tmp/elilo-3.16-all.tar.gz' ./elilo-3.16-ia64.efi
 mv elilo-3.16-x86_64.efi bootx64.efi
 mv elilo-3.16-ia32.efi bootia32.efi
 mv elilo-3.16-ia64.efi bootia64.efi
