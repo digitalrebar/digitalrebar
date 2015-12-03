@@ -36,7 +36,6 @@ done < <(find /opt/digitalrebar -name rebar.yml |grep -v '/core/')
 # Create the system deployment
 # We always need a system deployment
 if ! rebar deployments create '{"name": "system", "description": "Created Automatically by System","system": true}'; then cat /var/log/rebar/production.log; exit 1; fi
-printf 'export REBAR_KEY="%s"\n' "$REBAR_KEY" >/etc/profile.d/rebar-key.sh
 
 DOMAINNAME=$BASE_DOMAINNAME
 echo "{ \"domain\": \"$DOMAINNAME\" }" > config/domain.json
@@ -232,6 +231,8 @@ rebar deployments set system attrib rebar-access_keys to "{ \"value\": $keys }"
 rebar deployments set system attrib rebar-machine_key to "{ \"value\": \"`cat /etc/rebar.install.key`\" }"
 
 rebar deployments commit system
+
+printf 'export REBAR_KEY="%s"\n' "$REBAR_KEY" >/etc/profile.d/rebar-key.sh
 
 # Add/Update DNS Filters into the system
 filter_count=`jq ".filters | length" ${BUILT_CFG_FILE}`
