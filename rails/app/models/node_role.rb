@@ -214,7 +214,7 @@ class NodeRole < ActiveRecord::Base
   end
 
   def self.safe_create!(args)
-    res = find_by(args)
+    res = find_by(args) || find_by(node_id: args[:node_id], role_id: args[:role_id])
     return res if res
     r = Role.find_by!(id: args[:role_id])
     n = Node.find_by!(id: args[:node_id])

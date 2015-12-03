@@ -115,6 +115,7 @@ if ! [[ $(cat /proc/cmdline) =~ $host_re ]]; then
 else
     # Let Rebar know that we are back, and booted into Sledgehammer.
     export HOSTNAME="${BASH_REMATCH[1]}"
+    rebar nodes update "$HOSTNAME" '{"bootenv": "sledgehammer"}'
     echo "Node is back."
 fi
 
