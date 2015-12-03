@@ -17,6 +17,7 @@
 action :add do
   nodeaddr = sprintf("%08X",new_resource.address.address)
   tftproot = node["rebar"]["provisioner"]["server"]["root"]
+  provisioner_web=node['rebar']['provisioner']['server']['webservers'].first["url"]
   discover_dir="#{tftproot}/discovery"
   uefi_dir=discover_dir
   pxecfg_dir="#{discover_dir}/pxelinux.cfg"
@@ -30,8 +31,8 @@ action :add do
     source "default.#{extra}erb"
     variables(:append_line => new_resource.kernel_params,
               :install_name => new_resource.bootenv,
-              :initrd => new_resource.initrd,
-              :kernel => new_resource.kernel)
+              :initrd => "#{provisioner_web}/#{new_resource.initrd}",
+              :kernel => "#{provisioner_web}/#{new_resource.kernel}")
   end
   template uefifile do
     mode 0644

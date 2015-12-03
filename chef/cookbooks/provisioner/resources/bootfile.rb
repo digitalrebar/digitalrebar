@@ -16,8 +16,8 @@
 actions :add, :remove
 
 attribute :name, :kind_of => String, :name_attribute => true
-attribute :initrd, :kind_of => String, :default => "initrd0.img"
-attribute :kernel, :kind_of => String, :default => "vmlinuz0"
+attribute :initrd, :kind_of => String, :default => "discovery/initrd0.img"
+attribute :kernel, :kind_of => String, :default => "discovery/vmlinuz0"
 attribute :address, :kind_of => IP, :required => true
 attribute :bootenv, :kind_of => String, :required => "true"
 attribute :kernel_params, :kind_of => String, :default => ""

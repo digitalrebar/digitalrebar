@@ -4,6 +4,6 @@ TIMEOUT 10
 LABEL <%= @install_name %>
   KERNEL <%= @kernel %>
 <% iird="" -%>
-<% iird="initrd=../#{@initrd}" if @initrd and @initrd != "" -%>
+<% iird="initrd=#{@initrd}" if @initrd and @initrd != "" -%>
   append <%= iird %> <%= @append_line %>
   IPAPPEND 2
