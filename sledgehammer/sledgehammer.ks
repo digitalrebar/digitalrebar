@@ -34,6 +34,7 @@ efibootmgr
 gcc
 gcc-c++
 git
+glibc.i686
 gzip
 jq
 kernel
@@ -116,6 +117,10 @@ EOF_post
 
 /bin/bash -x /root/post-install 2>&1 | tee /root/post-install.log
 
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+curl -fgLO https://opscode-omnibus-packages.s3.amazonaws.com/el/6/i686/chef-11.18.12-1.el6.i686.rpm
+yum install -y chef-11.18.12-1.el6.i686.rpm
+rm -f /etc/resolv.conf
 
 %post --nochroot
 

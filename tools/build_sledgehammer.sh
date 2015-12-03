@@ -23,6 +23,12 @@ export LANG="C"
 export LC_ALL="C"
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 
+
+function die() {
+  echo $@
+  exit -1
+}
+
 GEM_RE='([^0-9].*)-([0-9].*)'
 set -e
 
