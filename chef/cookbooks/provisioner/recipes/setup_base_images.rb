@@ -108,9 +108,9 @@ template "#{pxecfg_dir}/default" do
   source "default.erb"
   variables(:append_line => "#{append_line} rebar.state=discovery rebar.install.key=#{machine_key}",
             :install_name => "discovery",
-            :initrd => "initrd0.img",
+            :initrd => "#{provisioner_web}/discovery/initrd0.img",
             :machine_key => machine_key,
-            :kernel => "vmlinuz0")
+            :kernel => "#{provisioner_web}/discovery/vmlinuz0")
 end
 
 # Do uefi as well.
@@ -326,8 +326,8 @@ EOC
   unless node["rebar"]["provisioner"]["server"]["boot_specs"][os]
     node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os] = Mash.new
   end
-  node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["kernel"] = "../#{os}/install/#{kernel}"
-  node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["initrd"] = "../#{os}/install/#{initrd}"
+  node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["kernel"] = "#{os}/install/#{kernel}"
+  node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["initrd"] = "#{os}/install/#{initrd}"
   node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["os_install_site"] = os_install_site
   node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["kernel_params"] = append
 
@@ -352,32 +352,26 @@ EOC
   end
 end
 
-# Generate the appropriate pxe and uefi config files for discovery
-# These will only be used if we have not already discovered the system.
-
-package "syslinux"
-
-ruby_block "Install pxelinux.0" do
-  block do
-    ["share","lib"].each do |d|
-      next unless ::File.exists?("/usr/#{d}/syslinux/pxelinux.0")
-      ::Kernel.system("cp /usr/#{d}/syslinux/pxelinux.0 #{discover_dir}")
-    end
-  end
-  not_if do ::File.exists?("#{discover_dir}/pxelinux.0") end
+bash "Install lpxelinux.0" do
+  code <<EOC
+cd #{discover_dir}
+for f in syslinux-6.03/bios/com32/elflink/ldlinux/ldlinux.c32 syslinux-6.03/bios/core/lpxelinux.0; do
+    tar xJf /tmp/syslinux-6.03.tar.xz $f -O >${f##*/}
+done
+EOC
+  not_if 'test -f #{discover_dir}/lpxelinux.0'
 end
 
 bash "Install elilo as UEFI netboot loader" do
   code <<EOC
 cd #{uefi_dir}
-[[ -f #{tftproot}/files/elilo-3.16-all.tar.gz ]] || \
-    curl -fgL -o '#{tftproot}/files/elilo-3.16-all.tar.gz' \
-         http://downloads.sourceforge.net/project/elilo/elilo/elilo-3.16/elilo-3.16-all.tar.gz
-tar xzf '#{tftproot}/files/elilo-3.16-all.tar.gz'
+
+tar xzf '/tmp/elilo-3.16-all.tar.gz' elilo-3.16-x86_64.efi
+tar xzf '/tmp/elilo-3.16-all.tar.gz' elilo-3.16-ia32.efi
+tar xzf '/tmp/elilo-3.16-all.tar.gz' elilo-3.16-ia64.efi
 mv elilo-3.16-x86_64.efi bootx64.efi
 mv elilo-3.16-ia32.efi bootia32.efi
 mv elilo-3.16-ia64.efi bootia64.efi
-rm elilo*.efi elilo*.tar.gz || :
 EOC
   not_if "test -f '#{uefi_dir}/bootx64.efi'"
 end

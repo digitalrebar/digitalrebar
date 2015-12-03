@@ -125,7 +125,7 @@ class BarclampDhcp::MgmtService < Service
     # Option 3 - gateway
     options[3] = network.network_router.address.addr if network and network.network_router
     # GREG: One day this needs to be selectable by arch
-    options[67] = "discovery/pxelinux.0"
+    options[67] = "discovery/lpxelinux.0"
 
     self.class.create_network(network.name, subnet, next_server, start_ip, end_ip, options)
   end
@@ -306,7 +306,7 @@ class BarclampDhcp::MgmtService < Service
       options = {}
     else
       options = {}
-      options[67] = "discovery/pxelinux.0"
+      options[67] = "discovery/lpxelinux.0"
       # GREG: One day this needs to be selectable by arch
     end
     options.each do |k,v|
