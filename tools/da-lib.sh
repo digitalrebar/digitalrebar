@@ -134,6 +134,7 @@ bring_up_admin_containers() {
         sudo chcon -Rt svirt_sandbox_file_t "$HOME/.cache/digitalrebar/tftpboot"
     fi
 
+    [[ -d $mountdir/deploy/compose/data-dir ]] && sudo rm -rf "$mountdir/deploy/compose/data-dir"
     ./init_files.sh --clean
     make_compose_args
     ./init_files.sh $REAL_COMPOSE_ARGS
@@ -177,5 +178,4 @@ tear_down_admin_containers() {
     cd "$mountdir/deploy/compose"
     docker-compose kill
     docker-compose rm -f
-    sudo rm -rf "$mountdir/deploy/compose/data-dir"
 }
