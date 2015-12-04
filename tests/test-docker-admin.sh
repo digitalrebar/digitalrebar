@@ -60,7 +60,7 @@ docker_admin_default_containers
 bring_up_admin_containers && wait_for_admin_containers || \
         die "Failed to deploy admin node"
 
-exit 0
+[[ $DEPLOY_OSES ]] || exit 0
 
 PARTY_MIX=(centos-6.6 centos-7.1.1503 debian-7.8.0 debian-8.1.0
            redhat-6.5 ubuntu-12.04 ubuntu-14.04 ubuntu-15.04)
@@ -68,7 +68,6 @@ printf "Bringing up slaves for party mix testing: "
 for ((n=0; n<${#PARTY_MIX[@]}; n++)); do
     printf "."
     "$mountdir/core/tools/kvm-slave" &>/dev/null &
-    sleep 15
 done
 echo " Done"
 
