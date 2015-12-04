@@ -75,8 +75,18 @@ class BarclampsController < ApplicationController
   def wizard
     @bc = Barclamp.find_key params[:barclamp_id]
     if request.get?
+
       @roles = @bc.roles.to_a.keep_if{ |r| r.milestone }.sort_by { |r| r.cohort }
       @nodes = Deployment.system.nodes.where(:admin=>false, :system=>false)
+
+      provisioner = Role.find_key 'provisioner-base-images'
+      admin = provisioner.nodes.first
+      @available_os = Attrib.get("provisioner-available-oses", admin).map{ |k,v| k } rescue []
+      @initial_role = Attrib.get('provisioner-target_os', Role.find_by(name: 'provisioner-os-install')) rescue "fred"
+      @errors = {}
+
+      needs = @bc.wizard.inspect["requires"]["roles"] rescue []
+
     elsif request.post?
 
       wiz_name = params[:deployment]
@@ -95,9 +105,9 @@ class BarclampsController < ApplicationController
 
       # find nodes and roles
       params.each do |key, value|
-        if key =~ /^node_([0-9]*)_role_([0-9]*)$/
-          nid = $1.to_i
-          rid = $2.to_i
+        if key =~ /^role_([0-9]*)_node_([0-9]*)$/
+          rid = $1.to_i
+          nid = $2.to_i
           roles[rid] << nid  ## add nodes that we are going to add
           nodes[nid] = params["wizard"]["node_#{nid}_os"] if params["wizard"] # we only want to do the node stuff once
         end
