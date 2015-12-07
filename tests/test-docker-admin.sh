@@ -40,11 +40,11 @@ cleanup() {
         docker-compose kill
         for container in $(docker-compose ps | awk '/^compose/ {print $1}'); do
             mkdir -p "$startdir/rebar/$container"
-            docker logs "$container" > "$startdir/rebar/$container.log"
+            docker logs "$container" &> "$startdir/rebar/$container.log"
             docker cp "$container:/var/log" "$startdir/rebar/$container"
         done
         docker-compose rm -f
-    )
+    ) &>/dev/null
     exit $res
 }
 
@@ -85,7 +85,7 @@ while (( ${#nodes[@]} != ${#PARTY_MIX[@]} )); do
 done
 echo " Done"
 
-sleep 10
+converge || exit 1
 
 for i in "${!PARTY_MIX[@]}"; do
     echo "Setting ${nodes[i]} to install ${PARTY_MIX[i]}"
@@ -97,5 +97,5 @@ for i in "${!PARTY_MIX[@]}"; do
 done
 
 echo "Waiting on OS installation to finish"
-rebar converge
+converge || exit 1
 echo "Finished."
