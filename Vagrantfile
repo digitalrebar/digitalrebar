@@ -5,7 +5,8 @@
 # vagrant plugin install vagrant-triggers
 #
 VAGRANTFILE_API_VERSION = "2"
-BASE_OS_BOX = "ubuntu/trusty64"
+#BASE_OS_BOX = "ubuntu/trusty64"
+BASE_OS_BOX = "bento/centos-7.1"
 SLAVE_RAM = "2048"
 ADMIN_PREFIX = "192.168.99"
 ADMIN_IP = "#{ADMIN_PREFIX}.100"

@@ -42,6 +42,12 @@ if [[ $success != 200 ]] ; then
     exit -1
 fi
 jq -r '.value|to_entries[].value' /tmp/keys > /tmp/keys2
+
+mkdir -p /root/.ssh
+chmod 700 /root/.ssh
+touch /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
+
 echo >> /root/.ssh/authorized_keys
 cat /tmp/keys2 >> /root/.ssh/authorized_keys
 rm -rf /tmp/keys /tmp/keys2
