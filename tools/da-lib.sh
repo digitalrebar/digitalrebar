@@ -26,6 +26,26 @@ rebar() {
     docker exec compose_rebar_api_1 rebar -E https://127.0.0.1:3000 -U rebar -P rebar1 "$@"
 }
 
+converge() {
+    rebar converge && return 0
+    failed_ids=($(rebar noderoles match '{"state": -1}' |jq -r '.[] |.id'))
+    if [[ ! $failed_ids ]]; then
+        echo "Converge failed, but no noderoles errored!"
+        return 1
+    fi
+    for id in "${failed_ids[@]}"; do
+        failed_noderole="$(rebar noderoles show "$id")"
+        nodename=$(rebar nodes show $(printf '%s' "$failed_noderole" |jq -r '.node_id') |jq -r -c '.name')
+        rolename=$(rebar roles show $(printf '%s' "$failed_noderole" |jq -r '.role_id') |jq -r -c '.name')
+        echo "*** FAILED NODEROLE $nodename: $rolename ***"
+        printf '%s' "$failed_noderole" |jq -r '.runlog'
+        echo
+        echo "*** END FAILED NODEROLE $nodename: $rolename ***"
+    done
+    echo "Rebar failed to converge."
+    return 1
+}
+
 known_containers=(provisioner logging debug node access)
 
 declare -A containers
@@ -168,10 +188,7 @@ wait_for_admin_containers() {
     fi
     sleep 5
     echo "Waiting for rebar to converge (up to 10 minutes)"
-    if ! rebar converge; then
-        echo "Rebar failed to converge!"
-        exit 1
-    fi
+    converge || exit 1
 }
 
 tear_down_admin_containers() {
