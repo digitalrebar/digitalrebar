@@ -21,6 +21,7 @@
     = NodeRole.state_name(state)
     = link_to t((@node.available ? '.reserve' : '.release')), node_path(@node.id, :api_version=>'v2', :available=>!@node.available), 
                   :method=>:put, :class=>'button', :remote=>true, :onclick=>"location.reload();"
+  = dl_item(t('.provider'), link_to(@node.provider.name, provider_path(:id=>@node.provider.id)))
   = dl_item(t('.vendor'), "#{@node.attrib_system_manufacturer} #{@node.attrib_system_product}")
   = dl_item(t('.serial'), @node.attrib_system_serial_number)
   = dl_item(t('.asset_tag'), @node.attrib_asset_tag)

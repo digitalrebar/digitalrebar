@@ -56,6 +56,7 @@ Rebar::Application.routes.draw do
   resources :jigs
   resources :node_roles
   resources :roles
+  resources :providers
 
   resources :interfaces
   resources :networks do
