@@ -1,5 +1,5 @@
+- raw = JSON.pretty_generate @item.auth_details
 %dt= t '.details'
 %dd
-  %a.toggle.with_label{:href => "#", :id => "#details_toggle", :rel => "details"}= t "expand"
-  %div{:id=>"details", :style =>"display:none"}
-    %pre= JSON.pretty_generate @item.auth_details
+  %textarea{:name => "auth_details", :rows=>10, :cols=>60}
+    = raw

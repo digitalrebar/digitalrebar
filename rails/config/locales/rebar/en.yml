@@ -471,12 +471,14 @@ en:
       name: "Name"
       description: "Description"
       type: "Type"
+      new: "Create Provider"
     show:
       title: "%{name} Provider"
       description: "Description"
       nodes: "Nodes"
       type: "Type"
       details: "Authentication Details"
+      update: "Save"
   available_hammers:
     index:
       id: "ID"
