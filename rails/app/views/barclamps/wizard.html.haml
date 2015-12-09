@@ -1,70 +1,75 @@
-- provisioner = Role.find_key 'provisioner-base-images'
-- admin = provisioner.nodes.first
-- available_os = Attrib.get("provisioner-available-oses", admin).map{ |k,v| k } rescue []
-- initial_role = Attrib.get('provisioner-target_os', Role.find_by(name: 'provisioner-os-install')) rescue "fred"
 %h1
   =t '.title', :barclamp => @bc.name.titleize
 
-= params[:id]
-= form_for :wizard, :'data-remote' => true, :url => "/barclamps/#{@bc.id}/wizard", :html => { :method=>:post, :'data-type' => 'json',  :id => @bc.name, :class => "formtastic" } do |f|
+- if @errors.count > 0 
 
-  %table.data.box
-    %thead
-      %tr
-        %th{:width=>'10%'}= t('.selection')
-        %th= t('.selection_value')
-    %tbody
-      %tr{:class => cycle(:odd,:even)}
-        %td= t('.deployment')
-        %td= text_field_tag(:deployment, @bc.name, :size => 15)
+  %h2= t '.errors_detected'
 
-  %table.data.box
-    %thead
-      %tr
-        %th= t('.name')
-        - if @roles and @roles.count > 0
-          - @roles.each do |r| 
-            %th
-              %input{type: "checkbox", class: "role_check", name:"role_#{r.id}"}
-              = r.name
-        %th= t('.os')
-        %th= t('.disk')
-        %th= t('.mem')
-        %th= t('.proc')
-    %tbody
-      - if @nodes and @nodes.count > 0
-        - @nodes.sort_by{|n| n.name }.each do |node|
-          - unless node.is_admin? or node.is_system?
-            %tr.node{ :class => cycle(:odd, :even, :name => "nodes"), :id => node.id }
-              %td= link_to node.name, node_path(node.id), :title=>node.description
-              - if @roles and @roles.count > 0
-                - @roles.each do |r|
-                  %td= check_box_tag "node_#{node.id}_role_#{r.id}", "include"
-              %td
-                - if available_os.count > 0
-                  - if node.is_docker_node?
-                    = t 'no_config'
-                  - else
-                    = f.select "node_#{node.id}_os", available_os, :selected=>initial_role
-                - else
-                  = t 'no_items'
-              %td= "#{node.attrib_number_of_drives || 0}, #{t('.raid')}: #{t((node.attrib_raid_set || 'not_set'))}"
-              %td= format_memory(node.attrib_memory)
-              %td= node.attrib_cpu
-      - else
+  %ul
+    - @errors.each do |msg|
+      %li= msg
+
+- else
+  = params[:id]
+  = form_for :wizard, :'data-remote' => true, :url => "/barclamps/#{@bc.id}/wizard", :html => { :method=>:post, :'data-type' => 'json',  :id => @bc.name, :class => "formtastic" } do |f|
+
+    %table.data.box
+      %thead
         %tr
-          %td{ :colspan=>9}
-            = t 'no_items'
+          %th{:width=>'10%'}= t('.selection')
+          %th= t('.selection_value')
+      %tbody
+        %tr{:class => cycle(:odd,:even)}
+          %td= t('.deployment')
+          %td= text_field_tag(:deployment, @bc.name, :size => 15)
 
-  %input.button{:type => "submit", :name => "create", :method=>:post, :value => t('.create')}
+    %table.data.box
+      %thead
+        %tr
+          %th= t('.name')
+          - if @roles and @roles.count > 0
+            - @roles.each do |r| 
+              %th
+                %input{type: "checkbox", class: "role_check", name:"role_#{r.id}"}
+                = r.name
+          %th= t('.os')
+          %th= t('.disk')
+          %th= t('.mem')
+          %th= t('.proc')
+      %tbody
+        - if @nodes and @nodes.count > 0
+          - @nodes.sort_by{|n| n.name }.each do |node|
+            - unless node.is_admin? or node.is_system?
+              %tr.node{ :class => cycle(:odd, :even, :name => "nodes"), :id => node.id }
+                %td= link_to node.name, node_path(node.id), :title=>node.description
+                - if @roles and @roles.count > 0
+                  - @roles.each do |r|
+                    %td= check_box_tag "role_#{r.id}_node_#{node.id}", "include"
+                %td
+                  - if @available_os.count > 0
+                    - if node.is_docker_node?
+                      = t 'no_config'
+                    - else
+                      = f.select "node_#{node.id}_os", @available_os, :selected=>@initial_role
+                  - else
+                    = t 'no_items'
+                %td= "#{node.attrib_number_of_drives || 0}, #{t('.raid')}: #{t((node.attrib_raid_set || 'not_set'))}"
+                %td= format_memory(node.attrib_memory)
+                %td= node.attrib_cpu
+        - else
+          %tr
+            %td{ :colspan=>9}
+              = t 'no_items'
 
-.clear
+    %input.button{:type => "submit", :name => "create", :method=>:post, :value => t('.create')}
 
-:javascript
+  .clear
 
-  $(".role_check").change(function() {
-    if (this.checked)
-      $(":checkbox[id=%" + this.name + "]").attr('checked', true);
-    else
-      $(":checkbox[id=%" + this.name + "]").attr('checked', false);
-  })
+  :javascript
+
+    $(".role_check").change(function() {
+      if (this.checked)
+        $(":checkbox[id^=" + this.name + "]").attr('checked', true);
+      else
+        $(":checkbox[id^=" + this.name + "]").attr('checked', false);
+    })
