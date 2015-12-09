@@ -83,9 +83,15 @@ class BarclampsController < ApplicationController
       admin = provisioner.nodes.first
       @available_os = Attrib.get("provisioner-available-oses", admin).map{ |k,v| k } rescue []
       @initial_role = Attrib.get('provisioner-target_os', Role.find_by(name: 'provisioner-os-install')) rescue "fred"
-      @errors = {}
+      @errors = []
 
-      needs = @bc.wizard.inspect["requires"]["roles"] rescue []
+      # look for required roles and add to errors list
+      needs = @bc.wizard.inspect["requires"]["roles"] || [] rescue []
+      needs.each do |r|  
+        unless (Role.find_key r rescue nil)
+          @errors << I18n.t('role_missing', :scope => 'barclamps.wizard', :role => r)
+        end
+      end
 
     elsif request.post?
 

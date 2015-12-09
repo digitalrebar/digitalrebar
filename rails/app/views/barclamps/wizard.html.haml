@@ -5,6 +5,10 @@
 
   %h2= t '.errors_detected'
 
+  %ul
+    - @errors.each do |msg|
+      %li= msg
+
 - else
   = params[:id]
   = form_for :wizard, :'data-remote' => true, :url => "/barclamps/#{@bc.id}/wizard", :html => { :method=>:post, :'data-type' => 'json',  :id => @bc.name, :class => "formtastic" } do |f|

@@ -243,6 +243,8 @@ en:
       proc: "Processor"
       raid: 'RAID'
       create: "Create"
+      errors_detected: "Errors Detected"
+      role_missing: "Missing required role: %{role}"
       <<: *raid_types
   dashboard:
     list:
