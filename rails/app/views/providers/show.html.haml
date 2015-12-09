@@ -3,12 +3,7 @@
 %dl
   = dl_item(t('.type'), @item.type || (t 'not_set'))
   = dl_item(t('.description'), @item.description || (t 'not_set'))
-  %dt= t '.details'
-  %dd
-    %a.toggle.with_label{:href => "#", :id => "#details_toggle", :rel => "details"}= t "expand"
-    %div{:id=>"details", :style =>"display:none"}
-      %pre= JSON.pretty_generate @item.auth_details
-
+  = render :partial => 'show', :locals=>{:item => @item}
 
 %br
 

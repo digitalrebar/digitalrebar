@@ -1,0 +1,5 @@
+%dt= t '.details'
+%dd
+  %a.toggle.with_label{:href => "#", :id => "#details_toggle", :rel => "details"}= t "expand"
+  %div{:id=>"details", :style =>"display:none"}
+    %pre= JSON.pretty_generate @item.auth_details
