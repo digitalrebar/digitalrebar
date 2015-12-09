@@ -66,7 +66,10 @@ for repo_name in "${!pkg_sources[@]}"; do
                 fi;;
             rpm)
                 if [[ ! -f /var/cache/${rest##*/} ]]; then
-                    (cd /var/cache && curl -fgl -O "$rest" && rpm -Uvh "${rest##*/}")
+                    (cd /var/cache && curl -fgl -O "$rest")
+                    if ! (cd /var/cache && rpm -qa | fgrep -q "$(rpm -qp ${rest##*/})") ; then
+                        (cd /var/cache && rpm -Uvh "${rest##*/}")
+                    fi
                     touch /tmp/.repo_update
                 fi;;
             bare)
