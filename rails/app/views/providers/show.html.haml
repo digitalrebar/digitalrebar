@@ -1,9 +1,17 @@
 %h1= t '.title', :name => @item.name.titleize
 
-%dl
-  = dl_item(t('.type'), @item.type || (t 'not_set'))
-  = dl_item(t('.description'), @item.description || (t 'not_set'))
-  = render :partial => 'show', :locals=>{:item => @item}
+= form_for :provider, :'data-remote' => true, :url => provider_path(@item.id), :html => { :method=>:put, :'data-type' => 'json',  :class => "formtastic" } do |f|
+  %dl
+    = dl_item(t('.type'), @item.type || (t 'not_set'))
+    %dt= t('.description')
+    %dd= text_field_tag(:description, @item.description, :size => 50)
+    - begin
+      = render :partial => @item.type.tolower, :locals=>{:item => @item}
+    - rescue
+      = render :partial => 'show', :locals=>{:item => @item}    
+    %dt
+    %dd= f.button :type => "submit", :name => "update", :method=>:post, :value => t('.update')
+
 
 %br
 

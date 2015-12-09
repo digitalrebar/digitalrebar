@@ -11,3 +11,11 @@
         %td= link_to i.name, provider_path(i.id)
         %td= i.type
         %td= i.description
+  %tfoot
+    = form_for :provider, :'data-remote' => true, :url => providers_path(), :html => { :method=>:post, :'data-type' => 'json',  :class => "formtastic" } do |f|
+      %tr 
+        %td= text_field_tag :name, t('default'), :size => 15
+        %td= select :type, nil, options_for_select({"Metal"=>'metal_provider',"IaaS (Fog)"=>"fog_provider"}, 'fog_provider')
+        %td
+          = f.button :type => "submit", :name => "create", :method=>:post, :value => t('.new')
+          = hidden_field_tag :auth_details, "{}"
