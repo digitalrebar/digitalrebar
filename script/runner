@@ -158,6 +158,7 @@ install() {
     case $OS_FAMILY in
         rhel)
             if_update_needed yum -y makecache
+            yum -y install epel-release # Everyone gets epel for free.
             yum -y install "${to_install[@]}";;
         debian)
             if_update_needed apt-get -y update
