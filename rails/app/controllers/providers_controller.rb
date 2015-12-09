@@ -32,22 +32,22 @@ class ProvidersController < ApplicationController
 
   # API GET /api/v2/providers
   def index
-    @providers = if params.has_key?(:node_id)
+    @list = if params.has_key?(:node_id)
       Node.find_key(params[:node_id]).providers
     else
       Provider.all
     end
     respond_to do |format|
       format.html { }
-      format.json { render api_index Provider, @providers }
+      format.json { render api_index Provider, @list }
     end
   end
 
   def show
-    @provider = Provider.find_key(params[:id])
+    @item = Provider.find_key(params[:id])
     respond_to do |format|
       format.html {  }
-      format.json { render api_show @provider }
+      format.json { render api_show @item }
     end
   end
 

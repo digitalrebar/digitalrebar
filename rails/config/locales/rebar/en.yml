@@ -123,6 +123,8 @@ en:
     utils_description: "Tools and System Functions "
     jigs: "Jigs"
     jigs_description: "Configuration Manager Plug-ins"
+    providers: "Providers"
+    providers_description: "Infrastructure Management Services"
     hammers: "Hammers"
     hammers_description: "External Interface Mechanisms"
     barclamps: "Barclamps"
@@ -362,6 +364,7 @@ en:
       admin: "Admin?"
       address: "Address"
       no_nodes: "No Nodes Registered.  Suggested action: configure Rebar."
+      provider: "Provider"
       <<: *deployment_common
       <<: *node_role_states
     show:
@@ -402,6 +405,7 @@ en:
       roles: Roles
       barclamps: Barclamps
       asset_tag: Service Tag
+      provider: "Provider"
       raid: RAID
       bdd_marker: BDD Marker
       reserve: "Reserve"
@@ -459,6 +463,18 @@ en:
       value: "Value"
       save: "Update"
       error: "Render Error"
+  providers:
+    index:
+      title: "Providers"
+      name: "Name"
+      description: "Description"
+      type: "Type"
+    show:
+      title: "%{name} Provider"
+      description: "Description"
+      nodes: "Nodes"
+      type: "Type"
+      details: "Authentication Details"
   available_hammers:
     index:
       id: "ID"

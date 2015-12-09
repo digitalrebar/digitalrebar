@@ -1,0 +1,13 @@
+%h1= t '.title'
+
+%table.data.box
+  %thead
+    %th= t '.name'
+    %th= t '.type'
+    %th= t '.description'
+  %tbody
+    - @list.each do |i|
+      %tr
+        %td= link_to i.name, provider_path(i.id)
+        %td= i.type
+        %td= i.description
