@@ -142,6 +142,7 @@ bring_up_admin_containers() {
     fi
 
     mkdir -p "$HOME/.cache/digitalrebar/tftpboot"
+    chmod 777 "$HOME/.cache/digitalrebar/tftpboot"
 
     sudo rm -rf "$HOME/.cache/digitalrebar/tftpboot/nodes"
     if [[ -f $HOME/.ssh/id_rsa.pub ]]; then
