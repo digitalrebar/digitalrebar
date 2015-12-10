@@ -33,6 +33,11 @@ class PacketProvider < Provider
       Rails.logger.info("Created server #{server.inspect}")
       Attrib.set('provider-node-id',obj, server["id"], :hint)
     end
+
+    # Packet nodes should always have rebar-joined-node.
+    r = Role.find_by_name('rebar-joined-node')
+    r.add_to_node(obj)
+    obj.commit!
   end
 
   def reboot_node(obj)
