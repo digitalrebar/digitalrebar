@@ -1,7 +1,7 @@
 --- 
   - name: Load tftp nat module
     modprobe: name=nf_nat_tftp state=present
-    when: dr_access_mode == "FORWARDER"
+    when: dr_access_mode == "FORWARDER" and ansible_os_family != "Darwin"
     sudo: yes
 
   # Stop services that get in the way of progress.
@@ -42,11 +42,11 @@
     command: mkdir -p ~/.cache/digitalrebar/tftpboot/isos
 
   - name: download Ubuntu ISO (SLOW, see https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
-    command: wget http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.3-server-amd64.iso -nc -O ~/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso
+    command: curl -sSL http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.3-server-amd64.iso -o ~/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso
     args:
       creates: ~/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso
   - name: download Centos ISO (SLOW, see https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
-    command: wget http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso -nc -O ~/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
+    command: curl -sSL http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso -o ~/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
     args:
       creates: ~/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
 
@@ -105,14 +105,17 @@
     command: /usr/local/bin/docker-compose kill
     args:
       chdir: compose
+    tags: stop
 
   - name: Ensure containers are removed
     command: /usr/local/bin/docker-compose rm -f
     args:
       chdir: compose
+    tags: stop
 
   - name: Restart Docker (yet again)
     service: name=docker state=restarted
+    when: ansible_os_family != "Darwin"
     sudo: yes
 
   - name: Compose up containers

@@ -5,13 +5,13 @@
     - name: Make cache dirs
       command: mkdir -p ~/.cache/digitalrebar/tftpboot/isos
     - name: download Ubuntu ISO (FAST local mirror)
-      command: wget http://mirror.ewr1.packet.net/ubuntu/isos/x86_64/14.04/ubuntu-14.04.3-server-amd64.iso -nc -O ~/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso
+      command: curl -sSL http://mirror.ewr1.packet.net/ubuntu/isos/x86_64/14.04/ubuntu-14.04.3-server-amd64.iso -o ~/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso
       ignore_errors: yes
       args:
         creates: ~/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso
 
     - name: download Centos ISO (FAST local mirror)
-      command: wget http://mirror.ewr1.packet.net/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso -nc -O ~/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
+      command: curl -sSL http://mirror.ewr1.packet.net/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso -o ~/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
       ignore_errors: yes
       args:
         creates: ~/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso

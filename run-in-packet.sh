@@ -1,104 +1,72 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2015, RackN Inc
 
-# Include Project API Key in Packet
-. ~/.dr_info
+# Still helper commands for finding values.
+#curl -s -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/plans
+#curl -s -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/operating-systems
 
-if [ "$API_KEY" == "" ] ; then
-    echo "You must define API_KEY (can be added to ~/.dr_info)"
-    exit 1
-fi
+#
+# We are deploying in packet add this packet instance as a provider
+# and force the admin deploy to packet
+#
+PROVIDER=packet
+DEPLOY_ADMIN=packet
 
-if ! which ansible &>/dev/null; then
-    echo "Please install Ansible!"
-    exit 1
-fi
+# Processes args, inits provider, and validates provider
+. workloads/wl-lib.sh
 
-if ! which jq &>/dev/null; then
-    echo "Please install jq!"
-    exit 1
-fi
+# Check to see if device id exists.
+if [ "$DEVICE_ID" != "" ] ; then
+    STATE=`curl -s -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/projects/$PROVIDER_PACKET_PROJECT_ID/devices/$DEVICE_ID | jq -r .state`
 
-HOST_MODE=""
-if [ "$1" == "--host" ] ; then
-  shift
-  HOST_MODE="YES"
-fi
-
-if [ "$1" == "--device-id" ] ; then
-  shift
-  DEVICE_ID="$1"
-  shift
+    if [[ $STATE == null ]] ; then
+        echo "Device ID doesn't exist in packet: $DEVICE_ID"
+        exit 1
+    fi
+    echo "My projects: ${PROVIDER_PACKET_PROJECT_ID} will reuse ${DEVICE_ID}"
 else
-  NODENAME=$1
-  if [ "$NODENAME" == "" ] ; then
-    NODENAME="${USER}1"
-    shift
-  fi
-fi
+    echo "My projects: ${PROVIDER_PACKET_PROJECT_ID} will create ${NODENAME}"
 
+    # Make name for unamed items
+    NODENAME=$1
+    if [ "$NODENAME" == "" ] ; then
+        TSTAMP=`date +%H%M`
+        NODENAME="${USER}1-${TSTAMP}"
+    else
+        shift
+    fi
 
-TSTAMP=`date +%H%M`
-
-PROJ_ID=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects | jq -r ".projects[].id"`
-
-echo "My projects: ${PROJ_ID} will be called ${NODENAME}_at_${TSTAMP}"
-
-#curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/plans | jq .
-#curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/operating-systems | jq .
-
-node="{
+    node="{
   \"facility\": \"ewr1\",
   \"plan\": \"baremetal_1\",
   \"operating_system\": \"ubuntu_14_04\",
-  \"hostname\": \"${NODENAME}${TSTAMP}\"
+  \"hostname\": \"${NODENAME}\"
 }"
-# future > try centos_7 for os
 
-date
-
-if [ "$DEVICE_ID" == "" ] ; then
-  DEVICE_ID=`curl -H "Content-Type: application/json" -X POST --data "$node" -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices | jq -r .id`
+    DEVICE_ID=`curl -H "Content-Type: application/json" -X POST --data "$node" -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/projects/$PROVIDER_PACKET_PROJECT_ID/devices | jq -r .id`
 fi
 
-STATE=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .state`
+# Wait for device to be up
+STATE=`curl -s -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/projects/$PROVIDER_PACKET_PROJECT_ID/devices/$DEVICE_ID | jq -r .state`
 while [ "$STATE" != "active" ] ; do
   echo "STATE = $STATE"
   sleep 5
-  STATE=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .state`
+  STATE=`curl -s -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/projects/$PROVIDER_PACKET_PROJECT_ID/devices/$DEVICE_ID | jq -r .state`
 done
 
 # We sleep here because while the API says up, not all services have started.
 sleep 30
 
-date
-
 # Get Public IP - HACK - should look it up
-IP=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .ip_addresses[0].address`
-CIDR=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .ip_addresses[0].cidr`
+IP=`curl -s -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/projects/$PROVIDER_PACKET_PROJECT_ID/devices/$DEVICE_ID | jq -r .ip_addresses[0].address`
+CIDR=`curl -s -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/projects/$PROVIDER_PACKET_PROJECT_ID/devices/$DEVICE_ID | jq -r .ip_addresses[0].cidr`
 
-EXTRA_VARS="packet=true"
-if [ "$HOST_MODE" == "YES" ] ; then
-  EXTRA_VARS="dr_access_mode=HOST dr_external_ip=$IP/$CIDR packet=true"
-fi
+ENV_VAR="\"packet\": true,"
 
-echo "Device ip = $IP/$CIDR"
+export ADMIN_IP="$IP/$CIDR"
 
-ssh-keygen -f "~/.ssh/known_hosts" -R $IP
-ssh -o StrictHostKeyChecking=no root@$IP date
+. ./run-in-system.sh
 
-# Build ansible inventory file
-echo "$IP ansible_ssh_user=root" > /tmp/run-in-hosts.$$
-
-export ANSIBLE_HOST_KEY_CHECKING=False
-ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars "$EXTRA_VARS" tasks/packet_isos.yml
-ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars "$EXTRA_VARS" digitalrebar.yml
-
-date
-
-echo "=== HELPFUL COMMANDS ==="
 echo "Packet Device ID: $DEVICE_ID"
-echo "repeat Packet run: ./run-in-packet.sh --device-id ${DEVICE_ID} ${NODE_NAME}"
-echo "repeat Ansible run: ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars \"$EXTRA_VARS\" digitalrebar.yml"
+echo "repeat Packet run: ./run-in-packet.sh --device-id ${DEVICE_ID} ${NODENAME}"
 echo "SSH access: ssh -X root@${IP}"
-echo "Digital Rebar UI https://${IP}:3000"
