@@ -15,9 +15,6 @@
 
 class MetalProvider < Provider
 
-  audited
-  has_many :nodes
-
   def reboot_node(obj)
     obj.power.reboot
   end

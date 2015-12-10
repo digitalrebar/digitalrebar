@@ -155,7 +155,6 @@ class DrillConsolidated < ActiveRecord::Migration
       t.references  :parent
       t.timestamps
     end
-    
 
     create_table :role_requires do |t|
       t.belongs_to  :role,            null: false
@@ -180,7 +179,7 @@ class DrillConsolidated < ActiveRecord::Migration
       t.json        :auth_details,   null: false, default: { expr: "'{}'::json" }
       t.timestamps
     end
-    
+
     create_table :nodes do |t|
       t.text        :name,           limit: 255,     null: false
       t.text        :description,    null: false, default: ''

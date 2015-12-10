@@ -18,9 +18,6 @@ require 'jsonrpc-client'
 
 class FogProvider < Provider
 
-  audited
-  has_many :nodes
-
   after_commit :register_endpoint, on: :create
 
   def create_node(obj)
