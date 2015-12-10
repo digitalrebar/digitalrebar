@@ -62,7 +62,7 @@ bring_up_admin_containers && wait_for_admin_containers || \
 
 [[ $DEPLOY_OSES ]] || exit 0
 
-PARTY_MIX=(centos-6.6 centos-7.1.1503 debian-7.8.0 debian-8.1.0
+PARTY_MIX=(centos-6.6 centos-7.1.1503 debian-7 debian-8
            redhat-6.5 ubuntu-12.04 ubuntu-14.04 ubuntu-15.04)
 printf "Bringing up slaves for party mix testing: "
 for ((n=0; n<${#PARTY_MIX[@]}; n++)); do

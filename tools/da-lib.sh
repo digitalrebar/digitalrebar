@@ -182,8 +182,8 @@ wait_for_admin_containers() {
                 "Took too long for rebar container to come up" \
                 rebar ping || exit 1
     if use_container provisioner; then
-        echo "Waiting for the provisioner (up to 600 seconds)"
-        retry_until 600 \
+        echo "Waiting for the provisioner (up to 1800 seconds)"
+        retry_until 1800 \
                     "Took too long for the provisioner to come up" \
                     provisioner_finished || exit 1
     fi

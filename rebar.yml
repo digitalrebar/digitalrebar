@@ -38,8 +38,8 @@ os_support:
   - centos-7.1.1503
   - opensuse-13.1
   - fedora-20
-  - debian-7.8.0
-  - debian-8.1.0
+  - debian-7
+  - debian-8
   - xenserver-6.5
   - esxi-5.5
   - fuel-6.0    
