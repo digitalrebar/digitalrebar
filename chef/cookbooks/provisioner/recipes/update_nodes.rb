@@ -191,19 +191,19 @@ new_clients = {}
       rootdev root
       action :add
     end
-  when "debian-7.8.0-install"
+  when "debian-7-install"
     provisioner_debian mnode_name do
       distro "debian"
-      version "7.8.0"
+      version "7"
       address v4addr
       target mnode_name
       rootdev root
       action :add
     end
-  when "debian-8.1.0-install"
+  when "debian-8-install"
     provisioner_debian mnode_name do
       distro "debian"
-      version "8.1.0"
+      version "8"
       address v4addr
       target mnode_name
       rootdev root
