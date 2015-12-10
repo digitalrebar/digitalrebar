@@ -475,10 +475,17 @@ en:
     show:
       title: "%{name} Provider"
       description: "Description"
+      name: "Provider"
       nodes: "Nodes"
       type: "Type"
       details: "Authentication Details"
       update: "Save"
+      provider: "Provider"
+      config_options: "Config Options"
+      aws_access_key_id: "Access Key"
+      aws_secret_access_key: "Secret"
+      region: "Region"
+      packet_project: "Project"
   available_hammers:
     index:
       id: "ID"

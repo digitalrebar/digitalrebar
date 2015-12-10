@@ -1,0 +1,20 @@
+- display = { "AWS" => "none", "packet" => "none" }
+- display[(@item.auth_details['provider'] || "AWS")] = "table-row-group"
+
+%tr
+  %td= t 'provider', :scope=>'providers.show'
+  %td= select :provider, :name, options_for_select({"Amazon Web Services"=>'AWS',"Packet.net"=>"packet"}, @item.auth_details['provider']), {:class=>"provider"}
+%tbody.provider_fields.AWS{:style=>"display:#{display['AWS']}"}
+  %tr
+    %td= t('aws_access_key_id', :scope=>'providers.show')
+    %td= text_field_tag(:aws_access_key_id, @item.auth_details['aws_access_key_id'], :size => 30)
+  %tr
+    %td= t 'aws_secret_access_key', :scope=>'providers.show'
+    %td= text_field_tag(:aws_secret_access_key, @item.auth_details['aws_secret_access_key'], :size => 60)
+  %tr
+    %td= t 'region', :scope=>'providers.show'
+    %td= text_field_tag(:region, @item.auth_details['region'], :size => 30)
+%tbody.provider_fields.packet{:style=>"display:#{display['packet']}"}
+  %tr
+    %td= t 'packet_project', :scope=>'providers.show'	
+    %td= "FOO"
