@@ -1,17 +1,32 @@
 %h1= t '.title', :name => @item.name.titleize
 
 = form_for :provider, :'data-remote' => true, :url => provider_path(@item.id), :html => { :method=>:put, :'data-type' => 'json',  :class => "formtastic" } do |f|
-  %dl
-    = dl_item(t('.type'), @item.type || (t 'not_set'))
-    %dt= t('.description')
-    %dd= text_field_tag(:description, @item.description, :size => 50)
-    - begin
-      = render :partial => @item.type.tolower, :locals=>{:item => @item}
-    - rescue
-      = render :partial => 'show', :locals=>{:item => @item}    
-    %dt
-    %dd= f.button :type => "submit", :name => "update", :method=>:post, :value => t('.update')
-
+  
+  %table.data.box
+    %thead
+      %tr
+        %th= t ".name"
+        %th= @item.name
+    %tbody
+      %tr
+        %td= t '.type'
+        %td= @item.type || t('not_set') rescue t('not_set' )
+      %tr
+        %td= t '.description'
+        %td= text_field_tag :description, @item.description, :size => 50
+      - begin 
+        = render :partial => (@item.type || "show").downcase, :locals=>{:item => @item}
+        = render :partial => 'show', :locals=>{:item => @item} if params.include? :raw
+      - rescue Exception => e
+        = render :partial => 'show', :locals=>{:item => @item}
+        - if Rails.env.development?
+          %tr
+            %td= "error"
+            %td= e.message
+    %tfoot
+      %tr
+        %td
+        %td= f.button :type => "submit", :name => "update", :method=>:post, :value => t('.update')
 
 %br
 
@@ -26,3 +41,14 @@
 - rescue Exception => e
   %strong= t 'work_in_progress', :message => 'join issue'
   %p= e.inspect
+
+.clear
+
+:javascript
+
+  $(provider_name).change(function() {
+    // this == the element that fired the change event
+    d = this.value;
+    $("tbody.provider_fields").attr("style", "display:none")
+    $("tbody." + d).attr("style", "display:table-row-group")
+  })

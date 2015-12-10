@@ -1,5 +1,6 @@
 - raw = JSON.pretty_generate @item.auth_details
-%dt= t '.details'
-%dd
-  %textarea{:name => "auth_details", :rows=>10, :cols=>60}
-    = raw
+%tr
+  %td= t '.details'
+  %td
+    %textarea{:name => "auth_details", :rows=>10, :cols=>60}
+      = raw
