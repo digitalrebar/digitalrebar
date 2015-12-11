@@ -106,6 +106,7 @@ Rebar::Application.routes.draw do
       resources :network_ranges do as_routes end
       resources :network_routers do as_routes end
       resources :networks do as_routes end
+      resources :providers do as_routes end
       resources :dns_name_filters do as_routes end
       resources :dns_name_entries do as_routes end
       resources :nodes do as_routes end

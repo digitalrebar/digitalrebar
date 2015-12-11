@@ -143,6 +143,7 @@ en:
       jig: "DevOps Jig"
       attribs: "Attributes"
       nodes: "Nodes"
+      providers: "Providers"
       groups: "Groups"
       roles: "Roles"
       deployments: "Deployments"
