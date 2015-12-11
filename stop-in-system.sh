@@ -1,51 +1,11 @@
 #!/usr/bin/env bash
 # Copyright 2015, RackN Inc
 
-ACCOUNT=${ACCOUNT:-"--user root"}
-
 # Load it up
 . workloads/wl-lib.sh
 
 # If we are on mac and local host config is set.
 if [[ $(uname -s) = Darwin && $DEPLOY_ADMIN = local ]] ; then
-    if ! which docker &>/dev/null; then
-        echo "Please install docker!"
-        echo "Install Docker for MacOS by using these steps:"
-        echo "  https://docs.docker.com/mac/step_one/"
-        echo "Additional one-time modifications need to be made:"
-cat <<EOF
-Switch to NFS instead of vboxsf - one time on the mac.
-sudo vi /etc/exports
-/Users -maproot=root:wheel 192.168.99.100
-sudo nfsd restart
-
-From boot2docker umount/remount /Users using NFS:
-Create the script in the boot2docker image: /var/lib/boot2docker/bootlocal.sh
-with the contents:
-# --START--
-umount /Users
-/usr/local/etc/init.d/nfs-client start
-mount 192.168.99.1:/Users /Users -o rw,async,noatime,rsize=32768,wsize=32768,proto=tcp
-# --END--
-
-Edit the host-only network to reduce the dhcp address range to one address
- - This only needs to be done if you are going to PXE boot vms in virtualbox.
-
-Stop the virtual machine
-Up the memory in the docker vm to more - 6G
-Up the cores assigned to at least 2 (better is 4).
-Stop virtual box and restart it
-Start headless
-EOF
-        ERROR="YES"
-    fi
-
-    if ! which docker-compose &>/dev/null; then
-        echo "Please install docker-compose!"
-        echo "Should have come with the docker tools"
-        ERROR="YES"
-    fi
-
     if [ "$DOCKER_HOST" == "" ] ; then
         echo "DOCKER_HOST should be set"
         echo "Make sure you are running from a docker-enabled terminal"
@@ -131,11 +91,5 @@ fi
 echo "$IP ansible_ssh_user=root" > /tmp/run-in-hosts.$$
 
 export ANSIBLE_HOST_KEY_CHECKING=False
-if [[ $ENV_VAR = "\"packet\": true," ]] ; then
-    ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars "$JSON_STRING" tasks/packet_isos.yml
-fi
-ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars "$JSON_STRING" digitalrebar.yml ${LC}
+ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars "$JSON_STRING" -t stop digitalrebar.yml ${LC}
 
-echo "=== HELPFUL COMMANDS ==="
-echo "repeat Ansible run: ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars \"$JSON_STRING\" digitalrebar.yml ${LC}"
-echo "Digital Rebar UI https://${IP}:3000"
