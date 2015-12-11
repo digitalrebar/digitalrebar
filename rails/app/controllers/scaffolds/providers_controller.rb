@@ -1,4 +1,4 @@
-# Copyright 2015 RackN
+# Copyright 2015, RackN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,27 +13,8 @@
 # limitations under the License.
 #
 
-class Provider < ActiveRecord::Base
-
-  AVAILABLE = {"IaaS General (Fog)"=>"FogProvider", "Packet.net"=>'PacketProvider', "Metal"=>'MetalProvider'}
-
-  audited
-  has_many :nodes
-
-  def as_json(args = nil)
-    super(args).merge("type" => self.type.to_s)
+class Scaffolds::ProvidersController < ApplicationController
+  active_scaffold :provider do |conf|
+    list.columns.exclude :auth_details
   end
-
-  def create_node(obj)
-    true
-  end
-
-  def reboot_node(obj)
-    true
-  end
-
-  def delete_node(obj)
-    true
-  end
-
-end
+end 
