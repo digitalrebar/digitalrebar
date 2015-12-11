@@ -45,12 +45,12 @@ class FogProvider < Provider
     ep.invoke('servers.delete',[self.auth_details,Attrib.get('provider-node-id',obj)])
   end
 
-  private
   def endpoint
     service = Diplomat::Service.get('fogwrap')
     JSONRPC::Client.new("http://#{service.Address}:#{service.ServicePort}")
   end
 
+  private
   def register_endpoint
     ep = endpoint
     ep.invoke('servers.register',[self.auth_details,
