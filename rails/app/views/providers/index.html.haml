@@ -5,8 +5,10 @@
     %th= t '.name'
     %th= t '.type'
     %th= t '.description'
+    %th= ""
   %tbody
     - @list.each do |i|
+      - next unless i.type
       %tr
         %td= link_to i.name, provider_path(i.id)
         %td= i.type
@@ -15,6 +17,7 @@
       %tr
         %td= text_field_tag :name, t('default'), :size => 15
         %td= select :type, nil, options_for_select(Provider::AVAILABLE, Provider::AVAILABLE.keys.first)
+        %td= text_field_tag :description, t('not_set'), :size => 40
         %td
           = f.button :type => "submit", :name => "create", :method=>:post, :value => t('.new')
           = hidden_field_tag :auth_details, "{}"
