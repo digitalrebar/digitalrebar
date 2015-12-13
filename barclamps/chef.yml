@@ -62,14 +62,6 @@ roles:
       - ntp-client
     flags:
       - implicit
-    attribs:
-      - name: chef-client_name
-        description: 'The name that this node should use for its chef client.'
-        map: 'chefjig/client/name'
-      - name: chef-client_key
-        description: 'The private key that this node should use to authenticate with the chef server'
-        map: 'chefjig/client/key'
-        ui_renderer: 'barclamp_chef/attribs/client_key'
     wants-attribs:
       - chef-servers
   - name: chef-solo
@@ -81,3 +73,12 @@ roles:
       - name: chef-solo_client_name
         description: 'The client name that chef-solo should use'
         map: 'rebar/chef-solo/name'
+
+attribs:
+  - name: chef-client_name
+    description: 'The name that this node should use for its chef client.'
+    map: 'chefjig/client/name'
+  - name: chef-client_key
+    description: 'The private key that this node should use to authenticate with the chef server'
+    map: 'chefjig/client/key'
+    ui_renderer: 'barclamp_chef/attribs/client_key'
