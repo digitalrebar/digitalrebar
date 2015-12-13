@@ -60,9 +60,9 @@ validate_tools() {
 
     if ! which rebar &>/dev/null ; then
         if [[ $(uname -s) == Darwin ]] ; then
-            curl -O rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-darwin-amd64
+            curl -o rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-darwin-amd64
         else
-            curl -O rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64
+            curl -o rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64
         fi
         chmod +x ./rebar
         export REBAR=./rebar
