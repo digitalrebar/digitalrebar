@@ -34,21 +34,13 @@
 
   %h2= t '.nodes'
 
-  %ol
-    - @item.nodes.order(:name).each do |n|
-      %li= link_to n.name, node_path(n.id)
+  - if @item.nodes.count > 0
+    %ol
+      - @item.nodes.order(:name).each do |n|
+        %li= link_to n.name, node_path(n.id)
+  - else
+    =t 'none'
 
 - rescue Exception => e
   %strong= t 'work_in_progress', :message => 'join issue'
   %p= e.inspect
-
-.clear
-
-:javascript
-
-  $(provider_name).change(function() {
-    // this == the element that fired the change event
-    d = this.value;
-    $("tbody.provider_fields").attr("style", "display:none")
-    $("tbody." + d).attr("style", "display:table-row-group")
-  })

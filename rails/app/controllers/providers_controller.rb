@@ -38,7 +38,7 @@ class ProvidersController < ApplicationController
       Provider.all
     end
     respond_to do |format|
-      format.html { render :show }
+      format.html {  }
       format.json { render api_index Provider, @list }
     end
   end
@@ -52,16 +52,18 @@ class ProvidersController < ApplicationController
   end
 
   def update
+    # deal w/ non-json form data from UI
+    params[:auth_details] = params[:auth_details].to_json if params[:auth_details].is_a? Hash
     Provider.transaction do
       @item = Provider.find_key(params[:id]).lock!
       if request.patch?
-        patch(@nm,%w{nameitemype auth_details})
+        patch(@item,%w{name item type description auth_details})
       else
-        @item.update_attributes!(params.permit(:name, :type, :auth_details))
+        @item.update_attributes!(params.permit(:name, :description, :type, :auth_details))
       end
     end
     respond_to do |format|
-      format.html {  }
+      format.html { render :show }
       format.json { render api_show @item }
     end
   end
@@ -74,9 +76,10 @@ class ProvidersController < ApplicationController
     params.require(:auth_details)
     @item = Provider.create!(name: params[:name],
                                  type: params[:type],
+                                 description: params[:description],
                                  auth_details: params[:auth_details])
     respond_to do |format|
-      format.html {  }
+      format.html { redirect_to provider_path(@item.id) }
       format.json { render api_show @item }
     end
   end

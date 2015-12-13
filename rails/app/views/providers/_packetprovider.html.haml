@@ -1,0 +1,11 @@
+%tr
+  %td{:colspan=>2}
+    %a{:href=>"http://packet.net"}
+      %img{:src=>"https://packet.global.ssl.fastly.net/assets/images/logo-main.png", :width=>138}
+%tr
+  %td= t 'region', :scope=>'providers.show'
+  %td= text_field_tag("auth_details[region]", @item.auth_details['region'], :size => 30)
+%tr
+  %td= t 'project', :scope=>'providers.show'	
+  %td
+    = text_field_tag("auth_details[project]", @item.auth_details['project'], :size => 30)

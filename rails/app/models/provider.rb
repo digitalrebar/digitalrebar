@@ -36,4 +36,9 @@ class Provider < ActiveRecord::Base
     true
   end
 
+  # provide JSON for Node Create by provider (intended to be overridden!)
+  def node_create_hints()
+    { foo: bar }
+  end
+
 end
