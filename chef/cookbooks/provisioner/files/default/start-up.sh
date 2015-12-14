@@ -93,6 +93,7 @@ if ! [[ $(cat /proc/cmdline) =~ $host_re ]]; then
                              \"mac\": \"$MAC\",
                              \"ip\": \"$IP\",
                              \"variant\": \"metal\",
+                             \"provider\": \"metal\",
                              \"os_family\": \"linux\",
                              \"arch\": \"$(uname -m)\"}" || {
             echo "We could not create a node for ourself!"

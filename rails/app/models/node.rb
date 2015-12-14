@@ -24,7 +24,6 @@ class Node < ActiveRecord::Base
   before_destroy    :before_destroy_handler
   after_update      :bootenv_change_handler
   after_update      :deployment_change_handler
-  before_create     :before_create_hooks
   after_commit      :after_create_hooks, on: :create
   after_commit      :after_commit_handler, on: :update
   after_commit      :on_destroy_hooks, on: :destroy
@@ -549,11 +548,6 @@ class Node < ActiveRecord::Base
         Rails.logger.error "node #{name} attempting to cleanup role #{r.name} failed with #{e.message}"
       end
     end
-  end
-
-  def before_create_hooks
-    # Handle node creation as needed
-    self.provider = Provider.find_by!(name: self.variant)
   end
 
   def after_create_hooks

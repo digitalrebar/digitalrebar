@@ -151,7 +151,8 @@ class Deployment < ActiveRecord::Base
                  admin: false,
                  system: true,
                  alive: true,
-                 variant: "phantom",
+                 variant: 'phantom',
+                 provider_id: Provider.find_by!(name: 'phantom').id,
                  deployment_id: self.id,
                  bootenv: "local")
   end

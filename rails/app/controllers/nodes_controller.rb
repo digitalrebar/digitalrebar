@@ -201,21 +201,20 @@ class NodesController < ApplicationController
     else
       params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
       params[:deployment_id] ||= Deployment.system
-      params[:variant] ||= "phantom"
-      params[:arch] ||= "x86_64"
-      params[:os_family] ||= "linux"
+      params[:provider_id] = Provider.find_key(params[:provider]).id if params.has_key? :provider
+      params[:provider_id] ||= Provider.find_by!(name: 'metal').id
       params.require(:name)
       params.require(:deployment_id)
-      params.require(:variant)
-      params.require(:arch)
-      params.require(:os_family)
+      params.require(:provider_id)
       hints = params[:hints] || {}
+      Rails.logger.info("Node create params: #{params.inspect}")
       default_net = nil
       Node.transaction do
         @node = Node.create!(params.permit(:name,
                                            :description,
                                            :admin,
                                            :deployment_id,
+                                           :provider_id,
                                            :allocated,
                                            :alive,
                                            :system,
