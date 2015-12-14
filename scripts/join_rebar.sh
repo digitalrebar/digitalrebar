@@ -73,6 +73,7 @@ if [[ $exists == 404 ]]; then
     curl -k -f -g --digest -u "$REBAR_KEY" -X POST \
       -d "name=$HOSTNAME" \
       -d "ip=$IP" \
+      -d "provider=metal" \
       -d "variant=metal" \
       -d "os_family=linux" \
       -d "arch=$(uname -m)" \
@@ -104,20 +105,12 @@ fi
 # Always make sure we are marking the node not alive. It will comeback later.
 curl -k -f -g --digest -u "$REBAR_KEY" \
     -X PUT "$REBAR_WEB/api/v2/nodes/$HOSTNAME" \
-    -d 'alive=false' \
-    -d 'bootenv=local' \
-    -d "variant=metal" \
-    -d "os_family=linux" \
-    -d "arch=$(uname -m)"
+    -d 'alive=false'
 echo "Set node not alive"
 
 # And then alive
 curl -k -f -g --digest -u "$REBAR_KEY" \
     -X PUT "$REBAR_WEB/api/v2/nodes/$HOSTNAME" \
-    -d 'alive=true' \
-    -d 'bootenv=local' \
-    -d "variant=metal" \
-    -d "os_family=linux" \
-    -d "arch=$(uname -m)"
+    -d 'alive=true'
 echo "Set node alive"
 
