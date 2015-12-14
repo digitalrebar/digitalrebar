@@ -176,7 +176,7 @@ add_provider() {
   \"auth_details\": {
     \"provider\": \"Google\",
     \"google_project\": \"$PROVIDER_GOOGLE_PROJECT\",
-    \"google_json_key\": \"$PROVIDER_GOOGLE_JSON_KEY\"
+    \"google_json_key\": $PROVIDER_GOOGLE_JSON_KEY
   }
 }"
             $REBAR providers create "$provider"
@@ -234,7 +234,7 @@ start_machine() {
     \"use-ntp\": false,
     \"use-dns\": false,
     \"use-logging\": false,
-    \"provider-create-hint\": nil
+    \"provider-create-hint\": {}
   }
 }"
 
@@ -252,7 +252,7 @@ start_machine() {
     \"use-ntp\": false,
     \"use-dns\": false,
     \"use-logging\": false,
-    \"provider-create-hint\": nil
+    \"provider-create-hint\": {}
   }
 }"
 
