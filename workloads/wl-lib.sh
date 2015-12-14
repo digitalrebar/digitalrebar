@@ -162,7 +162,7 @@ start_machine() {
 
             node="{
   \"name\": \"$1\",
-  \"variant\": \"$PROVIDER_NAME\",
+  \"provider\": \"$PROVIDER_NAME\",
   \"hints\": {
     \"use-proxy\": false,
     \"use-ntp\": false,
