@@ -34,6 +34,14 @@ validate_provider() {
         fi
         ;;
     aws)
+        if [ "$PROVIDER_AWS_ACCESS_KEY_ID" == "" ] ; then
+            echo "You must define AWS_ACCESS_KEY_ID (can be added to ~/.dr_info)"
+            error=1
+        fi
+        if [ "$PROVIDER_AWS_SECRET_ACCESS_KEY" == "" ] ; then
+            echo "You must define AWS_SECRET_ACCESS_KEY (can be added to ~/.dr_info)"
+            error=1
+        fi
         ;;
     system)
         ;;
@@ -135,6 +143,21 @@ add_provider() {
 }"
             $REBAR providers create "$provider"
             ;;
+        aws)
+            export PROVIDER_NAME="aws-provider"
+            PROVIDER_AWS_REGION=${PROVIDER_AWS_REGION:-us-west-2}
+            provider="{
+  \"name\": \"$PROVIDER_NAME\",
+  \"type\": \"AwsProvider\",
+  \"auth_details\": {
+    \"provider\": \"AWS\",
+    \"aws_access_key_id\": \"$PROVIDER_AWS_ACCESS_KEY_ID\",
+    \"aws_secret_access_key\": \"$PROVIDER_AWS_SECRET_ACCESS_KEY\",
+    \"region\": \"$PROVIDER_AWS_REGION\"
+  }
+}"
+            $REBAR providers create "$provider"
+            ;;
         *)
             die "add_provider not implemented: $PROVIDER"
             ;;
@@ -177,6 +200,24 @@ start_machine() {
 
             $REBAR nodes create "$node"
             ;;
+        aws)
+            # GREG: Choose ami?? by OS and Region
+
+            node="{
+  \"name\": \"$1\",
+  \"provider\": \"$PROVIDER_NAME\",
+  \"hints\": {
+    \"use-proxy\": false,
+    \"use-ntp\": false,
+    \"use-dns\": false,
+    \"use-logging\": false,
+    \"provider-create-hint\": nil
+  }
+}"
+
+            $REBAR nodes create "$node"
+            ;;
+
         system)
             echo "Should call run-in-system.sh"
             die "add_provider not implemented: $PROVIDER"
