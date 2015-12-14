@@ -14,6 +14,8 @@ start_args="$@"
 help_options["--k8s-master-count=<Number>"]="Number of masters to start"
 help_options["--k8s-minion-count=<Number>"]="Number of minions to start"
 help_options["--deployment-name=<String>"]="Deployment name to hold all the nodes"
+help_options["--teardown"]="Turn down deployment"
+help_options["--keep-admin"]="Keeps admin node running (modifies teardown)"
 
 # Mostly likely will require host - make it the default
 DEFAULT_ACCESS=HOST
