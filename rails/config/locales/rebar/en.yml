@@ -485,8 +485,10 @@ en:
       config_options: "Config Options"
       aws_access_key_id: "Access Key"
       aws_secret_access_key: "Secret"
-      region: "Region"
-      project: "Project"
+      packet_token: "Token"
+      packet_id: "ID"
+      packet_facility: "Region"
+      packet_plan: "Plan"
   available_hammers:
     index:
       id: "ID"
