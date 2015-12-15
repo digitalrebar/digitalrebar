@@ -54,7 +54,7 @@ validate_provider() {
             error=1
         fi
         ;;
-    system)
+    system|local)
         ;;
     *)
         echo "Unknown Provider or Unset Provider: $prov"

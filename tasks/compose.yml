@@ -63,9 +63,13 @@
   - name: get code
     synchronize: src=./compose dest={{home_dir.stdout}}/digitalrebar/deploy rsync_path="rsync"
 
-  - name: copy Github .NetRC for restricted repos (if dr_use_netrc enabled)
+  - name: Check if path exists
+    local_action: stat path=~/.netrc
+    register: netrc_path
+
+  - name: copy Github .NetRC for restricted repos
     synchronize: src=~/.netrc dest={{home_dir.stdout}} rsync_path="rsync"
-    when: dr_use_netrc is defined
+    when: netrc_path.stat.exists
 
   - name: setup compose
     command: ./setup.sh {{ dr_workloads | default([]) | join(" ") }}

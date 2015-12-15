@@ -9,8 +9,8 @@
 # We are deploying in packet add this packet instance as a provider
 # and force the admin deploy to packet
 #
-PROVIDER=packet
-DEPLOY_ADMIN=packet
+PROVIDER=${PROVIDER:-packet}
+DEPLOY_ADMIN=${DEPLOY_ADMIN:-packet}
 
 # Processes args, inits provider, and validates provider
 . workloads/wl-lib.sh
