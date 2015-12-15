@@ -213,9 +213,8 @@ EOC
     cwd os_install_dir
     code <<EOC
 set -e
-
-mv repodata/*comps*.xml ./comps.xml
-createrepo -g ./comps.xml .
+groups=($(echo repodata/*comps*.xml))
+createrepo -g "${groups[-1]}" .
 touch "repodata/.#{params["iso_file"]}.rebar_canary"
 EOC
     not_if do File.file?("#{os_install_dir}/repodata/.#{params["iso_file"]}.rebar_canary") end
