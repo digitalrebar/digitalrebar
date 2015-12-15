@@ -38,8 +38,4 @@ class Provider < ActiveRecord::Base
     false
   end
 
-  def friendly_name
-    "#{type.sub("Provider","")}: #{name}"
-  end
-
 end
