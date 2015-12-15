@@ -12,7 +12,7 @@ start_args="$@"
 # Docker Swarm Config options
 #
 help_options["--docker-swarm-manager-count=<Number>"]="Number of managers to start"
-help_options["--docker-swarm-minion-count=<Number>"]="Number of minions to start"
+help_options["--docker-swarm-member-count=<Number>"]="Number of members to start"
 help_options["--deployment-name=<String>"]="Deployment name to hold all the nodes"
 
 # Mostly likely will require host - make it the default
@@ -32,15 +32,15 @@ KEEP_ADMIN=false
 . workloads/wl-lib.sh
 
 DOCKER_SWARM_MANAGER_COUNT=${DOCKER_SWARM_MANAGER_COUNT:-1}
-DOCKER_SWARM_MINION_COUNT=${DOCKER_SWARM_MINION_COUNT:-3}
+DOCKER_SWARM_MEMBER_COUNT=${DOCKER_SWARM_MEMBER_COUNT:-3}
 DEPLOYMENT_NAME=${DEPLOYMENT_NAME:-docker-swarm}
 DEPLOYMENT_OS=${DEPLOYMENT_OS:-centos7}
 
 bring_up_admin "${DEPLOYMENT_NAME}-admin.neode.local"
 
 if [[ $TEARDOWN ]] ; then
-    for ((i=0 ; i < $DOCKER_SWARM_MINION_COUNT; i++)) ; do
-        NAME="${DEPLOYMENT_NAME}-minion-$i.neode.local"
+    for ((i=0 ; i < $DOCKER_SWARM_MEMBER_COUNT; i++)) ; do
+        NAME="${DEPLOYMENT_NAME}-member-$i.neode.local"
         $REBAR nodes destroy $NAME
     done
     for ((i=0 ; i < $DOCKER_SWARM_MANAGER_COUNT; i++)) ; do
@@ -74,10 +74,10 @@ for ((i=0 ; i < $DOCKER_SWARM_MANAGER_COUNT; i++)) ; do
 done
 
 #
-# Start up machines for minions
+# Start up machines for members
 #
-for ((i=0 ; i < $DOCKER_SWARM_MINION_COUNT; i++)) ; do
-    NAME="${DEPLOYMENT_NAME}-minion-$i.neode.local"
+for ((i=0 ; i < $DOCKER_SWARM_MEMBER_COUNT; i++)) ; do
+    NAME="${DEPLOYMENT_NAME}-member-$i.neode.local"
     start_machine $NAME $DEPLOYMENT_OS
 done
 
@@ -91,11 +91,11 @@ for ((i=0 ; i < $DOCKER_SWARM_MANAGER_COUNT; i++)) ; do
     $REBAR nodes bind $NAME to docker-swarm-manager
 done
 
-# Add minions
-for ((i=0 ; i < $DOCKER_SWARM_MINION_COUNT; i++)) ; do
-    NAME="${DEPLOYMENT_NAME}-minion-$i.neode.local"
+# Add members
+for ((i=0 ; i < $DOCKER_SWARM_MEMBER_COUNT; i++)) ; do
+    NAME="${DEPLOYMENT_NAME}-member-$i.neode.local"
     $REBAR nodes move $NAME to $DEPLOYMENT_NAME
-    $REBAR nodes bind $NAME to docker-swarm-minion
+    $REBAR nodes bind $NAME to docker-swarm-member
 done
 
 # GREG: Set parameters 
