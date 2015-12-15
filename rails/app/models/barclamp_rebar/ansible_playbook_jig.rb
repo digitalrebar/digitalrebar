@@ -51,8 +51,12 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     die "Missing playbook path @ #{role_file}" unless role_yaml['playbook_path']
     die "Missing playbook file @ #{role_file}" unless role_yaml['playbook_file']
 
-    role_map = role_yaml['role_map']
-    role_map = {} unless role_map
+    role_group_map = role_yaml['role_group_map']
+    role_group_map = {} unless role_group_map
+    role_tag_map = role_yaml['role_tag_map']
+    role_tag_map = {} unless role_tag_map
+    role_role_map = role_yaml['role_role_map']
+    role_role_map = {} unless role_role_map
 
     # Load/Update cache
     cache_dir = '/var/cache/rebar/ansible_playbook'
@@ -117,8 +121,8 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
         nrs = NodeRole.peers_by_role(nr.deployment, r)
         next if nrs.nil? or nrs.empty?
 
-        rns = role_map[r.name]
-        rns = [ r.name ] unless rns
+        rns = role_group_map[r.name]
+        next unless rns
         rns.each do |rn|
           next if rn == 'all'
           f.write("[#{rn}]\n")
@@ -133,20 +137,32 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
     # We don't have a playbook file, then we need to build one.
     if role_yaml['playbook_file'] == '.'
+      die "#{nr.role.name} must provide role map" unless role_role_map[nr.role.name]
+
       role_file = 'cluster.yml'
       File.open("#{role_cache_dir}/#{role_yaml['playbook_path']}/cluster.yml", 'w') do |f|
-        f.write("- hosts: #{role_map[nr.role.name]}\n")
+        f.write("- hosts:\n")
+        if role_group_map[nr.role.name]
+          role_group_map[nr.role.name].each do |gname|
+            f.write("  - #{gname}\n")
+          end
+        else
+          f.write("  - all\n")
+        end
         f.write("  roles:\n")
-        f.write("    - #{role_map[nr.role.name]}\n")
+        role_role_map[nr.role.name].each do |rname|
+          f.write("  - #{rname}\n")
+        end
       end
     else
       role_file = role_yaml['playbook_file']
     end
 
-    rns = role_map[nr.role.name]
-    rns = [ nr.role.name ] unless rns
-    out,err,ok = exec_cmd("cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} --tags=#{rns.join(',')}")
-    die("Running: cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} --tags=#{rns.join(',')}\nScript jig run for #{nr.role.name} on #{nr.node.name} failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?
+    rns = role_tag_map[nr.role.name]
+    rns_string = ""
+    rns_string = "--tags=#{rns.join(',')}" if rns
+    out,err,ok = exec_cmd("cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} #{rns_string}")
+    die("Running: cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} #{rns_string}\nScript jig run for #{nr.role.name} on #{nr.node.name} failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?
     nr.update!(runlog: out)
 
     # Now, we need to suck any written attributes back out.
