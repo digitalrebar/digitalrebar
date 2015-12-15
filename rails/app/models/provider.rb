@@ -15,8 +15,6 @@
 
 class Provider < ActiveRecord::Base
 
-  AVAILABLE = {"AWS"=>"AWSProvider", "Google"=>"GoogleProvider", "IaaS Generic (Fog)"=>"FogProvider", "Metal"=>'MetalProvider', "Packet.net"=>'PacketProvider'}
-
   audited
   has_many :nodes
 

@@ -475,6 +475,11 @@ en:
       description: "Description"
       type: "Type"
       new: "Create Provider"
+      aws: "Amazon AWS"
+      google: "Google GCE"
+      metal: "Metal Provisioner"
+      packet: "Packet.net"
+      iaas: "IaaS Generic - Fog"
     show:
       title: "%{name} Provider"
       description: "Description"
