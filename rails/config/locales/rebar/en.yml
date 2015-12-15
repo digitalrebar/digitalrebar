@@ -368,6 +368,8 @@ en:
       address: "Address"
       no_nodes: "No Nodes Registered.  Suggested action: configure Rebar."
       provider: "Provider"
+      create_nodes: "Create Nodes"
+      no_providers: "No Drivable Providers"
       <<: *deployment_common
       <<: *node_role_states
     show:
@@ -483,12 +485,19 @@ en:
       update: "Save"
       provider: "Provider"
       config_options: "Config Options"
-      aws_access_key_id: "Access Key"
-      aws_secret_access_key: "Secret"
-      packet_token: "Token"
-      packet_id: "ID"
-      packet_facility: "Region"
-      packet_plan: "Plan"
+      fog:
+        details: "Details"
+      aws:
+        access_key_id: "Access Key"
+        secret_access_key: "Secret"
+      packet:
+        token: "Token"
+        id: "ID"
+        facility: "Region"
+        plan: "Plan"
+      google:
+        project: "Project"
+        json_key: "JSON Key"
   available_hammers:
     index:
       id: "ID"

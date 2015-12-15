@@ -1,18 +1,6 @@
-- display = { "AWS" => "none", "GCE" => "none" }
-- provider = (@item.auth_details['provider'] || "AWS")
-- display[provider] = "table-row-group"
-
+- raw = JSON.pretty_generate @item.auth_details
 %tr
-  %td{:colspan=>2}
-    %a{:href=>"http://aws.amazon.com"}
-      %img{:src=>"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/AmazonWebservices_Logo.svg/2000px-AmazonWebservices_Logo.svg.png", :width=>138}
-    = hidden_field_tag "auth_details[provider]", "AWS"
-  %tr
-    %td= t('aws_access_key_id', :scope=>'providers.show')
-    %td= text_field_tag "auth_details[aws_access_key_id]", @item.auth_details['aws_access_key_id'], :size => 30, :class=>"auth_details"
-  %tr
-    %td= t 'aws_secret_access_key', :scope=>'providers.show'
-    %td= text_field_tag "auth_details[aws_secret_access_key]", @item.auth_details['aws_secret_access_key'], :size => 60,  :class=>"auth_details" 
-  %tr
-    %td= t 'region', :scope=>'providers.show'
-    %td= text_field_tag "auth_details[region]", @item.auth_details['region'] || "us-west", :size => 30, :class=>"auth_details" 
+  %td= t 'details', :scope=>'providers.show.fog'
+  %td
+    %textarea{:name => "auth_details", :rows=>10, :cols=>60}
+      = raw

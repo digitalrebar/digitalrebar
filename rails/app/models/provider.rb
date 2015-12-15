@@ -15,7 +15,7 @@
 
 class Provider < ActiveRecord::Base
 
-  AVAILABLE = {"IaaS General (Fog)"=>"FogProvider", "Packet.net"=>'PacketProvider', "Metal"=>'MetalProvider'}
+  AVAILABLE = {"AWS"=>"AWSProvider", "Google"=>"GoogleProvider", "IaaS Generic (Fog)"=>"FogProvider", "Metal"=>'MetalProvider', "Packet.net"=>'PacketProvider'}
 
   audited
   has_many :nodes
@@ -36,9 +36,12 @@ class Provider < ActiveRecord::Base
     true
   end
 
-  # provide JSON for Node Create by provider (intended to be overridden!)
-  def node_create_hints()
-    { foo: bar }
+  def can_create_nodes
+    false
+  end
+
+  def friendly_name
+    "#{type.sub("Provider","")}: #{name}"
   end
 
 end
