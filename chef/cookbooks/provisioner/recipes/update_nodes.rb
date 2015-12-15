@@ -182,6 +182,15 @@ new_clients = {}
       rootdev root
       action :add
     end
+  when 'centos-7.2.1511-install'
+    provisioner_fedora mnode_name do
+      distro 'centos'
+      version '7.2.1511'
+      address v4addr
+      target mnode_name
+      rootdev root
+      action :add
+    end
   when "coreos-install"
     provisioner_coreos mnode_name do
       distro 'coreos'

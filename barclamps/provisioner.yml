@@ -133,6 +133,13 @@ roles:
                 "codename": { type: str, required: false }
         default:
           # primary supported OSes
+          "centos-7.2.1511":
+            "initrd": "images/pxeboot/initrd.img"
+            "kernel": "images/pxeboot/vmlinuz"
+            "append": "method=%os_install_site% inst.geoloc=0"
+            "iso_mirror": "http://mirrors.kernel.org/centos/7.2.1511/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso"
+            "iso_file": "CentOS-7-x86_64-Minimal-1511.iso"
+            "online_mirror": "http://mirrors.kernel.org/centos/7/"
           "centos-7.1.1503":
             "initrd": "images/pxeboot/initrd.img"
             "kernel": "images/pxeboot/vmlinuz"
@@ -352,6 +359,7 @@ roles:
             - centos-6.6
             - fedora-20
             - centos-7.1.1503
+            - centos-7.2.1511
             - redhat-7.0
             - debian-7
             - debian-8
