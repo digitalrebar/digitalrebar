@@ -14,12 +14,13 @@ export WL_LIB_LOADED=true
 
 validate_provider() {
     error=0
+    prov=$1
 
-    if [ "$PROVIDER" == "" ] ; then
+    if [ "$prov" == "" ] ; then
         return 0
     fi
 
-    case $PROVIDER in
+    case $prov in
     packet)
         if [ "$PROVIDER_PACKET_KEY" == "" ] ; then
             echo "You must define PROVIDER_PACKET_KEY (can be added to ~/.dr_info)"
@@ -34,11 +35,29 @@ validate_provider() {
         fi
         ;;
     aws)
+        if [ "$PROVIDER_AWS_ACCESS_KEY_ID" == "" ] ; then
+            echo "You must define PROVIDER_AWS_ACCESS_KEY_ID (can be added to ~/.dr_info)"
+            error=1
+        fi
+        if [ "$PROVIDER_AWS_SECRET_ACCESS_KEY" == "" ] ; then
+            echo "You must define PROVIDER_AWS_SECRET_ACCESS_KEY (can be added to ~/.dr_info)"
+            error=1
+        fi
+        ;;
+    google)
+        if [ "$PROVIDER_GOOGLE_PROJECT" == "" ] ; then
+            echo "You must define PROVIDER_GOOGLE_PROJECT (can be added to ~/.dr_info)"
+            error=1
+        fi
+        if [ "$PROVIDER_GOOGLE_JSON_KEY" == "" ] ; then
+            echo "You must define PROVIDER_GOOGLE_JSON_KEY (can be added to ~/.dr_info)"
+            error=1
+        fi
         ;;
     system)
         ;;
     *)
-        echo "Unknown Provider or Unset Provider: $PROVIDER"
+        echo "Unknown Provider or Unset Provider: $prov"
         error=1
         ;;
     esac
@@ -113,6 +132,7 @@ tear_down_admin() {
 
         system|local)
             # Inherits all our vars!!
+            sleep 60 # Let the deletes drain.  This is lame
             . ./stop-in-system.sh
             ;;
         *)
@@ -131,6 +151,34 @@ add_provider() {
   \"auth_details\": {
     \"project_token\": \"$PROVIDER_PACKET_KEY\",
     \"project_id\": \"$PROVIDER_PACKET_PROJECT_ID\"
+  }
+}"
+            $REBAR providers create "$provider"
+            ;;
+        aws)
+            export PROVIDER_NAME="aws-provider"
+            PROVIDER_AWS_REGION=${PROVIDER_AWS_REGION:-us-west-2}
+            provider="{
+  \"name\": \"$PROVIDER_NAME\",
+  \"type\": \"AwsProvider\",
+  \"auth_details\": {
+    \"provider\": \"AWS\",
+    \"aws_access_key_id\": \"$PROVIDER_AWS_ACCESS_KEY_ID\",
+    \"aws_secret_access_key\": \"$PROVIDER_AWS_SECRET_ACCESS_KEY\",
+    \"region\": \"$PROVIDER_AWS_REGION\"
+  }
+}"
+            $REBAR providers create "$provider"
+            ;;
+        google)
+            export PROVIDER_NAME="google-provider"
+            provider="{
+  \"name\": \"$PROVIDER_NAME\",
+  \"type\": \"GoogleProvider\",
+  \"auth_details\": {
+    \"provider\": \"Google\",
+    \"google_project\": \"$PROVIDER_GOOGLE_PROJECT\",
+    \"google_json_key\": $PROVIDER_GOOGLE_JSON_KEY
   }
 }"
             $REBAR providers create "$provider"
@@ -177,6 +225,42 @@ start_machine() {
 
             $REBAR nodes create "$node"
             ;;
+        aws)
+            # GREG: Choose ami?? by OS and Region
+
+            node="{
+  \"name\": \"$1\",
+  \"provider\": \"$PROVIDER_NAME\",
+  \"hints\": {
+    \"use-proxy\": false,
+    \"use-ntp\": false,
+    \"use-dns\": false,
+    \"use-logging\": false,
+    \"provider-create-hint\": {}
+  }
+}"
+
+            $REBAR nodes create "$node"
+            ;;
+
+        google)
+            # GREG: Choose ami?? by OS and Region
+
+            node="{
+  \"name\": \"$1\",
+  \"provider\": \"$PROVIDER_NAME\",
+  \"hints\": {
+    \"use-proxy\": false,
+    \"use-ntp\": false,
+    \"use-dns\": false,
+    \"use-logging\": false,
+    \"provider-create-hint\": {}
+  }
+}"
+
+            $REBAR nodes create "$node"
+            ;;
+
         system)
             echo "Should call run-in-system.sh"
             die "add_provider not implemented: $PROVIDER"
@@ -296,5 +380,6 @@ if [[ $DEBUG == true ]] ; then
     set -x
 fi
 
-validate_provider
+validate_provider $DEPLOY_ADMIN
+validate_provider $PROVIDER
 
