@@ -1,0 +1,6 @@
+- raw = JSON.pretty_generate @item.auth_details
+%tr
+  %td= t 'details', :scope=>'providers.show.fog'
+  %td
+    %textarea{:name => "auth_details", :rows=>10, :cols=>60}
+      = raw

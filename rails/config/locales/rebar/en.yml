@@ -143,6 +143,7 @@ en:
       jig: "DevOps Jig"
       attribs: "Attributes"
       nodes: "Nodes"
+      providers: "Providers"
       groups: "Groups"
       roles: "Roles"
       deployments: "Deployments"
@@ -367,6 +368,8 @@ en:
       address: "Address"
       no_nodes: "No Nodes Registered.  Suggested action: configure Rebar."
       provider: "Provider"
+      create_nodes: "Create Nodes"
+      no_providers: "No Drivable Providers"
       <<: *deployment_common
       <<: *node_role_states
     show:
@@ -471,12 +474,35 @@ en:
       name: "Name"
       description: "Description"
       type: "Type"
+      new: "Create Provider"
+      aws: "Amazon AWS"
+      google: "Google GCE"
+      metal: "Metal Provisioner"
+      packet: "Packet.net"
+      iaas: "IaaS Generic - Fog"
     show:
       title: "%{name} Provider"
       description: "Description"
+      name: "Provider"
       nodes: "Nodes"
       type: "Type"
       details: "Authentication Details"
+      update: "Save"
+      provider: "Provider"
+      config_options: "Config Options"
+      fog:
+        details: "Details"
+      aws:
+        access_key_id: "Access Key"
+        secret_access_key: "Secret"
+      packet:
+        token: "Token"
+        id: "ID"
+        facility: "Region"
+        plan: "Plan"
+      google:
+        project: "Project"
+        json_key: "JSON Key"
   available_hammers:
     index:
       id: "ID"

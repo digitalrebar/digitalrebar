@@ -20,6 +20,10 @@ class FogProvider < Provider
 
   after_commit :register_endpoint, on: :create
 
+  def can_create_nodes
+    true
+  end
+
   def create_node(obj)
     obj.with_lock do
       if Attrib.get('provider-node-id',obj) != nil

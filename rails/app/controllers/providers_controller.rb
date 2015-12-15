@@ -38,7 +38,7 @@ class ProvidersController < ApplicationController
       Provider.all
     end
     respond_to do |format|
-      format.html { }
+      format.html {  }
       format.json { render api_index Provider, @list }
     end
   end
@@ -46,37 +46,48 @@ class ProvidersController < ApplicationController
   def show
     @item = Provider.find_key(params[:id])
     respond_to do |format|
-      format.html {  }
+      format.html { render :show  }
       format.json { render api_show @item }
     end
   end
 
   def update
+    # deal w/ non-json form data from UI
+    params[:auth_details] = params[:auth_details].to_json if params[:auth_details].is_a? Hash
     Provider.transaction do
-      @nm = Provider.find_key(params[:id]).lock!
+      @item = Provider.find_key(params[:id]).lock!
       if request.patch?
-        patch(@nm,%w{name type auth_details})
+        patch(@item,%w{name item type description auth_details})
       else
-        @nm.update_attributes!(params.permit(:name, :type, :auth_details))
+        @item.update_attributes!(params.permit(:name, :description, :type, :auth_details))
       end
     end
-    render api_show @nm
+    respond_to do |format|
+      format.html { render :show }
+      format.json { render api_show @item }
+    end
   end
 
   def create
+    # UI passes array, clean that up
+    params[:type] = params[:type].first if params[:type].kind_of?(Array)
     params.require(:name)
     params.require(:type)
     params.require(:auth_details)
-    @provider = Provider.create!(name: params[:name],
+    @item = Provider.create!(name: params[:name],
                                  type: params[:type],
+                                 description: params[:description],
                                  auth_details: params[:auth_details])
-    render api_show @provider
+    respond_to do |format|
+      format.html { redirect_to provider_path(@item.id) }
+      format.json { render api_show @item }
+    end
   end
 
   def destroy
-    @provider = Provider.find_key(params[:id])
-    @provider.destroy
-    render api_delete @provider
+    @item = Provider.find_key(params[:id])
+    @item.destroy
+    render api_delete @item
   end
 
 end
