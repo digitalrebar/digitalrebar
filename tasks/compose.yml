@@ -30,31 +30,41 @@
     when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
     sudo: yes
 
+  - name: record home
+    command: echo $HOME
+    register: home_dir
+    tags: stop
+
   - name: remove rebar-key file
-    command: sudo rm -f compose/data-dir/node/rebar-key.sh
+    command: sudo rm -f {{home_dir.stdout}}/digitalrebar/deploy/compose/data-dir/node/rebar-key.sh
 
   - name: create SSH key for host to access slaves
-    command: ssh-keygen -t rsa -f '~/.ssh/id_rsa' -P ''
+    command: ssh-keygen -t rsa -f '{{home_dir.stdout}}/.ssh/id_rsa' -P ''
     args:
-      creates: ~/.ssh/id_rsa.pub
+      creates: "{{home_dir.stdout}}/.ssh/id_rsa.pub"
 
   - name: Make cache dirs
-    command: mkdir -p ~/.cache/digitalrebar/tftpboot/isos
+    command: mkdir -p {{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos
 
   - name: download Ubuntu ISO (SLOW, see https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
-    command: curl -sSL http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.3-server-amd64.iso -o ~/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso
+    command: curl -sSL http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.3-server-amd64.iso -o {{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso
     args:
-      creates: ~/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso
+      creates: "{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso"
   - name: download Centos ISO (SLOW, see https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
-    command: curl -sSL http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso -o ~/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
+    command: curl -sSL http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso -o {{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
     args:
-      creates: ~/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
+      creates: "{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso"
+
+  - name: Make code dirs
+    file: path={{home_dir.stdout}}/digitalrebar/deploy/compose state=directory recurse=yes
+  - name: Link dirs
+    file: src={{home_dir.stdout}}/digitalrebar path={{home_dir.stdout}}/digitalrebar/deploy/compose/digitalrebar state=link
 
   - name: get code
-    synchronize: src=./compose dest=~ rsync_path="rsync"
+    synchronize: src=./compose dest={{home_dir.stdout}}/digitalrebar/deploy rsync_path="rsync"
 
   - name: copy Github .NetRC for restricted repos (if dr_use_netrc enabled)
-    synchronize: src=~/.netrc dest=~ rsync_path="rsync"
+    synchronize: src=~/.netrc dest={{home_dir.stdout}} rsync_path="rsync"
     when: dr_use_netrc is defined
 
   - name: setup compose
@@ -63,17 +73,17 @@
       RACKN_USER: "{{dr_rackn_username|default('')}}"
       RACKN_PASSWORD: "{{dr_rackn_password|default('')}}"
     args:
-      chdir: compose
-      creates: compose/digitalrebar/core
+      chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
+      creates: "{{home_dir.stdout}}/digitalrebar/deploy/compose/digitalrebar/core"
   - name: init compose files
     command: ./init_files.sh --external_ip {{ dr_external_ip }} --forwarder_ip {{ dr_forwarder_ip | default("0.0.0.0/24") }}  --access {{ dr_access_mode }} {{ dr_services| default([]) | join(" ") }}
     args:
-      chdir: compose
-      creates: compose/docker-compose.yml
+      chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
+      creates: "{{home_dir.stdout}}/digitalrebar/deploy/compose/docker-compose.yml"
   - name: copy user ssh public key to rebar
-    command: cp ~/.ssh/id_rsa.pub compose/config-dir/api/config/ssh_keys/setup-0.key
+    command: cp {{home_dir.stdout}}/.ssh/id_rsa.pub {{home_dir.stdout}}/digitalrebar/deploy/compose/config-dir/api/config/ssh_keys/setup-0.key
     args:
-      creates: compose/config-dir/api/config/ssh_keys/setup-0.key
+      creates: "{{home_dir.stdout}}/digitalrebar/deploy/compose/config-dir/api/config/ssh_keys/setup-0.key"
 
   - name: test for /vagrant
     stat: path=/vagrant
@@ -92,25 +102,25 @@
     when: ansible_os_family != "Darwin"
     sudo: yes
   - name: Set files to those permissions
-    command: chown -R rebar:rebar compose/digitalrebar
+    command: chown -R rebar:rebar digitalrebar
     when: ansible_os_family != "Darwin"
     sudo: yes
 
   - name: Pull compose images [SLOW]
     command: /usr/local/bin/docker-compose pull
     args:
-      chdir: compose
+      chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
 
   - name: Ensure containers are off
     command: /usr/local/bin/docker-compose kill
     args:
-      chdir: compose
+      chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
     tags: stop
 
   - name: Ensure containers are removed
     command: /usr/local/bin/docker-compose rm -f
     args:
-      chdir: compose
+      chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
     tags: stop
 
   - name: Restart Docker (yet again)
@@ -121,7 +131,7 @@
   - name: Compose up containers
     command: /usr/local/bin/docker-compose up -d
     args:
-      chdir: compose
+      chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
 
   - name: HOSTMODE wait until Digital Rebar service is up [1 upto 5 minutes]
     wait_for: host="{{dr_external_ip | ipaddr('address')}}" port=3000 delay=60 timeout=300
@@ -132,5 +142,5 @@
     when: dr_access_mode == "FORWARDER"
 
   - name: wait for rebar-key (1 to 30 minutes)
-    wait_for: path=compose/data-dir/node/rebar-key.sh state=present delay=60 timeout=1800
+    wait_for: path={{home_dir.stdout}}/digitalrebar/deploy/compose/data-dir/node/rebar-key.sh state=present delay=60 timeout=1800
 

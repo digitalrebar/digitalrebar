@@ -14,12 +14,13 @@ export WL_LIB_LOADED=true
 
 validate_provider() {
     error=0
+    prov=$1
 
-    if [ "$PROVIDER" == "" ] ; then
+    if [ "$prov" == "" ] ; then
         return 0
     fi
 
-    case $PROVIDER in
+    case $prov in
     packet)
         if [ "$PROVIDER_PACKET_KEY" == "" ] ; then
             echo "You must define PROVIDER_PACKET_KEY (can be added to ~/.dr_info)"
@@ -56,7 +57,7 @@ validate_provider() {
     system)
         ;;
     *)
-        echo "Unknown Provider or Unset Provider: $PROVIDER"
+        echo "Unknown Provider or Unset Provider: $prov"
         error=1
         ;;
     esac
@@ -131,6 +132,7 @@ tear_down_admin() {
 
         system|local)
             # Inherits all our vars!!
+            sleep 60 # Let the deletes drain.  This is lame
             . ./stop-in-system.sh
             ;;
         *)
@@ -378,5 +380,6 @@ if [[ $DEBUG == true ]] ; then
     set -x
 fi
 
-validate_provider
+validate_provider $DEPLOY_ADMIN
+validate_provider $PROVIDER
 
