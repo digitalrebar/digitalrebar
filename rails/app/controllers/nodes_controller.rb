@@ -49,7 +49,7 @@ class NodesController < ApplicationController
               Node.all
             end
     respond_to do |format|
-      format.html { @list.to_a.delete_if { |n| n.system }}
+      format.html { @list.to_a.delete_if { |n| n.system } }
       format.json { render api_index Node, @list.to_a }
     end
   end

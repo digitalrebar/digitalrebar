@@ -7,8 +7,8 @@
       %th= t '.status'
       %th= t '.admin'
       %th= t '.description'
-      %th= t '.provider'
-      %th= t '.deployment'
+      %th= link_to t('.provider'), providers_path
+      %th= link_to t('.deployment'), deployments_path
   %tbody.nodelist
     -nodes.each do |n|
       - s = n.state
