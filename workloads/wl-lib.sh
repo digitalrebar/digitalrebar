@@ -326,7 +326,7 @@ while (( $# > 0 )); do
     case $arg_key in
         # This used to process init-files.sh and workload.sh args
         --con-*)
-            a="${arg#--con-}"
+            a="${arg_key#--con-}"
             is_set=false
             for cval in "${known_containers[@]}"; do
                 if [[ $a = $cval ]]; then
@@ -343,7 +343,7 @@ while (( $# > 0 )); do
             fi;;
 
         --wl-*)
-            a="${arg#--wl-}"
+            a="${arg_key#--wl-}"
             is_set=false
             for cval in "${known_workloads[@]}"; do
                 if [[ $a = $cval ]]; then
