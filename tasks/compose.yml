@@ -38,6 +38,8 @@
   - name: remove rebar-key file
     command: sudo rm -f {{home_dir.stdout}}/digitalrebar/deploy/compose/data-dir/node/rebar-key.sh
 
+  - name: Make SSH dirs
+    file: path={{home_dir.stdout}}/.ssh state=directory recurse=yes mode=0700
   - name: create SSH key for host to access slaves
     command: ssh-keygen -t rsa -f '{{home_dir.stdout}}/.ssh/id_rsa' -P ''
     args:
@@ -106,7 +108,7 @@
     when: ansible_os_family != "Darwin"
     sudo: yes
   - name: Set files to those permissions
-    command: chown -R rebar:rebar digitalrebar
+    command: "chown -R rebar:rebar {{home_dir.stdout}}/digitalrebar"
     when: ansible_os_family != "Darwin"
     sudo: yes
 
