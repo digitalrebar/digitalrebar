@@ -4,6 +4,7 @@ consul:
   volumes:
     - ./config-dir/consul/server-default.json:/etc/consul.d/default.json
     - ./config-dir/consul/server-advertise.json:/etc/consul.d/server-advertise.json
+    - ./data-dir/consul/:/tmp/consul/
   env_file:
     - ./common.env
     - ./access.env
@@ -13,6 +14,7 @@ postgres:
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/postgres/initdb.d:/docker-entrypoint-initdb.d
+    - ./data-dir/postgresql/:/var/lib/postgresql/
   env_file:
     - ./common.env
     - ./access.env
