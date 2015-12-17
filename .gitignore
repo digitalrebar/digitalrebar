@@ -23,6 +23,7 @@ install-*.log
 /compose/config-dir/api/config/domain.json
 /compose/data-dir/node/rebar-key.sh
 /compose/data-dir/elasticsearch/elasticsearch
+/compose/config-dir/consul/server-advertise.json
 
 # Dynamically built by init_files.sh
 /compose/access.env
