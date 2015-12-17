@@ -110,16 +110,21 @@ sed "/ACCESS_MODE==/d" docker-compose.yml > dc.yml
 mv dc.yml docker-compose.yml
 
 # Find the IP address we should have Consul advertise on
-gwdev=$(ip -o -4 route show default |awk '{print $5}')
-if [[ $gwdev ]]; then
-    # First, advertise the address of the device with the default gateway
-    CONSUL_ADVERTISE=$(ip -o -4 addr show scope global dev "$gwdev" |awk '{print $4}')
-    CONSUL_ADVERTISE="${CONSUL_ADVERTISE%/*}"
+if [[ $(uname -s) == Darwin ]]; then
+    CONSUL_ADVERTISE=${DOCKER_HOST%:*}
+    CONSUL_ADVERTISE=${CONSUL_ADVERTISE##*/}
 else
-    # Hmmm... we have no access to the Internet.  Pick an address with
-    # global scope and hope for the best.
-    CONSUL_ADVERTISE=$(ip -o -4 addr show scope global dev |head -1 |awk '{print $4}')
-    CONSUL_ADVERTISE="${CONSUL_ADVERTISE%/*}"
+    gwdev=$(ip -o -4 route show default |awk '{print $5}')
+    if [[ $gwdev ]]; then
+        # First, advertise the address of the device with the default gateway
+        CONSUL_ADVERTISE=$(ip -o -4 addr show scope global dev "$gwdev" |awk '{print $4}')
+        CONSUL_ADVERTISE="${CONSUL_ADVERTISE%/*}"
+    else
+        # Hmmm... we have no access to the Internet.  Pick an address with
+        # global scope and hope for the best.
+        CONSUL_ADVERTISE=$(ip -o -4 addr show scope global dev |head -1 |awk '{print $4}')
+        CONSUL_ADVERTISE="${CONSUL_ADVERTISE%/*}"
+    fi
 fi
 # If we did not get and address to listen on, we are pretty much boned anyways
 if [[ ! $CONSUL_ADVERTISE ]]; then
