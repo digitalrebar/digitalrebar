@@ -14,9 +14,8 @@ provisioner:
   extends:
     file: docker-compose-common.yml
     service: provisioner
-  links:
-    - consul:consul
 {{ START ACCESS_MODE==FORWARDER }}
+  links:
     - forwarder:forwarder
 {{ END ACCESS_MODE==FORWARDER }}
 {{ START ACCESS_MODE==HOST }}
