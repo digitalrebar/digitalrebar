@@ -37,3 +37,6 @@ run-in-hosts
 
 # Used by Vagrant 
 rebar-key.sh
+
+# Cli tool
+rebar

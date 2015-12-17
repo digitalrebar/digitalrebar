@@ -112,6 +112,14 @@
     when: ansible_os_family != "Darwin"
     sudo: yes
 
+  - name: Restart Docker (yet again)
+    service: name=docker state=restarted
+    when: ansible_os_family != "Darwin"
+    sudo: yes
+  - name: allow docker access (without reboot - again)
+    command: sudo chmod 666 /var/run/docker.sock
+    when: ansible_os_family != "Darwin"
+
   - name: Pull compose images [SLOW]
     command: /usr/local/bin/docker-compose pull
     args:
@@ -128,14 +136,6 @@
     args:
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
     tags: stop
-
-  - name: Restart Docker (yet again)
-    service: name=docker state=restarted
-    when: ansible_os_family != "Darwin"
-    sudo: yes
-  - name: allow docker access (without reboot - again)
-    command: sudo chmod 666 /var/run/docker.sock
-    when: ansible_os_family != "Darwin"
 
   - name: Compose up containers
     command: /usr/local/bin/docker-compose up -d
