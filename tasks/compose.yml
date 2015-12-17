@@ -100,11 +100,11 @@
     when: vagrant_dir_present.stat.exists == True
 
   - name: Create rebar group
-    group: name=rebar gid=1030
+    group: name=rebar
     when: ansible_os_family != "Darwin"
     sudo: yes
   - name: Create rebar user
-    user: name=rebar group=rebar shell=/bin/bash uid=1030
+    user: name=rebar group=rebar shell=/bin/bash
     when: ansible_os_family != "Darwin"
     sudo: yes
   - name: Set files to those permissions
@@ -133,6 +133,9 @@
     service: name=docker state=restarted
     when: ansible_os_family != "Darwin"
     sudo: yes
+  - name: allow docker access (without reboot - again)
+    command: sudo chmod 666 /var/run/docker.sock
+    when: ansible_os_family != "Darwin"
 
   - name: Compose up containers
     command: /usr/local/bin/docker-compose up -d
