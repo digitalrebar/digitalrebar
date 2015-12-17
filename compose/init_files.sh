@@ -35,34 +35,34 @@ while [[ $1 == -* ]] ; do
       usage
       exit 0
       ;;
-    --clean) 
+    --clean)
         rm -f access.env dc docker-compose.yml config-dir/api/config/networks/the_admin.json config-dir/api/config/networks/the_bmc.json
         sudo rm -rf data-dir
       exit 0
       ;;
-    --access) 
+    --access)
       ACCESS_MODE=$1
       shift
       ;;
-    --external_ip) 
+    --external_ip)
       EXTERNAL_IP=$1
       shift
       ;;
-    --forwarder_ip) 
+    --forwarder_ip)
       FORWARDER_IP=$1
       shift
       ;;
-    --provisioner) 
+    --provisioner)
       FILES="$FILES provisioner.yml"
       PROVISION_IT="YES"
       ;;
-    --debug) 
+    --debug)
       FILES="$FILES debug.yml"
       ;;
-    --logging) 
+    --logging)
       FILES="$FILES logging.yml"
       ;;
-    --node) 
+    --node)
       FILES="$FILES node.yml"
       ;;
   esac
@@ -109,12 +109,37 @@ done
 sed "/ACCESS_MODE==/d" docker-compose.yml > dc.yml
 mv dc.yml docker-compose.yml
 
+# Find the IP address we should have Consul advertise on
+gwdev=$(ip -o -4 route show default |awk '{print $5}')
+if [[ $gwdev ]]; then
+    # First, advertise the address of the device with the default gateway
+    CONSUL_ADVERTISE=$(ip -o -4 addr show scope global dev "$gwdev" |awk '{print $4}')
+    CONSUL_ADVERTISE="${CONSUL_ADVERTISE%/*}"
+else
+    # Hmmm... we have no access to the Internet.  Pick an address with
+    # global scope and hope for the best.
+    CONSUL_ADVERTISE=$(ip -o -4 addr show scope global dev |head -1 |awk '{print $4}')
+    CONSUL_ADVERTISE="${CONSUL_ADVERTISE%/*}"
+fi
+# If we did not get and address to listen on, we are pretty much boned anyways
+if [[ ! $CONSUL_ADVERTISE ]]; then
+    echo "Could not find an address for Consul to listen on!"
+    exit 1
+fi
+# CONSUL_JOIN is separate from CONSUL_ADVERTISE as futureproofing
+CONSUL_JOIN="$CONSUL_ADVERTISE"
 # Make access.env for Variables.
-echo "EXTERNAL_IP=$EXTERNAL_IP" > access.env
-echo "FORWARDER_IP=$FORWARDER_IP" >> access.env
+cat >access.env <<EOF
+EXTERNAL_IP=$EXTERNAL_IP
+FORWARDER_IP=$FORWARDER_IP
+CONSUL_JOIN=$CONSUL_JOIN
+EOF
+
+cat >config-dir/consul/server-advertise.json <<EOF
+{"advertise_addr": "${CONSUL_ADVERTISE}"}
+EOF
 
 # With remaining arguments
 if [ "$#" -gt 0 ] ; then
     docker-compose $@
 fi
-

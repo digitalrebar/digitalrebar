@@ -1,9 +1,9 @@
 
 consul:
-  image: progrium/consul
-  command: -config-dir=/etc/consul.d -data-dir=/tmp/consul -server -bootstrap -ui-dir /ui 
+  image: gliderlabs/consul
   volumes:
     - ./config-dir/consul/server-default.json:/etc/consul.d/default.json
+    - ./config-dir/consul/server-advertise.json:/etc/consul.d/server-advertise.json
   env_file:
     - ./common.env
     - ./access.env

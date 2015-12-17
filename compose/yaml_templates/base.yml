@@ -3,23 +3,20 @@ consul:
   extends:
     file: docker-compose-common.yml
     service: consul
-  ports:
-    - "127.0.0.1:8500:8500"
+  net: host
+  command: agent -config-dir=/etc/consul.d -data-dir=/tmp/consul -server -bootstrap
 
 postgres:
   extends:
     file: docker-compose-common.yml
     service: postgres
-  links:
-    - consul:consul
 
 webproxy:
   extends:
     file: docker-compose-common.yml
     service: webproxy
-  links:
-    - consul:consul
 {{ START ACCESS_MODE==FORWARDER }}
+  links:
     - forwarder:forwarder
 {{ END ACCESS_MODE==FORWARDER }}
 {{ START ACCESS_MODE==HOST }}
@@ -32,7 +29,6 @@ goiardi:
     file: docker-compose-common.yml
     service: goiardi
   links:
-    - consul:consul
     - postgres:database
 {{ START ACCESS_MODE==FORWARDER }}
     - forwarder:forwarder
@@ -47,7 +43,6 @@ rebar_api:
     file: docker-compose-common.yml
     service: rebar_api
   links:
-    - consul:consul
     - postgres:database
     - goiardi:goiardi
 {{ START ACCESS_MODE==FORWARDER }}
@@ -62,9 +57,8 @@ fogwrap:
   extends:
     file: docker-compose-common.yml
     service: fogwrap
-  links:
-    - consul:consul
 {{ START ACCESS_MODE==FORWARDER }}
+  links:
     - forwarder:forwarder
 {{ END ACCESS_MODE==FORWARDER }}
 {{ START ACCESS_MODE==HOST }}
@@ -76,9 +70,8 @@ packetwrap:
   extends:
     file: docker-compose-common.yml
     service: packetwrap
-  links:
-    - consul:consul
 {{ START ACCESS_MODE==FORWARDER }}
+  links:
     - forwarder:forwarder
 {{ END ACCESS_MODE==FORWARDER }}
 {{ START ACCESS_MODE==HOST }}
@@ -90,9 +83,8 @@ dns:
   extends:
     file: docker-compose-common.yml
     service: dns
-  links:
-    - consul:consul
 {{ START ACCESS_MODE==FORWARDER }}
+  links:
     - forwarder:forwarder
 {{ END ACCESS_MODE==FORWARDER }}
 {{ START ACCESS_MODE==HOST }}
@@ -105,8 +97,6 @@ forwarder:
   extends:
     file: docker-compose-common.yml
     service: forwarder
-  links:
-    - consul:consul
 {{ END ACCESS_MODE==FORWARDER }}
 
 {{ START ACCESS_MODE==HOST }}
@@ -114,8 +104,6 @@ ntp:
   extends:
     file: docker-compose-common.yml
     service: ntp
-  links:
-    - consul:consul
   ports:
     - "123/udp:123/udp"
     - "123:123"
