@@ -18,7 +18,7 @@ require 'jsonrpc-client'
 
 class FogProvider < Provider
 
-  after_commit :register_endpoint, on: :create
+  after_commit :register_endpoint, on: [:create, :update]
 
   def can_create_nodes
     true
