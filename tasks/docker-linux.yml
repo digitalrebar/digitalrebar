@@ -25,7 +25,12 @@
     command: sudo curl -L https://github.com/docker/compose/releases/download/1.5.0/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }} -o /usr/local/bin/docker-compose
     args:
       creates: /usr/local/bin/docker-compose
+
   - name: Chmod Docker Compose
     command: sudo chmod +x /usr/local/bin/docker-compose
-  - name: allow docker access (without reboot)
+
+  - name: Allow docker access (without reboot)
     command: sudo chmod 666 /var/run/docker.sock
+
+  - name: Allow docker access after reboot
+    command: "sudo usermod -a -G docker $USER"
