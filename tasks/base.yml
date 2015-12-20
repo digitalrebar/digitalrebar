@@ -2,7 +2,9 @@
 ---
   - include: base-centos.yml
     when: ansible_os_family == "RedHat"
+  - include: base-ubuntu1510.yml
+    when: ansible_os_family == "Debian" and ansible_lsb.major_release == "15"
   - include: base-ubuntu1404.yml
-    when: ansible_os_family == "Debian"
+    when: ansible_os_family == "Debian" and ansible_lsb.major_release != "15"
   - include: base-darwin.yml
     when: ansible_os_family == "Darwin"

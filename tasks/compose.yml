@@ -97,14 +97,6 @@
     args:
       creates: "{{home_dir.stdout}}/digitalrebar/deploy/compose/config-dir/api/config/ssh_keys/setup-0.key"
 
-  - name: test for /vagrant
-    stat: path=/vagrant
-    register: vagrant_dir_present
-
-  - name: allow docker access after reboot
-    command: sudo usermod -a -G docker vagrant
-    when: vagrant_dir_present.stat.exists == True
-
   - name: Create rebar group
     group: name=rebar
     when: ansible_os_family != "Darwin"
