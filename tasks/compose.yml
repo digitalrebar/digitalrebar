@@ -38,10 +38,16 @@
   - name: remove rebar-key file
     command: sudo rm -f {{home_dir.stdout}}/digitalrebar/deploy/compose/data-dir/node/rebar-key.sh
 
+  - stat: path={{home_dir.stdout}}/.ssh/id_rsa.pub
+    register: ssh_pub
+
   - name: Make SSH dirs
     file: path={{home_dir.stdout}}/.ssh state=directory recurse=yes mode=0700
+    when: ssh_pub is not defined
+
   - name: create SSH key for host to access slaves
     command: ssh-keygen -t rsa -f '{{home_dir.stdout}}/.ssh/id_rsa' -P ''
+    when: ssh_pub is not defined
     args:
       creates: "{{home_dir.stdout}}/.ssh/id_rsa.pub"
 
