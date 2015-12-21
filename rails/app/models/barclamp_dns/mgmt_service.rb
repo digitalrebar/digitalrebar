@@ -19,6 +19,7 @@ require 'uri'
 class BarclampDns::MgmtService < Service
 
   def do_transition(nr,data)
+    deployment_name = nr.deployment.name
     internal_do_transition(nr, data, 'dns-mgmt-service', 'dns-management-servers') do |s|
       str_addr = s.ServiceAddress
       str_addr = s.Address if str_addr.nil? or str_addr.empty?
@@ -26,10 +27,9 @@ class BarclampDns::MgmtService < Service
       addr = IP.coerce(str_addr)
       Rails.logger.debug("DnsMgmtServer: #{addr.inspect}")
 
-      server_name = s.ServiceTags.first
-      cert_pem = ConsulAccess.getKey("digitalrebar/private/dns-mgmt/#{server_name}/cert_pem")
-      access_name = ConsulAccess.getKey("digitalrebar/private/dns-mgmt/#{server_name}/access_name")
-      access_password = ConsulAccess.getKey("digitalrebar/private/dns-mgmt/#{server_name}/access_password")
+      cert_pem = ConsulAccess.getKey("digitalrebar/private/dns-mgmt/#{deployment_name}/cert_pem")
+      access_name = ConsulAccess.getKey("digitalrebar/private/dns-mgmt/#{deployment_name}/access_name")
+      access_password = ConsulAccess.getKey("digitalrebar/private/dns-mgmt/#{deployment_name}/access_password")
 
       if addr.v6?
         saddr = "[#{addr.addr}]"
@@ -40,7 +40,7 @@ class BarclampDns::MgmtService < Service
 
       { 'address' => str_addr,
         'port' => "#{s.ServicePort}",
-        'name' => server_name,
+        'name' => deployment_name,
         'cert' => cert_pem,
         'access_name' => access_name,
         'access_password' => access_password,

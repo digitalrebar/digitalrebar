@@ -16,6 +16,7 @@
 class BarclampDns::Service < Service
 
   def do_transition(nr, data)
+    deployment_name = nr.deployment.name
     internal_do_transition(nr, data, "dns-service", "dns_servers") do |s|
       str_addr = s.ServiceAddress
       str_addr = s.Address if str_addr.nil? or str_addr.empty?
@@ -23,18 +24,17 @@ class BarclampDns::Service < Service
       addr = IP.coerce(str_addr)
       Rails.logger.debug("DnsServer: #{addr.inspect}")
 
-      server_name = s.ServiceTags.first
-      server_type = ConsulAccess.getKey("digitalrebar/private/dns/#{server_name}/type")
+      server_type = ConsulAccess.getKey("digitalrebar/private/dns/#{deployment_name}/type")
 
       res = { "address" => str_addr,
               "port" => "#{s.ServicePort}",
-              "name" => server_name,
+              "name" => deployment_name,
               "type" => server_type }
 
       if server_type == 'POWERDNS'
-        res['mgmt_port'] = ConsulAccess.getKey("digitalrebar/private/dns/#{server_name}/mgmt_port")
-        res['mgmt_token'] = ConsulAccess.getKey("digitalrebar/private/dns/#{server_name}/mgmt_token")
-        res['mgmt_name'] = (ConsulAccess.getKey("digitalrebar/private/dns/#{server_name}/mgmt_name") rescue 'localhost')
+        res['mgmt_port'] = ConsulAccess.getKey("digitalrebar/private/dns/#{deployment_name}/mgmt_port")
+        res['mgmt_token'] = ConsulAccess.getKey("digitalrebar/private/dns/#{deployment_name}/mgmt_token")
+        res['mgmt_name'] = (ConsulAccess.getKey("digitalrebar/private/dns/#{deployment_name}/mgmt_name") rescue 'localhost')
       end
 
       res
