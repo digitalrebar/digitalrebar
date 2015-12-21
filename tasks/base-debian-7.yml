@@ -19,9 +19,3 @@
     args:
       creates: /var/lib/gems/1.9.1/cache/json-1.8.3.gem
     sudo: yes
-  - name: stop apparmor
-    command: sudo service apparmor teardown
-    sudo: yes
-  - name: remove apparmor
-    command: sudo update-rc.d -f apparmor remove
-    sudo: yes
