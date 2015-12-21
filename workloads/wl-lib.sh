@@ -101,7 +101,7 @@ bring_up_admin() {
 
     export REBAR_ENDPOINT=https://${ADMIN_IP%/*}:3000
 
-    if $REBAR ping 2>/dev/null >/dev/null ; then
+    if rebar ping 2>/dev/null >/dev/null ; then
         echo "Admin node at $ADMIN_IP already running."
         return 0
     fi
@@ -154,7 +154,7 @@ add_provider() {
     \"project_id\": \"$PROVIDER_PACKET_PROJECT_ID\"
   }
 }"
-            $REBAR providers create "$provider"
+            rebar providers create "$provider"
             ;;
         aws)
             export PROVIDER_NAME="aws-provider"
@@ -170,7 +170,7 @@ add_provider() {
     \"region\": \"$PROVIDER_AWS_REGION\"
   }
 }"
-            $REBAR providers create "$provider"
+            rebar providers create "$provider"
             ;;
         google)
             export PROVIDER_NAME="google-provider"
@@ -184,7 +184,7 @@ add_provider() {
     \"google_json_key\": $PROVIDER_GOOGLE_JSON_KEY
   }
 }"
-            $REBAR providers create "$provider"
+            rebar providers create "$provider"
             ;;
         *)
             die "add_provider not implemented: $PROVIDER"
@@ -226,7 +226,7 @@ start_machine() {
   }
 }"
 
-            $REBAR nodes create "$node"
+            rebar nodes create "$node"
             ;;
         aws)
             # GREG: Choose ami?? by OS and Region
@@ -243,7 +243,7 @@ start_machine() {
   }
 }"
 
-            $REBAR nodes create "$node"
+            rebar nodes create "$node"
             ;;
 
         google)
@@ -261,7 +261,7 @@ start_machine() {
   }
 }"
 
-            $REBAR nodes create "$node"
+            rebar nodes create "$node"
             ;;
 
         system)

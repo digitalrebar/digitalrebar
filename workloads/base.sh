@@ -34,7 +34,7 @@ if [[ $TEARDOWN ]] ; then
 fi
 
 # Wait for the system to converge
-if ! $REBAR converge ; then
+if ! rebar converge ; then
   die "Admin node did NOT converge to completion"
 fi
 
