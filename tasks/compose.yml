@@ -65,7 +65,7 @@
     file: src={{home_dir.stdout}}/digitalrebar path={{home_dir.stdout}}/digitalrebar/deploy/compose/digitalrebar state=link
 
   - name: remove previous data
-    command: sudo rm -rf {{home_dir.stdout}}/digitalrebar/deploy/compose/data-dir/*
+    command: sudo rm -rf {{home_dir.stdout}}/digitalrebar/deploy/compose/data-dir
 
   - name: get code
     synchronize: src=./compose dest={{home_dir.stdout}}/digitalrebar/deploy rsync_path="rsync"
