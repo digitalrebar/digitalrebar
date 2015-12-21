@@ -43,15 +43,15 @@ bring_up_admin "${DEPLOYMENT_NAME}-admin.neode.local"
 if [[ $TEARDOWN ]] ; then
     for ((i=0 ; i < $K8S_MINION_COUNT; i++)) ; do
         NAME="${DEPLOYMENT_NAME}-minion-$i.neode.local"
-        $REBAR nodes destroy $NAME
+        rebar nodes destroy $NAME
     done
     for ((i=0 ; i < $K8S_MASTER_COUNT; i++)) ; do
         NAME="${DEPLOYMENT_NAME}-master-$i.neode.local"
-        $REBAR nodes destroy $NAME
+        rebar nodes destroy $NAME
     done
 
     # Destroy deployment
-    $REBAR deployments destroy "$DEPLOYMENT_NAME"
+    rebar deployments destroy "$DEPLOYMENT_NAME"
 
     if [[ $KEEP_ADMIN == false ]] ; then
         tear_down_admin "${DEPLOYMENT_NAME}-admin.neode.local"
@@ -61,7 +61,7 @@ if [[ $TEARDOWN ]] ; then
 fi
 
 # Wait for the system to converge
-if ! $REBAR converge ; then
+if ! rebar converge ; then
   die "Admin node did NOT converge to completion"
 fi
 
@@ -84,29 +84,29 @@ for ((i=0 ; i < $K8S_MINION_COUNT; i++)) ; do
 done
 
 # Create deployment
-$REBAR deployments create "{ \"name\": \"$DEPLOYMENT_NAME\" }"
+rebar deployments create "{ \"name\": \"$DEPLOYMENT_NAME\" }"
 
 # Add masters
 for ((i=0 ; i < $K8S_MASTER_COUNT; i++)) ; do
     NAME="${DEPLOYMENT_NAME}-master-$i.neode.local"
-    $REBAR nodes move $NAME to $DEPLOYMENT_NAME
-    $REBAR nodes bind $NAME to kubernetes-master
+    rebar nodes move $NAME to $DEPLOYMENT_NAME
+    rebar nodes bind $NAME to kubernetes-master
 done
 
 # Add minions
 for ((i=0 ; i < $K8S_MINION_COUNT; i++)) ; do
     NAME="${DEPLOYMENT_NAME}-minion-$i.neode.local"
-    $REBAR nodes move $NAME to $DEPLOYMENT_NAME
-    $REBAR nodes bind $NAME to kubernetes-minion
+    rebar nodes move $NAME to $DEPLOYMENT_NAME
+    rebar nodes bind $NAME to kubernetes-minion
 done
 
 # GREG: Set parameters 
 
 # Commit it all and start
-$REBAR deployments commit $DEPLOYMENT_NAME
+rebar deployments commit $DEPLOYMENT_NAME
 
 # Wait for the system to converge
-if ! $REBAR converge ; then
+if ! rebar converge ; then
   die "Machines did NOT converge in kubernetes"
 fi
 

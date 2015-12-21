@@ -137,21 +137,29 @@ validate_tools() {
         exit 1
     fi
 
-    if ! which rebar &>/dev/null ; then
-        if [[ $(uname -s) == Darwin ]] ; then
-            curl -o rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-darwin-amd64
-        else
-            curl -o rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64
-        fi
-        chmod +x ./rebar
-        export REBAR=./rebar
-    else
-        export REBAR=$(which rebar)
-    fi
-
     REBAR_USER=${REBAR_USER:-rebar}
     REBAR_PASSWORD=${REBAR_PASSWORD:-rebar1}
     export REBAR_KEY=${REBAR_KEY:-$REBAR_USER:$REBAR_PASSWORD}
+}
+
+rebar() {
+    local rebar_cmd
+
+    rebar_cmd=$(which rebar)
+    if [[ $rebar_cmd == "" ]] ; then
+        rebar_cmd="./rebar"
+
+        if [[ ! -f $rebar_cmd ]] ; then
+            if [[ $(uname -s) == Darwin ]] ; then
+                curl -so rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-darwin-amd64
+            else
+                curl -so rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64
+            fi
+            chmod +x ./rebar
+        fi
+    fi
+
+    $rebar_cmd $@
 }
 
 usage() {
