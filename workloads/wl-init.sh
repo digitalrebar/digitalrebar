@@ -71,7 +71,7 @@ validate_tools() {
     if ! which ansible &>/dev/null; then
         if [[ $OS_FAMILY == rhel ]] ; then
             yum -y install epel-release # Everyone gets epel for free.
-            yum install -y ansible
+            yum install -y ansible python-netaddr
         elif [[ $OS_FAMILY == debian ]] ; then
             apt-get install -y ansible
         fi
