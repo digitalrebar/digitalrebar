@@ -117,7 +117,7 @@ else
     gwdev=$(ip -o -4 route show default |awk '{print $5}')
     if [[ $gwdev ]]; then
         # First, advertise the address of the device with the default gateway
-        CONSUL_ADVERTISE=$(ip -o -4 addr show scope global dev "$gwdev" |awk '{print $4}')
+        CONSUL_ADVERTISE=$(ip -o -4 addr show scope global dev "$gwdev" |head -1 |awk '{print $4}')
         CONSUL_ADVERTISE="${CONSUL_ADVERTISE%/*}"
     else
         # Hmmm... we have no access to the Internet.  Pick an address with
