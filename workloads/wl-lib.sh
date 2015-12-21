@@ -147,6 +147,7 @@ add_provider() {
             export PROVIDER_NAME="packet-provider"
             provider="{
   \"name\": \"$PROVIDER_NAME\",
+  \"description\": \"Packet Provider\",
   \"type\": \"PacketProvider\",
   \"auth_details\": {
     \"project_token\": \"$PROVIDER_PACKET_KEY\",
@@ -160,6 +161,7 @@ add_provider() {
             PROVIDER_AWS_REGION=${PROVIDER_AWS_REGION:-us-west-2}
             provider="{
   \"name\": \"$PROVIDER_NAME\",
+  \"description\": \"AWS Provider\",
   \"type\": \"AwsProvider\",
   \"auth_details\": {
     \"provider\": \"AWS\",
@@ -174,6 +176,7 @@ add_provider() {
             export PROVIDER_NAME="google-provider"
             provider="{
   \"name\": \"$PROVIDER_NAME\",
+  \"description\": \"Google Provider\",
   \"type\": \"GoogleProvider\",
   \"auth_details\": {
     \"provider\": \"Google\",

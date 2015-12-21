@@ -35,9 +35,6 @@
     register: home_dir
     tags: stop
 
-  - name: remove rebar-key file
-    command: sudo rm -f {{home_dir.stdout}}/digitalrebar/deploy/compose/data-dir/node/rebar-key.sh
-
   - stat: path={{home_dir.stdout}}/.ssh/id_rsa.pub
     register: ssh_pub
 
@@ -67,6 +64,9 @@
     file: path={{home_dir.stdout}}/digitalrebar/deploy/compose state=directory recurse=yes
   - name: Link dirs
     file: src={{home_dir.stdout}}/digitalrebar path={{home_dir.stdout}}/digitalrebar/deploy/compose/digitalrebar state=link
+
+  - name: remove previous data
+    command: sudo rm -rf {{home_dir.stdout}}/digitalrebar/deploy/compose/data-dir/*
 
   - name: get code
     synchronize: src=./compose dest={{home_dir.stdout}}/digitalrebar/deploy rsync_path="rsync"
@@ -140,12 +140,12 @@
     args:
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
 
-  - name: HOSTMODE wait until Digital Rebar service is up [1 upto 5 minutes]
-    wait_for: host="{{dr_external_ip | ipaddr('address')}}" port=3000 delay=60 timeout=300
+  - name: HOSTMODE wait until Digital Rebar service is up [1 upto 15 minutes]
+    wait_for: host="{{dr_external_ip | ipaddr('address')}}" port=3000 delay=60 timeout=900
     when: dr_access_mode != "FORWARDER"
 
-  - name: FORWARDER wait until Digital Rebar service is up [1 upto 5 minutes]
-    wait_for: host="{{ansible_default_ipv4.address}}" port=3000 delay=60 timeout=300
+  - name: FORWARDER wait until Digital Rebar service is up [1 upto 15 minutes]
+    wait_for: host="{{ansible_default_ipv4.address}}" port=3000 delay=60 timeout=900
     when: dr_access_mode == "FORWARDER"
 
   - name: wait for rebar-key (1 to 30 minutes)
