@@ -16,6 +16,7 @@
 class BarclampChef::Service < Service
 
   def do_transition(nr, data)
+    deployment_name = nr.deployment.name
     internal_do_transition(nr, data, "chef-service", "chef-servers") do |s|
       str_addr = s.ServiceAddress
       str_addr = s.Address if str_addr.nil? or str_addr.empty?
@@ -24,10 +25,9 @@ class BarclampChef::Service < Service
       Rails.logger.debug("ChefServer: #{addr.inspect}")
 
       # TODO: THIS NEEDS TO RUN ON ALL RUNNERS AND API SERVERS
-      server_name = s.ServiceTags.first
-      proto = ConsulAccess.getKey("digitalrebar/private/chef/#{server_name}/proto")
-      key = ConsulAccess.getKey("digitalrebar/private/chef/#{server_name}/pem")
-      account = ConsulAccess.getKey("digitalrebar/private/chef/#{server_name}/account")
+      proto = ConsulAccess.getKey("digitalrebar/private/chef/#{deployment_name}/proto")
+      key = ConsulAccess.getKey("digitalrebar/private/chef/#{deployment_name}/pem")
+      account = ConsulAccess.getKey("digitalrebar/private/chef/#{deployment_name}/account")
 
       url = "#{proto}://"
       if addr.v6?

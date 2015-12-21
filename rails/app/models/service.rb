@@ -28,6 +28,12 @@ class Service < Role
         count += 1
         break if count > 20
         pieces = ConsulAccess.getService(service_name, :all, options, meta)
+        pieces.select! do |piece|
+          # New-school method of seeing if this service is in the proper deployment
+          piece.ServiceTags.any? do |st|
+            st =~ /^deployment:\s#{nr.deployment.name}$/ || st == nr.deployment.name
+          end
+        end if pieces
         if pieces and pieces.empty?
           Rails.logger.info("#{service_name} not available ... wait 10m or next update")
           runlog << "#{service_name} not available ... wait 10m or next update"
