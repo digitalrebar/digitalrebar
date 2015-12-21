@@ -1,0 +1,27 @@
+---
+  - name: Update repos (was not working from apt:)
+    command: sudo apt-get update -y
+  - name: Install Prereqs [SLOW]
+    apt: name={{ item }} state=latest
+    with_items:
+      - git
+      - screen
+      - qemu-kvm
+      - libvirt-bin
+      - bridge-utils
+      - ruby-dev
+      - make
+      - curl
+      - wget
+    sudo: yes
+  - name: gem install kvm slaves
+    command: sudo gem install json net-http-digest_auth
+    args:
+      creates: /var/lib/gems/1.9.1/cache/json-1.8.3.gem
+    sudo: yes
+  - name: stop apparmor
+    command: sudo service apparmor teardown
+    sudo: yes
+  - name: remove apparmor
+    command: sudo update-rc.d -f apparmor remove
+    sudo: yes
