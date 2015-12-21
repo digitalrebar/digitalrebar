@@ -25,4 +25,8 @@
     sudo: yes
   - name: gem install kvm slaves
     command: sudo gem install json net-http-digest_auth
+  # Docker will put back what it needs - firewalld on Centos7
+  - name: Silly flush of iptables
+    command: sudo iptables -F
+    ignore_errors: yes
 
