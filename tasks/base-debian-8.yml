@@ -10,6 +10,7 @@
       - libvirt-bin
       - bridge-utils
       - ruby-dev
+      - rubygems
       - make
       - curl
       - wget
