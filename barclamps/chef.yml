@@ -46,7 +46,7 @@ roles:
           type: seq
           sequence:
             - type: str
-      - name: chef-servers-admin-key
+      - name: chef-servers-admin-name
         description: 'Admin user used to access chef server'
         map: 'chefjig/server/username'
         schema:
