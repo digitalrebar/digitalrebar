@@ -40,11 +40,10 @@
 
   - name: Make SSH dirs
     file: path={{home_dir.stdout}}/.ssh state=directory recurse=yes mode=0700
-    when: ssh_pub is not defined
 
   - name: create SSH key for host to access slaves
     command: ssh-keygen -t rsa -f '{{home_dir.stdout}}/.ssh/id_rsa' -P ''
-    when: ssh_pub is not defined
+    when: ssh_pub.stat.exists == False
     args:
       creates: "{{home_dir.stdout}}/.ssh/id_rsa.pub"
 
