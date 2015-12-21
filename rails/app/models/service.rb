@@ -31,7 +31,7 @@ class Service < Role
         pieces.select! do |piece|
           # New-school method of seeing if this service is in the proper deployment
           piece.ServiceTags.any? do |st|
-            st =~ /^deployment:\s#{nr.deployment.name}$/ || st == nr.deployment.name
+            st =~ /^deployment:\s?#{nr.deployment.name}$/ || st == nr.deployment.name
           end
         end if pieces
         if pieces and pieces.empty?
