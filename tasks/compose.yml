@@ -90,7 +90,6 @@
     command: ./init_files.sh --external_ip {{ dr_external_ip }} --forwarder_ip {{ dr_forwarder_ip | default("0.0.0.0/24") }}  --access {{ dr_access_mode }} {{ dr_services| default([]) | join(" ") }}
     args:
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
-      creates: "{{home_dir.stdout}}/digitalrebar/deploy/compose/docker-compose.yml"
   - name: copy user ssh public key to rebar
     command: cp {{home_dir.stdout}}/.ssh/id_rsa.pub {{home_dir.stdout}}/digitalrebar/deploy/compose/config-dir/api/config/ssh_keys/setup-0.key
     args:
