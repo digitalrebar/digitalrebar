@@ -65,6 +65,7 @@ while (( $# > 0 )); do
     arg="$1"
     case $arg in
         --no-pull) export NO_PULL="Y";;
+        --dev) export DEV_MODE="Y";;
         --access)
             case $2 in
                 HOST|FORWARDER)
@@ -167,6 +168,11 @@ bring_up_admin_containers() {
         sudo modprobe nf_nat_tftp
     fi
     docker-compose up -d
+    # enable development mode
+    if [ "$DEV_MODE" == "Y" ] ; then
+        docker exec -it compose_rebar_api_1 touch /tmp/development.txt
+        echo "Starting in DEVELOPMENT MODE"
+    fi
 }
 
 provisioner_finished() {
