@@ -18,7 +18,8 @@ import requests, json, argparse
 from requests.auth import HTTPDigestAuth
   
 '''
-https://github.com/digitalrebar/doc/tree/master/development/api
+Usage: https://github.com/digitalrebar/doc/tree/master/clients/ansible
+API:  https://github.com/digitalrebar/doc/tree/master/development/api
 
 example: ansible -i inventory.py all -a "uname -a"
 '''
