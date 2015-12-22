@@ -18,7 +18,8 @@ import requests, json, argparse
 from requests.auth import HTTPDigestAuth
   
 '''
-https://github.com/digitalrebar/doc/tree/master/development/api
+Usage: https://github.com/digitalrebar/doc/tree/master/clients/ansible
+API:  https://github.com/digitalrebar/doc/tree/master/development/api
 
 example: ansible -i inventory.py all -a "uname -a"
 '''
@@ -26,7 +27,7 @@ example: ansible -i inventory.py all -a "uname -a"
 def main():
 
     # change these values to match your DigitalRebar installation
-    addr = "https://192.168.124.10:3000"
+    addr = "https://127.0.0.1:3000"
     user = "rebar"
     password = "rebar1"
 
@@ -52,7 +53,7 @@ def main():
     Auth = HTTPDigestAuth(user,password)
     Headers = {'content-type': 'application/json'}
     print("URL ", URL, " via ", Auth)
-    r = requests.get(URL,auth=Auth,headers=Headers)
+    r = requests.get(URL,auth=Auth,headers=Headers,verify=False)
 
     if r.status_code == 200: 
         print r.text
