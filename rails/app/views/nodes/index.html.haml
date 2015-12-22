@@ -14,8 +14,7 @@
         = text_field_tag :number, 1, :size => 2
         %button{:onclick=>"add_nodes()"}= t('add')
       - else
-        = link_to ('.no_providers'), providers_path
-
+        = link_to t('.no_providers'), providers_path, :class=>:button
 - if @list.length == 0
   %p= t '.no_nodes'
 - else

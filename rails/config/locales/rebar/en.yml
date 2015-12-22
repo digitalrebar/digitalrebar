@@ -371,7 +371,7 @@ en:
       provider: "Provider"
       create_nodes: "Provider Nodes"
       name_base: "digital_rebar_node"
-      no_providers: "No Drivable Providers"
+      no_providers: "Node Providers"
       create_failed: "Create Failed"
       <<: *deployment_common
       <<: *node_role_states
@@ -477,7 +477,7 @@ en:
       name: "Name"
       description: "Description"
       type: "Type"
-      new: "Create Provider"
+      new: "Add Provider"
       aws: "Amazon AWS"
       google: "Google GCE"
       metal: "Metal Provisioner"
@@ -485,6 +485,7 @@ en:
       iaas: "IaaS Generic - Fog"
     show:
       title: "%{name} Provider"
+      new: "New"
       description: "Description"
       name: "Provider"
       nodes: "Nodes"
@@ -498,6 +499,7 @@ en:
       aws:
         access_key_id: "Access Key"
         secret_access_key: "Secret"
+        region: "Region"
       packet:
         token: "Token"
         id: "ID"
