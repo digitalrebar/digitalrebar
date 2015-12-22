@@ -370,7 +370,7 @@ en:
       no_nodes: "No Nodes Registered.  Suggested action: configure Rebar."
       provider: "Provider"
       create_nodes: "Provider Nodes"
-      name_base: "digital_rebar_node"
+      name_base: "digital-rebar-node"
       no_providers: "Node Providers"
       create_failed: "Create Failed"
       <<: *deployment_common
