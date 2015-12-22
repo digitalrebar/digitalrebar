@@ -1,23 +1,35 @@
 %h1= t '.title', :name => @item.name.titleize
 
-= form_for :provider, :'data-remote' => true, :url => provider_path(@item.id), :html => { :method=>:put, :'data-type' => 'json',  :class => "formtastic" } do |f|
-  
+- if @item.id < 0
+  - url = providers_path()
+  - method = :post
+- else
+  - url = provider_path(@item.id)
+  - method = :put
+
+= form_for :provider, :'data-remote' => true, :url => url, :html => { :method=>method, :'data-type' => 'json',  :class => "formtastic" } do |f|
+
   %table.data.box
     %thead
       %tr
         %th= link_to t(".name"), providers_path
-        %th= @item.name
+        %th
     %tbody
       %tr
-        %td= t '.type'
-        %td
-          = @item.type || t('not_set') rescue t('not_set' )
-          (
-          = link_to t('raw'), provider_path(@item.id, :raw=>true)
-          )
+        %td= t '.name'
+        %td= text_field_tag :name, @item.name, :size => 25
       %tr
         %td= t '.description'
         %td= text_field_tag :description, @item.description, :size => 50
+      %tr
+        %td= t '.type'
+        %td
+          = hidden_field_tag :type, @item.type
+          = @item.type || t('not_set') rescue t('not_set' )
+          - if @item.id > 0
+            (
+            = link_to t('raw'), provider_path(@item.id, :raw=>true)
+            )
       - begin 
         - if params.include? :raw
           = render :partial => 'show', :locals=>{:item => @item}
@@ -32,7 +44,7 @@
     %tfoot
       %tr
         %td
-        %td= f.button :type => "submit", :name => "update", :method=>:post, :value => t('.update')
+        %td= f.button :type => "submit", :name => "update", :method=>method, :value => t('.update')
 
 %br
 

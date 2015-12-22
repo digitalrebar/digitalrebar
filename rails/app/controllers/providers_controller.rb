@@ -44,7 +44,12 @@ class ProvidersController < ApplicationController
   end
 
   def show
-    @item = Provider.find_key(params[:id])
+    @item = if params[:id] == 'create'
+      t = params[:new][:type]
+      Provider.new(name: t.downcase, id: -1, type: t, description: I18n.t('not_set'))
+    else
+      Provider.find_key(params[:id])
+    end
     respond_to do |format|
       format.html { render :show  }
       format.json { render api_show @item }
