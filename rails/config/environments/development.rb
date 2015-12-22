@@ -19,6 +19,7 @@
 # since you don't have to restart the webserver when you make code changes.
 Rebar::Application.configure do
   config.cache_classes = false
+  config.assets.digest = false
 
   # Show full error reports and disable caching
   #config.action_controller.consider_all_requests_local = true
