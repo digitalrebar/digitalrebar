@@ -32,7 +32,7 @@
     for (var i=0; i<number; i++) {
       $.post("#{nodes_path}",
         {
-          name: base_name+"_"+i+"."+provider+".neode.org",
+          name: base_name+"-"+i+"."+provider+".neode.org",
           description: "created by #{current_user.username}",
           provider: provider,
           hints: { 
