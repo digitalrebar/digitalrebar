@@ -55,7 +55,7 @@ CON_VAR="\"dr_services\": ["
 COMMA=""
 for c in "${!containers[@]}"; do
     [[ ${containers["$c"]} && ${containers["$c"]} != false ]] || continue
-    CON_VAR="$CON_VAR \"--$c\"$COMMA"
+    CON_VAR="$CON_VAR $COMMA \"--$c\""
     COMMA=","
 done
 CON_VAR="${CON_VAR} ],"
@@ -64,7 +64,7 @@ WL_VAR="\"dr_workloads\": ["
 COMMA=""
 for c in "${!workloads[@]}"; do
     [[ ${workloads["$c"]} && ${workloads["$c"]} != false ]] || continue
-    WL_VAR="$WL_VAR \"$c\"$COMMA"
+    WL_VAR="$WL_VAR $COMMA \"$c\""
     COMMA=","
 done
 WL_VAR="${WL_VAR} ]"
