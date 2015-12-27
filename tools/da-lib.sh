@@ -46,7 +46,7 @@ converge() {
     return 1
 }
 
-known_containers=(provisioner logging debug node access)
+known_containers=(provisioner logging debug node access ux)
 
 declare -A containers
 
