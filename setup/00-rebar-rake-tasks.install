@@ -6,6 +6,9 @@
 
 set -x
 
+echo "Sleeping...."
+sleep 60
+
 cd /opt/digitalrebar/core/rails
 tasks=("rake db:create"
     "rake railties:install:migrations"
