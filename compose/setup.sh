@@ -11,6 +11,9 @@ fi
 
 while [[ $1 ]]; do
   case "$1" in
+    ux)
+      ./workload.sh rackn digitialrebar-ux
+      shift;;
     kubernetes)
       ./workload.sh rackn docker
       ./workload.sh rackn $1
@@ -53,7 +56,7 @@ while [[ $1 ]]; do
       done
       shift;;
     all)
-      for wl in docker kubernetes hardware ceph packstack docker-swarm enterprise mesosphere burnin stackengine k8s-contrail; do
+      for wl in docker kubernetes hardware ceph packstack docker-swarm enterprise mesosphere burnin stackengine k8s-contrail digitalrebar-ux; do
         ./workload.sh rackn ${wl}
       done
       shift;;
