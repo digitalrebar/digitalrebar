@@ -106,6 +106,17 @@ provisioner:
     - ./common.env
     - ./access.env
 
+ux:
+  image: digitalrebar/dr_ux
+  privileged: true
+  volumes:
+    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./digitalrebar/digitalrebar-ux:/opt/digitalrebar-ux
+    - ./data-dir/node:/etc/rebar-data
+  env_file:
+    - ./common.env
+    - ./access.env
+
 elasticsearch:
   image: elasticsearch
   volumes:

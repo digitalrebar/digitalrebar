@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 # Copyright 2015, RackN Inc
 
-set -x
-
 ACCOUNT=${ACCOUNT:-"--user root"}
 
 # Load it up

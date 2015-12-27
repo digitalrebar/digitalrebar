@@ -274,8 +274,8 @@ start_machine() {
     esac
 }
 
-known_containers=(provisioner logging debug node access)
-known_workloads=(all docker kubernetes hardware ceph packstack docker-swarm enterprise mesosphere burnin k8s-contrail stackengine rackn)
+known_containers=(provisioner logging debug node access ux)
+known_workloads=(all docker kubernetes hardware ceph packstack docker-swarm enterprise mesosphere burnin k8s-contrail stackengine rackn ux)
 
 declare -A containers
 declare -A workloads

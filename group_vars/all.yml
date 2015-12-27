@@ -23,6 +23,10 @@
 #
 #  - debug
 #
+# UX - experimental RackN UI
+#
+#  - ux
+#
 # Node - add the private test node workload.
 #   Allows a container (or set with scale) to
 #   be added to DR after installation.
@@ -88,6 +92,10 @@ dr_services:
 #   can deploy a licensed copy of StackEngine.
 #
 #  - stackengine        # Needs rackn access
+#
+# UX - RackN new UI
+#
+#  - ux        # Needs rackn access
 #
 # All - will attempt to get all the known repos
 #
