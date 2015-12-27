@@ -165,6 +165,8 @@ forwarder:
     - ./access.env
   ports:
     - "3000:3000"
+    - "80:80"
+    - "443:443"
 
 node:
   image: digitalrebar/dr_node
