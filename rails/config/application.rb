@@ -40,8 +40,19 @@ module Rebar
       config.active_support.deprecation = :notify
       config.action_controller.allow_forgery_protection    = true
       config.eager_load = true
-    end
 
+      # enable CORS, in Dev only for now 
+      config.middleware.insert_before 0, Rack::Cors do
+        allow do
+          origins '*' 
+          resource '*',
+            headers: :any,
+            methods: [:get, :post, :put, :delete, :options, :patch, :head]
+        end
+      end
+    
+    end
+    
     # See everything in the log (default is :info)
     config.log_level = :debug
     config.paths['log'] = "/var/log/rebar/#{Rails.env}.log"
