@@ -5,11 +5,19 @@ require "#{`pwd`.strip}/lib/consul_access.rb"
 require 'httpclient'
 Faraday.default_adapter = :httpclient
 
-db = ConsulAccess.getService('rebar-database')
+db = nil
+while db.nil? do
+  begin
+    db = ConsulAccess.getService('rebar-database')
+    username = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/username')
+    password = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/password')
+    database = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/database')
+  rescue Exception => e
+    Rails.logger.fatal("Consul Access failed: #{e.message}")
+    db = nil
+  end
+end
 
-username = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/username')
-password = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/password')
-database = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/database')
 host = db.ServiceAddress 
 host = db.Address if host.nil? or host.empty?
 host = "database" if host.nil? or host.empty?

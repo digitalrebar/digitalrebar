@@ -43,9 +43,9 @@ if [[ ! -f /var/run/rebar/server.key ]]; then
     openssl req -new -key /var/run/rebar/server.key -out /var/run/rebar/server.csr -subj "/C=US/ST=Texas/L=Austin/O=RackN/OU=RebarAPI/CN=neode.net"
     openssl x509 -req -days 365 -in /var/run/rebar/server.csr -signkey /var/run/rebar/server.key -out /var/run/rebar/server.crt
     rm /var/run/rebar/server.csr
-    chmod 400 /var/run/rebar/server.key /var/run/rebar/server.crt
-    chown rebar:rebar /var/run/rebar/server.key /var/run/rebar/server.crt
 fi
+chmod 400 /var/run/rebar/server.key /var/run/rebar/server.crt
+chown rebar:rebar /var/run/rebar/server.key /var/run/rebar/server.crt
 
 if [[ -f /etc/rebar.install.key ]]; then
     read REBAR_KEY < /etc/rebar.install.key
