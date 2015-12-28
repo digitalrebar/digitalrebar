@@ -221,7 +221,7 @@ class Network < ActiveRecord::Base
       create_auto_v6_range
       r = Role.find_or_create_by!(name: role_name,
                                   type: "BarclampNetwork::Role",   # force
-                                  jig_name: Rails.env.production? ? "chef" : "test",
+                                  jig_name: "chef",
                                   barclamp_id: bc.id,
                                   description: I18n.t('automatic_by', :name=>name),
                                   library: false,

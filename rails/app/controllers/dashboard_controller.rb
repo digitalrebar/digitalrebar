@@ -129,7 +129,9 @@ class DashboardController < ApplicationController
       ready_name = params[:deployment]
       throw "Deployment Name is required" unless ready_name
       d = Deployment.find_or_create_by!(name: ready_name, parent: Deployment.system)
-      if params[:conduit]
+      throw "Did not create Deployment" unless d
+      n = Network.find_key(ready_name)
+      if !n and params[:conduit]
         n = Network.find_or_create_by!(name: ready_name, conduit: params[:conduit], deployment: d, v6prefix: Network::V6AUTO)
         NetworkRange.create! :name=>params[:range], :network=>n, :first=>params[:first_ip], :last=>params[:last_ip] if n.ranges.count < 2
       end
@@ -146,12 +148,12 @@ class DashboardController < ApplicationController
           Node.transaction do
             n.deployment = d
             n.save!
-            Rails.logger.info "Dashboard GetReady Deployment #{d.name} added node #{n.name}"
-            # assign milestone for OS assignment
-            ready.add_to_node_in_deployment n, d unless n.is_docker_node?
-            nics = n.attrib_nics.count rescue 0
-            ready_network.add_to_node_in_deployment n, d if nics > 0
           end
+          # assign milestone for OS assignment
+          Rails.logger.info "Dashboard GetReady Deployment #{d.name} added node #{n.name}"
+          ready.add_to_node_in_deployment n, d unless n.is_docker_node?
+          nics = n.attrib_nics.count rescue 0
+          ready_network.add_to_node_in_deployment n, d if nics > 0
           # set desired OS to attribute
           Attrib.set "provisioner-target_os", n, params["dashboard"]["#{node_id}_os"], :user unless n.is_docker_node?
         end
