@@ -13,7 +13,7 @@ while db.nil? do
     password = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/password')
     database = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/database')
   rescue Exception => e
-    Rails.logger.fatal("Consul Access failed: #{e.message}")
+    puts("Consul Access failed: #{e.message}")
     db = nil
   end
 end
