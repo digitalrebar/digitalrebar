@@ -46,6 +46,7 @@ case $OS_TYPE in
     *) OS_FAMILY=$OS_TYPE;;
 esac
 
+PATH=$PATH:`pwd`
 
 # Load default vars
 if [ -f ~/.dr_info ] ; then
@@ -147,19 +148,15 @@ rebar() {
 
     rebar_cmd=$(which rebar)
     if [[ $rebar_cmd == "" ]] ; then
-        rebar_cmd="./rebar"
-
-        if [[ ! -f $rebar_cmd ]] ; then
-            if [[ $(uname -s) == Darwin ]] ; then
-                curl -so rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-darwin-amd64
-            else
-                curl -so rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64
-            fi
-            chmod +x ./rebar
+        if [[ $(uname -s) == Darwin ]] ; then
+            curl -so rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-darwin-amd64
+        else
+            curl -so rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64
         fi
+        chmod +x ./rebar
     fi
 
-    $rebar_cmd $@
+    command rebar "$@"
 }
 
 usage() {
