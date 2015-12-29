@@ -64,7 +64,7 @@ class NodesController < ApplicationController
         node = Node.find_key params[:id]
         nodes = Node.where :id=>node.id
       else
-        nodes = Node.all
+        nodes = Node.non_system
       end
       nodes.each do |n|
         state = n.state

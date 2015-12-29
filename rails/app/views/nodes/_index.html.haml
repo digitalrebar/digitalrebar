@@ -5,10 +5,12 @@
       %th= t '.name'
       %th= t '.address'
       %th= t '.status'
-      %th= t '.admin'
       %th= t '.description'
       %th= link_to t('.provider'), providers_path
       %th= link_to t('.deployment'), deployments_path
+      %th
+        %input{type: "checkbox", class: "node_action", name:"node_action"}
+        = select_tag "act_on_nodes", options_for_select({t(".node_action") => "none", t(".delete") => "delete"}) #, t(".reboot") => "reboot", t(".debug") => "debug"})
   %tbody.nodelist
     -nodes.each do |n|
       - s = n.state
@@ -26,8 +28,12 @@
           = t (n.alive ? ".alive" : ".dead")
           = t (n.available ? ".available" : ".reserved")
           = NodeRole.state_name(s)
-        %td
-          = t 'yes' if n.admin
         %td= n.description
         %td= link_to n.provider.name, provider_path(n.provider.id) rescue t('unknown')
         %td= link_to n.deployment.name, deployment_path(n.deployment.id), :title=>n.deployment.description
+        %td
+          - if n.admin
+            = t '.admin'
+          - else
+            = check_box_tag "node_action_#{n.id}", n.id, false
+
