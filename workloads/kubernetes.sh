@@ -12,7 +12,7 @@ start_args="$@"
 # Kubernetes Config options
 #
 help_options["--k8s-master-count=<Number>"]="Number of masters to start"
-help_options["--k8s-minion-count=<Number>"]="Number of minions to start"
+help_options["--k8s-node-count=<Number>"]="Number of nodes to start"
 help_options["--deployment-name=<String>"]="Deployment name to hold all the nodes"
 help_options["--teardown"]="Turn down deployment"
 help_options["--keep-admin"]="Keeps admin node running (modifies teardown)"
@@ -34,15 +34,15 @@ KEEP_ADMIN=false
 . workloads/wl-lib.sh
 
 K8S_MASTER_COUNT=${K8S_MASTER_COUNT:-1}
-K8S_MINION_COUNT=${K8S_MINION_COUNT:-3}
+K8S_NODE_COUNT=${K8S_NODE_COUNT:-3}
 DEPLOYMENT_NAME=${DEPLOYMENT_NAME:-kubs}
 DEPLOYMENT_OS=${DEPLOYMENT_OS:-centos7}
 
 bring_up_admin "${DEPLOYMENT_NAME}-admin.neode.local"
 
 if [[ $TEARDOWN ]] ; then
-    for ((i=0 ; i < $K8S_MINION_COUNT; i++)) ; do
-        NAME="${DEPLOYMENT_NAME}-minion-$i.neode.local"
+    for ((i=0 ; i < $K8S_NODE_COUNT; i++)) ; do
+        NAME="${DEPLOYMENT_NAME}-node-$i.neode.local"
         rebar nodes destroy $NAME
     done
     for ((i=0 ; i < $K8S_MASTER_COUNT; i++)) ; do
@@ -76,10 +76,10 @@ for ((i=0 ; i < $K8S_MASTER_COUNT; i++)) ; do
 done
 
 #
-# Start up machines for minions
+# Start up machines for nodes
 #
-for ((i=0 ; i < $K8S_MINION_COUNT; i++)) ; do
-    NAME="${DEPLOYMENT_NAME}-minion-$i.neode.local"
+for ((i=0 ; i < $K8S_NODE_COUNT; i++)) ; do
+    NAME="${DEPLOYMENT_NAME}-node-$i.neode.local"
     start_machine $NAME $DEPLOYMENT_OS
 done
 
@@ -93,12 +93,18 @@ for ((i=0 ; i < $K8S_MASTER_COUNT; i++)) ; do
     rebar nodes bind $NAME to kubernetes-master
 done
 
-# Add minions
-for ((i=0 ; i < $K8S_MINION_COUNT; i++)) ; do
-    NAME="${DEPLOYMENT_NAME}-minion-$i.neode.local"
+# Add nodes
+for ((i=0 ; i < $K8S_NODE_COUNT; i++)) ; do
+    NAME="${DEPLOYMENT_NAME}-node-$i.neode.local"
     rebar nodes move $NAME to $DEPLOYMENT_NAME
-    rebar nodes bind $NAME to kubernetes-minion
+    rebar nodes bind $NAME to kubernetes-node
 done
+
+# Add the add-ons and tests.
+# GREG: Make conditional
+NAME="${DEPLOYMENT_NAME}-master-0.neode.local"
+rebar nodes bind $NAME to kubernetes-add-ons
+rebar nodes bind $NAME to kubernetes-test
 
 # GREG: Set parameters 
 
