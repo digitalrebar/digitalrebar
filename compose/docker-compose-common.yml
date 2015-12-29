@@ -32,6 +32,7 @@ goiardi:
   image: digitalrebar/dr_goiardi
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./common.env
     - ./access.env
