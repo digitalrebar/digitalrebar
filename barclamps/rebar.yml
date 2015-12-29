@@ -448,6 +448,12 @@ attribs:
     map: 'provider/control_address'
     schema:
       type: str
+  - name: provider-rate
+    description: 'The cost of this node in the provider'
+    map: 'provider/rate'
+    default: 1.0
+    schema:
+      type: float
 
 providers:
   - name: phantom
