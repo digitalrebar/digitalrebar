@@ -24,6 +24,39 @@
 
 :javascript
 
+  $(".node_action").change(function() {
+    if (this.checked)
+      $(":checkbox[id^=" + this.name + "]").attr('checked', true);
+    else
+      $(":checkbox[id^=" + this.name + "]").attr('checked', false);
+  })
+
+  $("#act_on_nodes").change(function() {
+    var action = this.value;
+    console.debug("action #{nodes_path()}");
+    $(":checkbox[id^=node_action]").each( function(index, value) {
+      if (value.checked) {
+        console.debug("loop " + action + " on " + value.value);
+        if (action == "delete") {
+          $.ajax({
+            type: 'DELETE',
+            url: "#{nodes_path}/" + value.value + "?format=json"})
+            .fail(function(jqXHR, textStatus, errorThrown) {
+              alert("#{t('.delete_failed')}: " + textStatus + " " + errorThrown)
+            })
+            .done(function() { 
+              value.disabled = true;
+            }
+          );
+        };
+      };
+    });
+    if (action == "delete") { 
+      location.reload(); } 
+    else {
+      this.value = "none"; }
+  });
+
   function add_nodes() {
     var base_name = $("#name").val();
     var provider = $("#add_provider").val();
