@@ -9,7 +9,6 @@ ux:
 {{ END ACCESS_MODE==FORWARDER }}
 {{ START ACCESS_MODE==HOST }}
   ports:
-    - "80:80"
     - "443:443"
 {{ END ACCESS_MODE==HOST }}
 
