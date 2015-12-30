@@ -11,6 +11,8 @@ The installation process is documented in the main
 [Digital Rebar documentation](https://github.com/digitalrebar/doc) and the
 [install page](https://github.com/digitalrebar/doc/deployment/install.rst).
 
+Note: Please try --help on scripts for additional options!
+
 ## This Just Might Work Quick Start Helps
 
 Here are some stuffs that just might work for a quick start on Mac OSX or Linux.
@@ -40,7 +42,7 @@ All Mac OS X questions can be answered [here](https://github.com/digitalrebar/do
 
 For Linux OSes (RedHat-based or Debian-Based), run (and fix missing items):
 ```shell
-./run-in-system.sh --localhost
+./run-in-system.sh --admin-ip=[your IP/24, not localhost] --account=[username] --deploy-admin=[local|system]
 ```
 
 At the end of this process, you will have an admin node running in containers on the local system.  The access mode will be FORWARDER mode and the default address will be 192.168.124.11/24.  Forwarder mode allows a little easier control of KVM-based systems.
