@@ -87,11 +87,7 @@ class Attrib < ActiveRecord::Base
     (name.is_a?(Attrib) ? name : Attrib.find_key(name)).get(from, source,committed)
   end
 
-  # Get the attribute value from the passed object.
-  # For now, we are encoding information about the objects we can use directly in to
-  # the Attrib class, and failing hard if we were passed something that
-  # we do not know how to handle.
-  def get(from_orig,source=:all, committed=false)
+  def simple_get(from_orig, source=:all, committed=false)
     d = nil
     Attrib.transaction do
       from = __resolve(from_orig)
@@ -142,7 +138,15 @@ class Attrib < ActiveRecord::Base
         d = d
       end
     }
-    Rails.logger.debug("Attrib: Got #{self.name}: #{d.inspect}") if d
+    return d
+  end
+
+  # Get the attribute value from the passed object.
+  # For now, we are encoding information about the objects we can use directly in to
+  # the Attrib class, and failing hard if we were passed something that
+  # we do not know how to handle.
+  def get(from_orig,source=:all, committed=false)
+    d = simple_get(from_orig,source,committed)
     if d.nil?
       d = self.default["value"]
       Rails.logger.debug("Attrib: Got #{self.name}: default #{d.inspect}")
