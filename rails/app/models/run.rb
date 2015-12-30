@@ -74,7 +74,7 @@ class NodeRoleRun < Que::Job
       end
       # Extract any new desired node attribs from the returned wall info
       nr.barclamp.attribs.where(role_id: nil).each do |a|
-        val = a.get(nr)
+        val = a.simple_get(nr)
         next if val.nil?
         a.set(nr.node,val)
       end
