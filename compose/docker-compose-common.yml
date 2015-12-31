@@ -31,6 +31,7 @@ webproxy:
 goiardi:
   image: digitalrebar/dr_goiardi
   volumes:
+    - ./data-dir/node:/etc/rebar-data
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
@@ -78,6 +79,7 @@ packetwrap:
 dns:
   image: digitalrebar/dr_dns
   volumes:
+    - ./data-dir/node:/etc/rebar-data
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/bind/named.conf:/etc/named.conf
     - ./config-dir/bind/named.conf:/etc/bind/named.conf
