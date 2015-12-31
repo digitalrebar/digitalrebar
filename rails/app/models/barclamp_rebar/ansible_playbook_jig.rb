@@ -100,7 +100,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
     # Remap additional variables
     role_yaml['attribute_map'].each do |am|
-      next if am['when'] and eval_condition(nr, data, am['when'])
+      next if am['when'] and !eval_condition(nr, data, am['when'])
       value = get_value(nr, data, am['name'])
       set_value(data, am['path'], value)
     end if role_yaml['attribute_map']
@@ -283,8 +283,9 @@ private
     rvalue = args[2]
 
     lvalue = get_value(nr, data, path)
-    lvalue = "" unless lvalue
+    lvalue = "" if lvalue.nil?
 
+    # Return the eval
     case operator
     when '=='
       lvalue.to_s == rvalue
