@@ -100,6 +100,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
     # Remap additional variables
     role_yaml['attribute_map'].each do |am|
+      next if am['when'] and eval_condition(nr, data, am['when'])
       value = get_value(nr, data, am['name'])
       set_value(data, am['path'], value)
     end if role_yaml['attribute_map']
@@ -264,6 +265,37 @@ private
 
     answer
   end
+
+  # nr is the node role being operated on.
+  # Data is a hash that will become JSON at some point.
+  # Cond is the eval string
+  #    cond is of the form <path> <operator> <value>
+  #    path = a / separated set of strings that index into hash and lists.
+  #    operator = == or !=
+  #    value = string
+  #
+  # Return boolean value of condition as applied to stringified path results.
+  #
+  def eval_condition(nr, data, cond)
+    args = cond.split
+    path = args[0]
+    operator = args[1]
+    rvalue = args[2]
+
+    lvalue = get_value(nr, data, path)
+    lvalue = "" unless lvalue
+
+    case operator
+    when '=='
+      lvalue.to_s == rvalue
+    when '!='
+      lvalue.to_s != rvalue
+    else
+      Rails.logger.info("EvalCondition in Ansible Playbook Jig: #{operator} unknown")
+      false
+    end
+  end
+
 
   # nr is the node role being operated on.
   # Data is a hash that will become JSON at some point.
