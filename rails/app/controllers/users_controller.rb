@@ -22,6 +22,48 @@ class UsersController < ApplicationController
 
   add_help(:index,[],[:get])
 
+  skip_before_filter :rebar_auth, :only => [:options]
+  skip_before_filter :authenticate_user!, :only => [:options]
+
+  def cors_headers
+    access_control = {
+      'Access-Control-Allow-Origin' => request.headers["HTTP_ORIGIN"],
+      'Access-Control-Allow-Headers' => 'X-Requested-With,Content-Type,Cookie, Authorization', # If-Modified-Since,If-None-Match,
+      'Access-Control-Allow-Credentials' => true,
+      'Access-Control-Expose-Headers' => 'WWW-Authenticate, Set-Cookie, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Allow-Origin'
+    }
+    access_control.each{ |k, v| response.headers[k] = v } if request.headers["HTTP_ORIGIN"]
+  end
+
+  def digest
+    if request.get? or request.post?
+      if request.headers["HTTP_ORIGIN"]
+        cors_headers
+        user = User.find_key session[:digest_user]
+        if user
+          render api_show(user), :status => :accepted
+        else
+          render :text => "digest", :status => :unauthorized
+        end
+      else
+        if session[:digest_user]
+          render :text => t('user.digest_success', :default=>'success')
+        else
+          render :text => "digest", :status => :unauthorized
+        end
+      end
+    elsif request.delete?
+      session_reset
+      render :nothing => true, :status => :ok
+    end
+  end
+
+  # CORS header method
+  def options
+    cors_headers
+    render :nothing => true, :status => :no_content
+  end
+
   def sample
     render api_show({},User)
   end
@@ -44,7 +86,7 @@ class UsersController < ApplicationController
       format.json { render api_index User, @users }
     end
   end
-  
+
  # RESTful DELETE of the node resource
   def destroy
     @user = User.find_by_id_or_username params[:id]

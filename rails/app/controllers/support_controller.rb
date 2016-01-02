@@ -28,14 +28,6 @@ class SupportController < ApplicationController
     render :text=>params[:id]
   end
 
-  def digest
-    if session[:digest_user]
-      render :text => t('user.digest_success', :default=>'success')
-    else
-      render :text => "digest", :status => :unauthorized
-    end
-  end
-
   def fail
     raise I18n.t('chuck_norris')
   end

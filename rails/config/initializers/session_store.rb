@@ -14,10 +14,11 @@
 # 
 
 # sessions needed for AJAX CORS
-Rebar::Application.config.force_ssl = true
+Rebar::Application.config.force_ssl = Rails.env.production?
 Rebar::Application.config.session_store :cookie_store,
   key: '_rebar_session',
   secret: "Digtal_Rebar_was_OpenCrowbar",
-  secure: true, # flags cookies as secure only in production
-  httponly: false # should be true by default for all cookies
+  domain: :all,
+  secure: Rails.env.production?,
+  httponly: false
 	    

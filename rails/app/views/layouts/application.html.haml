@@ -102,7 +102,7 @@
 
         })
         .fail(function(jqXHR, textStatus, errorThrown) {
-          location.load("/my/users/sign_in");
+          location.load("#{main_app.destroy_user_session_path()}");
         });
 
       } else {

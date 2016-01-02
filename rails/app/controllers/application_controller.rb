@@ -63,7 +63,6 @@ class ApplicationController < ActionController::Base
   protect_from_forgery # See ActionController::RequestForgeryProtection for details
   skip_before_action :verify_authenticity_token, if: :digest_request?
 
-
   def self.set_layout(template = "application")
     layout proc { |controller|
       if controller.is_ajax?
@@ -312,12 +311,23 @@ class ApplicationController < ActionController::Base
 
   protected
 
+  def cors_headers
+    access_control = {
+      'Access-Control-Allow-Origin' => request.headers["HTTP_ORIGIN"],
+      'Access-Control-Allow-Headers' => 'X-Requested-With,Content-Type,Cookie,Authorization', # If-Modified-Since,If-None-Match,
+      'Access-Control-Allow-Credentials' => true,
+      'Access-Control-Expose-Headers' => 'WWW-Authenticate, Set-Cookie, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Allow-Origin'
+    }
+    access_control.each{ |k, v| response.headers[k] = v } if request.headers["HTTP_ORIGIN"]
+  end
+
   def digest_request?
     request.headers["HTTP_AUTHORIZATION"] && request.headers["HTTP_AUTHORIZATION"].starts_with?('Digest username=')
   end
 
   def digest_auth!
     u = nil
+    cors_headers
     authed = authenticate_or_request_with_http_digest(User::DIGEST_REALM) do |username|
       u = User.find_by!(username: username)
       session[:digest_user] = u.username
@@ -332,12 +342,13 @@ class ApplicationController < ActionController::Base
     session[:start] = Time.now
     respond_to do |format|
       format.html { authenticate_user! }
-      format.json { digest_auth! }
+      format.json { digest_auth! unless signed_in? :user }
     end
   end
 
   #return true if we digest signed in
   def rebar_auth
+    Rails.logger.error("ZEHICLE: #{request.headers['HTTP_AUTHORIZATION']}")
     case
     when current_user then authenticate_user!
     when digest_request? then digest_auth!

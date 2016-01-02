@@ -19,7 +19,7 @@ Devise.setup do |config|
   # Configure the e-mail address which will be shown in Devise::Mailer,
   # note that it will be overwritten if you use your own mailer class with default "from" parameter.
   config.mailer_sender = "please-change-me-at-config-initializers-devise@example.com"
-  config.secret_key = 'b50e5bb6be60b6ec184d4519aaa3678d0598f05f2b10d3bf339695af574102bdea703cdeae17eeebb98630d9be67fb4159c4ae7aa087ac1343334a761cab8c1a'
+  config.secret_key = 'deba5bb6be60b6ec184d4519aaa3678d0598f05f2b10d3bf339695af574102bdea703cdeae17eeebb98630d9be67fb4159c4ae7aa087ac1343334a761cab8c1a'
 
   # Configure the class responsible to send e-mails.
   # config.mailer = "Devise::Mailer"
@@ -73,7 +73,7 @@ Devise.setup do |config|
   config.http_authenticatable = true
 
   # If http headers should be returned for AJAX requests. True by default.
-  # config.http_authenticatable_on_xhr = true
+  config.http_authenticatable_on_xhr = true
 
   # The realm used in Http Basic Authentication. "Application" by default.
   config.http_authentication_realm = 'Rebar'
@@ -224,7 +224,7 @@ Devise.setup do |config|
   # should add them to the navigational formats lists.
   #
   # The "*/*" below is required to match Internet Explorer requests.
-  # config.navigational_formats = ["*/*", :html]
+  config.navigational_formats = ["*/*", :html, :json]
 
   # The default HTTP method used to sign out a resource. Default is :delete.
   config.sign_out_via = :delete
