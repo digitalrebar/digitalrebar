@@ -115,7 +115,7 @@ class DrillConsolidated < ActiveRecord::Migration
       t.text        :name,              null: false, index: { unique: true }
       t.text        :description,       null: false, default: ''
       t.text        :type,              null: true
-      t.json        :template,          null: false, default: { expr: "'{}'::json" }
+      t.jsonb        :template,          null: false, default: { expr: "'{}'::jsonb" }
       t.text        :jig_name,          null: false
       t.text        :provides,          array: true, null: false, default: { expr: "ARRAY[]::text[]" }
       t.text        :conflicts,         array: true, null: false, default: { expr: "ARRAY[]::text[]" }
@@ -144,7 +144,7 @@ class DrillConsolidated < ActiveRecord::Migration
       t.boolean     :milestone,         null: false, default: false # 2014062400
       t.boolean     :powersave,         null: false, default: false # 20150109193000
       t.boolean     :service,           null: false, default: false # 20150203155600
-      t.json        :notes,          null: false,   default: { expr: "'{}'::json" }  # 20150713092600
+      t.jsonb        :notes,          null: false,   default: { expr: "'{}'::jsonb" }  # 20150713092600
     end
 
     create_table :deployments do |t|
@@ -176,7 +176,7 @@ class DrillConsolidated < ActiveRecord::Migration
       t.text        :name,           null: false, index: :unique
       t.text        :type
       t.text        :description,    null: false, default: "An undescribed provider"
-      t.json        :auth_details,   null: false, default: { expr: "'{}'::json" }
+      t.jsonb        :auth_details,   null: false, default: { expr: "'{}'::jsonb" }
       t.timestamps
     end
 
@@ -191,8 +191,8 @@ class DrillConsolidated < ActiveRecord::Migration
       t.text        :variant,        null: false,   default: "metal"
       t.text        :arch,           null: false,   default: "x86_64"
       t.text        :os_family,      null: false,   default: "linux"
-      t.json        :discovery,      null: false,   default: { expr: "'{}'::json" }
-      t.json        :hint,           null: false,   default: { expr: "'{}'::json" }
+      t.jsonb        :discovery,      null: false,   default: { expr: "'{}'::jsonb" }
+      t.jsonb        :hint,           null: false,   default: { expr: "'{}'::jsonb" }
       t.boolean     :allocated,      null: false,   default: false
       t.boolean     :alive,          null: false,   default: false
       t.boolean     :available,      null: false,   default: false
@@ -200,7 +200,7 @@ class DrillConsolidated < ActiveRecord::Migration
       t.timestamps
       t.text        :quirks,         array: true,   null: false, default: []       # 2014082713150
       t.boolean     :system,         null: false,   default: false       # 20150104222800
-      t.json        :notes,          null: false,   default: { expr: "'{}'::json" }  # 20150713092600
+      t.jsonb        :notes,          null: false,   default: { expr: "'{}'::jsonb" }  # 20150713092600
     end
     #natural key
     add_index(:nodes, :name, :unique => true)
@@ -217,17 +217,17 @@ class DrillConsolidated < ActiveRecord::Migration
       t.text        :map,           null: false, default: ''
       t.text        :ui_renderer,   null: false, default: "attribs/default"
       t.timestamps
-      t.json        :default,       default: { expr: "'{\"value\": null}'::json" }  # 20150516140700
+      t.jsonb        :default,       default: { expr: "'{\"value\": null}'::jsonb" }  # 20150516140700
     end
 
     create_table :deployment_roles do |t|
       t.belongs_to  :deployment,    null: false
       t.belongs_to  :role,          null: false
-      t.json        :committed_data, null: false, default: { expr: "'{}'::json" }
-      t.json        :wall,          null: false, default: { expr: "'{}'::json" }
+      t.jsonb        :committed_data, null: false, default: { expr: "'{}'::jsonb" }
+      t.jsonb        :wall,          null: false, default: { expr: "'{}'::jsonb" }
       t.timestamps
-      t.json        :proposed_data, null: true       # 2014101811300
-      t.json        :notes,          null: false,   default: { expr: "'{}'::json" }  # 20150713092600
+      t.jsonb        :proposed_data, null: true       # 2014101811300
+      t.jsonb        :notes,          null: false,   default: { expr: "'{}'::jsonb" }  # 20150713092600
     end
 
     #natural key
@@ -245,12 +245,12 @@ class DrillConsolidated < ActiveRecord::Migration
       t.text        :runlog,            null: false, default: ""
       t.boolean     :available,         null: false, default: true
       t.integer     :order,             null: false, default: 10000
-      t.json        :proposed_data,     null: false, default: { expr: "'{}'::json" }
-      t.json        :committed_data,    null: false, default: { expr: "'{}'::json" }
-      t.json        :sysdata,           null: false, default: { expr: "'{}'::json" }
-      t.json        :wall,              null: false, default: { expr: "'{}'::json" }
+      t.jsonb        :proposed_data,     null: false, default: { expr: "'{}'::jsonb" }
+      t.jsonb        :committed_data,    null: false, default: { expr: "'{}'::jsonb" }
+      t.jsonb        :sysdata,           null: false, default: { expr: "'{}'::jsonb" }
+      t.jsonb        :wall,              null: false, default: { expr: "'{}'::jsonb" }
       t.timestamps
-      t.json        :notes,             null: false,   default: { expr: "'{}'::json" }  # 20150713092600
+      t.jsonb        :notes,             null: false,   default: { expr: "'{}'::jsonb" }  # 20150713092600
     end
     #natural key
     add_index(:node_roles, [:role_id, :node_id], unique: true)
@@ -439,30 +439,30 @@ class DrillConsolidated < ActiveRecord::Migration
     create_view :provisioner_database, "select n.name as name,
                                         n.bootenv as bootenv,
                                         a.address as address,
-                                        json_extract_path(n.discovery,'ohai','network','interfaces') as discovered_macs,
-                                        json_extract_path(n.hint,'admin_macs') as hinted_macs
+                                        jsonb_extract_path(n.discovery,'ohai','network','interfaces') as discovered_macs,
+                                        jsonb_extract_path(n.hint,'admin_macs') as hinted_macs
                                  from nodes n
                                  inner join network_allocations a on a.node_id = n.id
                                                                   and family(a.address::inet) = 4
                                  inner join networks net on a.network_id = net.id and net.category = 'admin'
                                  inner join node_roles nr on nr.node_id = n.id
                                  inner join roles r on nr.role_id = r.id and r.name = 'rebar-managed-node'
-                                 where json_extract_path(n.hint,'admin_macs') is not null
-                                 or json_extract_path(n.discovery,'ohai','network','interfaces') is not null"
+                                 where jsonb_extract_path(n.hint,'admin_macs') is not null
+                                 or jsonb_extract_path(n.discovery,'ohai','network','interfaces') is not null"
 
     create_view :dhcp_database, "select n.name as name,
                                         n.bootenv as bootenv,
                                         a.address as address,
-                                        json_extract_path(n.discovery,'ohai','network','interfaces') as discovered_macs,
-                                        json_extract_path(n.hint,'admin_macs') as hinted_macs
+                                        jsonb_extract_path(n.discovery,'ohai','network','interfaces') as discovered_macs,
+                                        jsonb_extract_path(n.hint,'admin_macs') as hinted_macs
                                  from nodes n
                                  inner join network_allocations a on a.node_id = n.id
                                                                   and family(a.address::inet) = 4
                                  inner join networks net on a.network_id = net.id and net.category = 'admin'
                                  inner join node_roles nr on nr.node_id = n.id
                                  inner join roles r on nr.role_id = r.id and r.name = 'rebar-managed-node'
-                                 where json_extract_path(n.hint,'admin_macs') is not null
-                                 or json_extract_path(n.discovery,'ohai','network','interfaces') is not null"
+                                 where jsonb_extract_path(n.hint,'admin_macs') is not null
+                                 or jsonb_extract_path(n.discovery,'ohai','network','interfaces') is not null"
 
     create_view :docker_database, "select n.name as name,
                                        a.address as address
