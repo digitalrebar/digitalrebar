@@ -1,4 +1,4 @@
-- style = "#{(!current_user.settings(:errors).expand ? 'display:none; ' : '')}position:relative; top:1em"
+- style = "#{(!current_user.settings(:errors).expand ? 'display:none; ' : '')}position:relative; top:1em" rescue 'display:none;'
 %div#error_500{:class=>"fail box"}
   %div.message
     %h2= t 'error.title'

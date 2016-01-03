@@ -137,6 +137,7 @@ Rebar::Application.routes.draw do
 
       # framework resources pattern (not barclamps specific)
       scope 'api' do
+        match '(*session)' => "users#options", via: [:options]
         scope 'status' do
           get "nodes(/:id)" => "nodes#status", :as => :nodes_status
           get "deployments(/:id)" => "deployments#status", :as => :deployments_status
@@ -319,7 +320,7 @@ Rebar::Application.routes.draw do
               put "reset_password"
             end
           end
-          get 'digest'        => "support#digest"
+          match 'digest' => "users#digest", as: :digest_url, via: [:get, :post, :head, :delete]
         end # version
       end # api
     end # id constraints

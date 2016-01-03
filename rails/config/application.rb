@@ -46,7 +46,7 @@ module Rebar
         allow do
           origins '*' 
           resource '*',
-            headers: :any,
+            headers: 'Authorization, WWW-Authenticate, Set-Cookie, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Allow-Origin', #:any,
             methods: [:get, :post, :put, :delete, :options, :patch, :head]
         end
       end
