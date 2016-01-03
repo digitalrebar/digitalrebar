@@ -33,7 +33,6 @@ goiardi:
   volumes:
     - ./data-dir/node:/etc/rebar-data
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
-    - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./common.env
     - ./access.env
