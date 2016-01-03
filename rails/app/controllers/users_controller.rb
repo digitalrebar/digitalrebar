@@ -28,7 +28,7 @@ class UsersController < ApplicationController
   def cors_headers
     access_control = {
       'Access-Control-Allow-Origin' => request.headers["HTTP_ORIGIN"],
-      'Access-Control-Allow-Headers' => 'X-Requested-With,Content-Type,Cookie, Authorization', # If-Modified-Since,If-None-Match,
+      'Access-Control-Allow-Headers' => 'X-Requested-With,Content-Type,Cookie,Authorization,WWW-Authenticate', # If-Modified-Since,If-None-Match,
       'Access-Control-Allow-Credentials' => true,
       'Access-Control-Expose-Headers' => 'WWW-Authenticate, Set-Cookie, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Allow-Origin'
     }
@@ -36,7 +36,7 @@ class UsersController < ApplicationController
   end
 
   def digest
-    if request.get? or request.post?
+    if request.get? or request.post? or request.head?
       if request.headers["HTTP_ORIGIN"]
         cors_headers
         user = User.find_key session[:digest_user]
@@ -47,7 +47,7 @@ class UsersController < ApplicationController
         end
       else
         if session[:digest_user]
-          render :text => t('user.digest_success', :default=>'success')
+          render :text => t('user.digest_success', :default=>'success'), :status => :ok
         else
           render :text => "digest", :status => :unauthorized
         end

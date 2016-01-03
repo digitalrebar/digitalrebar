@@ -320,7 +320,7 @@ Rebar::Application.routes.draw do
               put "reset_password"
             end
           end
-          match 'digest' => "users#digest", via: [:get, :post, :delete]
+          match 'digest' => "users#digest", as: :digest_url, via: [:get, :post, :head, :delete]
         end # version
       end # api
     end # id constraints

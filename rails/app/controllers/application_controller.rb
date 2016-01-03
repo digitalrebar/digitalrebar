@@ -314,7 +314,7 @@ class ApplicationController < ActionController::Base
   def cors_headers
     access_control = {
       'Access-Control-Allow-Origin' => request.headers["HTTP_ORIGIN"],
-      'Access-Control-Allow-Headers' => 'X-Requested-With,Content-Type,Cookie,Authorization', # If-Modified-Since,If-None-Match,
+      'Access-Control-Allow-Headers' => 'X-Requested-With,Content-Type,Cookie,Authorization,WWW-Authenticate', # If-Modified-Since,If-None-Match,
       'Access-Control-Allow-Credentials' => true,
       'Access-Control-Expose-Headers' => 'WWW-Authenticate, Set-Cookie, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Allow-Origin'
     }
@@ -348,7 +348,6 @@ class ApplicationController < ActionController::Base
 
   #return true if we digest signed in
   def rebar_auth
-    Rails.logger.error("ZEHICLE: #{request.headers['HTTP_AUTHORIZATION']}")
     case
     when current_user then authenticate_user!
     when digest_request? then digest_auth!
