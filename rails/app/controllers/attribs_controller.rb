@@ -56,6 +56,8 @@ class AttribsController < ApplicationController
     else
       ret = @attrib.as_json
       ret["value"] = @attrib.get(target,bucket)
+      # added node_id so what we can get backwards references if type is node
+      ret["node_id"] = target.is_a?(Node) ? target.id : nil
       respond_to do |format|
         format.html { }
         format.json { render json: ret, content_type: cb_content_type(@attrib, "obj") }
