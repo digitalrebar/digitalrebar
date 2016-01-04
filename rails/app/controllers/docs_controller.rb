@@ -29,7 +29,10 @@ class DocsController < ApplicationController
     else
       @text = "#{I18n.t('.topic_missing', :scope=>'docs.topic')}: #{@file}"
     end
-    render :show
+      respond_to do |format|
+        format.html { render :show }
+        format.json { render json: { :eula => @raw } }
+      end
   end
 
 end
