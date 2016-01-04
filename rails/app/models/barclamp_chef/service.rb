@@ -25,10 +25,15 @@ class BarclampChef::Service < Service
       Rails.logger.debug("ChefServer: #{addr.inspect}")
 
       # TODO: THIS NEEDS TO RUN ON ALL RUNNERS AND API SERVERS
-      proto = ConsulAccess.getKey("digitalrebar/private/chef/#{deployment_name}/proto")
-      key = ConsulAccess.getKey("digitalrebar/private/chef/#{deployment_name}/pem")
-      account = ConsulAccess.getKey("digitalrebar/private/chef/#{deployment_name}/account")
-
+      begin
+        proto = ConsulAccess.getKey("digitalrebar/private/chef/#{deployment_name}/proto")
+        key = ConsulAccess.getKey("digitalrebar/private/chef/#{deployment_name}/pem")
+        account = ConsulAccess.getKey("digitalrebar/private/chef/#{deployment_name}/account")
+      rescue Diplomat::KeyNotFound
+        sleep 5
+        retry
+      end
+        
       url = "#{proto}://"
       if addr.v6?
         url << "[#{addr.addr}]"
