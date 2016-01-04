@@ -20,16 +20,23 @@ class DocsController < ApplicationController
 
   # render licenses details for login
   def eula
-    @file = Rails.configuration.rebar.eula_base || '../LICENSE.md'
-    if File.exist? @file
-      @raw = IO.read(@file)
-      fix_encoding! unless @raw.valid_encoding?
-      @raw.encode!('UTF-8', :invalid=>:replace)
-      @text = Maruku.new(@raw).to_html
+    if params.has_key? :alive            
+      render json: {}, status => :no_content
     else
-      @text = "#{I18n.t('.topic_missing', :scope=>'docs.topic')}: #{@file}"
+      @file = Rails.configuration.rebar.eula_base || '../LICENSE.md'
+      if File.exist? @file
+        @raw = IO.read(@file)
+        fix_encoding! unless @raw.valid_encoding?
+        @raw.encode!('UTF-8', :invalid=>:replace)
+        @text = Maruku.new(@raw).to_html
+      else
+        @text = "#{I18n.t('.topic_missing', :scope=>'docs.topic')}: #{@file}"
+      end
+      respond_to do |format|
+        format.html { render :show }
+        format.json { render json: { :eula => @raw } }
+      end
     end
-    render :show
   end
 
 end

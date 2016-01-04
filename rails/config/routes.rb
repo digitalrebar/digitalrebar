@@ -138,6 +138,7 @@ Rebar::Application.routes.draw do
       # framework resources pattern (not barclamps specific)
       scope 'api' do
         match '(*session)' => "users#options", via: [:options]
+        get 'license' => 'docs#eula'
         scope 'status' do
           get "nodes(/:id)" => "nodes#status", :as => :nodes_status
           get "deployments(/:id)" => "deployments#status", :as => :deployments_status
