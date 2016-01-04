@@ -135,7 +135,7 @@ attribs:
   - name: use-dns
     description: 'Whether the node should attempt to use the dns service'
     map: 'rebar/providers/use_dns'
-    default: false
+    default: true
     schema:
       type: bool
       required: true
