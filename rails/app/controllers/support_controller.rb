@@ -16,9 +16,6 @@
 
 class SupportController < ApplicationController
 
-  skip_before_filter :rebar_auth, :only => :digest
-  before_filter :digest_auth!, :only => :digest
-
   def eula
   end
   
