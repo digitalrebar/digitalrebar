@@ -27,9 +27,14 @@ class BarclampDhcp::MgmtService < Service
       addr = IP.coerce(str_addr)
       Rails.logger.debug("DhcpMgmtService: #{addr.inspect}")
 
-      cert_pem = ConsulAccess.getKey("digitalrebar/private/dhcp-mgmt/#{deployment_name}/cert_pem")
-      access_name = ConsulAccess.getKey("digitalrebar/private/dhcp-mgmt/#{deployment_name}/access_name")
-      access_password = ConsulAccess.getKey("digitalrebar/private/dhcp-mgmt/#{deployment_name}/access_password")
+      begin
+        cert_pem = ConsulAccess.getKey("digitalrebar/private/dhcp-mgmt/#{deployment_name}/cert_pem")
+        access_name = ConsulAccess.getKey("digitalrebar/private/dhcp-mgmt/#{deployment_name}/access_name")
+        access_password = ConsulAccess.getKey("digitalrebar/private/dhcp-mgmt/#{deployment_name}/access_password")
+      rescue Diplomat::KeyNotFound
+        sleep 5
+        retry
+      end
 
       if addr.v6?
         saddr = "[#{addr.addr}]"
