@@ -257,9 +257,3 @@ for ((i=0; i < user_count; i++)) ; do
     rebar users import "$user"
   fi
 done
-
-# Mark the node as alive.
-echo "Configuration Complete, you can watch annealing from the UI.  \`su - rebar\` to begin managing the system."
-# Converge the admin node.
-rebar converge && date || :
-
