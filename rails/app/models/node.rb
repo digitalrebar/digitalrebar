@@ -68,7 +68,9 @@ class Node < ActiveRecord::Base
   def as_json(args = nil)
     args ||= {}
     args[:except] = [ :discovery, :hint, :order, :notes ]
-    super(args)
+    o = super(args)
+    o['node-control-address'] = get_attrib('node-control-address')
+    o
   end
 
   # Get all the attributes applicable to a node.
