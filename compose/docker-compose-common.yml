@@ -23,6 +23,7 @@ webproxy:
   image: digitalrebar/dr_webproxy
   privileged: true
   volumes:
+    - ./data-dir/node:/etc/rebar-data
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
@@ -53,6 +54,7 @@ ntp:
   image: digitalrebar/dr_ntp
   privileged: true
   volumes:
+    - ./data-dir/node:/etc/rebar-data
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
