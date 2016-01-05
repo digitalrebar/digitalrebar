@@ -19,6 +19,25 @@ class NodeRolesController < ApplicationController
     render api_sample(NodeRole)
   end
 
+  # GET /api/status/node_roles
+  def status
+
+    out = { nodes: [], node_roles: [], deployments: [] }
+    recent = params[:age].to_i || 300
+
+    NodeRole.transaction do  # performance optimization
+      nrs = NodeRole.all
+      nrs.each do |nr|
+        age = Time.now - nr.updated_at
+        next if nr.state == 0 && age >= recent
+        out[:nodes] << nr.node_id unless out[:nodes].include? nr.node_id
+        out[:node_roles] << nr.id unless out[:node_roles].include? nr.id
+        out[:deployments] << nr.deployment_id unless out[:deployments].include? nr.deployment_id
+      end
+    end
+    
+    render api_array out.to_json
+  end
 
   def match
     attrs = NodeRole.attribute_names.map{|a|a.to_sym}
