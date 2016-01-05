@@ -32,13 +32,22 @@ class NodeRolesController < ApplicationController
   end
   
   def index
-    @list = (if params.key? :node_id
-              Node.find_key(params[:node_id]).node_roles
-            elsif params.key? :deployment_id
-              Deployment.find_key(params[:deployment_id]).node_roles
-            else
-              NodeRole.all
-            end).order("cohort asc, id asc")
+    NodeRole.transaction do
+      @list = (if params.key? :node_id
+                Node.find_key(params[:node_id]).node_roles
+              elsif params.key? :deployment_id
+                Deployment.find_key(params[:deployment_id]).node_roles
+              else
+                NodeRole.all
+              end).order("cohort asc, id asc")
+      if params.has_key? :runlog
+        @list = @list.clone
+        limit = params[:runlog] || "80"
+        @list.each do |i|
+          i.runlog = i.runlog.truncate(limit.to_i) unless i.state == NodeRole::ERROR
+        end
+      end
+    end
     respond_to do |format|
       format.html { }
       format.json { render api_index NodeRole, @list }
