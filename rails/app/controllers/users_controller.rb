@@ -62,6 +62,7 @@ class UsersController < ApplicationController
   # CORS header method
   def options
     cors_headers
+    response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,PATCH,HEADERS'
     render :nothing => true, :status => :no_content
   end
 
