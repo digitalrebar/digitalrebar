@@ -38,7 +38,7 @@ roles:
           type: seq
           sequence:
             - type: str
-              pattern: '/\Ahttp:\/\/.+\z/'
+              pattern: '/\Ahttps:\/\/.+\z/'
       - name: chef-servers-admin-key
         description: 'Admin key used to access chef server'
         map: 'chefjig/server/key'
