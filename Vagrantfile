@@ -20,12 +20,14 @@ VAGRANTFILE_API_VERSION = "2"
 BASE_OS_BOX = "bento/centos-7.1"
 SLAVE_RAM = "2048"
 # Host Mode - MAC
-# ADMIN_PREFIX = "192.168.99"
-# ADMIN_IP = "#{ADMIN_PREFIX}.100"
+ADMIN_PREFIX = "192.168.99"
+ADMIN_IP = "#{ADMIN_PREFIX}.100"
+ADMIN_CIDR = 24
 #
 # Forwarder Mode - Linux
-ADMIN_PREFIX = "192.168.124"
-ADMIN_IP = "#{ADMIN_PREFIX}.11"
+#ADMIN_PREFIX = "192.168.124"
+#ADMIN_IP = "#{ADMIN_PREFIX}.11"
+#ADMIN_CIDR = 24
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
@@ -77,7 +79,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       slave.vm.provider "virtualbox" do |vb|
         vb.memory = SLAVE_RAM
       end
-      slave.vm.provision "shell", path: "scripts/join_rebar.sh", args: "#{ADMIN_IP} #{ADMIN_PREFIX}.#{200+i}"
+      slave.vm.provision "shell", path: "scripts/join_rebar.sh", args: "#{ADMIN_IP} #{ADMIN_PREFIX}.#{200+i}/#{ADMIN_CIDR}"
       slave.trigger.after :destroy do
         run "rebar -E https://#{ADMIN_IP}:3000 -U rebar -P rebar1 nodes destroy node#{i}.rebar.local"
       end
