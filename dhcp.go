@@ -105,12 +105,20 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			if subnet != nil {
 				break
 			}
+
+		}
+
+		if ignore_anonymus {
+			// Search all subnets for a binding. First wins
+			log.Println("Looking up bound subnet for ", p.CHAddr().String())
+			subnet = h.info.FindBoundIP(p.CHAddr())
 		}
 
 		if subnet == nil {
 			// We didn't find a subnet for the interface.  Look for the assigned server IP
 			subnet = h.info.FindSubnet(h.ip)
 		}
+
 	}
 
 	if subnet == nil {
