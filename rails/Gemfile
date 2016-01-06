@@ -53,8 +53,6 @@ gem 'json-patch'
 gem 'rbnacl-libsodium'
 # For talking to JSONRPC 2.0 servers via HTTP
 gem 'jsonrpc-client'
-# For AJAX UI, allows Cross Site Reference
-gem 'rack-cors', :require => 'rack/cors'
 
 group :development, :test do
   gem 'coveralls'
