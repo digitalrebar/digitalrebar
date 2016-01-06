@@ -3,12 +3,13 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	dhcp "github.com/krolaw/dhcp4"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"sync"
+
+	dhcp "github.com/krolaw/dhcp4"
 )
 
 type DataTracker struct {
@@ -22,6 +23,17 @@ func NewDataTracker(data_dir string) *DataTracker {
 		Subnets:  make(map[string]*Subnet),
 		data_dir: data_dir,
 	}
+}
+
+func (dt *DataTracker) FindBoundIP(mac net.HardwareAddr) *Subnet {
+	for _, s := range dt.Subnets {
+		for _, b := range s.Bindings {
+			if b.Mac == mac.String() {
+				return s
+			}
+		}
+	}
+	return nil
 }
 
 func (dt *DataTracker) FindSubnet(ip net.IP) *Subnet {

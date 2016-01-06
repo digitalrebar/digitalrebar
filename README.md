@@ -99,7 +99,7 @@ to a byte string before sending to clients.
 
 ### Create Subnet
 
-Url: https://user:password@127.0.0.1:6754/zones
+Url: https://user:password@127.0.0.1:6754/subnets
 Method: Post
 Data: json Subnet object (can have bindings, leases, and options)
 options)
@@ -128,7 +128,7 @@ out.
 
 ### Update Subnet
 
-Url: https://user:password@127.0.0.1:6754/zones/<name>
+Url: https://user:password@127.0.0.1:6754/subnets/<name>
 Method: Put
 Data: json Subnet object (can have bindings, leases, and options)
 options)
@@ -140,7 +140,7 @@ Just like create but updates an existing subnet
 
 ### Delete Subnet
 
-Url: https://user:password@127.0.0.1:6754/zones/<name>
+Url: https://user:password@127.0.0.1:6754/subnets/<name>
 Method: Delete
 Returns: 200
 Errors: 404 if subnet name not found
@@ -150,7 +150,7 @@ Delete the subnet and all info with the subnet.
 
 ### Bind Mac/IP in Subnet
 
-Url: https://user:password@127.0.0.1:6754/zones/<name>/bind
+Url: https://user:password@127.0.0.1:6754/subnets/<name>/bind
 Method: Post
 Data: json Binding Object
 Returns: a json binding object
@@ -177,7 +177,7 @@ The bind object looks like:
 
 ### Unbind Mac/IP in Subnet
 
-Url: https://user:password@127.0.0.1:6754/zones/<name>/bind/<mac>
+Url: https://user:password@127.0.0.1:6754/subnets/<name>/bind/<mac>
 Method: Delete
 Returns: 200 if binding removed
 Errors: 404 if subnet name not found or mac not found
@@ -186,7 +186,7 @@ Deletes the binding of the mac/ip pair
 
 ### Set Next Server for an IP
 
-Url: https://user:password@127.0.0.1:6754/zones/<name>/next_server/<ip>
+Url: https://user:password@127.0.0.1:6754/subnets/<name>/next_server/<ip>
 Method: Put
 Data: Json next server object
 Returns: The next server object
