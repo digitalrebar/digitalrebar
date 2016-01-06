@@ -99,11 +99,12 @@ bring_up_admin() {
             ;;
     esac
 
-    export REBAR_ENDPOINT=https://${ADMIN_IP%/*}:3000
-
-    if rebar ping 2>/dev/null >/dev/null ; then
-        echo "Admin node at $ADMIN_IP already running."
-        return 0
+    if [[ $ADMIN_IP ]] ; then
+        export REBAR_ENDPOINT=https://${ADMIN_IP%/*}:3000
+        if rebar ping 2>/dev/null >/dev/null ; then
+            echo "Admin node at $ADMIN_IP already running."
+            return 0
+        fi
     fi
 
     # Must set ADMIN_IP if it isn't set.
