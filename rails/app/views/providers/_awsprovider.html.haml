@@ -13,4 +13,4 @@
     %td= password_field_tag "auth_details[aws_secret_access_key]", @item.auth_details['aws_secret_access_key'], :size => 60
   %tr
     %td= t 'region', :scope=>'providers.show.aws'
-    %td= text_field_tag "auth_details[region]", @item.auth_details['region'] || "us-west", :size => 30
+    %td= text_field_tag "auth_details[region]", @item.auth_details['region'] || "us-west-2", :size => 30

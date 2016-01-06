@@ -1,5 +1,4 @@
 - providers = Provider.all.to_a.keep_if { |p| p.can_create_nodes }
-- available_os = Attrib.get("provisioner-available-oses", admin).map{ |k,v| k } rescue [ t('default') ]
 
 %table{:width=>'100%'}
   %tr
@@ -10,7 +9,6 @@
         = link_to t('.create_nodes'), providers_path
         = text_field_tag :name, t('.name_base'), :size => 15
         = select :add, :provider, options_for_select(providers.map{|p| p.name}, providers.first)
-        = select :add, :os, options_for_select(available_os, available_os.first)
         = text_field_tag :number, 1, :size => 2
         %button{:onclick=>"add_nodes()"}= t('add')
       - else
@@ -74,8 +72,7 @@
             'use-dns': false,
             'use-logging': false,
             'provider-create-hint': { 
-              os: os,
-              hostname: base_name+"_"+i
+              hostname: base_name+"-"+i
               }
             }
           },
