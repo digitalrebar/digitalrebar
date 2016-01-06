@@ -42,15 +42,6 @@ module Rebar
       config.eager_load = true    
     end
     
-        # enable CORS, in Dev only for now 
-    config.middleware.insert_before 0, Rack::Cors do
-      allow do
-        origins '*' 
-        resource '*',
-          headers: 'Authorization, WWW-Authenticate, Set-Cookie, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Allow-Origin', #:any,
-          methods: [:get, :post, :put, :delete, :options, :patch, :head]
-      end
-    end
 
     # See everything in the log (default is :info)
     config.log_level = :debug
