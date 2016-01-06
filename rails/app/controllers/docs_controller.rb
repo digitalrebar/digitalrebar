@@ -20,6 +20,13 @@ class DocsController < ApplicationController
 
   # render licenses details for login
   def eula
+    access_control = {
+      'Access-Control-Allow-Origin' => request.headers["HTTP_ORIGIN"],
+      'Access-Control-Allow-Headers' => 'X-Requested-With,Content-Type,Cookie,Authorization,WWW-Authenticate', # If-Modified-Since,If-None-Match,
+      'Access-Control-Allow-Credentials' => true,
+      'Access-Control-Expose-Headers' => 'WWW-Authenticate, Set-Cookie, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Allow-Origin'
+    }
+    access_control.each{ |k, v| response.headers[k] = v } if request.headers["HTTP_ORIGIN"]
     if params.has_key? :alive            
       render json: {}, status => :no_content
     else
