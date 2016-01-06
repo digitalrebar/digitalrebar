@@ -14,8 +14,7 @@
 
 class Service < Role
 
-  # An option block can be given to format the service for return in the attribute
-  def internal_do_transition(nr, data, service_name, service_attribute)
+  def wait_for_service(nr,data,service_name)
     runlog = []
     addr_arr = []
     runlog << "Getting #{service_name} information from consul"
@@ -23,7 +22,7 @@ class Service < Role
     options = {}
     meta = {}
     count=0
-    while pieces == nil
+    while pieces.nil? || pieces.empty?
       begin
         count += 1
         break if count > 20
@@ -56,6 +55,14 @@ class Service < Role
         sleep 10
       end
     end
+    return [runlog,pieces]
+  end
+
+  # An option block can be given to format the service for return in the attribute
+  def internal_do_transition(nr, data, service_name, service_attribute)
+
+    runlog, pieces = wait_for_service(nr,data,service_name)
+    addr_arr = []
 
     runlog << "Processing pieces for #{service_name}"
     NodeRole.transaction do
