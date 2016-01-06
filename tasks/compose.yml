@@ -55,7 +55,7 @@
     args:
       creates: "{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso"
     when: "'--provisioner' in {{dr_services}}"
-    
+
   - name: download Centos ISO (SLOW, see https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
     command: curl -sSL http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso -o {{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
     args:
@@ -141,14 +141,14 @@
     args:
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
 
-  - debug msg="Expected IP {{dr_external_ip | ipaddr('address')}}"
+  - debug: msg="Expected IP {{dr_external_ip | ipaddr('address')}}"
     when: dr_access_mode == "HOST"
 
   - name: HOSTMODE wait until Digital Rebar service is up [1 upto 15 minutes]
     wait_for: host="{{dr_external_ip | ipaddr('address')}}" port=3000 delay=60 timeout=900
     when: dr_access_mode == "HOST"
 
-  - debug msg="Expected IP {{ansible_default_ipv4.address}}"
+  - debug: msg="Expected IP {{ansible_default_ipv4.address}}"
     when: dr_access_mode == "FORWARDER"
 
   - name: FORWARDER wait until Digital Rebar service is up [1 upto 15 minutes]
