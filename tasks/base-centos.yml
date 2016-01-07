@@ -8,7 +8,6 @@
       - git
       - curl
       - wget
-      - gcc
       - psmisc
     sudo: yes
   - name: Install Provisioner Prereqs [SLOW]
@@ -20,6 +19,7 @@
       - bridge-utils
       - ruby-devel
       - make
+      - gcc
     sudo: yes
     when: "'--provisioner' in {{dr_services}}"
   - name: Install Provisioner ruby-gems for CentOS/RedHat 6

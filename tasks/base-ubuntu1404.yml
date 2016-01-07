@@ -6,7 +6,7 @@
     with_items:
       - git
       - wget
-      - gcc
+      - curl
     sudo: yes
   - name: Install Provisioner Prereqs [SLOW]
     apt: name={{ item }} state=latest
@@ -18,6 +18,7 @@
       - bridge-utils
       - ruby1.9.1-dev
       - make
+      - gcc
     sudo: yes
     when: "'--provisioner' in {{dr_services}}"
   - name: Provisioner gem install kvm slaves
