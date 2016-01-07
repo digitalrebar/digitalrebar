@@ -21,3 +21,4 @@
     args:
       creates: /var/lib/gems/1.9.1/cache/json-1.8.3.gem
     sudo: yes
+    when: "'--provisioner' in {{dr_services}}"

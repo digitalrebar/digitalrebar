@@ -35,6 +35,42 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   puts "WARNING > EXPERIMENTAL!"
   puts "======================="
 
+  config.vm.define "base", autostart:false do |base|
+
+    base.vm.box = BASE_OS_BOX
+
+    # Create a private network, which allows host-only access to the machine
+    # using a specific IP.
+    base.vm.network "private_network", ip: ADMIN_IP, auto_config: true
+
+    # for base, we don't avoid downloading large files      
+
+    base.vm.provider "virtualbox" do |vb|
+      vb.memory = "4096"
+      vb.cpus = 4
+    end
+
+    #
+    # Admin nodes eat themselves without swap
+    #
+    base.vm.provision "shell", path: "scripts/increase_swap.sh"
+
+    base.vm.provision "ansible" do |ansible|
+      ansible.sudo = true
+      ansible.sudo_user = "root"
+      ansible.playbook = "digitalrebar.yml"
+      ansible.raw_arguments  = [
+        "--extra-vars='{
+           \"dr_access_mode\": \"HOST\", \"dr_external_ip\": \"#{ADMIN_IP}\/24\",
+           \"dr_services\": [  \"--node\" ],
+           \"dr_workloads\": [ ]
+        }'"]
+    end
+
+    puts "To monitor > https://#{ADMIN_IP}:3000 (Digital Rebar)"
+    puts "After the system is up, you can start the nodes using `vagrant up /node[1-20]/`"
+  end
+
   config.vm.define "admin", autostart:false do |admin|
 
     admin.vm.box = BASE_OS_BOX
@@ -46,7 +82,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # avoid redownloading large files      
     FileUtils.mkdir_p "#{ENV['HOME']}/.cache/digitalrebar/tftpboot"
     admin.vm.synced_folder "#{ENV['HOME']}/.cache/digitalrebar/tftpboot",
-          "/root/.cache/digitalrebar/tftpboot",
+          "/#{ENV['HOME']}/.cache/digitalrebar/tftpboot",
           type: 'nfs', nfs_udp: false,
           bsd__nfs_options: [ 'maproot=root:wheel' ],
           linux__nfs_options: [ 'maproot=root:wheel' ]
@@ -68,7 +104,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
 
     puts "To monitor > https://#{ADMIN_IP}:3000 (Digital Rebar)"
-    puts "After the system is up, you can start the nodes using `vagrant up /node[1-3]/`"
+    puts "After the system is up, you can start the nodes using `vagrant up /node[1-20]/`"
   end
 
   (1..20).each do |i|

@@ -47,6 +47,8 @@
     args:
       creates: "{{home_dir.stdout}}/.ssh/id_rsa.pub"
 
+  - debug: var=dr_services
+
   - name: Make cache dirs
     command: mkdir -p {{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos
 
