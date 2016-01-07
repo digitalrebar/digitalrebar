@@ -16,18 +16,21 @@
 class BarclampChef::Service < Service
 
   def do_transition(nr, data)
+    Rails.logger.info("Waiting on chef-service to appear in Consul")
+    wait_for_service(nr, data, "chef-service")
     deployment_role = nr.deployment_role
     admin_accounts=nil
     admin_keys=nil
     chef_servers = nil
-    Rails.logger.info("chef-service: Waiting on chef-service to appear in Consul")
-    wait_for_service(nr, data, "chef-service")
     until admin_accounts && admin_keys && chef_servers do
       admin_accounts = Attrib.get('chef-servers-admin-name',deployment_role)
       admin_keys = Attrib.get('chef-servers-admin-key',deployment_role)
       chef_servers = Attrib.get('chef-servers',deployment_role)
-      Rails.logger.info("chef-service: Loading attribs needed for chef-service to function")
-      sleep 1 unless admin_accounts && admin_keys && chef_servers
+      Rails.logger.info("chef-service: Testing required attribs")
+      unless admin_accounts && admin_keys && chef_servers
+        deployment_role.reload
+        sleep 1
+      end
     end
     account = admin_accounts.first
     url = chef_servers.first
