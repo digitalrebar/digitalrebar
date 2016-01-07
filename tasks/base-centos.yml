@@ -6,18 +6,23 @@
     yum: name={{ item }} state=latest
     with_items:
       - git
+      - curl
+      - wget
+      - psmisc
+    sudo: yes
+  - name: Install Provisioner Prereqs [SLOW]
+    yum: name={{ item }} state=latest
+    with_items:
       - screen
       - qemu-kvm
       - libvirt
       - bridge-utils
       - ruby-devel
       - make
-      - curl
-      - wget
       - gcc
-      - psmisc
     sudo: yes
-  - name: Install ruby-gems for CentOS/RedHat 6
+    when: "'--provisioner' in {{dr_services}}"
+  - name: Install Provisioner ruby-gems for CentOS/RedHat 6
     yum: name={{ item }} state=latest
     with_items:
       - rubygems
@@ -25,7 +30,9 @@
     sudo: yes
   - name: gem install kvm slaves
     command: sudo gem install json net-http-digest_auth
-  # Docker will put back what it needs - firewalld on Centos7
+    when: "'--provisioner' in {{dr_services}}"
+
+    # Docker will put back what it needs - firewalld on Centos7
   - name: Silly flush of iptables
     command: sudo iptables -F
     ignore_errors: yes

@@ -35,7 +35,8 @@
 # If no services are desired, comment out the dr_services: line as well
 #
 dr_services:
-  - --provisioner
+   -
+#  - --provisioner
 
 #
 # Workloads

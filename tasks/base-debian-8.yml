@@ -5,19 +5,25 @@
     apt: name={{ item }} state=latest
     with_items:
       - git
+      - curl
+      - wget
+    sudo: yes
+  - name: Install Provisioner Prereqs [SLOW]
+    apt: name={{ item }} state=latest
+    with_items:
       - screen
       - qemu-kvm
       - libvirt-bin
       - bridge-utils
       - ruby-dev
       - rubygems
-      - gcc
       - make
-      - curl
-      - wget
+      - gcc
     sudo: yes
-  - name: gem install kvm slaves
+    when: "'--provisioner' in {{dr_services}}"
+  - name: Provisoner gem install kvm slaves
     command: sudo gem install json net-http-digest_auth
     args:
       creates: /var/lib/gems/1.9.1/cache/json-1.8.3.gem
     sudo: yes
+    when: "'--provisioner' in {{dr_services}}"
