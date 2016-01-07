@@ -6,18 +6,23 @@
     yum: name={{ item }} state=latest
     with_items:
       - git
+      - curl
+      - wget
+      - gcc
+      - psmisc
+    sudo: yes
+  - name: Install Provisioner Prereqs [SLOW]
+    yum: name={{ item }} state=latest
+    with_items:
       - screen
       - qemu-kvm
       - libvirt
       - bridge-utils
       - ruby-devel
       - make
-      - curl
-      - wget
-      - gcc
-      - psmisc
     sudo: yes
-  - name: Install ruby-gems for CentOS/RedHat 6
+    when: "'--provisioner' in {{dr_services}}"
+  - name: Install Provisioner ruby-gems for CentOS/RedHat 6
     yum: name={{ item }} state=latest
     with_items:
       - rubygems

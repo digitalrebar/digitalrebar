@@ -71,42 +71,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     puts "After the system is up, you can start the nodes using `vagrant up /node[1-20]/`"
   end
 
-  config.vm.define "admin", autostart:false do |admin|
-
-    admin.vm.box = BASE_OS_BOX
-
-    # Create a private network, which allows host-only access to the machine
-    # using a specific IP.
-    admin.vm.network "private_network", ip: ADMIN_IP, auto_config: true
-
-    # avoid redownloading large files      
-    FileUtils.mkdir_p "#{ENV['HOME']}/.cache/digitalrebar/tftpboot"
-    admin.vm.synced_folder "#{ENV['HOME']}/.cache/digitalrebar/tftpboot",
-          "/#{ENV['HOME']}/.cache/digitalrebar/tftpboot",
-          type: 'nfs', nfs_udp: false,
-          bsd__nfs_options: [ 'maproot=root:wheel' ],
-          linux__nfs_options: [ 'maproot=root:wheel' ]
-
-    admin.vm.provider "virtualbox" do |vb|
-      vb.memory = "4096"
-      vb.cpus = 4
-    end
-
-    #
-    # Admin nodes eat themselves without swap
-    #
-    admin.vm.provision "shell", path: "scripts/increase_swap.sh"
-
-    admin.vm.provision "ansible" do |ansible|
-      ansible.sudo = true
-      ansible.sudo_user = "root"
-      ansible.playbook = "digitalrebar.yml"
-    end
-
-    puts "To monitor > https://#{ADMIN_IP}:3000 (Digital Rebar)"
-    puts "After the system is up, you can start the nodes using `vagrant up /node[1-20]/`"
-  end
-
   (1..20).each do |i|
     config.vm.define "node#{i}", autostart:false do |slave|
       slave.vm.hostname = "node#{i}.rebar.local"
