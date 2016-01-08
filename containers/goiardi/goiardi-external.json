@@ -1,0 +1,8 @@
+{
+  "service": {
+    "name": "chef-service",
+    "address": "FILLMEIN",
+    "tags": ["deployment:system"],
+    "port": 4646
+  }
+}

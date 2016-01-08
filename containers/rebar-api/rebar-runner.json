@@ -1,0 +1,10 @@
+{
+  "service": {
+    "name": "rebar-job-runner-service",
+    "tags": [ "deployment:system" ],
+    "check": {
+      "script": "ps aux | grep bin/que | grep -v grep",
+      "interval": "10s"
+    }
+  }
+}

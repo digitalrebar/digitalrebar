@@ -1,0 +1,10 @@
+# Copyright 2015, RackN
+
+source 'https://rubygems.org'
+
+gem 'jimson', '~> 0.10.0'
+gem 'puma', '~> 2.14.0'
+gem 'diplomat', '~> 0.14.0'
+gem 'pry', '~> 0.10.3'
+gem 'net-ssh'
+gem 'net-scp'

@@ -1,0 +1,11 @@
+{
+  "service": {
+    "name": "internal-proxy-service",
+    "tags": [ "deployment:system" ],
+    "port": 3128,
+    "check": {
+      "script": "pidof squid3",
+      "interval": "10s"
+    }
+  }
+}
