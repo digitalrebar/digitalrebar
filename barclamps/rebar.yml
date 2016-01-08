@@ -50,6 +50,7 @@ roles:
       - logging-client
       - ntp-client
       - network-lldpd
+      - rebar-inventory
   - name: rebar-hardware-configured
     description: "Rebar Hardware Configured Checkpoint"
     jig: noop
@@ -82,6 +83,13 @@ roles:
     provides:
       - rebar-managed-node
       - rebar-installed-node
+  - name: rebar-inventory
+    description: "Rebar Inventory"
+    flags:
+      - implicit
+    jig: script
+    requires:
+      - rebar-package-sources
   - name: rebar-access
     description: "Rebar Access Keys"
     flags:
@@ -160,6 +168,7 @@ roles:
       - milestone
       - implicit
     requires:
+      - rebar-inventory
       - rebar-package-sources
       - rebar-access
     conflicts:

@@ -72,6 +72,13 @@ class BarclampRebar::Jig < Jig
         end
         w[k[-1]] = v
       end
+      if File.exist?('ohai.json')
+        data_s = File.read('ohai.json')
+        data_hash = JSON.parse(data_s)
+        discovery = {"ohai" => data_hash}
+        Rails.logger.debug("Script jig: Saving discovery attributes")
+        nr.node.discovery_merge(discovery)
+      end
     end
     nr.update!(wall: new_wall)
     system("sudo -H chown -R rebar.rebar #{local_tmpdir}")
