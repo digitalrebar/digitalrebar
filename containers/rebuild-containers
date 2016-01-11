@@ -1,0 +1,237 @@
+#!/bin/bash
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+declare -A CONTAINERS
+CONTAINERS['digitalrebar/base']='base'
+CONTAINERS['digitalrebar/deploy-service-wrapper']='service-wrapper'
+CONTAINERS['digitalrebar/dr_dns']='dns'
+CONTAINERS['digitalrebar/dr_forwarder']='forwarder'
+CONTAINERS['digitalrebar/dr_goiardi']='goiardi'
+CONTAINERS['digitalrebar/dr_ntp']='ntp'
+CONTAINERS['digitalrebar/dr_postgres']='postgres'
+CONTAINERS['digitalrebar/dr_provisioner']='provisioner'
+CONTAINERS['digitalrebar/dr_rebar_api']='rebar-api'
+CONTAINERS['digitalrebar/dr_rebar_dhcp']='rebar-dhcp'
+CONTAINERS['digitalrebar/dr_ux']='ux'
+CONTAINERS['digitalrebar/dr_webproxy']='webproxy'
+CONTAINERS['digitalrebar/fogwrap']='fogwrap'
+CONTAINERS['digitalrebar/managed-service']='managed-service'
+CONTAINERS['digitalrebar/packetwrap']='packetwrap'
+
+declare -A REPOS
+declare -A CONTAINER_PARENTS
+declare -A CONTAINER_RANK
+declare -A CONTAINER_CHILDREN
+declare -A CONTAINERS_TO_BUILD
+declare -A BUILT_CONTAINERS
+declare -A UNBUILT_CONTAINERS
+declare -A UNKNOWN_CONTAINERS
+declare -A PARENT_CONTAINER_REBUILT
+
+BUILD_TAG='latest'
+PULL_CONTAINERS=false
+PUSH_CONTAINERS=false
+UPDATE_GIT=false
+
+if [[ $0 = /* ]]; then
+    mountdir="$0"
+elif [[ $0 = .*  || $0 = */* ]]; then
+    mountdir="$(readlink "$PWD/$0")"
+    if [ "$mountdir" == "" ] ; then
+        mountdir="$PWD/$0"
+    fi
+else
+    echo "Cannot figure out where core is!"
+    exit 1
+fi
+
+# This gets us to core
+mountdir="${mountdir%/deploy/containers/*}"
+
+CONTAINER_DIR="$mountdir/deploy/containers"
+
+# Figure out all the trans-container dependency information we will need.
+setup_parents() {
+    local container
+    for container in "${!CONTAINERS[@]}"; do
+        REPOS[${CONTAINERS[$container]}]=$container
+    done
+    local dockerfile repo unused parent
+    # Figure out who the parent of a container is
+    for dockerfile in "$CONTAINER_DIR"/*/Dockerfile; do
+        repo=${dockerfile#${CONTAINER_DIR}/}
+        repo=${repo%/Dockerfile}
+        local container=${REPOS[$repo]}
+        read unused parent < <(grep '^FROM' "$dockerfile" |head -1)
+        if [[ ${CONTAINERS[${parent%:*}]} ]]; then
+            CONTAINER_PARENTS[$container]=${parent%:*}
+        fi
+    done
+    for container in "${!CONTAINERS[@]}"; do
+        # Figure out what our children are.
+        local children=()
+        for child in "${!CONTAINER_PARENTS[@]}"; do
+            [[ ${CONTAINER_PARENTS[$child]} = $container ]] || continue
+            children+=("$child")
+        done
+        CONTAINER_CHILDREN[$container]="${children[*]}"
+        # Figure out how many parents we are responsible for
+        # for a container
+        local rank=0 child=$container
+        while [[ ${CONTAINER_PARENTS[$child]} ]]; do
+            rank=$((rank + 1))
+            child=${CONTAINER_PARENTS[$child]}
+        done
+        CONTAINER_RANK[$container]=$rank
+    done
+    
+}
+
+setup_parents
+
+build_children_of() {
+    # $1 = container whose children should be built.
+    local child
+    for child in ${CONTAINER_CHILDREN[$1]}; do
+        PARENT_CONTAINER_REBUILT[$child]=true
+        build_container "$child"
+    done
+}
+
+# Get the image numeric ID of a container image given the name of the image.
+image_id() {
+    docker images "${1}:${BUILD_TAG}" |awk '/digitalrebar/ {print $3}'
+}
+
+branch_exists() { git show-ref --quiet --verify --heads -- "refs/heads/$1"; }
+
+# Test to see if a container does not need to be rebuilt.
+container_is_up_to_date() (
+    [[ ${BUILT_CONTAINERS[$1]} ]] && return 0
+    [[ ${PARENT_CONTAINER_REBUILT[$1]} ]] && return 1
+    [[ $ALWAYS_PULL = true ]] && docker pull "$1:$BUILD_TAG"
+    cd "$repo_dir"
+    branch_exists "$tracking_branch" && \
+        git diff --exit-code -s "$tracking_branch" -- . && \
+        [[ -f last-built-image-id ]] && \
+        [[ $(image_id "$1") = $(cat last-built-image-id) ]]
+)
+
+# Build a container if needed.
+build_container() {
+    # $1 = container to build
+    local tracking_branch="containers/$1/$BUILD_TAG"
+    local repo_dir="$CONTAINER_DIR/${CONTAINERS[$1]}"
+    if container_is_up_to_date "$1"; then
+        echo "Container $1 does not need rebuilding"
+        return 0
+    fi
+    echo
+    echo "Building container $1"
+    if ! ( cd "$repo_dir" && docker build -t "${1}:${BUILD_TAG}" .); then
+        echo "Build of container $1 failed."
+        UNBUILT_CONTAINERS[$1]="Run 'cd \"$repo_dir\" && docker build -t \"${1}:${BUILD_TAG}\" .' to see what failed."
+        return
+    fi
+    BUILT_CONTAINERS[$1]=true
+    echo "Build of $1 successful"
+    echo
+    build_children_of "$1"
+}
+
+# Sort containers by rank to ensure that we don't perform needless rebuilds.
+sort_containers() {
+    local container
+    for container in "$@"; do
+        printf "%s %s\n" "${CONTAINER_RANK[$container]}" "$container"
+    done |sort -un |awk '{print $2}'
+}
+
+help() {
+    cat <<EOF
+rebuild-containers rebuilds the container hierarchy that Rebar is
+built from.  It understands how the containers relate to each other,
+and can figure out (via container build tracking branches and
+container image IDs what containers would need to be rebuilt when
+any of them change.  It takes the following options:
+
+    --tag if you want to tag the built containers with something 
+          other than 'latest'.
+
+    --pull if you want to pull containers from the Docker hub before
+           being built.  This is used to make sure that we avoid
+           excessive container rebuilds.
+
+    --update-git if you want to update the tracking metadata in the
+           deploy repository.
+
+    --push to push built containers to Docker hub.  It will also
+           push a branch with the latest built image IDs to Github.
+           That branch should be merged to the appropriate release
+           branch to keep the deploy repository synced up to the
+           container images at Dockerhub.
+
+    --help This help.
+EOF
+}
+
+while (( $# != 0)); do
+    case $1 in
+        --tag)
+            shift
+            BUILD_TAG=$1;;
+        --pull)
+            ALWAYS_PULL=true;;
+        --push)
+            UPDATE_GIT=true
+            PUSH_CONTAINERS=true;;
+        --update-git)
+            UPDATE_GIT=true;;
+        --help)
+            help && exit 0;;
+        *)
+            if [[ ${CONTAINERS[$1]} ]]; then
+                CONTAINERS_TO_BUILD[$1]=true
+            elif [[ ${REPOS[${1##*/}]} ]]; then
+                CONTAINERS_TO_BUILD[${REPOS[${1##*/}]}]=true
+            else
+                UNKNOWN_CONTAINERS[$1]=true
+            fi;;
+    esac
+    shift
+done
+
+if [[ ${#UNKNOWN_CONTAINERS[@]} != 0 ]]; then
+    echo "Cannot build unknown containers:"
+    printf "\t%s\n" "${!UNKNOWN_CONTAINERS[@]}"
+    exit 1
+fi
+
+if [[ ${#CONTAINERS_TO_BUILD[@]} == 0 ]]; then
+    help
+    exit 0
+fi
+
+while read container; do
+    build_container "$container"
+done < <(sort_containers "${!CONTAINERS_TO_BUILD[@]}")
+
+if [[ ${#UNBUILT_CONTAINERS[@]} != 0 ]]; then
+    for container in "${!UNBUILT_CONTAINERS[@]}"; do
+        echo "Build of $container failed."
+        echo "${UNBUILT_CONTAINERS[$container]}"
+        echo
+    done
+    exit 1
+fi
+
+if [[ $UPDATE_GIT = true && ${#BUILT_CONTAINERS[@]} != 0 ]]; then
+    for container in "${!BUILT_CONTAINERS[@]}"; do
+        [[ $PUSH_CONTAINERS = true ]] && docker push "${container}:${BUILD_TAG}"
+        id_file="$CONTAINER_DIR/${CONTAINERS[$container]}/last-built-image-id"
+        image_id "$container" >"$id_file"
+        git add "$id_file"
+    done
+    git commit -m "Built containers: ${!BUILT_CONTAINERS[*]}"
+    [[ $PUSH_CONTAINERS = true ]] && \
+        git push origin "HEAD:containers-built-for-$(git rev-parse --short HEAD)"
+fi

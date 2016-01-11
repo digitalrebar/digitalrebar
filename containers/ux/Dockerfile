@@ -1,0 +1,11 @@
+FROM digitalrebar/base
+MAINTAINER Greg Althaus <greg@rackn.com>
+ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
+
+RUN /usr/local/go/bin/go get -u github.com/digitalrebar/rebar-api/rebar \
+  && cp "$GOPATH/bin/rebar" /usr/local/bin \
+  && apt-get -y update \
+  && apt-get -y install nodejs nodejs-legacy npm \
+  && npm install -g bower
+
+COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
