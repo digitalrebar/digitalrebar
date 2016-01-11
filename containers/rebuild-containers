@@ -29,6 +29,8 @@ declare -A PARENT_CONTAINER_REBUILT
 
 BUILD_TAG='latest'
 PULL_CONTAINERS=false
+PUSH_CONTAINERS=false
+UPDATE_GIT=false
 
 if [[ $0 = /* ]]; then
     mountdir="$0"
@@ -130,13 +132,6 @@ build_container() {
         UNBUILT_CONTAINERS[$1]="Run 'cd \"$repo_dir\" && docker build -t \"${1}:${BUILD_TAG}\" .' to see what failed."
         return
     fi
-    (
-        cd "$repo_dir"
-        image_id "$1" >last-built-image-id
-        git add last-built-image-id
-        git commit -m "Built image $1:$BUILD_TAG with ID $(image_id "$1")" last-built-image-id
-        git branch -f "$tracking_branch"
-    )
     BUILT_CONTAINERS[$1]=true
     echo "Build of $1 successful"
     echo
@@ -151,6 +146,34 @@ sort_containers() {
     done |sort -un |awk '{print $2}'
 }
 
+help() {
+    cat <<EOF
+rebuild-containers rebuilds the container hierarchy that Rebar is
+built from.  It understands how the containers relate to each other,
+and can figure out (via container build tracking branches and
+container image IDs what containers would need to be rebuilt when
+any of them change.  It takes the following options:
+
+    --tag if you want to tag the built containers with something 
+          other than 'latest'.
+
+    --pull if you want to pull containers from the Docker hub before
+           being built.  This is used to make sure that we avoid
+           excessive container rebuilds.
+
+    --update-git if you want to update the tracking metadata in the
+           deploy repository.
+
+    --push to push built containers to Docker hub.  It will also
+           push a branch with the latest built image IDs to Github.
+           That branch should be merged to the appropriate release
+           branch to keep the deploy repository synced up to the
+           container images at Dockerhub.
+
+    --help This help.
+EOF
+}
+
 while (( $# != 0)); do
     case $1 in
         --tag)
@@ -158,6 +181,13 @@ while (( $# != 0)); do
             BUILD_TAG=$1;;
         --pull)
             ALWAYS_PULL=true;;
+        --push)
+            UPDATE_GIT=true
+            PUSH_CONTAINERS=true;;
+        --update-git)
+            UPDATE_GIT=true;;
+        --help)
+            help && exit 0;;
         *)
             if [[ ${CONTAINERS[$1]} ]]; then
                 CONTAINERS_TO_BUILD[$1]=true
@@ -175,6 +205,12 @@ if [[ ${#UNKNOWN_CONTAINERS[@]} != 0 ]]; then
     printf "\t%s\n" "${!UNKNOWN_CONTAINERS[@]}"
     exit 1
 fi
+
+if [[ ${#CONTAINERS_TO_BUILD[@]} == 0 ]]; then
+    help
+    exit 0
+fi
+
 while read container; do
     build_container "$container"
 done < <(sort_containers "${!CONTAINERS_TO_BUILD[@]}")
@@ -186,4 +222,16 @@ if [[ ${#UNBUILT_CONTAINERS[@]} != 0 ]]; then
         echo
     done
     exit 1
+fi
+
+if [[ $UPDATE_GIT = true && ${#BUILT_CONTAINERS[@]} != 0 ]]; then
+    for container in "${!BUILT_CONTAINERS[@]}"; do
+        [[ $PUSH_CONTAINERS = true ]] && docker push "${container}:${BUILD_TAG}"
+        id_file="$CONTAINER_DIR/${CONTAINERS[$container]}/last-built-image-id"
+        image_id "$container" >"$id_file"
+        git add "$id_file"
+    done
+    git commit -m "Built containers: ${!BUILT_CONTAINERS[*]}"
+    [[ $PUSH_CONTAINERS = true ]] && \
+        git push origin "HEAD:containers-built-for-$(git rev-parse --short HEAD)"
 fi
