@@ -539,7 +539,7 @@ class NodeRole < ActiveRecord::Base
   def error!
     # We can also go to ERROR pretty much any time.
     # but we silently ignore the transition if in BLOCKED
-    NodeRole.transaction do
+    self.with_lock do
       reload
       return if blocked?
       update!(state: ERROR)
@@ -551,7 +551,7 @@ class NodeRole < ActiveRecord::Base
   def active!
     # We can only go to ACTIVE from TRANSITION
     # but we silently ignore the transition if in BLOCKED
-    NodeRole.transaction do
+    self.with_lock do
       update!(run_count: run_count + 1)
       if !node.alive
         block_or_todo
@@ -565,7 +565,7 @@ class NodeRole < ActiveRecord::Base
 
   def todo!
     # You can pretty much always go back to TODO as long as all your parents are ACTIVE
-    NodeRole.transaction do
+    self.with_lock do
       reload
       raise InvalidTransition.new(self,state,TODO,"Not all parents are ACTIVE") unless activatable?
       update!(state: TODO)
@@ -578,7 +578,7 @@ class NodeRole < ActiveRecord::Base
 
   def transition!
     # We can only go to TRANSITION from TODO or ACTIVE
-    NodeRole.transaction do
+    self.with_lock do
       reload
       unless todo? || active? || transition?
         raise InvalidTransition.new(self,state,TRANSITION)
@@ -590,7 +590,7 @@ class NodeRole < ActiveRecord::Base
 
   def block!
     # We can pretty much always go to BLOCKED.
-    NodeRole.transaction do
+    self.with_lock do
       reload
       update!(state: BLOCKED)
       # Going into BLOCKED transitions any children in ERROR or TODO into BLOCKED.
@@ -604,7 +604,7 @@ class NodeRole < ActiveRecord::Base
     # We can also pretty much always go into PROPOSED,
     # and it does not affect the state of our children until
     # we go back out of PROPOSED.
-    NodeRole.transaction do
+    self.with_lock do
       reload
       update!(state: PROPOSED)
     end
