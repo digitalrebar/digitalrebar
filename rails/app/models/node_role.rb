@@ -58,13 +58,13 @@ class NodeRole < ActiveRecord::Base
   # validate        :deployable,        :if => :deployable?
   # node_role_pcms maps parent noderoles to child noderoles.
   has_and_belongs_to_many(:parents,
-                          -> { reorder('cohort DESC') },
+                          -> { reorder('cohort DESC, id ASC') },
                           :class_name => "NodeRole",
                           :join_table => "node_role_pcms",
                           :foreign_key => "child_id",
                           :association_foreign_key => "parent_id")
   has_and_belongs_to_many(:children,
-                          -> { reorder('cohort ASC') },
+                          -> { reorder('cohort ASC, id ASC') },
                           :class_name => "NodeRole",
                           :join_table => "node_role_pcms",
                           :foreign_key => "parent_id",
@@ -73,14 +73,14 @@ class NodeRole < ActiveRecord::Base
   # to include all of the parents and children of a noderole,
   # recursively.
   has_and_belongs_to_many(:all_parents,
-                          -> { reorder('cohort DESC') },
+                          -> { reorder('cohort DESC, id ASC') },
                           :class_name => "NodeRole",
                           :join_table => "node_role_all_pcms",
                           :foreign_key => "child_id",
                           :association_foreign_key => "parent_id",
                           :delete_sql => "SELECT 1") # TODO: Figure out how to remove
   has_and_belongs_to_many(:all_children,
-                          -> { reorder('cohort ASC') },
+                          -> { reorder('cohort ASC, id ASC') },
                           :class_name => "NodeRole",
                           :join_table => "node_role_all_pcms",
                           :foreign_key => "parent_id",
@@ -740,9 +740,12 @@ class NodeRole < ActiveRecord::Base
         NodeRole.transaction do
           # Immediate children of an ACTIVE node go to TODO
           children.where(state: BLOCKED).each do |c|
-            Rails.logger.debug("NodeRole #{name}: testing to see if #{c.name} is runnable")
-            next unless c.activatable?
-            c.todo!
+            c.with_lock do
+              c.reload
+              Rails.logger.debug("NodeRole #{name}: testing to see if #{c.name} is runnable")
+              next unless c.activatable?
+              c.todo!
+            end
           end
         end
         Run.run!
