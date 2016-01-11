@@ -16,6 +16,7 @@ CONTAINERS['digitalrebar/dr_webproxy']='webproxy'
 CONTAINERS['digitalrebar/fogwrap']='fogwrap'
 CONTAINERS['digitalrebar/managed-service']='managed-service'
 CONTAINERS['digitalrebar/packetwrap']='packetwrap'
+CONTAINERS['digitalrebar/dr_node']='node'
 
 declare -A REPOS
 declare -A CONTAINER_PARENTS
@@ -92,8 +93,7 @@ build_children_of() {
     # $1 = container whose children should be built.
     local child
     for child in ${CONTAINER_CHILDREN[$1]}; do
-        PARENT_CONTAINER_REBUILT[$child]=true
-        build_container "$child"
+        [[ ${BUILT_CONTAINERS[$child]} ]] || build_container "$child"
     done
 }
 
@@ -107,11 +107,9 @@ branch_exists() { git show-ref --quiet --verify --heads -- "refs/heads/$1"; }
 # Test to see if a container does not need to be rebuilt.
 container_is_up_to_date() (
     [[ ${BUILT_CONTAINERS[$1]} ]] && return 0
-    [[ ${PARENT_CONTAINER_REBUILT[$1]} ]] && return 1
     [[ $ALWAYS_PULL = true ]] && docker pull "$1:$BUILD_TAG"
     cd "$repo_dir"
-    branch_exists "$tracking_branch" && \
-        git diff --exit-code -s "$tracking_branch" -- . && \
+    git diff --exit-code -s HEAD -- . && \
         [[ -f last-built-image-id ]] && \
         [[ $(image_id "$1") = $(cat last-built-image-id) ]]
 )
@@ -119,7 +117,6 @@ container_is_up_to_date() (
 # Build a container if needed.
 build_container() {
     # $1 = container to build
-    local tracking_branch="containers/$1/$BUILD_TAG"
     local repo_dir="$CONTAINER_DIR/${CONTAINERS[$1]}"
     if container_is_up_to_date "$1"; then
         echo "Container $1 does not need rebuilding"
@@ -143,7 +140,7 @@ sort_containers() {
     local container
     for container in "$@"; do
         printf "%s %s\n" "${CONTAINER_RANK[$container]}" "$container"
-    done |sort -un |awk '{print $2}'
+    done |sort -n |awk '{print $2}'
 }
 
 help() {
@@ -169,6 +166,9 @@ any of them change.  It takes the following options:
            That branch should be merged to the appropriate release
            branch to keep the deploy repository synced up to the
            container images at Dockerhub.
+           --push implies --update-git.
+
+    --all to build all the buildable containers.
 
     --help This help.
 EOF
@@ -188,6 +188,12 @@ while (( $# != 0)); do
             UPDATE_GIT=true;;
         --help)
             help && exit 0;;
+        --all)
+            for d in "$CONTAINER_DIR"/*; do
+                [[ -f $d/Dockerfile ]] || continue
+                [[ ${REPOS[${d##*/}]} ]] || continue
+                CONTAINERS_TO_BUILD[${REPOS[${d##*/}]}]=true
+            done;;
         *)
             if [[ ${CONTAINERS[$1]} ]]; then
                 CONTAINERS_TO_BUILD[$1]=true
@@ -211,9 +217,9 @@ if [[ ${#CONTAINERS_TO_BUILD[@]} == 0 ]]; then
     exit 0
 fi
 
-while read container; do
+for container in $(sort_containers "${!CONTAINERS_TO_BUILD[@]}"); do
     build_container "$container"
-done < <(sort_containers "${!CONTAINERS_TO_BUILD[@]}")
+done
 
 if [[ ${#UNBUILT_CONTAINERS[@]} != 0 ]]; then
     for container in "${!UNBUILT_CONTAINERS[@]}"; do
