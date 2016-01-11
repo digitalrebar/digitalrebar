@@ -31,7 +31,7 @@ case node[:consul][:service_mode]
 when 'server'
   copy_params << :bootstrap_expect
   service_config['server'] = true
-  service_config['retry_join'] = node[:consul][:servers]
+  service_config['retry_join'] = node[:consul][:servers] - ["[#{node[:consul][:bind_addr]}]:8301"]
 when 'client'
   service_config['retry_join'] = node[:consul][:servers]
 else

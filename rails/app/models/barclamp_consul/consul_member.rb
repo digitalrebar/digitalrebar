@@ -23,5 +23,6 @@ class BarclampConsul::ConsulMember < Role
         Attrib.set_without_save("consul-address",nr,nr.node.addresses.first.addr)
       end
     end
+    true
   end
 end
