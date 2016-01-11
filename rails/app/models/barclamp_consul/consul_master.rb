@@ -27,12 +27,10 @@ class BarclampConsul::ConsulMaster < Role
       consuls = NodeRole.where(deployment_id: nr.deployment_id, role_id: nr.role_id).to_a
 
       servers = consuls.map{|cnr| "[#{cnr.node.addresses.first.addr}]:8301"}
-      to_join = consuls.reject{|cnr|cnr.id == nr.id}.map{|cnr| "[#{cnr.node.addresses.first.addr}]:8301"}
       Rails.logger.info("Updating global Consul servers: #{servers.inspect}")
-      Rails.logger.info("Updating this Consul's servers: #{to_join.inspect}")
       Attrib.set("consul-servers",nr.deployment_role,servers)
       Attrib.set("consul-bootstrap-expect",nr.deployment_role,servers.length)
-      Attrib.set_without_save("consul-servers",nr,to_join)
     end
+    true
   end
 end
