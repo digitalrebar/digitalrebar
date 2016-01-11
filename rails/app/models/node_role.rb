@@ -58,13 +58,13 @@ class NodeRole < ActiveRecord::Base
   # validate        :deployable,        :if => :deployable?
   # node_role_pcms maps parent noderoles to child noderoles.
   has_and_belongs_to_many(:parents,
-                          -> { reorder('cohort DESC') },
+                          -> { reorder('cohort DESC, id ASC') },
                           :class_name => "NodeRole",
                           :join_table => "node_role_pcms",
                           :foreign_key => "child_id",
                           :association_foreign_key => "parent_id")
   has_and_belongs_to_many(:children,
-                          -> { reorder('cohort ASC') },
+                          -> { reorder('cohort ASC, id ASC') },
                           :class_name => "NodeRole",
                           :join_table => "node_role_pcms",
                           :foreign_key => "parent_id",
@@ -73,14 +73,14 @@ class NodeRole < ActiveRecord::Base
   # to include all of the parents and children of a noderole,
   # recursively.
   has_and_belongs_to_many(:all_parents,
-                          -> { reorder('cohort DESC') },
+                          -> { reorder('cohort DESC, id ASC') },
                           :class_name => "NodeRole",
                           :join_table => "node_role_all_pcms",
                           :foreign_key => "child_id",
                           :association_foreign_key => "parent_id",
                           :delete_sql => "SELECT 1") # TODO: Figure out how to remove
   has_and_belongs_to_many(:all_children,
-                          -> { reorder('cohort ASC') },
+                          -> { reorder('cohort ASC, id ASC') },
                           :class_name => "NodeRole",
                           :join_table => "node_role_all_pcms",
                           :foreign_key => "parent_id",
@@ -539,7 +539,7 @@ class NodeRole < ActiveRecord::Base
   def error!
     # We can also go to ERROR pretty much any time.
     # but we silently ignore the transition if in BLOCKED
-    NodeRole.transaction do
+    self.with_lock do
       reload
       return if blocked?
       update!(state: ERROR)
@@ -551,7 +551,7 @@ class NodeRole < ActiveRecord::Base
   def active!
     # We can only go to ACTIVE from TRANSITION
     # but we silently ignore the transition if in BLOCKED
-    NodeRole.transaction do
+    self.with_lock do
       update!(run_count: run_count + 1)
       if !node.alive
         block_or_todo
@@ -565,7 +565,7 @@ class NodeRole < ActiveRecord::Base
 
   def todo!
     # You can pretty much always go back to TODO as long as all your parents are ACTIVE
-    NodeRole.transaction do
+    self.with_lock do
       reload
       raise InvalidTransition.new(self,state,TODO,"Not all parents are ACTIVE") unless activatable?
       update!(state: TODO)
@@ -578,7 +578,7 @@ class NodeRole < ActiveRecord::Base
 
   def transition!
     # We can only go to TRANSITION from TODO or ACTIVE
-    NodeRole.transaction do
+    self.with_lock do
       reload
       unless todo? || active? || transition?
         raise InvalidTransition.new(self,state,TRANSITION)
@@ -590,7 +590,7 @@ class NodeRole < ActiveRecord::Base
 
   def block!
     # We can pretty much always go to BLOCKED.
-    NodeRole.transaction do
+    self.with_lock do
       reload
       update!(state: BLOCKED)
       # Going into BLOCKED transitions any children in ERROR or TODO into BLOCKED.
@@ -604,7 +604,7 @@ class NodeRole < ActiveRecord::Base
     # We can also pretty much always go into PROPOSED,
     # and it does not affect the state of our children until
     # we go back out of PROPOSED.
-    NodeRole.transaction do
+    self.with_lock do
       reload
       update!(state: PROPOSED)
     end
@@ -740,9 +740,12 @@ class NodeRole < ActiveRecord::Base
         NodeRole.transaction do
           # Immediate children of an ACTIVE node go to TODO
           children.where(state: BLOCKED).each do |c|
-            Rails.logger.debug("NodeRole #{name}: testing to see if #{c.name} is runnable")
-            next unless c.activatable?
-            c.todo!
+            c.with_lock do
+              c.reload
+              Rails.logger.debug("NodeRole #{name}: testing to see if #{c.name} is runnable")
+              next unless c.activatable?
+              c.todo!
+            end
           end
         end
         Run.run!

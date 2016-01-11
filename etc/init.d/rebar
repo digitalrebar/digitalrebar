@@ -14,7 +14,6 @@
 ### END INIT INFO
 
 PATH="/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
-GEMFILE_LOCK=/opt/digitalrebar/core/rails/Gemfile.lock
 
 # if we started in development, make sure we're running development
 if [[ -f /tmp/development.txt ]]; then
@@ -62,7 +61,7 @@ que_worker() {
     workers="$1"
     shift
     for ((i=0; i < workers; i++)) ; do
-        cmd="bundle exec que -q $queue -w 1 -l info ./config/environment.rb"
+        cmd="bundle exec que -q $queue -w 1 -l debug ./config/environment.rb"
         as_rebar "$cmd" </dev/zero 2>&1 &>> "/var/log/rebar/$queue.$i.log" &
     done
 }
@@ -97,13 +96,6 @@ start(){
         return 1
     fi
     rm /opt/digitalrebar/core/rails/tmp/pids/*
-    if [[ $OS = suse ]]; then
-        # refresh the Gemfile.lock content before starting the server
-        # (outdated file can cause problems after any of the required
-        # rubygems were updated)
-        rm -f $GEMFILE_LOCK
-        as_rebar bundle install --local --quiet
-    fi
     as_rebar bundle exec puma -d -C $PUMA_CFG
     start_workers
 }
