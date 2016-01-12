@@ -4,13 +4,14 @@
   %tr
     %td
       %h1= t '.title'
-    %td{:align=>'right'}
+    %td{:align=>'right', :id=>'addcell'}
       - if providers and providers.count > 0
         = link_to t('.create_nodes'), providers_path
         = text_field_tag :name, t('.name_base'), :size => 15
         = select :add, :provider, options_for_select(providers.map{|p| p.name}, providers.first)
+        = text_field_tag :add_os, t('.default_os'), :size => 8
         = text_field_tag :number, 1, :size => 2
-        %button{:onclick=>"add_nodes()"}= t('add')
+        %button{:id=>'addbut', :onclick=>"add_nodes()"}= t('add')
       - else
         = link_to t('.no_providers'), providers_path, :class=>:button
 - if @list.length == 0
@@ -32,6 +33,7 @@
   $("#act_on_nodes").change(function() {
     var action = this.value;
     console.debug("action #{nodes_path()}");
+    $.ajaxSetup({ timeout: 50000 });
     $(":checkbox[id^=node_action]").each( function(index, value) {
       if (value.checked) {
         console.debug("loop " + action + " on " + value.value);
@@ -39,9 +41,6 @@
           $.ajax({
             type: 'DELETE',
             url: "#{nodes_path}/" + value.value + "?format=json"})
-            .fail(function(jqXHR, textStatus, errorThrown) {
-              alert("#{t('.delete_failed')}: " + textStatus + " " + errorThrown)
-            })
             .done(function() { 
               value.disabled = true;
             }
@@ -50,17 +49,23 @@
       };
     });
     if (action == "delete") { 
-      location.reload(); } 
+      update(); } 
     else {
       this.value = "none"; }
   });
 
   function add_nodes() {
+    $(this).prop("disabled",true);
     var base_name = $("#name").val();
     var provider = $("#add_provider").val();
     var os = $("#add_os").val();
+    if (os == "#{t('.default_os')}") {
+      os = ''
+    }
     var number = parseInt($("#number").val());
+    $.ajaxSetup({ timeout: 5000*number });
     for (var i=0; i<number; i++) {
+      $('#addcell').delay(100).fadeOut().fadeIn('slow');
       $.post("#{nodes_path}",
         {
           name: base_name+"-"+i+"."+provider+".neode.org",
@@ -72,18 +77,13 @@
             'use-dns': false,
             'use-logging': false,
             'provider-create-hint': { 
-              hostname: base_name+"-"+i
+              'hostname': base_name+"-"+i,
+              'os': os
               }
             }
-          },
-        function(data, status){ 
-          if (status=="success") { location.reload(); } 
-      })
-      .fail(function(jqXHR, textStatus, errorThrown) {
-        alert("#{t('.create_failed')}: " + textStatus + " " + errorThrown);
-        //break;
-      });
+        });
     };
+    update();
   }
 
   function update() {

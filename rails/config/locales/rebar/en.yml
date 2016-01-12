@@ -371,6 +371,7 @@ en:
       provider: "Provider"
       create_nodes: "Provider Nodes"
       name_base: "digital-rebar-node"
+      default_os: "default_os"
       no_providers: "Node Providers"
       create_failed: "Create Failed"
       node_action: "Actions:"
