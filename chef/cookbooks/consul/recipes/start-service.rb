@@ -75,6 +75,10 @@ if bind_addr && bind_addr != ""
   end
 end
 
+# Bind address is really advertise address.
+service_config[:advertise_addr] = service_config[:bind_addr]
+service_config.delete(:bind_addr)
+
 file node[:consul][:config_dir] + '/default.json' do
   mode 0640
   action :create
