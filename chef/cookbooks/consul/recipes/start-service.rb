@@ -32,6 +32,16 @@ when 'server'
   copy_params << :bootstrap_expect
   service_config['server'] = true
   service_config['retry_join'] = node[:consul][:servers] - ["[#{node[:consul][:bind_addr]}]:8301"]
+
+  bash 'Update firewall ports' do
+    code <<-EOF
+firewall-cmd --add-port 8300/tcp
+firewall-cmd --add-port 8301/tcp
+firewall-cmd --add-port 8302/tcp
+EOF
+    only_if "which firewall-cmd"
+  end
+
 when 'client'
   service_config['retry_join'] = node[:consul][:servers]
 else
