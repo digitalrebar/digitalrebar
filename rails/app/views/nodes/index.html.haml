@@ -59,16 +59,8 @@
     var base_name = $("#name").val();
     var provider = $("#add_provider").val();
     var os = $("#add_os").val();
-    if (os == "#{t('.default_os')}") {
-      os = ''
-    }
-    var number = parseInt($("#number").val());
-    $.ajaxSetup({ timeout: 5000*number });
-    for (var i=0; i<number; i++) {
-      $('#addcell').delay(100).fadeOut().fadeIn('slow');
-      $.post("#{nodes_path}",
-        {
-          name: base_name+"-"+i+"."+provider+".neode.org",
+    var payload = {
+          name: base_name+"-X."+provider+".neode.org",
           description: "created by #{current_user.username}",
           provider: provider,
           hints: { 
@@ -77,11 +69,22 @@
             'use-dns': false,
             'use-logging': false,
             'provider-create-hint': { 
-              'hostname': base_name+"-"+i,
-              'os': os
+              'hostname': base_name+"-X"
               }
             }
-        });
+          };
+    if (os != "#{t('.default_os')}") {
+      payload.hints['provider-create-hint'].os = os
+      payload.hints['provider-create-hint'].image_id = os
+    }
+    var number = parseInt($("#number").val());
+    $.ajaxSetup({ timeout: 5000*number });
+    for (var i=0; i<number; i++) {
+      $('#addcell').delay(100).fadeOut().fadeIn('slow');
+      payload.name = base_name+"-"+i+"."+provider+".neode.org";
+      payload.hints['provider-create-hint'].hostname = base_name+"-"+i;
+      console.debug("add " + JSON.stringify(payload, null, 2));
+      $.post("#{nodes_path}",payload);
     };
     update();
   }
