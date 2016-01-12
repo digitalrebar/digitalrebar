@@ -102,7 +102,7 @@
 
         })
         .fail(function(jqXHR, textStatus, errorThrown) {
-          location.load("#{main_app.destroy_user_session_path()}");
+          location.reload("#{main_app.destroy_user_session_path()}");
         });
 
       } else {
