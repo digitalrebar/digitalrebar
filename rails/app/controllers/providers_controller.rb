@@ -57,15 +57,7 @@ class ProvidersController < ApplicationController
   end
 
   def update
-    # deal w/ non-json form data from UI
-    if params[:auth_details].is_a? Hash
-      # if we're passing JSON then we need to convert that to a nested hash (ASSUME json params have json in the title)
-      params[:auth_details].each do |key, value|
-        params[:auth_details][key] = JSON.parse(value) if key =~ /json/ or key.start_with?("{")
-      end
-      # turn the hash into json for the provider
-      params[:auth_details] = params[:auth_details].to_json
-    end
+    hashfix if params[:auth_details].is_a? Hash # address UI formatting
     Provider.transaction do
       @item = Provider.find_key(params[:id]).lock!
       if request.patch?
@@ -81,6 +73,7 @@ class ProvidersController < ApplicationController
   end
 
   def create
+    hashfix if params[:auth_details].is_a? Hash # address UI formatting
     # UI passes array, clean that up
     params[:type] = params[:type].first if params[:type].kind_of?(Array)
     params.require(:name)
@@ -100,6 +93,24 @@ class ProvidersController < ApplicationController
     @item = Provider.find_key(params[:id])
     @item.destroy
     render api_delete @item
+  end
+
+  private
+
+  # address UI formatting
+  def hashfix
+    # deal w/ non-json form data from UI
+    # if we're passing JSON then we need to convert that to a nested hash (ASSUME json params have json in the title)
+    out = {}
+    params[:auth_details].each do |key, value|
+      if key =~ /json/ or key.start_with?("{")
+        out[key] = JSON.parse(value) 
+      else
+        out[key] = value
+      end
+    end
+    # turn the hash into json for the provider
+    params[:auth_details] = out.to_json
   end
 
 end
