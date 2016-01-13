@@ -58,7 +58,14 @@ class ProvidersController < ApplicationController
 
   def update
     # deal w/ non-json form data from UI
-    params[:auth_details] = params[:auth_details].to_json if params[:auth_details].is_a? Hash
+    if params[:auth_details].is_a? Hash
+      # if we're passing JSON then we need to convert that to a nested hash (ASSUME json params have json in the title)
+      params[:auth_details].each do |key, value|
+        params[:auth_details][key] = JSON.parse(value) if key =~ /json/ or key.start_with?("{")
+      end
+      # turn the hash into json for the provider
+      params[:auth_details] = params[:auth_details].to_json
+    end
     Provider.transaction do
       @item = Provider.find_key(params[:id]).lock!
       if request.patch?
