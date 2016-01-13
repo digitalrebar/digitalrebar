@@ -111,6 +111,7 @@ class ProvidersController < ApplicationController
     end
     # turn the hash into json for the provider
     params[:auth_details] = out.to_json
+    Rails.logger.debug("Provider create/update auth_details saved as #{params[:auth_details]}")
   end
 
 end
