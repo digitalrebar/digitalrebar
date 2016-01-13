@@ -32,6 +32,7 @@ BUILD_TAG='latest'
 PULL_CONTAINERS=false
 PUSH_CONTAINERS=false
 UPDATE_GIT=false
+FORCE_BUILD=false
 
 if [[ $0 = /* ]]; then
     mountdir="$0"
@@ -107,6 +108,7 @@ branch_exists() { git show-ref --quiet --verify --heads -- "refs/heads/$1"; }
 # Test to see if a container does not need to be rebuilt.
 container_is_up_to_date() (
     [[ ${BUILT_CONTAINERS[$1]} ]] && return 0
+    [[ $FORCE_BUILD == true ]] && return 1
     [[ $ALWAYS_PULL = true ]] && docker pull "$1:$BUILD_TAG"
     cd "$repo_dir"
     git diff --exit-code -s HEAD -- . && \
@@ -124,7 +126,9 @@ build_container() {
     fi
     echo
     echo "Building container $1"
-    if ! ( cd "$repo_dir" && docker build -t "${1}:${BUILD_TAG}" .); then
+    local buildargs=("-t" "${1}:${BUILD_TAG}")
+    [[ $FORCE_BUILD = true ]] && buildargs+=("--no-cache")
+    if ! ( cd "$repo_dir" && docker build "${buildargs[@]}" .); then
         echo "Build of container $1 failed."
         UNBUILT_CONTAINERS[$1]="Run 'cd \"$repo_dir\" && docker build -t \"${1}:${BUILD_TAG}\" .' to see what failed."
         return
@@ -150,6 +154,9 @@ built from.  It understands how the containers relate to each other,
 and can figure out (via container build tracking branches and
 container image IDs what containers would need to be rebuilt when
 any of them change.  It takes the following options:
+
+    --force Force a build even if it appears that the container does
+            not need rebuilding.
 
     --tag if you want to tag the built containers with something 
           other than 'latest'.
@@ -186,6 +193,8 @@ while (( $# != 0)); do
             PUSH_CONTAINERS=true;;
         --update-git)
             UPDATE_GIT=true;;
+        --force)
+            FORCE_BUILD=true;;
         --help)
             help && exit 0;;
         --all)
