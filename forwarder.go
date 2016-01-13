@@ -131,10 +131,15 @@ func main() {
 					knownSvc.ServiceAddress == svc.ServiceAddress &&
 					knownSvc.ServicePort == svc.ServicePort {
 					// Nothing changed, it goes in the untouched bucket.
+					log.Printf("%s has not changed config, ignoring", svcName)
 					untouchedServices[svcName] = knownSvc
 				} else {
 					// Something changed, it goes in the toRemove and
 					// wanted buckets
+					log.Printf("%s has changed config, will update forwarding rules", svcName)
+					log.Printf("%s: ServiceAddress %v => %v", svcName, knownSvc.ServiceAddress, svc.ServiceAddress)
+					log.Printf("%s: ServicePort %v => %v", svcName, knownSvc.ServicePort, svc.ServicePort)
+					log.Printf("%s: Address %v => %v", svcName, knownSvc.Address, svc.Address)
 					toRemoveServices[svcName] = knownSvc
 					wantedServices[svcName] = knownSvc
 				}
@@ -152,6 +157,7 @@ func main() {
 			if _, ok := untouchedServices[svcName]; ok {
 				continue
 			}
+			log.Printf("%s has gone away, will delete forwarding rules", svcName)
 			toRemoveServices[svcName] = svc
 		}
 		// Delete services we no longer care about
@@ -161,7 +167,9 @@ func main() {
 			if err == nil {
 				agentSvc, ok := agentSvcs[strings.Trim(svcName, "internal-")]
 				if ok {
-					agent.ServiceDeregister(agentSvc.ID)
+					if err := agent.ServiceDeregister(agentSvc.ID); err != nil {
+						log.Printf("Failed to deregister %v (%v)", svcName, err)
+					}
 				}
 			}
 			svcAddr := svc.ServiceAddress
