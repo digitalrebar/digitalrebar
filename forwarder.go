@@ -141,7 +141,7 @@ func main() {
 					log.Printf("%s: ServicePort %v => %v", svcName, knownSvc.ServicePort, svc.ServicePort)
 					log.Printf("%s: Address %v => %v", svcName, knownSvc.Address, svc.Address)
 					toRemoveServices[svcName] = knownSvc
-					wantedServices[svcName] = knownSvc
+					wantedServices[svcName] = svc
 				}
 			} else {
 				// New service, it goes in the wanted bucket
@@ -162,13 +162,15 @@ func main() {
 		}
 		// Delete services we no longer care about
 		for svcName, svc := range toRemoveServices {
-			// Whack service registration
-			agentSvcs, err := agent.Services()
-			if err == nil {
-				agentSvc, ok := agentSvcs[strings.Trim(svcName, "internal-")]
-				if ok {
-					if err := agent.ServiceDeregister(agentSvc.ID); err != nil {
-						log.Printf("Failed to deregister %v (%v)", svcName, err)
+			// Whack service registration iff the service was removed.
+			if _, ok := wantedServices[svcName]; !ok {
+				agentSvcs, err := agent.Services()
+				if err == nil {
+					agentSvc, ok := agentSvcs[strings.Trim(svcName, "internal-")]
+					if ok {
+						if err := agent.ServiceDeregister(agentSvc.ID); err != nil {
+							log.Printf("Failed to deregister %v (%v)", svcName, err)
+						}
 					}
 				}
 			}
