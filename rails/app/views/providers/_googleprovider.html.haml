@@ -10,4 +10,6 @@
     %td= text_field_tag "auth_details[google_project]", @item.auth_details['google_project'], :size => 30
   %tr
     %td= t 'json_key', :scope=>'providers.show.google'
-    %td= password_field_tag "auth_details[google_json_key]", @item.auth_details['google_json_key'], :size => 60
+    %td
+      %textarea{:name => "auth_details[google_json_key]", :rows=>20, :cols=>160}
+        = @item.auth_details['google_json_key'] || "{ 'replace_me':'with exact json from GCE' }'"
