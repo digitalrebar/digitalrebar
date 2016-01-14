@@ -35,21 +35,18 @@ UPDATE_GIT=false
 FORCE_BUILD=false
 
 if [[ $0 = /* ]]; then
-    mountdir="$0"
+    CONTAINER_DIR="$0"
 elif [[ $0 = .*  || $0 = */* ]]; then
-    mountdir="$(readlink "$PWD/$0")"
-    if [ "$mountdir" == "" ] ; then
-        mountdir="$PWD/$0"
+    CONTAINER_DIR="$(readlink "$PWD/$0")"
+    if [[ ! $CONTAINER_DIR ]] ; then
+        CONTAINER_DIR="$PWD/$0"
     fi
 else
     echo "Cannot figure out where core is!"
     exit 1
 fi
 
-# This gets us to core
-mountdir="${mountdir%/deploy/containers/*}"
-
-CONTAINER_DIR="$mountdir/deploy/containers"
+CONTAINER_DIR="${CONTAINER_DIR%/rebuild-containers}"
 
 # Figure out all the trans-container dependency information we will need.
 setup_parents() {
@@ -110,10 +107,12 @@ container_is_up_to_date() (
     [[ ${BUILT_CONTAINERS[$1]} ]] && return 0
     [[ $FORCE_BUILD == true ]] && return 1
     [[ $ALWAYS_PULL = true ]] && docker pull "$1:$BUILD_TAG"
+    [[ -f $repo_dir/last-built-image-id ]] || return 1
     cd "$repo_dir"
-    git diff --exit-code -s HEAD -- . && \
-        [[ -f last-built-image-id ]] && \
-        [[ $(image_id "$1") = $(cat last-built-image-id) ]]
+    local last_changed_rev=$(git rev-list -1 HEAD -- last-built-image-id)
+    [[ $last_changed_rev ]] || return 1
+    git diff --exit-code -s "$last_changed_rev" -- . || return 1
+    [[ $(image_id "$1") = $(cat last-built-image-id) ]]
 )
 
 # Build a container if needed.
@@ -227,7 +226,7 @@ if [[ ${#CONTAINERS_TO_BUILD[@]} == 0 ]]; then
 fi
 
 for container in $(sort_containers "${!CONTAINERS_TO_BUILD[@]}"); do
-    build_container "$container"
+    [[ ${BUILT_CONTAINERS[$container]} ]] || build_container "$container"
 done
 
 if [[ ${#UNBUILT_CONTAINERS[@]} != 0 ]]; then
