@@ -103,6 +103,7 @@ bring_up_admin() {
         export REBAR_ENDPOINT=https://${ADMIN_IP%/*}:3000
         if rebar ping 2>/dev/null >/dev/null ; then
             echo "Admin node at $ADMIN_IP already running."
+            ADMIN_ALREADY_UP=true
             return 0
         fi
     fi
@@ -193,6 +194,19 @@ add_provider() {
     esac
 }
 
+lookup_image_id() {
+  PROV=$1
+  REGION=$2
+  OS=$3
+
+  answer=$(egrep "$PROV.*$REGION.*$OS" workloads/os.map | awk '{ print $4 }')
+  if [[ ! $answer ]] ; then
+    answer=$(egrep "$PROV.*all.*$OS" workloads/os.map | awk '{ print $4 }')
+  fi
+
+  echo $answer
+}
+
 #
 # Arg1 is name of node
 # Arg2 is the OS to install (defaults to centos7 if not specified)
@@ -201,16 +215,13 @@ add_provider() {
 #
 start_machine() {
     OS=${2:-centos7}
+    os_name=$(lookup_image_id $PROVIDER $PROVIDER_AWS_REGION $OS)
 
     case $PROVIDER in
         packet)
-            case $OS in 
-                centos7) OS=centos_7;;
-                ubuntu1404) OS=ubuntu_14_04;;
-                debian7) OS=debian_7;;
-                debian8) OS=debian_8;;
-                *) OS=centos_7;;
-            esac
+            if [[ $os_name ]] ; then
+                OS_FIELD="\"os\": \"${os_name}\","
+            fi
 
             node="{
   \"name\": \"$1\",
@@ -221,16 +232,17 @@ start_machine() {
     \"use-dns\": false,
     \"use-logging\": false,
     \"provider-create-hint\": {
-      \"os\": \"$OS\",
+      $OS_FIELD
       \"hostname\": \"$1\"
     }
   }
 }"
-
             rebar nodes create "$node"
             ;;
         aws)
-            # GREG: Choose ami?? by OS and Region
+            if [[ $os_name ]] ; then
+                IMAGE_ID="\"image_id\": \"${os_name}\","
+            fi
 
             node="{
   \"name\": \"$1\",
@@ -240,7 +252,10 @@ start_machine() {
     \"use-ntp\": false,
     \"use-dns\": false,
     \"use-logging\": false,
-    \"provider-create-hint\": {}
+    \"provider-create-hint\": {
+      $IMAGE_ID
+      \"name\": \"$1\"
+    }
   }
 }"
 
@@ -248,7 +263,16 @@ start_machine() {
             ;;
 
         google)
-            # GREG: Choose ami?? by OS and Region
+            if [[ $os_name ]] ; then
+                DISKS="\"disks\": [{
+                  \"autoDelete\": true,
+                  \"boot\": true,
+                  \"type\": \"PERSISTENT\",
+                  \"initializeParams\": {
+                    \"sourceImage\": \"$os_name\"
+                  }
+                }],"
+            fi
 
             node="{
   \"name\": \"$1\",
@@ -258,7 +282,10 @@ start_machine() {
     \"use-ntp\": false,
     \"use-dns\": false,
     \"use-logging\": false,
-    \"provider-create-hint\": {}
+    \"provider-create-hint\": {
+      $DISKS
+      \"name\": \"$1\"
+    }
   }
 }"
 

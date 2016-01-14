@@ -59,8 +59,10 @@ if [[ $TEARDOWN ]] ; then
 fi
 
 # Wait for the system to converge
-if ! rebar converge ; then
-  die "Admin node did NOT converge to completion"
+if [[ ! $ADMIN_ALREADY_UP ]] ; then
+  if ! rebar converge ; then
+    die "Admin node did NOT converge to completion"
+  fi
 fi
 
 add_provider

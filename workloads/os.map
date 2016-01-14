@@ -1,0 +1,48 @@
+packet all centos7    centos_7
+packet all ubuntu1404 ubuntu_14_04
+packet all debian7    debian_7
+packet all debian8    debian_8
+
+google all centos7    projects/centos-cloud/global/images/centos-7-v20151104
+google all ubuntu1404 projects/ubuntu-os-cloud/global/images/ubuntu-1404-ubuntu1404-v20151113
+google all ubuntu1504 projects/ubuntu-os-cloud/global/images/ubuntu-1504-ubuntu1504-v20151120
+google all debian7    projects/debian-cloud/global/images/debian-7-wheezy-v20151104
+google all debian8    projects/debian-cloud/global/images/debian-8-jessie-v20151104
+
+#
+# These are hvm-only try switching to default type of t2
+#
+aws us-east-1      centos7 ami-61bbf104
+aws us-west-2      centos7 ami-d440a6e7
+aws us-west-1      centos7 ami-f77fbeb3
+aws eu-central-1   centos7 ami-e68f82fb
+aws eu-west-1      centos7 ami-33734044
+aws ap-southeast-1 centos7 ami-2a7b6b78
+aws ap-southeast-2 centos7 ami-d38dc6e9
+aws ap-northeast-1 centos7 ami-b80b6db8
+aws ap-northeast-2 centos7 ami-dd9d53b3
+aws sa-east-1      centos7 ami-fd0197e0
+
+aws ap-northeast-1 ubuntu1404 ami-20b98c4e
+aws ap-southeast-1 ubuntu1404 ami-06834165
+aws eu-central-1   ubuntu1404 ami-ffaab693
+aws eu-west-1      ubuntu1404 ami-a11dbfd2
+aws sa-east-1      ubuntu1404 ami-08bd3a64
+aws us-east-1      ubuntu1404 ami-0021766a
+aws us-west-1      ubuntu1404 ami-56f59e36
+aws cn-north-1     ubuntu1404 ami-3378b15e
+aws us-gov-west-1  ubuntu1404 ami-d6bbd9f5
+aws ap-southeast-2 ubuntu1404 ami-7bbee518
+aws us-west-2      ubuntu1404 ami-c94856a8
+
+aws ap-northeast-1 ubuntu1504 ami-b43300da
+aws ap-southeast-1 ubuntu1504 ami-e1e32e82
+aws eu-central-1   ubuntu1504 ami-836876ef
+aws eu-west-1      ubuntu1504 ami-8cfe57ff
+aws sa-east-1      ubuntu1504 ami-7578fe19
+aws us-east-1      ubuntu1504 ami-9e2977f4
+aws us-west-1      ubuntu1504 ami-8f7005ef
+aws cn-north-1     ubuntu1504 ami-fd79b090
+aws ap-southeast-2 ubuntu1504 ami-0fa6fc6c
+aws us-west-2      ubuntu1504 ami-b8a0b8d9
+
