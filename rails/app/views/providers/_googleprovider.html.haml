@@ -12,4 +12,4 @@
     %td= t 'json_key', :scope=>'providers.show.google'
     %td
       %textarea{:name => "auth_details[google_json_key]", :rows=>20, :cols=>160}
-        = @item.auth_details['google_json_key'] || "{ 'replace_me':'with exact json from GCE' }'"
+        = JSON.pretty_generate (@item.auth_details['google_json_key'] || { 'replace_me' => 'with exact json from GCE' } )

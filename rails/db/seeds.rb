@@ -37,6 +37,7 @@ ActiveRecord::Base.transaction do
   # nodes
   Nav.find_or_create_by(item: 'nodes', parent_item: 'root', name: 'nav.nodes', description: 'nav.nodes_description', path: "main_app.nodes_path", order: 1000)
   Nav.find_or_create_by(item: 'nodes_child', parent_item: 'nodes', name: 'nav.nodes', description: 'nav.nodes_description', path: "main_app.nodes_path", order: 1000)
+  Nav.find_or_create_by(item: 'providers', parent_item: 'nodes', name: 'nav.providers', description: 'nav.providers_description', path: "main_app.providers_path", order: 1400)
   Nav.find_or_create_by(item: 'families', parent_item: 'nodes', name: 'nav.families', description: 'nav.families_description', path: "main_app.families_path", order: 1500)
   Nav.find_or_create_by(item: 'groups', parent_item: 'nodes', name: 'nav.groups', description: 'nav.groups_description', path: "main_app.groups_path", order: 2000)
   Nav.find_or_create_by(item: 'getready', parent_item: 'nodes', name: 'nav.getready', description: 'nav.getready_description', path: "main_app.getready_path", order: 3000)
@@ -53,7 +54,6 @@ ActiveRecord::Base.transaction do
   Nav.find_or_create_by(item: 'manage_users', parent_item: 'utils', name: 'nav.manage_users', description: 'nav.manage_users_description', path: "main_app.users_path", order: 100)
   Nav.find_or_create_by(item: 'user_settings', parent_item: 'utils', name: 'nav.user_settings', description: 'nav.user_settings_description', path: "main_app.utils_settings_path", order: 200)
   Nav.find_or_create_by(item: 'jigs', parent_item: 'utils', name: 'nav.jigs', description: 'nav.jigs_description', path: "main_app.jigs_path", order: 300)
-  Nav.find_or_create_by(item: 'providers', parent_item: 'utils', name: 'nav.providers', description: 'nav.providers_description', path: "main_app.providers_path", order: 400)
   Nav.find_or_create_by(item: 'hammers', parent_item: 'utils', name: 'nav.hammers', description: 'nav.hammers_description', path: "main_app.available_hammers_path", order: 1000)
   Nav.find_or_create_by(item: 'barclamps', parent_item: 'utils', name: 'nav.barclamps', description: 'nav.barclamps_description', path: "main_app.barclamps_path", order: 4000)
 
