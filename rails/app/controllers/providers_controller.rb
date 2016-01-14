@@ -103,7 +103,7 @@ class ProvidersController < ApplicationController
     # if we're passing JSON then we need to convert that to a nested hash (ASSUME json params have json in the title)
     out = {}
     params[:auth_details].each do |key, value|
-      if key =~ /json/ or key.start_with?("{")
+      if key =~ /json/ or value.to_s.start_with?("{")
         out[key] = JSON.parse(value) 
       else
         out[key] = value
