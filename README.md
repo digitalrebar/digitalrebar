@@ -12,8 +12,8 @@ formats are used.  The service is controlled by a username and password.
 
 ## List Subnets
 
-Url: https://user:password@127.0.0.1:6755/subnets
-Method: Get
+Url: https://user:password@127.0.0.1:6755/subnets  
+Method: Get  
 Returns: a json array of subnet objects
 
 ```
@@ -84,9 +84,9 @@ Returns: a json array of subnet objects
 
 ### Show Subnet
 
-Url: https://user:password@127.0.0.1:6754/subnets/192.168.124.10
-Method: Get
-Returns: a json subnet object like the element in the list with leases
+Url: https://user:password@127.0.0.1:6754/subnets/192.168.124.10  
+Method: Get  
+Returns: a json subnet object like the element in the list with leases  
 Errors: 404 if not found.
 
 The subnet object containes leases (dynamic information), bindings
@@ -99,12 +99,12 @@ to a byte string before sending to clients.
 
 ### Create Subnet
 
-Url: https://user:password@127.0.0.1:6754/subnets
-Method: Post
-Data: json Subnet object (can have bindings, leases, and options)
-options)
-Returns: a json subnet object like the element in list
-Errors: 400 if request not valid
+Url: https://user:password@127.0.0.1:6754/subnets  
+Method: Post  
+Data: json Subnet object (can have bindings, leases, and options)  
+options)  
+Returns: a json subnet object like the element in list  
+Errors: 400 if request not valid  
         409 if subnet name already in use
 
 Data is in the format:
@@ -128,21 +128,21 @@ out.
 
 ### Update Subnet
 
-Url: https://user:password@127.0.0.1:6754/subnets/<name>
-Method: Put
-Data: json Subnet object (can have bindings, leases, and options)
-options)
-Returns: a json subnet object like the element in list
-Errors: 400 if request not valid
+Url: https://user:password@127.0.0.1:6754/subnets/<name>  
+Method: Put  
+Data: json Subnet object (can have bindings, leases, and options)  
+options)  
+Returns: a json subnet object like the element in list  
+Errors: 400 if request not valid  
         404 if subnet name not found
 
 Just like create but updates an existing subnet
 
 ### Delete Subnet
 
-Url: https://user:password@127.0.0.1:6754/subnets/<name>
-Method: Delete
-Returns: 200
+Url: https://user:password@127.0.0.1:6754/subnets/<name>  
+Method: Delete  
+Returns: 200  
 Errors: 404 if subnet name not found
 
 Delete the subnet and all info with the subnet.
@@ -150,11 +150,11 @@ Delete the subnet and all info with the subnet.
 
 ### Bind Mac/IP in Subnet
 
-Url: https://user:password@127.0.0.1:6754/subnets/<name>/bind
-Method: Post
-Data: json Binding Object
-Returns: a json binding object
-Errors: 404 if subnet name not found
+Url: https://user:password@127.0.0.1:6754/subnets/<name>/bind  
+Method: Post  
+Data: json Binding Object  
+Returns: a json binding object  
+Errors: 404 if subnet name not found  
         400 if data is not valid
 
 This call updates or creates a binding of a mac to an ip.
@@ -177,19 +177,19 @@ The bind object looks like:
 
 ### Unbind Mac/IP in Subnet
 
-Url: https://user:password@127.0.0.1:6754/subnets/<name>/bind/<mac>
-Method: Delete
-Returns: 200 if binding removed
+Url: https://user:password@127.0.0.1:6754/subnets/<name>/bind/<mac>  
+Method: Delete  
+Returns: 200 if binding removed  
 Errors: 404 if subnet name not found or mac not found
 
 Deletes the binding of the mac/ip pair
 
 ### Set Next Server for an IP
 
-Url: https://user:password@127.0.0.1:6754/subnets/<name>/next_server/<ip>
-Method: Put
-Data: Json next server object
-Returns: The next server object
+Url: https://user:password@127.0.0.1:6754/subnets/<name>/next_server/<ip>  
+Method: Put  
+Data: Json next server object  
+Returns: The next server object  
 Errors: 404 if subnet name not found or mac not found
 
 This sets the next server that the DHCP ACK should point to
@@ -206,7 +206,7 @@ The next server object looks like:
 
 # Build
 
-go get -u github.com/galthaus/rebar-dhcp
+go get -u github.com/galthaus/rebar-dhcp  
 go install github.com/galthaus/rebar-dhcp
 
 # Installing
