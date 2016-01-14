@@ -10,7 +10,6 @@ RUN groupadd -r rebar && useradd -r -u 1000 -g rebar -p '$6$afAL.34B$T2WR6zycEe2
   && mkdir -p /var/run/rebar \
   && chown rebar:rebar /var/run/rebar
 
-COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 COPY rebar_sudoer /etc/sudoers.d/rebar
 COPY ssh_config /home/rebar/.ssh/config
 COPY rebar-runner.json /etc/consul.d/rebar-runner.json
@@ -54,3 +53,5 @@ RUN apt-get -y update \
   && rm /var/run/rebar/server.csr \
   && chmod 400 /var/run/rebar/server.key /var/run/rebar/server.crt \
   && chown rebar:rebar /var/run/rebar/server.key /var/run/rebar/server.crt
+
+COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
