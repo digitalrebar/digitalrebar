@@ -3,7 +3,6 @@
 tmpdir=$(mktemp -d /tmp/sqitch-XXXXXX)
 cd "$tmpdir"
 cp -a "/go/src/github.com/ctdk/goiardi/sql-files/postgres-bundle/"* .
-cd $tmpdir
 
 sqitch target add goiardi db:pg://$POSTGRES_USER:$POSTGRES_PASSWORD@database/goiardi
 sqitch deploy goiardi
