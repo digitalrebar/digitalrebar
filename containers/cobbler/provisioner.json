@@ -1,7 +1,7 @@
 {
   "service": {
     "name": "provisioner-service",
-    "tags": [ "system" ],
+      "tags": [ "deployment:system"],
     "port": 80,
     "check": {
       "script": "pidof apache2",

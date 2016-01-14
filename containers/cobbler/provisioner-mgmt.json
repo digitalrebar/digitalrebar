@@ -1,7 +1,7 @@
 {
   "service": {
     "name": "provisioner-mgmt-service",
-    "tags": [ "system" ],
+    "tags": [ "deployment:system" ],
     "port": 25151,
     "check": {
       "script": "pidof /usr/bin/python",
