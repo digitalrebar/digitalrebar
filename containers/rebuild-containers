@@ -97,7 +97,7 @@ build_children_of() {
 
 # Get the image numeric ID of a container image given the name of the image.
 image_id() {
-    docker images "${1}:${BUILD_TAG}" |awk '/digitalrebar/ {print $3}'
+    docker inspect --type=image -f '{{.Config.Image}}' "${1}:${BUILD_TAG}"
 }
 
 branch_exists() { git show-ref --quiet --verify --heads -- "refs/heads/$1"; }
