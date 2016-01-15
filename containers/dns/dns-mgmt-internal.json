@@ -1,6 +1,6 @@
 {
   "service": {
-    "name": "dns-mgmt-service",
+    "name": "internal-dns-mgmt-service",
     "tags": [ "deployment:system" ],
     "port": 6754,
     "check": {
