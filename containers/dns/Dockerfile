@@ -17,7 +17,8 @@ RUN apt-get update \
 COPY bind /etc/bind
 COPY dns-internal.json /root/dns-internal.json
 COPY dns-external.json /root/dns-external.json
-COPY dns-mgmt.json /etc/consul.d/dns-mgmt.json
+COPY dns-mgmt-internal.json /root/dns-mgmt-internal.json
+COPY dns-mgmt-external.json /root/dns-mgmt-external.json
 COPY dns-mgmt.conf /etc/dns-mgmt.conf
 COPY database.json /var/cache/rebar-dns-mgmt/database.json
 COPY dns-mgmt-cert.conf /etc/dns-mgmt-cert.conf

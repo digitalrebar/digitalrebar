@@ -1,0 +1,12 @@
+{
+  "service": {
+      "name": "dns-mgmt-service",
+      "address": "FILLMEIN",
+      "tags": [ "deployment:system" ],
+      "port": 6754,
+      "check": {
+          "script": "pidof rebar-dns-mgmt",
+          "interval": "10s"
+      }
+  }
+}
