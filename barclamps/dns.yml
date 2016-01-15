@@ -24,24 +24,6 @@ barclamp:
   license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
-  - name: dns-bind_server
-    jig: chef
-    requires:
-      - consul
-    attribs:
-      - name: dns-forwarders
-        description: 'DNS servers that Rebar will use for recursive queries'
-        map: 'rebar/dns/forwarders'
-        schema:
-          type: seq
-          sequence:
-            - type: str
-              pattern: /[0-9a-f:.]*/
-      - name: dns-svc-name
-        description: 'The name of this service'
-        map: 'rebar/dns/service_name'
-        schema:
-          type: str
   - name: dns-service
     jig: role-provided
     flags:
@@ -71,52 +53,6 @@ roles:
       - dns_servers
       - dns-domain
       - use-dns
-  - name: dns-mgmt_server
-    jig: chef
-    requires:
-      - consul
-      - dns-service
-    wants-attribs:
-      - dns_servers
-      - consul-acl-master-token
-    attribs:
-      - name: dns-management-name
-        description: 'DNS management server name'
-        map: 'dns-mgmt/server_name'
-        schema:
-          type: str
-      - name: dns-management-port
-        description: 'DNS management server port'
-        map: 'dns-mgmt/server_port'
-        schema:
-          type: int
-          required: true
-        default: 6754
-      - name: dns-access-name
-        description: 'DNS management access name'
-        map: 'dns-mgmt/access_name'
-        schema:
-          type: str
-          required: true
-        default: 'admin'
-      - name: dns-https-cert
-        description: 'DNS management https cert'
-        map: 'dns-mgmt/https_cert'
-        schema:
-          type: str
-      - name: dns-https-key
-        description: 'DNS management https key'
-        map: 'dns-mgmt/https_key'
-        schema:
-          type: str
-        default: 'admin'
-      - name: dns-access-password
-        description: 'DNS management access password'
-        map: 'dns-mgmt/access_password'
-        schema:
-          type: str
-          required: true
-        default: 'admin'
   - name: dns-mgmt_service
     jig: role-provided
     flags:
