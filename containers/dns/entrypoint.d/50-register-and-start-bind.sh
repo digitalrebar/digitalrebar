@@ -29,7 +29,8 @@ attr="{\"value\": [{
       }]
 }"
 # Make sure we set the token type
-#rebar deployments set system attrib dns-management-servers to "$attr"
+rebar deployments set system attrib dns-management-servers to "$attr"
+rebar deployments commit system
 
 curl -X PUT -d 'BIND' http://127.0.0.1:8500/v1/kv/digitalrebar/private/dns/system/type?token=$CONSUL_M_ACL
 
