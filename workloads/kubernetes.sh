@@ -12,6 +12,7 @@ start_args="$@"
 # Kubernetes Config options
 #
 help_options["--deployment-name=<String>"]="Deployment name to hold all the nodes"
+help_options["--deployment-os=<String>"]="Deployment OS: centos7 default"
 help_options["--teardown"]="Turn down deployment"
 help_options["--keep-admin"]="Keeps admin node running (modifies teardown)"
 help_options["--dns-domain"]="Domain name to append to node names: neode.local"

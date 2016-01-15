@@ -4,8 +4,9 @@ packet all debian7    debian_7
 packet all debian8    debian_8
 
 google all centos7    projects/centos-cloud/global/images/centos-7-v20151104
-google all ubuntu1404 projects/ubuntu-os-cloud/global/images/ubuntu-1404-ubuntu1404-v20151113
+googla all ubuntu1404 projects/ubuntu-os-cloud/global/images/ubuntu-1404-trusty-v20160114e
 google all ubuntu1504 projects/ubuntu-os-cloud/global/images/ubuntu-1504-ubuntu1504-v20151120
+google all ubuntu1510 projects/ubuntu-os-cloud/global/images/ubuntu-1510-wily-v20151114
 google all debian7    projects/debian-cloud/global/images/debian-7-wheezy-v20151104
 google all debian8    projects/debian-cloud/global/images/debian-8-jessie-v20151104
 
@@ -23,26 +24,38 @@ aws ap-northeast-1 centos7 ami-b80b6db8
 aws ap-northeast-2 centos7 ami-dd9d53b3
 aws sa-east-1      centos7 ami-fd0197e0
 
-aws ap-northeast-1 ubuntu1404 ami-20b98c4e
-aws ap-southeast-1 ubuntu1404 ami-06834165
-aws eu-central-1   ubuntu1404 ami-ffaab693
-aws eu-west-1      ubuntu1404 ami-a11dbfd2
-aws sa-east-1      ubuntu1404 ami-08bd3a64
-aws us-east-1      ubuntu1404 ami-0021766a
-aws us-west-1      ubuntu1404 ami-56f59e36
-aws cn-north-1     ubuntu1404 ami-3378b15e
-aws us-gov-west-1  ubuntu1404 ami-d6bbd9f5
-aws ap-southeast-2 ubuntu1404 ami-7bbee518
-aws us-west-2      ubuntu1404 ami-c94856a8
+aws ap-northeast-1 ubuntu1404 ami-ebbe8b85
+aws ap-southeast-1 ubuntu1404 ami-c28240a1
+aws ap-southeast-2 ubuntu1404 ami-90bfe4f3
+aws cn-north-1     ubuntu1404 ami-d97db4b4
+aws eu-central-1   ubuntu1404 ami-fca9b590
+aws eu-west-1      ubuntu1404 ami-7bed4008
+aws sa-east-1      ubuntu1404 ami-7dbb3c11
+aws us-east-1      ubuntu1404 ami-b82176d2
+aws us-gov-west-1  ubuntu1404 ami-ecbbd9cf
+aws us-west-1      ubuntu1404 ami-4ff59e2f
+aws us-west-2      ubuntu1404 ami-47465826
 
-aws ap-northeast-1 ubuntu1504 ami-b43300da
-aws ap-southeast-1 ubuntu1504 ami-e1e32e82
-aws eu-central-1   ubuntu1504 ami-836876ef
-aws eu-west-1      ubuntu1504 ami-8cfe57ff
-aws sa-east-1      ubuntu1504 ami-7578fe19
-aws us-east-1      ubuntu1504 ami-9e2977f4
-aws us-west-1      ubuntu1504 ami-8f7005ef
-aws cn-north-1     ubuntu1504 ami-fd79b090
-aws ap-southeast-2 ubuntu1504 ami-0fa6fc6c
-aws us-west-2      ubuntu1504 ami-b8a0b8d9
 
+aws ap-northeast-1 ubunut1504 ami-894d7ee7
+aws ap-southeast-1 ubunut1504 ami-0bff3268
+aws ap-southeast-2 ubunut1504 ami-84a7fde7
+aws cn-north-1     ubunut1504 ami-3678b15b
+aws eu-central-1   ubunut1504 ami-b46b75d8
+aws eu-west-1      ubunut1504 ami-ccfe57bf
+aws sa-east-1      ubunut1504 ami-e17ef88d
+aws us-east-1      ubunut1504 ami-3b2d7351
+aws us-west-1      ubunut1504 ami-e7700587
+aws us-west-2      ubunut1504 ami-1da1b97c
+
+aws ap-northeast-1 ubuntu1510 ami-8ff5c6e1
+aws ap-southeast-1 ubuntu1510 ami-450dc026
+aws ap-southeast-2 ubuntu1510 ami-cadd87a9
+aws cn-north-1     ubuntu1510 ami-15b87078
+aws eu-central-1   ubuntu1510 ami-8f1709e3
+aws eu-west-1      ubuntu1510 ami-61a40d12
+aws sa-east-1      ubuntu1510 ami-7e1c9a12
+aws us-east-1      ubuntu1510 ami-42bee028
+aws us-gov-west-1  ubuntu1510 ami-60bad843
+aws us-west-1      ubuntu1510 ami-2f61144f
+aws us-west-2      ubuntu1510 ami-267a6147

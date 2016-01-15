@@ -254,7 +254,7 @@ start_machine() {
     \"use-logging\": false,
     \"provider-create-hint\": {
       $IMAGE_ID
-      \"name\": \"$1\"
+      \"hostname\": \"$1\"
     }
   }
 }"
@@ -284,7 +284,7 @@ start_machine() {
     \"use-logging\": false,
     \"provider-create-hint\": {
       $DISKS
-      \"name\": \"$1\"
+      \"hostname\": \"$1\"
     }
   }
 }"
