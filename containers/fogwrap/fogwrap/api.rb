@@ -34,11 +34,13 @@ class Servers
           raise "Failed to import key"
         end
         fixed_args[:key_name]=kp_name
-        fixed_args[:tags] = {"rebar:node-id" => node_id.to_s}
-        # Default to Centos 7 for the AMI.
+        my_name = (fixed_args[:hostname] ? fixed_args[:hostname] : "dr-#{Time.now.to_i}").split('.')[0]
+        fixed_args[:tags] = {"rebar:node-id" => node_id.to_s,
+                             "Name" => my_name }
+        fixed_args[:flavor_id] ||= 't2.micro'
         unless fixed_args[:image_id]
           log("Setting default image to an Ubuntu 14.04 based image")
-          fixed_args[:flavor_id] ||= 't2.micro'
+          # These are hvm:ebs images
           fixed_args[:image_id] = case ep.region
                                   when "us-west-1" then "ami-a88de2c8"
                                   when "us-west-2" then "ami-b4a2b5d5"
@@ -57,7 +59,7 @@ class Servers
         end
         log("Region #{ep.region} -> image #{fixed_args[:image_id]}")
       when 'Google'
-        name = "rebar-fogwrap-#{node_id}"
+        name = (fixed_args[:hostname] ? fixed_args[:hostname] : "rebar-fogwrap-#{node_id}").split('.')[0]
         zone = fixed_args[:zone_name] || "us-central1-f"
         if fixed_args[:disks].nil? || fixed_args[:disks].empty?
           fixed_args[:disks] = [{'autoDelete' => 'true',
