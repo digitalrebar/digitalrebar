@@ -1,5 +1,7 @@
 #!/bin/sh
 
+ set -x
+
 #
 # Specialied copy-ssh-id.sh that attempts to update the root user for access.
 #
@@ -92,6 +94,6 @@ fi
 ID=$(eval $GET_ID)
 
 echo "You may be asked for $NODE_INFO password"
-ssh -tt $INIT_ID_FILE $NODE_INFO "umask 077; $SUDO test -d ${DIR_TO_CHANGE} || $SUDO mkdir ${DIR_TO_CHANGE} ; $SUDO echo \"$ID\" >> ${FILE_TO_CHANGE}; $CLEAN_IT $SUDO sort -u ${FILE_TO_CHANGE} > /tmp/a ; $SUDO cp /tmp/a ${FILE_TO_CHANGE} ; $SUDO rm /tmp/a ; $SUDO test -x /sbin/restorecon && $SUDO /sbin/restorecon ${DIR_TO_CHANGE} ${FILE_TO_CHANGE}" || exit 1
+ssh -tt $INIT_ID_FILE $NODE_INFO "umask 077; $SUDO test -d ${DIR_TO_CHANGE} || $SUDO mkdir ${DIR_TO_CHANGE} ; $SUDO sh -c \"echo \\\"$ID\\\" >> ${FILE_TO_CHANGE}\"; $CLEAN_IT $SUDO sort -u ${FILE_TO_CHANGE} > /tmp/a ; $SUDO cp /tmp/a ${FILE_TO_CHANGE} ; $SUDO rm /tmp/a ; $SUDO test -x /sbin/restorecon && $SUDO /sbin/restorecon ${DIR_TO_CHANGE} ${FILE_TO_CHANGE}" || exit 1
 echo "Keys in place"
 
