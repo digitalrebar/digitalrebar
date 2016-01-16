@@ -53,6 +53,14 @@ if [ -f ~/.dr_info ] ; then
     . ~/.dr_info
 fi
 
+# Allow for "FORCING" From run-in-*.sh scripts
+if [[ $FORCE_PROVIDER ]] ; then
+    PROVIDER=$FORCE_PROVIDER
+fi
+if [[ $FORCE_DEPLOY_ADMIN ]] ; then
+    DEPLOY_ADMIN=$FORCE_DEPLOY_ADMIN
+fi
+
 die() {
     echo "$@"
     exit 1
@@ -156,9 +164,11 @@ validate_tools() {
     fi
 
     if [[ $PROVIDER == google || $DEPLOY_ADMIN == google ]] ; then
-        curl https://sdk.cloud.google.com | bash
-        exec -l $SHELL
-        gcloud init
+        if ! which gcloud &>/dev/null; then
+            curl https://sdk.cloud.google.com | bash
+            exec -l $SHELL
+            gcloud init
+        fi
     fi
 
     if [[ $error == 1 ]] ; then
