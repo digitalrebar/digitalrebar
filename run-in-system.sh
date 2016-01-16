@@ -2,6 +2,7 @@
 # Copyright 2015, RackN Inc
 
 ACCOUNT=${ACCOUNT:-"--user root"}
+LOGIN_USER=${LOGIN_USER:-root}
 
 # Load it up
 . workloads/wl-lib.sh
@@ -122,8 +123,8 @@ else
     ssh-keygen -f "~/.ssh/known_hosts" -R $IP
     ssh -o BatchMode=yes -o StrictHostKeyChecking=no root@$IP date
     if [ $? -ne 0 ]; then
-        echo scripts/ssh-copy-id.sh $CLEAN_IT $ID_FILE $ACCOUNT $INIT_ID_FILE root@$IP
-        scripts/ssh-copy-id.sh $CLEAN_IT $ID_FILE $ACCOUNT $INIT_ID_FILE root@$IP
+        echo scripts/ssh-copy-id.sh $CLEAN_IT $ID_FILE $ACCOUNT $INIT_ID_FILE $LOGIN_USER@$IP
+        scripts/ssh-copy-id.sh $CLEAN_IT $ID_FILE $ACCOUNT $INIT_ID_FILE $LOGIN_USER@$IP
     fi
 fi
 

@@ -43,6 +43,17 @@ validate_provider() {
             echo "You must define PROVIDER_AWS_SECRET_ACCESS_KEY (can be added to ~/.dr_info)"
             error=1
         fi
+        if [ "$PROVIDER_AWS_REGION" == "" ] ; then
+            echo "You must define PROVIDER_AWS_REGION (can be added to ~/.dr_info)"
+            error=1
+        fi
+
+        if [[ $error = 0 ]] ; then
+            aws configure set aws_access_key_id $PROVIDER_AWS_ACCESS_KEY_ID
+            aws configure set aws_secret_access_key $PROVIDER_AWS_SECRET_ACCESS_KEY
+            aws configure set default.region $PROVIDER_AWS_REGION
+        fi
+
         ;;
     google)
         if [ "$PROVIDER_GOOGLE_PROJECT" == "" ] ; then
@@ -80,6 +91,20 @@ bring_up_admin() {
                 export ADMIN_IP="$IP/$CIDR"
             fi
             ;;
+        aws)
+            if [ "$DEVICE_ID" != "" ] ; then
+                # Get Public IP - HACK - should look it up
+                IP=`aws ec2 describe-instances --instance-id $DEVICE_ID | jq -r .Reservations[0].Instances[0].PublicIpAddress`
+                CIDR=32
+            fi
+            ;;
+        google)
+            if [ "$DEVICE_ID" != "" ] ; then
+                # Get Public IP - HACK - should look it up
+                IP=`gcloud compute instances describe $DEVICE_ID --format=json | jq -r .networkInterfaces[0].accessConfigs[0].natIP`
+                CIDR=32
+            fi
+            ;;
         local)
             if [[ $(uname -s) = Darwin ]] ; then
                 IP=${DOCKER_HOST%:*}
@@ -113,6 +138,14 @@ bring_up_admin() {
         packet)
             # Inherits all our vars!!
             . ./run-in-packet.sh "$1"
+            ;;
+        aws)
+            # Inherits all our vars!!
+            . ./run-in-aws.sh "$1"
+            ;;
+        google)
+            # Inherits all our vars!!
+            . ./run-in-google.sh "$1"
             ;;
         local|system)
             # Inherits all our vars!!

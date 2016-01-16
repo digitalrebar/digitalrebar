@@ -126,7 +126,7 @@ validate_tools() {
             apt-get install -y sudo
         fi
 
-        if ! which jq &>/dev/null; then
+        if ! which sudo &>/dev/null; then
             echo "Please install sudo!"
             if [[ $(uname -s) == Darwin ]] ; then
                 echo "Something like: brew install sudo"
@@ -134,6 +134,33 @@ validate_tools() {
             error=1
         fi
     fi
+
+    if [[ $PROVIDER == aws || $DEPLOY_ADMIN == aws ]] ; then
+        if ! which unzip &>/dev/null; then
+            if [[ $OS_FAMILY == rhel ]] ; then
+                yum install -y unzip
+            elif [[ $OS_FAMILY == debian ]] ; then
+                apt-get install -y unzip
+            fi
+        fi
+
+        curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+        unzip awscli-bundle.zip
+        sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+        rm -rf awscli-bundle*
+
+        if ! which aws &>/dev/null; then
+            echo "Please install aws!"
+            error=1
+        fi
+    fi
+
+    if [[ $PROVIDER == google || $DEPLOY_ADMIN == google ]] ; then
+        curl https://sdk.cloud.google.com | bash
+        exec -l $SHELL
+        gcloud init
+    fi
+
     if [[ $error == 1 ]] ; then
         exit 1
     fi
