@@ -5,8 +5,8 @@
 # We are deploying in aws add this aws instance as a provider
 # and force the admin deploy to aws
 #
-PROVIDER=${PROVIDER:-google}
-DEPLOY_ADMIN=${DEPLOY_ADMIN:-google}
+FORCE_PROVIDER=${PROVIDER:-google}
+FORCE_DEPLOY_ADMIN=${DEPLOY_ADMIN:-google}
 
 # Processes args, inits provider, and validates provider
 . workloads/wl-lib.sh
