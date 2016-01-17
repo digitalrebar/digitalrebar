@@ -16,5 +16,6 @@ if [[ ! $ADMIN_IP ]] ; then
     exit 1
 fi
 
+validate_provider $PROVIDER
 add_provider
 

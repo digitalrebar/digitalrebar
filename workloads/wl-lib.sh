@@ -253,6 +253,7 @@ start_machine() {
 
     case $PROVIDER in
         packet)
+            export PROVIDER_NAME="packet-provider"
             if [[ $os_name ]] ; then
                 OS_FIELD="\"os\": \"${os_name}\","
             fi
@@ -274,6 +275,7 @@ start_machine() {
             rebar nodes create "$node"
             ;;
         aws)
+            export PROVIDER_NAME="aws-provider"
             if [[ $os_name ]] ; then
                 IMAGE_ID="\"image_id\": \"${os_name}\","
             fi
@@ -297,6 +299,7 @@ start_machine() {
             ;;
 
         google)
+            export PROVIDER_NAME="google-provider"
             if [[ $os_name ]] ; then
                 DISKS="\"disks\": [{
                   \"autoDelete\": true,
@@ -453,6 +456,9 @@ set -- "${args[@]}"
 if [[ $DEBUG == true ]] ; then
     set -x
 fi
+
+# GEts overridden when bringing up the admin node
+export REBAR_ENDPOINT=https://${ADMIN_IP%/*}:3000
 
 validate_provider $DEPLOY_ADMIN
 validate_provider $PROVIDER
