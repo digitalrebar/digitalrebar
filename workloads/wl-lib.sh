@@ -243,6 +243,7 @@ lookup_image_id() {
 #
 # Arg1 is name of node
 # Arg2 is the OS to install (defaults to centos7 if not specified)
+# Arg2 is the IP to use for system provider
 #
 # OS options are currently: centos7, ubuntu1404, debian8, debian7
 #
@@ -326,8 +327,17 @@ start_machine() {
             ;;
 
         system)
-            echo "Should call run-in-system.sh"
-            die "add_provider not implemented: $PROVIDER"
+            # Assumes that ADMIN_IP is set
+            # Assumes that OS==IP and it can ssh.
+            #
+            # Get the ssh keys and update authorized_keys
+            KEY_FILE2="/tmp/keys2.$$"
+            rebar deployments get system rebar-access_keys | jq -r '.value|to_entries[].value' > $KEY_FILE2
+            scp $KEY_FILE2 root@$IP:keys
+            rm -rf $KEY_FILE2
+
+            scp scripts/join_rebar.sh root@$OS:
+            ssh root@$OS /root/join_rebar.sh $ADMIN_IP
             ;;
         *)
             die "add_provider not implemented: $PROVIDER"
