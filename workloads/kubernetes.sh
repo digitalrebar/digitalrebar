@@ -15,6 +15,7 @@ help_options["--deployment-name=<String>"]="Deployment name to hold all the node
 help_options["--deployment-os=<String>"]="Deployment OS: centos7 default"
 help_options["--teardown"]="Turn down deployment"
 help_options["--keep-admin"]="Keeps admin node running (modifies teardown)"
+help_options["--wait-on-converge=true|false"]="Wait for converge of admin - defaults to true"
 help_options["--dns-domain"]="Domain name to append to node names: neode.local"
 
 help_options["--kubernetes-master-count=<Number>"]="Number of masters to start"
@@ -54,6 +55,7 @@ WL_KUBERNETES=true
 CON_NO_PROVISIONER=true
 
 KEEP_ADMIN=false
+WAIT_ON_CONVERGE=true
 
 #
 # Process config and validate providers
@@ -108,7 +110,7 @@ if [[ $TEARDOWN ]] ; then
 fi
 
 # Wait for the system to converge
-if [[ ! $ADMIN_ALREADY_UP ]] ; then
+if [[ ! $ADMIN_ALREADY_UP && $WAIT_ON_CONVERGE == true ]] ; then
   if ! rebar converge ; then
     die "Admin node did NOT converge to completion"
   fi

@@ -14,6 +14,9 @@ start_args="$@"
 help_options["--docker-swarm-manager-count=<Number>"]="Number of managers to start"
 help_options["--docker-swarm-member-count=<Number>"]="Number of members to start"
 help_options["--deployment-name=<String>"]="Deployment name to hold all the nodes"
+help_options["--teardown"]="Turn down deployment"
+help_options["--keep-admin"]="Keeps admin node running (modifies teardown)"
+help_options["--wait-on-converge=true|false"]="Wait for converge of admin - defaults to true"
 
 # Mostly likely will require host - make it the default
 DEFAULT_ACCESS=HOST
@@ -25,6 +28,7 @@ WL_DOCKER_SWARM=true
 CON_NO_PROVISIONER=true
 
 KEEP_ADMIN=false
+WAIT_ON_CONVERGE=true
 
 #
 # Process config and validate providers
@@ -59,7 +63,7 @@ if [[ $TEARDOWN ]] ; then
 fi
 
 # Wait for the system to converge
-if [[ ! $ADMIN_ALREADY_UP ]] ; then
+if [[ ! $ADMIN_ALREADY_UP && $WAIT_ON_CONVERGE == true ]] ; then
   if ! rebar converge ; then
     die "Admin node did NOT converge to completion"
   fi
