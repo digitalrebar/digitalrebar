@@ -30,11 +30,6 @@
     when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
     sudo: yes
 
-  - name: record home
-    command: echo $HOME
-    register: home_dir
-    tags: stop
-
   - stat: path={{home_dir.stdout}}/.ssh/id_rsa.pub
     register: ssh_pub
 
@@ -75,13 +70,9 @@
   - name: get code
     synchronize: src=./compose dest={{home_dir.stdout}}/digitalrebar/deploy rsync_path="rsync"
 
-  - name: Check if path exists
-    local_action: stat path=~/.netrc
-    register: netrc_path
-
   - name: copy Github .NetRC for restricted repos
     synchronize: src=~/.netrc dest={{home_dir.stdout}} rsync_path="rsync"
-    when: netrc_path.stat.exists
+    ignore_errors: yes
 
   - name: setup compose
     command: ./setup.sh {{ dr_workloads | default([]) | join(" ") }}
@@ -144,19 +135,19 @@
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
 
   - debug: msg="Expected IP {{dr_external_ip | ipaddr('address')}}"
-    when: dr_access_mode == "HOST"
+    when: dr_access_mode == "HOST" and ansible_version is defined and ansible_version|version_compare(1.9.0, '>=')
 
-  - name: HOSTMODE wait until Digital Rebar service is up [1 upto 15 minutes]
-    wait_for: host="{{dr_external_ip | ipaddr('address')}}" port=3000 delay=60 timeout=900
-    when: dr_access_mode == "HOST"
+  - name: HOSTMODE wait until Digital Rebar service is up [1 upto 10 minutes]
+    wait_for: host="{{dr_external_ip | ipaddr('address')}}" port=3000 delay=60 timeout=600
+    when: dr_access_mode == "HOST" and ansible_version is defined and ansible_version|version_compare(1.9.0, '>=')
 
   - debug: msg="Expected IP {{ansible_default_ipv4.address}}"
-    when: dr_access_mode == "FORWARDER"
+    when: dr_access_mode == "FORWARDER" and ansible_version is defined and ansible_version|version_compare(1.9.0, '>=')
 
-  - name: FORWARDER wait until Digital Rebar service is up [1 upto 15 minutes]
-    wait_for: host="{{ansible_default_ipv4.address}}" port=3000 delay=60 timeout=900
-    when: dr_access_mode == "FORWARDER"
+  - name: FORWARDER wait until Digital Rebar service is up [1 upto 10 minutes]
+    wait_for: host="{{ansible_default_ipv4.address}}" port=3000 delay=60 timeout=600
+    when: dr_access_mode == "FORWARDER" and ansible_version is defined and ansible_version|version_compare(1.9.0, '>=')
 
-  - name: wait for rebar-key (1 to 30 minutes)
-    wait_for: path={{home_dir.stdout}}/digitalrebar/deploy/compose/data-dir/node/rebar-key.sh state=present delay=60 timeout=1800
+  - name: wait for rebar-key (1 to 10 minutes)
+    wait_for: path={{home_dir.stdout}}/digitalrebar/deploy/compose/data-dir/node/rebar-key.sh state=present delay=60 timeout=600
 
