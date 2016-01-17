@@ -30,6 +30,11 @@
     when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
     sudo: yes
 
+  - name: record home
+    command: echo $HOME
+    register: home_dir
+    tags: stop
+
   - stat: path={{home_dir.stdout}}/.ssh/id_rsa.pub
     register: ssh_pub
 
