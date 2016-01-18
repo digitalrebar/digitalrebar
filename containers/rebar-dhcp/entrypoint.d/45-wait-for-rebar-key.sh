@@ -22,7 +22,10 @@ while ! rebar ping &>/dev/null; do
 done
 
 # Add the DHCP services since we have one
-rebar nodes bind "system-phantom.internal.local" to "dhcp-service"
-rebar nodes bind "system-phantom.internal.local" to "dhcp-mgmt_service"
-rebar nodes commit "system-phantom.internal.local"
-
+until rebar nodes show "system-phantom.internal.local" &>/dev/null; do
+    sleep 1
+done
+if rebar nodes bind "system-phantom.internal.local" to "dhcp-service"  && \
+        rebar nodes bind "system-phantom.internal.local" to "dhcp-mgmt_service"; then
+    rebar nodes commit "system-phantom.internal.local"
+fi

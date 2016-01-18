@@ -35,14 +35,10 @@ attr="{\"value\": [{
       }]
 }"
 # Make sure we set the token type
+rebar deployments set system attrib dhcp_servers to "{\"value\": [\"${EXTERNAL_IP%%/*}\"]}"
 rebar deployments set system attrib dhcp-management-servers to "$attr"
 rebar deployments commit system
 
 # Add service
 curl -X PUT -d "$service_dhcp" http://127.0.0.1:8500/v1/catalog/register?token=$CONSUL_M_ACL
 curl -X PUT -d "$service_dhcp_mgmt" http://127.0.0.1:8500/v1/catalog/register?token=$CONSUL_M_ACL
-
-# Access vars in consul for rebar-dhcp
-curl -X PUT -d 'admin' http://127.0.0.1:8500/v1/kv/digitalrebar/private/dhcp-mgmt/system/access_name?token=$CONSUL_M_ACL
-curl -X PUT -d 'admin' http://127.0.0.1:8500/v1/kv/digitalrebar/private/dhcp-mgmt/system/access_password?$CONSUL_M_ACL
-curl -X PUT --data-binary @/etc/dhcp-https-cert.pem http://127.0.0.1:8500/v1/kv/digitalrebar/private/dhcp-mgmt/system/cert_pem?token=$CONSUL_M_ACL
