@@ -549,6 +549,7 @@ en:
   roles:
     common: &roles_common
       flags: "Flags"
+      icon: "Icon"
       library: "Library"
       implicit: "Implicit"
       bootstrap: "Bootstrap"

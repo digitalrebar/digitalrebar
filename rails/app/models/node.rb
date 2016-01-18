@@ -70,6 +70,7 @@ class Node < ActiveRecord::Base
     args[:except] = [ :discovery, :hint, :order, :notes ]
     o = super(args)
     o['node-control-address'] = get_attrib('node-control-address')
+    o['state'] = state
     o
   end
 

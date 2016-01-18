@@ -150,6 +150,26 @@ class Barclamp < ActiveRecord::Base
         description = role['description'] || role_name.gsub("-"," ").titleize
         role_provides = role['provides'] || []
         role_conflicts = role['conflicts'] || []
+        icon = if role['icon']
+          role['icon']
+        else
+          case role_jig.name
+          when 'script'
+            'sim_card'
+          when 'chef-solo', 'chef'
+            'restaurant_menu'
+          when 'ansible-playbook', 'ansible'
+            'gamepad'
+          when 'role-provided'
+            'developer_board'
+          when 'noop'
+            'beenhere'
+          when "test"
+            'healing'
+          else
+            'memory'
+          end
+        end
         # roles data import
         r = role_type.find_or_create_by!(:name=>role_name,
                                          :jig_name => role_jig.name,
@@ -168,7 +188,8 @@ class Barclamp < ActiveRecord::Base
                              :destructive=>flags.include?('destructive'),
                              :service=>flags.include?('service'),
                              :cluster=>flags.include?('cluster'),
-                             :powersave=>flags.include?('powersave'))
+                             :powersave=>flags.include?('powersave'),
+                             :icon=>icon)
         prerequisites.each do |rr|
           Rails.logger.info("Making #{r.name} depend on #{rr}")
           RoleRequire.find_or_create_by!(:role_id => r.id, :requires => rr)

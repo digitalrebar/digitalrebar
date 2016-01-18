@@ -28,6 +28,7 @@ roles:
     jig: role-provided
     flags:
       - service
+    icon: access_time
     attribs:
       - name: ntp_servers
         description: "Addresses of the NTP servers to use for cluster-wide time synchronization"
@@ -47,6 +48,7 @@ roles:
     wants-attribs:
       - ntp_servers
       - use-ntp
+    icon: watch
 
 attribs:
   - name: use-ntp

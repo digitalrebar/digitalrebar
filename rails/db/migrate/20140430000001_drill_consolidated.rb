@@ -145,6 +145,7 @@ class DrillConsolidated < ActiveRecord::Migration
       t.boolean     :powersave,         null: false, default: false # 20150109193000
       t.boolean     :service,           null: false, default: false # 20150203155600
       t.jsonb        :notes,          null: false,   default: { expr: "'{}'::jsonb" }  # 20150713092600
+      t.text        :icon,              null: false, default: 'memory'  # 20160117
     end
 
     create_table :deployments do |t|

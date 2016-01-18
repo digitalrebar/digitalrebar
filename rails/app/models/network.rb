@@ -225,6 +225,7 @@ class Network < ActiveRecord::Base
                                   barclamp_id: bc.id,
                                   description: I18n.t('automatic_by', :name=>name),
                                   library: false,
+                                  icon: 'device_hub',
                                   implicit: true,
                                   milestone: true,    # may need more logic later, this is safest for first pass
                                   bootstrap: false,   # don't bootstrap networks anymore.
