@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/ant0ine/go-json-rest/rest"
-	dhcp "github.com/krolaw/dhcp4"
 	"log"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/ant0ine/go-json-rest/rest"
+	dhcp "github.com/krolaw/dhcp4"
 )
 
 /*
@@ -83,13 +84,13 @@ type Frontend struct {
 	cfg      Config
 }
 
-func NewFrontend(data_dir, cert_pem, key_pem string, cfg Config) *Frontend {
+func NewFrontend(cert_pem, key_pem string, cfg Config, store LoadSaver) *Frontend {
 	fe := &Frontend{
 		data_dir: data_dir,
 		cert_pem: cert_pem,
 		key_pem:  key_pem,
 		cfg:      cfg,
-		DhcpInfo: NewDataTracker(data_dir),
+		DhcpInfo: NewDataTracker(store),
 	}
 
 	fe.DhcpInfo.load_data()
