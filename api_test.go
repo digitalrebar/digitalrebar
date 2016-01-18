@@ -1,11 +1,13 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func base_url(path string) string {
@@ -17,7 +19,11 @@ func get_frontend() (*Frontend, http.Handler) {
 	cfg.Network.Port = 6755
 	cfg.Network.Username = "fred"
 	cfg.Network.Password = "rules"
-	the_fe := NewFrontend(".", "", "", cfg)
+	fs, err := NewFileStore("./database.json")
+	if err != nil {
+		log.Panic(err)
+	}
+	the_fe := NewFrontend("", "", cfg, fs)
 	handler := the_fe.RunServer(false)
 	return the_fe, handler
 }

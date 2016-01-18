@@ -1,16 +1,17 @@
 package main
 
 import (
-	dhcp "github.com/krolaw/dhcp4"
-	"github.com/stretchr/testify/assert"
+	"log"
 	"net"
 	"net/http"
 	"testing"
+
+	dhcp "github.com/krolaw/dhcp4"
+	"github.com/stretchr/testify/assert"
 )
 
 func newSubnet(dt *DataTracker, name, subnet string) (s *Subnet) {
 	_, theNet, _ := net.ParseCIDR(subnet)
-
 	s = NewSubnet()
 	s.Name = name
 	s.Subnet = &MyIPNet{theNet}
@@ -26,7 +27,11 @@ func addNewSubnet(dt *DataTracker, name, subnet string) (s *Subnet, err error, c
 }
 
 func simpleSetup() (dt *DataTracker, s *Subnet) {
-	dt = NewDataTracker(".")
+	store, err := NewFileStore("./database.test.json")
+	if err != nil {
+		log.Panic(err)
+	}
+	dt = NewDataTracker(store)
 	s, _, _ = addNewSubnet(dt, "fred", "192.168.128.0/24")
 	dt.AddSubnet(s)
 	return
@@ -155,7 +160,11 @@ func TestReplaceSubnetMustNotOverlap(t *testing.T) {
 }
 
 func TestFindSubnetEmpty(t *testing.T) {
-	dt := NewDataTracker(".")
+	store, err := NewFileStore("./database.test.json")
+	if err != nil {
+		log.Panic(err)
+	}
+	dt := NewDataTracker(store)
 
 	s := dt.FindSubnet(net.ParseIP("0.0.0.0"))
 	assert.Nil(t, s, "Expected nil subnets")
