@@ -19,37 +19,11 @@ require 'uri'
 class BarclampDhcp::MgmtService < Service
 
   def do_transition(nr,data)
-    deployment_name = nr.deployment.name
-    internal_do_transition(nr, data, 'dhcp-mgmt-service', 'dhcp-management-servers') do |s|
-      str_addr = s.ServiceAddress
-      str_addr = s.Address if str_addr.nil? or str_addr.empty?
-      Rails.logger.debug("DhcpMgmtService: #{s.inspect} #{str_addr}")
-      addr = IP.coerce(str_addr)
-      Rails.logger.debug("DhcpMgmtService: #{addr.inspect}")
-
-      begin
-        cert_pem = ConsulAccess.getKey("digitalrebar/private/dhcp-mgmt/#{deployment_name}/cert_pem")
-        access_name = ConsulAccess.getKey("digitalrebar/private/dhcp-mgmt/#{deployment_name}/access_name")
-        access_password = ConsulAccess.getKey("digitalrebar/private/dhcp-mgmt/#{deployment_name}/access_password")
-      rescue Diplomat::KeyNotFound
-        sleep 5
-        retry
-      end
-
-      if addr.v6?
-        saddr = "[#{addr.addr}]"
-      else
-        saddr = addr.addr
-      end
-      url = URI::HTTPS.build(host: saddr, port: s.ServicePort, userinfo: "#{access_name}:#{access_password}")
-
-      { 'address' => str_addr,
-        'port' => "#{s.ServicePort}",
-        'name' => deployment_name,
-        'cert' => cert_pem,
-        'access_name' => access_name,
-        'access_password' => access_password,
-        'url' => url.to_s }
+    wait_for_service(nr, data, 'dhcp-mgmt-service')
+    deployment_role = nr.deployment_role
+    until Attrib.get('dhcp-management-servers',deployment_role)
+      sleep 1
+      deployment_role.reload
     end
   end
 
