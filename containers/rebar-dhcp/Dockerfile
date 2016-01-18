@@ -16,8 +16,9 @@ RUN apt-get update \
   && mkdir -p /etc/consul.d \
   && chmod 700 /var/cache/rebar-dhcp \
   && cp $GOPATH/bin/rebar-dhcp /usr/local/bin \
-  && /usr/local/go/bin/go get -u github.com/digitalrebar/rebar-api/rebar \
-  && cp -r $GOPATH/bin/rebar /usr/local/bin
+  && curl -fgL -o /usr/local/bin/rebar \
+         https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64 \
+  && chmod 755 /usr/local/bin/rebar
 
 COPY docker-entrypoint.sh /sbin/docker-entrypoint.sh
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
