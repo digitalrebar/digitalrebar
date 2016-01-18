@@ -164,7 +164,7 @@ bring_up_admin_containers() {
     if [ "$NO_PULL" == "" ] ; then
         docker-compose pull
     fi
-    if [[ ${containers["access"]} = FORWARDER && $(uname -s) != Darwin ]]; then
+    if [[ ${containers["access"]} = FORWARDER && $(uname -s) != Darwin && $(uname -s) != "MINGW64_NT-10.0" ]]; then
         sudo modprobe nf_nat_tftp
     fi
     docker-compose up -d
