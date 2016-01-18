@@ -16,7 +16,7 @@
 # Run the container in FORWARDER mode
 #
 VAGRANTFILE_API_VERSION = "2"
-#BASE_OS_BOX = "ubuntu/trusty64"
+ADMIN_OS_BOX = "ubuntu/trusty64"
 BASE_OS_BOX = "bento/centos-7.1"
 SLAVE_RAM = "2048"
 # Host Mode - MAC
@@ -37,7 +37,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.define "base", autostart:false do |base|
 
-    base.vm.box = BASE_OS_BOX
+    base.vm.box = ADMIN_OS_BOX
 
     # Create a private network, which allows host-only access to the machine
     # using a specific IP.
@@ -55,17 +55,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #
     base.vm.provision "shell", path: "scripts/increase_swap.sh"
 
-    base.vm.provision "ansible" do |ansible|
-      ansible.sudo = true
-      ansible.sudo_user = "root"
-      ansible.playbook = "digitalrebar.yml"
-      ansible.raw_arguments  = [
-        "--extra-vars='{
-           \"dr_access_mode\": \"HOST\", \"dr_external_ip\": \"#{ADMIN_IP}\/24\",
-           \"dr_services\": [  \"--node\" ],
-           \"dr_workloads\": [ ]
-        }'"]
-    end
+    # make sure vagrant user can sudo
+    base.vm.provision "shell", inline: "sudo apt-get install git ansible jq -y"
+    base.vm.provision "shell", inline: "mkdir digitalrebar"
+    base.vm.provision "shell", inline: "git clone https://github.com/rackn/digitalrebar-deploy digitalrebar/deploy"
+    base.vm.provision "shell", inline: "cd digitalrebar/deploy && ./run-in-system.sh --deploy-admin=local --access=HOST --wl-docker-swarm --admin-ip=#{ADMIN_IP}\/#{ADMIN_CIDR}"
 
     puts "To monitor > https://#{ADMIN_IP}:3000 (Digital Rebar)"
     puts "After the system is up, you can start the nodes using `vagrant up /node[1-20]/`"
