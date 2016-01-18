@@ -1,6 +1,7 @@
 
 consul:
   image: gliderlabs/consul
+  restart: always
   volumes:
     - ./config-dir/consul/server-default.json:/etc/consul.d/default.json
     - ./config-dir/consul/server-advertise.json:/etc/consul.d/server-advertise.json
@@ -31,6 +32,7 @@ webproxy:
 
 goiardi:
   image: digitalrebar/dr_goiardi
+  restart: always
   volumes:
     - ./data-dir/node:/etc/rebar-data
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
@@ -53,6 +55,7 @@ rebar_api:
 ntp:
   image: digitalrebar/dr_ntp
   privileged: true
+  restart: always
   volumes:
     - ./data-dir/node:/etc/rebar-data
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
@@ -80,6 +83,7 @@ packetwrap:
 
 dns:
   image: digitalrebar/dr_dns
+  restart: always
   volumes:
     - ./data-dir/node:/etc/rebar-data
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
@@ -161,6 +165,7 @@ cadvisor:
 
 forwarder:
   image: digitalrebar/dr_forwarder
+  restart: always
   privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
