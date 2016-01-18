@@ -26,6 +26,7 @@ barclamp:
 roles:
   - name: dns-service
     jig: role-provided
+    icon: local_library
     flags:
       - service
     attribs:
@@ -45,6 +46,7 @@ roles:
           required: true
   - name: dns-client
     jig: script
+    icon: local_offer
     flags:
       - implicit
     requires:
@@ -55,6 +57,7 @@ roles:
       - use-dns
   - name: dns-mgmt_service
     jig: role-provided
+    icon: local_library
     flags:
       - service
     attribs:

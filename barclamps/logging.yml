@@ -28,6 +28,7 @@ barclamp:
 roles:
   - name: logging-server
     jig: chef
+    icon: content_paste
     requires:
       - dns-client
     attribs:
@@ -44,6 +45,7 @@ roles:
             - type: str
   - name: logging-client
     jig: chef
+    icon: create
     flags:
       - implicit
     requires:

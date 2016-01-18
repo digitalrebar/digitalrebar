@@ -25,6 +25,7 @@ barclamp:
 roles:
   - name: provisioner-server
     jig: chef
+    icon: local_shipping
     requires:
       - dns-client
       - logging-server
@@ -80,6 +81,7 @@ roles:
 
   - name: provisioner-base-images
     jig: chef
+    icon: album
     requires:
       - provisioner-server
       - provisioner-service
@@ -258,6 +260,7 @@ roles:
 
   - name: provisioner-database
     jig: chef
+    icon: library_books
     requires:
       - provisioner-base-images
       - provisioner-server
@@ -332,6 +335,7 @@ roles:
 
   - name: provisioner-os-install
     jig: script
+    icon: present_to_all
     requires:
       - rebar-hardware-configured
     flags:

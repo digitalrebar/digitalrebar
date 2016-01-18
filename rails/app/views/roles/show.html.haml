@@ -19,6 +19,8 @@
       - if @role.github and (current_user.settings(:docs).sources rescue false)
         %dt= t '.source'
         %dd= link_to @role.github, @role.github
+      %dt= t '.icon'
+      %dd= link_to @role.icon, "https://design.google.com/icons/#ic_#{@role.icon}"
       %dt= t '.flags'
       %dd
         = t '.library' if @role.library 
