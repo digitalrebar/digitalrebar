@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -13,15 +11,15 @@ import (
 )
 
 type DataTracker struct {
-	Subnets  map[string]*Subnet // subnet -> SubnetData
-	data_dir string             `json:"-"`
-	lock     sync.Mutex         `json:"-"`
+	sync.Mutex `json:"-"`
+	store      LoadSaver          `json:"-"`
+	Subnets    map[string]*Subnet // subnet -> SubnetData
 }
 
-func NewDataTracker(data_dir string) *DataTracker {
+func NewDataTracker(store LoadSaver) *DataTracker {
 	return &DataTracker{
-		Subnets:  make(map[string]*Subnet),
-		data_dir: data_dir,
+		Subnets: make(map[string]*Subnet),
+		store:   store,
 	}
 }
 
@@ -128,30 +126,15 @@ func (ipnet *MyIPNet) UnmarshalText(text []byte) error {
  * Data storage/retrieval functions
  */
 func (dt *DataTracker) load_data() {
-	dt.lock.Lock()
-	bytes, err := ioutil.ReadFile(dt.data_dir + "/database.json")
-	if err != nil {
-		log.Panic("failed to read file", err.Error())
+	if err := dt.store.Load(dt); err != nil {
+		log.Panicf("Unable to load data from backing store: %s", err)
 	}
-
-	err = json.Unmarshal(bytes, dt)
-	if err != nil {
-		log.Panic("failed to parse file", err.Error())
-	}
-	dt.lock.Unlock()
 }
 
 func (dt *DataTracker) save_data() {
-	dt.lock.Lock()
-	jdata, err := json.Marshal(dt)
-	if err != nil {
-		log.Panic("Failed to marshal data", err.Error())
+	if err := dt.store.Save(dt); err != nil {
+		log.Panicf("Unable to save data to backing store: %s", err)
 	}
-	err = ioutil.WriteFile(dt.data_dir+"/database.json", jdata, 0700)
-	if err != nil {
-		log.Panic("Failed to save data", err.Error())
-	}
-	dt.lock.Unlock()
 }
 
 func (dt *DataTracker) subnetsOverlap(subnet *Subnet) bool {

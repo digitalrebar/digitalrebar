@@ -36,11 +36,14 @@ func main() {
 	if cerr != nil {
 		log.Fatal(cerr)
 	}
-
-	fe := NewFrontend(data_dir, cert_pem, key_pem, cfg)
-
-	err := StartDhcpHandlers(fe.DhcpInfo, server_ip)
+	fs, err := NewFileStore(data_dir + "/database.json")
 	if err != nil {
+		log.Fatal(err)
+	}
+
+	fe := NewFrontend(cert_pem, key_pem, cfg, fs)
+
+	if err := StartDhcpHandlers(fe.DhcpInfo, server_ip); err != nil {
 		log.Fatal(err)
 	}
 	fe.RunServer(true)

@@ -1,0 +1,1 @@
+{"Subnets":{"fred":{"name":"fred","subnet":"192.168.128.0/24","active_start":"192.168.128.5","active_end":"192.168.128.25","active_lease_time":0,"reserved_lease_time":0}}}
