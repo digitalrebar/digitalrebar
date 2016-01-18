@@ -22,20 +22,29 @@ class NodeRolesController < ApplicationController
   # GET /api/status/node_roles
   def status
 
-    out = { nodes: [], node_roles: [], deployments: [] }
+    out = { nodes: [], node_roles: [], deployments: [], deleted: [] }
     recent = params[:age].to_i || 300
 
     NodeRole.transaction do  # performance optimization
       nrs = NodeRole.all
       nrs.each do |nr|
         age = Time.now - nr.updated_at
-        next if nr.state == 0 && age >= recent
+        next if nr.state >= 0 && age >= recent
         out[:nodes] << nr.node_id unless out[:nodes].include? nr.node_id
         out[:node_roles] << nr.id unless out[:node_roles].include? nr.id
         out[:deployments] << nr.deployment_id unless out[:deployments].include? nr.deployment_id
       end
     end
-    
+
+    # to handle UX not knowing about deleted nodes
+    # compare nodes to passed list.  return the ones that are not currently nodes.
+    if params[:nodes] 
+      params[:nodes].each do |nid|
+        out[:deleted] << nid if Node.where(:id=>nid).blank?
+      end
+    end
+
+    # done
     render api_array out.to_json
   end
 
