@@ -17,6 +17,14 @@ export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 set -x
 date
 
+# THIS IS A HACK FOR ANSIBLE
+#
+# Ansible in docker has issues with ssh parms
+# Mostly having to do with directory mapping.
+#
+sed -i '/\[ssh_connection\]/a ssh_args=' /etc/ansible/ansible.cfg
+# END HACK
+
 BUILT_CFG_FILE=/tmp/final.json
 export REBAR_KEY="$(cat /etc/rebar.install.key)"
 
