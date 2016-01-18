@@ -16,28 +16,28 @@
 # Run the container in FORWARDER mode
 #
 VAGRANTFILE_API_VERSION = "2"
-#BASE_OS_BOX = "ubuntu/trusty64"
+ADMIN_OS_BOX = "ubuntu/trusty64"
 BASE_OS_BOX = "bento/centos-7.1"
 SLAVE_RAM = "2048"
 # Host Mode - MAC
 ADMIN_PREFIX = "192.168.99"
 ADMIN_IP = "#{ADMIN_PREFIX}.100"
 ADMIN_CIDR = 24
-#
-# Forwarder Mode - Linux
-#ADMIN_PREFIX = "192.168.124"
-#ADMIN_IP = "#{ADMIN_PREFIX}.11"
-#ADMIN_CIDR = 24
+
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
-  puts "======================="
-  puts "WARNING > EXPERIMENTAL!"
-  puts "======================="
+  puts "==========================================================="
+  puts "Welcome to Digital Rebar Vagrant"
+  puts "  Documentation:\n\thttps://github.com/digitalrebar/doc/blob/master/deployment/vagrant.rst"
+  puts "  export REBAR_ENDPOINT and REBAR_KEY to use existing Digital Rebar Server (default = Vagrant admin)"
+  puts "  TRIGGERS REQUIRED: vagrant plugin install vagrant-triggers\n\tsee http://www.rubydoc.info/gems/vagrant-triggers/0.2.1"
+  puts "  REBAR CLI REQUIRED: rebar cli must be on your path\n\tsee https://github.com/digitalrebar/doc/tree/master/cli"
+  puts "==========================================================="
 
   config.vm.define "base", autostart:false do |base|
 
-    base.vm.box = BASE_OS_BOX
+    base.vm.box = ADMIN_OS_BOX
 
     # Create a private network, which allows host-only access to the machine
     # using a specific IP.
@@ -55,33 +55,48 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     #
     base.vm.provision "shell", path: "scripts/increase_swap.sh"
 
-    base.vm.provision "ansible" do |ansible|
-      ansible.sudo = true
-      ansible.sudo_user = "root"
-      ansible.playbook = "digitalrebar.yml"
-      ansible.raw_arguments  = [
-        "--extra-vars='{
-           \"dr_access_mode\": \"HOST\", \"dr_external_ip\": \"#{ADMIN_IP}\/24\",
-           \"dr_services\": [  \"--node\" ],
-           \"dr_workloads\": [ ]
-        }'"]
+    # make sure vagrant user can sudo
+    base.vm.provision "shell", inline: "sudo apt-get install git ansible jq -y"
+    base.vm.provision "shell", inline: "mkdir digitalrebar"
+    base.vm.provision "shell", inline: "git clone https://github.com/rackn/digitalrebar-deploy digitalrebar/deploy"
+    base.vm.provision "shell", inline: "cd digitalrebar/deploy && ./run-in-system.sh --deploy-admin=local --access=HOST --wl-docker-swarm --admin-ip=#{ADMIN_IP}\/#{ADMIN_CIDR}"
+    # check external interface
+    base.trigger.after :up do
+      run "rebar ping -E https://#{ADMIN_IP}:3000 -U rebar -P rebar1"
     end
-
     puts "To monitor > https://#{ADMIN_IP}:3000 (Digital Rebar)"
     puts "After the system is up, you can start the nodes using `vagrant up /node[1-20]/`"
   end
 
   (1..20).each do |i|
     config.vm.define "node#{i}", autostart:false do |slave|
+
+      if ENV['REBAR_ENDPOINT']
+        endpoint = ENV['REBAR_ENDPOINT']
+        endpoint =~ /https:\/\/(.*):3000/
+        admin_ip = $1
+      else
+        endpoint = "https://#{ADMIN_IP}:3000"
+        admin_ip = ADMIN_IP
+      end
+      puts "Using Digital Rebar Admin on #{admin_ip}."
+      key = "-U rebar -P rebar1" unless ENV['REBAR_KEY']
+      %x[rebar ping -E #{endpoint} #{key}]
+
       slave.vm.hostname = "node#{i}.rebar.local"
       slave.vm.box = BASE_OS_BOX
       slave.vm.network "private_network", ip: "#{ADMIN_PREFIX}.#{200+i}", auto_config: true
       slave.vm.provider "virtualbox" do |vb|
         vb.memory = SLAVE_RAM
       end
-      slave.vm.provision "shell", path: "scripts/join_rebar.sh", args: "#{ADMIN_IP} #{ADMIN_PREFIX}.#{200+i}/#{ADMIN_CIDR}"
+      slave.vm.provision "shell", path: "scripts/join_rebar.sh", args: "#{admin_ip} #{ADMIN_PREFIX}.#{200+i}/#{ADMIN_CIDR}"
+      # we should able to see the new node
+      slave.trigger.after :up do
+        run "rebar -E #{endpoint} #{key} nodes show node#{i}.rebar.local"
+      end
+      # auto cleanup!
       slave.trigger.after :destroy do
-        run "rebar -E https://#{ADMIN_IP}:3000 -U rebar -P rebar1 nodes destroy node#{i}.rebar.local"
+        run "rebar -E #{endpoint} #{key} nodes destroy node#{i}.rebar.local"
       end
     end
   end
