@@ -8,7 +8,7 @@ LOGIN_USER=${LOGIN_USER:-root}
 . workloads/wl-lib.sh
 
 # If we are on mac and local host config is set.
-if [[ $(uname -s) = Darwin && $DEPLOY_ADMIN = local ]] ; then
+if [[ ($(uname -s) = Darwin || $(uname -s) = "MINGW64_NT-10.0") && $DEPLOY_ADMIN = local ]] ; then
     if ! which docker &>/dev/null; then
         echo "Please install docker!"
         echo "Install Docker for MacOS by using these steps:"

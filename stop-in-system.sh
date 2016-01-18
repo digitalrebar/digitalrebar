@@ -5,7 +5,7 @@
 . workloads/wl-lib.sh
 
 # If we are on mac and local host config is set.
-if [[ $(uname -s) = Darwin && $DEPLOY_ADMIN = local ]] ; then
+if [[ ($(uname -s) = "MINGW64_NT-10.0" || $(uname -s) = Darwin) && $DEPLOY_ADMIN = local ]] ; then
     if [ "$DOCKER_HOST" == "" ] ; then
         echo "DOCKER_HOST should be set"
         echo "Make sure you are running from a docker-enabled terminal"
