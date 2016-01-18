@@ -116,6 +116,9 @@ mv dc.yml docker-compose.yml
 if [[ $(uname -s) == Darwin ]]; then
     CONSUL_ADVERTISE=${DOCKER_HOST%:*}
     CONSUL_ADVERTISE=${CONSUL_ADVERTISE##*/}
+elif [[ $(uname -s) == "MINGW64_NT-10.0" ]]; then
+    CONSUL_ADVERTISE=${DOCKER_HOST%:*}
+    CONSUL_ADVERTISE=${CONSUL_ADVERTISE##*/}
 else
     gwdev=$(ip -o -4 route show default |head -1 |awk '{print $5}')
     if [[ $gwdev ]]; then
