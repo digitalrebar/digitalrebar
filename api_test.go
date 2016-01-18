@@ -19,7 +19,7 @@ func get_frontend() (*Frontend, http.Handler) {
 	cfg.Network.Port = 6755
 	cfg.Network.Username = "fred"
 	cfg.Network.Password = "rules"
-	fs, err := NewFileStore("./database.json")
+	fs, err := NewFileStore("./database.test.json")
 	if err != nil {
 		log.Panic(err)
 	}
