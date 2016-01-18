@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if which sudo 2>/dev/null >/dev/null ; then
+    SUDO=sudo
+fi
+
 function usage {
     echo "Usage: $0 <flags> [options docker-compose flags/commands]"
     echo "  -h or --help - help (this)"
@@ -37,7 +41,7 @@ while [[ $1 == -* ]] ; do
       ;;
     --clean)
         rm -f access.env dc docker-compose.yml config-dir/api/config/networks/the_admin.json config-dir/api/config/networks/the_bmc.json
-        sudo rm -rf data-dir
+        $SUDO rm -rf data-dir
       exit 0
       ;;
     --access)
