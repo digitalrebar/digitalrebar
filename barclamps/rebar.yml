@@ -28,6 +28,7 @@ roles:
   - name: rebar-admin-node
     description: "Core Rebar Services Bundle"
     jig: noop
+    icon: 'camera'
     flags:
       - milestone
       - implicit
@@ -39,6 +40,7 @@ roles:
   - name: rebar-managed-node
     description: "Rebar Node Service Bundle"
     jig: noop
+    icon: 'assistant'
     flags:
       - milestone
       - implicit
@@ -88,6 +90,7 @@ roles:
     flags:
       - implicit
     jig: script
+    icon: 'local_grocery_store'
     requires:
       - rebar-package-sources
   - name: rebar-access
@@ -95,6 +98,7 @@ roles:
     flags:
       - implicit
     jig: script
+    icon: 'person_pin'
     attribs:
       - name: rebar-machine_key
         description: 'The username and password that managed nodes should use to talk to the Rebar API'
