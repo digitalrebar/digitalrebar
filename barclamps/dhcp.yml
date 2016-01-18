@@ -49,8 +49,29 @@ roles:
         schema:
           type: seq
           sequence:
-            - type: str
-              pattern: /[0-9a-f:.]*/
+            - type: map
+              mapping:
+                address:
+                  type: str
+                  required: true
+                port:
+                  type: str
+                  required: true
+                name:
+                  type: str
+                  required: true
+                cert:
+                  type: str
+                  required: true
+                access_name:
+                  type: str
+                  required: true
+                access_password:
+                  type: str
+                  required: true
+                url:
+                  type: str
+                  required: true
     wants-attribs:
       - provisioner-webservers
 
