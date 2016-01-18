@@ -5,6 +5,10 @@ die() {
     exit 1
 }
 
+if which sudo 2>/dev/null >/dev/null ; then
+    SUDO=sudo
+fi
+
 if [ "${BASH_VERSINFO}" -lt 4 ] ; then
     die "Must have a bash version of 4 or higher"
 fi
@@ -137,7 +141,7 @@ bring_up_admin_containers() {
     elif [[ ! -d $mountdir/deploy/compose ]]; then
         echo "$mountdir/deploy does not contain a checkout of the digitalrebar container deployer!"
     elif [[ ! -L  $mountdir/deploy/compose/digitalrebar ]]; then
-        sudo rm -rf "$mountdir/deploy/compose/digitalrebar"
+        $SUDO rm -rf "$mountdir/deploy/compose/digitalrebar"
         ln -s "$mountdir" \
            "$mountdir/deploy/compose/digitalrebar"
     fi
@@ -145,18 +149,18 @@ bring_up_admin_containers() {
     mkdir -p "$HOME/.cache/digitalrebar/tftpboot"
     chmod 777 "$HOME/.cache/digitalrebar/tftpboot"
 
-    sudo rm -rf "$HOME/.cache/digitalrebar/tftpboot/nodes"
+    $SUDO rm -rf "$HOME/.cache/digitalrebar/tftpboot/nodes"
     if [[ -f $HOME/.ssh/id_rsa.pub ]]; then
         cp "$HOME/.ssh/id_rsa.pub" "$mountdir/deploy/compose/config-dir/api/config/ssh_keys/$USER-0.key"
     fi
 
     cd "$mountdir/deploy/compose"
     if (which selinuxenabled && which chcon) &>/dev/null && selinuxenabled; then
-        sudo chcon -Rt svirt_sandbox_file_t "$mountdir"
-        sudo chcon -Rt svirt_sandbox_file_t "$HOME/.cache/digitalrebar/tftpboot"
+        $SUDO chcon -Rt svirt_sandbox_file_t "$mountdir"
+        $SUDO chcon -Rt svirt_sandbox_file_t "$HOME/.cache/digitalrebar/tftpboot"
     fi
 
-    [[ -d $mountdir/deploy/compose/data-dir ]] && sudo rm -rf "$mountdir/deploy/compose/data-dir"
+    [[ -d $mountdir/deploy/compose/data-dir ]] && $SUDO rm -rf "$mountdir/deploy/compose/data-dir"
     ./init_files.sh --clean
     make_compose_args
     ./init_files.sh $REAL_COMPOSE_ARGS
@@ -165,7 +169,7 @@ bring_up_admin_containers() {
         docker-compose pull
     fi
     if [[ ${containers["access"]} = FORWARDER && $(uname -s) != Darwin && $(uname -s) != "MINGW64_NT-10.0" ]]; then
-        sudo modprobe nf_nat_tftp
+        $SUDO modprobe nf_nat_tftp
     fi
     docker-compose up -d
     # enable development mode
