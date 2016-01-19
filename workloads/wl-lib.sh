@@ -55,6 +55,8 @@ validate_provider() {
         fi
 
         ;;
+    debug)
+        ;;
     google)
         if [ "$PROVIDER_GOOGLE_PROJECT" == "" ] ; then
             echo "You must define PROVIDER_GOOGLE_PROJECT (can be added to ~/.dr_info)"
@@ -203,6 +205,27 @@ add_provider() {
     \"aws_access_key_id\": \"$PROVIDER_AWS_ACCESS_KEY_ID\",
     \"aws_secret_access_key\": \"$PROVIDER_AWS_SECRET_ACCESS_KEY\",
     \"region\": \"$PROVIDER_AWS_REGION\"
+  }
+}"
+            rebar providers create "$provider"
+            ;;
+        debug)
+            export PROVIDER_NAME="debug-provider"
+            PROVIDER_AWS_REGION=${PROVIDER_AWS_REGION:-us-west-2}
+            provider="{
+  \"name\": \"$PROVIDER_NAME\",
+  \"description\": \"Debug Provider\",
+  \"type\": \"AwsProvider\",
+  \"auth_details\": {
+    \"provider\": \"AWS\",
+    \"aws_access_key_id\": \"dummyiTqwW5qpsDQbn1Z38Ma94gWh99c\",
+    \"aws_secret_access_key\": \"dummyca9-28d4-4cee-8280-8af2f5464f37\",
+    \"region\": \"us-west-2\",
+    \"debug\":{
+      \"host_ip\":\"192.17.0.17\",
+      \"boot_delay_time\": 1,
+      \"ssh_delay_time\": 1
+    }
   }
 }"
             rebar providers create "$provider"
