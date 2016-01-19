@@ -47,9 +47,8 @@ class NodeRolesController < ApplicationController
     # compare nodes to passed nodes json list.
     # return the deleted ones that are not currently nodes from the UX list
     if request.put? and params[:nodes] 
-      params[:nodes].each do |nid|
-        out[:deleted] << nid if Node.where(:id=>nid).blank?
-      end
+      nodes = Node.all.map{ |n| n.id }
+      out[:deleted] = (params[:nodes] - nodes) rescue []
     end
 
     # done
