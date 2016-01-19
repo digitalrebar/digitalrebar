@@ -28,5 +28,5 @@ openssl req -nodes -sha256 -x509 -newkey rsa:2048 \
 chmod 600 /etc/rebar-dhcp*
 
 # Service has to start first - or we should move the consul stuff into the app.
-/usr/local/bin/rebar-dhcp --server_ip=$EXTERNAL_IP &
+/usr/local/bin/rebar-dhcp --server_ip=$EXTERNAL_IP --backing_store=consul --data_dir=digitalrebar/dhcp/database &
 
