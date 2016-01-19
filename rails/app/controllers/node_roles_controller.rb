@@ -19,6 +19,41 @@ class NodeRolesController < ApplicationController
     render api_sample(NodeRole)
   end
 
+  # GET /api/status/node_roles?age=[newer than # seconds]
+  # PUT same URL with added payload {"nodes":[1,2,3]} to find deleted nodes
+  def status
+
+    # by design, this informs the API about REST objects that have been updated
+    # it is NOT indended to return the data - the consumer needs to make that decision
+
+    out = { nodes: [], node_roles: [], deployments: [], deleted: [] }
+    recent = params[:age].to_i || 300
+
+    NodeRole.transaction do  # performance optimization
+      nrs = NodeRole.all
+      nrs.each do |nr|
+        age = Time.now - nr.updated_at
+        next if nr.state >= 0 && age >= recent
+        out[:nodes] << nr.node_id
+        out[:node_roles] << nr.id
+        out[:deployments] << nr.deployment_id
+      end
+    end
+    # optimization avoid logic during the loop
+    out[:nodes] = out[:nodes].uniq
+    out[:deployments] = out[:deployments].uniq
+
+    # on PUT, to handle UX not knowing about deleted nodes
+    # compare nodes to passed nodes json list.
+    # return the deleted ones that are not currently nodes from the UX list
+    if request.put? and params[:nodes] 
+      nodes = Node.all.map{ |n| n.id }
+      out[:deleted] = (params[:nodes] - nodes) rescue []
+    end
+
+    # done
+    render api_array out.to_json
+  end
 
   def match
     attrs = NodeRole.attribute_names.map{|a|a.to_sym}

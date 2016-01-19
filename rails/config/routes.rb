@@ -144,6 +144,7 @@ Rebar::Application.routes.draw do
           get "deployments(/:id)" => "deployments#status", :as => :deployments_status
           get "heartbeat" => "support#heartbeat", :as => :heartbeat_status
           get "inventory(/:id)" => "inventory#index"
+          match "active" => "node_roles#status", via: [:get, :put]
         end
         scope 'test' do
           put "nodes(/:id)" => "nodes#test_load_data"
