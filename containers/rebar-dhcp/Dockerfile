@@ -23,6 +23,5 @@ RUN apt-get update \
 COPY docker-entrypoint.sh /sbin/docker-entrypoint.sh
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 COPY rebar-dhcp.conf /etc/rebar-dhcp.conf
-COPY database.json /var/cache/rebar-dhcp/database.json
 COPY rebar-dhcp-cert.conf /etc/rebar-dhcp-cert.conf
 
