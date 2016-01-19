@@ -41,7 +41,6 @@ class NodeRolesController < ApplicationController
     end
     # optimization avoid logic during the loop
     out[:nodes] = out[:nodes].uniq
-    out[:node_roles] = out[:node_roles].uniq
     out[:deployments] = out[:deployments].uniq
 
     # on PUT, to handle UX not knowing about deleted nodes
