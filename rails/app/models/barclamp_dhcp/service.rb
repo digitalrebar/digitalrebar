@@ -16,7 +16,12 @@
 class BarclampDhcp::Service < Service
 
   def do_transition(nr, data)
-    internal_do_transition(nr, data, "dhcp", "dhcp_servers")
+    wait_for_service(nr,data, "dhcp")
+    deployment_role = nr.deployment_role
+    until Attrib.get('dhcp_servers',deployment_role) do
+      sleep 1
+      deployment_role.reload
+    end
   end
 
 end
