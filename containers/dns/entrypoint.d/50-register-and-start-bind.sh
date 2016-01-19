@@ -13,7 +13,7 @@ fi
 consul reload
 
 # Start the services.
-/usr/local/bin/rebar-dns-mgmt &
+/usr/local/bin/rebar-dns-mgmt --backing_store=consul --data_dir=digitalrebar/dns/database &
 /usr/sbin/named -g -u bind &
 
 attr="{\"value\": [{
