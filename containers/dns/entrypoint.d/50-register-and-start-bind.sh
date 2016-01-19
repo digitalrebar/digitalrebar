@@ -14,8 +14,7 @@ consul reload
 
 # Start the services.
 /usr/local/bin/rebar-dns-mgmt &
-
-service bind9 start
+/usr/sbin/named -g -u bind &
 
 attr="{\"value\": [{
        \"address\": \"$the_ip\",
