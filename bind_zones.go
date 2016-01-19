@@ -226,7 +226,7 @@ func (di *BindDnsInstance) PatchZone(zones *ZoneTracker, zoneName string, rec Re
 	}
 
 	// Restart bind
-	cmd := exec.Command("service", "named", "restart")
+	cmd := exec.Command("rndc", "reload")
 	err = cmd.Run()
 	if err != nil {
 		return Zone{}, &backendError{err.Error(), http.StatusInternalServerError}
