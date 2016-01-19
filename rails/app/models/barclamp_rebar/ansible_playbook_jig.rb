@@ -26,17 +26,15 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     status = Open4::popen4ext(true,cmd) do |_pid,stdin,stdout,stderr|
       stdin.close
 
-      stdout.fcntl(Fcntl::F_SETFL, Fcntl::O_NONBLOCK)
-
       begin
+        # Readpartial will read all the data up to 16K
+        # If not data is present, it will block
         loop do
-          IO.select([stdout]) # <- waits for data (any data, even 1 byte)
-          out << stdout.read_nonblock(8)
+          out << stdout.readpartial(16384)
           nr.update!(runlog: out) if nr
         end
       rescue Errno::EAGAIN
-        Rails.log.error("Failed to read stdout.")
-        out << "Failed to read stdout."
+        retry
       rescue EOFError
       end
 
