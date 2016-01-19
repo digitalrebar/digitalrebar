@@ -1,12 +1,11 @@
 package main
 
 import (
-	"encoding/json"
-	"github.com/ant0ine/go-json-rest/rest"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"sync"
+
+	"github.com/ant0ine/go-json-rest/rest"
 )
 
 /*
@@ -65,8 +64,8 @@ func NewZoneData() *ZoneData {
 }
 
 type ZoneTracker struct {
-	Zones map[string]*ZoneData // zone name -> ZoneData
-	Lock  sync.Mutex           `json:"-"`
+	sync.Mutex `json:"-"`
+	Zones      map[string]*ZoneData // zone name -> ZoneData
 }
 
 func NewZoneTracker() *ZoneTracker {
@@ -82,14 +81,14 @@ type Frontend struct {
 	dns_frontend_point
 	Backend  *dns_backend_point
 	ZoneInfo *ZoneTracker
-	data_dir string
+	store    LoadSaver
 }
 
-func NewFrontend(backend *dns_backend_point, data_dir string) *Frontend {
+func NewFrontend(backend *dns_backend_point, store LoadSaver) *Frontend {
 	return &Frontend{
 		Backend:  backend,
 		ZoneInfo: NewZoneTracker(),
-		data_dir: data_dir,
+		store:    store,
 	}
 }
 
@@ -97,26 +96,16 @@ func NewFrontend(backend *dns_backend_point, data_dir string) *Frontend {
  * Data storage/retrieval functions
  */
 func (fe *Frontend) load_data() {
-	bytes, err := ioutil.ReadFile(fe.data_dir + "/database.json")
-	if err != nil {
-		log.Panic("failed to read file", err.Error())
-	}
-
-	err = json.Unmarshal(bytes, &fe.ZoneInfo)
-	if err != nil {
-		log.Panic("failed to parse file", err.Error())
+	if err := fe.store.Load(fe.ZoneInfo); err != nil {
+		log.Panic(err)
 	}
 }
 
 func (fe *Frontend) save_data() {
-	jdata, err := json.Marshal(fe.ZoneInfo)
-	if err != nil {
-		log.Panic("Failed to marshal data", err.Error())
+	if err := fe.store.Save(fe.ZoneInfo); err != nil {
+		log.Panic(err)
 	}
-	err = ioutil.WriteFile(fe.data_dir+"/database.json", jdata, 0700)
-	if err != nil {
-		log.Panic("Failed to save data", err.Error())
-	}
+
 }
 
 // List function
@@ -152,9 +141,10 @@ func (fe *Frontend) PatchZone(w rest.ResponseWriter, r *rest.Request) {
 
 	zoneName := r.PathParam("id")
 
-	fe.ZoneInfo.Lock.Lock()
+	fe.ZoneInfo.Lock()
 	zone := fe.ZoneInfo.Zones[zoneName]
-	if record.ChangeType == "ADD" {
+	switch record.ChangeType {
+	case "ADD":
 		// If no zone, create zone
 		if zone == nil {
 			zone = NewZoneData()
@@ -190,7 +180,7 @@ func (fe *Frontend) PatchZone(w rest.ResponseWriter, r *rest.Request) {
 		}
 		zes.Types[record.Type] = append(zt, nze)
 		fe.save_data()
-	} else if record.ChangeType == "REMOVE" {
+	case "REMOVE":
 		if zone == nil {
 			goto output
 		}
@@ -220,14 +210,14 @@ func (fe *Frontend) PatchZone(w rest.ResponseWriter, r *rest.Request) {
 				break
 			}
 		}
-	} else {
-		fe.ZoneInfo.Lock.Unlock()
+	default:
+		fe.ZoneInfo.Unlock()
 		rest.Error(w, "Invalid action type", 400)
 		return
 	}
 
 output:
-	fe.ZoneInfo.Lock.Unlock()
+	fe.ZoneInfo.Unlock()
 
 	data, derr := (*fe.Backend).PatchZone(fe.ZoneInfo, zoneName, record)
 	if derr != nil {
