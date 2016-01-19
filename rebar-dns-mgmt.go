@@ -9,12 +9,13 @@ package main
  */
 
 import (
-	"code.google.com/p/gcfg"
 	"flag"
 	"fmt"
-	"github.com/ant0ine/go-json-rest/rest"
 	"log"
 	"net/http"
+
+	"code.google.com/p/gcfg"
+	"github.com/ant0ine/go-json-rest/rest"
 )
 
 // For PDNS, Dns.Server to access (localhost)
@@ -34,22 +35,23 @@ type Config struct {
 	}
 }
 
-var config_path, key_pem, cert_pem, data_dir string
+var config_path, key_pem, cert_pem, data_dir, backingStore string
 
 func init() {
 	flag.StringVar(&config_path, "config_path", "/etc/dns-mgmt.conf", "Path to config file")
 	flag.StringVar(&key_pem, "key_pem", "/etc/dns-mgmt-https-key.pem", "Path to config file")
 	flag.StringVar(&cert_pem, "cert_pem", "/etc/dns-mgmt-https-cert.pem", "Path to config file")
 	flag.StringVar(&data_dir, "data_dir", "/var/cache/rebar-dns-mgmt", "Path to store data")
+	flag.StringVar(&backingStore, "backing_store", "file", "Backing store to use. Either 'consul' or 'file'")
 }
 
 func main() {
 	flag.Parse()
 
 	var cfg Config
-	cerr := gcfg.ReadFileInto(&cfg, config_path)
-	if cerr != nil {
-		log.Fatal(cerr)
+	err := gcfg.ReadFileInto(&cfg, config_path)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	var be dns_backend_point
@@ -65,8 +67,17 @@ func main() {
 	} else {
 		log.Fatal("Failed to find type")
 	}
+	var bs LoadSaver
+	switch backingStore {
+	case "file":
+		bs, err = NewFileStore(data_dir + "/database.json")
+	case "consul":
+		bs, err = NewConsulStore(data_dir)
+	default:
+		log.Fatalf("Unknown backing store type %s", backingStore)
+	}
 
-	fe := NewFrontend(&be, data_dir)
+	fe := NewFrontend(&be, bs)
 
 	fe.load_data()
 
