@@ -29,6 +29,14 @@ loop do
       ep = val[2]
       kp_name = "id-fogwrap-#{rebar_id}"
       kp_loc = File.expand_path("~/.ssh/#{kp_name}")
+      if ! File.exists?(kp_loc)
+        ssh_key=Diplomat::Kv.get("fogwrap/keys/#{rebar_id}")
+        File.open(kp_loc,"w") do |f|
+          f.write(ssh_key)
+          f.flush
+          f.chmod(0600)
+        end
+      end
       log "Testing server #{server.id}"
       unless server.ready?
         log "Server #{server.id} not ready, skipping"
@@ -64,12 +72,14 @@ loop do
       system("rebar nodes set #{rebar_id} attrib node-control-address to '{\"value\": \"#{server.public_ip_address}\"}'")
       log "Marking server #{server.id} alive"
       Diplomat::Kv.delete(key)
+      Diplomat::Kv.delete("fogwrap/keys/#{rebar_id}")
       system("rebar nodes update #{rebar_id} '{\"alive\": true, \"available\": true}'")
       if ep.respond_to? :key_pairs
         old_kp = ep.key_pairs.get(kp_name)
         old_kp.destroy if old_kp
         File::delete(kp_loc, "#{kp_loc}.pub")
       end
+      File::delete(kp_loc, "#{kp_loc}.pub")
     end
   rescue Exception => e
     log "Caught error, looping"
