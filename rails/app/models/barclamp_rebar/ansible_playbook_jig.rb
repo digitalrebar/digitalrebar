@@ -20,13 +20,26 @@ require 'yaml'
 # Ansible Playbook Jig
 class BarclampRebar::AnsiblePlaybookJig < Jig
 
-  def exec_cmd(cmd)
+  def exec_cmd(cmd, nr = nil)
     Rails.logger.debug("Local Running #{cmd}")
     out,err = '',''
     status = Open4::popen4ext(true,cmd) do |_pid,stdin,stdout,stderr|
       stdin.close
-      out << stdout.read
+
+      begin
+        # Readpartial will read all the data up to 16K
+        # If not data is present, it will block
+        loop do
+          out << stdout.readpartial(16384)
+          nr.update!(runlog: out) if nr
+        end
+      rescue Errno::EAGAIN
+        retry
+      rescue EOFError
+      end
+
       err << stderr.read
+
       stdout.close
       stderr.close
     end
@@ -35,6 +48,12 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
   def stage_run(nr)
     super(nr)
+  end
+
+  def node_inventory_data(node)
+    address = node.address
+    return nil unless address
+    node.name + " ansible_ssh_host=" + address.addr + " ansible_ssh_user=root ip=" + address.addr + "\n"
   end
 
   def run(nr,data)
@@ -113,11 +132,11 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     File.open("#{rundir}/inventory.ini", 'w') do |f|
       # all = all nodes in deployment
       nr.deployment.nodes.each do |n|
-        address = n.address
-        next unless address
-        f.write(address.addr + " ansible_ssh_user=root\n")
+        ninfo = node_inventory_data(n)
+        f.write(ninfo) if ninfo
       end
 
+      groups = {}
       nr.deployment.roles.each do |r|
         nrs = NodeRole.peers_by_role(nr.deployment, r)
         next if nrs.nil? or nrs.empty?
@@ -126,12 +145,18 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
         next unless rns
         rns.each do |rn|
           next if rn == 'all'
-          f.write("[#{rn}]\n")
+          groups[rn] ||= []
           nrs.each do |tnr|
-            address = tnr.node.address
-            next unless address
-            f.write(address.addr + " ansible_ssh_user=root\n")
+            ninfo = node_inventory_data(tnr.node)
+            groups[rn] << ninfo if ninfo
           end
+        end
+      end
+
+      groups.each do |g,list|
+        f.write("[#{g}]\n")
+        list.uniq.each do |ninfo|
+          f.write(ninfo)
         end
       end
     end
@@ -162,8 +187,14 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     rns = role_tag_map[nr.role.name]
     rns_string = ""
     rns_string = "--tags=#{rns.join(',')}" if rns
-    out,err,ok = exec_cmd("cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} #{rns_string}")
-    die("Running: cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} #{rns_string}\nScript jig run for #{nr.role.name} on #{nr.node.name} failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?
+
+    # Run all nodes
+    nodestring = ""
+    # Run one node
+    # nodestring = "-l #{nr.node.address.addr}"
+
+    out,err,ok = exec_cmd("cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook #{nodestring} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} #{rns_string}", nr)
+    die("Running: cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook #{nodestring} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} #{rns_string}\nScript jig run for #{nr.role.name} on #{nr.node.name} failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?
     nr.update!(runlog: out)
 
     # Now, we need to suck any written attributes back out.

@@ -67,7 +67,7 @@ class BarclampChef::Jig < Jig
     chef_node.save
     # SSH into the node and kick chef-client.
     # If it passes, go to ACTIVE, otherwise ERROR.
-    out,err,ok = nr.node.ssh("chef-client")
+    out,err,ok = nr.node.ssh("chef-client", nr)
     raise("Chef jig run for #{nr.name} failed\nOut: #{out}\nErr:#{err}") unless ok.success?
     # Reload the node, find any attrs on it that map to ones this
     # node role cares about, and write them to the wall.

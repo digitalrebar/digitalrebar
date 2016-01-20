@@ -27,10 +27,10 @@ class SecureShellHammer < Hammer
       run: [:run] }
   end
 
-  def run(cmd)
+  def run(cmd, nr = nil)
     node_address = node.address
     throw "ERROR: SecureShellHammer.run cannot find a reachable address for #{node.name}" unless node_address
-    run_on(". /etc/profile; exec ssh -l #{username} #{node_address.addr} -- #{cmd}")
+    run_on(". /etc/profile; exec ssh -l #{username} #{node_address.addr} -- #{cmd}", nr)
   end
 
   def copy_from(remote_src, local_dest, opts="")
@@ -47,12 +47,24 @@ class SecureShellHammer < Hammer
     run("reboot")
   end
 
-  def run_on(cmd)
+  def run_on(cmd, nr = nil)
     Rails.logger.debug("Node: #{node.name}: Running #{cmd}")
     out,err = '',''
     status = Open4::popen4ext(true,cmd) do |pid,stdin,stdout,stderr|
       stdin.close
-      out << stdout.read
+
+      begin
+        # Readpartial will read all the data up to 16K
+        # If not data is present, it will block
+        loop do
+          out << stdout.readpartial(16384)
+          nr.update!(runlog: out) if nr
+        end
+      rescue Errno::EAGAIN
+        retry
+      rescue EOFError
+      end
+
       err << stderr.read
       stdout.close
       stderr.close
