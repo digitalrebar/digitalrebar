@@ -49,7 +49,7 @@ else
         exit -1
     fi
   
-    DEVICE_ID=`aws ec2 run-instances --image-id $IID --count 1 --instance-type t2.medium --key-name $KEY_NAME --security-group-ids $SG_ID | jq -r .Instances[0].InstanceId`
+    DEVICE_ID=`aws ec2 run-instances --image-id $IID --count 1 --instance-type m4.large --key-name $KEY_NAME --security-group-ids $SG_ID | jq -r .Instances[0].InstanceId`
 fi
 
 # Wait for device to be up
@@ -64,6 +64,9 @@ done
 IP=`aws ec2 describe-instances --instance-id $DEVICE_ID | jq -r .Reservations[0].Instances[0].PublicIpAddress`
 CIDR=32
 
+# Set Name
+aws ec2 create-tags --instance-id $DEVICE_ID --tags Key=Name,Value=$(hostname)
+
 ENV_VAR="\"aws\": true,"
 
 export ADMIN_IP="$IP/$CIDR"
@@ -76,4 +79,4 @@ CLEAN_IT="--clean"
 
 echo "AWS Device ID: $DEVICE_ID"
 echo "repeat AWS run: ./run-in-aws.sh --device-id=${DEVICE_ID}"
-echo "SSH access: ssh -X root@${IP}"
+echo "SSH access: ssh -X centos@${IP}"
