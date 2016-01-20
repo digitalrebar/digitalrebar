@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # If we are not using forwarder, we need to use the external address to take to us.
+the_ip=${EXTERNAL_IP%%/*}
 if [[ $FORWARDER_IP ]] ; then
-    the_ip=${IP%%/*}
     cp /root/dns-internal.json /etc/consul.d/dns.json
     cp /root/dns-mgmt-internal.json /etc/consul.d/dns-mgmt.json
 else
-    the_ip=${EXTERNAL_IP%%/*}
     sed -e "s/FILLMEIN/$the_ip/" /root/dns-external.json > /etc/consul.d/dns.json
     sed -e "s/FILLMEIN/$the_ip/" /root/dns-mgmt-external.json > /etc/consul.d/dns-mgmt.json
 fi
+
 consul reload
 
 # Start the services.
