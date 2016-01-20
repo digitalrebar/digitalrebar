@@ -44,3 +44,12 @@ if [[ -z ${1} ]]; then
 else
   exec "$@"
 fi
+
+attr="{\"value\": [{
+    \"address\": \"${EXTERNAL_IP%%/*}\",
+    \"port\": \"3128\",
+    \"url\": \"http://${EXTERNAL_IP%%/*}:3128\"
+    }]}"
+
+rebar deployments set system attrib proxy-servers to "$attr"
+rebar deployments commit system
