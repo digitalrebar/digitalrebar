@@ -40,9 +40,9 @@ if [[ -z ${1} ]]; then
     $(which squid3) -N -f /etc/squid3/squid.conf -z
   fi
   echo "Starting squid3..."
-  exec $(which squid3) -f /etc/squid3/squid.conf -NYCd 1 ${EXTRA_ARGS}
+  $(which squid3) -f /etc/squid3/squid.conf -NYCd 1 ${EXTRA_ARGS} &
 else
-  exec "$@"
+  "$@" &
 fi
 
 attr="{\"value\": [{
@@ -53,3 +53,4 @@ attr="{\"value\": [{
 
 rebar deployments set system attrib proxy-servers to "$attr"
 rebar deployments commit system
+
