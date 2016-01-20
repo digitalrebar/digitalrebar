@@ -28,4 +28,10 @@ attr="{\"value\": [{
 }"
 # Make sure we set the token type
 rebar deployments set system attrib dns-management-servers to "$attr"
+rebar deployments set system attrib dns_servers to \
+"{\"value\":[
+    {\"address\": \"$the_ip\",
+     \"port\": \"53\",
+     \"name\": \"system\"}]}"
+
 rebar deployments commit system
