@@ -16,7 +16,7 @@
 class BarclampDhcp::Service < Service
 
   def do_transition(nr, data)
-    wait_for_service(nr,data, "dhcp")
+    wait_for_service(nr,data, "dhcp-service")
     deployment_role = nr.deployment_role
     until Attrib.get('dhcp_servers',deployment_role) do
       sleep 1
