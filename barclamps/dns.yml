@@ -36,8 +36,18 @@ roles:
         schema:
           type: seq
           sequence:
-            - type: str
-              pattern: /[0-9a-f:.]*/
+            - type: map
+              mapping:
+                address:
+                  type: str
+                  required: true
+                  pattern: /[0-9a-f:.]*/
+                port:
+                  type: str
+                  required: true
+                name:
+                  type: str
+                  required: true
       - name: dns-domain
         description: 'DNS domain name for the cluster'
         map: 'rebar/dns/domain'
