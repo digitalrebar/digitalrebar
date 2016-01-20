@@ -52,7 +52,7 @@ else
     DEVICE_ID=`aws ec2 run-instances --image-id $IID --count 1 --instance-type m4.large --key-name $KEY_NAME --security-group-ids $SG_ID | jq -r .Instances[0].InstanceId`
 
     # Set Name
-    aws ec2 create-tags --instance-id $DEVICE_ID --tags Key=Name,Value=${NODENAME%%.*}
+    aws ec2 create-tags --resources $DEVICE_ID --tags Key=Name,Value=${NODENAME%%.*}
 
 fi
 
