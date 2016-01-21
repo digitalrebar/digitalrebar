@@ -14,7 +14,10 @@ RUN apt-get -y update \
   && apt-get -y purge make cmake build-essential \
   && cd /tmp \
   && curl -fgL -O http://downloads.sourceforge.net/project/elilo/elilo/elilo-3.16/elilo-3.16-all.tar.gz \
-  && curl -fgL -O https://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.xz
+  && curl -fgL -O https://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.xz \
+  && curl -fgL -o '/tmp/chef.deb' \
+       'https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/10.04/x86_64/chef_11.18.12-1_amd64.deb' \
+  && dpkg -i /tmp/chef.deb && rm -f /tmp/chef.deb
 
 COPY tftpd.conf /etc/default/tftpd-hpa
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/

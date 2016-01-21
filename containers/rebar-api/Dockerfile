@@ -22,7 +22,7 @@ RUN apt-get -y update \
   && apt-add-repository ppa:ansible/ansible \
   && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - \
   && apt-get -y update \
-  && apt-get -y install ruby2.1 ruby2.1-dev make cmake curl swig3.0 libcimcclient0-dev libxml2-dev libcurl4-openssl-dev libssl-dev build-essential jq sudo libopenwsman-dev postgresql-9.4 postgresql-client-9.4 libpq5 libpq-dev autoconf uuid-runtime ipmitool ansible python-pip python-dns python-netaddr \
+  && apt-get -y install ruby2.1 ruby2.1-dev make cmake curl swig3.0 libcimcclient0-dev libxml2-dev libcurl4-openssl-dev libssl-dev build-essential jq sudo libopenwsman-dev postgresql-client-9.4 libpq5 libpq-dev autoconf uuid-runtime ipmitool ansible python-netaddr python-dns python-pip \
   && pip install dnspython \
   && gem install bundler \
   && gem install net-http-digest_auth \
@@ -53,6 +53,9 @@ RUN apt-get -y update \
   && openssl x509 -req -days 365 -in /var/run/rebar/server.csr -signkey /var/run/rebar/server.key -out /var/run/rebar/server.crt \
   && rm /var/run/rebar/server.csr \
   && chmod 400 /var/run/rebar/server.key /var/run/rebar/server.crt \
-  && chown rebar:rebar /var/run/rebar/server.key /var/run/rebar/server.crt
+  && chown rebar:rebar /var/run/rebar/server.key /var/run/rebar/server.crt \
+  && curl -fgL -o '/tmp/chef.deb' \
+       'https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/10.04/x86_64/chef_11.18.12-1_amd64.deb' \
+  && dpkg -i /tmp/chef.deb && rm -f /tmp/chef.deb
 
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
