@@ -52,8 +52,18 @@ roles:
         schema:
           type: seq
           sequence:
-            - type: str
-              pattern: '/\Ahttp:\/\/.+\z/'
+            - type: map
+              mapping:
+                address:
+                  type: str
+                  required: true
+                port:
+                  type: str
+                  required: true
+                url:
+                  type: str
+                  required: true
+                  pattern: '/\Ahttp:\/\/.+\z/'
   - name: proxy-client
     jig: script
     flags:

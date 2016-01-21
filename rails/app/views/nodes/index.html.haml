@@ -23,6 +23,8 @@
 
 :javascript
 
+  var freshness = 0
+
   $(".node_action").change(function() {
     if (this.checked)
       $(":checkbox[id^=" + this.name + "]").attr('checked', true);
@@ -34,10 +36,12 @@
     var action = this.value;
     console.debug("action #{nodes_path()}");
     $.ajaxSetup({ timeout: 50000 });
+    freshness = 0;
     $(":checkbox[id^=node_action]").each( function(index, value) {
       if (value.checked) {
         console.debug("loop " + action + " on " + value.value);
         if (action == "delete") {
+          freshness --;
           $.ajax({
             type: 'DELETE',
             url: "#{nodes_path}/" + value.value + "?format=json"})
@@ -48,10 +52,10 @@
         };
       };
     });
+    this.value = "none";
     if (action == "delete") { 
-      update(); } 
-    else {
-      this.value = "none"; }
+      update(); 
+    };
   });
 
   function add_nodes() {
@@ -74,18 +78,39 @@
             }
           };
     if (os != "#{t('.default_os')}") {
-      payload.hints['provider-create-hint'].os = os
-      payload.hints['provider-create-hint'].image_id = os
-    }
+      // packet
+      payload.hints['provider-create-hint'].os = os;
+      // aws
+      payload.hints['provider-create-hint'].image_id = os;
+      // google
+      payload.hints['provider-create-hint'].disks = [];
+      payload.hints['provider-create-hint'].disks.push(
+                { 
+                  'autoDelete': true,
+                  'boot': true,
+                  'type': 'PERSISTENT',
+                  'initializeParams': {
+                    'sourceImage': os
+                  }
+                });
+    };
     var number = parseInt($("#number").val());
     $.ajaxSetup({ timeout: 5000*number });
+    $('#addcell').fadeOut().fadeIn('slow');
+    freshness = -1*number;
     for (var i=0; i<number; i++) {
-      $('#addcell').delay(100).fadeOut().fadeIn('slow');
       payload.name = base_name+"-"+i+"."+provider+".neode.org";
       payload.hints['provider-create-hint'].hostname = base_name+"-"+i;
       console.debug("add " + JSON.stringify(payload, null, 2));
-      $.post("#{nodes_path}",payload);
+      // hack because POST converts JSON array to hash
+      $.ajax({
+        url: "#{nodes_path}",
+        data: JSON.stringify(payload),
+        contentType: "application/json",
+        type: "post"
+      });
     };
+    $('#addcell').fadeOut().fadeIn('slow');
     update();
   }
 
@@ -103,10 +128,13 @@
         var count = 0;
         $.each(data, function(id,node) {
           count ++;
-          if (count > current_nodes) {
-          	location.reload();
+          freshness ++;
+          if (count != current_nodes && 0 < freshness) {
+          	// location.reload();
           	return;
-          }
+          } else {
+            console.debug("no refresh: (" + freshness + ") count " + count + " == " + current_nodes);
+          };
           var tr = $('#'+id+'.node');
           var td = tr.children('.status');
           var led = td.children('.led');

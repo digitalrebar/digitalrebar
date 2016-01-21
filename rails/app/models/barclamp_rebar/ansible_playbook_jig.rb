@@ -20,13 +20,26 @@ require 'yaml'
 # Ansible Playbook Jig
 class BarclampRebar::AnsiblePlaybookJig < Jig
 
-  def exec_cmd(cmd)
+  def exec_cmd(cmd, nr = nil)
     Rails.logger.debug("Local Running #{cmd}")
     out,err = '',''
     status = Open4::popen4ext(true,cmd) do |_pid,stdin,stdout,stderr|
       stdin.close
-      out << stdout.read
+
+      begin
+        # Readpartial will read all the data up to 16K
+        # If not data is present, it will block
+        loop do
+          out << stdout.readpartial(16384)
+          nr.update!(runlog: out) if nr
+        end
+      rescue Errno::EAGAIN
+        retry
+      rescue EOFError
+      end
+
       err << stderr.read
+
       stdout.close
       stderr.close
     end
@@ -35,6 +48,26 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
   def stage_run(nr)
     super(nr)
+  end
+
+  def node_inventory_data(node, nr, data, inventory_map)
+    address = node.address
+    return nil unless address
+
+    answer = node.name + " ansible_ssh_host=" + address.addr + " ansible_ssh_user=root"
+
+    # Process inventory map
+    #
+    # Get per node data
+    data = stage_run(node.node_roles.first)
+    inventory_map.each do |am|
+      next if am['when'] and !eval_condition(node, nr, data, am['when'])
+      value = get_value(node, nr, data, am['name'])
+      answer += " #{am['path']}=#{value}"
+    end
+
+    answer += "\n"
+    answer
   end
 
   def run(nr,data)
@@ -57,6 +90,8 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     role_tag_map = {} unless role_tag_map
     role_role_map = role_yaml['role_role_map']
     role_role_map = {} unless role_role_map
+    inventory_map = role_yaml['inventory_map']
+    inventory_map = {} unless inventory_map
 
     # Load/Update cache
     cache_dir = '/var/cache/rebar/ansible_playbook'
@@ -100,8 +135,8 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
     # Remap additional variables
     role_yaml['attribute_map'].each do |am|
-      next if am['when'] and !eval_condition(nr, data, am['when'])
-      value = get_value(nr, data, am['name'])
+      next if am['when'] and !eval_condition(nr.node, nr, data, am['when'])
+      value = get_value(nr.node, nr, data, am['name'])
       set_value(data, am['path'], value)
     end if role_yaml['attribute_map']
 
@@ -113,11 +148,11 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     File.open("#{rundir}/inventory.ini", 'w') do |f|
       # all = all nodes in deployment
       nr.deployment.nodes.each do |n|
-        address = n.address
-        next unless address
-        f.write(address.addr + " ansible_ssh_user=root\n")
+        ninfo = node_inventory_data(n, nr, data, inventory_map)
+        f.write(ninfo) if ninfo
       end
 
+      groups = {}
       nr.deployment.roles.each do |r|
         nrs = NodeRole.peers_by_role(nr.deployment, r)
         next if nrs.nil? or nrs.empty?
@@ -126,12 +161,18 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
         next unless rns
         rns.each do |rn|
           next if rn == 'all'
-          f.write("[#{rn}]\n")
+          groups[rn] ||= []
           nrs.each do |tnr|
-            address = tnr.node.address
-            next unless address
-            f.write(address.addr + " ansible_ssh_user=root\n")
+            ninfo = node_inventory_data(tnr.node, nr, data, inventory_map)
+            groups[rn] << ninfo if ninfo
           end
+        end
+      end
+
+      groups.each do |g,list|
+        f.write("[#{g}]\n")
+        list.uniq.each do |ninfo|
+          f.write(ninfo)
         end
       end
     end
@@ -162,8 +203,14 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     rns = role_tag_map[nr.role.name]
     rns_string = ""
     rns_string = "--tags=#{rns.join(',')}" if rns
-    out,err,ok = exec_cmd("cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} #{rns_string}")
-    die("Running: cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook -l #{nr.node.address.addr} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} #{rns_string}\nScript jig run for #{nr.role.name} on #{nr.node.name} failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?
+
+    # Run all nodes
+    nodestring = ""
+    # Run one node
+    # nodestring = "-l #{nr.node.address.addr}"
+
+    out,err,ok = exec_cmd("cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook #{nodestring} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} #{rns_string}", nr)
+    die("Running: cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook #{nodestring} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} #{rns_string}\nScript jig run for #{nr.role.name} on #{nr.node.name} failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?
     nr.update!(runlog: out)
 
     # Now, we need to suck any written attributes back out.
@@ -188,14 +235,14 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
 private
 
-  def get_address(node, command, data)
+  def get_address(node, nr, command)
     args = command.split(/[\)\(\.,]/)
     addr_class = args[1].strip.to_sym
     attr_cat = args[2].strip
     ip_part = args[4].strip
 
     list = ['admin']
-    value = Attrib.get(attr_cat, node)
+    value = Attrib.get(attr_cat, nr)
     list = [value] if value
     addresses = node.addresses(addr_class, list)
 
@@ -206,7 +253,8 @@ private
     # This only works if the node is the starting node.  :-( ??
     if ip_part == 'ifname'
       # check for the address in the detected nic / ip table.
-      data.each do |k,v|
+      nic_data = Attrib.get('nics', node)
+      nic_data.each do |k,v|
         next unless v.is_a?(Hash)
         next unless v['ips']
         ips = v['ips']
@@ -223,7 +271,7 @@ private
     answer
   end
 
-  def get_nodes(nr, command, data)
+  def get_nodes(node, nr, command)
     parts = command.split(/\./,2)
     new_command = parts[1]
 
@@ -231,14 +279,14 @@ private
     role_name = args[1].strip
 
     answer = []
-    NodeRole.peers_by_role(nr.deployment, Role.find_by_name(role_name)).order(:id).each do |tnr|
-      answer << process_command(tnr, new_command, data)
+    NodeRole.peers_by_role(node.deployment, Role.find_by_name(role_name)).order(:node_id).each do |tnr|
+      answer << process_command(tnr.node, nr, new_command)
     end
 
     answer.join(' ')
   end
 
-  def get_first_node(nr, command, data)
+  def get_first_node(node, nr, command)
     parts = command.split(/\./,2)
     new_command = parts[1]
 
@@ -246,8 +294,8 @@ private
     role_name = args[1].strip
 
     answer = nil
-    tnr = NodeRole.peers_by_role(nr.deployment, Role.find_by_name(role_name)).order(:id).first rescue nil
-    answer = process_command(tnr, new_command, data) if tnr
+    tnr = NodeRole.peers_by_role(node.deployment, Role.find_by_name(role_name)).order(:node_id).first rescue nil
+    answer = process_command(tnr.node, nr, new_command) if tnr
 
     answer
   end
@@ -256,18 +304,18 @@ private
   #   ipaddress([all|v4_only|v6_only], attribute).[ifname|cidr|address]
   #   nodes_with_role(k8scontrail-master).<command applied to all nodes joined by " ">
   #   first_node_with_role(k8scontrail-master).<command applied to node>
-  def process_command(nr, command, data)
+  def process_command(node, nr, command)
     answer = nil
 
-    answer = get_address(nr.node, command, data) if command.starts_with?('ipaddress(')
-    answer = get_nodes(nr, command, data) if command.starts_with?('nodes_with_role(')
-    answer = get_first_node(nr, command, data) if command.starts_with?('first_node_with_role(')
+    answer = get_address(node, nr, command) if command.starts_with?('ipaddress(')
+    answer = get_nodes(node, nr, command) if command.starts_with?('nodes_with_role(')
+    answer = get_first_node(node, nr, command) if command.starts_with?('first_node_with_role(')
 
     answer
   end
 
-  # nr is the node role being operated on.
-  # Data is a hash that will become JSON at some point.
+  # node is the node being operated on.
+  # data is the data to look through
   # Cond is the eval string
   #    cond is of the form <path> <operator> <value>
   #    path = a / separated set of strings that index into hash and lists.
@@ -276,13 +324,13 @@ private
   #
   # Return boolean value of condition as applied to stringified path results.
   #
-  def eval_condition(nr, data, cond)
+  def eval_condition(node, nr, data, cond)
     args = cond.split
     path = args[0]
     operator = args[1]
     rvalue = args[2]
 
-    lvalue = get_value(nr, data, path)
+    lvalue = get_value(node, nr, data, path)
     lvalue = "" if lvalue.nil?
 
     # Return the eval
@@ -298,7 +346,7 @@ private
   end
 
 
-  # nr is the node role being operated on.
+  # Node is the node being operated on.
   # Data is a hash that will become JSON at some point.
   # Path is string or eval string
   #    path = a / separated set of strings that index into hash and lists.
@@ -307,11 +355,11 @@ private
   #
   # Return value
   #
-  def get_value(nr, data, path)
+  def get_value(node, nr, data, path)
 
     # if it is an eval process the command.
     if path.starts_with?('eval:')
-      return process_command(nr, path.sub(/^eval:/, ''), data)
+      return process_command(node, nr, path.sub(/^eval:/, ''))
     end
 
     # Assume hash string with possible array indexes

@@ -42,7 +42,7 @@ class BarclampRebar::Jig < Jig
     FileUtils.cp('/opt/digitalrebar/core/script/runner',local_tmpdir)
     out,err,ok = nr.node.scp_to("#{local_tmpdir}/.","#{remote_tmpdir}","-r")
     die("Copy failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?
-    out,err,ok = nr.node.ssh("/bin/bash '#{remote_tmpdir}/runner' '#{remote_tmpdir}' '#{nr.role.name}'")
+    out,err,ok = nr.node.ssh("/bin/bash '#{remote_tmpdir}/runner' '#{remote_tmpdir}' '#{nr.role.name}'", nr)
     die("Script jig run for #{nr.role.name} on #{nr.node.name} failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?
     nr.update!(runlog: out)
     # Now, we need to suck any written attributes back out.

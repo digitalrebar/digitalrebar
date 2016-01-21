@@ -16,16 +16,11 @@
 class BarclampDns::Service < Service
 
   def do_transition(nr, data)
-    deployment_name = nr.deployment.name
-    internal_do_transition(nr, data, "dns-service", "dns_servers") do |s|
-      str_addr = s.ServiceAddress
-      str_addr = s.Address if str_addr.nil? or str_addr.empty?
-      Rails.logger.debug("DnsServer: #{s.inspect} #{str_addr}")
-      addr = IP.coerce(str_addr)
-      Rails.logger.debug("DnsServer: #{addr.inspect}")
-      { "address" => str_addr,
-        "port" => "#{s.ServicePort}",
-        "name" => deployment_name }
+    wait_for_service(nr,data, "dns-service")
+    deployment_role = nr.deployment_role
+    until Attrib.get('dns_servers', deployment_role) do
+      sleep 1
+      deployment_role.reload
     end
   end
 

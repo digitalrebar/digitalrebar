@@ -97,7 +97,7 @@ class BarclampChef::SoloJig < Jig
     raise("Chef Solo jig: #{nr.name}: failed to copy node attribs to target\nOut: #{out}\nErr:#{err}") unless ok.success?
     out,err,ok = nr.node.scp_to(node_json, "/var/chef/node.json")
     raise ("Chef Solo jig: #{nr.name}: failed to copy node to target\nOut: #{out}\nErr:#{err}") unless ok.success?
-    out,err,ok = nr.node.ssh("chef-solo -j /var/chef/node.json")
+    out,err,ok = nr.node.ssh("chef-solo -j /var/chef/node.json", nr)
     raise("Chef Solo jig run for #{nr.name} failed\nOut: #{out}\nErr:#{err}") unless ok.success?
     nr.update!(runlog: out)
     node_out_json = File.join(local_tmpdir, "node-out.json")

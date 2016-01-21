@@ -246,14 +246,14 @@ class Node < ActiveRecord::Base
     actions[:xfer] || {}
   end
 
-  def run(cmd)
+  def run(cmd, nr=nil)
     raise("No run actions for #{name}") unless actions[:run]
-    actions[:run].run(cmd)
+    actions[:run].run(cmd, nr)
   end
 
-  def ssh(cmd)
+  def ssh(cmd, nr=nil)
     Rails.logger.warn("Node.ssh outdated, please update #{caller[0]} to use Node.run instead!")
-    run(cmd)
+    run(cmd, nr)
   end
 
   def scp_from(remote_src, local_dest, opts="")

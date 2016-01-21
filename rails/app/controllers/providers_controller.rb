@@ -67,7 +67,10 @@ class ProvidersController < ApplicationController
       end
     end
     respond_to do |format|
-      format.html { render :show }
+      format.html { 
+        flash[:notice] = @item.name + " " + I18n.t('save')
+        render :show 
+      }
       format.json { render api_show @item }
     end
   end
@@ -84,7 +87,10 @@ class ProvidersController < ApplicationController
                                  description: params[:description],
                                  auth_details: params[:auth_details])
     respond_to do |format|
-      format.html { redirect_to provider_path(@item.id) }
+      format.html { 
+        flash[:notice] = @item.name + " " + I18n.t('save')
+        redirect_to provider_path(@item.id) 
+      }
       format.json { render api_show @item }
     end
   end
