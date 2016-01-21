@@ -480,6 +480,8 @@ if [[ $DEBUG == true ]] ; then
     set -x
 fi
 
+validate_tools
+
 # GEts overridden when bringing up the admin node
 export REBAR_ENDPOINT=https://${ADMIN_IP%/*}:3000
 
