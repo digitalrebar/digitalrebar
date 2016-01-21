@@ -146,9 +146,9 @@ validate_tools() {
     if [[ $PROVIDER == aws || $DEPLOY_ADMIN == aws ]] ; then
         if ! which unzip &>/dev/null; then
             if [[ $OS_FAMILY == rhel ]] ; then
-                yum install -y unzip
+                sudo yum install -y unzip
             elif [[ $OS_FAMILY == debian ]] ; then
-                apt-get install -y unzip
+                sudo apt-get install -y unzip
             fi
         fi
 
