@@ -77,9 +77,8 @@ loop do
       if ep.respond_to? :key_pairs
         old_kp = ep.key_pairs.get(kp_name)
         old_kp.destroy if old_kp
-        File::delete(kp_loc, "#{kp_loc}.pub")
       end
-      File::delete(kp_loc, "#{kp_loc}.pub")
+      File::delete(kp_loc)
     end
   rescue Exception => e
     log "Caught error, looping"
