@@ -66,6 +66,7 @@ ntp:
 fogwrap:
   image: digitalrebar/fogwrap
   privileged: true
+  restart: always
   volumes:
     - ./data-dir/node:/etc/rebar-data
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
