@@ -24,7 +24,6 @@ class Servers
         raise "Failed to generate key"
       end
       kp = Net::SSH::KeyFactory.load_private_key(kp_loc)
-      File::delete(kp_loc, "#{kp_loc}.pub")
       case endpoint["provider"]
       when 'AWS'
         old_kp = ep.key_pairs.get(kp_name)
@@ -91,6 +90,7 @@ class Servers
         {id: server.name}
       end
       Diplomat::Kv.put("fogwrap/keys/#{node_id}",kp.to_s)
+      File::delete(kp_loc, "#{kp_loc}.pub")
     rescue Exception => e
       log("Exception Create: #{e.inspect}")
       raise e
