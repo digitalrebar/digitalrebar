@@ -234,6 +234,11 @@ help_options["--access=<HOST|FORWARDER>"]="Mode to run the admin node in"
 help_options["--rebar-user=<String>"]="Username to access the rebar system"
 help_options["--rebar-password=<String>"]="Password to access the rebar system"
 
+help_options["--provider-google-admin-instance-type"]="Google instance type to use for admin nodes"
+help_options["--provider-google-instance-type"]="Google instance type to use for nodes"
+help_options["--provider-aws-admin-instance-type"]="AWS instance type to use for admin nodes"
+help_options["--provider-aws-instance-type"]="AWS instance type to use for nodes"
+
 help_options["--con-*"]="Container services to enable"
 help_options["--con-no-*"]="Container services to disable"
 help_options["--wl-*"]="Container services to enable"

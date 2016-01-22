@@ -11,6 +11,8 @@ FORCE_DEPLOY_ADMIN=${DEPLOY_ADMIN:-google}
 # Processes args, inits provider, and validates provider
 . workloads/wl-lib.sh
 
+PROVIDER_GOOGLE_ADMIN_INSTANCE_TYPE=${PROVIDER_GOOGLE_ADMIN_INSTANCE_TYPE:-n1-standard-2}
+
 # Check to see if device id exists.
 if [ "$DEVICE_ID" != "" ] ; then
     STATE=`gcloud compute instances describe $DEVICE_ID --format=json | jq -r .status`
@@ -33,7 +35,7 @@ else
     DEVICE_ID=${NODENAME%%.*}
 
     # This defaults to debian 8 - just do it for now.
-    if ! gcloud compute instances create ${DEVICE_ID} ; then
+    if ! gcloud compute instances create --machine-type ${PROVIDER_GOOGLE_ADMIN_INSTANCE_TYPE} ${DEVICE_ID} ; then
         echo "Failed to create gcloud instance"
         exit 1
     fi
