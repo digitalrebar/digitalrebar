@@ -11,6 +11,21 @@ postgres:
     file: docker-compose-common.yml
     service: postgres
 
+logging:
+  extends:
+    file: docker-compose-common.yml
+    service: logging
+{{ START ACCESS_MODE==FORWARDER }}
+  links:
+    - forwarder:forwarder
+{{ END ACCESS_MODE==FORWARDER }}
+{{ START ACCESS_MODE==HOST }}
+  ports:
+    - "514:514"
+    - "514/udp:514/udp"
+    - "2514:2514"
+{{ END ACCESS_MODE==HOST }}
+
 webproxy:
   extends:
     file: docker-compose-common.yml

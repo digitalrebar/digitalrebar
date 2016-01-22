@@ -1,0 +1,8 @@
+{
+    "service": {
+        "name": "logging-service-relp",
+        "address": "FILLMEIN",
+        "tags": [ "deployment:system" ],
+        "port": 2514
+    }
+}
