@@ -81,16 +81,18 @@ class Servers
       log("Will create new srver with #{fixed_args.inspect}")
       server = ep.servers.create(fixed_args)
       log("Created server #{server.to_json}")
+      ret = nil
       case endpoint["provider"]
       when 'AWS'
         Diplomat::Kv.put("fogwrap/create/#{node_id}/#{server.id}",endpoint.to_json)
-        {id: server.id}
+        ret = {id: server.id}
       when 'Google'
         Diplomat::Kv.put("fogwrap/create/#{node_id}/#{server.name}",endpoint.to_json)
-        {id: server.name}
+        ret = {id: server.name}
       end
       Diplomat::Kv.put("fogwrap/keys/#{node_id}",kp.to_s)
       File::delete(kp_loc, "#{kp_loc}.pub")
+      ret
     rescue Exception => e
       log("Exception Create: #{e.inspect}")
       raise e
