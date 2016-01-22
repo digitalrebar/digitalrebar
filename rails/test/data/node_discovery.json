@@ -1424,7 +1424,6 @@
          "dns-server",
          "dns-client",
          "ntp-server",
-         "logging-server",
          "provisioner-server",
          "provisioner-dhcp-server",
          "rebar-package-sources",

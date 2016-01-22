@@ -28,7 +28,6 @@ roles:
     icon: local_shipping
     requires:
       - dns-client
-      - logging-server
       - proxy-client
       - rebar-access
     attribs:

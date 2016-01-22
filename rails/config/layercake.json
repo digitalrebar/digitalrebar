@@ -30,7 +30,6 @@
   "dns-mgmt_server":"core",
   "dns-mgmt_service": "services",
   "dns-client":"clients",
-  "logging-server":"core",
   "logging-client":"clients",
   "network-server":"network",
   "network-admin":"network",
