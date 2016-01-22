@@ -302,6 +302,9 @@ start_machine() {
             if [[ $os_name ]] ; then
                 IMAGE_ID="\"image_id\": \"${os_name}\","
             fi
+            if [[ $PROVIDER_AWS_INSTANCE_TYPE ]] ; then
+                INST_DATA="\"flavor_id\": \"$PROVIDER_AWS_INSTANCE_TYPE\","
+            fi
 
             node="{
   \"name\": \"$1\",
@@ -313,6 +316,7 @@ start_machine() {
     \"use-logging\": false,
     \"provider-create-hint\": {
       $IMAGE_ID
+      $INST_DATA
       \"hostname\": \"$1\"
     }
   }
@@ -334,6 +338,10 @@ start_machine() {
                 }],"
             fi
 
+            if [[ $PROVIDER_GOOGLE_INSTANCE_TYPE ]] ; then
+                INST_DATA="\"machine_type\": \"$PROVIDER_GOOGLE_INSTANCE_TYPE\","
+            fi
+
             node="{
   \"name\": \"$1\",
   \"provider\": \"$PROVIDER_NAME\",
@@ -344,6 +352,7 @@ start_machine() {
     \"use-logging\": false,
     \"provider-create-hint\": {
       $DISKS
+      $INST_DATA
       \"hostname\": \"$1\"
     }
   }

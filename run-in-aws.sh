@@ -11,6 +11,8 @@ FORCE_DEPLOY_ADMIN=${DEPLOY_ADMIN:-aws}
 # Processes args, inits provider, and validates provider
 . workloads/wl-lib.sh
 
+PROVIDER_AWS_ADMIN_INSTANCE_TYPE=${PROVIDER_AWS_ADMIN_INSTANCE_TYPE:-m4.large}
+
 # Choose aws image
 IID=$(lookup_image_id "aws" $PROVIDER_AWS_REGION "centos7")
 
@@ -53,7 +55,7 @@ else
         exit -1
     fi
   
-    DEVICE_ID=`aws ec2 run-instances --image-id $IID --count 1 --instance-type m4.large --key-name $KEY_NAME --security-group-ids $SG_ID | jq -r .Instances[0].InstanceId`
+    DEVICE_ID=`aws ec2 run-instances --image-id $IID --count 1 --instance-type ${PROVIDER_AWS_ADMIN_INSTANCE_TYPE} --key-name $KEY_NAME --security-group-ids $SG_ID | jq -r .Instances[0].InstanceId`
 
     # Set Name
     aws ec2 create-tags --resources $DEVICE_ID --tags Key=Name,Value=${NODENAME%%.*}
