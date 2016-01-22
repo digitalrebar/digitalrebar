@@ -56,7 +56,7 @@ ENV_VAR="\"google\": true,"
 export ADMIN_IP="$IP/$CIDR"
 
 # Make sure our key is in place.
-gcloud compute ssh root@$DEVICE_ID --ssh-key-file /Users/galthaus/.ssh/id_rsa --command "date"
+gcloud compute ssh root@$DEVICE_ID --ssh-key-file $HOME/.ssh/id_rsa --command "date"
 
 . ./run-in-system.sh
 
