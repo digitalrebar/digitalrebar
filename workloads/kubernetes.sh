@@ -22,28 +22,35 @@ help_options["--kubernetes-master-count=<Number>"]="Number of masters to start"
 help_options["--kubernetes-node-count=<Number>"]="Number of nodes to start"
 help_options["--kubernetes-gateway-count=<Number>"]="Number of gateway nodes to start (opencontrail only)"
 
-help_options["--kubernetes-source-type=<packageManager|localBuild>"]="Where to get kubernetes from"
+help_options["--kubernetes-bin-dir=<String>"]="Directory to store binaries: /usr/local/bin"
+help_options["--kubernetes-local-release-dir=<String>"]="Directory to download binaries: /tmp/releases"
+help_options["--kubernetes-log-level=<Int>"]="Kubernetes Log Level: 2"
+help_options["--kubernetes-users=<String>"]="JSON string of users with password and role"
+
 help_options["--kubernetes-cluster-name=<String>"]="Name of cluster: cluster.local"
 help_options["--kubernetes-kube-service-addresses=<CIDRIP>"]="Internal Service IP Addresses"
 
-help_options["--kubernetes-networking=<flannel|opencontrail>"]="Network mode to use"
 help_options["--kubernetes-network-category=<category name>"]="Network category to use for underlay traffic, default: admin"
+help_options["--kubernetes-networking=<calico|flannel|opencontrail>"]="Network mode to use"
 
-help_options["--kubernetes-flannel-subnet=<IP>"]="Subnet whole flannel subnet space (dotted quad)"
-help_options["--kubernetes-flannel-prefix=<Number>"]="Subnet prefix for whole flannel subnet space"
-help_options["--kubernetes-flannel-host-prefix=<Number>"]="Subnet prefix for host section flannel subnet space"
+help_options["--kubernetes-pods-subnet=<CIDRIP>"]="Subnet whole calico/flannel subnet space (dotted quad)"
+help_options["--kubernetes-network-prefix=<Number>"]="Subnet prefix for whole calico/flannel subnet space"
+help_options["--kubernetes-network-node-prefix=<Number>"]="Subnet prefix for node calico/flannel subnet space"
 
 help_options["--kubernetes-opencontrail-public-subnet=<CIDRIP>"]="Public network space for opencontrail"
-help_options["--kubernetes-opencontrail-private-subnet=<CIDRIP>"]="Private network space for opencontrail"
 
+help_options["--kubernetes-dns-upstream=<JSON ARRAY of IP>"]="JSON array of DNS server IPs"
 help_options["--kubernetes-dns=<true|false>"]="Use DNS add-on"
 help_options["--kubernetes-dns-replicas=<Number>"]="Number of DNS replicas to run"
+
 help_options["--kubernetes-ui=<true|false>"]="Use Kube-UI"
 help_options["--kubernetes-cluster-logging=<true|false>"]="Use cluster logging"
 help_options["--kubernetes-cluster-monitoring=<true|false>"]="Use cluster monitoring"
 
 help_options["--kubernetes-test=<true|false>"]="Add the test role to validate completion"
 
+help_options["--kubernetes-etcd-peer-port=<Int>"]="Default etcd peer port: 2380"
+help_options["--kubernetes-etcd-client-port=<Int>"]="Default etcd client port: 2379"
 
 # Mostly likely will require host - make it the default
 DEFAULT_ACCESS=HOST
@@ -146,7 +153,20 @@ done
 rebar deployments create "{ \"name\": \"$DEPLOYMENT_NAME\" }"
 
 # Configure default parameters
-rebar deployments bind $DEPLOYMENT_NAME to kubernetes-config
+rebar deployments bind $DEPLOYMENT_NAME to kubernetes-deploy
+
+if [[ $KUBERNETES_BIN_DIR ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-bin_dir to "{ \"value\": \"${KUBERNETES_BIN_DIR}\" }"
+fi
+if [[ $KUBERNETES_LOCAL_RELEASE_DIR ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-local_release_dir to "{ \"value\": \"${KUBERNETES_LOCAL_RELEASE_DIR}\" }"
+fi
+if [[ $KUBERNETES_LOG_LEVEL ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-log_level to "{ \"value\": ${KUBERNETES_LOG_LEVEL} }"
+fi
+if [[ $KUBERNETES_USERS ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-users to "{ \"value\": ${KUBERNETES_USERS} }"
+fi
 
 if [[ $KUBERNETES_NETWORKING ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-networking to "{ \"value\": \"${KUBERNETES_NETWORKING}\" }"
@@ -155,9 +175,6 @@ if [[ $KUBERNETES_NETWORK_CATEGORY ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-network-category to "{ \"value\": \"${KUBERNETES_NETWORK_CATEGORY}\" }"
 fi
 
-if [[ $KUBERNETES_SOURCE_TYPE ]]; then
-    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-source_type to "{ \"value\": \"${KUBERNETES_SOURCE_TYPE}\" }"
-fi
 if [[ $KUBERNETES_CLUSTER_NAME ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-cluster_name to "{ \"value\": \"${KUBERNETES_CLUSTER_NAME}\" }"
 fi
@@ -165,25 +182,32 @@ if [[ $KUBERNETES_KUBE_SERVICE_ADDRESSES ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-kube_service_addresses to "{ \"value\": \"${KUBERNETES_KUBE_SERVICE_ADDRESSES}\" }"
 fi
 
-if [[ $KUBERNETES_FLANNEL_SUBNET ]]; then
-    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-flannel_subnet to "{ \"value\": \"${KUBERNETES_FLANNEL_SUBNET}\" }"
+if [[ $KUBERNETES_PODS_SUBNET ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-pods_subnet to "{ \"value\": \"${KUBERNETES_PODS_SUBNET}\" }"
 fi
-if [[ $KUBERNETES_FLANNEL_PREFIX ]]; then
-    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-flannel_prefix to "{ \"value\": \"${KUBERNETES_FLANNEL_PREFIX}\" }"
+if [[ $KUBERNETES_NETWORK_PREFIX ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-network_prefix to "{ \"value\": \"${KUBERNETES_NETWORK_PREFIX}\" }"
 fi
-if [[ $KUBERNETES_FLANNEL_HOST_PREFIX ]]; then
-    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-flannel_host_prefix to "{ \"value\": \"${KUBERNETES_FLANNEL_HOST_PREFIX}\" }"
+if [[ $KUBERNETES_NETWORK_NODE_PREFIX ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-network_node_prefix to "{ \"value\": \"${KUBERNETES_NETWORK_NODE_PREFIX}\" }"
 fi
 
 if [[ $KUBERNETES_OPENCONTRAIL_PUBLIC_SUBNET ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-opencontrail_public_subnet to "{ \"value\": \"${KUBERNETES_OPENCONTRAIL_PUBLIC_SUBNET}\" }"
 fi
-if [[ $KUBERNETES_OPENCONTRAIL_PRIVATE_SUBNET ]]; then
-    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-opencontrail_private_subnet to "{ \"value\": \"${KUBERNETES_OPENCONTRAIL_PRIVATE_SUBNET}\" }"
+
+if [[ $KUBERNETES_ETCD_PEER_PORT ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-etcd_peer_port to "{ \"value\": ${KUBERNETES_ETCD_PEER_PORT} }"
+fi
+if [[ $KUBERNETES_ETCD_CLIENT_PORT ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-etcd_client_port to "{ \"value\": ${KUBERNETES_ETCD_CLIENT_PORT} }"
 fi
 
 KUBERNETES_ADDONS=false
 
+if [[ $KUBERNETES_DNS_UPSTREAM ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-upstream_dns_servers to "{ \"value\": ${KUBERNETES_DNS_UPSTREAM} }"
+fi
 if [[ $KUBERNETES_DNS ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-dns_setup to "{ \"value\": ${KUBERNETES_DNS} }"
     KUBERNETES_ADDONS=true
@@ -225,11 +249,14 @@ done
 for ((i=0 ; i < $KUBERNETES_GATEWAY_COUNT; i++)) ; do
     NAME="${DEPLOYMENT_NAME}-gateway-$i.${DNS_DOMAIN}"
     rebar nodes move $NAME to $DEPLOYMENT_NAME
-    rebar nodes bind $NAME to kubernetes-gateway
+    rebar nodes bind $NAME to opencontrail-gateway
 done
 
-# Add the add-ons and tests if needed/requested
+# Add deploy
 NAME="${DEPLOYMENT_NAME}-master-0.${DNS_DOMAIN}"
+rebar nodes bind $NAME to kubernetes-deploy
+
+# Add the add-ons and tests if needed/requested
 if [[ $KUBERNETES_ADDONS == true ]]; then
     rebar nodes bind $NAME to kubernetes-add-ons
 fi
