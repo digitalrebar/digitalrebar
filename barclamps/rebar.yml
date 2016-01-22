@@ -115,18 +115,6 @@ roles:
           mapping:
             =:
               type: str
-  - name: rebar-build-root-key
-    description: "Build or Gather the root public key for this node"
-    jig: chef
-    flags:
-      - implicit
-    attribs:
-      - name: rebar-root-public-key
-        description: 'The username and password that managed nodes should use to talk to the Rebar API'
-        map: 'rebar/root_public_key'
-        schema:
-          type: str
-          required: true
   - name: rebar-api_server
     jig: chef
     wants-attribs:
