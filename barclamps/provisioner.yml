@@ -30,7 +30,6 @@ roles:
       - dns-client
       - logging-server
       - proxy-client
-      - rebar-build-root-key
       - rebar-access
     attribs:
       - name: provisioner-online
