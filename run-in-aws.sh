@@ -11,9 +11,13 @@ FORCE_DEPLOY_ADMIN=${DEPLOY_ADMIN:-aws}
 # Processes args, inits provider, and validates provider
 . workloads/wl-lib.sh
 
-# Access controls.
-LOGIN_USER="centos"
+# Choose aws image
 IID=$(lookup_image_id "aws" $PROVIDER_AWS_REGION "centos7")
+
+# Access controls for the above image
+INIT_ID_FILE="--init-ident $HOME/.ssh/$(hostname)"
+CLEAN_IT="--clean"
+LOGIN_USER="centos"
 
 # Check to see if device id exists.
 if [ "$DEVICE_ID" != "" ] ; then
@@ -71,10 +75,6 @@ CIDR=32
 ENV_VAR="\"aws\": true,"
 
 export ADMIN_IP="$IP/$CIDR"
-
-# Set vars for ssh key injection
-INIT_ID_FILE="--init-ident $HOME/.ssh/$(hostname)"
-CLEAN_IT="--clean"
 
 . ./run-in-system.sh
 
