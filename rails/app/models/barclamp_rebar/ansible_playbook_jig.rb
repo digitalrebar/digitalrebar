@@ -80,7 +80,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     role_yaml = YAML.load_file(role_file)
     die "Bad yaml file @ #{role_file}" unless role_yaml
 
-    die "Missing src path @ #{role_file}" unless role_yaml['playbook_src_path']
+    die "Missing src path @ #{role_file}" unless role_yaml['playbook_src_paths']
     die "Missing playbook path @ #{role_file}" unless role_yaml['playbook_path']
     die "Missing playbook file @ #{role_file}" unless role_yaml['playbook_file']
 
@@ -101,30 +101,45 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     File.open("#{cache_dir}/lock", File::RDWR|File::CREAT, 0644) do |f1|
       f1.flock(File::LOCK_EX)
 
-      if !File.exists?(role_cache_dir)
-        # If we are told galaxy, then load it into ansible.
-        if role_yaml['playbook_src_path'] =~ /^galaxy:/
-          out, err, status = exec_cmd("sudo ansible-galaxy install #{role_yaml['playbook_src_path'].split(':')[1]}")
-          die "Failed to get @ #{role_file}: #{out} #{err}" unless status.success?
+      # Put sort in place
+      role_yaml['playbook_src_paths'].each do |dir, info|
+        piece_part = "#{role_cache_dir}/#{dir}"
+        if !File.exists?(piece_part)
+          # If we are told galaxy, then load it into ansible.
+          if info =~ /^galaxy:/
+            out, err, status = exec_cmd("sudo ansible-galaxy install #{info.split(':')[1]}")
+            die "Failed to get #{info} @ #{role_file}: #{out} #{err}" unless status.success?
+            out, err, status = exec_cmd("mkdir -p #{piece_part}")
+            die "Failed to mkdir @ #{role_file}:#{dir} #{out} #{err}" unless status.success?
+          elsif info =~ /^http/
+            out, err, status = exec_cmd("mkdir -p #{role_cache_dir}")
+            die "Failed to mkdir @ #{role_file}:#{dir} #{out} #{err}" unless status.success?
+            # Load the git cache
+            out, err, status = exec_cmd("git clone #{info} #{piece_part}")
+            die "Failed to git #{info} @ #{role_file}: #{out} #{err}" unless status.success?
+          else
+            FileUtils.cp_r("#{local_scripts}/#{info}/.", "#{piece_part}")
+          end
 
-          out, err, status = exec_cmd("mkdir -p #{role_cache_dir}")
-          die "Failed to get @ #{role_file}: #{out} #{err}" unless status.success?
-        elsif role_yaml['playbook_src_path'] =~ /^http/
-          # Load the git cache
-          out, err, status = exec_cmd("git clone #{role_yaml['playbook_src_path']} #{role_cache_dir}")
-          die "Failed to get @ #{role_file}: #{out} #{err}" unless status.success?
         else
-          FileUtils.cp_r("#{local_scripts}/#{role_yaml['playbook_src_path']}/.", "#{role_cache_dir}")
-        end
-      else
-        if role_yaml['playbook_src_path'] =~ /^galaxy:/
-          # Update galaxy repos??
-        elsif role_yaml['playbook_src_path'] =~ /^http/
-          # Update git repos??
-        else
-          FileUtils.cp_r("#{local_scripts}/#{role_yaml['playbook_src_path']}/.", "#{role_cache_dir}")
+          if info =~ /^galaxy:/
+            # Update galaxy repos??
+          elsif info =~ /^http/
+            # Update git repos??
+          else
+            FileUtils.cp_r("#{local_scripts}/#{info}/.", "#{piece_part}")
+          end
         end
       end
+
+      # Pieces in place run actions
+      if role_yaml['playbook_src_setup']
+        role_yaml['playbook_src_setup'].each do |action|
+          out, err, status = exec_cmd("cd #{role_cache_dir}; #{action}")
+          die "Failed to setup @ #{role_file}: #{action}: #{out} #{err}" unless status.success?
+        end
+      end
+
     end
 
     rundir,err,ok = exec_cmd('mktemp -d /tmp/ansible-playbook-jig-XXXXXX')
