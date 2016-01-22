@@ -1,0 +1,12 @@
+{
+    "service": {
+        "name": "provisioner-service",
+        "address": "FILLMEIN",
+        "tags": [ "deployment:system" ],
+        "port": 8091,
+        "check": {
+            "script": "pidof sws",
+            "interval": "10s"
+        }
+    }
+}
