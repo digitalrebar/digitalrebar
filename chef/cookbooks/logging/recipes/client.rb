@@ -19,7 +19,6 @@ return if node[:platform] == "coreos" || !node[:rebar][:providers][:use_logging]
 package "rsyslog" unless Kernel.system("which rsyslogd")
 
 # Don't configure this node as a logging client if it is already a server.
-return if node["roles"].include?("logging-server")
 servers = node[:rebar][:logging][:servers]
 
 # Disable syslogd in favor of rsyslog on redhat.

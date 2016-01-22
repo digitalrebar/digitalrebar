@@ -23,36 +23,28 @@ barclamp:
   license: "Apache 2"
   license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
-
-
 roles:
-  - name: logging-server
-    jig: chef
-    icon: content_paste
-    requires:
-      - dns-client
+  - name: logging-service
+    jig: role-provided
+    icon: local_library
+    flags:
+      - service
     attribs:
-      - name: logging_server
+      - name: logging_servers
         description: "The IP addresses of the server that should get all logging output."
         map: 'rebar/logging/servers'
-      - name: logging-external_servers
-        description: 'The IP addresses if the external log server we should ship logs to'
-        map: 'rebar/logging/external_servers'
-        default: []
         schema:
           type: seq
           sequence:
             - type: str
+
   - name: logging-client
     jig: chef
     icon: create
     flags:
       - implicit
-    requires:
-      - dns-client
-      - logging-server
     wants-attribs:
-      - logging_server
+      - logging_servers
       - use-logging
 
 attribs:

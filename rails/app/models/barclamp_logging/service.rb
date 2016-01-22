@@ -1,4 +1,4 @@
-# Copyright 2013, Dell
+# Copyright 2015, RackN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,15 @@
 # limitations under the License.
 #
 
-en:
-  common:
-    roles:
-      logging-client: "Logging Client"
-    attribs:
+class BarclampLogging::Service < Service
+
+  def do_transition(nr, data)
+    wait_for_service(nr,data, "logging-service")
+    deployment_role = nr.deployment_role
+    until Attrib.get('logging_servers', deployment_role) do
+      sleep 1
+      deployment_role.reload
+    end
+  end
+
+end
