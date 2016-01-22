@@ -105,6 +105,8 @@ branch_exists() { git show-ref --quiet --verify --heads -- "refs/heads/$1"; }
 # Test to see if a container does not need to be rebuilt.
 container_is_up_to_date() (
     [[ ${BUILT_CONTAINERS[$1]} ]] && return 0
+    local pc=${CONTAINER_PARENTS[$1]}
+    [[ $pc && ${BUILT_CONTAINERS[$pc]} ]] && return 1
     [[ $FORCE_BUILD == true ]] && return 1
     [[ $ALWAYS_PULL = true ]] && docker pull "$1:$BUILD_TAG"
     [[ -f $repo_dir/last-built-image-id ]] || return 1
@@ -123,6 +125,13 @@ build_container() {
         echo "Container $1 does not need rebuilding"
         return 0
     fi
+    if [[ ${CONTAINER_PARENTS[$1]} ]]; then
+        local pc=${CONTAINER_PARENTS[$1]}
+        if [[ ${UNBUILT_CONTAINERS[$pc]} ]]; then
+            UNBUILT_CONTAINERS[$1]="Refusing to build container $1, parent $pc failed build"
+            return 1
+        fi
+    fi
     echo
     echo "Building container $1"
     local buildargs=("-t" "${1}:${BUILD_TAG}")
@@ -130,7 +139,7 @@ build_container() {
     if ! ( cd "$repo_dir" && docker build "${buildargs[@]}" .); then
         echo "Build of container $1 failed."
         UNBUILT_CONTAINERS[$1]="Run 'cd \"$repo_dir\" && docker build -t \"${1}:${BUILD_TAG}\" .' to see what failed."
-        return
+        return 1
     fi
     BUILT_CONTAINERS[$1]=true
     echo "Build of $1 successful"
@@ -226,7 +235,7 @@ if [[ ${#CONTAINERS_TO_BUILD[@]} == 0 ]]; then
 fi
 
 for container in $(sort_containers "${!CONTAINERS_TO_BUILD[@]}"); do
-    [[ ${BUILT_CONTAINERS[$container]} ]] || build_container "$container"
+    [[ ${BUILT_CONTAINERS[$container]} ]] || build_container "$container" || break
 done
 
 if [[ ${#UNBUILT_CONTAINERS[@]} != 0 ]]; then
