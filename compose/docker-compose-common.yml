@@ -116,6 +116,18 @@ provisioner:
     - ./common.env
     - ./access.env
 
+logging:
+  image: digitalrebar/logging
+  privileged: true
+  restart: always
+  volumes:
+    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./data-dir/node:/etc/rebar-data
+    - ./data-dir/node-logs:/var/log/nodes
+  env_file:
+    - ./common.env
+    - ./access.env
+
 ux:
   image: digitalrebar/dr_ux
   privileged: true
