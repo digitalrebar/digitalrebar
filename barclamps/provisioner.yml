@@ -23,65 +23,10 @@ barclamp:
   license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
-  - name: provisioner-server
-    jig: chef
-    icon: local_shipping
-    requires:
-      - dns-client
-      - proxy-client
-      - rebar-access
-    attribs:
-      - name: provisioner-online
-        description: 'Whether or not the provisioner is operating in online mode..'
-        map: 'rebar/provisioner/server/online'
-        default: true
-        schema:
-          type: bool
-      - name: provisioner-root
-        description: 'Root directory of the provisioner'
-        map: 'rebar/provisioner/server/root'
-        default: '/tftpboot'
-        schema:
-          type: str
-      - name: provisioner-upstream_proxy
-        description: "The upstream proxy the provisioner should use"
-        map: 'rebar/provisioner/server/upstream_proxy'
-        schema:
-          type: str
-      - name: provisioner-default-user
-        description: "The name of the user Rebar will create by default on deployed nodes"
-        map: 'rebar/provisioner/server/default_user'
-        default: 'rebar'
-        schema:
-          type: str
-      - name: provisioner-default-password-hash
-        description: "The default password hash for the default user"
-        map: 'rebar/provisioner/server/default_password_hash'
-        default: '$1$GAT8F5cU$5KfBh7eq6S9hM6DWulb9L0'
-        schema:
-          type: str
-      - name: provisioner-server-http-port
-        description: 'The port that the provisioner Web server will listen on'
-        map: 'rebar/provisioner/server/web_port'
-        default: 8091
-        schema:
-          type: int
-      - name: provisioner-use-local-security
-        description: 'Something that no longer has meaning as far as I know'
-        map: 'rebar/provisioner/server/use_local_security'
-        default: true
-      - name: provisioner-use-serial-console
-        description: 'Whether the provisioner should configure installed nodes to use a serial console as their default console.'
-        map: 'rebar/provisioner/server/use_security_console'
-        default: false
-        schema:
-          type: bool
-
   - name: provisioner-base-images
     jig: chef
     icon: album
     requires:
-      - provisioner-server
       - provisioner-service
       - rebar-api_service
       - dns-service
@@ -261,7 +206,6 @@ roles:
     icon: library_books
     requires:
       - provisioner-base-images
-      - provisioner-server
       - proxy-client
       - ntp-service
       - rebar-access
@@ -295,6 +239,52 @@ roles:
       - proxy-service
       - chef-service
     attribs:
+      - name: provisioner-online
+        description: 'Whether or not the provisioner is operating in online mode..'
+        map: 'rebar/provisioner/server/online'
+        default: true
+        schema:
+          type: bool
+      - name: provisioner-root
+        description: 'Root directory of the provisioner'
+        map: 'rebar/provisioner/server/root'
+        default: '/tftpboot'
+        schema:
+          type: str
+      - name: provisioner-upstream_proxy
+        description: "The upstream proxy the provisioner should use"
+        map: 'rebar/provisioner/server/upstream_proxy'
+        schema:
+          type: str
+      - name: provisioner-default-user
+        description: "The name of the user Rebar will create by default on deployed nodes"
+        map: 'rebar/provisioner/server/default_user'
+        default: 'rebar'
+        schema:
+          type: str
+      - name: provisioner-default-password-hash
+        description: "The default password hash for the default user"
+        map: 'rebar/provisioner/server/default_password_hash'
+        default: '$1$GAT8F5cU$5KfBh7eq6S9hM6DWulb9L0'
+        schema:
+          type: str
+      - name: provisioner-server-http-port
+        description: 'The port that the provisioner Web server will listen on'
+        map: 'rebar/provisioner/server/web_port'
+        default: 8091
+        schema:
+          type: int
+      - name: provisioner-use-local-security
+        description: 'Something that no longer has meaning as far as I know'
+        map: 'rebar/provisioner/server/use_local_security'
+        default: true
+      - name: provisioner-use-serial-console
+        description: 'Whether the provisioner should configure installed nodes to use a serial console as their default console.'
+        map: 'rebar/provisioner/server/use_security_console'
+        default: false
+        schema:
+          type: bool
+
       - name: provisioner-webservers
         description: 'The URL that managed nodes should use to contact the provisioner webserver.'
         map: 'rebar/provisioner/server/webservers'

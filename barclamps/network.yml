@@ -92,8 +92,6 @@ roles:
               - "0000:00/0000:00:07"
   - name: network-lldpd
     jig: chef
-    requires:
-      - provisioner-server
     flags:
       - implicit
   # there are more roles BUT they are dynamically created
