@@ -73,9 +73,9 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
   def run(nr,data)
     role_yaml = nr.role.metadata
 
-    die "Missing src path @ #{role_file}" unless role_yaml['playbook_src_paths']
-    die "Missing playbook path @ #{role_file}" unless role_yaml['playbook_path']
-    die "Missing playbook file @ #{role_file}" unless role_yaml['playbook_file']
+    die "Missing src path @ #{nr.role.name}" unless role_yaml['playbook_src_paths']
+    die "Missing playbook path @ #{nr.role.name}" unless role_yaml['playbook_path']
+    die "Missing playbook file @ #{nr.role.name}" unless role_yaml['playbook_file']
 
     role_group_map = role_yaml['role_group_map']
     role_group_map = {} unless role_group_map
@@ -101,15 +101,15 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
           # If we are told galaxy, then load it into ansible.
           if info =~ /^galaxy:/
             out, err, status = exec_cmd("sudo ansible-galaxy install #{info.split(':')[1]}")
-            die "Failed to get #{info} @ #{role_file}: #{out} #{err}" unless status.success?
+            die "Failed to get #{info} @ #{nr.role.name}: #{out} #{err}" unless status.success?
             out, err, status = exec_cmd("mkdir -p #{piece_part}")
-            die "Failed to mkdir @ #{role_file}:#{dir} #{out} #{err}" unless status.success?
+            die "Failed to mkdir @ #{nr.role.name}:#{dir} #{out} #{err}" unless status.success?
           elsif info =~ /^http/
             out, err, status = exec_cmd("mkdir -p #{role_cache_dir}")
-            die "Failed to mkdir @ #{role_file}:#{dir} #{out} #{err}" unless status.success?
+            die "Failed to mkdir @ #{nr.role.name}:#{dir} #{out} #{err}" unless status.success?
             # Load the git cache
             out, err, status = exec_cmd("git clone #{info} #{piece_part}")
-            die "Failed to git #{info} @ #{role_file}: #{out} #{err}" unless status.success?
+            die "Failed to git #{info} @ #{nr.role.name}: #{out} #{err}" unless status.success?
           else
             local_scripts = File.join nr.barclamp.source_path, 'ansible-playbooks', 'roles', nr.role.name
             FileUtils.cp_r("#{local_scripts}/#{info}/.", "#{piece_part}")
@@ -131,7 +131,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
       if role_yaml['playbook_src_setup']
         role_yaml['playbook_src_setup'].each do |action|
           out, err, status = exec_cmd("cd #{role_cache_dir}; #{action}")
-          die "Failed to setup @ #{role_file}: #{action}: #{out} #{err}" unless status.success?
+          die "Failed to setup @ #{action}: #{out} #{err}" unless status.success?
         end
       end
 
