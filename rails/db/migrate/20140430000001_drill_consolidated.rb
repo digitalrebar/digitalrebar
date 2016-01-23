@@ -115,7 +115,7 @@ class DrillConsolidated < ActiveRecord::Migration
       t.text        :name,              null: false, index: { unique: true }
       t.text        :description,       null: false, default: ''
       t.text        :type,              null: true
-      t.jsonb        :template,          null: false, default: { expr: "'{}'::jsonb" }
+      t.jsonb       :template,          null: false, default: { expr: "'{}'::jsonb" }
       t.text        :jig_name,          null: false
       t.text        :provides,          array: true, null: false, default: { expr: "ARRAY[]::text[]" }
       t.text        :conflicts,         array: true, null: false, default: { expr: "ARRAY[]::text[]" }
@@ -144,8 +144,9 @@ class DrillConsolidated < ActiveRecord::Migration
       t.boolean     :milestone,         null: false, default: false # 2014062400
       t.boolean     :powersave,         null: false, default: false # 20150109193000
       t.boolean     :service,           null: false, default: false # 20150203155600
-      t.jsonb        :notes,          null: false,   default: { expr: "'{}'::jsonb" }  # 20150713092600
+      t.jsonb       :notes,             null: false, default: { expr: "'{}'::jsonb" }  # 20150713092600
       t.text        :icon,              null: false, default: 'memory'  # 20160117
+      t.jsonb       :metadata,          null: false, default: { expr: "'{}'::jsonb" }  # 20160123104600
     end
 
     create_table :deployments do |t|
@@ -177,7 +178,7 @@ class DrillConsolidated < ActiveRecord::Migration
       t.text        :name,           null: false, index: :unique
       t.text        :type
       t.text        :description,    null: false, default: "An undescribed provider"
-      t.jsonb        :auth_details,   null: false, default: { expr: "'{}'::jsonb" }
+      t.jsonb       :auth_details,   null: false, default: { expr: "'{}'::jsonb" }
       t.timestamps
     end
 

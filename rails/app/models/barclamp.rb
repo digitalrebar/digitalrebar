@@ -150,6 +150,7 @@ class Barclamp < ActiveRecord::Base
         description = role['description'] || role_name.gsub("-"," ").titleize
         role_provides = role['provides'] || []
         role_conflicts = role['conflicts'] || []
+        role_metadata = role['metadata'] || {}
         icon = if role['icon']
           role['icon']
         else
@@ -189,6 +190,7 @@ class Barclamp < ActiveRecord::Base
                              :service=>flags.include?('service'),
                              :cluster=>flags.include?('cluster'),
                              :powersave=>flags.include?('powersave'),
+                             :metadata=>role_metadata,
                              :icon=>icon)
         prerequisites.each do |rr|
           Rails.logger.info("Making #{r.name} depend on #{rr}")
