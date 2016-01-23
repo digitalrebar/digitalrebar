@@ -71,14 +71,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
   end
 
   def run(nr,data)
-    local_scripts = File.join nr.barclamp.source_path, 'ansible-playbooks', 'roles', nr.role.name
-    die "No local scripts @ #{local_scripts}" unless File.exists?(local_scripts)
-
-    role_file = File.join local_scripts, 'role.yml'
-    die "No def file @ #{role_file}" unless File.exists?(role_file)
-
-    role_yaml = YAML.load_file(role_file)
-    die "Bad yaml file @ #{role_file}" unless role_yaml
+    role_yaml = nr.role.metadata
 
     die "Missing src path @ #{role_file}" unless role_yaml['playbook_src_paths']
     die "Missing playbook path @ #{role_file}" unless role_yaml['playbook_path']
@@ -118,6 +111,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
             out, err, status = exec_cmd("git clone #{info} #{piece_part}")
             die "Failed to git #{info} @ #{role_file}: #{out} #{err}" unless status.success?
           else
+            local_scripts = File.join nr.barclamp.source_path, 'ansible-playbooks', 'roles', nr.role.name
             FileUtils.cp_r("#{local_scripts}/#{info}/.", "#{piece_part}")
           end
 
@@ -127,6 +121,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
           elsif info =~ /^http/
             # Update git repos??
           else
+            local_scripts = File.join nr.barclamp.source_path, 'ansible-playbooks', 'roles', nr.role.name
             FileUtils.cp_r("#{local_scripts}/#{info}/.", "#{piece_part}")
           end
         end
@@ -219,10 +214,10 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     rns_string = ""
     rns_string = "--tags=#{rns.join(',')}" if rns
 
-    # Run all nodes
-    nodestring = ""
-    # Run one node
-    # nodestring = "-l #{nr.node.address.addr}"
+    # Run one node (Default)
+    nodestring = "-l #{nr.node.name}"
+    # unless deplyoment scope - then run all nodes
+    nodestring = "" if role_yaml['playbook_scope'] == 'deployment'
 
     out,err,ok = exec_cmd("cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook #{nodestring} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} #{rns_string}", nr)
     die("Running: cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook #{nodestring} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} #{rns_string}\nScript jig run for #{nr.role.name} on #{nr.node.name} failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?
