@@ -1,0 +1,11 @@
+{
+    "service": {
+        "name": "internal-provisioner-service",
+        "tags": [ "deployment:system" ],
+        "port": 8091,
+        "check": {
+            "script": "pidof sws",
+            "interval": "10s"
+        }
+    }
+}

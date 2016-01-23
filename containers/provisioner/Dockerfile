@@ -19,5 +19,6 @@ RUN apt-get -y update \
        'https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/10.04/x86_64/chef_11.18.12-1_amd64.deb' \
   && dpkg -i /tmp/chef.deb && rm -f /tmp/chef.deb
 
+COPY *.json /root/
 COPY tftpd.conf /etc/default/tftpd-hpa
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
