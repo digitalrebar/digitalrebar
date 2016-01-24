@@ -129,7 +129,7 @@ else
 fi
 
 # Build ansible inventory file
-echo "$IP ansible_ssh_user=$LOGIN_USER" > /tmp/run-in-hosts.$$
+echo "$IP ansible_ssh_user=root" > /tmp/run-in-hosts.$$
 
 export ANSIBLE_HOST_KEY_CHECKING=False
 if [[ $ENV_VAR = "\"packet\": true," ]] ; then
