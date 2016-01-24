@@ -124,15 +124,15 @@ elif [[ $(uname -s) == "MINGW64_NT-10.0" ]]; then
     CONSUL_ADVERTISE=${DOCKER_HOST%:*}
     CONSUL_ADVERTISE=${CONSUL_ADVERTISE##*/}
 else
-    gwdev=$(ip -o -4 route show default |head -1 |awk '{print $5}')
+    gwdev=$(/sbin/ip -o -4 route show default |head -1 |awk '{print $5}')
     if [[ $gwdev ]]; then
         # First, advertise the address of the device with the default gateway
-        CONSUL_ADVERTISE=$(ip -o -4 addr show scope global dev "$gwdev" |head -1 |awk '{print $4}')
+        CONSUL_ADVERTISE=$(/sbin/ip -o -4 addr show scope global dev "$gwdev" |head -1 |awk '{print $4}')
         CONSUL_ADVERTISE="${CONSUL_ADVERTISE%/*}"
     else
         # Hmmm... we have no access to the Internet.  Pick an address with
         # global scope and hope for the best.
-        CONSUL_ADVERTISE=$(ip -o -4 addr show scope global dev |head -1 |awk '{print $4}')
+        CONSUL_ADVERTISE=$(/sbin/ip -o -4 addr show scope global dev |head -1 |awk '{print $4}')
         CONSUL_ADVERTISE="${CONSUL_ADVERTISE%/*}"
     fi
 fi
