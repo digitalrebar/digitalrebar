@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-class AwsProvider < FogProvider
+class AwsProvider < CloudProvider
 
   before_save :inject_aws
 

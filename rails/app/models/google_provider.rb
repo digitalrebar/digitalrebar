@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-class GoogleProvider < FogProvider
+class GoogleProvider < CloudProvider
 
   before_save :inject_google
 
@@ -22,5 +22,5 @@ class GoogleProvider < FogProvider
   def inject_google
     auth_details['provider'] = 'Google'
   end
-  
+
 end

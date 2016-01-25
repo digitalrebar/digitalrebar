@@ -500,7 +500,7 @@ en:
       update: "Save"
       provider: "Provider"
       config_options: "Config Options"
-      fog:
+      cloud:
         details: "Details"
       aws:
         access_key_id: "Access Key"

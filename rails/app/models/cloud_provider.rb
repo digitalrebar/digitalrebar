@@ -16,7 +16,7 @@ require 'diplomat'
 require 'jsonrpc-client'
 
 
-class FogProvider < Provider
+class CloudProvider < Provider
 
   after_commit :register_endpoint, on: [:create, :update]
 
@@ -55,7 +55,7 @@ class FogProvider < Provider
   end
 
   def endpoint
-    service = Diplomat::Service.get('fogwrap')
+    service = Diplomat::Service.get('cloudwrap')
     JSONRPC::Client.new("http://#{service.Address}:#{service.ServicePort}")
   end
 
