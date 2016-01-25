@@ -19,63 +19,8 @@
 Chef::Log.info("Provisioner: raw server data #{ node["rebar"]["provisioner"]["server"] }")
 
 provisioner_web = node["rebar"]["provisioner"]["server"]["webservers"].first["url"]
-api_server=node['rebar']['api']['servers'].first["url"]
-
-machine_key = node["rebar"]["machine_key"]
-
 os_token="#{node["platform"]}-#{node["platform_version"]}"
 tftproot =  node["rebar"]["provisioner"]["server"]["root"]
-discover_dir="#{tftproot}/discovery"
-pxecfg_dir="#{discover_dir}/pxelinux.cfg"
-uefi_dir=discover_dir
-
-# Build base sledgehammer kernel args
-sledge_args = Array.new
-sledge_args << "rootflags=loop"
-sledge_args << "initrd=initrd0.img"
-sledge_args << "root=live:/sledgehammer.iso"
-sledge_args << "rootfstype=auto"
-sledge_args << "ro"
-sledge_args << "liveimg"
-sledge_args << "rd_NO_LUKS"
-sledge_args << "rd_NO_MD"
-sledge_args << "rd_NO_DM"
-if node["rebar"]["provisioner"]["server"]["use_serial_console"]
-  sledge_args << "console=tty0 console=ttyS1,115200n8"
-end
-sledge_args << "provisioner.web=#{provisioner_web}"
-sledge_args << "rebar.web=#{api_server}"
-sledge_args << "rebar.dns.domain=#{node["rebar"]["dns"]["domain"]}"
-na = node[:rebar][:dns][:nameservers].collect { |x| x['address'] }
-sledge_args << "rebar.dns.servers=#{na.join(',')}"
-
-
-node.normal["rebar"]["provisioner"]["server"]["sledgehammer_kernel_params"] = sledge_args.join(" ")
-append_line = node["rebar"]["provisioner"]["server"]["sledgehammer_kernel_params"]
-
-# By default, install the same OS that the admin node is running
-# If the comitted proposal has a defualt, try it.
-# Otherwise use the OS the provisioner node is using.
-
-bash "Set up selinux contexts for #{tftproot}" do
-  code <<EOC
-semanage fcontext -a -f '' -t public_content_t "#{tftproot}"
-semanage fcontext -a -f '' -t public_content_t "#{tftproot}(/.*)?"
-EOC
-  only_if "which selinuxenabled && selinuxenabled"
-  not_if "ls -adZ #{tftproot} |grep -q public_content_t"
-end
-
-# Make sure that the files directory is on the server
-directory "#{tftproot}/files" do
-  action :create
-  recursive true
-end
-
-remote_file "Copy rebar to the weserver" do
-  path "#{tftproot}/files/rebar"
-  source "file:///usr/local/bin/rebar"
-end
 
 unless default = node["rebar"]["provisioner"]["server"]["default_os"]
   node.normal["rebar"]["provisioner"]["server"]["default_os"] = default = os_token
@@ -85,46 +30,6 @@ unless node.normal["rebar"]["provisioner"]["server"]["repositories"]
   node.normal["rebar"]["provisioner"]["server"]["repositories"] = Mash.new
 end
 node.normal["rebar"]["provisioner"]["server"]["available_oses"] = Mash.new
-
-directory "#{pxecfg_dir}" do
-  action :create
-  recursive true
-end
-
-directory "#{tftproot}/nodes" do
-  action :create
-  recursive true
-end
-
-cookbook_file "#{tftproot}/nodes/start-up.sh" do
-  source "start-up.sh"
-  action :create
-end
-
-template "#{pxecfg_dir}/default" do
-  mode 0644
-  owner "root"
-  group "root"
-  source "default.erb"
-  variables(:append_line => "#{append_line} rebar.state=discovery rebar.install.key=#{machine_key}",
-            :install_name => "discovery",
-            :initrd => "#{provisioner_web}/discovery/initrd0.img",
-            :machine_key => machine_key,
-            :kernel => "#{provisioner_web}/discovery/vmlinuz0")
-end
-
-# Do uefi as well.
-template "#{uefi_dir}/elilo.conf" do
-  mode 0644
-  owner "root"
-  group "root"
-  source "default.elilo.erb"
-  variables(:append_line => "#{append_line} rebar.state=discovery",
-            :install_name => "discovery",
-            :initrd => "initrd0.img",
-            :machine_key => machine_key,
-            :kernel => "vmlinuz0")
-end
 
 node["rebar"]["provisioner"]["server"]["supported_oses"].each do |os,params|
   web_path = "#{provisioner_web}/#{os}"
@@ -349,30 +254,6 @@ EOC
       node.normal["rebar"]["provisioner"]["server"]["repositories"][os]["provisioner"] = loc
     end
   end
-end
-
-bash "Install lpxelinux.0" do
-  code <<EOC
-cd #{discover_dir}
-for f in syslinux-6.03/bios/com32/elflink/ldlinux/ldlinux.c32 syslinux-6.03/bios/core/lpxelinux.0; do
-    tar xJf /tmp/syslinux-6.03.tar.xz $f -O >${f##*/}
-done
-EOC
-  not_if "test -f '#{discover_dir}/lpxelinux.0'"
-end
-
-bash "Install elilo as UEFI netboot loader" do
-  code <<EOC
-cd #{uefi_dir}
-
-tar xzf '/tmp/elilo-3.16-all.tar.gz' ./elilo-3.16-x86_64.efi
-tar xzf '/tmp/elilo-3.16-all.tar.gz' ./elilo-3.16-ia32.efi
-tar xzf '/tmp/elilo-3.16-all.tar.gz' ./elilo-3.16-ia64.efi
-mv elilo-3.16-x86_64.efi bootx64.efi
-mv elilo-3.16-ia32.efi bootia32.efi
-mv elilo-3.16-ia64.efi bootia64.efi
-EOC
-  not_if "test -f '#{uefi_dir}/bootx64.efi'"
 end
 
 # Build coreos chef code tgz - fix ip issue for ohai and dmidecode

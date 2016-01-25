@@ -9,42 +9,27 @@ get_param() {
     [[ $(cat /proc/cmdline) =~ $1 ]] && echo "${BASH_REMATCH[1]}"
 }
 
-is_suse() [[ -f /etc/SuSE-release ]]
+dhcp_param() {
+    [[ $(cat /var/lib/dhclient/dhclient.leases) =~ $1 ]] && echo "${BASH_REMATCH[1]}"
+}
+
 
 DHCPDIR=/var/lib/dhclient
 RSYSLOGSERVICE=rsyslog
-
-is_suse && {
- DHCPDIR=/var/lib/dhcp
- RSYSLOGSERVICE=syslog
-}
 
 # Some useful boot parameter matches
 ip_re='([0-9a-f.:]+/[0-9]+)'
 bootif_re='BOOTIF=([^ ]+)'
 host_re='rebar\.fqdn=([^ ]+)'
-install_key_re='rebar\.install\.key=([^ ]+)'
 provisioner_re='provisioner\.web=([^ ]+)'
-rebar_re='rebar\.web=([^ ]+)'
-domain_re='rebar\.dns\.domain=([^ ]+)'
-dns_server_re='rebar\.dns\.servers=([^ ]+)'
-
-# Grab the boot parameters we should always be passed
-
-# install key first
-export REBAR_KEY="$(get_param "$install_key_re")"
-
-# Provisioner and Rebar web endpoints next
-export PROVISIONER_WEB="$(get_param "$provisioner_re")"
-export REBAR_WEB="$(get_param "$rebar_re")"
-export DOMAIN="$(get_param "$domain_re")"
-export DNS_SERVERS="$(get_param "$dns_server_re")"
+domain_re='option domain-name "([^"]+)'
+dns_servers_re='option domain-name-servers ([^;]+)'
+PROVISIONER_WEB="$(get_param "$provisioner_re")"
 
 # Test to see if we got everything we must have.
 # Die horribly otherwise.
-if ! [[ $REBAR_KEY && $PROVISIONER_WEB && $REBAR_WEB && \
-    $DOMAIN && $DNS_SERVERS ]]; then
-    echo "Sledgehammer was not booted off a Rebar 2 provisioner."
+if ! [[ $PROVISIONER_WEB ]]; then
+    echo "Do not know where to find the Provisioner."
     echo "This cannot happen"
     exit 1
 fi
@@ -87,7 +72,7 @@ if [[ ! $BOOTDEV ]]; then
     exit 1
 fi
 
-killall dhclient && sleep 5
+killall dhclient && sleep 5 || :
 # Make sure our PXE interface is up, then fire up DHCP on it.
 ip link set "$BOOTDEV" up || :
 dhclient "$BOOTDEV" || :
@@ -100,7 +85,7 @@ if ! [[ $(ip -4 -o addr show dev $BOOTDEV) =~ $bootdev_ip_re ]]; then
 fi
 
 while ! [[ -x /tmp/start-up.sh ]]; do
-    curl -s -f -L -o /tmp/start-up.sh "$PROVISIONER_WEB/nodes/start-up.sh" || :
+    curl -sfL -o /tmp/start-up.sh "$PROVISIONER_WEB/nodes/start-up.sh" || :
     if grep -q '/tmp/control.sh' /tmp/start-up.sh && \
         head -1 /tmp/start-up.sh | grep -q '^#!/bin/bash'; then
         chmod 755 /tmp/start-up.sh
@@ -108,5 +93,13 @@ while ! [[ -x /tmp/start-up.sh ]]; do
     fi
     sleep 1
 done
+DOMAIN=$(dhcp_param "$domain_re")
+DNS_SERVERS=$(dhcp_param "$dns_servers_re")
+if [[ ! ($DOMAIN && $DNS_SERVERS) ]]; then
+    echo "Cannot find domain from the DHCP information"
+    exit 1
+fi
+
+export BOOTDEV PROVISIONER_WEB MAC DOMAIN DNS_SERVERS
 
 . /tmp/start-up.sh
