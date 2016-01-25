@@ -166,7 +166,7 @@ loop do
       if ep && ep.respond_to?(:key_pairs)
         old_kp = ep.key_pairs.get(kp_name)
         old_kp.destroy if old_kp
-      else if ep.nil? # Packet
+      elsif ep.nil? # Packet
         # Packet endpoint has the account key
         packet_project_token = endpoint['project_token']
 
