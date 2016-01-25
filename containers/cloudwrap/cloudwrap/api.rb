@@ -38,34 +38,11 @@ class Servers
       packet_project_token = endpoint['project_token']
       packet_project_id = endpoint['project_id']
 
-      response = nil
-      begin
-        response = RestClient.get "https://api.packet.net/ssh-keys",
-                                   content_type: :json, accept: :json,
-                                   'X-Auth-Token' => packet_project_token
-      rescue Exception => e
-        return "Failed: error = #{e}"
-      end
-
-      if response.code != 200
-        return "Failed to get ssh-keys for #{endpoint}: #{response.code}"
-      end
-
       # Is our key in it?
       s = File.open("#{kp_loc}.pub", 'rb') { |f| f.read }
       s = s.strip
 
-      found = false
-      wrong = false
-      key_id = nil
-      keys = JSON.parse(response.body)['ssh_keys']
-      keys.each do |key|
-        next unless key['label'] == kp_name
-        found = true
-        wrong = true if s != key['key']
-        key_id = key['id'] if wrong
-        break
-      end
+      found, wrong, key_id = get_packet_key_info(packet_project_token, kp_name, s)
 
       data = {
         'label' => kp_name,

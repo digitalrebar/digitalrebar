@@ -166,6 +166,25 @@ loop do
       if ep && ep.respond_to?(:key_pairs)
         old_kp = ep.key_pairs.get(kp_name)
         old_kp.destroy if old_kp
+      else if ep.nil? # Packet
+        # Packet endpoint has the account key
+        packet_project_token = endpoint['project_token']
+
+        found, wrong, key_id = get_packet_key_info(packet_project_token, kp_name, '')
+        if key_id
+          response = nil
+          begin
+            response = RestClient.delete "https://api.packet.net/ssh-keys/#{key_id}",
+                                         content_type: :json, accept: :json,
+                                         'X-Auth-Token' => packet_project_token
+          rescue Exception => e
+            return e.inspect
+          end
+
+          if response.code != 204
+            raise "Failed to delete device for #{endpoint} #{id}"
+          end
+        end
       end
       File::delete(kp_loc)
     end
