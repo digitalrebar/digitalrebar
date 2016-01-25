@@ -89,7 +89,7 @@ loop do
         end
 
         dev_ip = server.public_ip_address
-        cidr = "#{dev_ip}/32"
+        cidr = "32"
 
       when 'Packet'
         cidr = device_data['ip_addresses'][0]['cidr']
@@ -157,8 +157,8 @@ loop do
         end
       end
 
-      log("Adding node control address #{cidr} to node #{rebar_id}")
-      system("rebar nodes set #{rebar_id} attrib node-control-address to '{\"value\": \"#{cidr}\"}'")
+      log("Adding node control address #{dev_ip}/#{cidr} to node #{rebar_id}")
+      system("rebar nodes set #{rebar_id} attrib node-control-address to '{\"value\": \"#{dev_ip}/#{cidr}\"}'")
       log "Marking server #{rebar_id} alive"
       Diplomat::Kv.delete(key)
       Diplomat::Kv.delete("cloudwrap/keys/#{rebar_id}")
