@@ -148,6 +148,7 @@ cat >access.env <<EOF
 EXTERNAL_IP=$EXTERNAL_IP
 FORWARDER_IP=$FORWARDER_IP
 CONSUL_JOIN=$CONSUL_JOIN
+DR_START_TIME=$(date +%s)
 EOF
 
 cat >config-dir/consul/server-advertise.json <<EOF

@@ -12,7 +12,7 @@ def fix_hash(h)
 end
 
 def keyfile_name(node_id)
-  "id-cloudwrap-#{node_id}"
+  "id-cloudwrap-#{node_id}-#{ENV['DR_START_TIME']}"
 end
 
 def get_packet_key_info(packet_project_token, kp_name, s)

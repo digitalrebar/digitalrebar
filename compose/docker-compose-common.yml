@@ -72,6 +72,7 @@ cloudwrap:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
+    - ./access.env
 
 dns:
   image: digitalrebar/dr_dns

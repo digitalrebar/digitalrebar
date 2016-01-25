@@ -137,7 +137,7 @@ loop do
           f.flush
           f.fsync
           begin
-            Net::SCP.upload!(dev_ip, 'root', f.path, "/tmp/rebar_keys", { keys: [ kp_loc ], paranoid: false })
+            Net::SCP.upload!(dev_ip, 'root', f.path, "/tmp/rebar_keys", { ssh: { keys: [ kp_loc ], paranoid: false } })
           rescue Exception => e
             log "Server #{packet_device_id} failed to upload keys, skipping: #{e}"
             next
