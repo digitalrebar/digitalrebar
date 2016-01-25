@@ -68,10 +68,10 @@ rebar_api:
     - "3000:3000"
 {{ END ACCESS_MODE==HOST }}
 
-fogwrap:
+cloudwrap:
   extends:
     file: docker-compose-common.yml
-    service: fogwrap
+    service: cloudwrap
 {{ START ACCESS_MODE==FORWARDER }}
   links:
     - forwarder:forwarder
@@ -81,19 +81,6 @@ fogwrap:
     - "3030:3030"
 {{ END ACCESS_MODE==HOST }}
     
-packetwrap:
-  extends:
-    file: docker-compose-common.yml
-    service: packetwrap
-{{ START ACCESS_MODE==FORWARDER }}
-  links:
-    - forwarder:forwarder
-{{ END ACCESS_MODE==FORWARDER }}
-{{ START ACCESS_MODE==HOST }}
-  ports:
-    - "3031:3031"
-{{ END ACCESS_MODE==HOST }}
-
 dns:
   extends:
     file: docker-compose-common.yml

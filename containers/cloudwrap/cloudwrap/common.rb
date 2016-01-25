@@ -11,6 +11,39 @@ def fix_hash(h)
   res
 end
 
+def keyfile_name(node_id)
+  "id-cloudwrap-#{node_id}"
+end
+
+def get_packet_key_info(packet_project_token, kp_name, s)
+  response = nil
+  begin
+    response = RestClient.get "https://api.packet.net/ssh-keys",
+                               content_type: :json, accept: :json,
+                               'X-Auth-Token' => packet_project_token
+  rescue Exception => e
+    return [ false, true, nil ]
+  end
+
+  if response.code != 200
+    return [ false, true, nil ]
+  end
+
+  found = false
+  wrong = false
+  key_id = nil
+  keys = JSON.parse(response.body)['ssh_keys']
+  keys.each do |key|
+    next unless key['label'] == kp_name
+    found = true
+    wrong = true if s != key['key']
+    key_id = key['id'] if wrong
+    break
+  end
+
+  [ found, wrong, key_id ]
+end
+
 #
 # Debug / Mock to test scale
 #
@@ -177,6 +210,7 @@ def get_endpoint(ep)
     res = fix_hash(ep)
     res[:google_json_key_string] = JSON.generate(res.delete(:google_json_key))
     Fog::Compute.new(res)
+  when 'Packet' then nil
   else
     log("Cannot get endpoint for #{ep['provider']}")
   end
