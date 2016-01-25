@@ -63,19 +63,10 @@ ntp:
     - ./common.env
     - ./access.env
 
-fogwrap:
-  image: digitalrebar/fogwrap
+cloudwrap:
+  image: digitalrebar/cloudwrap
   privileged: true
   restart: always
-  volumes:
-    - ./data-dir/node:/etc/rebar-data
-    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
-  env_file:
-    - ./common.env
-
-packetwrap:
-  image: digitalrebar/packetwrap
-  privileged: true
   volumes:
     - ./data-dir/node:/etc/rebar-data
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json

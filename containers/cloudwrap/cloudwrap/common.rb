@@ -177,6 +177,7 @@ def get_endpoint(ep)
     res = fix_hash(ep)
     res[:google_json_key_string] = JSON.generate(res.delete(:google_json_key))
     Fog::Compute.new(res)
+  when 'Packet' then nil
   else
     log("Cannot get endpoint for #{ep['provider']}")
   end

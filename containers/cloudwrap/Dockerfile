@@ -1,8 +1,8 @@
 FROM digitalrebar/deploy-service-wrapper
-MAINTAINER Greg Althaus <greg@rackn.com>
+MAINTAINER Victor Lowther <victor@rackn.com>
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
-COPY packetwrap /opt/packetwrap
+COPY cloudwrap /opt/cloudwrap
 
 RUN apt-get -y update && \
     apt-get -y install software-properties-common wget && \
@@ -11,5 +11,5 @@ RUN apt-get -y update && \
     apt-get -y update && \
     apt-get -y install ruby2.2 ruby2.2-dev make cmake curl build-essential jq libxml2-dev libcurl4-openssl-dev libssl-dev && \
     gem install bundler && \
-    mkdir -p /var/cache/packetwrap/gems && \
-    (cd /opt/packetwrap && bundle install --path /var/cache/packetwrap/gems --standalone --binstubs /usr/local/bin)
+    mkdir -p /var/cache/cloudwrap/gems && \
+    (cd /opt/cloudwrap && bundle install --path /var/cache/cloudwrap/gems --standalone --binstubs /usr/local/bin)

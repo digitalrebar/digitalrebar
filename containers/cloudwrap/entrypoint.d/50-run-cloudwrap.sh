@@ -4,10 +4,10 @@ if [[ $forwarder ]] ; then
     ip route add default via $forwarder
 fi
 
-cat >> /etc/consul.d/fogwrap.json <<EOF
+cat >> /etc/consul.d/cloudwrap.json <<EOF
 {
   "service": {
-    "name": "fogwrap",
+    "name": "cloudwrap",
     "tags": [ "deployment:system" ],
     "port": 3030,
     "check": {
@@ -26,7 +26,7 @@ run_forever() (
 )
 
 consul reload
-cd /opt/fogwrap
+cd /opt/cloudwrap
 
 touch api.log waiter.log
 run_forever bundle exec ./api.rb >>api.log &
