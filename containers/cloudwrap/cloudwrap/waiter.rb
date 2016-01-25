@@ -162,7 +162,7 @@ loop do
       Diplomat::Kv.delete(key)
       Diplomat::Kv.delete("cloudwrap/keys/#{rebar_id}")
       system("rebar nodes update #{rebar_id} '{\"alive\": true, \"available\": true}'")
-      if ep && ep.respond_to? :key_pairs
+      if ep && ep.respond_to?(:key_pairs)
         old_kp = ep.key_pairs.get(kp_name)
         old_kp.destroy if old_kp
       end
