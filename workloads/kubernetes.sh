@@ -209,6 +209,11 @@ if [[ $KUBERNETES_ETCD_CLIENT_PORT ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-etcd_client_port to "{ \"value\": ${KUBERNETES_ETCD_CLIENT_PORT} }"
 fi
 
+if [[ $KUBERNETES_DNS == true ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-dns_setup to "{ \"value\": true }"
+else
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-dns_setup to "{ \"value\": false }"
+fi
 if [[ $KUBERNETES_DNS_UPSTREAM ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-upstream_dns_servers to "{ \"value\": ${KUBERNETES_DNS_UPSTREAM} }"
 fi
