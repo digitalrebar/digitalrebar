@@ -39,13 +39,17 @@ help_options["--kubernetes-network-node-prefix=<Number>"]="Subnet prefix for nod
 
 help_options["--kubernetes-opencontrail-public-subnet=<CIDRIP>"]="Public network space for opencontrail"
 
-help_options["--kubernetes-dns-upstream=<JSON ARRAY of IP>"]="JSON array of DNS server IPs"
 help_options["--kubernetes-dns=<true|false>"]="Use DNS add-on"
+help_options["--kubernetes-dns-upstream=<JSON ARRAY of IP>"]="JSON array of DNS server IPs"
 help_options["--kubernetes-dns-replicas=<Number>"]="Number of DNS replicas to run"
+help_options["--kubernetes-dns-namespace=<Kuberetenes Namespace>"]="Namespace to put the DNS service in"
+help_options["--kubernetes-dns-domain=<Domain String>"]="Domain of the internal Kubernetes DNS service"
 
 help_options["--kubernetes-ui=<true|false>"]="Use Kube-UI"
+help_options["--kubernetes-dash=<true|false>"]="Use Kube-Dash"
 help_options["--kubernetes-cluster-logging=<true|false>"]="Use cluster logging"
 help_options["--kubernetes-cluster-monitoring=<true|false>"]="Use cluster monitoring"
+help_options["--kubernetes-fabric8=<true|false>"]="Use Fabric8 console"
 
 help_options["--kubernetes-test=<true|false>"]="Add the test role to validate completion"
 
@@ -205,30 +209,20 @@ if [[ $KUBERNETES_ETCD_CLIENT_PORT ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-etcd_client_port to "{ \"value\": ${KUBERNETES_ETCD_CLIENT_PORT} }"
 fi
 
-KUBERNETES_ADDONS=false
-
 if [[ $KUBERNETES_DNS_UPSTREAM ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-upstream_dns_servers to "{ \"value\": ${KUBERNETES_DNS_UPSTREAM} }"
-fi
-if [[ $KUBERNETES_DNS ]]; then
-    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-dns_setup to "{ \"value\": ${KUBERNETES_DNS} }"
-    KUBERNETES_ADDONS=true
 fi
 if [[ $KUBERNETES_DNS_REPLICAS ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-dns_replicas to "{ \"value\": ${KUBERNETES_DNS_REPLICAS} }"
 fi
-if [[ $KUBERNETES_UI ]]; then
-    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-kube-ui to "{ \"value\": ${KUBERNETES_UI} }"
-    KUBERNETES_ADDONS=true
+KUBERNETES_DNS_DOMAIN=${KUBERNETES_DNS_DOMAIN:-$DNS_DOMAIN}
+if [[ $KUBERNETES_DNS_DOMAIN ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-dns_domain to "{ \"value\": ${KUBERNETES_DNS_DOMAIN} }"
 fi
-if [[ $KUBERNETES_CLUSTER_LOGGING ]]; then
-    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-cluster_logging to "{ \"value\": ${KUBERNETES_CLUSTER_LOGGING} }"
-    KUBERNETES_ADDONS=true
+if [[ $KUBERNETES_DNS_NAMESPACE ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-dns_namespace to "{ \"value\": ${KUBERNETES_DNS_NAMESPACE} }"
 fi
-if [[ $KUBERNETES_CLUSTER_MONITORING ]]; then
-    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-cluster_monitoring to "{ \"value\": ${KUBERNETES_CLUSTER_MONITORING} }"
-    KUBERNETES_ADDONS=true
-fi
+
 
 rebar deployments commit $DEPLOYMENT_NAME
 
@@ -259,8 +253,23 @@ NAME="${DEPLOYMENT_NAME}-master-0.${DNS_DOMAIN}"
 rebar nodes bind $NAME to kubernetes-deploy
 
 # Add the add-ons and tests if needed/requested
-if [[ $KUBERNETES_ADDONS == true ]]; then
-    rebar nodes bind $NAME to kubernetes-add-ons
+if [[ $KUBERNETES_DNS == true ]]; then
+    rebar nodes bind $NAME to kubernetes-dns
+fi
+if [[ $KUBERNETES_UI == true ]]; then
+    rebar nodes bind $NAME to kubernetes-ui
+fi
+if [[ $KUBERNETES_DASH == true ]]; then
+    rebar nodes bind $NAME to kubernetes-dash
+fi
+if [[ $KUBERNETES_FABRIC8 == true ]]; then
+    rebar nodes bind $NAME to kubernetes-fabric8
+fi
+if [[ $KUBERNETES_CLUSTER_LOGGING == true ]]; then
+    rebar nodes bind $NAME to kubernetes-logging
+fi
+if [[ $KUBERNETES_CLUSTER_MONITORING == true ]]; then
+    rebar nodes bind $NAME to kubernetes-monitoring
 fi
 
 if [[ $KUBERNETES_TEST == true ]]; then
