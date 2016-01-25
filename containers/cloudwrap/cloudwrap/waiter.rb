@@ -19,20 +19,21 @@ loop do
     JSON.parse(response.body).each do |k|
       ep = JSON.parse(Base64.decode64(k["Value"]))
       endpoints[ep] ||= get_endpoint(ep)
-      fog_id = k["Key"].split("/",4)[-1]
+      packet_device_id = k["Key"].split("/",4)[-1]
       rebar_id = k["Key"].split("/",4)[-2]
 
       case ep['provider']
       when 'AWS', 'Google'
-        servers[k["Key"]] = [rebar_id, endpoints[ep].servers.get(fog_id), endpoints[ep]]
+        servers[k["Key"]] = [rebar_id, endpoints[ep].servers.get(packet_device_id), endpoints[ep], ep]
       when 'Packet'
-        servers[k["Key"]] = [rebar_id, packet_device_id, ep]
+        servers[k["Key"]] = [rebar_id, packet_device_id, nil, ep]
       end
     end if response && response.code == 200
     servers.each do |key, val|
       rebar_id = val[0]
-      server = val[1]
+      packet_device_id = server = val[1]
       ep = val[2]
+      endpoint = val[3]
 
       # Load key
       kp_name = "id-cloudwrap-#{rebar_id}"
@@ -47,7 +48,7 @@ loop do
       end
 
       # State good?
-      case ep['provider']
+      case endpoint['provider']
       when 'AWS', 'Google'
         log "Testing server #{server.id}"
         unless server.ready?
@@ -58,7 +59,7 @@ loop do
         log "Testing server #{rebar_id} #{packet_device_id} state"
         response = nil
         begin
-          response = RestClient.get "https://api.packet.net/projects/#{ep[:project_id]}/devices/#{packet_device_id}", content_type: :json, accept: :json, 'X-Auth-Token' => ep[:project_token]
+          response = RestClient.get "https://api.packet.net/projects/#{endpoint['project_id']}/devices/#{packet_device_id}", content_type: :json, accept: :json, 'X-Auth-Token' => endpoint['project_token']
         rescue RestClient::ResourceNotFound => e2
           log("Looking for #{packet_device_id}, but was delete - removing")
           Diplomat::Kv.delete(key)
@@ -76,7 +77,7 @@ loop do
       end
 
       # SSH able?
-      case ep['provider']
+      case endpoint['provider']
       when 'AWS', 'Google'
         server.private_key_path = kp_loc
         unless %w(rebar ec2-user ubuntu centos root).find do |user|
@@ -107,7 +108,7 @@ loop do
       end
 
       log "Adding rebar keys and enabling SSH in as root"
-      case ep['provider']
+      case endpoint['provider']
       when 'AWS', 'Google'
         server.ssh("sudo -- mkdir -p /root/.ssh")
         server.ssh("sudo -- sed -i -r '/(PasswordAuthentication|PermitRootLogin)/d' /etc/ssh/sshd_config")
