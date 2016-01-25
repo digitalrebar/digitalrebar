@@ -23,8 +23,6 @@ type Node struct {
 	Bootenv string `json:"bootenv"`
         // Access IP
         CtrlAddr     string        `json:"node-control-address"`
-        // Provider ID
-        ProviderID   int64         `json:"provider_id"`
 	// The deployment that this Node is currently a member of.
 	DeploymentID int64 `json:"deployment_id"`
 	Order        int64 `json:"order"`
