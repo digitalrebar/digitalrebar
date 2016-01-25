@@ -60,11 +60,22 @@ new_clients = {}
       action :add
     end
   when 'sledgehammer'
-    pxe_params = node['rebar']['provisioner']['server']['sledgehammer_kernel_params'].split(' ')
-    pxe_params << "rebar.fqdn=#{mnode_name}"
-    pxe_params << "rebar.install.key=#{machine_key}"
+    sledge_args = Array.new
+    sledge_args << "rootflags=loop"
+    sledge_args << "initrd=initrd0.img"
+    sledge_args << "root=live:/sledgehammer.iso"
+    sledge_args << "rootfstype=auto"
+    sledge_args << "ro"
+    sledge_args << "liveimg"
+    sledge_args << "rd_NO_LUKS"
+    sledge_args << "rd_NO_MD"
+    sledge_args << "rd_NO_DM"
+    sledge_args << "provisioner.web=#{provisioner_web}"
+    sledge_args << "rebar.web=#{api_server}"
+    sledge_args << "rebar.fqdn=#{mnode_name}"
+    sledge_args << "rebar.install.key=#{machine_key}"
     provisioner_bootfile mnode_name do
-      kernel_params pxe_params.join(' ')
+      kernel_params sledge_args.join(' ')
       address v4addr
       bootenv "sledgehammer"
       action :add
