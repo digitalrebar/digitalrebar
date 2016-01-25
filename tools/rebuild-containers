@@ -12,9 +12,8 @@ CONTAINERS['digitalrebar/dr_rebar_api']='rackn/deploy-rebar-api'
 CONTAINERS['digitalrebar/dr_rebar_dhcp']='rackn/deploy-rebar-dhcp'
 CONTAINERS['digitalrebar/dr_ux']='rackn/deploy-ux'
 CONTAINERS['digitalrebar/dr_webproxy']='rackn/deploy-webproxy'
-CONTAINERS['digitalrebar/fogwrap']='rackn/deploy-fogwrap'
+CONTAINERS['digitalrebar/cloudwrap']='rackn/deploy-cloudwrap'
 CONTAINERS['digitalrebar/managed-service']='rackn/deploy-managed-service'
-CONTAINERS['digitalrebar/packetwrap']='rackn/deploy-packetwrap'
 
 declare -A REPOS
 for container in "${!CONTAINERS[@]}"; do
