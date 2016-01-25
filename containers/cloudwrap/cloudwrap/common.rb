@@ -22,10 +22,12 @@ def get_packet_key_info(packet_project_token, kp_name, s)
                                content_type: :json, accept: :json,
                                'X-Auth-Token' => packet_project_token
   rescue Exception => e
+    log("Failed to get key info: error = #{e.inspect}")
     return [ false, true, nil ]
   end
 
   if response.code != 200
+    log("Failed to get key info: resp = #{response.inspect}")
     return [ false, true, nil ]
   end
 

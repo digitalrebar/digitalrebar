@@ -178,10 +178,12 @@ loop do
                                          content_type: :json, accept: :json,
                                          'X-Auth-Token' => packet_project_token
           rescue Exception => e
+            log("Failed to remove key: #{e.inspect}")
             return e.inspect
           end
 
           if response.code != 204
+            log("Failed to delete device for #{endpoint} #{id}")
             raise "Failed to delete device for #{endpoint} #{id}"
           end
         end

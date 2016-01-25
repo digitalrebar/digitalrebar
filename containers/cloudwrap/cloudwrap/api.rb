@@ -58,9 +58,11 @@ class Servers
                                        content_type: :json, accept: :json,
                                        'X-Auth-Token' => packet_project_token
         rescue Exception => e
+          log("Failed to get keys: #{e.inspect}")
           return e.inspect
         end
         if response.code != 200
+          log("Failed to update key to list #{endpoint}: #{response.code}")
           return "Failed to update key to list #{endpoint}: #{response.code}"
         end
 
@@ -73,9 +75,11 @@ class Servers
                                      content_type: :json, accept: :json,
                                      'X-Auth-Token' => packet_project_token
         rescue Exception => e
+          log(e.inspect)
           return e.inspect
         end
         if response.code != 201
+          log("Failed to add key to list #{endpoint}")
           raise "Failed to add key to list #{endpoint}"
         end
       end
@@ -163,9 +167,11 @@ class Servers
                                      content_type: :json, accept: :json,
                                      'X-Auth-Token' => packet_project_token
         rescue Exception => e
+          log("Failed to create packet: #{e.inspect}")
           return e.inspect
         end
         if response.code != 201
+          log("Failed to create node for #{endpoint} #{fixed_args}")
           raise "Failed to create node for #{endpoint} #{fixed_args}"
         end
 
@@ -215,6 +221,7 @@ class Servers
                                    'X-Auth-Token' => packet_project_token
 
         if response.code != 200
+          log("Failed to list devices for #{endpoint}")
           return "Failed to list devices for #{endpoint}"
         end
 
@@ -243,10 +250,12 @@ class Servers
                                    content_type: :json, accept: :json,
                                    'X-Auth-Token' => packet_project_token
       rescue Exception => e
+        log(e.inspect)
         return e.inspect
       end
 
       if response.code != 200
+        log("Failed to get device for #{endpoint} #{id}")
         return "Failed to get device for #{endpoint} #{id}"
       end
 
@@ -255,9 +264,9 @@ class Servers
   end
 
   def reboot(endpoint, id)
+    log("Rebooting server #{id}")
     case endpoint["provider"]
     when 'AWS', 'Google'
-      log("Rebooting server #{id}")
       get(endpoint,id).reboot
     when 'Packet'
       # Packet endpoint has the account key
@@ -273,9 +282,11 @@ class Servers
                                    content_type: :json, accept: :json,
                                    'X-Auth-Token' => packet_project_token
       rescue Exception => e
+        log(e.inspect)
         return e.inspect
       end
       if response.code != 202
+        log("Failed to reboot node for #{endpoint} #{fixed_args}")
         raise "Failed to reboot node for #{endpoint} #{fixed_args}"
       end
       true
@@ -283,10 +294,10 @@ class Servers
   end
 
   def delete(endpoint,id)
+    log("Deleting server #{id}")
     begin
       case endpoint["provider"]
       when 'AWS', 'Google'
-        log("Deleting server #{id}")
         ep = get_endpoint(endpoint)
         log("Could not find endpoint for: #{endpoint}") unless ep
         server = ep.servers.get(id) if ep
@@ -303,10 +314,12 @@ class Servers
                                      content_type: :json, accept: :json,
                                      'X-Auth-Token' => packet_project_token
         rescue Exception => e
+          log(e.inspect)
           return e.inspect
         end
 
         if response.code != 204
+          log("Failed to delete device for #{endpoint} #{id}")
           raise "Failed to delete device for #{endpoint} #{id}"
         end
         true
