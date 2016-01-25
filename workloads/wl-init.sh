@@ -152,14 +152,16 @@ validate_tools() {
             fi
         fi
 
-        curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
-        unzip awscli-bundle.zip
-        sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
-        rm -rf awscli-bundle*
-
         if ! which aws &>/dev/null; then
-            echo "Please install aws!"
-            error=1
+            curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+            unzip awscli-bundle.zip
+            sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+            rm -rf awscli-bundle*
+
+            if ! which aws &>/dev/null; then
+                echo "Please install aws!"
+                error=1
+            fi
         fi
     fi
 
