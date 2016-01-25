@@ -36,7 +36,7 @@ loop do
       endpoint = val[3]
 
       # Load key
-      kp_name = "id-cloudwrap-#{rebar_id}"
+      kp_name = keyfile_name(rebar_id)
       kp_loc = File.expand_path("~/.ssh/#{kp_name}")
       if ! File.exists?(kp_loc)
         ssh_key=Diplomat::Kv.get("cloudwrap/keys/#{rebar_id}")
@@ -97,7 +97,7 @@ loop do
 
         log "Make sure node is ssh-able?"
         begin
-          Net::SSH.start(dev_ip, 'root', { paranoid: false }) do |ssh|
+          Net::SSH.start(dev_ip, 'root', { keys: [ kp_loc ], paranoid: false }) do |ssh|
             # capture all stderr and stdout output from a remote process
             ssh.exec!("date")
           end
@@ -130,14 +130,14 @@ loop do
       when 'Packet'
         log "Put keys to node"
         Tempfile.open("cloudwrap-keys") do |f|
-        pubkeys = JSON.parse(`rebar deployments get system attrib rebar-access_keys`)
+          pubkeys = JSON.parse(`rebar deployments get system attrib rebar-access_keys`)
           pubkeys['value'].each_value do |v|
             f.puts(v.strip)
           end
           f.flush
           f.fsync
           begin
-            Net::SCP.upload!(dev_ip, 'root', f.path, "/tmp/rebar_keys", { paranoid: false })
+            Net::SCP.upload!(dev_ip, 'root', f.path, "/tmp/rebar_keys", { keys: [ kp_loc ], paranoid: false })
           rescue Exception => e
             log "Server #{packet_device_id} failed to upload keys, skipping: #{e}"
             next
@@ -146,7 +146,7 @@ loop do
 
         log "Put keys in place on node"
         begin
-          Net::SSH.start(dev_ip, 'root', { paranoid: false }) do |ssh|
+          Net::SSH.start(dev_ip, 'root', { keys: [ kp_loc ], paranoid: false }) do |ssh|
             # capture all stderr and stdout output from a remote process
             ssh.exec!("cat /tmp/rebar_keys >> /root/.ssh/authorized_keys")
             ssh.exec!("rm -f /tmp/rebar_keys")

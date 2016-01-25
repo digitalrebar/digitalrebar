@@ -11,6 +11,10 @@ def fix_hash(h)
   res
 end
 
+def keyfile_name(node_id)
+  "id-cloudwrap-#{node_id}"
+end
+
 #
 # Debug / Mock to test scale
 #

@@ -13,7 +13,7 @@ class Servers
   extend Jimson::Handler
 
   def upload_key(endpoint, ep, node_id, fixed_args)
-    kp_name = "id-cloudwrap-#{node_id}"
+    kp_name = keyfile_name(node_id)
     kp_loc = File.expand_path("~/.ssh/#{kp_name}")
     if ! system("ssh-keygen -t rsa -b 1024 -N '' -f '#{kp_loc}'")
       log("Failed to generate new key #{kp_loc}")
