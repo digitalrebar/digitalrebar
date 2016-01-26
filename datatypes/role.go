@@ -60,6 +60,8 @@ type Role struct {
 	Cohort    int      `json:"cohort"`
 	Conflicts []string `json:"conflicts"`
 	Provides  []string `json:"provides"`
+        // Metadata is an structure passed to the jib for operation
+        Metadata interface{} `json:"metadata"`
 }
 
 func (o *Role) ApiName() string {

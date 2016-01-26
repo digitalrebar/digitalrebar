@@ -71,7 +71,7 @@ type roleImport struct {
 	Description  string         `json:"description",yaml:"description"`
 	Requires     []string       `json:"requires",yaml:"requires"`
 	Conflicts    []string       `json:"conflicts",yaml:"conflicts"`
-	Provides     []string       `json:"conflicts",yaml:"conflicts"`
+	Provides     []string       `json:"provides",yaml:"provides"`
 	Flags        []string       `json:"flags",yaml:"flags"`
 	Attribs      []attribImport `json:"attribs",yaml:"attribs"`
 	WantsAttribs string         `json:"wants_attribs",yaml:"wants_attribs"`
