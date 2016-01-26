@@ -81,14 +81,12 @@ roles:
           "centos-7.2.1511":
             "initrd": "images/pxeboot/initrd.img"
             "kernel": "images/pxeboot/vmlinuz"
-            "append": "method=%os_install_site% inst.geoloc=0"
             "iso_mirror": "http://mirrors.kernel.org/centos/7.2.1511/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso"
             "iso_file": "CentOS-7-x86_64-Minimal-1511.iso"
             "online_mirror": "http://mirrors.kernel.org/centos/7/"
           "centos-7.1.1503":
             "initrd": "images/pxeboot/initrd.img"
             "kernel": "images/pxeboot/vmlinuz"
-            "append": "method=%os_install_site% inst.geoloc=0"
             "iso_mirror": "http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso"
             "iso_file": "CentOS-7-x86_64-Minimal-1503-01.iso"
             "online_mirror": "http://mirrors.kernel.org/centos/7/"
@@ -113,17 +111,14 @@ roles:
             "initrd": "images/pxeboot/initrd.img"
             "kernel": "images/pxeboot/vmlinuz"
             "iso_file": "RHEL6.5-20131111.0-Server-x86_64-DVD1.iso"
-            "append": "method=%os_install_site%"
           "centos-6.5":
             "initrd": "images/pxeboot/initrd.img"
             "kernel": "images/pxeboot/vmlinuz"
-            "append": "method=%os_install_site%"
             "iso_file": "CentOS-6.5-x86_64-bin-DVD1.iso"
             "online_mirror": "http://mirrors.kernel.org/centos/6/"
           "centos-6.6":
             "initrd": "images/pxeboot/initrd.img"
             "kernel": "images/pxeboot/vmlinuz"
-            "append": "method=%os_install_site%"
             "iso_mirror": "http://mirrors.kernel.org/centos/6.6/isos/x86_64/CentOS-6.6-x86_64-bin-DVD1.iso"
             "iso_file": "CentOS-6.6-x86_64-bin-DVD1.iso"
             "online_mirror": "http://mirrors.kernel.org/centos/6/"
@@ -148,7 +143,6 @@ roles:
             "initrd": "images/pxeboot/initrd.img"
             "kernel": "images/pxeboot/vmlinuz"
             "iso_file": "rhel-server-7.0-x86_64-dvd.iso"
-            "append": "method=%os_install_site% inst.geoloc=0"
           "xenserver-6.5":
             "initrd": ""
             "kernel": "boot/pxelinux/mboot.c32"
@@ -186,16 +180,7 @@ roles:
             "initrd": "images/pxeboot/initrd.img"
             "kernel": "images/pxeboot/vmlinuz"
             "iso_file": "Fedora-20-x86_64-DVD.iso"
-            "append": "method=%os_install_site% inst.geoloc=0"
             "online_mirror": "http://mirrors.kernel.org/fedora/releases/20/Fedora/x86_64/os/"
-          "suse-11.2":
-            "initrd": "boot/x86_64/loader/initrd"
-            "kernel": "boot/x86_64/loader/linux"
-            "append": "install=%os_install_site%"
-          "suse-12.2":
-            "initrd": "boot/x86_64/loader/initrd"
-            "kernel": "boot/x86_64/loader/linux"
-            "append": "install=%os_install_site%"
           "coreos":
             "initrd": "coreos/cpio.gz"
             "kernel": "coreos/vmlinuz"

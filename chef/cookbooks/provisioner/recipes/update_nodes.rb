@@ -45,7 +45,6 @@ new_clients = {}
     "uefifile" => uefifile,
     "bootenv" => bootenv
   }
-  # Generate an appropriate control.sh for the system.
   directory "#{node_dir}/#{mnode_name}" do
     action :create
     recursive true
