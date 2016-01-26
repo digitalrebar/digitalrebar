@@ -17,7 +17,7 @@ action :add do
   os = "coreos"
   proxy = node["rebar"]["proxy"]["servers"].first["url"]
   proxy_addr = node["rebar"]["proxy"]["servers"].first["address"]
-  params = node["rebar"]["provisioner"]["server"]["boot_specs"][os]
+  params = node["rebar"]["provisioner"]["server"]["supported_oses"][os]
   tftproot = node["rebar"]["provisioner"]["server"]["root"]
   api_server=node['rebar']['api']['servers'].first["url"]
   ntp_server = "#{node["rebar"]["ntp"]["servers"].first}"
@@ -30,6 +30,10 @@ action :add do
   web_path = "#{provisioner_web}/nodes/#{mnode_name}"
   append = "cloud-config-url=#{web_path}/coreos-bootstrap-install.sh rebar.install.key=#{machine_key}"
   v4addr = new_resource.address
+  kernel = "#{os}/install/#{params["kernel"]}"
+  initrd = "#{os}/install/#{params["initrd"]}"
+  initrd = "" unless params["initrd"] && !params["initrd"].empty?
+
 
   directory node_dir do
     action :create
@@ -76,8 +80,8 @@ action :add do
 
   provisioner_bootfile mnode_name do
     bootenv "#{os}-install"
-    kernel params["kernel"]
-    initrd params["initrd"]
+    kernel kernel
+    initrd initrd
     address v4addr
     kernel_params append
     action :add

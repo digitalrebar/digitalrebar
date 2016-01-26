@@ -42,11 +42,7 @@ roles:
       - rebar-api-servers
       - rebar-machine_key
       - rebar-access_keys
-
     attribs:
-      - name: provisioner-sledgehammer-kernel-params
-        description: 'The kernel parameters passed to Sledgehammer.'
-        map: 'rebar/provisioner/server/sledgehammer_kernel_params'
       - name: provisioner-default-os
         description: 'The default operating system the provisioner will deploy'
         map: 'rebar/provisioner/server/default_os'
@@ -56,9 +52,26 @@ roles:
       - name: provisioner-provided-repos
         description: 'The repositories that this provisioner provides for OS install purposes'
         map: 'rebar/provisioner/server/repositories'
+        schema:
+          type: map
+          mapping:
+            = :
+              type: map
+              mapping:
+                = :
+                  type: seq
+                  sequence:
+                    - type: str
+                      required: true
       - name: provisioner-available-oses
         description: 'The operating systems that are installable by this provisioner node.'
         map: 'rebar/provisioner/server/available_oses'
+        schema:
+          type: map
+          mapping:
+            = :
+              type: bool
+              required: true
       - name: provisioner-supported-oses
         description: 'The operating systems that the provisioner knows how to install'
         map: 'rebar/provisioner/server/supported_oses'
@@ -205,7 +218,6 @@ roles:
       - rebar-machine_key
       - rebar-access_keys
       - package-repositories
-      - provisioner-sledgehammer-kernel-params
       - provisioner-default-password-hash
       - provisioner-default-user
       - provisioner-supported-oses

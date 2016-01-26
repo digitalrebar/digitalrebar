@@ -19,10 +19,11 @@ action :add do
   proxy = node["rebar"]["proxy"]["servers"].first["url"]
   proxy_addr = node["rebar"]["proxy"]["servers"].first["address"]
   repos = node["rebar"]["provisioner"]["server"]["repositories"][os]
-  params = node["rebar"]["provisioner"]["server"]["boot_specs"][os]
+  params = node["rebar"]["provisioner"]["server"]["supported_oses"][os]
   online = node["rebar"]["provisioner"]["server"]["online"]
   tftproot = node["rebar"]["provisioner"]["server"]["root"]
   provisioner_web = node["rebar"]["provisioner"]["server"]["webservers"].first["url"]
+  os_install_site = "#{provisioner_web}/#{os}/install"
   api_server=node['rebar']['api']['servers'].first["url"]
   machine_key = node["rebar"]["machine_key"]
   keys = node["rebar"]["access_keys"].values.sort.join($/)
@@ -30,12 +31,15 @@ action :add do
   mnode_rootdev = new_resource.rootdev
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
   web_path = "#{provisioner_web}/nodes/#{mnode_name}"
+  kernel = "#{os}/install/#{params["kernel"]}"
+  initrd = "#{os}/install/#{params["initrd"]}"
+  initrd = "" unless params["initrd"] && !params["initrd"].empty?
 
   append = "\
        ../#{os}/install/boot/xen.gz dom0_max_vcpus=1-2 dom0_mem=752M,max:752M com1=115200,8n1 \
        console=com1,vga --- ../#{os}/install/boot/vmlinuz \
        xencons=hvc console=hvc0 console=tty0 rebar.fqdn=#{mnode_name} rebar.install.key=#{machine_key} \
-       answerfile=#{web_path}/compute.ks #{params["kernel_params"]} \
+       answerfile=#{web_path}/compute.ks #{params["append"] || ""} \
        install --- ../#{os}/install/install.img"
 
   v4addr = new_resource.address
@@ -50,14 +54,14 @@ action :add do
     source "compute.ks.xen.erb"
     owner "root"
     group "root"
-    variables(:os_install_site => params[:os_install_site],
+    variables(:os_install_site => os_install_site,
               :name => mnode_name,
               :rootdev => mnode_rootdev,
               :proxy => proxy,
               :proxy_addr => proxy_addr,
               :repos => repos,
               :provisioner_web => provisioner_web,
-              :source => "#{provisioner_web}/#{os}/install",
+              :source => os_install_site,
               :api_server => api_server,
               :online => online,
               :keys => keys,
@@ -76,8 +80,8 @@ action :add do
 
   provisioner_bootfile mnode_name do
     bootenv "#{os}-install"
-    kernel params["kernel"]
-    initrd ""
+    kernel kernel
+    initrd initrd
     address v4addr
     kernel_params append
     action :add

@@ -21,7 +21,8 @@ action :add do
   online = node["rebar"]["provisioner"]["server"]["online"]
   tftproot = node["rebar"]["provisioner"]["server"]["root"]
   provisioner_web = node["rebar"]["provisioner"]["server"]["webservers"].first["url"]
-  params = node["rebar"]["provisioner"]["server"]["boot_specs"][os]
+  params = node["rebar"]["provisioner"]["server"]["supported_oses"][os]
+  os_install_site = "#{provisioner_web}/#{os}/install"
   api_server=node['rebar']['api']['servers'].first["url"]
   ntp_server = "#{node["rebar"]["ntp"]["servers"].first}"
   keys = node["rebar"]["access_keys"].values.sort.join($/)
@@ -30,8 +31,12 @@ action :add do
   mnode_rootdev = new_resource.rootdev
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
   web_path = "#{provisioner_web}/nodes/#{mnode_name}"
-  append = "ksdevice=bootif ks=#{web_path}/compute.ks method=#{params["os_install_site"]} #{params["kernel_params"]} rebar.fqdn=#{mnode_name} rebar.install.key=#{machine_key}"
+  append = "ksdevice=bootif ks=#{web_path}/compute.ks method=#{os_install_site} #{params["append"] || ""} rebar.fqdn=#{mnode_name} rebar.install.key=#{machine_key}"
   v4addr = new_resource.address
+  kernel = "#{os}/install/#{params["kernel"]}"
+  initrd = "#{os}/install/#{params["initrd"]}"
+  initrd = "" unless params["initrd"] && !params["initrd"].empty?
+
 
   directory node_dir do
     action :create
@@ -43,7 +48,7 @@ action :add do
     source "compute.ks.erb"
     owner "root"
     group "root"
-    variables(:os_install_site => params[:os_install_site],
+    variables(:os_install_site => os_install_site,
               :name => mnode_name,
               :rootdev => mnode_rootdev,
               :proxy => proxy,
@@ -67,8 +72,8 @@ action :add do
 
   provisioner_bootfile mnode_name do
     bootenv "#{os}-install"
-    kernel params["kernel"]
-    initrd params["initrd"]
+    kernel kernel
+    initrd initrd
     address v4addr
     kernel_params append
     action :add
