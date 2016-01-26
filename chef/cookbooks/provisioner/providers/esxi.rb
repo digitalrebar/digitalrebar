@@ -16,7 +16,7 @@
 action :add do
   raise "ESXi broken until it os ported to use the new disk reservation code"
   os = "#{new_resource.distro}-#{new_resource.version}"
-  params = node["rebar"]["provisioner"]["server"]["boot_specs"][os]
+  params = node["rebar"]["provisioner"]["server"]["supported_oses"][os]
   tftproot = node["rebar"]["provisioner"]["server"]["root"]
   provisioner_web = node["rebar"]["provisioner"]["server"]["webservers"].first["url"]
   api_server=node['rebar']['api']['servers'].first["url"]
@@ -28,8 +28,11 @@ action :add do
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
   web_path = "#{provisioner_web}/nodes/#{mnode_name}"
 
-  append = "-c ../#{os}/install/boot.cfg #{params["kernel_params"]} ks=#{web_path}/compute.ks rebar.install.key=#{machine_key}"
+  append = "-c ../#{os}/install/boot.cfg #{params["append"] || ""} ks=#{web_path}/compute.ks rebar.install.key=#{machine_key}"
   mac_list = new_resource.address
+  kernel = "#{os}/install/#{params["kernel"]}"
+  initrd = "#{os}/install/#{params["initrd"]}"
+  initrd = "" unless params["initrd"] && !params["initrd"].empty?
 
   directory node_dir do
     action :create
@@ -59,8 +62,8 @@ action :add do
 
   provisioner_bootfile mnode_name do
     bootenv "#{os}-install"
-    kernel params["kernel"]
-    initrd ""
+    kernel kernel
+    initrd initrd
     address mac_list
     kernel_params append
     action :add

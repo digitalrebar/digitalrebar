@@ -16,7 +16,7 @@
 action :add do
   raise "Fuel Broken for now until it is ported to use the new disk reservation code!"
   os = "#{new_resource.distro}-#{new_resource.version}"
-  params = node["rebar"]["provisioner"]["server"]["boot_specs"][os]
+  params = node["rebar"]["provisioner"]["server"]["supported_oses"][os]
   tftproot = node["rebar"]["provisioner"]["server"]["root"]
   provisioner_web = node["rebar"]["provisioner"]["server"]["webservers"].first["url"]
   ntp_server = "#{node["rebar"]["ntp"]["servers"].first}"
@@ -32,8 +32,11 @@ action :add do
   #
   # GREG: Fill in ip params
   #
-  append = "ksdevice=#{my_intf} forceformat=yes installdrive=sda repo=nfs:#{provisioner_addr}:#{install_dir} ks=#{web_path}/compute.ks hostname=#{mnode_name} #{params["kernel_params"]} rebar.install.key=#{machine_key} rebar.fqdn=#{mnode_name}"
+  append = "ksdevice=#{my_intf} forceformat=yes installdrive=sda repo=nfs:#{provisioner_addr}:#{install_dir} ks=#{web_path}/compute.ks hostname=#{mnode_name} #{params["append"] || ""} rebar.install.key=#{machine_key} rebar.fqdn=#{mnode_name}"
   mac_list = new_resource.address
+  kernel = "#{os}/install/#{params["kernel"]}"
+  initrd = "#{os}/install/#{params["initrd"]}"
+  initrd = "" unless params["initrd"] && !params["initrd"].empty?
 
   directory node_dir do
     action :create
@@ -61,8 +64,8 @@ action :add do
 
   provisioner_bootfile mnode_name do
     bootenv "#{os}-install"
-    kernel params["kernel"]
-    initrd params["initrd"]
+    kernel kernel
+    initrd initrd
     address mac_list
     kernel_params append
     action :add

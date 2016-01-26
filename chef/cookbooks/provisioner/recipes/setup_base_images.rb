@@ -32,13 +32,9 @@ end
 node.normal["rebar"]["provisioner"]["server"]["available_oses"] = Mash.new
 
 node["rebar"]["provisioner"]["server"]["supported_oses"].each do |os,params|
-  web_path = "#{provisioner_web}/#{os}"
-  os_install_site = "#{web_path}/install"
   os_dir="#{tftproot}/#{os}"
   os_install_dir = "#{os_dir}/install"
   iso_dir="#{tftproot}/isos"
-  initrd = params["initrd"]
-  kernel = params["kernel"]
 
   # Don't bother for OSes that are not actaully present on the provisioner node.
   next unless File.file?("#{iso_dir}/#{params["iso_file"]}") or
@@ -200,18 +196,6 @@ EOC
       end
     end
   end
-
-  unless node["rebar"]["provisioner"]["server"]["boot_specs"]
-    node.normal["rebar"]["provisioner"]["server"]["boot_specs"] = Mash.new
-  end
-  unless node["rebar"]["provisioner"]["server"]["boot_specs"][os]
-    node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os] = Mash.new
-  end
-  node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["kernel"] = "#{os}/install/#{kernel}"
-  node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["initrd"] = "#{os}/install/#{initrd}"
-
-  node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["os_install_site"] = os_install_site
-  node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["kernel_params"] = params["append"] || ""
 
   ruby_block "Set up local base OS install repos for #{os}" do
     block do
