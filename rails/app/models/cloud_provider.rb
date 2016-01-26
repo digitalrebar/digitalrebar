@@ -33,7 +33,7 @@ class CloudProvider < Provider
       end
       ep = endpoint
       params = Attrib.get('provider-create-hint',obj) || {}
-      server = ep.invoke('servers.create',[self.auth_details,obj.id,params])
+      server = ep.invoke('servers.create',[self.auth_details,obj.id,params], { timeout: 120 })
       Rails.logger.info("Created server #{server.inspect}")
       Attrib.set('provider-node-id',obj, server["id"], :hint)
     end
