@@ -201,29 +201,6 @@ EOC
     end
   end
 
-  replaces={
-    '%os_site%'         => web_path,
-    '%os_install_site%' => os_install_site
-  }
-  append = params["append"] || ""
-
-  # Sigh.  There has to be a more elegant way.
-  replaces.each { |k,v|
-    append.gsub!(k,v)
-  }
-
-  # If we were asked to use a serial console, arrange for it.
-  if  node["rebar"]["provisioner"]["server"]["use_serial_console"]
-    append << " console=tty0 console=ttyS1,115200n8"
-  end
-
-  # If we were asked to use a serial console, arrange for it.
-  if  node["rebar"]["provisioner"]["server"]["use_serial_console"]
-    append << " console=tty0 console=ttyS1,115200n8"
-  end
-
-  # Add per-OS base repos that may not have been added above.
-
   unless node["rebar"]["provisioner"]["server"]["boot_specs"]
     node.normal["rebar"]["provisioner"]["server"]["boot_specs"] = Mash.new
   end
@@ -232,8 +209,9 @@ EOC
   end
   node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["kernel"] = "#{os}/install/#{kernel}"
   node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["initrd"] = "#{os}/install/#{initrd}"
+
   node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["os_install_site"] = os_install_site
-  node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["kernel_params"] = append
+  node.normal["rebar"]["provisioner"]["server"]["boot_specs"][os]["kernel_params"] = params["append"] || ""
 
   ruby_block "Set up local base OS install repos for #{os}" do
     block do

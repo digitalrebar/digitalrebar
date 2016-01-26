@@ -18,10 +18,10 @@ action :add do
   proxy = node["rebar"]["proxy"]["servers"].first["url"]
   proxy_addr = node["rebar"]["proxy"]["servers"].first["address"]
   repos = Rebar::fetch_repos_for(node,os)
-  params = node["rebar"]["provisioner"]["server"]["boot_specs"][os]
   online = node["rebar"]["provisioner"]["server"]["online"]
   tftproot = node["rebar"]["provisioner"]["server"]["root"]
   provisioner_web = node["rebar"]["provisioner"]["server"]["webservers"].first["url"]
+  params = node["rebar"]["provisioner"]["server"]["boot_specs"][os]
   api_server=node['rebar']['api']['servers'].first["url"]
   ntp_server = "#{node["rebar"]["ntp"]["servers"].first}"
   keys = node["rebar"]["access_keys"].values.sort.join($/)
@@ -30,7 +30,7 @@ action :add do
   mnode_rootdev = new_resource.rootdev
   node_dir = "#{tftproot}/nodes/#{mnode_name}"
   web_path = "#{provisioner_web}/nodes/#{mnode_name}"
-  append = "ksdevice=bootif ks=#{web_path}/compute.ks #{params["kernel_params"]} rebar.fqdn=#{mnode_name} rebar.install.key=#{machine_key}"
+  append = "ksdevice=bootif ks=#{web_path}/compute.ks method=#{params["os_install_site"]} inst.geoloc=0 #{params["kernel_params"]} rebar.fqdn=#{mnode_name} rebar.install.key=#{machine_key}"
   v4addr = new_resource.address
 
   directory node_dir do
