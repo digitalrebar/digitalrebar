@@ -105,10 +105,12 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
             out, err, status = exec_cmd("mkdir -p #{piece_part}")
             die "Failed to mkdir @ #{nr.role.name}:#{dir} #{out} #{err}" unless status.success?
           elsif info =~ /^http/
+            parts = info.split(' ')
+            branch = "-b #{parts[1]}" if parts[1] and !parts[1].empty?
             out, err, status = exec_cmd("mkdir -p #{role_cache_dir}")
             die "Failed to mkdir @ #{nr.role.name}:#{dir} #{out} #{err}" unless status.success?
             # Load the git cache
-            out, err, status = exec_cmd("git clone #{info} #{piece_part}")
+            out, err, status = exec_cmd("git clone #{branch} #{parts[0]} #{piece_part}")
             die "Failed to git #{info} @ #{nr.role.name}: #{out} #{err}" unless status.success?
           else
             local_scripts = File.join nr.barclamp.source_path, 'ansible-playbooks', 'roles', nr.role.name
