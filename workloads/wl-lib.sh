@@ -400,7 +400,7 @@ DEPLOY_ADMIN=${DEPLOY_ADMIN:-system}
 # preseed the containers from the environment variables
 for cval in "${known_containers[@]}"; do
     varname=${cval^^}
-    varname=${varname/-/_}
+    varname=${varname//-/_}
     novarname=CON_NO_${varname}
     varname=CON_${varname}
 
@@ -415,7 +415,7 @@ done
 # preseed the workloads from the environment variables
 for cval in "${known_workloads[@]}"; do
     varname=${cval^^}
-    varname=${varname/-/_}
+    varname=${varname//-/_}
     novarname=WL_NO_${varname}
     varname=WL_${varname}
 
@@ -473,7 +473,7 @@ while (( $# > 0 )); do
             ;;
         --*)
             arg_key="${arg_key#--}"
-            arg_key="${arg_key/-/_}"
+            arg_key="${arg_key//-/_}"
             arg_key="${arg_key^^}"
             echo "Overriding $arg_key with $arg_data"
             export $arg_key="$arg_data"
