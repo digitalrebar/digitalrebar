@@ -33,9 +33,13 @@ class CloudProvider < Provider
       end
       ep = endpoint
       params = Attrib.get('provider-create-hint',obj) || {}
-      server = ep.invoke('servers.create',[self.auth_details,obj.id,params], { timeout: 120 })
-      Rails.logger.info("Created server #{server.inspect}")
-      Attrib.set('provider-node-id',obj, server["id"], :hint)
+      begin
+        server = ep.invoke('servers.create',[self.auth_details,obj.id,params], { timeout: 120 })
+        Rails.logger.info("Created server #{server.inspect}")
+        Attrib.set('provider-node-id',obj, server["id"], :hint)
+      rescue Exception => e
+        Rails.logger.fatal("invoke create failed: #{e.inspect}")
+      end
     end
 
     # Nodes should always have rebar-joined-node.
@@ -46,12 +50,22 @@ class CloudProvider < Provider
 
   def reboot_node(obj)
     ep = endpoint
-    ep.invoke('servers.reboot',[self.auth_details,Attrib.get('provider-node-id',obj)])
+    begin
+      ep.invoke('servers.reboot',[self.auth_details,Attrib.get('provider-node-id',obj)], { timeout: 120 })
+    rescue Exception => e
+      Rails.logger.fatal("invoke reboot failed: #{e.inspect}")
+      false
+    end
   end
 
   def delete_node(obj)
     ep = endpoint
-    ep.invoke('servers.delete',[self.auth_details,Attrib.get('provider-node-id',obj)])
+    begin
+      ep.invoke('servers.delete',[self.auth_details,Attrib.get('provider-node-id',obj)], { timeout: 120 })
+    rescue Exception => e
+      Rails.logger.fatal("invoke delete failed: #{e.inspect}")
+      false
+    end
   end
 
   def endpoint
@@ -62,9 +76,14 @@ class CloudProvider < Provider
   private
   def register_endpoint
     ep = endpoint
-    ep.invoke('servers.register',[self.auth_details,
-                                  'rebar',
-                                  Attrib.get('rebar-access_keys',Deployment.system)])
+    begin
+      ep.invoke('servers.register',
+                [self.auth_details, 'rebar', Attrib.get('rebar-access_keys',Deployment.system)],
+                {timeout: 120})
+    rescue Exception => e
+      Rails.logger.fatal("invoke register failed: #{e.inspect}")
+      false
+    end
   end
 
 end
