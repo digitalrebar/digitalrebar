@@ -25,7 +25,7 @@ SS_URL=$PROV_SLEDGEHAMMER_URL/$PROV_SLEDGEHAMMER_SIG
 SS_DIR=$PROV_TFTPROOT/sledgehammer/$PROV_SLEDGEHAMMER_SIG
 mkdir -p "$SS_DIR"
 if [[ ! -e $SS_DIR/sha1sums ]]; then
-    for f in initrd0.img vmlinux0 sha1sums; do
+    for f in initrd0.img vmlinuz0 sha1sums; do
         curl -fgL -o "$SS_DIR/$f" "$SS_URL/$f"
     done
   sha1sum -c sha1sums
