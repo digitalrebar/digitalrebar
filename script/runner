@@ -158,6 +158,9 @@ install() {
     case $OS_FAMILY in
         rhel)
             if_update_needed yum -y makecache
+            # The ssl ciphers are out-to-date on some of these systems.
+            # Make sure they are up to date.
+            yum -y update nss
             yum -y install epel-release # Everyone gets epel for free.
             yum -y install "${to_install[@]}";;
         debian)
