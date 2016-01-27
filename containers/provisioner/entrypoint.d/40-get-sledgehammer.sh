@@ -28,7 +28,11 @@ if [[ ! -e $SS_DIR/sha1sums ]]; then
     for f in initrd0.img vmlinuz0 sha1sums; do
         curl -fgL -o "$SS_DIR/$f" "$SS_URL/$f"
     done
-  sha1sum -c sha1sums
+    if ! (cd "$SS_DIR" && sha1sum -c sha1sums); then
+        echo "Download of sledgehammer failed or is corrupt!"
+        rm -f "$SS_DIR/sha1sums"
+        exit 1
+    fi
 fi
 
 # Extract lpxelinux and elilo
