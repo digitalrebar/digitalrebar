@@ -222,7 +222,7 @@ if [[ $KUBERNETES_DNS_REPLICAS ]]; then
 fi
 KUBERNETES_DNS_DOMAIN=${KUBERNETES_DNS_DOMAIN:-$DNS_DOMAIN}
 if [[ $KUBERNETES_DNS_DOMAIN ]]; then
-    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-dns_domain to "{ \"value\": ${KUBERNETES_DNS_DOMAIN} }"
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-dns_domain to "{ \"value\": \"${KUBERNETES_DNS_DOMAIN}\" }"
 fi
 if [[ $KUBERNETES_DNS_NAMESPACE ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-dns_namespace to "{ \"value\": ${KUBERNETES_DNS_NAMESPACE} }"
