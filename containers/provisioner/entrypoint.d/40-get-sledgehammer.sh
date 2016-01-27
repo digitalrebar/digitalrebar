@@ -1,5 +1,5 @@
 #!/bin/bash
-PROV_WEB="http://${EXTERNAL_IP%%/*}:8091"
+PROV_WEB="http://${EXTERNAL_IP%%/*}:${WEBPORT}"
 
 if [[ ! $PROV_SLEDGEHAMMER_SIG ]] ; then
   echo "Sledgehammer Hash not specified"
@@ -12,14 +12,14 @@ if [[ ! $PROV_SLEDGEHAMMER_URL ]] ; then
 fi
 
 for d in files nodes discovery/pxelinux.cfg; do
-    mkdir -p "/tftpboot/$d"
+    mkdir -p "${TFTPROOT}/$d"
 done
-cp /usr/local/bin/rebar "/tftpboot/files/rebar"
-cp /tmp/start-up.sh "/tftpboot/nodes/start-up.sh"
+cp /usr/local/bin/rebar "${TFTPROOT}/files/rebar"
+cp /tmp/start-up.sh "${TFTPROOT}/nodes/start-up.sh"
 
 # Get sledgehammer
 SS_URL=$PROV_SLEDGEHAMMER_URL/$PROV_SLEDGEHAMMER_SIG
-SS_DIR=/tftpboot/sledgehammer/$PROV_SLEDGEHAMMER_SIG
+SS_DIR=${TFTPROOT}/sledgehammer/$PROV_SLEDGEHAMMER_SIG
 mkdir -p "$SS_DIR"
 if [[ ! -e $SS_DIR/sha1sums ]]; then
     for f in initrd0.img vmlinuz0 sha1sums; do
@@ -34,7 +34,7 @@ fi
 
 # Extract lpxelinux and elilo
 (
-    cd "/tftpboot/discovery"
+    cd "${TFTPROOT}/discovery"
 
     for f in syslinux-6.03/bios/com32/elflink/ldlinux/ldlinux.c32 \
                  syslinux-6.03/bios/core/lpxelinux.0; do
@@ -49,16 +49,16 @@ fi
 )
 
 # Make it the discovery image
-rm -f "/tftpboot/discovery/initrd0.img" "/tftpboot/discovery/vmlinuz0"
-cp "/tftpboot/sledgehammer/$PROV_SLEDGEHAMMER_SIG/initrd0.img" \
-   "/tftpboot/sledgehammer/$PROV_SLEDGEHAMMER_SIG/vmlinuz0" \
-   "/tftpboot/discovery"
+rm -f "${TFTPROOT}/discovery/initrd0.img" "${TFTPROOT}/discovery/vmlinuz0"
+cp "${TFTPROOT}/sledgehammer/$PROV_SLEDGEHAMMER_SIG/initrd0.img" \
+   "${TFTPROOT}/sledgehammer/$PROV_SLEDGEHAMMER_SIG/vmlinuz0" \
+   "${TFTPROOT}/discovery"
 
 if which selinuxenabled && \
         selinuxenabled && \
-        ! (ls -adZ "/tftpboot" |grep -q public_content_t); then
-    semanage fcontext -a -f '' -t public_content_t "/tftpboot"
-    semanage fcontext -a -f '' -t public_content_t "/tftpboot(/.*)?"
+        ! (ls -adZ "${TFTPROOT}" |grep -q public_content_t); then
+    semanage fcontext -a -f '' -t public_content_t "${TFTPROOT}"
+    semanage fcontext -a -f '' -t public_content_t "${TFTPROOT}(/.*)?"
 fi
 
 # Make a pxelinux config file on stdout.
@@ -120,11 +120,11 @@ pxelinux_cfg "discovery" \
              "$PROV_WEB/discovery/vmlinuz0" \
              "${SLEDGE_ARGS[*]}" \
              "$PROV_WEB/discovery/initrd0.img" \
-             > "/tftpboot/discovery/pxelinux.cfg/default"
+             > "${TFTPROOT}/discovery/pxelinux.cfg/default"
 
 elilo_cfg "discovery" \
           "vmlinux0" \
           "${SLEDGE_ARGS[*]}" \
           "initrd0.img" \
-          > "/tftpboot/discovery/elilo.conf"
+          > "${TFTPROOT}/discovery/elilo.conf"
 

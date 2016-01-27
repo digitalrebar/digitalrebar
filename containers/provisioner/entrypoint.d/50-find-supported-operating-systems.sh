@@ -3,15 +3,15 @@
 supported_oses="$(rebar deployments get system attrib provisioner-supported-oses |jq -c '.value')"
 declare -a available_oses
 declare -A install_repos
-iso_dir="/tftpboot/isos"
+iso_dir="${TFTPROOT}/isos"
 rhelish_re='^(redhat|centos|fedora)'
 
 # First, extract ISO files for operating systems we know about.
 for key in $(jq -r 'keys[]' <<< "$supported_oses"); do
     os_specs="$(jq -r ".[\"$key\"]" <<< "$supported_oses")"
     iso="$(jq -r ".iso_file" <<< "$os_specs")"
-    os_install_dir="/tftpboot/$key/install"
-    os_web_path="http://${EXTERNAL_IP%%/*}:8091/${key}/install"
+    os_install_dir="${TFTPROOT}/$key/install"
+    os_web_path="http://${EXTERNAL_IP%%/*}:${WEBPORT}/${key}/install"
     if [[ ! -f $os_install_dir/.${iso}.rebar_canary ]]; then
         if ! [[ $iso && -f $iso_dir/$iso ]]; then
             echo "$iso is not present, skipping"
@@ -84,7 +84,7 @@ else
 fi
 
 if which selinuxenabled && selinuxenabled; then
-    restorecon -R -F /tftpboot
+    restorecon -R -F ${TFTPROOT}
 fi
 
 rebar deployments set system attrib provisioner-available-oses to "$avail_os_line"
