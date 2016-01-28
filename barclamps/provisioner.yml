@@ -23,25 +23,46 @@ barclamp:
   license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
-  - name: provisioner-base-images
+  - name: provisioner-database
     jig: chef
-    icon: album
+    icon: library_books
     requires:
-      - provisioner-service
-      - rebar-api_service
-      - dns-service
+      - proxy-client
+      - ntp-service
       - rebar-access
     wants-attribs:
       - dns-domain
-      - dns_servers
+      - proxy-servers
       - provisioner-online
       - provisioner-webservers
-      - provisioner-root
-      - provisioner-use-serial-console
-      - provisioner-use-local-security
       - rebar-api-servers
+      - ntp_servers
+      - provisioner-root
       - rebar-machine_key
       - rebar-access_keys
+      - package-repositories
+      - provisioner-default-password-hash
+      - provisioner-default-user
+      - provisioner-supported-oses
+    attribs:
+      - name: provisioner-clients
+        description: 'The systems that this provisioner will manage boot states for'
+        map: 'rebar/provisioner/clients'
+      - name: provisioner-managed-clients
+        description: 'The systems that this provisioner has configured boot states for'
+        map: 'rebar_wall/provisioner/clients'
+  - name: provisioner-service
+    jig: role-provided
+    flags:
+      - service
+    requires:
+      - proxy-service
+      - chef-service
+      - rebar-api_service
+    wants-attribs:
+      - dns-domain
+      - dns_servers
+      - rebar-api-servers
     attribs:
       - name: provisioner-default-os
         description: 'The default operating system the provisioner will deploy'
@@ -198,44 +219,6 @@ roles:
             "initrd": "coreos/cpio.gz"
             "kernel": "coreos/vmlinuz"
             "iso_file": "coreos_production_iso_image.iso"
-
-  - name: provisioner-database
-    jig: chef
-    icon: library_books
-    requires:
-      - provisioner-base-images
-      - proxy-client
-      - ntp-service
-      - rebar-access
-    wants-attribs:
-      - dns-domain
-      - proxy-servers
-      - provisioner-online
-      - provisioner-webservers
-      - rebar-api-servers
-      - ntp_servers
-      - provisioner-root
-      - rebar-machine_key
-      - rebar-access_keys
-      - package-repositories
-      - provisioner-default-password-hash
-      - provisioner-default-user
-      - provisioner-supported-oses
-    attribs:
-      - name: provisioner-clients
-        description: 'The systems that this provisioner will manage boot states for'
-        map: 'rebar/provisioner/clients'
-      - name: provisioner-managed-clients
-        description: 'The systems that this provisioner has configured boot states for'
-        map: 'rebar_wall/provisioner/clients'
-  - name: provisioner-service
-    jig: role-provided
-    flags:
-      - service
-    requires:
-      - proxy-service
-      - chef-service
-    attribs:
       - name: provisioner-online
         description: 'Whether or not the provisioner is operating in online mode..'
         map: 'rebar/provisioner/server/online'

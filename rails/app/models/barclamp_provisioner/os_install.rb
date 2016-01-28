@@ -37,7 +37,7 @@ class BarclampProvisioner::OsInstall < Role
       provisioner_node_id = Attrib.get('provisioner-node-id',node)
       if provisioner_node_id > 0
         provisioner_node = Node.find_by!(id: provisioner_node_id)
-        provisioner_repos = Attrib.get('provisioner-provided-repos',provisioner_node)
+        provisioner_repos = Attrib.get('provisioner-provided-repos',provisioner_node.deployment)
         Rails.logger.info("base_images: #{provisioner_repos.inspect}")
         if provisioner_repos
           repos_to_add={}

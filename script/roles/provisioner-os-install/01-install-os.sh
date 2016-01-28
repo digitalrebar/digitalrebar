@@ -8,7 +8,7 @@
 set -x
 set +e
 
-webserver="$(read_attribute "rebar/provisioner/server/webservers/0/url")"
+. /etc/profile.d/rebar-key.sh
 
 # Nuke it all.
 declare vg pv maj min blocks name
@@ -41,10 +41,7 @@ while read maj min blocks name; do
     fi
 done < <(tac /proc/partitions)
 
-
-while true; do
-    curl -k -s -f -L -o /tmp/bootstate "$webserver/nodes/$HOSTNAME/bootstate" && \
-        [[ -f /tmp/bootstate && $(cat /tmp/bootstate) = *-install ]] && break
+while ! rebar nodes get $HOSTNAME attrib provisioner-active-bootstate |grep -q -- '-install'; do
     sleep 1
 done
 
