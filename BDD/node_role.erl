@@ -67,7 +67,7 @@ bind(Node, Role, Deployment) ->
 % specialized function
 
 available_os(AdminNode, OS) -> 
-  attrib_set(AdminNode, "provisioner-base-images", json:output([{data,[{rebar,[{provisioner, [{server, [{available_oses, [{K, true} || K <- OS]}]}]}]}]}])).
+  attrib_set(AdminNode, "provisioner-service", json:output([{data,[{rebar,[{provisioner, [{server, [{available_oses, [{K, true} || K <- OS]}]}]}]}]}])).
 
 attrib_set(Node, Attrib, ValueJSON) ->
   bdd_utils:log(debug, node_role, attrib_set, "Calling with node ~p attrib ~p set ~p", [Node, Attrib, ValueJSON]),

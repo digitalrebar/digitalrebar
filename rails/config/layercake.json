@@ -49,7 +49,6 @@
   "rebar-package-sources":"core",
   "provisioner-database":"hide",
   "provisioner-docker-setup":"core",
-  "provisioner-base-images":"core",
   "provisioner-service":"services",
   "proxy-service":"services",
   "proxy-client":"clients",
