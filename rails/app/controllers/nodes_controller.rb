@@ -227,6 +227,8 @@ class NodesController < ApplicationController
         default_net = Network.lookup_network(params[:ip]) if params[:ip]
         hints["hint-#{default_net.name}-v4addr"] = params[:ip] if default_net
         hints["node-control-address"] = params[:ip] if params[:ip]
+        # Kubernetes hack for networking until we get better at it.
+        hints["node-private-control-address"] = params[:ip].split('/')[0] if params[:ip]
         hints["hint-admin-macs"] = [params[:mac]] if params[:mac]
         # Set any hints we got with node creation.
         hints.each do |k,v|

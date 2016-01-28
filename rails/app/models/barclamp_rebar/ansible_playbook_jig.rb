@@ -247,6 +247,25 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
 private
 
+  def walk_nics(node, ip_str)
+    # check for the address in the detected nic / ip table.
+    answer = nil
+    nic_data = Attrib.get('nics', node)
+    nic_data.each do |k,v|
+      next unless v.is_a?(Hash)
+      next unless v['ips']
+      ips = v['ips']
+      ips.each do |ip_string|
+        if ip_string.split('/')[0] == ip_str
+          answer = k
+          break
+        end
+      end
+      return answer if answer
+    end
+    answer
+  end
+
   def get_address(node, nr, command)
     args = command.split(/[\)\(\.,]/)
     addr_class = args[1].strip.to_sym
@@ -262,21 +281,14 @@ private
     answer = addresses[0].to_s if ip_part == 'cidr'
     answer = addresses[0].addr if ip_part == 'address'
 
-    # This only works if the node is the starting node.  :-( ??
     if ip_part == 'ifname'
-      # check for the address in the detected nic / ip table.
-      nic_data = Attrib.get('nics', node)
-      nic_data.each do |k,v|
-        next unless v.is_a?(Hash)
-        next unless v['ips']
-        ips = v['ips']
-        ips.each do |ip_string|
-          if ip_string == addresses[0].to_s
-            answer = k
-            break
-          end
+      answer = walk_nics(node, addresses[0].address)
+      # This is a hack for kubernetes until we get a better handle on networking.
+      unless answer
+        value = Attrib.get('node-private-control-address', node)
+        if value
+          answer = walk_nics(node, value)
         end
-        break if answer
       end
     end
 
@@ -312,6 +324,11 @@ private
     answer
   end
 
+  def get_attrib(node, nr, command)
+    args = command.split(/[\)\(\.,]/)
+    Attrib.get(args[1], node)
+  end
+
   # possible custom commands are:
   #   ipaddress([all|v4_only|v6_only], attribute).[ifname|cidr|address]
   #   nodes_with_role(k8scontrail-master).<command applied to all nodes joined by " ">
@@ -319,6 +336,7 @@ private
   def process_command(node, nr, command)
     answer = nil
 
+    answer = get_attrib(node, nr, command) if command.starts_with?('attrib(')
     answer = get_address(node, nr, command) if command.starts_with?('ipaddress(')
     answer = get_nodes(node, nr, command) if command.starts_with?('nodes_with_role(')
     answer = get_first_node(node, nr, command) if command.starts_with?('first_node_with_role(')

@@ -449,6 +449,11 @@ attribs:
     map: 'provider/control_address'
     schema:
       type: str
+  - name: node-private-control-address
+    description: 'The private network address that should be used to control the node.'
+    map: 'provider/private_control_address'
+    schema:
+      type: str
   - name: provider-rate
     description: 'The cost of this node in the provider'
     map: 'provider/rate'
