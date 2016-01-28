@@ -22,6 +22,9 @@ netname_re='"network":"([^ ]+)"'
 # install key first
 export REBAR_KEY="$(get_param "$install_key_re")"
 export REBAR_ENDPOINT="$(get_param "$rebar_re")"
+
+echo "export REBAR_KEY=\"$REBAR_KEY\"" >/etc/profile.d/rebar-key.sh
+echo "export REBAR_ENDPOINT=\"$REBAR_ENDPOINT\"" >> /etc/profile.d/rebar-key.sh
 # Provisioner and Rebar web endpoints next
 
 # Download the Rebar CLI
