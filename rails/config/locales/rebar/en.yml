@@ -163,7 +163,7 @@ en:
         chef-client: "https://github.com/digitalrebar/doc/blob/master/role_errors/chef-client.rst"
         admin-internal: "https://github.com/digitalrebar/doc/blob/master/role_errors/admin-internal.rst"
         provisioner-database: "https://github.com/digitalrebar/doc/blob/master/role_errors/provisioner-database.rst"
-        provisioner-base-images: "https://github.com/digitalrebar/doc/blob/master/role_errors/provisioner-base-images.rst"
+        provisioner-service: "https://github.com/digitalrebar/doc/blob/master/role_errors/provisioner-base-images.rst"
 
   # Models  
   user:

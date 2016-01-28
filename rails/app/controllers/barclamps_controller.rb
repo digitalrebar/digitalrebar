@@ -79,7 +79,7 @@ class BarclampsController < ApplicationController
       @roles = @bc.roles.to_a.keep_if{ |r| r.milestone }.sort_by { |r| r.cohort }
       @nodes = Deployment.system.nodes.where(:admin=>false, :system=>false)
 
-      provisioner = Role.find_key 'provisioner-base-images'
+      provisioner = Role.find_key 'provisioner-service'
       admin = provisioner.nodes.first
       @available_os = Attrib.get("provisioner-available-oses", admin).map{ |k,v| k } rescue []
       @initial_role = Attrib.get('provisioner-target_os', Role.find_by(name: 'provisioner-os-install')) rescue "fred"

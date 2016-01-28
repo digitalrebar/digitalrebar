@@ -17,7 +17,6 @@ en:
   common:
     roles:
       provisioner-service: "Provisioner Service"
-      provisioner-base-images: "Available O/S"
       provisioner-dhcp-server: "DHCP Server"
       provisioner-dhcp-database: "DHCP Boot Records"
       provisioner-os-install: "Install OS"
