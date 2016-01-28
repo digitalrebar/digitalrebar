@@ -163,6 +163,10 @@ class FakeDriver
      def public_ip_address
        @parent.get_endpoint_address
      end
+
+     def private_ip_address
+       @parent.get_endpoint_address
+     end
    end
 
    class Status

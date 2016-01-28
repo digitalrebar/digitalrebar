@@ -91,9 +91,14 @@ loop do
         dev_ip = server.public_ip_address
         cidr = "32"
 
+        private_dev_ip = server.private_ip_address
+
       when 'Packet'
+        # For now, make packet private and public the same.
+        # The node can bind to either.
         cidr = device_data['ip_addresses'][0]['cidr']
         dev_ip = device_data['ip_addresses'][0]['address']
+        private_dev_ip = device_data['ip_addresses'][0]['address']
 
         log "Make sure node is ssh-able?"
         begin
@@ -159,6 +164,8 @@ loop do
 
       log("Adding node control address #{dev_ip}/#{cidr} to node #{rebar_id}")
       system("rebar nodes set #{rebar_id} attrib node-control-address to '{\"value\": \"#{dev_ip}/#{cidr}\"}'")
+      log("Adding node private control address #{private_dev_ip} to node #{rebar_id}")
+      system("rebar nodes set #{rebar_id} attrib node-private-control-address to '{\"value\": \"#{private_dev_ip}\"}'")
       log "Marking server #{rebar_id} alive"
       Diplomat::Kv.delete(key)
       Diplomat::Kv.delete("cloudwrap/keys/#{rebar_id}")
