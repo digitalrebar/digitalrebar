@@ -565,6 +565,7 @@ en:
       description: "Description"
       upstream: "Upstream (prerequisites)"
       wanted: "Wanted Attributes"
+      metadata: "Role Specific Metadata (JSON)"
       inuse: "Role Activity (Node Roles)"
       reapply: "Retry/Reapply All"
     index:
