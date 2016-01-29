@@ -41,7 +41,7 @@ class Deployment < ActiveRecord::Base
   has_many        :node_roles,        :dependent => :destroy
   has_many        :nodes
   belongs_to      :parent,            class_name: "Deployment"
-  has_many        :networks
+  has_many        :networks,          :dependent => :destroy
 
   scope           :children_of,     ->(d)  { where(:parent_id => d.id) }
 
