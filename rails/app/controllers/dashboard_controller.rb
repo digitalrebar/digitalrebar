@@ -126,25 +126,33 @@ class DashboardController < ApplicationController
     if request.get?
       @nodes = Deployment.system.nodes.where(:admin=>false, :system=>false)
     elsif request.post?
+
       ready_name = params[:deployment]
       throw "Deployment Name is required" unless ready_name
       d = Deployment.find_or_create_by!(name: ready_name, parent: Deployment.system)
       throw "Did not create Deployment" unless d
-      n = Network.find_key(ready_name)
+      network_name = ready_name + "-default"
+      n = Network.find_key(network_name) rescue nil
       if !n and params[:conduit]
-        n = Network.find_or_create_by!(name: ready_name, conduit: params[:conduit], deployment: d, v6prefix: Network::V6AUTO)
-        NetworkRange.create! :name=>params[:range], :network=>n, :first=>params[:first_ip], :last=>params[:last_ip] if n.ranges.count < 2
+        n = Network.find_or_create_by!(name: network_name, category: ready_name, group: "default", conduit: params[:conduit], deployment: d, v6prefix: Network::V6AUTO)
+        begin
+          NetworkRange.create! :name=>params[:range], :network=>n, :first=>params[:first_ip], :last=>params[:last_ip] if n.ranges.count < 2
+        rescue
+          Rails.logger.warn "Dashboard GetReady did not create Network #{n.name} Range #{params[:range]}.  Likely conflicted with existing IP range."
+        end
       end
 
       # milestone for OS assignment
       ready = Role.find_key 'rebar-installed-node'
       ready.add_to_deployment d
-      ready_network = Role.find_key "network-#{ready_name}"
+      ready_network = Role.find_key "network-#{network_name}"
       ready_network.add_to_deployment d
 
-      params.each do |node_id, value|
+      params.keys.each do |node_id|
+        Rails.logger.debug "Dashboard GetReady Checking #{node_id}"
         if node_id =~ /^node_([0-9]*)/
           n = Node.find $1.to_i
+          Rails.logger.debug "Dashboard GetReady using Node #{n.inspect}"
           Node.transaction do
             n.deployment = d
             n.save!
