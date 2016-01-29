@@ -28,10 +28,6 @@ Ohai.plugin(:RebarOhai) do
     Dir.foreach('/sys/class/net') do |entry|
       next if entry =~ /\./
 
-      # We only care about actual physical devices.
-      # or eth devices in containers
-      next unless File.exists? "/sys/class/net/#{entry}/device" or entry =~ /eth/
-
       type = File::open("/sys/class/net/#{entry}/type") do |f|
         f.readline.strip
       end rescue '0'
