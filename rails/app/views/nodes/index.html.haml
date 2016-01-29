@@ -123,17 +123,18 @@
         
         // If node count has changed, re-render the page
         var current_nodes = $('.node').length;
-        
+
+        // update node counts        
+        $.each(data, function(id,node) { current_nodes--; });
         // Update nodes
-        var count = 0;
+        freshness ++;
         $.each(data, function(id,node) {
-          count ++;
-          freshness ++;
-          if (count != current_nodes && 0 < freshness) {
-          	location.reload();
+          if (current_nodes != 0 && 0 < freshness) {
+            console.debug("REFRESH: (" + freshness + ") current_nodes " + 0 + " != " + current_nodes);
+            location.reload();
           	return;
           } else {
-            console.debug("no refresh: (" + freshness + ") count " + count + " == " + current_nodes);
+            console.debug("no refresh: (" + freshness + ") current_nodes " + 0 + " == " + current_nodes);
           };
           var tr = $('#'+id+'.node');
           var td = tr.children('.status');
