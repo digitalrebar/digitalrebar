@@ -24,3 +24,7 @@ COPY *.json /root/
 COPY tftpd.conf /etc/default/tftpd-hpa
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 COPY start-up.sh /tmp/
+
+ENV TFTPROOT /tftpboot
+ENV WEBPORT 8091
+ENV APIPORT 8092

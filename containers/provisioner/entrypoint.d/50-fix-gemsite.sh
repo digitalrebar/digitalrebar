@@ -1,5 +1,5 @@
 # Fix Gemsite
-mkdir -p /tftpboot/gemsite/gems
-cd /tftpboot/gemsite
+mkdir -p ${TFTPROOT}/gemsite/gems
+cd ${TFTPROOT}/gemsite
 /opt/chef/embedded/bin/gem generate_index
 cd -
