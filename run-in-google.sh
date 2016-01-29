@@ -12,6 +12,9 @@ FORCE_DEPLOY_ADMIN=${DEPLOY_ADMIN:-google}
 . workloads/wl-lib.sh
 
 PROVIDER_GOOGLE_ADMIN_INSTANCE_TYPE=${PROVIDER_GOOGLE_ADMIN_INSTANCE_TYPE:-n1-standard-2}
+if [[ $PROVIDER_GOOGLE_ZONE ]] ; then
+    ZONE_NAME="--zone $PROVIDER_GOOGLE_ZONE"
+fi
 
 # Check to see if device id exists.
 if [ "$DEVICE_ID" != "" ] ; then
@@ -35,22 +38,22 @@ else
     DEVICE_ID=${NODENAME%%.*}
 
     # This defaults to debian 8 - just do it for now.
-    if ! gcloud compute instances create --machine-type ${PROVIDER_GOOGLE_ADMIN_INSTANCE_TYPE} ${DEVICE_ID} ; then
+    if ! gcloud compute instances create ${ZONE_NAME} --machine-type ${PROVIDER_GOOGLE_ADMIN_INSTANCE_TYPE} ${DEVICE_ID} ; then
         echo "Failed to create gcloud instance"
         exit 1
     fi
 fi
 
 # Wait for device to be up
-STATE=`gcloud compute instances describe $DEVICE_ID --format=json | jq -r .status`
+STATE=`gcloud compute instances describe $ZONE_NAME $DEVICE_ID --format=json | jq -r .status`
 while [ "$STATE" != "RUNNING" ] ; do
   echo "STATE = $STATE"
   sleep 5
-  STATE=`gcloud compute instances describe $DEVICE_ID --format=json | jq -r .status`
+  STATE=`gcloud compute instances describe $ZONE_NAME $DEVICE_ID --format=json | jq -r .status`
 done
 
 # Get Public IP - HACK - should look it up
-IP=`gcloud compute instances describe $DEVICE_ID --format=json | jq -r .networkInterfaces[0].accessConfigs[0].natIP`
+IP=`gcloud compute instances describe $ZONE_NAME $DEVICE_ID --format=json | jq -r .networkInterfaces[0].accessConfigs[0].natIP`
 CIDR=32
 
 ENV_VAR="\"google\": true,"
@@ -58,7 +61,7 @@ ENV_VAR="\"google\": true,"
 export ADMIN_IP="$IP/$CIDR"
 
 # Make sure our key is in place.
-gcloud compute ssh root@$DEVICE_ID --ssh-key-file $HOME/.ssh/id_rsa --command "date"
+gcloud compute ssh $ZONE_NAME root@$DEVICE_ID --ssh-key-file $HOME/.ssh/id_rsa --command "date"
 
 . ./run-in-system.sh
 
