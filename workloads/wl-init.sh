@@ -241,6 +241,9 @@ help_options["--provider-google-instance-type"]="Google instance type to use for
 help_options["--provider-aws-admin-instance-type"]="AWS instance type to use for admin nodes"
 help_options["--provider-aws-instance-type"]="AWS instance type to use for nodes"
 
+help_options["--provider-aws-region"]="AWS Region to use for nodes"
+help_options["--provider-google-zone"]="Google zone to use for nodes"
+
 help_options["--con-*"]="Container services to enable"
 help_options["--con-no-*"]="Container services to disable"
 help_options["--wl-*"]="Container services to enable"

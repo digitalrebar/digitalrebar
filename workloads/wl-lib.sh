@@ -103,7 +103,10 @@ bring_up_admin() {
         google)
             if [ "$DEVICE_ID" != "" ] ; then
                 # Get Public IP - HACK - should look it up
-                IP=`gcloud compute instances describe $DEVICE_ID --format=json | jq -r .networkInterfaces[0].accessConfigs[0].natIP`
+                if [[ $PROVIDER_GOOGLE_ZONE ]] ; then
+                    ZONE_NAME="--zone $PROVIDER_GOOGLE_ZONE"
+                fi
+                IP=`gcloud compute instances describe $ZONE_NAME $DEVICE_ID --format=json | jq -r .networkInterfaces[0].accessConfigs[0].natIP`
                 CIDR=32
             fi
             ;;
@@ -342,6 +345,10 @@ start_machine() {
                 INST_DATA="\"machine_type\": \"$PROVIDER_GOOGLE_INSTANCE_TYPE\","
             fi
 
+            if [[ $PROVIDER_GOOGLE_ZONE ]] ; then
+                ZONE_NAME="\"zone_name\": \"$PROVIDER_GOOGLE_ZONE\","
+            fi
+
             node="{
   \"name\": \"$1\",
   \"provider\": \"$PROVIDER_NAME\",
@@ -353,6 +360,7 @@ start_machine() {
     \"provider-create-hint\": {
       $DISKS
       $INST_DATA
+      $ZONE_NAME
       \"hostname\": \"$1\"
     }
   }
