@@ -1,4 +1,9 @@
-%h1= t '.title'
+%table{:width=>'100%'}
+  %tr
+    %td
+      %h1= t '.title'
+    %td{:align=>'right'}
+      = link_to t('add'), barclamp_upload_path(-1), :class => 'button'
 
 - if @list.length==0
   %p= t 'no_items'

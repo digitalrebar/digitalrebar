@@ -35,8 +35,7 @@
 - rescue Exception => moderror
   %p= t '.model_error', :error=>moderror.message
 
-- unless params.include? :form
-  %h3= t '.upstream'
+%h3= t '.upstream'
   = render :partial => "index", :locals => { :list => @role.parents, :jig_name => nil }
 
 %h3= t'.attributes'

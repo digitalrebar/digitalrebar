@@ -6,14 +6,7 @@
   = dl_item t('.version'), @barclamp.version
   = dl_item t('.commit'), @barclamp.commit
   = dl_item t('.build_on'), @barclamp.build_on
-
-%strong 
-  %a.toggle.with_label{:href => "#", :id => "#data_toggle", :rel => "rawdata"}= t '.rawconfig'
-
-%div{:id=>"rawdata", :style =>"display:none"}
-
-  %p
-    %pre= JSON.pretty_generate @barclamp.cfg_data
+  = dl_item t('.rawconfig'), link_to(t('edit'), barclamp_upload_path(@barclamp.id))
 
 %hr
 %h3= t '.roles'

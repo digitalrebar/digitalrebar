@@ -38,6 +38,10 @@ class BarclampsController < ApplicationController
     end
   end
 
+  def upload
+    @barclamp = Barclamp.find_key params[:barclamp_id] rescue nil
+  end
+
   def show
     @barclamp = Barclamp.find_key params[:id]
     respond_to do |format|

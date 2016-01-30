@@ -1,0 +1,21 @@
+-if @barclamp
+  - name = @barclamp.name
+  - data = @barclamp.cfg_data
+- else
+  - data = { barclamp: { name: ""}, roles: [ { name: "", jig: ""} ], attribs: [] }
+  - name = t 'add' 
+
+= form_for :deployment, :'data-remote' => true, :url => barclamps_path(), :html => { :method=>:post, :'data-type' => 'json', :multipart => true, :class => "formtastic" } do |f|
+
+  %table{:width=>'100%'}
+    %tr
+      %td
+        - if @barclamp
+          %h1= link_to name, barclamp_path(@barclamp.id)
+        - else
+          %h1= name
+      %td{:align=>'right'}
+        %input.button{:type => "submit", :name => "update", :method=>:post, :value => t('update')}
+
+  %textarea{:name => "value", :rows=>50, :cols=>120}
+    = JSON.pretty_generate data
