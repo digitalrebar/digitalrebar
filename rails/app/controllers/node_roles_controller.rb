@@ -56,7 +56,6 @@ class NodeRolesController < ApplicationController
       deployments = Deployment.all.map{ |d| d.id }
       out[:deleted][:deployments] = (params[:deployments] - deployments) rescue []
     end
-    Rails.logger.warn("ZEHICLE active #{out.inspect}")
 
     # done
     render api_array out.to_json
