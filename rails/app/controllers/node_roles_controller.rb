@@ -56,6 +56,7 @@ class NodeRolesController < ApplicationController
       deployments = Deployment.all.map{ |d| d.id }
       out[:deleted][:deployments] = (params[:deployments] - deployments) rescue []
     end
+    Rails.logger.warn("ZEHICLE active #{out.inspect}")
 
     # done
     render api_array out.to_json
@@ -103,7 +104,7 @@ class NodeRolesController < ApplicationController
       raise "could not find role #{params[:id]}" unless role
       @node_role = NodeRole.find_by!(node_id: node.id, role_id: role.id)
     else
-      @node_role = NodeRole.find_key params[:id]
+      @node_role = NodeRole.find params[:id]
     end
     respond_to do |format|
       format.html {  }
