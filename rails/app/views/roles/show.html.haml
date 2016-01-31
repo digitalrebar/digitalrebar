@@ -36,7 +36,8 @@
   %p= t '.model_error', :error=>moderror.message
 
 %h3= t '.upstream'
-  = render :partial => "index", :locals => { :list => @role.parents, :jig_name => nil }
+
+= render :partial => "index", :locals => { :list => @role.parents, :jig_name => nil }
 
 %h3= t'.attributes'
 
@@ -81,7 +82,7 @@
 
 %h3= t '.metadata'
 
-= JSON.pretty_generate @role.metadata
+%pre= JSON.pretty_generate @role.metadata
 
 - inuse = @role.node_roles.sort
 %h3
