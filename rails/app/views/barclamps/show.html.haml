@@ -6,16 +6,24 @@
   = dl_item t('.version'), @barclamp.version
   = dl_item t('.commit'), @barclamp.commit
   = dl_item t('.build_on'), @barclamp.build_on
+  = dl_item t('.rawconfig'), link_to(t('edit'), barclamp_upload_path(@barclamp.id))
 
-%strong 
-  %a.toggle.with_label{:href => "#", :id => "#data_toggle", :rel => "rawdata"}= t '.rawconfig'
 
-%div{:id=>"rawdata", :style =>"display:none"}
+- if @barclamp.cfg_data["barclamp"]["os_support"]
+  %h3= t '.os_support'
 
-  %p
-    %pre= JSON.pretty_generate @barclamp.cfg_data
+  - provisioner = Role.find_key 'provisioner-service'
+  - if provisioner
+    - admin = provisioner.nodes.first
+    - available_os = Attrib.get("provisioner-available-oses", admin).map{ |k,v| k } rescue []
+  
+  %ul
+    - @barclamp.cfg_data["barclamp"]["os_support"].each do |os|
+      %li
+        = os
+        - if provisioner and !available_os.include? os
+          = t '.not_available'
 
-%hr
 %h3= t '.roles'
 
 = render :partial => "roles/index", :locals => { :list => @barclamp.roles, :jig_name => nil }

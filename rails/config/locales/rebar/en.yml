@@ -232,9 +232,11 @@ en:
       source_path: "Source Path"
       source_url: "Source URL"
       version: "Version"
-      rawconfig: "Raw Configuration"
+      rawconfig: "Configuration"
       commit: "Commit xRef"
       build_on: "Date xRef"
+      os_support: "Declared OS Support"
+      not_available: "(Note: not included in Provisioner list)"
     wizard:
       title: "%{barclamp} Configuration Wizard"
       selection: "Selection"
@@ -565,6 +567,7 @@ en:
       description: "Description"
       upstream: "Upstream (prerequisites)"
       wanted: "Wanted Attributes"
+      metadata: "Role Specific Metadata (JSON)"
       inuse: "Role Activity (Node Roles)"
       reapply: "Retry/Reapply All"
     index:

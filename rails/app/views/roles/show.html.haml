@@ -1,47 +1,43 @@
-= form_for :role, :'data-remote' => true, :url => role_path(@role.id), :html => { :method=>:put, :'data-type' => 'html',  :class => "formtastic" } do |f|
+%h1= @role.name
 
-  %div{:style => 'float:right'}
-    %input.button{:type => "submit", :name => "save", :value => t('.save')}
-  %h1= @role.name
-
-  %dl
-    %dt= t '.description' 
-    %dd= @role.description
-
-    - unless params.include? :form
-      %dt= t '.jig' 
-      %dd= link_to @role.jig_name, jig_path(@role.jig_name)
-      %dt= t '.barclamp' 
-      %dd= link_to @role.barclamp.name, barclamp_path(@role.barclamp.id), :title=>@role.barclamp.description
-      - if Rails.env.development?
-        %dt= t '.type'
-        %dd= "[#{@role.class.to_s}]"
-      - if @role.github and (current_user.settings(:docs).sources rescue false)
-        %dt= t '.source'
-        %dd= link_to @role.github, @role.github
-      %dt= t '.icon'
-      %dd= link_to @role.icon, "https://design.google.com/icons/#ic_#{@role.icon}"
-      %dt= t '.flags'
-      %dd
-        = t '.library' if @role.library 
-        = t '.discovery' if @role.discovery
-        = t '.implicit' if @role.implicit
-        = t '.bootstrap' if @role.bootstrap
-        = t '.abstract' if @role.abstract
-        = t '.service' if @role.service
-
-  .clear
-
-  - begin 
-    - specific = "barclamp_#{@role.barclamp.name}/node_roles/#{@role.name}"
-    - general = "barclamp_#{@role.barclamp.name}/roles/role"
-    - template = @role.template.to_json
-  - rescue Exception => moderror
-    %p= t '.model_error', :error=>moderror.message
+%dl
+  %dt= t '.description' 
+  %dd= @role.description
 
   - unless params.include? :form
-    %h3= t '.upstream'
-    = render :partial => "index", :locals => { :list => @role.parents, :jig_name => nil }
+    %dt= t '.jig' 
+    %dd= link_to @role.jig_name, jig_path(@role.jig_name)
+    %dt= t '.barclamp' 
+    %dd= link_to @role.barclamp.name, barclamp_path(@role.barclamp.id), :title=>@role.barclamp.description
+    - if Rails.env.development?
+      %dt= t '.type'
+      %dd= "[#{@role.class.to_s}]"
+    - if @role.github and (current_user.settings(:docs).sources rescue false)
+      %dt= t '.source'
+      %dd= link_to @role.github, @role.github
+    %dt= t '.icon'
+    %dd= link_to @role.icon, "https://design.google.com/icons/#ic_#{@role.icon}"
+    %dt= t '.flags'
+    %dd
+      = t '.library' if @role.library 
+      = t '.discovery' if @role.discovery
+      = t '.implicit' if @role.implicit
+      = t '.bootstrap' if @role.bootstrap
+      = t '.abstract' if @role.abstract
+      = t '.service' if @role.service
+
+.clear
+
+- begin 
+  - specific = "barclamp_#{@role.barclamp.name}/node_roles/#{@role.name}"
+  - general = "barclamp_#{@role.barclamp.name}/roles/role"
+  - template = @role.template.to_json
+- rescue Exception => moderror
+  %p= t '.model_error', :error=>moderror.message
+
+%h3= t '.upstream'
+
+= render :partial => "index", :locals => { :list => @role.parents, :jig_name => nil }
 
 %h3= t'.attributes'
 
@@ -83,6 +79,10 @@
             %td= link_to a.role.name, role_path(a.role.name)
           - else
             %td= 'Node'
+
+%h3= t '.metadata'
+
+%pre= JSON.pretty_generate @role.metadata
 
 - inuse = @role.node_roles.sort
 %h3

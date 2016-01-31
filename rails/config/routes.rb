@@ -30,6 +30,7 @@ Rebar::Application.routes.draw do
   resources :barclamps do
     get :wizard
     post :wizard
+    get :upload
   end
   resources :deployment_roles do
     resources :node_roles
