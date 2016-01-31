@@ -79,7 +79,7 @@ class Barclamp < ActiveRecord::Base
 
       source_url = bc['barclamp']["source_url"]
       barclamp.update_attributes!(
-        :description   => bc['barclamp']['description'] || bc_name.humanize,
+        :description   => bc['barclamp']['description'] || bc['barclamp']['display'] || bc_name.humanize,
         :version       => version,
         :build_version => build_version,
         :source_url    => source_url,
