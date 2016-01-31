@@ -2,7 +2,7 @@
   - name = @barclamp.name
   - data = @barclamp.cfg_data
 - else
-  - data = { barclamp: { name: ""}, roles: [ { name: "", jig: ""} ], attribs: [] }
+  - data = { barclamp: { name: "", source_path: ""}, roles: [ { name: "", jig: ""} ], attribs: [] }
   - name = t 'add'
 
 %table
@@ -28,6 +28,10 @@
     }
     catch (e) {
       alert("Bad JSON: " + e);
+      return;
+    }
+    if (!raw.barclamp.name || raw.barclamp.name.length === 0 ) {
+      alert("Name is required");
       return;
     }
     console.debug(raw.barclamp.name);
