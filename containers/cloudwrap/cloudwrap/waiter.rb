@@ -92,6 +92,7 @@ loop do
         cidr = "32"
 
         private_dev_ip = server.private_ip_address
+        private_dev_cidr = "32"
 
       when 'Packet'
         # For now, make packet private and public the same.
@@ -99,6 +100,7 @@ loop do
         cidr = device_data['ip_addresses'][0]['cidr']
         dev_ip = device_data['ip_addresses'][0]['address']
         private_dev_ip = device_data['ip_addresses'][0]['address']
+        private_dev_cidr = device_data['ip_addresses'][0]['cidr']
 
         log "Make sure node is ssh-able?"
         begin
@@ -132,6 +134,10 @@ loop do
         server.ssh("sudo -- mv /tmp/rebar_keys /root/.ssh/authorized_keys")
         server.ssh("sudo -- chmod 600 /root/.ssh/authorized_keys")
         server.ssh("sudo -- chown root:root /root/.ssh/authorized_keys")
+
+        answer = server.ssh("ip addr | grep #{private_dev_ip} | awk '{ print $2 }' | awk -F/ '{ print $2 }'")
+        private_dev_cidr = answer[0].stdout.strip
+
       when 'Packet'
         log "Put keys to node"
         Tempfile.open("cloudwrap-keys") do |f|
@@ -164,8 +170,8 @@ loop do
 
       log("Adding node control address #{dev_ip}/#{cidr} to node #{rebar_id}")
       system("rebar nodes set #{rebar_id} attrib node-control-address to '{\"value\": \"#{dev_ip}/#{cidr}\"}'")
-      log("Adding node private control address #{private_dev_ip} to node #{rebar_id}")
-      system("rebar nodes set #{rebar_id} attrib node-private-control-address to '{\"value\": \"#{private_dev_ip}\"}'")
+      log("Adding node private control address #{private_dev_ip}/#{private_dev_cidr} to node #{rebar_id}")
+      system("rebar nodes set #{rebar_id} attrib node-private-control-address to '{\"value\": \"#{private_dev_ip}/#{private_dev_cidr}\"}'")
       log "Marking server #{rebar_id} alive"
       Diplomat::Kv.delete(key)
       Diplomat::Kv.delete("cloudwrap/keys/#{rebar_id}")
