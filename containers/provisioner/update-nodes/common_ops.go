@@ -11,7 +11,7 @@ import (
 )
 
 func listThings(c *echo.Context, thing keySaver) error {
-	things := backend.List(thing)
+	things := backend.list(thing)
 	res := make([]interface{}, len(things))
 	for i, obj := range things {
 		var buf interface{}
@@ -28,24 +28,24 @@ func createThing(c *echo.Context, thing keySaver) error {
 	if err := c.Bind(&thing); err != nil {
 		return c.JSON(http.StatusBadRequest, NewError(err.Error()))
 	}
-	if err := backend.Load(thing); err == nil {
-		return c.JSON(http.StatusConflict, NewError(thing.Key()+" already exists."))
+	if err := backend.load(thing); err == nil {
+		return c.JSON(http.StatusConflict, NewError(thing.key()+" already exists."))
 	}
-	if err := backend.Save(thing, nil); err != nil {
+	if err := backend.save(thing, nil); err != nil {
 		return c.JSON(http.StatusInternalServerError, NewError(err.Error()))
 	}
 	return c.JSON(http.StatusCreated, thing)
 }
 
 func getThing(c *echo.Context, thing keySaver) error {
-	if err := backend.Load(thing); err != nil {
+	if err := backend.load(thing); err != nil {
 		return c.NoContent(http.StatusNotFound)
 	}
 	return c.JSON(http.StatusOK, thing)
 }
 
 func updateThing(c *echo.Context, oldThing, newThing keySaver) error {
-	if err := backend.Load(oldThing); err != nil {
+	if err := backend.load(oldThing); err != nil {
 		return c.NoContent(http.StatusNotFound)
 	}
 	patch, err := ioutil.ReadAll(c.Request().Body)
@@ -60,15 +60,15 @@ func updateThing(c *echo.Context, oldThing, newThing keySaver) error {
 	if err := json.Unmarshal(newThingBuf, &newThing); err != nil {
 		return err
 	}
-	if err := backend.Save(newThing, oldThing); err != nil {
+	if err := backend.save(newThing, oldThing); err != nil {
 		return err
 	}
 	return c.JSON(http.StatusAccepted, newThing)
 }
 
 func deleteThing(c *echo.Context, thing keySaver) error {
-	if backend.Delete(thing) != nil {
-		return c.NoContent(http.StatusConflict)
+	if err := backend.remove(thing); err != nil {
+		return c.JSON(http.StatusConflict, NewError(fmt.Sprintf("Failed to delete %s: %v", thing.key(), err)))
 	}
 	return c.NoContent(http.StatusAccepted)
 }

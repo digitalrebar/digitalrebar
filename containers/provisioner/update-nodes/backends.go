@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -14,22 +13,22 @@ import (
 )
 
 type keySaver interface {
-	Prefix() string
-	Key() string
-	OnChange(interface{}) error
-	OnDelete() error
+	prefix() string
+	key() string
+	onChange(interface{}) error
+	onDelete() error
 }
 
 type storageBackend interface {
-	List(keySaver) [][]byte
-	Save(keySaver, interface{}) error
-	Load(keySaver) error
-	Delete(keySaver) error
+	list(keySaver) [][]byte
+	save(keySaver, interface{}) error
+	load(keySaver) error
+	remove(keySaver) error
 }
 
-type FileBackend string
+type fileBackend string
 
-func NewFileBackend(path string) (FileBackend, error) {
+func newFileBackend(path string) (fileBackend, error) {
 	fullPath, err := filepath.Abs(filepath.Clean(path))
 	if err != nil {
 		return "", err
@@ -37,32 +36,31 @@ func NewFileBackend(path string) (FileBackend, error) {
 	if err := os.MkdirAll(fullPath, 0755); err != nil {
 		return "", err
 	}
-	return FileBackend(fullPath), nil
+	return fileBackend(fullPath), nil
 }
 
-func (f FileBackend) mkThingPath(thing keySaver) string {
-	fullPath := filepath.Clean(filepath.Join(string(f), thing.Prefix()))
+func (f fileBackend) mkThingPath(thing keySaver) string {
+	fullPath := filepath.Join(string(f), thing.prefix())
 	if err := os.MkdirAll(fullPath, 0755); err != nil {
-		log.Fatalf("file: Cannot create %s: %v", fullPath, err)
+		logger.Fatalf("file: Cannot create %s: %v", fullPath, err)
 	}
 	return fullPath
 }
 
-func (f FileBackend) mkThingName(thing keySaver) string {
-	return filepath.Clean(filepath.Join(string(f), thing.Key())) + ".json"
+func (f fileBackend) mkThingName(thing keySaver) string {
+	return filepath.Join(string(f), thing.key()) + ".json"
 }
 
-func (f FileBackend) List(thing keySaver) [][]byte {
+func (f fileBackend) list(thing keySaver) [][]byte {
 	dir := f.mkThingPath(thing)
 	file, err := os.Open(dir)
 	if err != nil {
-		log.Fatalf("file: Failed to open dir %s: %v", dir, err)
+		logger.Fatalf("file: Failed to open dir %s: %v", dir, err)
 	}
 	names, err := file.Readdirnames(0)
 	if err != nil {
-		log.Fatalf("file: Failed to get listing for dir %s: %v", dir, err)
+		logger.Fatalf("file: Failed to get listing for dir %s: %v", dir, err)
 	}
-	log.Printf("%+v", names)
 	res := make([][]byte, 0, len(names))
 	for _, name := range names {
 		if !strings.HasSuffix(name, ".json") {
@@ -71,14 +69,14 @@ func (f FileBackend) List(thing keySaver) [][]byte {
 		fullName := filepath.Join(dir, name)
 		buf, err := ioutil.ReadFile(fullName)
 		if err != nil {
-			log.Fatalf("file: Failed to read info for %s: %v", fullName, err)
+			logger.Fatalf("file: Failed to read info for %s: %v", fullName, err)
 		}
 		res = append(res, buf)
 	}
 	return res
 }
 
-func (f FileBackend) Load(thing keySaver) error {
+func (f fileBackend) load(thing keySaver) error {
 	fullName := f.mkThingName(thing)
 	buf, err := ioutil.ReadFile(fullName)
 	if err != nil {
@@ -87,9 +85,9 @@ func (f FileBackend) Load(thing keySaver) error {
 	return json.Unmarshal(buf, &thing)
 }
 
-func (f FileBackend) Save(newThing keySaver, oldThing interface{}) error {
+func (f fileBackend) save(newThing keySaver, oldThing interface{}) error {
 	f.mkThingPath(newThing)
-	if err := newThing.OnChange(oldThing); err != nil {
+	if err := newThing.onChange(oldThing); err != nil {
 		return err
 	}
 	fullPath := f.mkThingName(newThing)
@@ -108,36 +106,42 @@ func (f FileBackend) Save(newThing keySaver, oldThing interface{}) error {
 	return nil
 }
 
-func (f FileBackend) Delete(thing keySaver) error {
+func (f fileBackend) remove(thing keySaver) error {
+	if err := f.load(thing); err != nil {
+		return err
+	}
+	if err := thing.onDelete(); err != nil {
+		return err
+	}
 	return os.Remove(f.mkThingName(thing))
 }
 
-type ConsulBackend struct {
+type consulBackend struct {
 	kv      *consul.KV
 	baseKey string
 }
 
-func (cb *ConsulBackend) makePrefix(thing keySaver) string {
-	return path.Clean(path.Join(cb.baseKey, thing.Prefix()))
+func (cb *consulBackend) makePrefix(thing keySaver) string {
+	return path.Join(cb.baseKey, thing.prefix())
 }
 
-func (cb *ConsulBackend) makeKey(thing keySaver) string {
-	return path.Clean(path.Join(cb.baseKey, thing.Key()))
+func (cb *consulBackend) makeKey(thing keySaver) string {
+	return path.Join(cb.baseKey, thing.key())
 }
 
-func NewConsulBackend(baseKey string) (*ConsulBackend, error) {
+func newConsulBackend(baseKey string) (*consulBackend, error) {
 	client, err := consul.NewClient(consul.DefaultConfig())
 	if err != nil {
 		return nil, err
 	}
-	backend := &ConsulBackend{
+	backend := &consulBackend{
 		kv:      client.KV(),
 		baseKey: baseKey,
 	}
 	return backend, nil
 }
 
-func (cb *ConsulBackend) List(thing keySaver) [][]byte {
+func (cb *consulBackend) list(thing keySaver) [][]byte {
 	keypairs, _, err := cb.kv.List(cb.makePrefix(thing), nil)
 	if err != nil {
 		return [][]byte{}
@@ -149,8 +153,8 @@ func (cb *ConsulBackend) List(thing keySaver) [][]byte {
 	return res
 }
 
-func (cb *ConsulBackend) Save(newThing keySaver, oldThing interface{}) error {
-	if err := newThing.OnChange(oldThing); err != nil {
+func (cb *consulBackend) save(newThing keySaver, oldThing interface{}) error {
+	if err := newThing.onChange(oldThing); err != nil {
 		return err
 	}
 	buf, err := json.Marshal(newThing)
@@ -164,7 +168,7 @@ func (cb *ConsulBackend) Save(newThing keySaver, oldThing interface{}) error {
 	return err
 }
 
-func (cb *ConsulBackend) Load(s keySaver) error {
+func (cb *consulBackend) load(s keySaver) error {
 	key := cb.makeKey(s)
 	kp, _, err := cb.kv.Get(key, nil)
 	if err != nil {
@@ -178,8 +182,11 @@ func (cb *ConsulBackend) Load(s keySaver) error {
 	return nil
 }
 
-func (cb *ConsulBackend) Delete(s keySaver) error {
-	if err := s.OnDelete(); err != nil {
+func (cb *consulBackend) remove(s keySaver) error {
+	if err := cb.load(s); err != nil {
+		return err
+	}
+	if err := s.onDelete(); err != nil {
 		return err
 	}
 	key := cb.makeKey(s)

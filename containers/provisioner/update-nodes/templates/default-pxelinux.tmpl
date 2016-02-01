@@ -1,0 +1,8 @@
+DEFAULT {{.Env.Name}}
+PROMPT 0
+TIMEOUT 10
+LABEL {{.Env.Name}}
+  KERNEL {{.Env.PathFor "http" .Env.Kernel}}
+  INITRD {{.Env.JoinInitrds "http"}}
+  APPEND {{.BootParams}}
+  IPAPPEND 2
