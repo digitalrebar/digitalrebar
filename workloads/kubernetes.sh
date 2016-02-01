@@ -38,6 +38,7 @@ help_options["--kubernetes-network-prefix=<Number>"]="Subnet prefix for whole ca
 help_options["--kubernetes-network-node-prefix=<Number>"]="Subnet prefix for node calico/flannel subnet space"
 
 help_options["--kubernetes-opencontrail-public-subnet=<CIDRIP>"]="Public network space for opencontrail"
+help_options["--kubernetes-opencontrail-private-subnet=<CIDRIP>"]="Private network space for opencontrail"
 
 help_options["--kubernetes-dns=<true|false>"]="Use DNS add-on"
 help_options["--kubernetes-dns-upstream=<JSON ARRAY of IP>"]="JSON array of DNS server IPs"
@@ -202,6 +203,10 @@ if [[ $KUBERNETES_OPENCONTRAIL_PUBLIC_SUBNET ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-opencontrail_public_subnet to "{ \"value\": \"${KUBERNETES_OPENCONTRAIL_PUBLIC_SUBNET}\" }"
 fi
 
+if [[ $KUBERNETES_OPENCONTRAIL_PRIVATE_SUBNET ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-opencontrail_private_subnet to "{ \"value\": \"${KUBERNETES_OPENCONTRAIL_PRIVATE_SUBNET}\" }"
+fi
+
 if [[ $KUBERNETES_ETCD_PEER_PORT ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-etcd_peer_port to "{ \"value\": ${KUBERNETES_ETCD_PEER_PORT} }"
 fi
@@ -250,7 +255,7 @@ done
 for ((i=0 ; i < $KUBERNETES_GATEWAY_COUNT; i++)) ; do
     NAME="${DEPLOYMENT_NAME}-gateway-$i.${DNS_DOMAIN}"
     rebar nodes move $NAME to $DEPLOYMENT_NAME
-    rebar nodes bind $NAME to opencontrail-gateway
+    rebar nodes bind $NAME to kubernetes-gateway
 done
 
 # Add deploy
