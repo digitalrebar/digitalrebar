@@ -28,7 +28,7 @@
         %th= link_to g.name, group_path(g.id)
   %tbdoy
     - if params[:all] or @group.nodes.count == 0
-      %tr#node{id: 0}
+      %tr{id: "node_0"}
         %td= t 'no_items'
     - else
       - @group.nodes.each do |n|
@@ -47,7 +47,7 @@
     action(node, group);
     $('table.data.box#nodelist').append('<tr#node id='+node+'><td><a href="/nodes/'+node+'">'+name+'</a></td></tr>');
     $('div#'+node).hide();
-    $('div#node_0').hide();
+    $('tr#node_0').hide();
   }
 
   function move(node, group) {
