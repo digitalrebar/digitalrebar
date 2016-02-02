@@ -96,7 +96,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
       # auto cleanup!
       slave.trigger.after :destroy do
-        run "rebar -E #{endpoint} #{key} nodes destroy node#{i}.rebar.local"
+        run "rebar -E #{endpoint} #{key} ping" rescue puts "No API: Server Down"
+        run "rebar -E #{endpoint} #{key} nodes destroy node#{i}.rebar.local" rescue puts "Delete failed!  Server may be down"
       end
     end
   end
