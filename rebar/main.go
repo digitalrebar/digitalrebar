@@ -244,9 +244,18 @@ func main() {
 	}
 
 	converge := &cobra.Command{
-		Use:   "converge",
-		Short: "Wait for all the noderoles to become active, and fail if any error out",
+		Use:   "converge [deployment]",
+		Short: "Wait for all the noderoles to become active (optionally by deployment), and fail if any error out",
 		Run: func(c *cobra.Command, args []string) {
+			var deploymentID int64 = 0
+			if len(args) == 1 {
+				obj := &client.Deployment{}
+				if client.Fetch(obj, args[0]) != nil {
+					log.Fatalf("Failed to fetch %v\n", args[0])
+				}
+				deploymentID = obj.ID
+			}
+
 			for {
 				nodeRoles, err := client.NodeRoles()
 				if err != nil {
@@ -254,6 +263,9 @@ func main() {
 				}
 				allActive := true
 				for _, nodeRole := range nodeRoles {
+					if nodeRole.DeploymentID != deploymentID {
+						continue
+					}
 					if nodeRole.State == datatypes.NodeRoleError {
 						log.Fatalln("Rebar could not converge")
 					}
