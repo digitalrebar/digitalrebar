@@ -26,7 +26,7 @@ class InventoryController < ApplicationController
 
       if !params[:hostvar] || params[:hostvar] == "none"
 
-        available_os = Attrib.get("provisioner-available-oses", Node.admin.where(:available => true).first) rescue []
+        available_os = Attrib.get("provisioner-available-oses", Node.admin.where(:available => true).first) rescue {}
         @inventory[:all] = { vars: { ansible_ssh_user: "root",  ansible_ssh_port: 22, available_os: available_os.keys }}
 
         # list of deployment groups
