@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"code.google.com/p/gcfg"
+	"github.com/digitalrebar/gcfg"
 )
 
 type Config struct {
