@@ -117,6 +117,7 @@ fi
 if [ "$DEVICE_ID" != "" ] ; then
     EXTRA="--device-id=$DEVICE_ID"
 fi
+echo "To test the swarm, docker -H tcp://$ADMIN_IP:2475 info"
 echo "To teardown, $0 $start_args --teardown=true --admin-ip=$ADMIN_IP $EXTRA"
-echo "To keep the admin node, add --keep_admin=true"
+echo "To teardown but keep the admin node, add --keep_admin=true"
 
