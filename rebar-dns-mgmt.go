@@ -14,7 +14,7 @@ import (
 	"log"
 	"net/http"
 
-	"code.google.com/p/gcfg"
+	"github.com/digitalrebar/gcfg"
 	"github.com/ant0ine/go-json-rest/rest"
 )
 
