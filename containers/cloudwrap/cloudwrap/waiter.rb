@@ -135,7 +135,7 @@ loop do
         server.ssh("sudo -- chmod 600 /root/.ssh/authorized_keys")
         server.ssh("sudo -- chown root:root /root/.ssh/authorized_keys")
 
-        answer = server.ssh("ip addr | grep #{private_dev_ip} | awk '{ print $2 }' | awk -F/ '{ print $2 }'")
+        answer = server.ssh("sudo -- ip addr | grep #{private_dev_ip} | awk '{ print $2 }' | awk -F/ '{ print $2 }'")
         private_dev_cidr = answer[0].stdout.strip
 
       when 'Packet'
