@@ -264,16 +264,40 @@ roles:
         default: false
         schema:
           type: bool
-
       - name: provisioner-webservers
         description: 'The URL that managed nodes should use to contact the provisioner webserver.'
         map: 'rebar/provisioner/server/webservers'
         schema:
           type: seq
           sequence:
-            - type: str
-              pattern: /[0-9a-f:.]*/
-
+            - type: map
+              mapping:
+                url:
+                  type: str
+                  required: true
+                port:
+                  type: int
+                  required: true
+                address:
+                  type: str
+                  required: true
+      - name: provisioner-management-servers
+        description: 'The information for the provisioner management servers.'
+        map: 'rebar/provisioner/server/management_servers'
+        schema:
+          type: seq
+          sequence:
+            - type: map
+              mapping:
+                url:
+                  type: str
+                  required: true
+                port:
+                  type: int
+                  required: true
+                address:
+                  type: str
+                  required: true
   - name: provisioner-docker-setup
     jig: chef
     conflicts:
