@@ -110,7 +110,7 @@ done
 rebar deployments commit $DEPLOYMENT_NAME
 
 # Wait for the system to converge
-if ! rebar converge ; then
+if ! rebar converge $DEPLOYMENT_NAME ; then
   die "Machines did NOT converge in docker-swarm"
 fi
 
