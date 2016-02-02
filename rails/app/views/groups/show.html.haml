@@ -12,7 +12,10 @@
   %h2= t '.unclaimed'
 
   - nodes.each do |n|
-    = link_to_function n.name, "add(#{n.id}, #{@group.id}, '#{n.name}')", {id: n.id}
+    %div{:id=>n.id}
+      %a{:onclick=>"add(#{n.id}, #{@group.id}, '#{n.name}')"}
+        =image_tag('icons/add.png')
+      = link_to n.name, node_path(n.id)
 
 %h2= t '.nodes'
 
@@ -43,8 +46,8 @@
   function add(node, group, name) {
     action(node, group);
     $('table.data.box#nodelist').append('<tr#node id='+node+'><td><a href="/nodes/'+node+'">'+name+'</a></td></tr>');
-    $('a#'+node).hide();
-    $('tr#node_0').hide();
+    $('div#'+node).hide();
+    $('div#node_0').hide();
   }
 
   function move(node, group) {
