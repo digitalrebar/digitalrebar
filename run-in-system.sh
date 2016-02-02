@@ -92,6 +92,10 @@ if [[ $ACCESS = HOST ]] ; then
   ACCESS_VAR="\"dr_access_mode\": \"HOST\", \"dr_external_ip\": \"$IP/$CIDR\","
 fi
 
+if [[ $DEPLOY = CLONE ]] ; then
+  EXTRA_VARS="[\"dr_clone_deploy\": \"true\"]"
+fi
+
 CON_VAR="\"dr_services\": ["
 COMMA=""
 for c in "${!containers[@]}"; do
@@ -115,6 +119,7 @@ JSON_STRING="{
   ${ACCESS_VAR}
   ${CON_VAR}
   ${WL_VAR}
+  ${EXTRA_VARS}
 }"
 
 if [[ $DEPLOY_ADMIN = local ]] ; then
