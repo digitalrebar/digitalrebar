@@ -282,12 +282,12 @@ private
     answer = addresses[0].addr if ip_part == 'address'
 
     if ip_part == 'ifname'
-      answer = walk_nics(node, addresses[0].address)
+      answer = walk_nics(node, addresses[0].addr)
       # This is a hack for kubernetes until we get a better handle on networking.
       unless answer
         value = Attrib.get('node-private-control-address', node)
         if value
-          answer = walk_nics(node, value)
+          answer = walk_nics(node, IP.coerce(value).addr)
         end
       end
     end
@@ -326,7 +326,16 @@ private
 
   def get_attrib(node, nr, command)
     args = command.split(/[\)\(\.,]/)
-    Attrib.get(args[1], node)
+    val = Attrib.get(args[1], node)
+
+    # It wans an IP fix.
+    if val and args.length > 3
+      ip = IP.coerce(val)
+      val = ip.addr if args[3] == 'address'
+      val = ip.to_s if args[3] == 'cidr'
+    end
+
+    val
   end
 
   # possible custom commands are:
