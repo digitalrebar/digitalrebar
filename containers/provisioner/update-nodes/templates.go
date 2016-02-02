@@ -1,83 +1,98 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"os"
+	"io"
+	"io/ioutil"
+	"net/http"
 	"path"
-	"path/filepath"
 	"text/template"
+
+	"github.com/labstack/echo"
 )
 
-type renderData struct {
-	Node *Node
-	Env  *BootEnv
+// Template represents a template that will be associated with a boot environment.
+type Template struct {
+	UUID       string // UUID is a unique identifier for this template.
+	Contents   string // Contents is the raw template.
+	parsedTmpl *template.Template
 }
 
-func parseTemplates(bootenv *BootEnv) error {
-	for _, templateParams := range bootenv.Templates {
-		pathTmpl, err := template.New(templateParams.Name).Parse(templateParams.Path)
-		if err != nil {
-			return fmt.Errorf("template: Error compiling path template %s (%s): %v",
-				templateParams.Name,
-				templateParams.Path,
-				err)
-		}
-		tmpl, err := template.New(templateParams.Name).Parse(templateParams.Contents)
-		if err != nil {
-			return fmt.Errorf("template: Error compiling template %s: %v\n---template---\n %s",
-				templateParams.Name,
-				err,
-				templateParams.Contents)
-		}
-		templateParams.pathTmpl = pathTmpl
-		templateParams.contentTmpl = tmpl
-	}
-	return nil
+func (t *Template) prefix() string {
+	return "templates"
 }
 
-func RenderTemplates(node *Node, bootenv *BootEnv) error {
-	// nodeDir :=
-	// uefiDir :=
-	// pxeDir := path.Join(uefiDir, "pxelinux.cfg")
-	vars := &renderData{
-		Node: node,
-		Env:  bootenv,
-	}
-	if err := parseTemplates(bootenv); err != nil {
+func (t *Template) key() string {
+	return path.Join(t.prefix(), t.UUID)
+}
+
+// Parse checks to make sure the template contents are valid according to text/template.
+func (t *Template) Parse() (err error) {
+	parsedTmpl, err := template.New(t.UUID).Parse(t.Contents)
+	if err != nil {
 		return err
 	}
+	t.parsedTmpl = parsedTmpl.Option("missingkey=error")
+	return nil
+}
 
-	for _, templateParams := range bootenv.Templates {
-		pathBuf := &bytes.Buffer{}
-		if err := templateParams.pathTmpl.Execute(pathBuf, vars); err != nil {
-			return fmt.Errorf("template: Error rendering path %s (%s): %v",
-				templateParams.Name,
-				templateParams.Path,
-				err)
-		}
-		tmplPath := filepath.Clean(filepath.Join(fileRoot, pathBuf.String()))
-		if err := os.MkdirAll(path.Dir(tmplPath), 0755); err != nil {
-			return fmt.Errorf("template: Unable to create dir for %s: %v", tmplPath, err)
-		}
+func createTemplate(c *echo.Context) error {
+	thing := &Template{}
+	thing.UUID = c.P(0)
+	buf, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return fmt.Errorf("template: failed to read request body")
+	}
+	if err := backend.load(thing); err == nil {
+		return c.JSON(http.StatusConflict, NewError(thing.key()+" already exists."))
+	}
+	thing.Contents = string(buf)
+	if err := backend.save(thing, nil); err != nil {
+		return c.JSON(http.StatusInternalServerError, NewError(err.Error()))
+	}
+	return c.JSON(http.StatusOK, thing)
+}
 
-		tmplDest, err := os.Create(tmplPath)
-		if err != nil {
-			return fmt.Errorf("template: Unable to create file %s: %v", tmplPath, err)
+func (t *Template) onChange(oldThing interface{}) error {
+	if t.Contents == "" || t.UUID == "" {
+		return fmt.Errorf("template: Illegal template %+v", t)
+	}
+	if err := t.Parse(); err != nil {
+		return fmt.Errorf("template: %s does not compile: %v", t.UUID, err)
+	}
+	if oldThing != nil {
+		old := oldThing.(*Template)
+		if old.UUID != t.UUID {
+			return fmt.Errorf("template: Cannot change UUID of %s", t.UUID)
 		}
-		defer tmplDest.Close()
-		if err := templateParams.contentTmpl.Execute(tmplDest, vars); err != nil {
-			os.Remove(tmplPath)
-			return fmt.Errorf("template: Error rendering template %s: %v\n---template---\n %s",
-				templateParams.Name,
-				err,
-				templateParams.Contents)
-		}
-		tmplDest.Sync()
 	}
 	return nil
 }
 
-func DeleteRenderedTemplates(node *Node, bootenv *BootEnv) {
-	return
+func (t *Template) onDelete() error {
+	bootenv := &BootEnv{}
+	bootEnvs, err := bootenv.List()
+	if err == nil {
+		for _, bootEnv := range bootEnvs {
+			for _, tmpl := range bootEnv.Templates {
+				if tmpl.UUID == t.UUID {
+					return fmt.Errorf("template: %s is in use by bootenv %s (template %s", t.UUID, bootEnv.Name, tmpl.Name)
+				}
+			}
+		}
+	}
+	return err
+}
+
+// Render executes the template with params writing the results to dest
+func (t *Template) Render(dest io.Writer, params interface{}) error {
+	if t.parsedTmpl == nil {
+		if err := t.Parse(); err != nil {
+			return fmt.Errorf("template: %s does not compile: %v", t.UUID, err)
+		}
+	}
+	if err := t.parsedTmpl.Execute(dest, params); err != nil {
+		return fmt.Errorf("template: cannot execute %s: %v", t.UUID, err)
+	}
+	return nil
 }

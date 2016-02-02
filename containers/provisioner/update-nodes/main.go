@@ -3,27 +3,28 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 
 	consul "github.com/hashicorp/consul/api"
 	"github.com/labstack/echo"
 	mw "github.com/labstack/echo/middleware"
+	"github.com/labstack/gommon/log"
 )
 
-var nodeKey, fileRoot string
+var machineKey, fileRoot, provisionerURL, commandURL string
 var backEndType string
 var apiPort int64
 var client *consul.Client
 var backend storageBackend
 var api *echo.Echo
+var logger *log.Logger
 
 func init() {
 	flag.StringVar(&backEndType,
 		"backend",
 		"consul",
 		"Storage backend to use.  Can be either 'consul' or 'directory'")
-	flag.StringVar(&nodeKey,
+	flag.StringVar(&machineKey,
 		"data-root",
 		"digitalrebar/provisioner/boot-info",
 		"Location we should store runtime information in")
@@ -35,27 +36,37 @@ func init() {
 		"file-root",
 		"/tftpboot",
 		"Root of filesystem we should manage")
+	flag.StringVar(&provisionerURL,
+		"provisioner",
+		"http://localhost:8091",
+		"Public URL for the provisioner")
+	flag.StringVar(&commandURL,
+		"command",
+		"http://localhost:3000",
+		"Public URL for the Command and Control server machines should communicate with")
 }
 
 func main() {
 	// Some initial setup
 	flag.Parse()
+	logger = log.New("provisioner-mgmt")
+	logger.SetOutput(os.Stderr)
 	var err error
 	switch backEndType {
 	case "consul":
-		backend, err = NewConsulBackend(nodeKey)
+		backend, err = newConsulBackend(machineKey)
 	case "directory":
-		backend, err = NewFileBackend(nodeKey)
+		backend, err = newFileBackend(machineKey)
 	default:
-		log.Fatalf("Unknown storage backend type %v\n", backEndType)
+		logger.Fatalf("Unknown storage backend type %v\n", backEndType)
 	}
 	api = echo.New()
 	api.Use(mw.Logger())
 	api.Use(mw.Recover())
-	api.SetLogOutput(os.Stderr)
+	api.SetLogger(logger)
 	api.SetDebug(true)
 	if err != nil {
-		log.Panic(err)
+		logger.Fatal(err)
 	}
 	// bootenv methods
 	api.Get("/bootenvs",
@@ -78,26 +89,50 @@ func main() {
 		func(c *echo.Context) error {
 			return deleteThing(c, &BootEnv{Name: c.P(0)})
 		})
-	// node methods
-	api.Get("/nodes",
+	// machine methods
+	api.Get("/machines",
 		func(c *echo.Context) error {
-			return listThings(c, &Node{})
+			return listThings(c, &Machine{})
 		})
-	api.Post("/nodes",
+	api.Post("/machines",
 		func(c *echo.Context) error {
-			return createThing(c, &Node{})
+			return createThing(c, &Machine{})
 		})
-	api.Get("/nodes/:name",
+	api.Get("/machines/:name",
 		func(c *echo.Context) error {
-			return getThing(c, &Node{Name: c.P(0)})
+			return getThing(c, &Machine{Name: c.P(0)})
 		})
-	api.Patch("/nodes/:name",
+	api.Patch("/machines/:name",
 		func(c *echo.Context) error {
-			return updateThing(c, &Node{Name: c.P(0)}, &Node{})
+			return updateThing(c, &Machine{Name: c.P(0)}, &Machine{})
 		})
-	api.Delete("/nodes/:name",
+	api.Delete("/machines/:name",
 		func(c *echo.Context) error {
-			return deleteThing(c, &Node{Name: c.P(0)})
+			return deleteThing(c, &Machine{Name: c.P(0)})
 		})
+
+	// template methods
+	api.Get("/templates",
+		func(c *echo.Context) error {
+			return listThings(c, &Template{})
+		})
+	api.Post("/templates",
+		func(c *echo.Context) error {
+			return createThing(c, &Template{})
+		})
+	api.Post("/templates/:uuid", createTemplate)
+	api.Get("/templates/:uuid",
+		func(c *echo.Context) error {
+			return getThing(c, &Template{UUID: c.P(0)})
+		})
+	api.Patch("/templates/:uuid",
+		func(c *echo.Context) error {
+			return updateThing(c, &Template{UUID: c.P(0)}, &Template{})
+		})
+	api.Delete("/templates/:uuid",
+		func(c *echo.Context) error {
+			return deleteThing(c, &Template{UUID: c.P(0)})
+		})
+
 	api.Run(fmt.Sprintf(":%d", apiPort))
 }

@@ -5,35 +5,45 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"path"
 )
 
-type Node struct {
-	Name       string
-	Address    string
-	HexAddress string
-	BootEnv    string
-	Params     map[string]string
+// Machine represents a single bare-metal system that the provisioner
+// should manage the boot environment for.
+type Machine struct {
+	Name    string                 // The FQDN of the machine.
+	Address string                 // The IPv4 address that the machine PXE boots with.
+	BootEnv string                 // The boot environment that the machine should boot into.
+	Params  map[string]interface{} // Any additional parameters that may be needed for template expansion.
 }
 
-func (n *Node) Prefix() string {
-	return nodeKey + "/nodes"
+// HexAddress returns Address in raw hexadecimal format, suitable for
+// pxelinux and elilo usage.
+func (n *Machine) HexAddress() string {
+	addr := net.ParseIP(n.Address).To4()
+	hexIP := []byte(addr)
+	return fmt.Sprintf("%02X%02X%02X%02X", hexIP[0], hexIP[1], hexIP[2], hexIP[3])
 }
 
-func (n *Node) Key() string {
-	return n.Prefix() + "/" + n.Name
+func (n *Machine) prefix() string {
+	return "machines"
 }
 
-func (n *Node) OnChange(oldThing interface{}) error {
+func (n *Machine) key() string {
+	return path.Join(n.prefix(), n.Name)
+}
+
+func (n *Machine) onChange(oldThing interface{}) error {
 	if oldThing != nil {
-		old := oldThing.(*Node)
+		old := oldThing.(*Machine)
 		if old.Name != n.Name {
-			return errors.New("Cannot change name of node")
+			return errors.New("Cannot change name of machine")
 		}
 		oldBootEnv := &BootEnv{Name: old.BootEnv}
-		if err := backend.Load(oldBootEnv); err != nil {
+		if err := backend.load(oldBootEnv); err != nil {
 			return err
 		}
-		DeleteRenderedTemplates(old, oldBootEnv)
+		oldBootEnv.DeleteRenderedTemplates(old)
 	}
 	addr := net.ParseIP(n.Address)
 	if addr != nil {
@@ -42,35 +52,34 @@ func (n *Node) OnChange(oldThing interface{}) error {
 	if addr == nil {
 		return errors.New(n.Address + " is not a valid IPv4 address")
 	}
-	hexIP := []byte(addr)
-	n.HexAddress = fmt.Sprintf("%02X%02X%02X%02X", hexIP[0], hexIP[1], hexIP[2], hexIP[3])
 	bootEnv := &BootEnv{Name: n.BootEnv}
-	if err := backend.Load(bootEnv); err != nil {
+	if err := backend.load(bootEnv); err != nil {
 		return err
 	}
-	if err := RenderTemplates(n, bootEnv); err != nil {
+	if err := bootEnv.RenderTemplates(n); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (n *Node) OnDelete() error {
+func (n *Machine) onDelete() error {
 	bootEnv := &BootEnv{Name: n.BootEnv}
-	if backend.Load(bootEnv) != nil {
-		DeleteRenderedTemplates(n, bootEnv)
+	if err := backend.load(bootEnv); err != nil {
+		return err
 	}
+	bootEnv.DeleteRenderedTemplates(n)
 	return nil
 }
 
-func (b *Node) List() ([]*Node, error) {
-	things := backend.List(b)
-	res := make([]*Node, len(things))
+func (b *Machine) List() ([]*Machine, error) {
+	things := backend.list(b)
+	res := make([]*Machine, len(things))
 	for i, blob := range things {
-		node := &Node{}
-		if err := json.Unmarshal(blob, node); err != nil {
+		machine := &Machine{}
+		if err := json.Unmarshal(blob, machine); err != nil {
 			return nil, err
 		}
-		res[i] = node
+		res[i] = machine
 	}
 	return res, nil
 }
