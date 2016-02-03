@@ -14,10 +14,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/digitalrebar/gcfg"
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/digitalrebar/gcfg"
 )
 
+// For NSUPDATE, Dns.Server is ip of server to update
 // For PDNS, Dns.Server to access (localhost)
 // For BIND, Dns.Server name (FQDN of DNS server)
 type Config struct {
@@ -64,6 +65,8 @@ func main() {
 			UrlBase:     base,
 			AccessToken: cfg.Dns.Password,
 		}
+	} else if cfg.Dns.Type == "NSUPDATE" {
+		be = NewNsupdateDnsInstance(cfg.Dns.Server)
 	} else {
 		log.Fatal("Failed to find type")
 	}
