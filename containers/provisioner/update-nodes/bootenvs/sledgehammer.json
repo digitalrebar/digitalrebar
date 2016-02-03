@@ -5,8 +5,8 @@
     },
     "Kernel": "vmlinuz0",
     "Initrds": [ "initrd0.img" ],
-    "BootParams": "rootflags=loop root=live:/sledgehammer.iso rootfstype=auto ro liveimg rd_NO_LUKS rd_NO_MD rd_NO_DM provisioner.web={{.ProvisionerURL}} rebar.web={{.CommandURL}} rebar.fqdn={{.Machine.Name}} rebar.install.key={{index .Machine.Params \"rebar-machine_key\"}}",
-    "RequiredParams": ["ntp-servers","provisioner-online","rebar-access_keys","rebar-machine_key"],
+    "BootParams": "rootflags=loop root=live:/sledgehammer.iso rootfstype=auto ro liveimg rd_NO_LUKS rd_NO_MD rd_NO_DM provisioner.web={{.ProvisionerURL}} rebar.web={{.CommandURL}} rebar.fqdn={{.Machine.Name}} rebar.install.key={{.Param \"rebar-machine_key\"}}",
+    "RequiredParams": ["ntp_servers","provisioner-online","rebar-access_keys","rebar-machine_key"],
     "Templates": [
         {
             "Name": "pxelinux",
@@ -20,7 +20,7 @@
         },
         {
             "Name": "control.sh",
-            "Path": "{{.Machine.Name}}/control.sh",
+            "Path": "nodes/{{.Machine.Name}}/control.sh",
             "UUID": "sledgehammer-control.sh.tmpl"
         }
     ]

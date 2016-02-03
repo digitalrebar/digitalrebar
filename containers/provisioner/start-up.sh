@@ -74,13 +74,7 @@ if ! [[ $(cat /proc/cmdline) =~ $host_re ]]; then
 else
     # Let Rebar know that we are back, and booted into Sledgehammer.
     export HOSTNAME="${BASH_REMATCH[1]}"
-    rebar nodes update "$HOSTNAME" '{"bootenv": "sledgehammer"}'
-    echo "Node is back."
 fi
-
-# Always make sure we are marking the node not alive. It will comeback later.
-rebar nodes update $HOSTNAME '{"alive": false}'
-echo "Set node not alive - will be set in control.sh!"
 
 # Figure out what our current addresses should be
 addrs="$(rebar nodes networkallocations $HOSTNAME |jq -r '.[] | .address')"
@@ -100,6 +94,10 @@ done
 if [[ $network_router ]]; then
     ip route add default via "${network_router%%/*}"
 fi
+
+# Always make sure we are marking the node not alive. It will comeback later.
+rebar nodes update $HOSTNAME '{"alive": false, "bootenv": "sledgehammer"}'
+echo "Set node not alive - will be set in control.sh!"
 
 # Set our hostname for everything else.
 if [ -f /etc/sysconfig/network ] ; then
