@@ -34,6 +34,15 @@ func (r *RenderData) BootParams() (string, error) {
 	return res.String(), nil
 }
 
+// Param is a helper function for extracting a parameter from Machine.Params
+func (r *RenderData) Param(key string) (interface{}, error) {
+	res, ok := r.Machine.Params[key]
+	if !ok {
+		return nil, fmt.Errorf("No such machine parameter %s", key)
+	}
+	return res, nil
+}
+
 // TemplateInfo holds information on the templates in the boot
 // environment that will be expanded into files.
 type TemplateInfo struct {

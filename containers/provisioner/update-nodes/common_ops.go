@@ -25,16 +25,17 @@ func listThings(c *echo.Context, thing keySaver) error {
 }
 
 func createThing(c *echo.Context, thing keySaver) error {
+	finalStatus := http.StatusCreated
+	if err := backend.load(thing); err == nil {
+		finalStatus = http.StatusAccepted
+	}
 	if err := c.Bind(&thing); err != nil {
 		return c.JSON(http.StatusBadRequest, NewError(err.Error()))
-	}
-	if err := backend.load(thing); err == nil {
-		return c.JSON(http.StatusConflict, NewError(thing.key()+" already exists."))
 	}
 	if err := backend.save(thing, nil); err != nil {
 		return c.JSON(http.StatusInternalServerError, NewError(err.Error()))
 	}
-	return c.JSON(http.StatusCreated, thing)
+	return c.JSON(finalStatus, thing)
 }
 
 func getThing(c *echo.Context, thing keySaver) error {

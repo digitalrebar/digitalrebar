@@ -32,13 +32,13 @@ echo "AcceptEnv http_proxy https_proxy no_proxy" >> /etc/ssh/sshd_config
 service sshd restart
 
 # Synchronize our date
-ntpdate "{{index (index .Machine.Params "ntp-servers") 0}}"
+ntpdate "{{index (.Param "ntp_servers") 0}}"
 
 # Other gem dependency installs.
 cat > /etc/gemrc <<EOF
 :sources:
-{{ if index .Machine.Params "provisioner-online" }}- http://rubygems.org/{{ end }}
-gem: --no-ri --no-rdoc --bindir /usr/local/bin --http-proxy $http_proxy
+{{ if .Param "provisioner-online" }}- http://rubygems.org/{{ end }}
+gem: --no-ri --no-rdoc --bindir /usr/local/bin
 EOF
 cp /etc/gemrc /root/.gemrc
 
@@ -51,7 +51,7 @@ cp /etc/gemrc /root/.gemrc
 
 mkdir -p /root/.ssh
 cat >/root/.ssh/authorized_keys <<EOF
-{{ range $key := index .Machine.Params "rebar-access_keys" }}{{$key}}{{ end }}
+{{ range $key := .Param "rebar-access_keys" }}{{$key}}{{ end }}
 EOF
 
 # Mark us as alive.
