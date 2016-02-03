@@ -37,20 +37,21 @@ func (t *Template) Parse() (err error) {
 }
 
 func createTemplate(c *echo.Context) error {
+	finalStatus := http.StatusCreated
 	thing := &Template{}
 	thing.UUID = c.P(0)
+	if err := backend.load(thing); err == nil {
+		finalStatus = http.StatusAccepted
+	}
 	buf, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
 		return fmt.Errorf("template: failed to read request body")
-	}
-	if err := backend.load(thing); err == nil {
-		return c.JSON(http.StatusConflict, NewError(thing.key()+" already exists."))
 	}
 	thing.Contents = string(buf)
 	if err := backend.save(thing, nil); err != nil {
 		return c.JSON(http.StatusInternalServerError, NewError(err.Error()))
 	}
-	return c.JSON(http.StatusOK, thing)
+	return c.JSON(finalStatus, thing)
 }
 
 func (t *Template) onChange(oldThing interface{}) error {
