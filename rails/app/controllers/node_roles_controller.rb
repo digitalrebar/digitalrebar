@@ -214,6 +214,16 @@ class NodeRolesController < ApplicationController
     end
   end
 
+  def parents
+    @node_role = NodeRole.find params[:node_role_id]
+    render api_index NodeRole, @node_role.parents
+  end
+
+  def children
+    @node_role = NodeRole.find params[:node_role_id]
+    render api_index NodeRole, @node_role.children
+  end
+
   def anneal
     respond_to do |format|
       format.html { }

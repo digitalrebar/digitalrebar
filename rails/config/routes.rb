@@ -296,6 +296,8 @@ Rebar::Application.routes.draw do
             put :retry
             put :propose
             put :commit
+            get :parents
+            get :children
             resources :attribs
           end
           resources :roles do
