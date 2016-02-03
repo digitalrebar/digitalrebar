@@ -22,7 +22,6 @@ class Node < ActiveRecord::Base
 
   before_validation :default_population
   before_destroy    :before_destroy_handler
-  after_update      :bootenv_change_handler
   after_update      :deployment_change_handler
   after_commit      :after_create_hooks, on: :create
   after_commit      :after_commit_handler, on: :update
@@ -462,17 +461,6 @@ class Node < ActiveRecord::Base
 
   private
 
-  def bootenv_change_handler
-    return unless self.bootenv_changed?
-    return unless self.actions[:boot]
-    new_bootenv = self.changes["bootenv"]
-    if new_bootenv == "local"
-      self.actions[:boot].disk
-    else
-      self.actions[:boot].pxe
-    end
-  end
-
   def deployment_change_handler
     return unless self.deployment_id_changed?
     # If we change deployments from system to something else, then
@@ -556,7 +544,7 @@ class Node < ActiveRecord::Base
   def after_create_hooks
     return if @after_create
     @after_create = true
-    self.provider.create_node(self) 
+    self.provider.create_node(self)
     # Handle binding the default hammers for this node.
     case
     when self.is_system?

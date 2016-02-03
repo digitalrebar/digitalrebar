@@ -13,7 +13,68 @@
 # limitations under the License. 
 # 
 
+require 'rest-client'
+require 'uri'
+
 class BarclampProvisioner::Service < Service
+
+  def on_node_change(node)
+    return unless node.previous_changes["bootenv"]
+    sysdepl = Deployment.system
+    provisioner_mgmt = Attrib.get('provisioner-management-servers',sysdepl)
+    url = provisioner_mgmt[0]["url"]
+    if node.bootenv == "unknown"
+      Rails.logger.info("Node: #{node.name} bootenv set to unknown, forgetting about it")
+      RestClient.delete("#{url}/machines/#{node.name}")
+      return
+    end
+    payload = {"Name" => node.name,
+               "Address" => node.addresses(:v4_only)[0].addr,
+               "BootEnv" => node.bootenv,
+               "Params" => {}
+              }
+    begin
+      response = RestClient.get("#{url}/bootenvs/#{node.bootenv}")
+    rescue => e
+      Rails.logger.error("Node: provisioner manager #{url} does not know about bootenv #{node.bootenv}")
+      raise "Provisioner management does not know about bootenv #{node.bootenv}"
+    end
+    bootenv_options = JSON.parse(response.body)
+    bootenv_options["RequiredParams"].each do |param|
+      # Try a few ways to get the params
+      val = (Attrib.get(param,node) rescue nil)
+      if val.nil?
+        depl = node.deployment
+        while val.nil?
+          dnode = Node.find_by!(system: true, deployment_id: depl)
+          val = (Attrib.get(param, dnode) rescue nil)
+          val = (Attrib.get(param, depl) rescue nil) if val.nil?
+          break if depl.parent_id.nil?
+          depl = depl.parent
+        end
+      end
+      if val.nil?
+        Rails.logger.error("Node: bootenv #{node.bootenv} requires parameter #{param}, but we cannot find it!")
+        raise "Cannot find required parameter #{param}"
+      end
+      payload["Params"][param] = val
+    end if bootenv_options["RequiredParams"] && !bootenv_options["RequiredParams"].empty?
+    begin
+      response = RestClient.post("#{url}/machines",payload.to_json, content_type: :json)
+    rescue => e
+      Rails.logger.error("Node: failed to switch #{node.name} to #{node.bootenv}\n#{e.response}")
+      raise "Unable to change bootenv to #{node.bootenv}"
+    end
+    Attrib.set('provisioner-active-bootstate',node,node.bootenv)
+    Rails.logger.info("Node: #{node.name} transitioned to #{node.bootenv}")
+    return unless node.actions[:boot]
+    if new_bootenv == "local"
+      node.actions[:boot].disk
+    else
+      node.actions[:boot].pxe
+    end
+    
+  end
 
   def do_transition(nr, data)
     wait_for_service(nr, data, "provisioner-service")
