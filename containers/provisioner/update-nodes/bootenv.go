@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -32,6 +33,22 @@ func (r *RenderData) BootParams() (string, error) {
 		return "", err
 	}
 	return res.String(), nil
+}
+
+func (r *RenderData) ParseUrl(segment, rawUrl string) (string, error) {
+	parsedUrl, err := url.Parse(rawUrl)
+	if err != nil {
+		return "", err
+	}
+	switch segment {
+	case "scheme":
+		return parsedUrl.Scheme, nil
+	case "host":
+		return parsedUrl.Host, nil
+	case "path":
+		return parsedUrl.Path, nil
+	}
+	return "", fmt.Errorf("No idea how to get URL part %s from %s", segment, rawUrl)
 }
 
 // Param is a helper function for extracting a parameter from Machine.Params
@@ -68,11 +85,15 @@ type OsInfo struct {
 	IsoUrl    string // The URL that the ISO can be downloaded from, if any.
 }
 
+func (o *OsInfo) InstallUrl() string {
+	return provisionerURL + "/" + path.Join(o.Name, "install")
+}
+
 // BootEnv encapsulates the machine-agnostic information needed by the
 // provisioner to set up a boot environment.
 type BootEnv struct {
 	Name           string          // The name of the boot environment.
-	OS             OsInfo          // The OS specific information for the boot environment.
+	OS             *OsInfo         // The OS specific information for the boot environment.
 	Templates      []*TemplateInfo // The templates that should be expanded into files for the bot environment.
 	Kernel         string          // The partial path to the kernel in the boot environment.
 	Initrds        []string        // Partial paths to the initrds that should be loaded for the boot environment.
@@ -115,21 +136,24 @@ func (b *BootEnv) parseTemplates() error {
 				templateParams.Path,
 				err)
 		}
-		tmpl := &Template{UUID: templateParams.UUID}
-		if err := backend.load(tmpl); err != nil {
-			return fmt.Errorf("bootenv: Error loading template %s for %s: %v",
-				templateParams.UUID,
-				templateParams.Name,
-				err)
-		}
-		if err := tmpl.Parse(); err != nil {
-			return fmt.Errorf("bootenv: Error compiling template %s: %v\n---template---\n %s",
-				templateParams.Name,
-				err,
-				tmpl.Contents)
-		}
 		templateParams.pathTmpl = pathTmpl.Option("missingkey=error")
-		templateParams.contents = tmpl
+		if templateParams.contents == nil {
+			tmpl := &Template{UUID: templateParams.UUID}
+			if err := backend.load(tmpl); err != nil {
+				return fmt.Errorf("bootenv: Error loading template %s for %s: %v",
+					templateParams.UUID,
+					templateParams.Name,
+					err)
+			}
+			if err := tmpl.Parse(); err != nil {
+				return fmt.Errorf("bootenv: Error compiling template %s: %v\n---template---\n %s",
+					templateParams.Name,
+					err,
+					tmpl.Contents)
+			}
+			templateParams.contents = tmpl
+		}
+
 	}
 	if b.BootParams != "" {
 		tmpl, err := template.New("machine").Parse(b.BootParams)
@@ -158,6 +182,11 @@ func (b *BootEnv) prefix() string {
 
 func (b *BootEnv) key() string {
 	return path.Join(b.prefix(), b.Name)
+}
+
+func (b *BootEnv) newIsh() keySaver {
+	res := &BootEnv{Name: b.Name}
+	return keySaver(res)
 }
 
 // RenderPaths renders the paths of the templates for this machine.
@@ -295,8 +324,8 @@ func (b *BootEnv) onChange(oldThing interface{}) error {
 			}
 		}
 	}
-	if oldThing != nil {
-		old := oldThing.(*BootEnv)
+
+	if old, ok := oldThing.(*BootEnv); ok && old != nil {
 		if old.Name != b.Name {
 			return errors.New("Cannot change name of bootenv")
 		}

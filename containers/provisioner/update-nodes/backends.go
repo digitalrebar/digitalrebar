@@ -17,6 +17,7 @@ type keySaver interface {
 	key() string
 	onChange(interface{}) error
 	onDelete() error
+	newIsh() keySaver
 }
 
 type storageBackend interface {

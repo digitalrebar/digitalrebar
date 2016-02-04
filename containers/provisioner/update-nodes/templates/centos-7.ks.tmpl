@@ -1,0 +1,154 @@
+# Rebar Centos-7 (and related distros) kickstart
+
+install
+url --url {{ .Env.OS.InstallUrl }}
+# Add support for our local proxy.
+repo --name="CentOS"  --baseurl={{ .Env.OS.InstallUrl }} {{if .Param "proxy-servers"}} --proxy="{{index (.Param "proxy-servers") 0 "url"}}"{{end}} --cost=100
+# key --skip
+# Disable geolocation for language and timezone
+# Currently broken by https://bugzilla.redhat.com/show_bug.cgi?id=1111717
+# geoloc 0
+timezone --utc UTC
+lang en_US.UTF-8
+keyboard us
+# rebar
+rootpw --iscrypted {{ .Param "provisioner-default-password-hash" }}
+firewall --disabled
+authconfig --enableshadow --enablemd5
+selinux --disabled
+bootloader --location=mbr --driveorder={{ .Param "operating-system-disk" }} --append="rhgb quiet"
+zerombr
+ignoredisk --only-use={{ .Param "operating-system-disk" }}
+clearpart --all --drives={{ .Param "operating-system-disk" }}
+part /boot --fstype ext4 --size=512 --ondisk={{ .Param "operating-system-disk" }}
+part /boot/efi --fstype vfat --size=512 --ondisk={{ .Param "operating-system-disk" }}
+part swap --recommended
+part pv.6 --size=1 --grow --ondisk={{ .Param "operating-system-disk" }}
+volgroup {{ .Machine.ShortName }} --pesize=32768 pv.6
+logvol / --fstype ext4 --name=lv_root --vgname={{ .Machine.ShortName }} --size=1 --grow
+text
+reboot
+
+%packages
+@core
+trousers
+fipscheck
+device-mapper-multipath
+openssh
+curl.x86_64
+efibootmgr
+tar
+%end
+
+%post
+
+exec > /root/post-install.log 2>&1
+set -x
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+(cd /bin; curl -fgl -O "{{.ProvisionerURL}}/files/rebar"; chmod 755 rebar)
+export REBAR_ENDPOINT="{{.CommandURL}}"
+export REBAR_KEY="{{.Param "rebar-machine_key"}}"
+echo "$REBAR_KEY" >/etc/rebar.install.key
+export HOSTNAME="{{.Machine.Name}}"
+if [ -f /etc/sysconfig/network ] ; then
+      sed -i -e "s/HOSTNAME=.*/HOSTNAME=${HOSTNAME}/" /etc/sysconfig/network
+fi
+echo "${HOSTNAME#*.}" >/etc/domainname
+echo "$HOSTNAME" >/etc/hostname
+hostname "$HOSTNAME"
+
+# Use the install repo from the provisioner for local package installation
+cat >/etc/yum.repos.d/00-rebar-base.repo <<EOF
+[rebar-base]
+name=Rebar Base Repo
+baseurl={{.Env.OS.InstallUrl}}
+gpgcheck=0
+EOF
+
+# epel must be enabled to install jq.
+cat >/etc/yum.repos.d/rebar-epel.repo <<EOF
+[rebar-epel]
+name=Rebar Epel Repo
+baseurl=http://mirrors.kernel.org/fedora-epel/7/x86_64/
+gpgcheck=0
+EOF
+{{if .Param "proxy-servers"}}
+echo "proxy={{index (.Param "proxy-servers") 0 "url"}}" >> /etc/yum.conf
+{{end}}
+sed -i '/^enabled/ s/1/0/' /etc/yum/pluginconf.d/fastestmirror.conf
+
+# Install ntpdate
+yum -y install ntpdate jq
+
+# Make sure we can install gems
+cat >/etc/gemrc <<EOF
+:sources:
+- http://rubygems.org/
+gem: --no-ri --no-rdoc --bindir /usr/local/bin {{if .Param "proxy-servers"}} --http-proxy="{{index (.Param "proxy-servers") 0 "url"}}"{{end}}
+EOF
+cp /etc/gemrc /root/.gemrc
+
+rsyslog_dir="/etc/rsyslog.d"
+mkdir -p "$rsyslog_dir"
+echo '$IncludeConfig /etc/rsyslog.d/*.conf' >>/etc/rsyslog.conf
+if [ ! -f "$rsyslog_dir/10-rebar-client.conf" ]; then
+    echo "*.* @@${{index (.Param "logging_servers") 0}}" > "$rsyslog_dir/10-rebar-client.conf"
+    if ! curl -f -s -o "$rsyslog_dir/00-rebar-debug.conf" \
+        {{.ProvisionerURL}}/rsyslog.d/00-rebar-debug.conf
+    then
+        rm -f "$rsyslog_dir/00-rebar-debug.conf"
+    fi
+fi
+mkdir -p /root/.ssh
+cat >/root/.ssh/authorized_keys <<EOF
+{{ range $key := .Param "rebar-access_keys" }}{{$key}}{{ end }}
+EOF
+echo "PermitRootLogin without-password" >> /etc/ssh/sshd_config
+echo "AcceptEnv http_proxy https_proxy no_proxy" >> /etc/ssh/sshd_config
+
+{{if .Param "proxy-servers"}}
+# Setup a proxy for the environment
+echo "http_proxy={{index (.Param "proxy-servers") 0 "url"}}" >> /etc/environment
+echo "https_proxy={{index (.Param "proxy-servers") 0 "url"}}" >> /etc/environment
+echo "no_proxy=127.0.0.1,localhost,::1,{{index (.Param "proxy-servers") 0 "address"}}" >> /etc/environment
+
+# Setup bash proxy env
+mkdir -p /etc/profile.d
+echo "http_proxy={{index (.Param "proxy-servers") 0 "url"}}" >> /etc/profile.d/proxy.sh
+echo "https_proxy={{index (.Param "proxy-servers") 0 "url"}}" >>  /etc/profile.d/proxy.sh
+echo "no_proxy=127.0.0.1,localhost,::1,{{index (.Param "proxy-servers") 0 "address"}}" >> /etc/profile.d/proxy.sh
+{{end}}
+
+# Set up the default rebar service.
+curl -s -o /usr/sbin/rebar_join  "{{.Machine.Url}}/rebar_join.sh"
+chmod +x /usr/sbin/rebar_join
+
+cat >/etc/systemd/system/rebar.service <<EOF
+[Unit]
+Description=Rebar Node Checkin
+Documentation=http://github.com/digitalrebar
+After=sshd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/rebar_join start
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl enable rebar
+
+# The network barclamp is in charge of doing horrible things
+# to the network, not NetworkManager
+chkconfig NetworkManager off || :
+chkconfig network on || :
+rm /etc/yum.repos.d/rebar-epel.repo
+
+rebar nodes update "$HOSTNAME" '{"bootenv": "local"}'
+while [[ $(rebar nodes get "$HOSTNAME" attrib provisioner-active-bootstate |jq -r '.value') != local ]]; do
+    sleep 1
+done
+
+sync
+%end

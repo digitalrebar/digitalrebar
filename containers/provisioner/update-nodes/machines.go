@@ -2,10 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net"
 	"path"
+	"strings"
 )
 
 // Machine represents a single bare-metal system that the provisioner
@@ -25,6 +25,18 @@ func (n *Machine) HexAddress() string {
 	return fmt.Sprintf("%02X%02X%02X%02X", hexIP[0], hexIP[1], hexIP[2], hexIP[3])
 }
 
+func (n *Machine) ShortName() string {
+	idx := strings.Index(n.Name, ".")
+	if idx == -1 {
+		return n.Name
+	}
+	return n.Name[:idx]
+}
+
+func (n *Machine) Url() string {
+	return provisionerURL + "/" + n.key()
+}
+
 func (n *Machine) prefix() string {
 	return "machines"
 }
@@ -33,11 +45,15 @@ func (n *Machine) key() string {
 	return path.Join(n.prefix(), n.Name)
 }
 
+func (n *Machine) newIsh() keySaver {
+	res := &Machine{Name: n.Name}
+	return keySaver(res)
+}
+
 func (n *Machine) onChange(oldThing interface{}) error {
-	if oldThing != nil {
-		old := oldThing.(*Machine)
+	if old, ok := oldThing.(*Machine); ok && old != nil {
 		if old.Name != n.Name {
-			return errors.New("Cannot change name of machine")
+			return fmt.Errorf("machine: Cannot change name of machine %s", old.Name)
 		}
 		oldBootEnv := &BootEnv{Name: old.BootEnv}
 		if err := backend.load(oldBootEnv); err != nil {
@@ -50,7 +66,7 @@ func (n *Machine) onChange(oldThing interface{}) error {
 		addr = addr.To4()
 	}
 	if addr == nil {
-		return errors.New(n.Address + " is not a valid IPv4 address")
+		return fmt.Errorf("machine: %s  is not a valid IPv4 address", n.Address)
 	}
 	bootEnv := &BootEnv{Name: n.BootEnv}
 	if err := backend.load(bootEnv); err != nil {

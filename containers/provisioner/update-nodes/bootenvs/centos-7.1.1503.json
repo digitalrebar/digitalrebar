@@ -1,0 +1,40 @@
+{
+    "Name": "centos-7.1.1503-install",
+    "OS": {
+        "Name": "centos-7.1.1503"
+    },
+    "Kernel": "images/pxeboot/vmlinuz",
+    "Initrds": [ "images/pxeboot/initrd.img" ],
+    "BootParams": "ksdevice=bootif ks={{.Machine.Url}}/compute.ks method={{.Env.OS.InstallUrl}} inst.geoloc=0",
+    "RequiredParams": [
+        "logging_servers",
+        "ntp_servers",
+        "operating-system-disk",
+        "provisioner-default-password-hash",
+        "proxy-servers",
+        "rebar-access_keys",
+        "rebar-machine_key"
+    ],
+    "Templates": [
+        {
+            "Name": "pxelinux",
+            "Path": "discovery/pxelinux.cfg/{{.Machine.HexAddress}}",
+            "UUID": "default-pxelinux.tmpl"
+        },
+        {
+            "Name": "elilo",
+            "Path": "discovery/{{.Machine.HexAddress}}.conf",
+            "UUID": "default-elilo.tmpl"
+        },
+        {
+            "Name": "compute.ks",
+            "Path": "machines/{{.Machine.Name}}/compute.ks",
+            "UUID": "centos-7.ks.tmpl"
+        },
+        {
+            "Name": "rebar_join.sh",
+            "Path": "machines/{{.Machine.Name}}/rebar_join.sh",
+            "UUID": "rebar-join.sh.tmpl"
+        }
+    ]
+}

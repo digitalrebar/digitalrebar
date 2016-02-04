@@ -125,7 +125,7 @@ while [[ $(rebar nodes get "$HOSTNAME" attrib provisioner-active-bootstate |jq -
     sleep 1
 done
 
-curl -s -f -L -o /tmp/control.sh "$PROVISIONER_WEB/nodes/$HOSTNAME/control.sh" && \
+curl -s -f -L -o /tmp/control.sh "$PROVISIONER_WEB/machines/$HOSTNAME/control.sh" && \
     grep -q '^exit 0$' /tmp/control.sh && \
     head -1 /tmp/control.sh | grep -q '^#!/bin/bash' || {
     echo "Could not load our control.sh!"
@@ -139,5 +139,5 @@ echo "transfer from start-up to control script"
 
 [[ -x /tmp/control.sh ]] && exec /tmp/control.sh
 
-echo "Did not get control.sh from $PROVISIONER_WEB/nodes/$HOSTNAME/control.sh"
+echo "Did not get control.sh from $PROVISIONER_WEB/machines/$HOSTNAME/control.sh"
 exit 1

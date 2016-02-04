@@ -1,0 +1,50 @@
+{
+    "Name": "ubuntu-15.04-install",
+    "OS": {
+        "Name": "ubuntu-15.04",
+        "Family": "ubuntu",
+        "Version": "15.04"
+    },
+    "Kernel": "install/netboot/ubuntu-installer/amd64/linux",
+    "Initrds": [ "install/netboot/ubuntu-installer/amd64/initrd.gz" ],
+    "BootParams": "debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto url={{.Machine.Url}}/seed netcfg/get_hostname={{.Machine.Name}} root=/dev/ram rw quiet -- ",
+    "RequiredParams": [
+        "dns-domain",
+        "logging_servers",
+        "ntp_servers",
+        "operating-system-disk",
+        "provisioner-default-password-hash",
+        "provisioner-default-user",
+        "provisioner-use-local-security",
+        "proxy-servers",
+        "rebar-access_keys",
+        "rebar-machine_key"
+    ],
+    "Templates": [
+        {
+            "Name": "pxelinux",
+            "Path": "discovery/pxelinux.cfg/{{.Machine.HexAddress}}",
+            "UUID": "default-pxelinux.tmpl"
+        },
+        {
+            "Name": "elilo",
+            "Path": "discovery/{{.Machine.HexAddress}}.conf",
+            "UUID": "default-elilo.tmpl"
+        },
+        {
+            "Name": "seed",
+            "Path": "machines/{{.Machine.Name}}/seed",
+            "UUID": "net_seed.tmpl"
+        },
+        {
+            "Name": "net-post-install.sh",
+            "Path": "machines/{{.Machine.Name}}/post-install.sh",
+            "UUID": "net-post-install.sh.tmpl"
+        },
+        {
+            "Name": "rebar_join.sh",
+            "Path": "machines/{{.Machine.Name}}/rebar_join.sh",
+            "UUID": "rebar-join.sh.tmpl"
+        }
+    ]
+}

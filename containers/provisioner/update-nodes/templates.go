@@ -26,6 +26,11 @@ func (t *Template) key() string {
 	return path.Join(t.prefix(), t.UUID)
 }
 
+func (t *Template) newIsh() keySaver {
+	res := &Template{UUID: t.UUID}
+	return keySaver(res)
+}
+
 // Parse checks to make sure the template contents are valid according to text/template.
 func (t *Template) Parse() (err error) {
 	parsedTmpl, err := template.New(t.UUID).Parse(t.Contents)
@@ -38,20 +43,22 @@ func (t *Template) Parse() (err error) {
 
 func createTemplate(c *echo.Context) error {
 	finalStatus := http.StatusCreated
-	thing := &Template{}
-	thing.UUID = c.P(0)
-	if err := backend.load(thing); err == nil {
+	oldThing := &Template{UUID: c.P(0)}
+	newThing := &Template{UUID: c.P(0)}
+	if err := backend.load(oldThing); err == nil {
 		finalStatus = http.StatusAccepted
+	} else {
+		oldThing = nil
 	}
 	buf, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
 		return fmt.Errorf("template: failed to read request body")
 	}
-	thing.Contents = string(buf)
-	if err := backend.save(thing, nil); err != nil {
+	newThing.Contents = string(buf)
+	if err := backend.save(newThing, oldThing); err != nil {
 		return c.JSON(http.StatusInternalServerError, NewError(err.Error()))
 	}
-	return c.JSON(finalStatus, thing)
+	return c.JSON(finalStatus, newThing)
 }
 
 func (t *Template) onChange(oldThing interface{}) error {
@@ -61,10 +68,28 @@ func (t *Template) onChange(oldThing interface{}) error {
 	if err := t.Parse(); err != nil {
 		return fmt.Errorf("template: %s does not compile: %v", t.UUID, err)
 	}
-	if oldThing != nil {
-		old := oldThing.(*Template)
-		if old.UUID != t.UUID {
-			return fmt.Errorf("template: Cannot change UUID of %s", t.UUID)
+
+	if old, ok := oldThing.(*Template); ok && old != nil && old.UUID != t.UUID {
+		return fmt.Errorf("template: Cannot change UUID of %s", t.UUID)
+		machine := &Machine{}
+		machines, err := machine.List()
+		if err == nil {
+			for _, machine := range machines {
+				reRender := false
+				bootEnv := &BootEnv{Name: machine.BootEnv}
+				if err := backend.load(bootEnv); err == nil {
+					for _, template := range bootEnv.Templates {
+						if template.UUID == t.UUID {
+							reRender = true
+							template.contents = t
+							break
+						}
+					}
+				}
+				if reRender {
+					bootEnv.RenderTemplates(machine)
+				}
+			}
 		}
 	}
 	return nil

@@ -73,20 +73,9 @@ else
     avail_os_line='{"value": {} }'
 fi
 
-if [[ ${#install_repos[@]} != 0 ]]; then
-    install_repo_line='{"value": {'
-    for key in "${!install_repos[@]}"; do
-        install_repo_line+="\"$key\": {\"provisioner\": ${install_repos[$key]} },"
-    done
-    install_repo_line="${install_repo_line%,} }}"
-else
-    install_repo_line='{"value": {} }'
-fi
-
 if which selinuxenabled && selinuxenabled; then
     restorecon -R -F ${TFTPROOT}
 fi
 
 rebar deployments set system attrib provisioner-available-oses to "$avail_os_line"
-rebar deployments set system attrib provisioner-provided-repos to "$install_repo_line"
 

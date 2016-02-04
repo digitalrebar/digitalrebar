@@ -24,18 +24,23 @@ func listThings(c *echo.Context, thing keySaver) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-func createThing(c *echo.Context, thing keySaver) error {
-	finalStatus := http.StatusCreated
-	if err := backend.load(thing); err == nil {
-		finalStatus = http.StatusAccepted
-	}
-	if err := c.Bind(&thing); err != nil {
+func createThing(c *echo.Context, newThing keySaver) error {
+	if err := c.Bind(&newThing); err != nil {
 		return c.JSON(http.StatusBadRequest, NewError(err.Error()))
 	}
-	if err := backend.save(thing, nil); err != nil {
-		return c.JSON(http.StatusInternalServerError, NewError(err.Error()))
+	finalStatus := http.StatusCreated
+	oldThing := newThing.newIsh()
+	if err := backend.load(oldThing); err == nil {
+		logger.Infof("backend: Updating %v\n", oldThing.key())
+		finalStatus = http.StatusAccepted
+	} else {
+		logger.Infof("backend: Creating %v\n", newThing.key())
+		oldThing = nil
 	}
-	return c.JSON(finalStatus, thing)
+	if err := backend.save(newThing, oldThing); err != nil {
+		return c.JSON(http.StatusConflict, NewError(err.Error()))
+	}
+	return c.JSON(finalStatus, newThing)
 }
 
 func getThing(c *echo.Context, thing keySaver) error {
@@ -62,7 +67,7 @@ func updateThing(c *echo.Context, oldThing, newThing keySaver) error {
 		return err
 	}
 	if err := backend.save(newThing, oldThing); err != nil {
-		return err
+		return c.JSON(http.StatusConflict, NewError(err.Error()))
 	}
 	return c.JSON(http.StatusAccepted, newThing)
 }
