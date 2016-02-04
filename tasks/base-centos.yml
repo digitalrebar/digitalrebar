@@ -21,7 +21,7 @@
       - make
       - gcc
     sudo: yes
-    when: "'--provisioner' in {{dr_services}}"
+    when: "'--provisioner' in dr_services"
   - name: Install Provisioner ruby-gems for CentOS/RedHat 6
     yum: name={{ item }} state=latest
     with_items:
@@ -30,7 +30,7 @@
     sudo: yes
   - name: gem install kvm slaves
     command: sudo gem install json net-http-digest_auth
-    when: "'--provisioner' in {{dr_services}}"
+    when: "'--provisioner' in dr_services"
 
     # Docker will put back what it needs - firewalld on Centos7
   - name: Silly flush of iptables

@@ -1,5 +1,8 @@
 # Base include for OS prep
 ---
+  - debug: msg="LONG INSTALL NOTE >> Installing Provisioner takes longer than normal install"
+    when: "'--provisioner' in dr_services"
+
   - include: base-centos.yml
     when: ansible_os_family == "RedHat"
   - include: base-ubuntu1510.yml
