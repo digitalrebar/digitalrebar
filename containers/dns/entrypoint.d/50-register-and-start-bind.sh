@@ -12,9 +12,22 @@ fi
 
 consul reload
 
+# Append DNS mgmt config from env vars
+if [[ $DNS_TYPE == POWERDNS ]] ; then
+    OTHER_PARMS="hostname = $DNS_SERVER_HOSTNAME\nport = $DNS_SERVER_PORT\npassword = $DNS_SERVER_TOKEN\n"
+fi
+
+cat >> /etc/dns-mgmt.conf <<EOF
+type = $DNS_TYPE
+server = $DNS_SERVER
+$OTHER_PARMS
+EOF
+
 # Start the services.
 /usr/local/bin/rebar-dns-mgmt --backing_store=consul --data_dir=digitalrebar/dns/database &
-/usr/sbin/named -g -u bind &
+if [[ $DNS_TYPE == BIND ]] ; then
+    /usr/sbin/named -g -u bind &
+fi
 
 attr="{\"value\": [{
        \"address\": \"$the_ip\",
