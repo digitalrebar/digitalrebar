@@ -93,7 +93,7 @@ if [[ $ACCESS = HOST ]] ; then
 fi
 
 if [[ $DEPLOY = CLONE ]] ; then
-  EXTRA_VARS="[\"dr_clone_deploy\": \"true\"]"
+  EXTRA_VARS="\"dr_clone_deploy\": \"true\","
 fi
 
 CON_VAR="\"dr_services\": ["
@@ -117,9 +117,9 @@ WL_VAR="${WL_VAR} ]"
 JSON_STRING="{
   ${ENV_VAR}
   ${ACCESS_VAR}
+  ${EXTRA_VARS}
   ${CON_VAR}
   ${WL_VAR}
-  ${EXTRA_VARS}
 }"
 
 if [[ $DEPLOY_ADMIN = local ]] ; then
