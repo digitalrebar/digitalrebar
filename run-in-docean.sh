@@ -61,7 +61,7 @@ while [ "$STATE" != "active" ] ; do
 done
 
 # Get Public IP 
-IP=`tugboat droplets | grep --color=never ${NODENAME} | sed -r "s:\x1B\[[0-9;]*[mK]::g" | sed -n 's/(ip: \([0-9.]*\)\, \(.*\)/\1/p'`
+IP=`tugboat droplets | grep --color=never ${NODENAME} | sed -r "s:\x1B\[[0-9;]*[mK]::g" | sed -n 's/\(.*\)(ip: \([0-9.]*\)\, \(.*\)/\2/p'`
 CIDR=32
 
 ENV_VAR="\"docean\": true,"
