@@ -57,6 +57,9 @@ validate_provider() {
         ;;
     debug)
         ;;
+    docean)
+        # ADD PROVIDER INIT HERE!
+        ;;
     google)
         if [ "$PROVIDER_GOOGLE_PROJECT" == "" ] ; then
             echo "You must define PROVIDER_GOOGLE_PROJECT (can be added to ~/.dr_info)"
