@@ -53,6 +53,7 @@ help_options["--kubernetes-cluster-monitoring=<true|false>"]="Use cluster monito
 help_options["--kubernetes-fabric8=<true|false>"]="Use Fabric8 console"
 
 help_options["--kubernetes-test=<true|false>"]="Add the test role to validate completion"
+help_options["--kubernetes-guestbook=<true|false>"]="Add the guestbook role to start a guestbook app"
 
 help_options["--kubernetes-etcd-peer-port=<Int>"]="Default etcd peer port: 2380"
 help_options["--kubernetes-etcd-client-port=<Int>"]="Default etcd client port: 2379"
@@ -281,9 +282,11 @@ fi
 if [[ $KUBERNETES_CLUSTER_MONITORING == true ]]; then
     rebar nodes bind $NAME to kubernetes-monitoring
 fi
-
 if [[ $KUBERNETES_TEST == true ]]; then
     rebar nodes bind $NAME to kubernetes-test
+fi
+if [[ $KUBERNETES_GUESTBOOK == true ]]; then
+    rebar nodes bind $NAME to kubernetes-guestbook
 fi
 
 # Commit it all and start
