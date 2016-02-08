@@ -117,7 +117,11 @@ fi
 if [ "$DEVICE_ID" != "" ] ; then
     EXTRA="--device-id=$DEVICE_ID"
 fi
-echo "To test the swarm, docker -H tcp://$ADMIN_IP:2475 info"
+
+# Lookup Manager Node IP
+MANAGER_IP=$(rebar nodes show "${DEPLOYMENT_NAME}-manager-0.neode.local" | jq --raw-output '.["node-control-address"]' | cut -d '/' -f 1)
+echo "To test Docker Swarm, docker -H tcp://$MANAGER_IP:2475 info"
+
 echo "To teardown, $0 $start_args --teardown=true --admin-ip=$ADMIN_IP $EXTRA"
 echo "To teardown but keep the admin node, add --keep_admin=true"
 

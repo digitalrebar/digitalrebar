@@ -56,13 +56,13 @@
     command: curl -sSL http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.3-server-amd64.iso -o {{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso
     args:
       creates: "{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso"
-    when: "'--provisioner' in {{dr_services}}"
+    when: "'--provisioner' in dr_services"
 
   - name: download Centos ISO (SLOW, see https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
     command: curl -sSL http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso -o {{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
     args:
       creates: "{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso"
-    when: "'--provisioner' in {{dr_services}}"
+    when: "'--provisioner' in dr_services"
 
   - name: Make code dirs
     file: path={{home_dir.stdout}}/digitalrebar/deploy/compose state=directory recurse=yes
@@ -72,8 +72,13 @@
   - name: remove previous data
     command: sudo rm -rf {{home_dir.stdout}}/digitalrebar/deploy/compose/data-dir
 
-  - name: get code
+  - name: get code (from local system)
     synchronize: src=./compose dest={{home_dir.stdout}}/digitalrebar/deploy rsync_path="rsync"
+    when: dr_clone_deploy is not defined
+
+  - name: get code (from github)
+    git: repo=https://github.com/rackn/digitalrebar-deploy.git dest={{home_dir.stdout}}/digitalrebar/deploy
+    when: dr_clone_deploy is defined
 
   - local_action: stat path=~/.netrc
     register: netrc_path
