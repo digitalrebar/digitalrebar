@@ -1,0 +1,28 @@
+# Copyright RackN 2016
+# Provides information for RackN/DigitalRebar-Deploy scripts
+# See https://github.com/digitalrebar/doc/blob/e9eeb480fef56c9994f746e7f7b39c66eea0304b/deployment/dr_info.rst
+# Place in home directory as ~/.dr_info
+
+# Enable Extra Screen Information
+#DEBUG=true
+
+# Default Provider (packet|aws|gooble)
+PROVIDER=aws
+
+# Packet Config
+#PROVIDER_PACKET_KEY=
+#PROVIDER_PACKET_PROJECT_ID=
+#NODENAME=rebarrocks
+
+# AWS Config
+#PROVIDER_AWS_ACCESS_KEY_ID=
+#PROVIDER_AWS_SECRET_ACCESS_KEY=
+#PROVIDER_AWS_REGION=us-west-2
+
+# Google Config
+#PROVIDER_GOOGLE_PROJECT=
+#PROVIDER_GOOGLE_JSON_KEY=$(cat "$HOME/.ssh/project-key.json")
+
+# Digital Ocean Config
+#PROVIDER_DOCEAN_KEY=
+#PROVIDER_DOCEAN_REGION=nyc1
