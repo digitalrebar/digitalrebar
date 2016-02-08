@@ -198,7 +198,7 @@ class DrillConsolidated < ActiveRecord::Migration
       t.boolean     :allocated,      null: false,   default: false
       t.boolean     :alive,          null: false,   default: false
       t.boolean     :available,      null: false,   default: false
-      t.text        :bootenv,        null: false,   default: "sledgehammer"
+      t.text        :bootenv,        null: false,   default: "unknown"
       t.timestamps
       t.text        :quirks,         array: true,   null: false, default: []       # 2014082713150
       t.boolean     :system,         null: false,   default: false       # 20150104222800

@@ -126,6 +126,7 @@ class Attrib < ActiveRecord::Base
             when :note then from.notes
             else from.template
             end
+          when from.nil? then return nil
           else raise("Cannot extract attribute data from #{from.class.to_s}")
           end
     end
@@ -300,7 +301,7 @@ class Attrib < ActiveRecord::Base
   def __resolve(to)
     case
     when (to.is_a?(Node) && self.role_id) then to.node_roles.find_by!(:role_id => self.role_id)
-    when to.is_a?(Deployment) then to.deployment_roles.find_by!(:role_id => self.role_id)
+    when (to.is_a?(Deployment) && self.role_id) then to.deployment_roles.find_by!(:role_id => self.role_id)
     when [Node,Role,DeploymentRole,NodeRole,Hash].any?{|klass|to.is_a?(klass)} then to
     else raise "#{to.class.name} is not something that we can use Attribs with!"
     end
