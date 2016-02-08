@@ -20,7 +20,7 @@
         },
         {
             "Name": "control.sh",
-            "Path": "nodes/{{.Machine.Name}}/control.sh",
+            "Path": "machines/{{.Machine.Name}}/control.sh",
             "UUID": "sledgehammer-control.sh.tmpl"
         }
     ]

@@ -8,7 +8,3 @@ rebar deployments set system attrib provisioner-webservers to \
 
 rebar deployments set system attrib provisioner-management-servers to \
  "{\"value\": [{\"url\": \"$mgmt_url\", \"address\": \"${EXTERNAL_IP%%/*}\", \"port\": $APIPORT}]}"
-
-if ! rebar nodes roles "$HOSTNAME" |grep -q 'provisioner-database'; then
-     rebar nodes bind "$HOSTNAME" to 'provisioner-database'
-fi
