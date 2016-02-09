@@ -27,10 +27,10 @@ bash "Fetch consul for #{install_version}" do
 set -e
 d=$(mktemp -d /tmp/consul-XXXXXX)
 cd $d
-curl -f -L -O '#{node[:consul][:base_url]}/#{install_version}.zip'
-echo '#{install_checksum}  #{install_version}.zip' > sha256sums
+curl -f -L -O '#{node[:consul][:base_url]}/#{node[:consul][:version]}/consul_#{install_version}.zip'
+echo '#{install_checksum}  consul_#{install_version}.zip' > sha256sums
 sha256sum -c --status sha256sums
-unzip "#{install_version}.zip"
+unzip "consul_#{install_version}.zip"
 mv consul #{node[:consul][:install_dir]}
 EOC
   not_if { ::File.exists?("#{node[:consul][:install_dir]}/consul") }

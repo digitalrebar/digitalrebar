@@ -34,6 +34,7 @@ when 'server'
   service_config['retry_join'] = node[:consul][:servers] - ["[#{node[:consul][:bind_addr]}]:8301"]
 
   bash 'Update firewall ports' do
+    ignore_failure true
     code <<-EOF
 firewall-cmd --add-port 8300/tcp
 firewall-cmd --add-port 8301/tcp
