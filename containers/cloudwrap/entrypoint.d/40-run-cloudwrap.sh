@@ -8,7 +8,7 @@ cat >> /etc/consul.d/cloudwrap.json <<EOF
 {
   "service": {
     "name": "cloudwrap",
-    "tags": [ "deployment:system" ],
+    "tags": [ "deployment:$SERVICE_DEPLOYMENT" ],
     "port": 3030,
     "check": {
       "http": "http://localhost:3030",

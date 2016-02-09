@@ -1,9 +1,11 @@
 FROM digitalrebar/base
 MAINTAINER Victor Lowther <victor@rackn.com>
 
+RUN mkdir -p /tmp/consul /etc/consul.d  && \
+    curl -fgL -o consul.zip \
+        https://releases.hashicorp.com/consul/0.6.3/consul_0.6.3_linux_amd64.zip && \
+    unzip consul.zip -d /usr/local/bin && \
+    rm consul.zip
+
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
-RUN  apt-get -y update && \
-     apt-get -y install jq && \
-     curl -fgL -o /usr/local/bin/rebar \
-         https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64 && \
-     chmod 755 /usr/local/bin/rebar
+

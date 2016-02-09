@@ -1,6 +1,6 @@
 #!/bin/bash
 
-supported_oses="$(rebar deployments get system attrib provisioner-supported-oses |jq -c '.value')"
+supported_oses="$(rebar deployments get $SERVICE_DEPLOYMENT attrib provisioner-supported-oses |jq -c '.value')"
 declare -a available_oses
 declare -A install_repos
 iso_dir="${TFTPROOT}/isos"
@@ -77,5 +77,5 @@ if which selinuxenabled && selinuxenabled; then
     restorecon -R -F ${TFTPROOT}
 fi
 
-rebar deployments set system attrib provisioner-available-oses to "$avail_os_line"
+set_service_attrib provisioner-service provisioner-available-oses "$avail_os_line"
 

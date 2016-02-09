@@ -2,41 +2,7 @@
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 set -e
 set -x
-
-declare -a join
-if grep -q consul /etc/hosts; then
-    # If there is a consul host entry, join it.
-    join=(--retry-join consul)
-elif [[ $CONSUL_JOIN ]]; then
-    # Otherwise, try $CONSUL_JOIN
-    join=()
-    for j in $CONSUL_JOIN; do
-        join+=(--retry-join "$j")
-    done
-else
-    # Finally, see if there is a consul running on our gateway and try to join it
-    join=(--retry-join $(ip route show scope global |awk '/default/ {print $3}'))
-fi
-consul agent --config-dir /etc/consul.d --data-dir /data "${join[@]}" &
-unset join
-unset j
-answer=""
-# We need consul to converge on a leader.
-# This can take a little time, so we ask for
-# leader status.  The leader status returns
-# nothing, a string that says no leader, or
-# the leader IP:port pair.  The default port
-# is 8300 for server communication.
 set -o pipefail
-count=0
-while [[ $answer != *:8300* ]]; do
-  sleep 1
-  answer=$(curl http://localhost:8500/v1/status/leader)
-  if [ $((count % 30)) -eq 0 ] ; then
-      echo "Waiting for consul leader: $answer"
-  fi
-  count=$((count + 1))
-done
 
 kv_get() {
     # $1 = path into the KV store of the thing to get
@@ -51,6 +17,38 @@ kv_put() {
     curl -sfg "http://localhost:8500/v1/kv/${1}?token=${CONSUL_M_ACL}" \
          -X PUT \
          --data-binary @-
+}
+
+make_service() {
+    # $1 = service name.
+    # $2 = port to check on
+    # $3 = check fragment
+    if [[ $FORWARDER_IP ]]; then
+        printf '{"name":"internal-%s-service","port":%s,"tags":["deployment:%s"],"check":%s}' "$1" "$2" "$SERVICE_DEPLOYMENT" "$3"
+    else
+        printf '{"name":"%s-service","port":%s,"address":"%s","tags":["deployment:%s"],"check":%s}' "$1" "$2" "${EXTERNAL_IP%%/*}" "$SERVICE_DEPLOYMENT" "$3"
+    fi | curl -X PUT http://localhost:8500/v1/agent/service/register --data-binary @-
+}
+
+bind_service() {
+    # $1 = service to bind to the system deployment
+    local json=''
+    if json=$(rebar nodes bind $SERVICE_DEPLOYMENT-phantom.internal.local to "$1"); then
+        rebar noderoles commit $(jq -r '.id' <<< "$json")
+    fi
+}
+
+set_service_attrib() {
+    # $1 = service name
+    # $2 = attrib name
+    # $3 = attrib value
+    local json=''
+    local deployment_id role_id dr_id
+    deployment_id=$(rebar deployments show $SERVICE_DEPLOYMENT |jq -r '.id')
+    role_id=$(rebar roles show $1 |jq -r '.id')
+    dr_id=$(rebar deploymentroles match "{\"role_id\": $role_id, \"deployment_id\": $deployment_id}" |
+                   jq -r '.[0].id')
+    rebar deploymentroles set "$dr_id" attrib "$2" to "$3" && rebar deploymentroles commit "$dr_id"
 }
 
 unset answer count

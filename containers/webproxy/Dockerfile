@@ -15,7 +15,5 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 80F70E11F0F0D5F
 
 COPY squid.conf /etc/squid3/squid.conf
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
-COPY squid-internal.json /root/squid-internal.json
-COPY squid-external.json /root/squid-external.json
 
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
