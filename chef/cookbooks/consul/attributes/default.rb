@@ -15,18 +15,15 @@
 # limitations under the License.
 #
 
-default[:consul][:base_url] = 'http://dl.bintray.com/mitchellh/consul/'
-default[:consul][:version] = '0.5.2'
+default[:consul][:base_url] = 'https://releases.hashicorp.com/consul'
+default[:consul][:version] = '0.6.3'
 default[:consul][:install_dir] = '/usr/local/bin'
 default[:consul][:checksums] = {
-  '0.5.0_darwin_amd64' => '24d9758c873e9124e0ce266f118078f87ba8d8363ab16c2e59a3cd197b77e964',
-  '0.5.0_linux_386'    => '4b6147c30596a30361d4753d409f8a1af9518f54f5ed473a4c4ac973738ac0fd',
-  '0.5.0_linux_amd64'  => '161f2a8803e31550bd92a00e95a3a517aa949714c19d3124c46e56cfdc97b088',
-  '0.5.0_web_ui'       => '0081d08be9c0b1172939e92af5a7cf9ba4f90e54fae24a353299503b24bb8be9',
-  '0.5.2_darwin_amd64' => '87be515d7dbab760a61a359626a734f738d46ece367f68422b7dec9197d9eeea',
-  '0.5.2_linux_386'    => '29306ce398109f954ceeea3af79878be4fb0d949f8af3a27c95ccef2101e8f60',
-  '0.5.2_linux_amd64'  => '171cf4074bfca3b1e46112105738985783f19c47f4408377241b868affa9d445',
-  '0.5.2_web_ui'       => 'ad883aa52e1c0136ab1492bbcedad1210235f26d59719fb6de3ef6464f1ff3b1'
+  '0.6.3_darwin_386'   => '7fb30756504cd9559c9b23e5d0d8d73a847ee62ed85d39955b5906c2f59a5bc1',
+  '0.6.3_darwin_amd64' => '6dff4ffc61d66aacd627a176737b8725624718a9e68cc81460a3df9b241c7932',
+  '0.6.3_linux_386'    => '2afb65383ab913344daaa9af827c1e8576c7cae16e93798048122929b6e4cc92',
+  '0.6.3_linux_amd64'  => 'b0532c61fec4a4f6d130c893fd8954ec007a6ad93effbe283a39224ed237e250',
+  '0.6.3_web_ui'       => '93bbb300cacfe8de90fb3bd5ede7d37ae6ce014898edc520b9c96a676b2bbb72'
 }
 
 

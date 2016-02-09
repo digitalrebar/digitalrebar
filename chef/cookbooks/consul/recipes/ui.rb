@@ -23,12 +23,10 @@ bash "Fetch consul UI for #{install_version}" do
 set -e
 mkdir -p "#{node[:consul][:ui_dir]}"
 cd "#{node[:consul][:ui_dir]}"
-curl -f -L -O '#{node[:consul][:base_url]}/#{install_version}.zip'
-echo '#{install_checksum}  #{install_version}.zip' > sha256sums
+curl -f -L -O '#{node[:consul][:base_url]}/#{node[:consul][:version]}/consul_#{install_version}.zip'
+echo '#{install_checksum}  consul_#{install_version}.zip' > sha256sums
 sha256sum -c --status sha256sums
-unzip "#{install_version}.zip"
-mv dist/* .
-rm -rf dist
+unzip "consul_#{install_version}.zip"
 EOC
   not_if { ::File.exists?("#{node[:consul][:ui_dir]}/static") }
 end
