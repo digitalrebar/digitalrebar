@@ -1,9 +1,7 @@
 # Try to keep this OS neutral
 ---
   - name: Get Docker
-    command: curl -sSL https://get.docker.com/ -o /tmp/docker.sh
-    args:
-      creates: /tmp/docker.sh
+    get_url: url=https://get.docker.com/ dest=/tmp/docker.sh validate_certs=False
   - name: Prep Docker
     command: sudo chmod 755 /tmp/docker.sh
   - name: Install Docker [SLOW]
@@ -22,12 +20,7 @@
     sudo: yes
 
   - name: Get Docker Compose
-    command: sudo curl -L https://github.com/docker/compose/releases/download/1.5.0/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }} -o /usr/local/bin/docker-compose
-    args:
-      creates: /usr/local/bin/docker-compose
-
-  - name: Chmod Docker Compose
-    command: sudo chmod +x /usr/local/bin/docker-compose
+    get_url: url="https://github.com/docker/compose/releases/download/1.5.0/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }}" dest=/usr/local/bin/docker-compose mode=0755
 
   - name: Allow docker access (without reboot)
     command: sudo chmod 666 /var/run/docker.sock

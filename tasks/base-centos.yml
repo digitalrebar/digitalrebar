@@ -9,6 +9,7 @@
       - curl
       - wget
       - psmisc
+      - python
     sudo: yes
   - name: Install Provisioner Prereqs [SLOW]
     yum: name={{ item }} state=latest
