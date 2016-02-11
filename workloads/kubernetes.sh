@@ -310,8 +310,10 @@ if [ "$DEVICE_ID" != "" ] ; then
 fi
 
 # Hint so user knows which IP to use for Master
-MANAGER_IP=$(rebar nodes show "${DEPLOYMENT_NAME}-master-0.${DNS_DOMAIN}" | jq --raw-output '.["node-control-address"]' | cut -d '/' -f 1)
-echo "To test Kubernetes, use Master at $MANAGER_IP"
+for ((i=0 ; i < $KUBERNETES_MASTER_COUNT; i++)) ; do
+    MANAGER_IP=$(rebar nodes show "${DEPLOYMENT_NAME}-master-$i.${DNS_DOMAIN}" | jq --raw-output '.["node-control-address"]' | cut -d '/' -f 1)
+    echo "To test Kubernetes, use Master $i at http://${MANAGER_IP}/ui"
+done
 
 echo "To teardown, $0 $start_args --teardown=true --admin-ip=$ADMIN_IP $EXTRA"
 echo "To keep the admin node, add --keep_admin=true"
