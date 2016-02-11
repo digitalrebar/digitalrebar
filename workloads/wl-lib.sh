@@ -173,6 +173,17 @@ tear_down_admin() {
             curl -s -X DELETE -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/projects/$PROVIDER_PACKET_PROJECT_ID/devices/$DEVICE_ID
             ;;
 
+        google)
+            if [[ $PROVIDER_GOOGLE_ZONE ]] ; then
+                ZONE_NAME="--zone $PROVIDER_GOOGLE_ZONE"
+            fi
+            gcloud compute instances delete $DEVICE_ID --delete-disks all $ZONE_NAME
+            ;;
+
+        aws)
+            aws ec2 terminate-instances --instance-ids $DEVICE_ID
+            ;;
+
         system|local)
             # Inherits all our vars!!
             sleep 60 # Let the deletes drain.  This is lame
