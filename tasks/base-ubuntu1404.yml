@@ -1,6 +1,10 @@
 ---
+  - name: Add python2.7 repo
+    apt_repository: repo='ppa:fkrull/deadsnakes-python2.7'
   - name: Update repos (was not working from apt:)
     command: sudo apt-get update -y
+  - name: Update python.
+    command: sudo apt-get upgrade -y
   - name: Install Prereqs [SLOW]
     apt: name={{ item }} state=latest
     with_items:

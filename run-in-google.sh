@@ -37,8 +37,7 @@ else
     echo "GOOGLE will create ${NODENAME}"
     DEVICE_ID=${NODENAME%%.*}
 
-    # This defaults to debian 8 - just do it for now.
-    if ! gcloud compute instances create ${ZONE_NAME} --machine-type ${PROVIDER_GOOGLE_ADMIN_INSTANCE_TYPE} ${DEVICE_ID} ; then
+    if ! gcloud compute instances create ${ZONE_NAME} --image ubuntu-14-04 --machine-type ${PROVIDER_GOOGLE_ADMIN_INSTANCE_TYPE} ${DEVICE_ID} ; then
         echo "Failed to create gcloud instance"
         exit 1
     fi
@@ -62,6 +61,7 @@ export ADMIN_IP="$IP/$CIDR"
 
 # Make sure our key is in place.
 gcloud compute ssh $ZONE_NAME root@$DEVICE_ID --ssh-key-file $HOME/.ssh/id_rsa --command "date"
+gcloud compute ssh $ZONE_NAME ubuntu@$DEVICE_ID --ssh-key-file $HOME/.ssh/id_rsa sudo sed -i -e "1d" /root/.ssh/authorized_keys
 
 . ./run-in-system.sh
 
