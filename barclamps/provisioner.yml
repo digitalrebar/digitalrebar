@@ -27,8 +27,6 @@ roles:
     jig: role-provided
     flags:
       - service
-    requires:
-      - rebar-api_service
     wants-attribs:
       - rebar-api-servers
     attribs:
