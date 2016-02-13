@@ -27,6 +27,9 @@ help_options["--kubernetes-local-release-dir=<String>"]="Directory to download b
 help_options["--kubernetes-log-level=<Int>"]="Kubernetes Log Level: 2"
 help_options["--kubernetes-users=<String>"]="JSON string of users with password and role"
 
+help_options["--kubernetes-cloud-provider=<true|false>"]="Is kubernetes in a cloud environment"
+help_options["--kubernetes-cloud-provider-type=<String>"]="Which cloud environment"
+
 help_options["--kubernetes-cluster-name=<String>"]="Name of cluster: cluster.local"
 help_options["--kubernetes-kube-service-addresses=<CIDRIP>"]="Internal Service IP Addresses"
 
@@ -39,6 +42,7 @@ help_options["--kubernetes-network-node-prefix=<Number>"]="Subnet prefix for nod
 
 help_options["--kubernetes-opencontrail-public-subnet=<CIDRIP>"]="Public network space for opencontrail"
 help_options["--kubernetes-opencontrail-private-subnet=<CIDRIP>"]="Private network space for opencontrail"
+help_options["--kubernetes-opencontrail-no-arp=<true|false>"]="Should opencontrail arp or not: Google should not.  Make true for that."
 
 help_options["--kubernetes-dns=<true|false>"]="Use DNS add-on"
 help_options["--kubernetes-dns-upstream=<JSON ARRAY of IP>"]="JSON array of DNS server IPs"
@@ -76,7 +80,33 @@ WAIT_ON_CONVERGE=true
 #
 . workloads/wl-lib.sh
 
-DNS_DOMAIN=${DNS_DOMAIN:-neode.local}
+#
+# Make sure that the domain name matches the domain that the 
+# provider will create.
+#
+if [[ ! $DNS_DOMAIN ]] ; then
+    if [[ $PROVIDER == google ]] ; then
+        DNS_DOMAIN=c.${PROVIDER_GOOGLE_PROJECT}.internal
+    fi
+
+    if [[ $PROVIDER == aws ]] ; then
+        MY_REGION=${PROVIDER_AWS_REGION:-us-west-2}
+        DNS_DOMAIN=${MY_REGION}.compute.internal
+    fi
+
+    DNS_DOMAIN=${DNS_DOMAIN:-neode.local}
+fi
+
+if [[ $PROVIDER == google ]] ; then
+    KUBERNETES_OPENCONTRAIL_NO_ARP=${KUBERNETES_OPENCONTRAIL_NO_ARP:-true}
+    KUBERNETES_CLOUD_PROVIDER_TYPE=${KUBERNETES_CLOUD_PROVIDER_TYPE:-google}
+    KUBERNETES_CLOUD_PROVIDER=${KUBERNETES_CLOUD_PROVIDER:-true}
+fi
+
+if [[ $PROVIDER == aws ]] ; then
+    KUBERNETES_CLOUD_PROVIDER_TYPE=${KUBERNETES_CLOUD_PROVIDER_TYPE:-aws}
+    KUBERNETES_CLOUD_PROVIDER=${KUBERNETES_CLOUD_PROVIDER:-true}
+fi
 
 K_GATEWAY_COUNT_DEFAULT=0
 KUBERNETES_NETWORKING=${KUBERNETES_NETWORKING:-flannel}
@@ -197,6 +227,13 @@ if [[ $KUBERNETES_KUBE_SERVICE_ADDRESSES ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-kube_service_addresses to "{ \"value\": \"${KUBERNETES_KUBE_SERVICE_ADDRESSES}\" }"
 fi
 
+if [[ $KUBERNETES_CLOUD_PROVIDER ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-cloud-provider to "{ \"value\": ${KUBERNETES_CLOUD_PROVIDER} }"
+fi
+if [[ $KUBERNETES_CLOUD_PROVIDER_TYPE ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-cloud-provider-type to "{ \"value\": \"${KUBERNETES_CLOUD_PROVIDER_TYPE}\" }"
+fi
+
 if [[ $KUBERNETES_PODS_SUBNET ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-pods_subnet to "{ \"value\": \"${KUBERNETES_PODS_SUBNET}\" }"
 fi
@@ -214,6 +251,10 @@ fi
 if [[ $KUBERNETES_OPENCONTRAIL_PRIVATE_SUBNET ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-opencontrail_private_subnet to "{ \"value\": \"${KUBERNETES_OPENCONTRAIL_PRIVATE_SUBNET}\" }"
 fi
+if [[ $KUBERNETES_OPENCONTRAIL_NO_ARP ]]; then
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-opencontrail_no_arp to "{ \"value\": ${KUBERNETES_OPENCONTRAIL_NO_ARP} }"
+fi
+
 
 if [[ $KUBERNETES_ETCD_PEER_PORT ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-etcd_peer_port to "{ \"value\": ${KUBERNETES_ETCD_PEER_PORT} }"
@@ -312,9 +353,10 @@ fi
 # Hint so user knows which IP to use for Master
 for ((i=0 ; i < $KUBERNETES_MASTER_COUNT; i++)) ; do
     MANAGER_IP=$(rebar nodes show "${DEPLOYMENT_NAME}-master-$i.${DNS_DOMAIN}" | jq --raw-output '.["node-control-address"]' | cut -d '/' -f 1)
-    echo "To test Kubernetes, use Master $i at http://${MANAGER_IP}/ui"
+    echo "To test Kubernetes, use Master $i at https://${MANAGER_IP}/ui"
 done
 
+echo "Access Digital Rebar UI, https://${ADMIN_IP}:3000"
 echo "To teardown, $0 $start_args --teardown=true --admin-ip=$ADMIN_IP $EXTRA"
 echo "To keep the admin node, add --keep_admin=true"
 
