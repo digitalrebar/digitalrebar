@@ -231,7 +231,7 @@ if [[ $KUBERNETES_CLOUD_PROVIDER ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-cloud-provider to "{ \"value\": ${KUBERNETES_CLOUD_PROVIDER} }"
 fi
 if [[ $KUBERNETES_CLOUD_PROVIDER_TYPE ]]; then
-    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-cloud-provider-type to "{ \"value\": ${KUBERNETES_CLOUD_PROVIDER_TYPE} }"
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-cloud-provider-type to "{ \"value\": \"${KUBERNETES_CLOUD_PROVIDER_TYPE}\" }"
 fi
 
 if [[ $KUBERNETES_PODS_SUBNET ]]; then
