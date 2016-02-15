@@ -26,8 +26,8 @@ class NodeRolesController < ApplicationController
     # by design, this informs the API about REST objects that have been updated
     # it is NOT indended to return the data - the consumer needs to make that decision
 
-    out = { changed: { nodes: [], node_roles: [], deployments: [] }, deleted: { nodes: [], deployments: [] } }
-    recent = params[:age].to_i || 300
+    out = { changed: { nodes: [], node_roles: [], deployments: [], providers: [] }, deleted: { nodes: [], deployments: [], providers: [] } }
+    recent = (params[:age] || 300).to_i
 
     changed_nodes = []
     changed_deployments = []
@@ -45,6 +45,14 @@ class NodeRolesController < ApplicationController
     out[:changed][:nodes] = changed_nodes.uniq
     out[:changed][:deployments] = changed_deployments.uniq
 
+    Provider.transaction do
+      Provider.all.each do |p|
+        age = Time.now - p.updated_at
+        next if age >= recent
+        out[:changed][:providers] << p.id
+      end
+    end
+
     # on PUT, to handle UX not knowing about deleted nodes
     # compare nodes to passed nodes json list.
     # return the deleted ones that are not currently nodes from the UX list
@@ -55,6 +63,10 @@ class NodeRolesController < ApplicationController
     if request.put? and params[:deployments]
       deployments = Deployment.all.map{ |d| d.id }
       out[:deleted][:deployments] = (params[:deployments] - deployments) rescue []
+    end
+    if request.put? and params[:providers]
+      providers = Provider.all.map{ |p| p.id }
+      out[:deleted][:providers] = (params[:providers] - providers) rescue []
     end
 
     # done
