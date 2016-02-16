@@ -2,7 +2,7 @@
 rm -f ~/.pgpass
 pass=''
 while [[ ! $pass ]]; do
-    pass=$(kv_get digitalrebar/private/database/goiardi/password)
+    pass=$(kv_get digitalrebar/private/database/goiardi/password) || :
     [[ $pass ]] || sleep 5
 done
 echo $pass >~/.pgpass

@@ -2,13 +2,8 @@
 
 # If we are not using forwarder, we need to use the external address to take to us.
 the_ip=${EXTERNAL_IP%%/*}
-if [[ $FORWARDER_IP ]] ; then
-    cp /root/dns-internal.json /etc/consul.d/dns.json
-    cp /root/dns-mgmt-internal.json /etc/consul.d/dns-mgmt.json
-else
-    sed -e "s/FILLMEIN/$the_ip/" /root/dns-external.json > /etc/consul.d/dns.json
-    sed -e "s/FILLMEIN/$the_ip/" /root/dns-mgmt-external.json > /etc/consul.d/dns-mgmt.json
-fi
+make_service "dns" "53" '{"script": "dig @127.0.0.1 127.0.0.1 >/dev/null 2>&1", "interval": "10s"}'
+make_service "dns-mgmt" "6754" '{ "script": "pidof rebar-dns-mgmt","interval": "10s"}'
 
 consul reload
 
@@ -29,10 +24,13 @@ if [[ $DNS_TYPE == BIND ]] ; then
     /usr/sbin/named -g -u bind &
 fi
 
+bind_service dns-service
+bind_service dns-mgmt_service
+
 attr="{\"value\": [{
        \"address\": \"$the_ip\",
        \"port\": \"6754\",
-       \"name\": \"system\",
+       \"name\": \"$SERVICE_DEPLOYMENT\",
        \"access_name\": \"admin\",
        \"access_password\": \"admin\",
        \"url\": \"https://admin:admin@${the_ip}:6754\",
@@ -40,11 +38,10 @@ attr="{\"value\": [{
       }]
 }"
 # Make sure we set the token type
-rebar deployments set system attrib dns-management-servers to "$attr"
-rebar deployments set system attrib dns_servers to \
+set_service_attrib dns-service dns-domain "{\"value\": \"$BASE_DOMAINNAME\"}"
+set_service_attrib dns-mgmt_service dns-management-servers "$attr"
+set_service_attrib dns-service dns_servers \
 "{\"value\":[
     {\"address\": \"$the_ip\",
      \"port\": \"53\",
-     \"name\": \"system\"}]}"
-
-rebar deployments commit system
+     \"name\": \"$SERVICE_DEPLOYMENT\"}]}"

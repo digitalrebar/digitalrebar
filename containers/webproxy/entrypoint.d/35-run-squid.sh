@@ -45,12 +45,12 @@ else
   "$@" &
 fi
 
+bind_service 'proxy-service'
 attr="{\"value\": [{
     \"address\": \"${EXTERNAL_IP%%/*}\",
     \"port\": \"3128\",
     \"url\": \"http://${EXTERNAL_IP%%/*}:3128\"
     }]}"
 
-rebar deployments set system attrib proxy-servers to "$attr"
-rebar deployments commit system
+set_service_attrib proxy-service proxy-servers "$attr"
 

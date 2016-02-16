@@ -4,7 +4,7 @@ cat >> /etc/consul.d/forwarder.json <<EOF
 {
   "service": {
     "name": "forwarder",
-    "tags": [ "deployment:system" ],
+    "tags": [ "deployment:$SERVICE_DEPLOYMENT" ],
     "address": "${FORWARDER_IP%%/*}",
     "check": {
       "script": "pgrep forwarder",

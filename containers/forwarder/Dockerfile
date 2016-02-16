@@ -1,9 +1,9 @@
-FROM digitalrebar/base
+FROM digitalrebar/deploy-service-wrapper
 MAINTAINER Victor Lowther <victor@rackn.com>
 
 ENV GOPATH /go
 
-RUN apt-get install -y iptables ntp ntpdate jq && \
+RUN apt-get install -y iptables ntp ntpdate && \
   /usr/local/go/bin/go get -u github.com/digitalrebar/forwarder && \
   cp -r $GOPATH/bin/forwarder /usr/local/bin
 

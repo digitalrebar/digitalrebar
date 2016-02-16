@@ -1,1 +1,0 @@
-{"service": {"name": "internal-chef-service", "tags": ["deployment:system"], "port": 4646}}

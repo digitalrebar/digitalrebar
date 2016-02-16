@@ -1,13 +1,10 @@
-FROM digitalrebar/base
+FROM digitalrebar/deploy-service-wrapper
 
 # Set our command
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 
 RUN groupadd -r rebar && useradd -r -u 1000 -g rebar -p '$6$afAL.34B$T2WR6zycEe2q3DktVtbH2orOroblhR6uCdo5n3jxLsm47PBm9lwygTbv3AjcmGDnvlh0y83u2yprET8g9/mve.' -m -d /home/rebar -s /bin/bash rebar \
-  && mkdir -p /opt/digitalrebar \
-  && mkdir -p /etc/sudoers.d \
-  && mkdir -p /home/rebar/.ssh \
-  && mkdir -p /var/run/rebar \
+  && mkdir -p /opt/digitalrebar /etc/sudoers.d /home/rebar/.ssh /var/run/rebar \
   && chown rebar:rebar /var/run/rebar
 
 COPY rebar_sudoer /etc/sudoers.d/rebar
@@ -31,16 +28,8 @@ RUN apt-get -y update \
          https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64 \
   && chmod 755 /usr/local/bin/rebar \
   && [ -d /opt/digitalrebar/core ] || git clone https://github.com/digitalrebar/core /opt/digitalrebar/core \
-  && mkdir -p /var/run/rebar \
-  && mkdir -p /var/cache/rebar/cookbooks \
-  && mkdir -p /var/cache/rebar/gems \
-  && mkdir -p /var/cache/rebar/bin \
-  && mkdir -p /var/log/rebar \
-  && chown -R rebar:rebar /opt/digitalrebar \
-  && chown -R rebar:rebar /var/run/rebar \
-  && chown -R rebar:rebar /var/cache/rebar \
-  && chown -R rebar:rebar /var/log/rebar \
-  && chown -R rebar:rebar /home/rebar/.ssh \
+  && mkdir -p /var/run/rebar /var/cache/rebar/cookbooks /var/cache/rebar/gems /var/cache/rebar/bin /var/log/rebar \
+  && chown -R rebar:rebar /opt/digitalrebar /var/run/rebar /var/cache/rebar /var/log/rebar /home/rebar/.ssh \
   && chmod 755 /home/rebar/.ssh \
   && ln -s /usr/bin/swig3.0 /usr/bin/swig \
   && su -l -c 'cd /opt/digitalrebar/core/rails; bundle install --path /var/cache/rebar/gems --standalone --binstubs /var/cache/rebar/bin' rebar \

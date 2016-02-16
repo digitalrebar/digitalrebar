@@ -1,7 +1,0 @@
-{
-    "service": {
-        "name": "internal-logging-service-relp",
-        "tags": [ "deployment:system" ],
-        "port": 2514
-    }
-}

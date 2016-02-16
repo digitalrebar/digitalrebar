@@ -20,7 +20,6 @@ RUN apt-get -y update \
   && curl -fgL -o /tmp/syslinux.tar.xz \
      https://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.xz
 
-COPY *.json /root/
 COPY tftpd.conf /etc/default/tftpd-hpa
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 COPY start-up.sh /tmp/

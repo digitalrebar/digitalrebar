@@ -1,30 +1,18 @@
 #!/bin/bash
 
-if [ "$forwarder" != "" ] ; then
-    ip route del default
-    ip route add default via $forwarder
-fi
-
-cat >> /etc/consul.d/rebar-ux.json <<EOF
-{
-  "service": {
-    "name": "internal-rebar-ux",
-    "tags": [ "deployment:system" ],
-    "port": 443,
-    "check": {
-      "script": "curl -k -H 'Host=www.mydomain.com' https://localhost:443",
-      "interval": "10s"
-    }
-  }
-}
-EOF
-
 run_forever() (
     while true; do
         "$@"
         sleep 5
     done
 )
+
+if [ "$forwarder" != "" ] ; then
+    ip route del default
+    ip route add default via $forwarder
+fi
+
+make_service rebar-ux 443 '{"script": "curl -k -H \"Host=www.mydomain.com\" https://localhost:443","interval": "10s"}'
 
 consul reload
 cd /opt/digitalrebar-ux
@@ -87,4 +75,3 @@ touch websecureport.log
 run_forever python simple-https.py >websecureport.log 2>&1 &
 
 tail -f websecureport.log
-

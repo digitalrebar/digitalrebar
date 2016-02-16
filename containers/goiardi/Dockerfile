@@ -18,5 +18,4 @@ RUN apt-get update && \
 
 COPY goiardi.conf /etc/goiardi/
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
-COPY goiardi-internal.json /root/goiardi-internal.json
-COPY goiardi-external.json /root/goiardi-external.json
+

@@ -1,16 +1,11 @@
 #!/bin/bash
 
-if [[ $FORWARDER_IP ]]; then
-    cp /root/internal-logging.json /etc/consul.d/logging.json
-    cp /root/internal-logging-relp.json /etc/consul.d/logging-relp.json
-else
-    sed -e "s/FILLMEIN/${EXTERNAL_IP%%/*}/" root/external-logging.json >/etc/consul.d/logging.json
-    sed -e "s/FILLMEIN/${EXTERNAL_IP%%/*}/" root/external-logging-relp.json >/etc/consul.d/logging-relp.json
-fi
+make_service "logging" 514 '{"script": "pgrep rsyslogd","interval": "10s"}'
+make_service "logging-relp" 2154 '{"script": "pgrep rsyslogd","interval": "10s"}'
+
 consul reload
 
 /usr/sbin/rsyslogd
 
-rebar nodes bind system-phantom.internal.local to logging-service
-rebar deployments set system attrib logging_servers to "{\"value\": [\"${EXTERNAL_IP%%/*}\"]}"
-rebar deployments commit system
+bind_service logging-service
+set_service_attrib logging-service logging_servers "{\"value\": [\"${EXTERNAL_IP%%/*}\"]}"

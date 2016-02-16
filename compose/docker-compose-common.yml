@@ -47,7 +47,7 @@ rebar_api:
     - ./digitalrebar:/opt/digitalrebar
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/api/config:/opt/digitalrebar/core/config
-    - ./data-dir/node:/node-data
+    - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./common.env
     - ./access.env
@@ -175,6 +175,7 @@ forwarder:
   privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./common.env
     - ./access.env
