@@ -62,6 +62,7 @@ export ADMIN_IP="$IP/$CIDR"
 # Make sure our key is in place.
 gcloud compute ssh $ZONE_NAME ubuntu@$DEVICE_ID --ssh-key-file $HOME/.ssh/id_rsa sudo sed -i -e "1d" /root/.ssh/authorized_keys
 gcloud compute ssh $ZONE_NAME root@$DEVICE_ID --ssh-key-file $HOME/.ssh/id_rsa --command "date"
+gcloud compute ssh $ZONE_NAME ubuntu@$DEVICE_ID --ssh-key-file $HOME/.ssh/id_rsa sudo sed -i -e "1d" /root/.ssh/authorized_keys
 
 . ./run-in-system.sh
 

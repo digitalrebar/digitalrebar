@@ -49,7 +49,6 @@ help_options["--kubernetes-dns-upstream=<JSON ARRAY of IP>"]="JSON array of DNS 
 help_options["--kubernetes-dns-replicas=<Number>"]="Number of DNS replicas to run"
 help_options["--kubernetes-dns-namespace=<Kuberetenes Namespace>"]="Namespace to put the DNS service in"
 help_options["--kubernetes-dns-domain=<Domain String>"]="Domain of the internal Kubernetes DNS service"
-help_options["--kubernetes-use-dns-masq=<true|false>"]="Use DNS Masq as well"
 
 help_options["--kubernetes-ui=<true|false>"]="Use Kube-UI"
 help_options["--kubernetes-dash=<true|false>"]="Use Kube-Dash"
@@ -114,12 +113,6 @@ PROVIDER_GOOGLE_INSTANCE_TYPE=${PROVIDER_GOOGLE_INSTANCE_TYPE:-n1-standard-2}
 PROVIDER_AWS_INSTANCE_TYPE=${PROVIDER_AWS_INSTANCE_TYPE:-m3.medium}
 if [[ $KUBERNETES_NETWORKING == opencontrail ]]; then
     K_GATEWAY_COUNT_DEFAULT=1
-
-    # Default use dns masq to false for opencontrail
-    KUBERNETES_USE_DNS_MASQ=${KUBERNETES_USE_DNS_MASQ:-false}
-else
-    # Default use dns masq to true for others
-    KUBERNETES_USE_DNS_MASQ=${KUBERNETES_USE_DNS_MASQ:-true}
 fi
 
 KUBERNETES_MASTER_COUNT=${KUBERNETES_MASTER_COUNT:-1}
@@ -280,9 +273,6 @@ if [[ $KUBERNETES_DNS_DOMAIN ]]; then
 fi
 if [[ $KUBERNETES_DNS_NAMESPACE ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-dns_namespace to "{ \"value\": ${KUBERNETES_DNS_NAMESPACE} }"
-fi
-if [[ $KUBERNETES_USE_DNS_MASQ ]]; then
-    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-use_dns_masq to "{ \"value\": ${KUBERNETES_USE_DNS_MASQ} }"
 fi
 
 rebar deployments commit $DEPLOYMENT_NAME
