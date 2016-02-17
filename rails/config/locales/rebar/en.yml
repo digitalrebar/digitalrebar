@@ -159,12 +159,13 @@ en:
         chef-client: "You may be having network issues, please visit online help for possible solutions"
         admin-internal: "You may be having network issues, please visit online help for possible solutions"
         provisioner-database: "You may be having network issues, please visit online help for possible solutions"
+        consul-member: "Likely timing issue, please retry or visit online help for additional solutions"
       error_links:
         chef-client: "https://github.com/digitalrebar/doc/blob/master/role_errors/chef-client.rst"
         admin-internal: "https://github.com/digitalrebar/doc/blob/master/role_errors/admin-internal.rst"
         provisioner-database: "https://github.com/digitalrebar/doc/blob/master/role_errors/provisioner-database.rst"
         provisioner-service: "https://github.com/digitalrebar/doc/blob/master/role_errors/provisioner-base-images.rst"
-
+        consul-member: "https://github.com/digitalrebar/doc/blob/master/role_errors/consul-member.rst"
   # Models  
   user:
     chatlink: "Interactive Support"
