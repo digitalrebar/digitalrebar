@@ -1,18 +1,109 @@
 #!/bin/bash
 
 # Setup database tasks
-. /opt/digitalrebar/core/setup/00-rebar-rake-tasks.install
+(
+    cd /opt/digitalrebar/core/rails
+    tasks=("rake db:create"
+           "rake railties:install:migrations"
+           "rake db:migrate"
+           "rake db:seed"
+           "rake assets:precompile")
+
+    for task in "${tasks[@]}"; do
+        su -l -s /bin/bash -c "cd /opt/digitalrebar/core/rails; RAILS_ENV=$RAILS_ENV bundle exec $task" rebar && continue
+        echo "Task $task failed." >&2
+        exit 1
+    done
+)
 
 # Start up the code
-. /opt/digitalrebar/core/setup/01-rebar-start.install
+# If we want to test a new rebar CLI, copy it in place.
+if [[ -f /opt/digitalrebar/rebar && -x /opt/digitalrebar/rebar ]]; then
+    cp /opt/digitalrebar/rebar /usr/local/bin
+fi
+
+export REBAR_ENDPOINT="https://${IP}:3000"
+# if we started in development, make sure we're running development
+if [[ -f /tmp/development.txt ]]; then
+    RAILS_ENV=development
+else
+    [[ $RAILS_ENV ]] || RAILS_ENV=production
+fi
+
+export RAILS_ENV
+case $RAILS_ENV in
+    development) PUMA_CFG="puma-dev.cfg";;
+    production)  PUMA_CFG="puma.cfg";;
+    test)        PUMA_CFG="puma-test.cfg";;
+esac
+
+if [[ ! -f /var/run/rebar/server.key ]]; then
+    openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out /var/run/rebar/server.key
+    openssl req -new -key /var/run/rebar/server.key -out /var/run/rebar/server.csr -subj "/C=US/ST=Texas/L=Austin/O=RackN/OU=RebarAPI/CN=neode.net"
+    openssl x509 -req -days 365 -in /var/run/rebar/server.csr -signkey /var/run/rebar/server.key -out /var/run/rebar/server.crt
+    rm /var/run/rebar/server.csr
+fi
+chmod 400 /var/run/rebar/server.key /var/run/rebar/server.crt
+chown rebar:rebar /var/run/rebar/server.key /var/run/rebar/server.crt
+
+as_rebar() (
+    su -l -c "cd /opt/digitalrebar/core/rails; RAILS_ENV=$RAILS_ENV $*" rebar
+)
+
+que_worker() {
+    queue="$1"
+    shift
+    workers="$1"
+    shift
+    for ((i=0; i < workers; i++)) ; do
+        cmd="bundle exec que -q $queue -w 1 -l debug ./config/environment.rb"
+        as_rebar "$cmd" </dev/zero 2>&1 &>> "/var/log/rebar/$queue.$i.log" &
+    done
+}
+
+start_workers() {
+    que_worker NodeRoleRunner 10
+    que_worker HighPriorityRunner 2
+    disown -a
+}
+
+mkdir -p /var/run/rebar && chown rebar:rebar /var/run/rebar
+as_rebar bundle exec puma -d -C $PUMA_CFG
+start_workers
+
+while ! rebar -U rebar -P rebar1 ping; do
+    sleep 5
+done
+
 
 # Build initial access keys
-. /opt/digitalrebar/core/setup/02-make-machine-key.install
+if ! rebar -U rebar -P rebar1 users show machine-install; then
+    # read key rest < <(dd if=/dev/urandom bs=64 count=1 2>/dev/null |sha512sum - 2>/dev/null)
+    key=`dd if=/dev/urandom bs=64 count=1 2>/dev/null | sha512sum - 2>/dev/null | awk '{ print $1 }'`
+    echo "Creating machine-install user"
+    machine_user="
+{
+  \"username\": \"machine-install\",
+  \"email\": \"root@localhost.localdomain\",
+  \"password\": \"$key\",
+  \"password_confirmation\": \"$key\",
+  \"remember_me\": false,
+  \"is_admin\": true,
+  \"digest\": true
+}"
 
-[[ $REBAR_ENDPOINT ]] || export REBAR_ENDPOINT="https://${IP}:3000"
+    if ! rebar -U rebar -P rebar1 -E https://127.0.0.1:3000 users import "$machine_user"; then
+        echo "Could not create machine-install user!"
+        exit 1
+    fi
+    echo "machine-install:$key" >/etc/rebar.install.key
+    kv_put digitalrebar/private/api/keys/machine_key < <(cat /etc/rebar.install.key)
+else
+    kv_get digitalrebar/private/api/keys/machine_key >/etc/rebar.install.key
+fi
+export REBAR_KEY="$(cat /etc/rebar.install.key)"
 
 make_service rebar-api 3000 '{"script": "rebar -E $REBAR_ENDPOINT -U rebar -P rebar1 ping","interval": "10s"}'
-consul reload
 
 # THIS IS A HACK FOR ANSIBLE
 #
@@ -23,7 +114,6 @@ sed -i '/\[ssh_connection\]/a ssh_args=' /etc/ansible/ansible.cfg
 # END HACK
 
 BUILT_CFG_FILE=/tmp/final.json
-export REBAR_KEY="$(cat /etc/rebar.install.key)"
 
 . /etc/profile
 cd /opt/digitalrebar/core

@@ -248,7 +248,7 @@ if [[ ${#UNBUILT_CONTAINERS[@]} != 0 ]]; then
 fi
 
 if [[ $UPDATE_GIT = true && ${#BUILT_CONTAINERS[@]} != 0 ]]; then
-    for container in "${!BUILT_CONTAINERS[@]}"; do
+    for container in $(sort_containers "${!BUILT_CONTAINERS[@]}"); do
         [[ $PUSH_CONTAINERS = true ]] && docker push "${container}:${BUILD_TAG}"
         id_file="$CONTAINER_DIR/${CONTAINERS[$container]}/last-built-image-id"
         image_id "$container" >"$id_file"
