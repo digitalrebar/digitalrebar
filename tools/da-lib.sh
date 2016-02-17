@@ -179,11 +179,8 @@ bring_up_admin_containers() {
     fi
 }
 
-provisioner_finished() {
-    rebar nodes match \
-          '{"name": "provisioner.local.neode.org",
-            "alive": true, "available": true}'  | \
-        grep -F -q provisioner.local.neode.org
+test_phantom() {
+    ! rebar nodes show system-phantom.internal.local | jq '.alive, .available' |grep false
 }
 
 wait_for_admin_containers() {
@@ -191,13 +188,15 @@ wait_for_admin_containers() {
     retry_until 240 \
                 "Took too long for rebar container to come up" \
                 rebar ping || exit 1
-    if use_container provisioner; then
-        echo "Waiting for the provisioner (up to 1800 seconds)"
-        retry_until 1800 \
-                    "Took too long for the provisioner to come up" \
-                    provisioner_finished || exit 1
-    fi
-    sleep 5
+
+    echo "Waiting on system deployment"
+    retry_until 240 \
+                "Took too long for system deployment to appear" \
+                rebar deployments show system || exit 1
+    echo "Waiting on system-phantom.internal.local"
+    retry_until 240 \
+                "Took too long for system-phantom.internal.local to be runnable" \
+                test_phantom || exit 1
     echo "Waiting for rebar to converge (up to 10 minutes)"
     converge || exit 1
 }
