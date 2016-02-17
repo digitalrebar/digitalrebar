@@ -1,7 +1,5 @@
 #!/bin/bash
 
-cd /opt/digitalrebar/core
-
 if [[ $DR_DEV ]]; then
 	export RAILS_ENV=development
 	export PUMA_CFG=puma-dev.cfg
