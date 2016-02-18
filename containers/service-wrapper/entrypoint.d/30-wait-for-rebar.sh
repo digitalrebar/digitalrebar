@@ -1,16 +1,13 @@
-while [[ ! -e /etc/rebar-data/rebar-key.sh ]] ; do
-  sleep 5
-done
-
-# Wait for the webserver to be ready.
-. /etc/rebar-data/rebar-key.sh
-while ! rebar ping &>/dev/null; do
-  sleep 1
-  . /etc/rebar-data/rebar-key.sh
-done
-
-# Wait for the $SERVICE_DEPLOYMENT deployment to show up
-
-while ! rebar deployments show $SERVICE_DEPLOYMENT &>/dev/null; do
+rebar_data=''
+while true; do
+    if ! rebar_data=$(kv_get digitalrebar/private/api/keys/rebar_key); then
+        sleep 5
+        continue
+    fi
+    cat >/etc/rebar-data/rebar-key.sh <<< "$rebar_data"
+    . /etc/rebar-data/rebar-key.sh
+    if rebar deployments show $SERVICE_DEPLOYMENT &>/dev/null; then
+        break
+    fi
     sleep 1
 done
