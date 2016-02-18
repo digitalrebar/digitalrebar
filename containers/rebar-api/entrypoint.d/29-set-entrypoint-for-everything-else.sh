@@ -1,8 +1,11 @@
 #!/bin/bash
 
+if ! kv_get digitalrebar/private/api/keys/rebar_key &>/dev/null; then
 # Copy out stuff to data dir
-cp /etc/profile.d/rebar-key.sh /etc/rebar-data
-echo "export REBAR_ENDPOINT=$REBAR_ENDPOINT" >> /etc/rebar-data/rebar-key.sh
-echo "export EXTERNAL_REBAR_ENDPOINT=https://${EXTERNAL_IP%%/*}:3000" >> /etc/rebar-data/rebar-key.sh
-
-kv_put digitalrebar/private/api/keys/rebar_key </etc/rebar-data/rebar-key.sh
+    cat >/etc/rebar-data/rebar-key.sh <<EOF
+export REBAR_KEY="$REBAR_KEY"
+export REBAR_ENDPOINT="$REBAR_ENDPOINT"
+export EXTERNAL_REBAR_ENDPOINT="https://${EXTERNAL_IP%%/*}:3000"
+EOF
+    kv_put digitalrebar/private/api/keys/rebar_key </etc/rebar-data/rebar-key.sh
+fi
