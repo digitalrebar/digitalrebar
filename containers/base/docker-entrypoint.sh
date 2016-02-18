@@ -32,9 +32,15 @@ make_service() {
 
 bind_service() {
     # $1 = service to bind to the system deployment
-    local json=''
-    if json=$(rebar nodes bind $SERVICE_DEPLOYMENT-phantom.internal.local to "$1"); then
-        rebar noderoles commit $(jq -r '.id' <<< "$json")
+    local json='' deployment_id role_id dr_id
+    deployment_id=$(rebar deployments show $SERVICE_DEPLOYMENT |jq -r '.id')
+    role_id=$(rebar roles show $1 |jq -r '.id')
+    dr_id=$(rebar deploymentroles match "{\"role_id\": $role_id, \"deployment_id\": $deployment_id}" |
+                   jq -r '.[0].id')
+    if [[ $dr_id = null ]]; then
+        if json=$(rebar nodes bind $SERVICE_DEPLOYMENT-phantom.internal.local to "$1"); then
+            rebar noderoles commit $(jq -r '.id' <<< "$json")
+        fi
     fi
 }
 
