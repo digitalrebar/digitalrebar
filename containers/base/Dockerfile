@@ -3,7 +3,7 @@ MAINTAINER Victor Lowther <victor@rackn.com>
 
 ENV GOPATH /go
 
-RUN mkdir -p /usr/local/sbin/ /usr/local/entrypoint.d && \
+RUN mkdir -p /usr/local/sbin/ /usr/local/entrypoint.d /etc/rebar-data && \
     apt-get update && \
     apt-get -y dist-upgrade && \
     apt-get install -y curl unzip git jq && \
@@ -15,5 +15,3 @@ RUN mkdir -p /usr/local/sbin/ /usr/local/entrypoint.d && \
     tar -C '/usr/local' -zxf /tmp/goball.tgz && rm /tmp/goball.tgz
 
 COPY docker-entrypoint.sh /sbin/docker-entrypoint.sh
-
-

@@ -45,6 +45,7 @@ RUN apt-get -y update \
   && chown rebar:rebar /var/run/rebar/server.key /var/run/rebar/server.crt \
   && curl -fgL -o '/tmp/chef.deb' \
        'https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/10.04/x86_64/chef_11.18.12-1_amd64.deb' \
-  && dpkg -i /tmp/chef.deb && rm -f /tmp/chef.deb
+  && dpkg -i /tmp/chef.deb && rm -f /tmp/chef.deb \
+  && sed -i '/\[ssh_connection\]/a ssh_args=' /etc/ansible/ansible.cfg
 
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/

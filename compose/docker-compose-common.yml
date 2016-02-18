@@ -12,6 +12,7 @@ consul:
 
 postgres:
   image: digitalrebar/dr_postgres
+  restart: always
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/postgres/initdb.d:/docker-entrypoint-initdb.d
@@ -22,9 +23,9 @@ postgres:
 
 webproxy:
   image: digitalrebar/dr_webproxy
+  restart: always
   privileged: true
   volumes:
-    - ./data-dir/node:/etc/rebar-data
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
@@ -34,7 +35,6 @@ goiardi:
   image: digitalrebar/dr_goiardi
   restart: always
   volumes:
-    - ./data-dir/node:/etc/rebar-data
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
@@ -47,7 +47,6 @@ rebar_api:
     - ./digitalrebar:/opt/digitalrebar
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/api/config:/opt/digitalrebar/core/config
-    - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./common.env
     - ./access.env
@@ -57,7 +56,6 @@ ntp:
   privileged: true
   restart: always
   volumes:
-    - ./data-dir/node:/etc/rebar-data
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
@@ -68,7 +66,6 @@ cloudwrap:
   privileged: true
   restart: always
   volumes:
-    - ./data-dir/node:/etc/rebar-data
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
@@ -78,7 +75,6 @@ dns:
   image: digitalrebar/dr_dns
   restart: always
   volumes:
-    - ./data-dir/node:/etc/rebar-data
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/bind/named.conf:/etc/named.conf
     - ./config-dir/bind/named.conf:/etc/bind/named.conf
@@ -92,7 +88,6 @@ dhcp:
   privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
-    - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./common.env
     - ./access.env
@@ -100,10 +95,10 @@ dhcp:
 provisioner:
   image: digitalrebar/dr_provisioner
   privileged: true
+  restart: always
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ~/.cache/digitalrebar/tftpboot:/tftpboot
-    - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./common.env
     - ./access.env
@@ -114,7 +109,6 @@ logging:
   restart: always
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
-    - ./data-dir/node:/etc/rebar-data
     - ./data-dir/node-logs:/var/log/nodes
   env_file:
     - ./common.env
@@ -123,10 +117,10 @@ logging:
 ux:
   image: digitalrebar/dr_ux
   privileged: true
+  restart: always
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./digitalrebar/digitalrebar-ux:/opt/digitalrebar-ux
-    - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./common.env
     - ./access.env
@@ -175,7 +169,6 @@ forwarder:
   privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
-    - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./common.env
     - ./access.env
@@ -186,8 +179,6 @@ forwarder:
 node:
   image: digitalrebar/dr_node
   privileged: true
-  volumes:
-    - ./data-dir/node:/etc/rebar-data
   env_file:
     - ./access.env
 
