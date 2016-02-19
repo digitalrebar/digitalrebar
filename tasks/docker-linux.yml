@@ -2,6 +2,7 @@
 ---
   - name: Get Docker
     get_url: url=https://get.docker.com/ dest=/tmp/docker.sh validate_certs=False
+    sudo: yes
   - name: Prep Docker
     command: sudo chmod 755 /tmp/docker.sh
   - name: Install Docker [SLOW]
@@ -21,6 +22,7 @@
 
   - name: Get Docker Compose
     get_url: url="https://github.com/docker/compose/releases/download/1.5.0/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }}" dest=/usr/local/bin/docker-compose mode=0755
+    sudo: yes
 
   - name: Allow docker access (without reboot)
     command: sudo chmod 666 /var/run/docker.sock
