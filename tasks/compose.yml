@@ -68,8 +68,12 @@
   - name: remove previous data
     command: sudo rm -rf {{home_dir.stdout}}/digitalrebar/deploy/compose/data-dir
 
-  - name: get code (from local system)
+  - name: get code (from local system) compose
     synchronize: src=./compose dest={{home_dir.stdout}}/digitalrebar/deploy rsync_path="rsync"
+    when: dr_clone_deploy is not defined
+
+  - name: get code (from local system) scripts
+    synchronize: src=./scripts dest={{home_dir.stdout}}/digitalrebar/deploy rsync_path="rsync"
     when: dr_clone_deploy is not defined
 
   - name: get code (from github)
@@ -157,6 +161,6 @@
     wait_for: host="{{ansible_default_ipv4.address}}" port=3000 delay=60 timeout=1200
     when: dr_access_mode == "FORWARDER" and ansible_version is defined and {{ansible_version.full|version_compare('1.9.0', '>=')}}
 
-  - name: wait for rebar-key (1 to 30 minutes)
-    wait_for: path={{home_dir.stdout}}/digitalrebar/deploy/compose/data-dir/node/rebar-key.sh state=present delay=60 timeout=1800
+  - name: wait for admin convergence
+    command: "{{home_dir.stdout}}/digitalrebar/deploy/scripts/wait_for_rebar.sh"
 
