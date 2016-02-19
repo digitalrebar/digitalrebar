@@ -2,8 +2,8 @@
 # Copyright 2015, RackN Inc
 
 #
-# We are deploying in aws add this aws instance as a provider
-# and force the admin deploy to aws
+# We are deploying in google add this google instance as a provider
+# and force the admin deploy to google
 #
 FORCE_PROVIDER=${PROVIDER:-google}
 FORCE_DEPLOY_ADMIN=${DEPLOY_ADMIN:-google}
@@ -21,7 +21,7 @@ if [ "$DEVICE_ID" != "" ] ; then
     STATE=`gcloud compute instances describe $DEVICE_ID --format=json | jq -r .status`
 
     if [[ $STATE == null ]] ; then
-        echo "Instance ID doesn't exist in aws: $DEVICE_ID"
+        echo "Instance ID doesn't exist in google: $DEVICE_ID"
         exit 1
     fi
     echo "GOOGLE reuse ${DEVICE_ID}"
