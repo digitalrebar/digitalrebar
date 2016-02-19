@@ -2,8 +2,8 @@
 # Copyright 2015, RackN Inc
 
 #
-# We are deploying in aws add this aws instance as a provider
-# and force the admin deploy to aws
+# We are deploying in google add this google instance as a provider
+# and force the admin deploy to google
 #
 FORCE_PROVIDER=${PROVIDER:-google}
 FORCE_DEPLOY_ADMIN=${DEPLOY_ADMIN:-google}
