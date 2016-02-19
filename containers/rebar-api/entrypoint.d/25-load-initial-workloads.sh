@@ -18,3 +18,4 @@ if ! rebar deployments show system; then
                                "system": true}' && \
         rebar deployments commit system || exit 1
 fi
+bind_service network-server
