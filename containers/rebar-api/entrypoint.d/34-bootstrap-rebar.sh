@@ -1,22 +1,7 @@
 #!/bin/bash
 
-if ! kv_get digitalrebar/private/api/keys/rebar_key &>/dev/null; then
+if [[ -f $BUILT_CFG_FILE ]]; then
     cd /opt/digitalrebar/core
-    BUILT_CFG_FILE=/tmp/final.json
-
-    # This is a hack as well for now.
-    cat > config/filters/admin-default.json <<EOF
-{ 
-  "name": "default",
-  "priority": 50,
-  "template": "{{node.name}}.$BASE_DOMAINNAME",
-  "matcher": "net.category == \"admin\"",
-  "service": "system"
-}
-EOF
-    cp /home/rebar/.ssh/id_rsa.pub config/ssh_keys/admin-0.key
-
-    ./rebar-build-json.rb > ${BUILT_CFG_FILE}
 
     # Process networks
     admin_nets=()
@@ -31,7 +16,7 @@ EOF
         fi
         name="$category-$group"
         if rebar networks show $name >/dev/null 2>&1 ; then
-            rebar networks update $name "$network"
+            rebar networks update $name "$network" 
         else
             rebar networks import "$network"
         fi
@@ -72,13 +57,7 @@ EOF
         
         rebar deployments commit $name
     done
-    
-    # Add keys into the system
-    bind_service rebar-api_service
-    rebar deployments bind system to rebar-access || :
-    keys=`jq -r .ssh_keys ${BUILT_CFG_FILE}`
-    set_service_attrib rebar-access rebar-access_keys "{ \"value\": $keys }"
-    set_service_attrib rebar-access rebar-machine_key "{ \"value\": \"`cat /etc/rebar.install.key`\" }"    
+     
     # Add/Update DNS Filters into the system
     filter_count=`jq ".filters | length" ${BUILT_CFG_FILE}`
     for ((i=0; i < filter_count; i++)) ; do
@@ -98,8 +77,8 @@ EOF
         name=`jq -r ".users[$i].username" ${BUILT_CFG_FILE}`
         if rebar users show $name >/dev/null 2>&1 ; then
             rebar users update $name "$user"
-  else
-      rebar users import "$user"
+        else
+            rebar users import "$user"
         fi
     done
 fi

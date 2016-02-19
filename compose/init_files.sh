@@ -4,6 +4,8 @@ if which sudo 2>/dev/null >/dev/null ; then
     SUDO=sudo
 fi
 
+SERVICES="proxy-service network-server rebar-api_service chef-service ntp-service dns-service logging-service dns-mgmt_service"
+
 function usage {
     echo "Usage: $0 <flags> [options docker-compose flags/commands]"
     echo "  -h or --help - help (this)"
@@ -40,7 +42,7 @@ while [[ $1 == -* ]] ; do
       exit 0
       ;;
     --clean)
-        rm -f access.env dc docker-compose.yml config-dir/api/config/networks/the_admin.json config-dir/api/config/networks/the_bmc.json
+        rm -f access.env services.env dc docker-compose.yml config-dir/api/config/networks/the_admin.json config-dir/api/config/networks/the_bmc.json
         $SUDO rm -rf data-dir
       exit 0
       ;;
@@ -59,6 +61,7 @@ while [[ $1 == -* ]] ; do
     --provisioner)
       FILES="$FILES provisioner.yml"
       PROVISION_IT="YES"
+      SERVICES+=" dhcp-mgmt_service dhcp-service provisioner-service"
       ;;
     --debug)
       FILES="$FILES debug.yml"
@@ -149,6 +152,10 @@ EXTERNAL_IP=$EXTERNAL_IP
 FORWARDER_IP=$FORWARDER_IP
 CONSUL_JOIN=$CONSUL_JOIN
 DR_START_TIME=$(date +%s)
+EOF
+
+cat >services.env <<EOF
+SERVICES=$SERVICES
 EOF
 
 cat >config-dir/consul/server-advertise.json <<EOF

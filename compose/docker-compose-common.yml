@@ -50,6 +50,7 @@ rebar_api:
   env_file:
     - ./common.env
     - ./access.env
+    - ./services.env
 
 ntp:
   image: digitalrebar/dr_ntp
