@@ -6,8 +6,12 @@
 # Enable Extra Screen Information
 #DEBUG=true
 
-# Default Provider (packet|aws|gooble)
+# Safe Defaults (disable if you want to require command line setting)
 PROVIDER=aws
+DEPLOY_ADMIN=aws
+KUBERNETES_DNS=true
+KUBERNETES_UI=true
+KUBERNETES_NETWORKING=flannel
 
 # Packet Config
 #PROVIDER_PACKET_KEY=
