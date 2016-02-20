@@ -77,7 +77,7 @@ validate_tools() {
         error=1
     fi
 
-    if [[ ! -e ~/.ssh/id_rsa ]]
+    if [[ ! -e ~/.ssh/id_rsa ]] ; then
         echo "SSH key missing so we are adding one for you"
         ssh-keygen -t rsa -f ~/.ssh/id_rsa -P ''
     fi
