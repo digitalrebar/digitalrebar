@@ -29,11 +29,39 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   puts "==========================================================="
   puts "Welcome to Digital Rebar Vagrant"
+  puts "  Machine types available: \n\tclient (run remote DR) \n\tbase (DR server) \n\tnode1[-20] (node for local test)"
   puts "  Documentation:\n\thttps://github.com/digitalrebar/doc/blob/master/deployment/vagrant.rst"
   puts "  export REBAR_ENDPOINT and REBAR_KEY to use existing Digital Rebar Server (default = Vagrant admin)"
   puts "  TRIGGERS REQUIRED: vagrant plugin install vagrant-triggers\n\tsee http://www.rubydoc.info/gems/vagrant-triggers/0.2.1"
   puts "  REBAR CLI REQUIRED: rebar cli must be on your path\n\tsee https://github.com/digitalrebar/doc/tree/master/cli"
+  puts "  Maintained by RackN, Copyright 2016"
   puts "==========================================================="
+
+  config.vm.define "client", autostart:false do |client|
+  
+    client.vm.box = ADMIN_OS_BOX
+    client.vm.provider "virtualbox" do |vb|
+      vb.memory = "2048"
+      vb.cpus = 2
+    end
+
+    client.vm.provision "shell", inline: "sudo apt-get update && sudo apt-get install git ansible jq -y"
+    client.vm.provision "shell", inline: "ssh-keygen -t rsa -f /home/vagrant/.ssh/id_rsa -P ''", privileged: false
+    client.vm.provision "shell", inline: "ssh-keygen -t rsa -f /home/vagrant/.ssh/vagrant-ubuntu-trusty-64 -P ''", privileged: false
+
+    # get the deploy code
+    client.vm.provision "shell", inline: "mkdir digitalrebar", privileged: false
+    client.vm.provision "shell", inline: "git clone https://github.com/rackn/digitalrebar-deploy digitalrebar/deploy", privileged: false
+    client.vm.provision "shell", inline: "digitalrebar/deploy/workloads/kubernetes.sh --help", privileged: false
+    client.vm.provision "shell", inline: "cp digitalrebar/deploy/.dr_info.example /home/vagrant/.dr_info", privileged: false
+    # get the rebar client
+    client.vm.provision "shell", inline: "sudo curl -o /usr/local/sbin/rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64"
+    client.vm.provision "shell", inline: "sudo chmod +x /usr/local/sbin/rebar"
+    client.vm.provision "shell", inline: "rebar --help"
+
+    puts "NEXT CLIENT STEPS: \n\tvagrant ssh client\n\tvi ~/.dr_info"
+
+  end
 
   config.vm.define "base", autostart:false do |base|
 
@@ -56,6 +84,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     base.vm.provision "shell", path: "scripts/increase_swap.sh"
 
     # make sure vagrant user can sudo
+    base.vm.provision "shell", inline: "sudo apt-get update"
     base.vm.provision "shell", inline: "sudo apt-get install git ansible jq -y"
     base.vm.provision "shell", inline: "mkdir digitalrebar"
     base.vm.provision "shell", inline: "git clone https://github.com/rackn/digitalrebar-deploy digitalrebar/deploy"
