@@ -27,8 +27,6 @@ roles:
     jig: role-provided
     flags:
       - service
-    wants-attribs:
-      - rebar-api-servers
     attribs:
       - name: provisioner-default-os
         description: 'The default operating system the provisioner will deploy'

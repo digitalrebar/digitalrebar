@@ -21,7 +21,8 @@ class BarclampDhcp::MgmtService < Service
   def do_transition(nr,data)
     wait_for_service(nr, data, 'dhcp-mgmt-service')
     deployment_role = nr.deployment_role
-    until Attrib.get('dhcp-management-servers',deployment_role)
+    until Attrib.get('dhcp-management-servers',deployment_role) &&
+          Attrib.get('provisioner-webservers',deployment_role.deployment)
       sleep 1
       deployment_role.reload
     end
