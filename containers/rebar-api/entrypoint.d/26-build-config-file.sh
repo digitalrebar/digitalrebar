@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if ! kv_get digitalrebar/private/api/keys/rebar_key &>/dev/null; then
+if [[ -f /tmp/.do_config ]]; then
     cd /opt/digitalrebar/core
     export BUILT_CFG_FILE=/tmp/final.json
 
