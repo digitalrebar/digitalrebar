@@ -58,8 +58,8 @@ set_service_attrib() {
 }
 
 unset answer count
-# Just about everything wants an IP address.
-IP=$(ip -o -4 addr show eth0 |awk '{ print $4 }' | awk -F/ '{ print $1 }')
+# Just about everything wants an IP address.  Get the first global one
+IP=$(ip -o -4 addr | grep 'scope global' | awk '{ print $4 }' | awk -F/ '{ print $1 }' | head -1)
 forwarder=$(awk '/forwarder/ { print $1}' </etc/hosts|head -1)
 
 # Now that consul is up, run whatever commands we want the system to run.
