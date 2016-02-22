@@ -103,6 +103,9 @@ validate_tools() {
             sudo yum -y install epel-release # Everyone gets epel for free.
             sudo yum install -y ansible python-netaddr
         elif [[ $OS_FAMILY == debian ]] ; then
+            sudo apt-get install -y software-properties-common
+            sudo apt-add-repository -y ppa:ansible/ansible
+            sudo apt-get update -y
             sudo apt-get install -y ansible python-netaddr
         fi
 
