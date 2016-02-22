@@ -31,7 +31,7 @@ roles:
       - name: provisioner-default-os
         description: 'The default operating system the provisioner will deploy'
         map: 'rebar/provisioner/server/default_os'
-        default: 'centos-7.1.1503'
+        default: 'centos-7.2.1511'
         schema:
           type: str
       - name: provisioner-provided-repos
@@ -259,7 +259,7 @@ roles:
         description: "The operating system to install on a node"
         map: 'rebar/target_os'
         ui_renderer: 'barclamp_provisioner/attribs/target_os'
-        default: "centos-7.1.1503"
+        default: "centos-7.2.1511"
         schema:
           type: str
           required: true
