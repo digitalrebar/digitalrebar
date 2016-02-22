@@ -82,12 +82,28 @@ validate_tools() {
         ssh-keygen -t rsa -f ~/.ssh/id_rsa -P ''
     fi
 
+    if ! which sudo &>/dev/null; then
+        if [[ $OS_FAMILY == rhel ]] ; then
+            yum install -y sudo
+        elif [[ $OS_FAMILY == debian ]] ; then
+            apt-get install -y sudo
+        fi
+
+        if ! which sudo &>/dev/null; then
+            echo "Please install sudo!"
+            if [[ $(uname -s) == Darwin ]] ; then
+                echo "Something like: brew install sudo"
+            fi
+            error=1
+        fi
+    fi
+
     if ! which ansible &>/dev/null; then
         if [[ $OS_FAMILY == rhel ]] ; then
-            yum -y install epel-release # Everyone gets epel for free.
-            yum install -y ansible python-netaddr
+            sudo yum -y install epel-release # Everyone gets epel for free.
+            sudo yum install -y ansible python-netaddr
         elif [[ $OS_FAMILY == debian ]] ; then
-            apt-get install -y ansible python-netaddr
+            sudo apt-get install -y ansible python-netaddr
         fi
 
         if ! which ansible &>/dev/null; then
@@ -101,9 +117,9 @@ validate_tools() {
 
     if ! which curl &>/dev/null; then
         if [[ $OS_FAMILY == rhel ]] ; then
-            yum install -y curl
+            sudo yum install -y curl
         elif [[ $OS_FAMILY == debian ]] ; then
-            apt-get install -y curl
+            sudo apt-get install -y curl
         fi
 
         if ! which curl &>/dev/null; then
@@ -117,32 +133,16 @@ validate_tools() {
 
     if ! which jq &>/dev/null; then
         if [[ $OS_FAMILY == rhel ]] ; then
-            yum -y install epel-release # Everyone gets epel for free.
-            yum install -y jq
+            sudo yum -y install epel-release # Everyone gets epel for free.
+            sudo yum install -y jq
         elif [[ $OS_FAMILY == debian ]] ; then
-            apt-get install -y jq
+            sudo apt-get install -y jq
         fi
 
         if ! which jq &>/dev/null; then
             echo "Please install jq!"
             if [[ $(uname -s) == Darwin ]] ; then
                 echo "Something like: brew install jq"
-            fi
-            error=1
-        fi
-    fi
-
-    if ! which sudo &>/dev/null; then
-        if [[ $OS_FAMILY == rhel ]] ; then
-            yum install -y sudo
-        elif [[ $OS_FAMILY == debian ]] ; then
-            apt-get install -y sudo
-        fi
-
-        if ! which sudo &>/dev/null; then
-            echo "Please install sudo!"
-            if [[ $(uname -s) == Darwin ]] ; then
-                echo "Something like: brew install sudo"
             fi
             error=1
         fi
