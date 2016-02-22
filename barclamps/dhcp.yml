@@ -38,8 +38,6 @@ roles:
               pattern: /[0-9a-f:.]*/
   - name: dhcp-mgmt_service
     jig: role-provided
-    requires:
-      - provisioner-service
     flags:
       - service
     attribs:
@@ -72,6 +70,3 @@ roles:
                 url:
                   type: str
                   required: true
-    wants-attribs:
-      - provisioner-webservers
-
