@@ -9,5 +9,5 @@
       ignore_errors: yes
 
     - name: download Centos ISO (FAST local mirror)
-      get_url: url=http://mirror.ewr1.packet.net/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso dest=~/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1503-01.iso
+      get_url: url=http://mirror.ewr1.packet.net/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso dest=~/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1511.iso
       ignore_errors: yes
