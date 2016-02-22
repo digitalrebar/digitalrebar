@@ -26,6 +26,7 @@ install-*.log
 
 # Dynamically built by init_files.sh
 /compose/access.env
+/compose/services.env
 /compose/docker-compose.yml
 
 .idea
