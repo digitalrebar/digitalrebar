@@ -18,20 +18,54 @@ require 'uri'
 
 class BarclampProvisioner::Service < Service
 
+  def on_node_delete(node)
+    provisioner_delete(node.name)
+  end
+
   def on_node_change(node)
-    return unless node.previous_changes["bootenv"]
-    sysdepl = Deployment.system
-    provisioner_mgmt = Attrib.get('provisioner-management-servers',sysdepl)
-    url = provisioner_mgmt[0]["url"]
-    if node.bootenv == "unknown"
-      Rails.logger.info("Node: #{node.name} bootenv set to unknown, forgetting about it")
-      RestClient.delete("#{url}/machines/#{node.name}")
+    return unless node.previous_changes['bootenv'] or node.previous_changes['name']
+
+    if node.bootenv == 'unknown'
+      Rails.logger.info("Node: #{name} bootenv set to unknown, forgetting about it")
+      provisioner_delete(node.name)
       return
     end
-    payload = {"Name" => node.name,
-               "Address" => node.addresses(:v4_only)[0].addr,
-               "BootEnv" => node.bootenv,
-               "Params" => {}
+
+    if node.previous_changes['name']
+      provisioner_delete(node.previous_changes['name'][0])
+    end
+
+    provisioner_create(node)
+
+    return unless node.actions[:boot] and node.previous_changes['bootenv']
+    if node.bootenv == 'local'
+      node.actions[:boot].disk
+    else
+      node.actions[:boot].pxe
+    end
+  end
+
+  def do_transition(nr, data)
+    wait_for_service(nr, data, 'provisioner-service')
+    wait_for_service(nr, data, 'provisioner-mgmt-service')
+    deployment_role = nr.deployment_role
+    until Attrib.get('provisioner-webservers', deployment_role) &&
+          Attrib.get('provisioner-management-servers', deployment_role) do
+      sleep 1
+      deployment_role.reload
+    end
+  end
+
+private
+
+  def provisioner_create(node)
+    sysdepl = Deployment.system
+    provisioner_mgmt = Attrib.get('provisioner-management-servers',sysdepl)
+    url = provisioner_mgmt[0]['url']
+    payload = {'Name' => node.name,
+               'Address' => node.addresses(:v4_only)[0].addr,
+               'BootEnv' => node.bootenv,
+               'Params' => {}
               }
     begin
       response = RestClient.get("#{url}/bootenvs/#{node.bootenv}")
@@ -40,7 +74,7 @@ class BarclampProvisioner::Service < Service
       raise "Provisioner management does not know about bootenv #{node.bootenv}"
     end
     bootenv_options = JSON.parse(response.body)
-    bootenv_options["RequiredParams"].each do |param|
+    bootenv_options['RequiredParams'].each do |param|
       # Try a few ways to get the params
       val = (Attrib.get(param,node) rescue nil)
       if val.nil?
@@ -57,8 +91,8 @@ class BarclampProvisioner::Service < Service
         Rails.logger.error("Node: bootenv #{node.bootenv} requires parameter #{param}, but we cannot find it!")
         raise "Cannot find required parameter #{param}"
       end
-      payload["Params"][param] = val
-    end if bootenv_options["RequiredParams"] && !bootenv_options["RequiredParams"].empty?
+      payload['Params'][param] = val
+    end if bootenv_options['RequiredParams'] && !bootenv_options['RequiredParams'].empty?
     begin
       response = RestClient.post("#{url}/machines",payload.to_json, content_type: :json)
     rescue => e
@@ -67,24 +101,13 @@ class BarclampProvisioner::Service < Service
     end
     Attrib.set('provisioner-active-bootstate',node,node.bootenv)
     Rails.logger.info("Node: #{node.name} transitioned to #{node.bootenv}")
-    return unless node.actions[:boot]
-    if new_bootenv == "local"
-      node.actions[:boot].disk
-    else
-      node.actions[:boot].pxe
-    end
-    
   end
 
-  def do_transition(nr, data)
-    wait_for_service(nr, data, "provisioner-service")
-    wait_for_service(nr, data, "provisioner-mgmt-service")
-    deployment_role = nr.deployment_role
-    until Attrib.get('provisioner-webservers', deployment_role) &&
-          Attrib.get('provisioner-management-servers', deployment_role) do
-      sleep 1
-      deployment_role.reload
-    end
+  def provisioner_delete(name)
+    sysdepl = Deployment.system
+    provisioner_mgmt = Attrib.get('provisioner-management-servers',sysdepl)
+    url = provisioner_mgmt[0]['url']
+    RestClient.delete("#{url}/machines/#{name}")
   end
 
 end
