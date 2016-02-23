@@ -15,6 +15,7 @@ function usage {
     echo "  --logging # Adds the logging (kibana,elasticsearch+) components"
     echo "  --debug # Adds the cadviser components"
     echo "  --node # Adds the node component"
+    echo "  --tag <TAG> # Uses that tag for builds and trees. default: latest"
     echo
     echo "  --external_ip <CIDR Address, default: 192.168.124.11/24> "
     echo "  --forwarder_ip <CIDR Address, default: 192.168.124.11/24> "
@@ -27,6 +28,7 @@ function usage {
 ACCESS_MODE="FORWARDER"
 FILES="base.yml"
 PROVISION_IT="NO"
+DR_TAG="latest"
 
 while [[ $1 == -* ]] ; do
   arg=$1
@@ -48,6 +50,10 @@ while [[ $1 == -* ]] ; do
       ;;
     --access)
       ACCESS_MODE=$1
+      shift
+      ;;
+    --tag)
+      DR_TAG=$1
       shift
       ;;
     --external_ip)

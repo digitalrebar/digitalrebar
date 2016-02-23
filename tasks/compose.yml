@@ -88,7 +88,7 @@
     when: netrc_path.stat.exists
 
   - name: setup compose
-    command: ./setup.sh {{ dr_workloads | default([]) | join(" ") }}
+    command: ./setup.sh --tag {{ dr_tag }} {{ dr_workloads | default([]) | join(" ") }}
     environment:
       RACKN_USER: "{{dr_rackn_username|default('')}}"
       RACKN_PASSWORD: "{{dr_rackn_password|default('')}}"
@@ -96,7 +96,7 @@
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
       creates: "{{home_dir.stdout}}/digitalrebar/deploy/compose/digitalrebar/core"
   - name: init compose files
-    command: ./init_files.sh --external_ip {{ dr_external_ip }} --forwarder_ip {{ dr_forwarder_ip | default("0.0.0.0/24") }}  --access {{ dr_access_mode }} {{ dr_services| default([]) | join(" ") }}
+    command: ./init_files.sh --tag {{ dr_tag }} --external_ip {{ dr_external_ip }} --forwarder_ip {{ dr_forwarder_ip | default("0.0.0.0/24") }}  --access {{ dr_access_mode }} {{ dr_services| default([]) | join(" ") }}
     args:
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
   - name: copy user ssh public key to rebar
@@ -126,24 +126,24 @@
     when: ansible_os_family != "Darwin"
 
   - name: Pull compose images [SLOW]
-    command: /usr/local/bin/docker-compose pull
+    shell: "DR_TAG={{dr_tag}} /usr/local/bin/docker-compose pull"
     args:
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
 
   - name: Ensure containers are off
-    command: /usr/local/bin/docker-compose kill
+    shell: "DR_TAG={{dr_tag}} /usr/local/bin/docker-compose kill"
     args:
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
     tags: stop
 
   - name: Ensure containers are removed
-    command: /usr/local/bin/docker-compose rm -f
+    shell: "DR_TAG={{dr_tag}} /usr/local/bin/docker-compose rm -f"
     args:
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
     tags: stop
 
   - name: Compose up containers
-    command: /usr/local/bin/docker-compose up -d
+    shell: "DR_TAG={{dr_tag}} /usr/local/bin/docker-compose up -d"
     args:
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
 
