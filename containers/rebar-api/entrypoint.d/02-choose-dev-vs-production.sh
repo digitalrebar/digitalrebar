@@ -1,4 +1,5 @@
 #!/bin/bash
+
 export REBAR_ENDPOINT="https://${IP}:3000"
 
 if [[ $DR_DEV ]]; then

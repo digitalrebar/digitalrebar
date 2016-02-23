@@ -1,9 +1,5 @@
 #!/bin/bash
 
-make_service dhcp 67 '{"script": "pidof rebar-dhcp", "interval": "10s"}'
-make_service dhcp-mgmt  6755 '{"script": "pidof rebar-dhcp", "interval": "10s"}'
-consul reload
-
 attr="{\"value\": [{
        \"address\": \"${EXTERNAL_IP%%/*}\",
        \"port\": \"6755\",
