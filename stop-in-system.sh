@@ -51,6 +51,10 @@ if [[ $ACCESS = HOST ]] ; then
   ACCESS_VAR="\"dr_access_mode\": \"HOST\", \"dr_external_ip\": \"$IP/$CIDR\","
 fi
 
+if [[ $DR_TAG ]] ; then
+    TAG_VARS="\"dr_tag\": \"$DR_TAG\","
+fi
+
 CON_VAR="\"dr_services\": ["
 COMMA=""
 for c in "${!containers[@]}"; do
@@ -72,6 +76,7 @@ WL_VAR="${WL_VAR} ]"
 JSON_STRING="{
   ${ENV_VAR}
   ${ACCESS_VAR}
+  ${TAG_VARS}
   ${CON_VAR}
   ${WL_VAR}
 }"
