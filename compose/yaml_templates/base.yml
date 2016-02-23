@@ -92,6 +92,7 @@ dns:
 {{ START ACCESS_MODE==HOST }}
   ports:
     - "53/udp:53/udp"
+    - "6754/tcp:6754/tcp"
 {{ END ACCESS_MODE==HOST }}
 
 {{ START ACCESS_MODE==FORWARDER }}
