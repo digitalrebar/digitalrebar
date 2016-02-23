@@ -1,17 +1,20 @@
-#!/bin/bash
-
-set -e
+#!/usr/bin/env bash
 
 startdir="$PWD"
 
 if [[ $0 = /* ]]; then
     mountdir="$0"
 elif [[ $0 = .*  || $0 = */* ]]; then
-    mountdir="$(readlink -f "$PWD/$0")"
+    mountdir="$(readlink "$PWD/$0")"
+    if [ "$mountdir" == "" ] ; then
+        mountdir="$PWD/$0"
+    fi
 else
     echo "Cannot figure out where core is!"
     exit 1
 fi
+
+set -e
 
 mountdir="${mountdir%/*}"
 
