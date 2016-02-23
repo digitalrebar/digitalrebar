@@ -18,7 +18,7 @@ fi
 
 # Check to see if device id exists.
 if [ "$DEVICE_ID" != "" ] ; then
-    STATE=`gcloud compute instances describe $DEVICE_ID --format=json | jq -r .status`
+    STATE=`gcloud compute instances describe ${ZONE_NAME} $DEVICE_ID --format=json | jq -r .status`
 
     if [[ $STATE == null ]] ; then
         echo "Instance ID doesn't exist in google: $DEVICE_ID"

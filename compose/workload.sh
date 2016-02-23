@@ -18,6 +18,11 @@ fi
 
 if [ ! -e $2 ] ; then
   git clone "https://${USERPW}github.com/${1}/${2}.git"
+  if [[ $DR_TAG && $DR_TAG != "latest" ]] ; then
+      cd $2
+      git checkout ${DR_TAG}
+      cd ..
+  fi
 else
   cd $2
   git pull

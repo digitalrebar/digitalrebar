@@ -7,6 +7,13 @@ if [[ ! -e workload.sh ]]; then
   cd compose
 fi
 
+DR_TAG=latest
+if [[ $1 == "--tag" ]] ; then
+    shift
+    DR_TAG=$1
+    shift
+fi
+
 ./workload.sh digitalrebar core
 
 while [[ $1 ]]; do

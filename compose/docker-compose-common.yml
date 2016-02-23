@@ -11,7 +11,7 @@ consul:
     - ./access.env
 
 postgres:
-  image: digitalrebar/dr_postgres
+  image: digitalrebar/dr_postgres:${DR_TAG}
   restart: always
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
@@ -22,7 +22,7 @@ postgres:
     - ./access.env
 
 webproxy:
-  image: digitalrebar/dr_webproxy
+  image: digitalrebar/dr_webproxy:${DR_TAG}
   restart: always
   privileged: true
   volumes:
@@ -32,7 +32,7 @@ webproxy:
     - ./access.env
 
 goiardi:
-  image: digitalrebar/dr_goiardi
+  image: digitalrebar/dr_goiardi:${DR_TAG}
   restart: always
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
@@ -41,7 +41,7 @@ goiardi:
     - ./access.env
 
 rebar_api:
-  image: digitalrebar/dr_rebar_api
+  image: digitalrebar/dr_rebar_api:${DR_TAG}
   privileged: true
   volumes:
     - ./digitalrebar:/opt/digitalrebar
@@ -53,7 +53,7 @@ rebar_api:
     - ./services.env
 
 ntp:
-  image: digitalrebar/dr_ntp
+  image: digitalrebar/dr_ntp:${DR_TAG}
   privileged: true
   restart: always
   volumes:
@@ -63,7 +63,7 @@ ntp:
     - ./access.env
 
 cloudwrap:
-  image: digitalrebar/cloudwrap
+  image: digitalrebar/cloudwrap:${DR_TAG}
   privileged: true
   restart: always
   volumes:
@@ -73,7 +73,7 @@ cloudwrap:
     - ./access.env
 
 dns:
-  image: digitalrebar/dr_dns
+  image: digitalrebar/dr_dns:${DR_TAG}
   restart: always
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
@@ -84,7 +84,7 @@ dns:
     - ./access.env
 
 dhcp:
-  image: digitalrebar/dr_rebar_dhcp
+  image: digitalrebar/dr_rebar_dhcp:${DR_TAG}
   restart: always
   privileged: true
   volumes:
@@ -94,7 +94,7 @@ dhcp:
     - ./access.env
 
 provisioner:
-  image: digitalrebar/dr_provisioner
+  image: digitalrebar/dr_provisioner:${DR_TAG}
   privileged: true
   restart: always
   volumes:
@@ -105,7 +105,7 @@ provisioner:
     - ./access.env
 
 logging:
-  image: digitalrebar/logging
+  image: digitalrebar/logging:${DR_TAG}
   privileged: true
   restart: always
   volumes:
@@ -116,7 +116,7 @@ logging:
     - ./access.env
 
 ux:
-  image: digitalrebar/dr_ux
+  image: digitalrebar/dr_ux:${DR_TAG}
   privileged: true
   restart: always
   volumes:
@@ -165,7 +165,7 @@ cadvisor:
     - "8181:8080"
 
 forwarder:
-  image: digitalrebar/dr_forwarder
+  image: digitalrebar/dr_forwarder:${DR_TAG}
   restart: always
   privileged: true
   volumes:
@@ -178,7 +178,7 @@ forwarder:
     - "443:443"
 
 node:
-  image: digitalrebar/dr_node
+  image: digitalrebar/dr_node:${DR_TAG}
   privileged: true
   env_file:
     - ./access.env
