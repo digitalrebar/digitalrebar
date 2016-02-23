@@ -3,7 +3,6 @@
 if [[ $RUN_NTP ]] ; then
     
     (unset FORWARDER_IP; make_service "ntp" "123" '{"script": "ntpdate -q 127.0.0.1 2>&1 >/dev/null","interval": "10s"}')
-    consul reload
 
     if [[ ! $EXTERNAL_NTP_SERVER ]] ; then
         cat >> /etc/ntp.conf <<EOF

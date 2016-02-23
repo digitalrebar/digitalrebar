@@ -5,8 +5,6 @@ the_ip=${EXTERNAL_IP%%/*}
 make_service "dns" "53" '{"script": "dig @127.0.0.1 127.0.0.1 >/dev/null 2>&1", "interval": "10s"}'
 make_service "dns-mgmt" "6754" '{ "script": "pidof rebar-dns-mgmt","interval": "10s"}'
 
-consul reload
-
 # Append DNS mgmt config from env vars
 if [[ $DNS_TYPE == POWERDNS ]] ; then
     OTHER_PARMS="hostname = $DNS_SERVER_HOSTNAME\nport = $DNS_SERVER_PORT\npassword = $DNS_SERVER_TOKEN\n"

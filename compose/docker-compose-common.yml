@@ -35,6 +35,7 @@ goiardi:
   image: digitalrebar/dr_goiardi:${DR_TAG}
   restart: always
   volumes:
+    - ./data-dir/goiardi:/var/cache/goiardi
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env

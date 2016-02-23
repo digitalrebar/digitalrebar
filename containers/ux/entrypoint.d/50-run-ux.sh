@@ -14,7 +14,6 @@ fi
 
 make_service rebar-ux 443 '{"script": "curl -k -H \"Host=www.mydomain.com\" https://localhost:443","interval": "10s"}'
 
-consul reload
 cd /opt/digitalrebar-ux
 
 bower --allow-root install --config.interactive=false
