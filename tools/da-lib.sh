@@ -65,11 +65,16 @@ docker_admin_default_containers() {
 
 args=()
 
+export DR_TAG=latest
+
 while (( $# > 0 )); do
     arg="$1"
     case $arg in
         --no-pull) export NO_PULL="Y";;
         --dev) export DEV_MODE="Y";;
+        --tag)
+            export DR_TAG="$2"
+            shift;;
         --access)
             case $2 in
                 HOST|FORWARDER)
