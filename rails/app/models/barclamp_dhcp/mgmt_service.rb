@@ -55,9 +55,7 @@ class BarclampDhcp::MgmtService < Service
     end
   end
 
-  # Event triggers for node creation.
-  # roles should override if they want to handle network addition
-  def on_network_create(network)
+  def build_network(network)
     # For now, only do admin networks
     return if network.category != 'admin'
 
@@ -108,6 +106,13 @@ class BarclampDhcp::MgmtService < Service
     options[67] = "discovery/lpxelinux.0"
 
     self.class.create_network(network.name, subnet, next_server, start_ip, end_ip, options)
+    self.class.update_network(network.name, subnet, next_server, start_ip, end_ip, options)
+  end
+
+  # Event triggers for node creation.
+  # roles should override if they want to handle network addition
+  def on_network_create(network)
+    build_network(network)
   end
 
   # Event triggers for network destruction.
@@ -122,6 +127,7 @@ class BarclampDhcp::MgmtService < Service
   #
   # This does not include IP allocation/deallocation.
   def on_network_change(network)
+    build_network(network)
   end
 
   def on_network_allocation_create(na)
