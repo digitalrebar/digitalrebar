@@ -154,7 +154,7 @@ bring_up_admin_containers() {
     mkdir -p "$HOME/.cache/digitalrebar/tftpboot"
     chmod 777 "$HOME/.cache/digitalrebar/tftpboot"
 
-    $SUDO rm -rf "$HOME/.cache/digitalrebar/tftpboot/nodes"
+    $SUDO rm -rf "$HOME/.cache/digitalrebar/tftpboot/machines"
     if [[ -f $HOME/.ssh/id_rsa.pub ]]; then
         cp "$HOME/.ssh/id_rsa.pub" "$mountdir/deploy/compose/config-dir/api/config/ssh_keys/$USER-0.key"
     fi
