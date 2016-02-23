@@ -22,7 +22,6 @@ install-*.log
 /compose/config-dir/api/config/networks/the_bmc.json
 /compose/config-dir/api/config/domain.json
 /compose/data-dir
-/compose/config-dir/consul/server-advertise.json
 
 # Dynamically built by init_files.sh
 /compose/access.env
