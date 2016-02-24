@@ -86,8 +86,9 @@ fi
 set_listen_addresses '' # we're going to start up postgres, but it's not ready for use yet (this is initialization), so don't listen to the outside world yet
 if [[ -d /var/lib/postgresql/backup ]]; then
     for f in pg_hba.conf pg_ident.conf postgresql.auto.conf postgresql.conf postmaster.opts; do
-        cp "/var/lib/postgresql/backup/$f" "/var/lib/postgresql/data/$f"
+        cp "/var/lib/postgresql/backup/$f" "$PGDATA/$f"
     done
+    chown -R postgres "$PGDATA"
 fi
 gosu postgres "$@" &
 pid="$!"

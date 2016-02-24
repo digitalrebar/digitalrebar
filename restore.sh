@@ -17,7 +17,7 @@
 # Any backup processes should be run while DigitalRebar is up and
 # running.
 
-if [[ ! -d compose/config-dir ]]; then
+if [[ ! -f compose/docker-compose-common.yml ]]; then
     echo "$0 must run from the top-level deploy directory"
     exit 1
 fi
@@ -50,6 +50,13 @@ in_docker() {
     shift
     docker exec "$container" "$@"
 }
+
+# Wipe out any currently-running containers
+(cd compose; docker-compose kill; docker-compose rm -f) || :
+
+# Clean up crap we will restore over the top of.
+clean_files=(access.env config-dir data-dir docker-compose.yml services.env)
+(cd compose; sudo rm -rf "${clean_files[@]}")
 
 # Extract the contents of the tftpboot directory.  This is the only
 # one we don't complain about if it does not exist
