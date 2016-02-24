@@ -1,16 +1,15 @@
 
-provisioner:
+dns:
   extends:
     file: docker-compose-common.yml
-    service: provisioner
+    service: dns
 {{ START ACCESS_MODE==FORWARDER }}
   links:
     - forwarder:forwarder
 {{ END ACCESS_MODE==FORWARDER }}
 {{ START ACCESS_MODE==HOST }}
   ports:
-    - "69/udp:69/udp"
-    - "8091:8091"
-    - "8092:8092"
+    - "53/udp:53/udp"
+    - "6754/tcp:6754/tcp"
 {{ END ACCESS_MODE==HOST }}
 

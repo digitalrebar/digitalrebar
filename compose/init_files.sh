@@ -1,17 +1,22 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if which sudo 2>/dev/null >/dev/null ; then
     SUDO=sudo
 fi
 
-SERVICES="proxy-service network-server rebar-api_service chef-service ntp-service dns-service logging-service dns-mgmt_service"
+SERVICES="network-server rebar-api_service logging-service"
 
 function usage {
     echo "Usage: $0 <flags> [options docker-compose flags/commands]"
     echo "  -h or --help - help (this)"
     echo "  --clean - cleans up directory and exits"
     echo "  --access <HOST|FORWARDER> # Defines how the admin containers should be accessed"
-    echo "  --provisioner # Adds the provisioner components"
+    echo "  --dhcp # Adds the dhcp component"
+    echo "  --provisioner # Adds the provisioner component"
+    echo "  --dns # Adds the dns component"
+    echo "  --ntp # Adds the ntp component"
+    echo "  --chef # Adds the chef component"
+    echo "  --webproxy # Adds the webproxy component"
     echo "  --logging # Adds the logging (kibana,elasticsearch+) components"
     echo "  --debug # Adds the cadviser components"
     echo "  --node # Adds the node component"
@@ -67,7 +72,27 @@ while [[ $1 == -* ]] ; do
     --provisioner)
       FILES="$FILES provisioner.yml"
       PROVISION_IT="YES"
-      SERVICES+=" dhcp-mgmt_service dhcp-service provisioner-service"
+      SERVICES+=" provisioner-service"
+      ;;
+    --ntp)
+      FILES="$FILES ntp.yml"
+      SERVICES+=" ntp-service"
+      ;;
+    --chef)
+      FILES="$FILES chef.yml"
+      SERVICES+=" chef-service"
+      ;;
+    --dhcp)
+      FILES="$FILES dhcp.yml"
+      SERVICES+=" dhcp-mgmt_service dhcp-service"
+      ;;
+    --dns)
+      FILES="$FILES dns.yml"
+      SERVICES+=" dns-mgmt_service dns-service"
+      ;;
+    --webproxy)
+      FILES="$FILES webproxy.yml"
+      SERVICES+=" proxy-service"
       ;;
     --debug)
       FILES="$FILES debug.yml"
