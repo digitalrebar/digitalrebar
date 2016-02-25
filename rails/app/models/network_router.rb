@@ -57,7 +57,7 @@ class NetworkRouter < ActiveRecord::Base
         Rails.logger.info("NetworkRouter: Calling #{r.name} on_network_change for #{self.network.name}")
         r.on_network_change(self.network)
       rescue Exception => e
-        Rails.logger.error "NetworkRouter #{self.name} attempting to change role #{r.name} failed with #{e.message}"
+        Rails.logger.error "NetworkRouter #{self.address} attempting to change role #{r.name} failed with #{e.message}"
       end
     end
   end
