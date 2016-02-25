@@ -414,6 +414,12 @@ known_workloads=(all docker kubernetes hardware ceph packstack docker-swarm ente
 declare -A containers
 declare -A workloads
 
+# Default the normal containers on, but they can be turned off.
+[[ ${containers["dns"]} ]] || containers["dns"]=true
+[[ ${containers["ntp"]} ]] || containers["ntp"]=true
+[[ ${containers["chef"]} ]] || containers["chef"]=true
+[[ ${containers["webproxy"]} ]] || containers["webproxy"]=true
+
 use_container() {
     ! [[ ! ${containers[$1]} || ${containers[$1]} == false ]]
 }
