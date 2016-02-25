@@ -48,6 +48,7 @@ cleanup() {
         done
         docker-compose rm -f
     ) &>/dev/null
+    [[ $backup_location && -d $backup_location ]] && rm -rf "$backup_location"
     exit $res
 }
 
@@ -62,6 +63,9 @@ docker_admin_default_containers
 
 bring_up_admin_containers && wait_for_admin_containers || \
         die "Failed to deploy admin node"
+
+backup_containers && restore_containers && wait_for_admin_containers || \
+        die "Failed to backup and restore containers to a running state!"
 
 [[ $DEPLOY_OSES ]] || exit 0
 
