@@ -188,6 +188,17 @@ test_phantom() {
     ! rebar nodes show system-phantom.internal.local | jq '.alive, .available' |grep false
 }
 
+backup_containers() {
+    backup_location=$(mktemp -d /tmp/rebar-backup-XXXXXXXX)
+    rm -rf "$backup_location"
+    (cd "$mountdir/deploy" && ./backup.sh  "$backup_location")
+}
+
+restore_containers() {
+    [[ -d $backup_location ]] || die "No backup location"
+    (cd "$mountdir/deploy" && ./restore.sh "$backup_location")
+}
+
 wait_for_admin_containers() {
     echo "Waiting on API to start (up to 240 seconds)"
     retry_until 240 \
