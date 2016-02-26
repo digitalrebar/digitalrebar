@@ -141,13 +141,13 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
 		}
 
-		options, lease_time := subnet.build_options(lease, binding)
+		options, lease_time := subnet.build_options(lease, binding, p)
 
 		reply := dhcp.ReplyPacket(p, dhcp.Offer,
 			h.ip,
 			lease.Ip,
 			lease_time,
-			subnet.Options.SelectOrderOrAll(options[dhcp.OptionParameterRequestList]))
+			options.SelectOrderOrAll(options[dhcp.OptionParameterRequestList]))
 		log.Println("Discover: Handing out: ", reply.YIAddr(), " to ", reply.CHAddr())
 		return reply
 
@@ -175,7 +175,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
 		}
 
-		options, lease_time := subnet.build_options(lease, binding)
+		options, lease_time := subnet.build_options(lease, binding, p)
 
 		subnet.update_lease_time(h.info, lease, lease_time)
 
@@ -183,7 +183,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			h.ip,
 			lease.Ip,
 			lease_time,
-			subnet.Options.SelectOrderOrAll(options[dhcp.OptionParameterRequestList]))
+			options.SelectOrderOrAll(options[dhcp.OptionParameterRequestList]))
 		if binding != nil && binding.NextServer != nil {
 			reply.SetSIAddr(net.ParseIP(*binding.NextServer))
 		} else if subnet.NextServer != nil {
