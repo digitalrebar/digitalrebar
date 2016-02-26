@@ -4,6 +4,7 @@
         export REBAR_KEY="machine-install:$(dd if=/dev/urandom bs=64 count=1 2>/dev/null | sha512sum - 2>/dev/null | awk '{ print $1 }')"
         touch /tmp/.do_config
     else
+        rm /tmp/.do_config || :
         . /etc/rebar-data/rebar-key.sh
     fi
 
