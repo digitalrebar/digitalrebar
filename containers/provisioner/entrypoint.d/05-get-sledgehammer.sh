@@ -14,6 +14,7 @@ for d in files nodes discovery/pxelinux.cfg; do
 done
 cp /usr/local/bin/rebar "${TFTPROOT}/files/rebar"
 cp /tmp/start-up.sh "${TFTPROOT}/nodes/start-up.sh"
+cp /tmp/ipxe.* "${TFTPROOT}"
 
 # Get sledgehammer
 SS_URL=$PROV_SLEDGEHAMMER_URL/$PROV_SLEDGEHAMMER_SIG

@@ -27,6 +27,11 @@
             "UUID": "default-elilo.tmpl"
         },
         {
+            "Name": "ipxe",
+            "Path": "discovery/{{.Machine.Address}}.ipxe",
+            "UUID": "default-ipxe.tmpl"
+        },
+        {
             "Name": "compute.ks",
             "Path": "machines/{{.Machine.Name}}/compute.ks",
             "UUID": "centos-7.ks.tmpl"

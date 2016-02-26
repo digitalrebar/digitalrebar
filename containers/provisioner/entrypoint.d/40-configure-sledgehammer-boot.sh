@@ -42,7 +42,6 @@ EOF
 }
 
 SLEDGE_ARGS=("rootflags=loop"
-             "initrd=initrd0.img"
              "root=live:/sledgehammer.iso"
              "rootfstype=auto"
              "ro"
@@ -55,6 +54,16 @@ SLEDGE_ARGS=("rootflags=loop"
              "rebar.state=discovery"
              "rebar.install.key=${REBAR_KEY}"
             )
+cat > "$TFTPROOT/default.ipxe" <<EOF
+#!ipxe
+chain $PROV_WEB/discovery/\${netX/ip}.ipxe && goto bail || goto sledgehammer
+:sledgehammer
+kernel $PROV_WEB/discovery/vmlinuz0 ${SLEDGE_ARGS[@]} BOOTIF=01-\${netX/mac:hexhyp}
+initrd $PROV_WEB/discovery/initrd0.img
+boot
+:bail
+exit
+EOF
 
 pxelinux_cfg "discovery" \
              "$PROV_WEB/discovery/vmlinuz0" \

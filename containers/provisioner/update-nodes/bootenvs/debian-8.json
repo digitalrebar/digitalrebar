@@ -32,6 +32,11 @@
             "UUID": "default-elilo.tmpl"
         },
         {
+            "Name": "ipxe",
+            "Path": "discovery/{{.Machine.Address}}.ipxe",
+            "UUID": "default-ipxe.tmpl"
+        },
+        {
             "Name": "seed",
             "Path": "machines/{{.Machine.Name}}/seed",
             "UUID": "net_seed.tmpl"

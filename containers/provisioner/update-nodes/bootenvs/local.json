@@ -13,6 +13,11 @@
             "Name": "elilo",
             "Path": "discovery/{{.Machine.HexAddress}}.conf",
             "UUID": "local-elilo.tmpl"
+        },
+        {
+            "Name": "ipxe",
+            "Path": "discovery/{{.Machine.Address}}.ipxe",
+            "UUID": "local-ipxe.tmpl"
         }
     ]
 }

@@ -173,7 +173,7 @@ func (b *BootEnv) JoinInitrds(proto string) string {
 	for i, initrd := range b.Initrds {
 		fullInitrds[i] = b.PathFor(proto, initrd)
 	}
-	return strings.Join(fullInitrds, ", ")
+	return strings.Join(fullInitrds, " ")
 }
 
 func (b *BootEnv) prefix() string {
@@ -271,6 +271,7 @@ func (b *BootEnv) DeleteRenderedTemplates(machine *Machine) {
 func (b *BootEnv) onChange(oldThing interface{}) error {
 	seenPxeLinux := false
 	seenELilo := false
+	seenIPXE := false
 	for _, template := range b.Templates {
 		if template.Name == "pxelinux" {
 			seenPxeLinux = true
@@ -278,14 +279,19 @@ func (b *BootEnv) onChange(oldThing interface{}) error {
 		if template.Name == "elilo" {
 			seenELilo = true
 		}
+		if template.Name == "ipxe" {
+			seenIPXE = true
+		}
 		if template.Name == "" ||
 			template.Path == "" ||
 			template.UUID == "" {
 			return errors.New(fmt.Sprintf("bootenv: Illegal template: %+v", template))
 		}
 	}
-	if !(seenPxeLinux && seenELilo) {
-		return errors.New("bootenv: Missing elilo or pxelinux template")
+	if !seenIPXE {
+		if !(seenPxeLinux && seenELilo) {
+			return errors.New("bootenv: Missing elilo or pxelinux template")
+		}
 	}
 	if err := b.parseTemplates(); err != nil {
 		return err

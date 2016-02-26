@@ -19,6 +19,11 @@
             "UUID": "default-elilo.tmpl"
         },
         {
+            "Name": "ipxe",
+            "Path": "discovery/{{.Machine.Address}}.ipxe",
+            "UUID": "default-ipxe.tmpl"
+        },
+        {
             "Name": "control.sh",
             "Path": "machines/{{.Machine.Name}}/control.sh",
             "UUID": "sledgehammer-control.sh.tmpl"
