@@ -18,7 +18,9 @@ RUN apt-get -y update \
   && curl -fgL -o /tmp/elilo.tar.gz \
      http://downloads.sourceforge.net/project/elilo/elilo/elilo-3.16/elilo-3.16-all.tar.gz \
   && curl -fgL -o /tmp/syslinux.tar.xz \
-     https://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.xz
+     https://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.xz \
+  && curl -fgL -o /tmp/ipxe.efi http://boot.ipxe.org/ipxe.efi \
+  && curl -fgL -o /tmp/ipxe.pxe http://boot.ipxe.org/ipxe.pxe
 
 COPY tftpd.conf /etc/default/tftpd-hpa
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
