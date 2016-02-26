@@ -4,12 +4,11 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	dhcp "github.com/krolaw/dhcp4"
-	"github.com/willf/bitset"
 	"net"
 	"strconv"
 	"strings"
-	"time"
+
+	dhcp "github.com/krolaw/dhcp4"
 )
 
 func convertByteToOptionValue(code dhcp.OptionCode, b []byte) string {
@@ -93,7 +92,8 @@ func convertByteToOptionValue(code dhcp.OptionCode, b []byte) string {
 	case dhcp.OptionBootFileSize,
 		dhcp.OptionMaximumDatagramReassemblySize,
 		dhcp.OptionInterfaceMTU,
-		dhcp.OptionMaximumDHCPMessageSize:
+		dhcp.OptionMaximumDHCPMessageSize,
+		dhcp.OptionClientArchitecture:
 		return fmt.Sprint(binary.BigEndian.Uint16(b))
 
 	// 1 byte integer value
@@ -252,116 +252,8 @@ func convertOptionValueToByte(code dhcp.OptionCode, value string) ([]byte, error
 //
 // Array of 2-byte integers
 // OptionPathMTUPlateauTable                OptionCode = 25
-// OptionClientArchitecture OptionCode = 93
 // Array of 1-byte integers
 //OptionParameterRequestList   OptionCode = 55
 // Complex See RFC 3046
 // OptionRelayAgentInformation OptionCode = 82
 // OptionClasslessRouteFormat OptionCode = 121
-
-func convertSubnetToApiSubnet(s *Subnet) *ApiSubnet {
-	apiSubnet := NewApiSubnet()
-	apiSubnet.Name = s.Name
-	apiSubnet.Subnet = s.Subnet.String()
-	apiSubnet.ActiveStart = s.ActiveStart.String()
-	apiSubnet.ActiveEnd = s.ActiveEnd.String()
-	apiSubnet.ActiveLeaseTime = int(s.ActiveLeaseTime.Seconds())
-	apiSubnet.ReservedLeaseTime = int(s.ReservedLeaseTime.Seconds())
-
-	if s.NextServer != nil {
-		ns := s.NextServer.String()
-		apiSubnet.NextServer = &ns
-	}
-
-	for _, v := range s.Leases {
-		apiSubnet.Leases = append(apiSubnet.Leases, v)
-	}
-
-	for _, v := range s.Bindings {
-		apiSubnet.Bindings = append(apiSubnet.Bindings, v)
-	}
-
-	for i, v := range s.Options {
-		o := &Option{
-			Code:  i,
-			Value: convertByteToOptionValue(i, v),
-		}
-		apiSubnet.Options = append(apiSubnet.Options, o)
-	}
-
-	return apiSubnet
-}
-
-func convertApiSubnetToSubnet(as *ApiSubnet, subnet *Subnet) (*Subnet, error) {
-	if subnet == nil {
-		subnet = NewSubnet()
-	}
-	subnet.Name = as.Name
-
-	_, netdata, err := net.ParseCIDR(as.Subnet)
-	if err != nil {
-		return nil, err
-	}
-
-	subnet.Subnet = &MyIPNet{netdata}
-	subnet.ActiveStart = net.ParseIP(as.ActiveStart).To4()
-	subnet.ActiveEnd = net.ParseIP(as.ActiveEnd).To4()
-	subnet.ActiveLeaseTime = time.Duration(as.ActiveLeaseTime) * time.Second
-	subnet.ReservedLeaseTime = time.Duration(as.ReservedLeaseTime) * time.Second
-	subnet.ActiveBits = bitset.New(uint(dhcp.IPRange(subnet.ActiveStart, subnet.ActiveEnd)))
-
-	if as.NextServer != nil {
-		ip := net.ParseIP(*as.NextServer).To4()
-		subnet.NextServer = &ip
-	}
-
-	if subnet.ActiveLeaseTime == 0 {
-		subnet.ActiveLeaseTime = 30 * time.Second
-	}
-	if subnet.ReservedLeaseTime == 0 {
-		subnet.ReservedLeaseTime = 2 * time.Hour
-	}
-
-	for _, v := range as.Leases {
-		subnet.Leases[v.Mac] = v
-		if dhcp.IPInRange(subnet.ActiveStart, subnet.ActiveEnd, v.Ip) {
-			subnet.ActiveBits.Set(uint(dhcp.IPRange(subnet.ActiveStart, v.Ip) - 1))
-		}
-	}
-
-	for _, v := range as.Bindings {
-		subnet.Bindings[v.Mac] = v
-		if dhcp.IPInRange(subnet.ActiveStart, subnet.ActiveEnd, v.Ip) {
-			subnet.ActiveBits.Set(uint(dhcp.IPRange(subnet.ActiveStart, v.Ip) - 1))
-		}
-	}
-
-	// Seed initial options
-	subnet.Options[dhcp.OptionSubnetMask] = []byte(net.IP(netdata.Mask).To4())
-	m := binary.BigEndian.Uint32(subnet.Options[dhcp.OptionSubnetMask])
-	n := binary.BigEndian.Uint32(netdata.IP)
-	b := n | ^m
-	result := make([]byte, 4)
-	binary.BigEndian.PutUint32(result, b)
-	subnet.Options[dhcp.OptionBroadcastAddress] = result
-
-	for _, o := range as.Options {
-		subnet.Options[o.Code], err = convertOptionValueToByte(o.Code, o.Value)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if !netdata.Contains(subnet.ActiveStart) {
-		return nil, errors.New("ActiveStart not in Subnet")
-	}
-	if !netdata.Contains(subnet.ActiveEnd) {
-		return nil, errors.New("ActiveEnd not in Subnet")
-	}
-
-	if dhcp.IPLess(subnet.ActiveEnd, subnet.ActiveStart) {
-		return nil, errors.New("ActiveEnd less than ActiveStart")
-	}
-
-	return subnet, nil
-}
