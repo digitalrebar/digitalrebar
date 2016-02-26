@@ -42,7 +42,6 @@ EOF
 }
 
 SLEDGE_ARGS=("rootflags=loop"
-             "initrd=initrd0.img"
              "root=live:/sledgehammer.iso"
              "rootfstype=auto"
              "ro"
