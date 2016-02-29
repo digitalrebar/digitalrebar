@@ -248,12 +248,12 @@ func (c *challenge) parseChallenge(input string) error {
 		return fmt.Errorf("Challenge is bad, missing prefix: %s", input)
 	}
 	s = strings.Trim(s[7:], ws)
-	sl := strings.Split(s, ", ")
+	sl := strings.Split(s, ",")
 	c.Algorithm = "MD5"
 	var r []string
 	for i := range sl {
 		r = strings.SplitN(sl[i], "=", 2)
-		switch r[0] {
+		switch strings.TrimSpace(r[0]) {
 		case "realm":
 			c.Realm = strings.Trim(r[1], qs)
 		case "domain":
