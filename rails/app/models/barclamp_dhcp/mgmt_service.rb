@@ -103,7 +103,7 @@ class BarclampDhcp::MgmtService < Service
     # Option 3 - gateway
     options[3] = network.network_router.address.addr if network and network.network_router
     # GREG: One day this needs to be selectable by arch
-    options[67] = "discovery/lpxelinux.0"
+    options[67] = '{{if (eq (index . 77) "iPXE") }}default.ipxe{{else if (eq (index . 93) "0")}}ipxe.pxe{{else}}ipxe.efi{{end}}'
 
     self.class.create_network(network.name, subnet, next_server, start_ip, end_ip, options)
     self.class.update_network(network.name, subnet, next_server, start_ip, end_ip, options)
@@ -292,7 +292,7 @@ class BarclampDhcp::MgmtService < Service
       options = {}
     else
       options = {}
-      options[67] = "discovery/lpxelinux.0"
+      options[67] = '{{if (eq (index . 77) "iPXE") }}default.ipxe{{else if (eq (index . 93) "0")}}ipxe.pxe{{else}}ipxe.efi{{end}}'
       # GREG: One day this needs to be selectable by arch
     end
     options.each do |k,v|
