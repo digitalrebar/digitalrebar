@@ -218,12 +218,23 @@ has_attribute() {
 }
 
 get_keys() {
-    local loc="$TMPDIR/attrs/$1"
-
-    if [[ -d $TMPDIR/attrs/$1 ]]; then
-        ls "$loc"
-    else
+    local -a keys
+    local i
+    local num_re='^[0-9]+$'
+    IFS='/' read -r -s -a keys <<< "$1"
+    for i in "${!keys[@]}"; do
+        if [[ ${keys[$i]} =~ $num_re ]]; then
+            keys[$i]="[${keys[$i]}]"
+        else
+            keys[$i]="[\"${keys[$i]}\"]"
+        fi
+    done
+    local keyarg="$(printf '.%s | ' "${keys[@]}")"
+    local v="$(jq -r -c "${keyarg%* | } | keys | reduce .[] as \$item (\"\"; . + \$item + \" \")" <"$TMPDIR/attrs.json")"
+    if [[ $v = null ]]; then
         echo ""
+    else
+        printf '%s' "$v"
     fi
 }
 
