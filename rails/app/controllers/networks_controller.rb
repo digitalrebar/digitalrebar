@@ -71,9 +71,9 @@ class NetworksController < ::ApplicationController
   def create
 
     # cleanup inputs
-    params[:use_vlan] = true if !params.key?(:use_vlan) && params[:vlan].to_int > 0 rescue false
+    params[:use_vlan] = true if !params.key?(:use_vlan) && params[:vlan].to_i > 0 rescue false
     params[:vlan] ||= 0
-    params[:use_team] = true if !params.key?(:use_team) && params[:team_mode].to_int > 0 rescue false
+    params[:use_team] = true if !params.key?(:use_team) && params[:team_mode].to_i > 0 rescue false
     params[:team_mode] ||= 5
     params[:configure] = true unless params.key?(:configure)
     params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
@@ -83,6 +83,7 @@ class NetworksController < ::ApplicationController
     params.require(:group)
     params.require(:conduit)
     params.require(:deployment_id)
+    params.delete(:v6prefix) if params[:v6prefix] == ""
     params[:name] = "#{params[:category]}-#{params[:group]}"
     Network.transaction do
       @network = Network.create! params.permit(:name,
