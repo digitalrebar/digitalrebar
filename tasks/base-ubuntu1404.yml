@@ -4,7 +4,7 @@
     sudo: yes
   - name: Update repos (was not working from apt:)
     command: sudo apt-get update -y
-  - name: Update python.
+  - name: Update python [SLOW]
     command: sudo apt-get upgrade -y
   - name: Install Prereqs [SLOW]
     apt: name={{ item }} state=latest
