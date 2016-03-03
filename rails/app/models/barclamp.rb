@@ -190,6 +190,7 @@ class Barclamp < ActiveRecord::Base
                              :service=>flags.include?('service'),
                              :cluster=>flags.include?('cluster'),
                              :powersave=>flags.include?('powersave'),
+                             :leaverunlog=>flags.include?('leaverunlog'),
                              :metadata=>role_metadata,
                              :icon=>icon)
         prerequisites.each do |rr|
