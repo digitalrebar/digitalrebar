@@ -109,7 +109,10 @@ bring_up_admin() {
                 if [[ $PROVIDER_GOOGLE_ZONE ]] ; then
                     ZONE_NAME="--zone $PROVIDER_GOOGLE_ZONE"
                 fi
-                IP=`gcloud compute instances describe $ZONE_NAME $DEVICE_ID --format=json | jq -r .networkInterfaces[0].accessConfigs[0].natIP`
+                if [[ $PROVIDER_GOOGLE_PROJECT ]] ; then
+                    PROJECT_ID="--project $PROVIDER_GOOGLE_PROJECT"
+                fi
+                IP=`gcloud ${PROJECT_ID} compute instances describe $ZONE_NAME $DEVICE_ID --format=json | jq -r .networkInterfaces[0].accessConfigs[0].natIP`
                 CIDR=32
             fi
             ;;
@@ -177,7 +180,10 @@ tear_down_admin() {
             if [[ $PROVIDER_GOOGLE_ZONE ]] ; then
                 ZONE_NAME="--zone $PROVIDER_GOOGLE_ZONE"
             fi
-            gcloud compute instances delete $DEVICE_ID --delete-disks all $ZONE_NAME
+            if [[ $PROVIDER_GOOGLE_PROJECT ]] ; then
+                PROJECT_ID="--project $PROVIDER_GOOGLE_PROJECT"
+            fi
+            gcloud ${PROJECT_ID} compute instances delete $DEVICE_ID --delete-disks all $ZONE_NAME
             ;;
 
         aws)
