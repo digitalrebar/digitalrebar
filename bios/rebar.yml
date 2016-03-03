@@ -30,7 +30,7 @@ gems:
 
 roles:
   - name: bios-discover
-    jig: noop
+    jig: role-provided
     flags:
       - implicit
       - discovery
@@ -183,6 +183,8 @@ roles:
       - provisioner-webservers
   - name: bios-dell-rseries-configure
     jig: role-provided
+    flags:
+      - leaverunlog
     requires:
       - bios-discover
     wants-attribs:

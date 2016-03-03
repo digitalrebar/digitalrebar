@@ -24,7 +24,7 @@
 require 'structurematch'
 class BarclampBios::Discover < Role
 
-  def on_active(nr)
+  def do_transition(nr,data)
     # Start by making a hash of all our attribs for matching purposes
     runlog = []
     matched = Attrib.get("bios-config-sets",nr,:wall)
@@ -59,6 +59,9 @@ class BarclampBios::Discover < Role
         bc_noderole.add_child(chc_noderole)
         nr.runlog = runlog.join("\n")
       end
+    else
+      runlog << "Already matched #{matched} a BIOS config set for #{nr.node.name}"
+      nr.runlog = runlog.join("\n")
     end
   end
 end
