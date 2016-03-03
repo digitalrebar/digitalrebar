@@ -46,6 +46,7 @@ RUN apt-get -y update \
   && curl -fgL -o '/tmp/chef.deb' \
        'https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/10.04/x86_64/chef_11.18.12-1_amd64.deb' \
   && dpkg -i /tmp/chef.deb && rm -f /tmp/chef.deb \
-  && sed -i '/\[ssh_connection\]/a ssh_args=' /etc/ansible/ansible.cfg
+  && sed -i '/\[ssh_connection\]/a ssh_args=' /etc/ansible/ansible.cfg \
+  && /usr/local/go/bin/go get -u github.com/VictorLowther/intelamt/amttool
 
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
