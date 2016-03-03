@@ -15,10 +15,13 @@ PROVIDER_GOOGLE_ADMIN_INSTANCE_TYPE=${PROVIDER_GOOGLE_ADMIN_INSTANCE_TYPE:-n1-st
 if [[ $PROVIDER_GOOGLE_ZONE ]] ; then
     ZONE_NAME="--zone $PROVIDER_GOOGLE_ZONE"
 fi
+if [[ $PROVIDER_GOOGLE_PROJECT ]] ; then
+    PROJECT_ID="--project $PROVIDER_GOOGLE_PROJECT"
+fi
 
 # Check to see if device id exists.
 if [ "$DEVICE_ID" != "" ] ; then
-    STATE=`gcloud compute instances describe ${ZONE_NAME} $DEVICE_ID --format=json | jq -r .status`
+    STATE=`gcloud ${PROJECT_ID} compute instances describe ${ZONE_NAME} $DEVICE_ID --format=json | jq -r .status`
 
     if [[ $STATE == null ]] ; then
         echo "Instance ID doesn't exist in google: $DEVICE_ID"
@@ -37,22 +40,22 @@ else
     echo "GOOGLE will create ${NODENAME}"
     DEVICE_ID=${NODENAME%%.*}
 
-    if ! gcloud compute instances create ${ZONE_NAME} --image ubuntu-14-04 --machine-type ${PROVIDER_GOOGLE_ADMIN_INSTANCE_TYPE} ${DEVICE_ID} ; then
+    if ! gcloud ${PROJECT_ID} compute instances create ${ZONE_NAME} --image ubuntu-14-04 --machine-type ${PROVIDER_GOOGLE_ADMIN_INSTANCE_TYPE} ${DEVICE_ID} ; then
         echo "Failed to create gcloud instance"
         exit 1
     fi
 fi
 
 # Wait for device to be up
-STATE=`gcloud compute instances describe $ZONE_NAME $DEVICE_ID --format=json | jq -r .status`
+STATE=`gcloud ${PROJECT_ID} compute instances describe $ZONE_NAME $DEVICE_ID --format=json | jq -r .status`
 while [ "$STATE" != "RUNNING" ] ; do
   echo "STATE = $STATE"
   sleep 5
-  STATE=`gcloud compute instances describe $ZONE_NAME $DEVICE_ID --format=json | jq -r .status`
+  STATE=`gcloud ${PROJECT_ID} compute instances describe $ZONE_NAME $DEVICE_ID --format=json | jq -r .status`
 done
 
 # Get Public IP - HACK - should look it up
-IP=`gcloud compute instances describe $ZONE_NAME $DEVICE_ID --format=json | jq -r .networkInterfaces[0].accessConfigs[0].natIP`
+IP=`gcloud ${PROJECT_ID} compute instances describe $ZONE_NAME $DEVICE_ID --format=json | jq -r .networkInterfaces[0].accessConfigs[0].natIP`
 CIDR=32
 
 ENV_VAR="\"google\": true,"
@@ -60,9 +63,9 @@ ENV_VAR="\"google\": true,"
 export ADMIN_IP="$IP/$CIDR"
 
 # Make sure our key is in place.
-gcloud compute ssh $ZONE_NAME ubuntu@$DEVICE_ID --ssh-key-file $HOME/.ssh/id_rsa --command "sudo sed -i -e '/login as the user/d' /root/.ssh/authorized_keys"
-gcloud compute ssh $ZONE_NAME root@$DEVICE_ID --ssh-key-file $HOME/.ssh/id_rsa --command "date"
-gcloud compute ssh $ZONE_NAME ubuntu@$DEVICE_ID --ssh-key-file $HOME/.ssh/id_rsa --command "sudo sed -i -e '1d' /root/.ssh/authorized_keys"
+gcloud ${PROJECT_ID} compute ssh $ZONE_NAME ubuntu@$DEVICE_ID --ssh-key-file $HOME/.ssh/id_rsa --command "sudo sed -i -e '/login as the user/d' /root/.ssh/authorized_keys"
+gcloud ${PROJECT_ID} compute ssh $ZONE_NAME root@$DEVICE_ID --ssh-key-file $HOME/.ssh/id_rsa --command "date"
+gcloud ${PROJECT_ID} compute ssh $ZONE_NAME ubuntu@$DEVICE_ID --ssh-key-file $HOME/.ssh/id_rsa --command "sudo sed -i -e '1d' /root/.ssh/authorized_keys"
 
 . ./run-in-system.sh
 
