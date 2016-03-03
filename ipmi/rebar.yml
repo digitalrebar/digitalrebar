@@ -37,6 +37,9 @@ hammers:
   - name: wsman
     priority: 2
     type: 'BarclampIpmi::WsmanHammer'
+  - name: amt
+    priority: 2
+    type: 'BarclampIpmi::AmtHammer'
 
 roles:
   - name: ipmi-discover
