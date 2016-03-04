@@ -71,41 +71,15 @@ if ! [[ $(cat /proc/cmdline) =~ $host_re ]]; then
     else
         echo "Node already committed, moving on"
     fi
+    dhclient -r
+    dhclient "$BOOTDEV"
 else
     # Let Rebar know that we are back, and booted into Sledgehammer.
     export HOSTNAME="${BASH_REMATCH[1]}"
 fi
 
-# Figure out what our current addresses should be
-node_id="$(rebar nodes show $HOSTNAME | jq -r '.id')"
-networks="$(rebar nodes networkallocations $node_id | jq -r '.[] | .network_id' | sort -u)"
-addrs=""
-for network in $networks; do
-    cat="$(rebar networks show $network | jq -r '.category')"
-
-    if [[ $cat == admin ]] ; then
-        addrs+=" $(rebar networkallocations match "{\"network_id\": $network, \"node_id\": $node_id}" | jq -r '.[] | .address')"
-
-        admin_network_id=$network
-    fi
-
-done
-if [[ ! $addrs ]]; then
-    echo "Could not find local network address allocations"
-    exit 1
-fi
-
-network_router="$(rebar networkrouters match "{\"network_id\": $admin_network_id}" | jq -r '.[0].address')"
-
-killall dhclient || :
-ip addr flush scope global dev "$BOOTDEV"
-for addr in $addrs; do
-    ip addr add "$addr" dev "$BOOTDEV"
-done
-
-if [[ $network_router ]]; then
-    ip route add default via "${network_router%%/*}"
-fi
+control_ip=$(ip -o -4 addr show scope global dev "$BOOTDEV" |awk '{print $4}')
+rebar nodes set $HOSTNAME attrib node-control-address to "{\"value\": \"${control_ip}\"}"
 
 # Always make sure we are marking the node not alive. It will comeback later.
 rebar nodes update $HOSTNAME '{"alive": false, "bootenv": "sledgehammer"}'
