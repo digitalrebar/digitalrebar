@@ -42,6 +42,18 @@ hammers:
     type: 'BarclampIpmi::AmtHammer'
 
 roles:
+  - name: amt-discover
+    jig: script
+    flags:
+      - implicit
+      - discovery
+    attribs:
+      - name: amt-enable
+        description: "Whether to try to enable Intel AMT support on the system"
+        map: 'amt/enable'
+        default: false
+        schema:
+          type: bool
   - name: ipmi-discover
     jig: chef
     attaches:
