@@ -170,7 +170,7 @@ roles:
                   "BootMode": "Uefi"
               - "name": "virtualization"
                 "parent": "default"
-                "settings": 
+                "settings":
                   "ProcVirtualization": "Enabled"
                   "SriovGlobalEnable": "Enabled"
       - name: bios-all_configs
