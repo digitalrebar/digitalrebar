@@ -32,7 +32,7 @@ module BarclampRaid
       "overhead" => 0
     },
     "raid0" => {
-      "min_disks" => 2,
+      "min_disks" => 1,
       "max_disks" => 1000,
       "type" => "simple",
       "overhead" => 0
