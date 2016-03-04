@@ -179,7 +179,7 @@ bring_up_admin_containers() {
     docker-compose up -d
     # enable development mode
     if [ "$DEV_MODE" == "Y" ] ; then
-        docker exec -it compose_rebar_api_1 touch /tmp/development.txt
+        docker exec -it compose_rebar_api_1 touch /opt/digitalrebar/dev.mode
         echo "Starting in DEVELOPMENT MODE"
     fi
 }
