@@ -1,89 +1,106 @@
 lang en_US.UTF-8
 keyboard us
-timezone US/Eastern
+timezone UTC
 auth --useshadow --enablemd5
 # rebar1
 rootpw --iscrypted $1$UwJdGUMy$ORqjDQIW//wt7sWY.xG9M0
 selinux --disabled
 firewall --disabled
 
-repo --name=a-base    --baseurl=http://mirrors.kernel.org/centos/6/os/$basearch
-repo --name=a-updates --baseurl=http://mirrors.kernel.org/centos/6/updates/$basearch
-repo --name=a-extras  --baseurl=http://mirrors.kernel.org/centos/6/extras/$basearch
-repo --name=a-live    --baseurl=http://www.nanotechnologies.qc.ca/propos/linux/centos-live/$basearch/live
-repo --name=a-wsman   --baseurl=http://download.opensuse.org/repositories/Openwsman/CentOS_CentOS-6
-repo --name=a-lldpd   --baseurl=http://download.opensuse.org/repositories/home:/vbernat/CentOS_CentOS-6/
-repo --name=a-epel    --baseurl=http://mirrors.kernel.org/fedora-epel/6/$basearch
+repo --name=a-base    --baseurl=http://mirrors.kernel.org/centos/7/os/$basearch
+repo --name=a-updates --baseurl=http://mirrors.kernel.org/centos/7/updates/$basearch
+repo --name=a-extras  --baseurl=http://mirrors.kernel.org/centos/7/extras/$basearch
+repo --name=a-lldpd   --baseurl=http://download.opensuse.org/repositories/home:/vbernat/CentOS_7/
+repo --name=a-epel    --baseurl=http://mirrors.kernel.org/fedora-epel/7/$basearch
 
 %packages
-@core
 OpenIPMI
 OpenIPMI-tools
+aic94xx-firmware
+audit
 authconfig
-autoconf
-automake
+basesystem
 bash
-chkconfig
-compat-libstdc++-33.i686
+biosdevname
+btrfs-progs
 comps-extras
 coreutils
 curl
 dhclient
 dmidecode
+e2fsprogs
 efibootmgr
-gcc
-gcc-c++
-git
+filesystem
+firewalld
+glibc
 glibc.i686
 gzip
+hostname
+initscripts
+iproute
+iprutils
+iptables
+iputils
+irqbalance
 jq
+kbd
 kernel
-libstdc++.i686
-libsysfs.x86_64
-libxml2
-libxml2-devel
-libxml2.i686
-libxslt
+kernel-tools
+kexec-tools
+less
+libsysfs
+linux-firmware
 lldpd
 lvm2
-make
+man-db
 mdadm
+microcode_ctl
 mktemp
+ncurses
 ntp
 openssh-clients
 openssh-server
-openwsman-ruby
+openssl-libs
 parted
 passwd
 pciutils
-perl-XML-Twig
+plymouth
 policycoreutils
+procps-ng
+rdma
 rootfiles
 rpm
+rsyslog
 ruby
 ruby-devel.x86_64
 ruby-libs.x86_64
-ruby-rdoc
-ruby-ri
 rubygems
-screen
+setup
+shadow-utils
+sudo
 syslinux
+systemd
 tar
 tcpdump
+tuned
 unzip
+util-linux
 vconfig
 vim-enhanced
+vim-minimal
 wget
 which
-wsmancli
+xfsprogs
 yum
 zlib
-zlib-devel
+%end
 
 %post
 
 # Hack to really turn down SELINUX
 sed -i -e 's/\(^SELINUX=\).*$/\1disabled/' /etc/selinux/config
+systemctl enable network
+systemctl disable kdump
 
 ########################################################################
 # Create a sub-script so the output can be captured
@@ -96,22 +113,22 @@ echo ###################################################################
 echo ## Creating the centos-live init script
 echo ###################################################################
 
-cat > /etc/rc.d/init.d/openstack-start-up << EOF_initscript
-#!/bin/bash
-#
-# live: Init script for live image
-#
-# chkconfig: 345 72 28
-# description: Init script for live image.
-screen -d -m -S sledgehammer-bootstrap -t 'Sledgehammer Bootstrap' \
-    script -f -c '/sbin/sledgehammer-start-up.sh' /var/log/install.log
+cat > /etc/systemd/system/sledgehammer.service << EOF_initscript
+[Unit]
+Description=Sledgehammer startup script
+After=network.target
 
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/sbin/sledgehammer-start-up.sh
+
+[Install]
+WantedBy=multi-user.target
 
 EOF_initscript
 
-/sbin/chkconfig --level 35 iptables off
-/sbin/chkconfig --level 35 ip6tables off
-/sbin/chkconfig --add openstack-start-up
+systemctl enable sledgehammer.service
 
 EOF_post
 
@@ -120,7 +137,9 @@ EOF_post
 echo "nameserver 8.8.8.8" > /etc/resolv.conf
 curl -fgLO https://opscode-omnibus-packages.s3.amazonaws.com/el/6/i686/chef-11.18.12-1.el6.i686.rpm
 yum install -y chef-11.18.12-1.el6.i686.rpm
+rm chef-11.18.12-1.el6.i686.rpm
 rm -f /etc/resolv.conf
+%end
 
 %post --nochroot
 
@@ -132,7 +151,6 @@ cat > /root/postnochroot-install << EOF_postnochroot
 #!/bin/bash
 
 cp start-up.sh $INSTALL_ROOT/sbin/sledgehammer-start-up.sh
-chmod +x $INSTALL_ROOT/etc/rc.d/init.d/openstack-start-up
 chmod +x $INSTALL_ROOT/sbin/sledgehammer-start-up.sh
 cp sshd_config $INSTALL_ROOT/etc/ssh/sshd_config
 
@@ -141,5 +159,4 @@ cp dhclient.conf $INSTALL_ROOT/etc
 EOF_postnochroot
 
 /bin/bash -x /root/postnochroot-install 2>&1 | tee /root/postnochroot-install.log
-
 %end
