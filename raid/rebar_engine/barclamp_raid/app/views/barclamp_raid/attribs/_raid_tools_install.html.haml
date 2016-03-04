@@ -4,6 +4,16 @@
     %td
       = link_to attrib.name_i18n, attrib_path(attrib.id), :title=>attrib.description
       = v["name"]
-    %td= link_to v["archive"], v["source"], :target=>"_new"
+    %td
+      %ul
+        %li
+          = "Archive: "
+          = link_to v["archive"], v["source"], :target=>"_new"
+        %li
+          = "RAID Levels: "
+          = v["raid_levels"].join ", "
+        %li
+          = "Executable: "
+          = v["executable"]
     - if current_user and current_user.settings(:ui).debug
       %td= attrib.ui_renderer rescue Attrib::UI_RENDERER

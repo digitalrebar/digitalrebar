@@ -72,9 +72,9 @@ roles:
               - "raid1"
               - "raid10"
             "executable": "/usr/sbin/sas2ircu"
-            "archive": "SAS2IRCU_P19.zip"
+            "archive": "SAS2IRCU_P20.zip"
             "source": "http://www.avagotech.com/support/download-search"
-            "linux_installcode": "cd /usr/sbin && unzip -j -o '/tmp/SAS2IRCU_P19.zip' 'SAS2IRCU_P19/sas2ircu_linux_x86_rel/sas2ircu' && chmod 755 sas2ircu"
+            "linux_installcode": "cd /usr/sbin && unzip -j -o '/tmp/SAS2IRCU_P20.zip' 'SAS2IRCU_P20/sas2ircu_linux_x86_rel/sas2ircu' && chmod 755 sas2ircu"
     wants-attribs:
       - provisioner-webservers
   - name: raid-discover

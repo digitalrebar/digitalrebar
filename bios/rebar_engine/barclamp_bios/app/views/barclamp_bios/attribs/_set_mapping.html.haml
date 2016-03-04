@@ -1,0 +1,17 @@
+- value = Attrib.get(attrib.name, obj)
+- value.each do |v|
+  - v["configs"].each do |c|
+    %tr
+      %td
+        = link_to attrib.name_i18n, attrib_path(attrib.id), :title=>attrib.description
+        %p
+          = v["role"]
+          = ": "
+          = c["name"]
+      %td
+        %span.toggle.with_label{:href => "#", :id => "#toggle_#{attrib.id}_#{c["name"]}", :rel => "rawdata_#{attrib.id}_#{c["name"]}" }
+          = "Details..."
+        %pre{:id=>"rawdata_#{attrib.id}_#{c["name"]}", :style =>"display:none"}
+          = JSON.pretty_generate(c)
+      - if current_user and current_user.settings(:ui).debug
+        %td= attrib.ui_renderer rescue Attrib::UI_RENDERER
