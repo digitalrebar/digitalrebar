@@ -76,7 +76,7 @@ class BarclampBios::DellRseriesConfigure < Role
     applied_configs << name
     config = configs.find{|e|e["name"] == name}
     raise "Cannot find BIOS config #{name}" unless config
-    get_config_or_panic(config["parent"], config, applied_configs, final_config, nr) if config["parent"]
+    get_config_or_panic(config["parent"], configs, applied_configs, final_config, nr) if config["parent"]
     update_log(nr, "Adding settings from bios config #{name}")
     final_config.deep_merge!(config["settings"])
   end
