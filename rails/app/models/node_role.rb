@@ -584,7 +584,11 @@ class NodeRole < ActiveRecord::Base
         raise InvalidTransition.new(self,state,TRANSITION)
       end
       Rails.logger.info("NodeRole: Transitioning #{name}")
-      update!(state: TRANSITION, runlog: "")
+      if role.leaverunlog
+        update!(state: TRANSITION)
+      else
+        update!(state: TRANSITION, runlog: "")
+      end
     end
   end
 

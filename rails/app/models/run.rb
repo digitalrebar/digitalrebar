@@ -90,7 +90,7 @@ class NodeRoleRun < Que::Job
     rescue StandardError => e
       to_error = true
       NodeRole.transaction do
-        nr.update!(runlog: "#{e.class.name}: #{e.message}\nBacktrace:\n#{e.backtrace.join("\n")}")
+        nr.update!(runlog: "#{nr.runlog}\n\n\n#{e.class.name}: #{e.message}\nBacktrace:\n#{e.backtrace.join("\n")}")
       end
       Rails.logger.info("Run: Queued job #{job.id} for #{nr.name} failed, exceptions raised.")
       Rails.logger.error("#{e.class.name}: #{e.message}\nBacktrace:\n#{e.backtrace.join("\n")}")
