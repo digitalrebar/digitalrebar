@@ -1,7 +1,10 @@
 !!!
 %html
   %head
-    %title= t 'title', default: "Digital Rebar"
+    %title
+      = t 'title', default: "Digital Rebar"
+      - if Rails.configuration.rebar.devmode
+        = "[dev]"
     = csrf_meta_tags
     = stylesheet_link_tag Rails.configuration.rebar.sass_base || 'application'
     /[if IE]
@@ -62,6 +65,8 @@
       %a{:href=>"https://github.com/orgs/digitalrebar/people", :target=>"_new", :alt=>"Digital Rebar"}
         Digital Rebar
       =t 'version', :version=>Rails.configuration.rebar.version || '2.x'
+      - if Rails.configuration.rebar.devmode
+        = "[dev]"
 
 - if current_user or session[:digest_user]
   :javascript

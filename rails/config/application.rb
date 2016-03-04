@@ -30,24 +30,26 @@ module Rebar
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
+    config.rebar = ActiveSupport::OrderedOptions.new
 
-    # do not load if dev file exists
-    unless File.exists? '/tmp/development.txt'
-      # defaults are producction
+    # dev settings if dev file exists
+    if File.exists? '/opt/digitalrebar/dev.mode'
+      config.log_level = :debug
+      config.rebar.devmode = true
+    else
+      # defaults are production
       config.cache_classes = true
       config.action_controller.perform_caching             = true
       config.action_view.cache_template_loading            = true
       config.active_support.deprecation = :notify
       config.action_controller.allow_forgery_protection    = true
       config.eager_load = true    
+      config.log_level = :info
+      config.rebar.devmode = false
     end
     
+    config.paths['log'] = "/var/log/rebar/production.log"
 
-    # See everything in the log (default is :info)
-    config.log_level = :debug
-    config.paths['log'] = "/var/log/rebar/#{Rails.env}.log"
-
-    config.rebar = ActiveSupport::OrderedOptions.new 
     config.rebar.version = '2.E'
     config.rebar.docs = "https://github.com/digitalrebar/doc/blob/master/README.rst"
     config.rebar.chat_link = "https://gitter.im/digitalrebar/core"
