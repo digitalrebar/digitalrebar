@@ -5,8 +5,12 @@ que_worker() {
     shift
     workers="$1"
     shift
+    LOG_LEVEL=info
+    if [[ -f /opt/digitalrebar/dev.mode ]] ; then
+      LOG_LEVEL=debug
+    fi
     for ((i=0; i < workers; i++)) ; do
-        cmd="bundle exec que -q $queue -w 1 -l debug ./config/environment.rb"
+        cmd="bundle exec que -q $queue -w 1 -l ${LOG_LEVEL} ./config/environment.rb"
         as_rebar "$cmd" </dev/zero 2>&1 &>> "/var/log/rebar/$queue.$i.log" &
     done
 }
