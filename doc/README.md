@@ -14,7 +14,7 @@ Before Rebar can configure RAID, you must download the correct utilities.  Rebar
 
 You need to perform this step if you see the following error:
 
-`STDOUT: SAS2IRCU_P19.zip not present at http://192.168.124.10:8091/files/raid`
+`STDOUT: SAS2IRCU_P20.zip not present at http://192.168.124.10:8091/files/raid`
 
 *Note* The directory which you should place the file is different depending on weather rebar is running in a Docker container or if it is running on a native OS
 
@@ -32,8 +32,8 @@ Steps on a native OS (Not in a Docker container):
       1. Enter 'SAS2IRCU' in the Keywork field.
       1. Click 'Search'
       1. Open 'Management Software and Tools'
-      1. Find and click Download on 'SAS2IRCU_P19'
-      1. The filename should be 'SAS2IRCU_P19.zip'
+      1. Find and click Download on 'SAS2IRCU_P20'
+      1. The filename should be 'SAS2IRCU_P20.zip'
   1. copy the two downloaded files copied into: `/tftpboot/files/raid`
   1. update the permissions to allow guest reading: `chmod 664 *`
 
@@ -52,8 +52,8 @@ Steps with Docker:
       1. Enter 'SAS2IRCU' in the Keywork field.
       1. Click 'Search'
       1. Open 'Management Software and Tools'
-      1. Find and click Download on 'SAS2IRCU_P19'
-      1. The filename should be 'SAS2IRCU_P19.zip'
+      1. Find and click Download on 'SAS2IRCU_P20'
+      1. The filename should be 'SAS2IRCU_P20.zip'
   1. copy the two downloaded files copied into: `~/.cache/digitalrebar/tftpboot/files/raid`
   1. update the permissions to allow guest reading: `chmod 664 *`
 

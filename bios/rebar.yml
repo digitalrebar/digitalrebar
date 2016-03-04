@@ -42,6 +42,7 @@ roles:
     attribs:
       - name: bios-set-mapping
         map: 'bios/set_mapping'
+        ui_renderer: 'barclamp_bios/attribs/set_mapping'
         description: "Mapping of chassis manufacturers and product names to config sets"
         schema:
           type: seq
