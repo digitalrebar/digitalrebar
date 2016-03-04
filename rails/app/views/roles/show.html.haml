@@ -48,16 +48,15 @@
     %thead
       %tr.node{ :class => cycle(:odd, :even) }
         %th= t '.attrib'
-        %th= t '.description'
         %th= 'Default'
         %th= t '.map'
     %tbdoy
       - @role.attribs.each do |a|
         %tr{ :class => cycle(:odd, :even) }
-          %td= link_to a.name, attrib_path(a.id)
-          %td= a.description
-          %td= a.default["value"] 
-          %td= a.map
+          - begin
+            = render :partial => a.ui_renderer, :locals => { :attrib => a, :obj => @role, :obj_type => Role, :flag => :none, :editable => false}
+          - rescue Exception => e
+            = render :partial => Attrib::UI_RENDERER, :locals => { :attrib => a, :obj => @role, :obj_type => Role, :flag => :error, :editable => false, :error => e}
 
 %h3= t '.wanted'
 
