@@ -19,6 +19,7 @@ class BarclampRaid::RaidHammer < Hammer
   # node role runlog as it goes.
   class NodeRoleLogger < StringIO
     def initialize(nr)
+      super()
       @node_role = nr
     end
 
