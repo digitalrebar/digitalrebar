@@ -15,13 +15,19 @@
 
 class BarclampRaid::Discover < Role
 
-  def on_active(nr)
+  def do_transition(nr, data)
+    update_log(nr, "Detecting Raid Controllers")
+    controllers = nr.node.actions[:raid].detect(nr).map{|c|c.to_hash} || []
+    Attrib.set('raid-detected-controllers',nr,controllers,:wall)
+
     # Do nothing unless we discovered RAID controllers we can manage on this node.
-    controllers = (nr.wall["rebar_wall"]["raid"]["controllers"] || [] rescue [])
     if controllers.empty?
+      update_log(nr, "No RAID controllers found")
       Rails.logger.info("No RAID controllers on #{nr.node.name}")
-      return
+      return true
     end
+
+    update_log(nr, "Found controllers: #{controllers}\nAdd configuration roles")
 
     # Since we have detected controllers we can manage, go ahead and bind the
     # raid-configure and rebar-hardware-configured roles to this node.
@@ -33,4 +39,10 @@ class BarclampRaid::Discover < Role
     chc_noderole = chc_role.add_to_node_in_deployment(nr.node, nr.deployment)
     rpc_noderole.add_child(chc_noderole)
   end
+
+  def update_log(nr, string)
+    nr.runlog += string + "\n"
+    nr.save
+  end
+
 end

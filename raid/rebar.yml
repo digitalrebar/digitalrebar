@@ -78,7 +78,7 @@ roles:
     wants-attribs:
       - provisioner-webservers
   - name: raid-discover
-    jig: raid
+    jig: role-provided
     flags:
       - discovery
       - implicit
@@ -94,7 +94,7 @@ roles:
         description: "Whether to run the RAID recipes with debugging enabled"
         map: 'raid/debug'
   - name: raid-configure
-    jig: raid
+    jig: role-provided
     flags:
       - implicit
       - destructive
@@ -166,8 +166,3 @@ hammers:
     type: 'BarclampRaid::RaidHammer'
     priority: 5
 
-jigs:
-  - name: raid
-    description: 'Manage RAID volumes'
-    class: 'BarclampRaid::Jig'
-    implementor: raid-tools-install

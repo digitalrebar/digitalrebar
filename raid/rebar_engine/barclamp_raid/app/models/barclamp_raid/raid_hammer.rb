@@ -15,6 +15,24 @@
 
 class BarclampRaid::RaidHammer < Hammer
 
+  # Special class that will write out the string to the
+  # node role runlog as it goes.
+  class NodeRoleLogger < StringIO
+    def initialize(nr)
+      super()
+      @node_role = nr
+    end
+
+    def <<(s)
+      super(s)
+      return unless @node_role
+      NodeRole.transaction do
+        ns = @node_role.runlog + s
+        @node_role.update!(runlog: ns)
+      end
+    end
+  end
+
   def self.drivers(candidate_node, logger)
     res = []
     Attrib.get('raid-drivers',candidate_node).each do |driver|
@@ -59,12 +77,9 @@ class BarclampRaid::RaidHammer < Hammer
   #
   # @return [Array<BarclampRaid::Driver>]
   def detect(nr)
-    logger = StringIO.new
+    logger = NodeRoleLogger.new(nr)
     logger << "Detecting Raid Configuration\n"
     ans = drivers(logger).map{|d|d.controllers}.flatten
-    NodeRole.transaction do
-      nr.update!(runlog: logger.string)
-    end
     ans
   end
 
@@ -74,7 +89,7 @@ class BarclampRaid::RaidHammer < Hammer
   # @param nr [NodeRole]param noderole containing raid configuration
   # @return [Array<Volumes>] The current volumes on the system
   def converge(nr)
-    logger = StringIO.new
+    logger = NodeRoleLogger.new(nr)
     logger << "Converging Raid Configuration\n"
 
     wanted_config = Attrib.get('raid-wanted-volumes',nr) || []
@@ -129,10 +144,6 @@ class BarclampRaid::RaidHammer < Hammer
         Rails.logger.error("Unable to create #{v} on any raid controller!\n")
         logger << "Unable to create #{v} on any raid controller!\n"
       end
-    end
-
-    NodeRole.transaction do
-      nr.update!(runlog: logger.string)
     end
 
     current_volumes

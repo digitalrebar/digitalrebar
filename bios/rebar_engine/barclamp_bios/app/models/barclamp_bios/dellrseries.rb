@@ -27,8 +27,8 @@ class BarclampBios::Dellrseries < BarclampBios::Driver
                 "http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_BIOSString",
                 "http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_BIOSInteger"]
 
-  def initialize(node)
-    super(node)
+  def initialize(node, nr)
+    super(node, nr)
     @client = @node.hammers.find_by!(name: "wsman")
   end
 
@@ -37,6 +37,7 @@ class BarclampBios::Dellrseries < BarclampBios::Driver
     return @settings if @settings
     res = Hash.new
     @@namespaces.each do |ns|
+      update_log("Gathering info from #{ns}")
       items = @client.enumerate(ns).Items
       next unless items
       items.each do |item|
@@ -76,6 +77,7 @@ class BarclampBios::Dellrseries < BarclampBios::Driver
           raise("Cannot handle BIOS settings of type #{item.name}")
         end
         raise "Aiee!!! Duplicate #{self.inspect} setting #{i["name"]}" if res[i["name"]]
+        update_log("Found item: #{item.AttributeName.text} value: #{item.CurrentValue.text}")
         res[i["name"]] = BarclampBios::Setting.new(i)
       end
     end

@@ -105,8 +105,14 @@ module BarclampBios
     # and firmware updates on.  It assumes that all needed tools are installed,
     # and that any required OOB communication channels have been configured.
     # @param node [Node] The node that this instance of the driver will manage.
-    def initialize(node)
+    def initialize(node, node_role)
       @node = node
+      @node_role = node_role
+    end
+
+    def update_log(string)
+      @node_role.runlog += string + "\n"
+      @node_role.save
     end
 
     # Provide a user-friendly inspect method.
@@ -121,7 +127,6 @@ module BarclampBios
     # @return [Hash{String => BarclampBios::Setting}]
     def settings
       raise "Must be implemented by subclass!"
-      @settings
     end
 
     # Refresh this driver's settings by setting @settings to nil,
@@ -158,7 +163,6 @@ module BarclampBios
     # @return [Boolean] Whether or not the node needs to be rebooted.
     def commit
       raise "Must be implemented by subclass!"
-      false
     end
 
     # Wipe the BIOS settings back to the factory defaults.
@@ -166,7 +170,6 @@ module BarclampBios
     # by default.
     def factory_reset!
       raise "Must be implemented by subclass!"
-      false
     end
   end
 end
