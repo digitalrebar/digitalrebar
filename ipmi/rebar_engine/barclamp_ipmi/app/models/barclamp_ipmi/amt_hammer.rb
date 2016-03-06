@@ -57,7 +57,7 @@ class BarclampIpmi::AmtHammer < Hammer
   
     
   def invoke(*args)
-    cmd = "amttool -e #{endpoint} -u #{username} -p #{password} -op #{args.map{|a|a.to_s}.join(' ')}"
+    cmd = "amttool -e #{endpoint} -u #{username} -p #{authenticator} -op #{args.map{|a|a.to_s}.join(' ')}"
     res = %x{#{cmd} 2>&1}
     return [res, $?.exitstatus == 0]
   end
