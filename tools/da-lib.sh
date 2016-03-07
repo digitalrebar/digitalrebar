@@ -50,7 +50,7 @@ converge() {
     return 1
 }
 
-known_containers=(provisioner logging debug node access ux)
+known_containers=(provisioner dhcp ntp dns chef webproxy logging debug node access ux)
 
 declare -A containers
 
@@ -60,6 +60,11 @@ use_container() {
 
 docker_admin_default_containers() {
     [[ ${containers["provisioner"]} ]] || containers["provisioner"]=true
+    [[ ${containers["dhcp"]} ]] || containers["dhcp"]=true
+    [[ ${containers["dns"]} ]] || containers["dns"]=true
+    [[ ${containers["ntp"]} ]] || containers["ntp"]=true
+    [[ ${containers["chef"]} ]] || containers["chef"]=true
+    [[ ${containers["webproxy"]} ]] || containers["webproxy"]=true
     [[ ${containers["access"]} ]] || containers["access"]=FORWARDER
 }
 
