@@ -82,13 +82,13 @@ end
 
 class SoftwareBundle < BaseItem
   def is_win_bundle
-    return self["OperatingSystems"]["WIN"]
+    return self["OperatingSystems"]["WIN64"] rescue false
   end
 
   def has_platform(name, sys)
     self["Systems"].each do |key, brand|
       return true if brand.has_system(name, sys)
-    end      
+    end
     return false
   end
 

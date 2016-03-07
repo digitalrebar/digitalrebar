@@ -37,8 +37,9 @@ class BarclampBios::DellRseriesConfigure < Role
       get_config_or_panic(cfg_name, configs, applied_configs, final_config, nr)
     end
     # Throw out irrelavent settings or settings that do not need to change.
+    settings = driver.settings
     final_config.select! do |k,v|
-      driver.settings.has_key?(k) && driver.settings[k].current_value != v
+      settings.has_key?(k) && settings[k].current_value != v
     end
     # If we threw away everything, we have nothing to do.
     if final_config.empty?
@@ -52,16 +53,12 @@ class BarclampBios::DellRseriesConfigure < Role
     end
     update_log(nr, "Committing changes")
     if driver.commit
-      update_log(nr, "Rebooting node to let changes take effect.")
-      if nr.node.bootenv == "local"
-        nr.node.power.reboot
-      else
-        nr.node.power[:reset] ? nr.node.power.reset : nr.node.power.reboot
-      end
       # The node is rebooting, so mark it as not alive.
+      update_log(nr, "Marking node dead.")
       nr.node.alive = false
       nr.node.save!
     end
+    true
   end
 
   private
