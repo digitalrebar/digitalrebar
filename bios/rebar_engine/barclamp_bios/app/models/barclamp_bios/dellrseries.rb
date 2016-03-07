@@ -40,6 +40,7 @@ class BarclampBios::Dellrseries < BarclampBios::Driver
       update_log("Gathering info from #{ns}")
       items = @client.enumerate(ns).Items
       next unless items
+      last_part = ns.split('/').last
       items.each do |item|
         # Skip items we cannot change.
         next if item.IsReadOnly.text == "true"
@@ -47,15 +48,13 @@ class BarclampBios::Dellrseries < BarclampBios::Driver
         i["name"] = item.AttributeName.text
         i["driver"] = self
         # Construct a validator for this setting.
-        case item.name
+        case last_part
         when "DCIM_BIOSEnumeration"
           i["current_value"] = item.CurrentValue.text
           # Get all the possible values
           possible_values = Array.new
-          pv = item.PossibleValues
-          while pv
+          item.PossibleValues.each do |pv|
             possible_values << pv.text
-            pv = pv.next
           end
           i["validator"] = possible_values
         when "DCIM_BIOSString"
@@ -74,7 +73,7 @@ class BarclampBios::Dellrseries < BarclampBios::Driver
           upper_bound = item.UpperBound.text.to_i
           i["validator"] = (lower_bound..upper_bound)
         else
-          raise("Cannot handle BIOS settings of type #{item.name}")
+          raise("Cannot handle BIOS settings of type #{last_part}")
         end
         raise "Aiee!!! Duplicate #{self.inspect} setting #{i["name"]}" if res[i["name"]]
         update_log("Found item: #{item.AttributeName.text} value: #{item.CurrentValue.text}")
@@ -85,13 +84,15 @@ class BarclampBios::Dellrseries < BarclampBios::Driver
   end
 
   def commit
+    # Gather all the changed settings.
+    to_commit = @settings.values.reject{|s|s.current_value == s.proposed_value || s.proposed_value.nil?}
+    return false if to_commit.empty?
+
     # Clear any pending config job.
     # We do not care about the results.
     @client.invoke("http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_JobService","DeleteJobQueue",{"JobID" => "JID_CLEARALL"})
     @client.invoke("http://schemas.dell.com/wbem/wscim/1/cim-schema/2/DCIM_BIOSService","DeletePendingConfiguration",{"Target" => "BIOS.Setup.1-1"})
-    # Gather all the changed settings.
-    to_commit = @settings.values.reject{|s|s.current_value == s.proposed_value || s.proposed_value.nil?}
-    return false if to_commit.empty?
+
     args = {
       "Target" => "BIOS.Setup.1-1",
       "AttributeName" => [],

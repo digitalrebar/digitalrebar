@@ -15,8 +15,8 @@
 #
 
 [[ $BC_CACHE ]] || export BC_CACHE="$HOME/.rebar-build-cache/barclamps/bios"
-[[ $REBAR_DIR ]] || export REBAR_DIR="$HOME/rebar"
-[[ $BC_DIR ]] || export BC_DIR="$HOME/rebar/barclamps/bios"
+[[ $REBAR_DIR ]] || export REBAR_DIR="$HOME/digitalrebar"
+[[ $BC_DIR ]] || export BC_DIR="$HOME/digitalrebar/hardware/bios"
 
 echo "Using: BC_CACHE = $BC_CACHE"
 echo "Using: REBAR_DIR = $REBAR_DIR"

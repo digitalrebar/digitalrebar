@@ -17,15 +17,6 @@ Gem::Specification.new do |s|
   s.test_files = Dir["test/**/*"]
 
   s.add_dependency "rails"
-  if !(File.exists?("/etc/redhat-release") &&
-       IO.read("/etc/redhat-release").match(/ 7\.0/))
-    if !(File.exist?("/etc/os-release") &&
-         IO.read("/etc/os-release").match(/VERSION_ID="14\.04"/))
-      s.add_dependency "openwsman", '=2.4.14'
-    else
-      s.add_dependency "openwsman", '=2.4.1'
-    end
-  end
 
   # s.add_dependency "jquery-rails"
 end
