@@ -175,7 +175,7 @@ class NodeRolesController < ApplicationController
                    end
       # if you've been passed data then save it
       if request.patch?
-        patch(@node_role, %w{data})
+        patch(@node_role, %w{data run_count})
       else
         if params[:data]
           @node_role.data = params[:data]
