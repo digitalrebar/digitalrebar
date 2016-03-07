@@ -47,6 +47,7 @@ RUN apt-get -y update \
   && dpkg -i /tmp/chef.deb && rm -f /tmp/chef.deb \
   && sed -i '/\[ssh_connection\]/a ssh_args=' /etc/ansible/ansible.cfg \
   && /usr/local/go/bin/go get -u github.com/VictorLowther/intelamt/amttool \
+  && mv /go/bin/amttool /usr/local/bin/amttool \
   && /usr/local/go/bin/go get -u github.com/VictorLowther/wsman/wscli
 
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
