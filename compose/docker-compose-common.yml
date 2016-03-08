@@ -78,8 +78,7 @@ dns:
   restart: always
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
-    - ./config-dir/bind/named.conf:/etc/named.conf
-    - ./config-dir/bind/named.conf:/etc/bind/named.conf
+    - ./config-dir/bind/named.conf:/etc/bind/named.conf.tmpl
   env_file:
     - ./common.env
     - ./access.env

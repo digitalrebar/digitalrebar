@@ -45,6 +45,8 @@ ACCESS_MODE="FORWARDER"
 FILES="base.yml"
 PROVISION_IT="NO"
 DR_TAG="latest"
+ADD_DNS=false
+RUN_NTP="NO"
 
 while [[ $1 == -* ]] ; do
   arg=$1
@@ -88,7 +90,7 @@ while [[ $1 == -* ]] ; do
     --ntp)
       FILES="$FILES ntp.yml"
       SERVICES+=" ntp-service"
-      set_var_in_common_env "RUN_NTP" "NO"
+      RUN_NTP="YES"
       ;;
     --chef)
       FILES="$FILES chef.yml"
@@ -99,8 +101,18 @@ while [[ $1 == -* ]] ; do
       SERVICES+=" dhcp-mgmt_service dhcp-service"
       ;;
     --dns)
-      FILES="$FILES dns.yml"
-      SERVICES+=" dns-mgmt_service dns-service"
+      if [[ $ADD_DNS != true ]] ; then
+          FILES="$FILES dns.yml"
+      fi
+      SERVICES+=" dns-service"
+      ADD_DNS=true
+      ;;
+    --dns-mgmt)
+      if [[ $ADD_DNS != true ]] ; then
+          FILES="$FILES dns.yml"
+      fi
+      SERVICES+=" dns-mgmt_service"
+      ADD_DNS=true
       ;;
     --webproxy)
       FILES="$FILES webproxy.yml"
@@ -195,6 +207,7 @@ EXTERNAL_IP=$EXTERNAL_IP
 FORWARDER_IP=$FORWARDER_IP
 CONSUL_JOIN=$CONSUL_JOIN
 DR_START_TIME=$(date +%s)
+RUN_NTP=$RUN_NTP
 EOF
 
 cat >services.env <<EOF

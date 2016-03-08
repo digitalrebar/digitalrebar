@@ -15,15 +15,18 @@ if [[ $DNS_TYPE == BIND ]] ; then
     dns_ip=$the_ip
     DNS_SERVER_PARM=$DNS_BIND_SERVER_NAME
 
-    /usr/sbin/named -g -u bind &
-
     # Update forwarders line
     data=""
     for element in "${external_server_array[@]}"
     do
         data="${data}${element};\\n"
     done
-    sed -i -e "s/^EXTERNAL_DNS_SERVERS/${data}/g" /etc/bind/named.conf
+    sed -e "s/^EXTERNAL_DNS_SERVERS/${data}/g" /etc/bind/named.conf.tmpl > /etc/bind/named.conf
+    sed -e "s/^EXTERNAL_DNS_SERVERS/${data}/g" /etc/bind/named.conf.tmpl > /etc/named.conf
+
+    /usr/sbin/named -g -u bind &
+
+    IFS=', ' read -r -a external_server_array <<< "$dns_ip"
 
 elif [[ $DNS_TYPE == POWERDNS ]] ; then
     dns_ip=$DNS_SERVER_HOSTNAME

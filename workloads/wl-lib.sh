@@ -408,7 +408,7 @@ start_machine() {
     esac
 }
 
-known_containers=(provisioner dhcp dns ntp chef webproxy logging debug node access ux)
+known_containers=(provisioner dhcp dns dns-mgmt ntp chef webproxy logging debug node access ux)
 known_workloads=(all docker kubernetes hardware ceph packstack docker-swarm enterprise mesosphere burnin k8s-contrail stackengine rackn ux)
 
 declare -A containers
@@ -416,6 +416,7 @@ declare -A workloads
 
 # Default the normal containers on, but they can be turned off.
 [[ ${containers["dns"]} ]] || containers["dns"]=true
+[[ ${containers["dns-mgmt"]} ]] || containers["dns-mgmt"]=true
 [[ ${containers["ntp"]} ]] || containers["ntp"]=true
 [[ ${containers["chef"]} ]] || containers["chef"]=true
 [[ ${containers["webproxy"]} ]] || containers["webproxy"]=true
