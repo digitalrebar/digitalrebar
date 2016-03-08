@@ -22,6 +22,7 @@ class BarclampIpmi::AmtConfigure < Role
     end
     unless data['amt']['enable']
       nr.runlog = "AMT not enabled"
+      return
     end
     ip = data['provider']['control_address']
     endpoint = "http://#{ip.split('/')[0]}:16992/wsman"
