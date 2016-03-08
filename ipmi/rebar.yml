@@ -44,6 +44,7 @@ hammers:
 roles:
   - name: amt-discover
     jig: script
+    type: 'BarclampIpmi::AmtDiscover'
     flags:
       - implicit
       - discovery
@@ -54,6 +55,21 @@ roles:
         default: false
         schema:
           type: bool
+  - name: amt-configure
+    jig: role-provided
+    type: 'BarclampIpmi::AmtConfigure'
+    requires:
+      - amt-discover
+    wants-attribs:
+      - node-control-address
+      - amt-enable
+    attribs:
+      - name: amt-password
+        description: 'The password for the AMT controller'
+        map: 'amt/password'
+        default: 'Rebar_1!'
+        schema:
+          type: str
   - name: ipmi-discover
     jig: chef
     attaches:
