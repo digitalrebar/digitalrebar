@@ -30,6 +30,17 @@ function usage {
     echo " Otherwise nothing is run and just files are setup."
 }
 
+#
+# Sets a value for a variable.
+# The variable must exist.
+#
+function set_var_in_common_env {
+  local var=$1
+  local value=$2
+
+  sed -i -e "s/^${var}=.*/${var}=${value}/" common.env
+}
+
 ACCESS_MODE="FORWARDER"
 FILES="base.yml"
 PROVISION_IT="NO"
@@ -77,6 +88,7 @@ while [[ $1 == -* ]] ; do
     --ntp)
       FILES="$FILES ntp.yml"
       SERVICES+=" ntp-service"
+      set_var_in_common_env "RUN_NTP" "NO"
       ;;
     --chef)
       FILES="$FILES chef.yml"
