@@ -92,17 +92,6 @@ fi
 echo "${HOSTNAME#*.}" >/etc/domainname
 hostname "$HOSTNAME"
 
-# Update our /etc/resolv.conf with the IP address of our DNS servers,
-# which were passed to us via kernel param.
-chattr -i /etc/resolv.conf || :
-echo "domain $DOMAIN" >/etc/resolv.conf.new
-
-for server in ${DNS_SERVERS//,/ }; do
-    echo "nameserver ${server}" >> /etc/resolv.conf.new
-done
-
-mv -f /etc/resolv.conf.new /etc/resolv.conf
-
 # Force reliance on DNS
 echo '127.0.0.1 localhost' >/etc/hosts
 
