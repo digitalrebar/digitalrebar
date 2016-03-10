@@ -15,6 +15,7 @@ import (
 )
 
 var (
+	version            = "1.1.0"
 	debug              = false
 	endpoint           = "https://127.0.0.1:3000"
 	username, password string
@@ -234,6 +235,13 @@ func main() {
 			log.Fatalf("Could not connect to Rebar: %v\n", err.Error())
 		}
 	}
+	vers := &cobra.Command{
+		Use:   "version",
+		Short: "Rebar CLI Command Version",
+		Run: func(cmd *cobra.Command, args []string) {
+			d("Version: %v", version)
+		},
+	}
 
 	ping := &cobra.Command{
 		Use:   "ping",
@@ -282,6 +290,7 @@ func main() {
 	}
 	app.AddCommand(converge)
 	app.AddCommand(ping)
+	app.AddCommand(vers)
 
 	app.Execute()
 }
