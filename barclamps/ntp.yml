@@ -41,8 +41,8 @@ roles:
   - name: ntp-client
     jig: script
     requires:
-      - dns-client
       - ntp-service
+      - rebar-installed-node
     flags:
       - implicit
     wants-attribs:

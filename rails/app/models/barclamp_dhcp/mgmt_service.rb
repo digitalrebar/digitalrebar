@@ -13,6 +13,7 @@
 # limitations under the License. 
 # 
 
+require 'resolv'
 require 'rest-client'
 require 'uri'
 
@@ -81,28 +82,50 @@ class BarclampDhcp::MgmtService < Service
     Rails.logger.fatal('Missing next_server') unless next_server
 
     options = {}
+
     # Option 6 - name servers
     # Option 15 - domain name
-    dns_server = nil
+    dns_server = []
     dns_domain = nil
     BarclampDns::Service.all.each do |role|
       role.node_roles.each do |nr|
         services = Attrib.get('dns_servers', nr)
         next unless services
 
-        dns_server = services[0]['address']
+        dns_server = services.map { |s| s['address'] }
         dns_domain = Attrib.get('dns-domain', nr)
         break
       end
-      break if dns_server
+      break unless dns_server.empty?
     end
-    Rails.logger.fatal('Missing dns_server') unless dns_server
-    options[6] = dns_server
-    options[15] = dns_domain
+    Rails.logger.fatal('Missing dns_server') unless dns_server.empty?
+    unless dns_server.empty?
+      options[6] = dns_server.join(',')
+      options[15] = dns_domain
+    end
+
+    # Option 42 - ntp
+    ntp_server = []
+    BarclampNtp::Service.all.each do |role|
+      role.node_roles.each do |nr|
+        ntp_server = Attrib.get('ntp_servers', nr) || []
+        break unless ntp_server.empty?
+      end
+      break unless ntp_server.empty?
+    end
+    Rails.logger.fatal('Missing ntp_server') unless ntp_server.empty?
+    unless ntp_server.empty?
+      ips = []
+      ntp_server.each do |ns|
+        Resolv.each_address(ns) do |ip|
+          ips << ip
+        end
+      end
+      options[42] = ips.join(',')
+    end
 
     # Option 3 - gateway
     options[3] = network.network_router.address.addr if network and network.network_router
-    # GREG: One day this needs to be selectable by arch
     options[67] = '{{if (eq (index . 77) "iPXE") }}default.ipxe{{else if (eq (index . 93) "0")}}ipxe.pxe{{else}}ipxe.efi{{end}}'
 
     self.class.create_network(network.name, subnet, next_server, start_ip, end_ip, options)
@@ -293,7 +316,6 @@ class BarclampDhcp::MgmtService < Service
     else
       options = {}
       options[67] = '{{if (eq (index . 77) "iPXE") }}default.ipxe{{else if (eq (index . 93) "0")}}ipxe.pxe{{else}}ipxe.efi{{end}}'
-      # GREG: One day this needs to be selectable by arch
     end
     options.each do |k,v|
       hash["options"] ||= []
