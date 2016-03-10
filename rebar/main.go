@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	version            = "1.1.0"
+	version            = "1.1.1"
 	debug              = false
 	endpoint           = "https://127.0.0.1:3000"
 	username, password string
@@ -232,7 +232,9 @@ func main() {
 	app.PersistentPreRun = func(c *cobra.Command, a []string) {
 		d("Talking to Rebar with %v (%v:%v)", endpoint, username, password)
 		if err := client.Session(endpoint, username, password); err != nil {
-			log.Fatalf("Could not connect to Rebar: %v\n", err.Error())
+			if c.Use != "version" {
+				log.Fatalf("Could not connect to Rebar: %v\n", err.Error())
+			}
 		}
 	}
 	vers := &cobra.Command{
