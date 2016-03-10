@@ -63,7 +63,7 @@ func main() {
 	api = echo.New()
 	api.Use(mw.Logger())
 	api.Use(mw.Recover())
-	api.SetLogger(logger)
+	api.SetLogOutput(os.Stderr)
 	api.SetDebug(true)
 	if err != nil {
 		logger.Fatal(err)

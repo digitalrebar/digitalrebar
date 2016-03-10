@@ -1,17 +1,22 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if which sudo 2>/dev/null >/dev/null ; then
     SUDO=sudo
 fi
 
-SERVICES="proxy-service network-server rebar-api_service chef-service ntp-service dns-service logging-service dns-mgmt_service"
+SERVICES="network-server rebar-api_service logging-service"
 
 function usage {
     echo "Usage: $0 <flags> [options docker-compose flags/commands]"
     echo "  -h or --help - help (this)"
     echo "  --clean - cleans up directory and exits"
     echo "  --access <HOST|FORWARDER> # Defines how the admin containers should be accessed"
-    echo "  --provisioner # Adds the provisioner components"
+    echo "  --dhcp # Adds the dhcp component"
+    echo "  --provisioner # Adds the provisioner component"
+    echo "  --dns # Adds the dns component"
+    echo "  --ntp # Adds the ntp component"
+    echo "  --chef # Adds the chef component"
+    echo "  --webproxy # Adds the webproxy component"
     echo "  --logging # Adds the logging (kibana,elasticsearch+) components"
     echo "  --debug # Adds the cadviser components"
     echo "  --node # Adds the node component"
@@ -25,10 +30,23 @@ function usage {
     echo " Otherwise nothing is run and just files are setup."
 }
 
+#
+# Sets a value for a variable.
+# The variable must exist.
+#
+function set_var_in_common_env {
+  local var=$1
+  local value=$2
+
+  sed -i -e "s/^${var}=.*/${var}=${value}/" common.env
+}
+
 ACCESS_MODE="FORWARDER"
 FILES="base.yml"
 PROVISION_IT="NO"
 DR_TAG="latest"
+ADD_DNS=false
+RUN_NTP="NO"
 
 while [[ $1 == -* ]] ; do
   arg=$1
@@ -67,7 +85,38 @@ while [[ $1 == -* ]] ; do
     --provisioner)
       FILES="$FILES provisioner.yml"
       PROVISION_IT="YES"
-      SERVICES+=" dhcp-mgmt_service dhcp-service provisioner-service"
+      SERVICES+=" provisioner-service"
+      ;;
+    --ntp)
+      FILES="$FILES ntp.yml"
+      SERVICES+=" ntp-service"
+      RUN_NTP="YES"
+      ;;
+    --chef)
+      FILES="$FILES chef.yml"
+      SERVICES+=" chef-service"
+      ;;
+    --dhcp)
+      FILES="$FILES dhcp.yml"
+      SERVICES+=" dhcp-mgmt_service dhcp-service"
+      ;;
+    --dns)
+      if [[ $ADD_DNS != true ]] ; then
+          FILES="$FILES dns.yml"
+      fi
+      SERVICES+=" dns-service"
+      ADD_DNS=true
+      ;;
+    --dns-mgmt)
+      if [[ $ADD_DNS != true ]] ; then
+          FILES="$FILES dns.yml"
+      fi
+      SERVICES+=" dns-mgmt_service"
+      ADD_DNS=true
+      ;;
+    --webproxy)
+      FILES="$FILES webproxy.yml"
+      SERVICES+=" proxy-service"
       ;;
     --debug)
       FILES="$FILES debug.yml"
@@ -158,6 +207,7 @@ EXTERNAL_IP=$EXTERNAL_IP
 FORWARDER_IP=$FORWARDER_IP
 CONSUL_JOIN=$CONSUL_JOIN
 DR_START_TIME=$(date +%s)
+RUN_NTP=$RUN_NTP
 EOF
 
 cat >services.env <<EOF

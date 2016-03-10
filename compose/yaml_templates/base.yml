@@ -26,40 +26,12 @@ logging:
     - "2514:2514"
 {{ END ACCESS_MODE==HOST }}
 
-webproxy:
-  extends:
-    file: docker-compose-common.yml
-    service: webproxy
-{{ START ACCESS_MODE==FORWARDER }}
-  links:
-    - forwarder:forwarder
-{{ END ACCESS_MODE==FORWARDER }}
-{{ START ACCESS_MODE==HOST }}
-  ports:
-    - "3128:3128"
-{{ END ACCESS_MODE==HOST }}
-
-goiardi:
-  extends:
-    file: docker-compose-common.yml
-    service: goiardi
-  links:
-    - postgres:database
-{{ START ACCESS_MODE==FORWARDER }}
-    - forwarder:forwarder
-{{ END ACCESS_MODE==FORWARDER }}
-{{ START ACCESS_MODE==HOST }}
-  ports:
-    - "4646:4646"
-{{ END ACCESS_MODE==HOST }}
-
 rebar_api:
   extends:
     file: docker-compose-common.yml
     service: rebar_api
   links:
     - postgres:database
-    - goiardi:goiardi
 {{ START ACCESS_MODE==FORWARDER }}
     - forwarder:forwarder
 {{ END ACCESS_MODE==FORWARDER }}
@@ -81,34 +53,10 @@ cloudwrap:
     - "3030:3030"
 {{ END ACCESS_MODE==HOST }}
     
-dns:
-  extends:
-    file: docker-compose-common.yml
-    service: dns
-{{ START ACCESS_MODE==FORWARDER }}
-  links:
-    - forwarder:forwarder
-{{ END ACCESS_MODE==FORWARDER }}
-{{ START ACCESS_MODE==HOST }}
-  ports:
-    - "53/udp:53/udp"
-    - "6754/tcp:6754/tcp"
-{{ END ACCESS_MODE==HOST }}
-
 {{ START ACCESS_MODE==FORWARDER }}
 forwarder:
   extends:
     file: docker-compose-common.yml
     service: forwarder
 {{ END ACCESS_MODE==FORWARDER }}
-
-{{ START ACCESS_MODE==HOST }}
-ntp:
-  extends:
-    file: docker-compose-common.yml
-    service: ntp
-  ports:
-    - "123/udp:123/udp"
-    - "123:123"
-{{ END ACCESS_MODE==HOST }}
 
