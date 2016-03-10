@@ -61,6 +61,7 @@ roles:
       - implicit
     requires:
       - dns-service
+      - rebar-installed-node
     wants-attribs:
       - dns_servers
       - dns-domain

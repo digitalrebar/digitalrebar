@@ -48,9 +48,7 @@ roles:
     requires:
       - rebar-access
       - deployer-client
-      - dns-client
       - logging-client
-      - ntp-client
       - network-lldpd
       - rebar-inventory
   - name: rebar-hardware-configured
