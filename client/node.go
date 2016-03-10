@@ -34,7 +34,7 @@ func (o *Node) Move(depl *Deployment) error {
 
 // Power performs a power management action for the node.
 func (o *Node) Power(action string) error {
-	_, err := session.request("PUT", fmt.Sprintf("power?poweraction=%v", action), nil)
+	_, err := session.request("PUT", fmt.Sprintf("%v?poweraction=%v", urlFor(o, "power"), action), nil)
 	return err
 }
 

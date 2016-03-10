@@ -239,7 +239,7 @@ func main() {
 		Use:   "version",
 		Short: "Rebar CLI Command Version",
 		Run: func(cmd *cobra.Command, args []string) {
-			d("Version: %v", version)
+			log.Printf("Version: %v", version)
 		},
 	}
 
