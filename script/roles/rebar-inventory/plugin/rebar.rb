@@ -80,7 +80,7 @@ Ohai.plugin(:RebarOhai) do
         when lp =~ /^[0-9a-f]{4}:[0-9a-f]{2}:[0-9a-f]{2}\.[0-9a-f]$/
           abstract_addr[:pci] ||= []
           abstract_addr[:pci] << lp.split(/[:.]/).map{|m|m.to_i(16)}
-        when lp =~ /^([0-9]:){3}[0-9]$/
+        when lp =~ /^([0-9]+:){3}[0-9]+$/
           abstract_addr[:scsi] ||= []
           abstract_addr[:scsi] << lp.split(":").map{|m|m.to_i(16)}
         end
