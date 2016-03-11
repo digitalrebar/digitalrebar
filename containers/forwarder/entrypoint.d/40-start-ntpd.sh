@@ -28,7 +28,8 @@ EOF
     fi
 
     TEST_IP="${NTP_SERVER_IP%%/*}"
-    (unset FORWARDER_IP; EXTERNAL_IP=$NTP_SERVER_IP make_service "ntp" "123" "{\"script\": \"ntpdate -q $TEST_IP 2>&1 >/dev/null\",\"interval\": \"10s\"}')
+    (
+        unset FORWARDER_IP; EXTERNAL_IP=$NTP_SERVER_IP make_service "ntp" "123" "{\"script\": \"ntpdate -q $TEST_IP 2>&1 >/dev/null\",\"interval\": \"10s\"}")
     bind_service ntp-service
 
     if [[ $NTP_RUN_PROXY == YES ]] ; then
