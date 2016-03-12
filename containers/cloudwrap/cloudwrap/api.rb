@@ -33,6 +33,8 @@ class Servers
       fixed_args[:key_name]=kp_name
     when 'Google'
       fixed_args[:public_key_path] = "#{kp_loc}.pub"
+    when 'OpenStack'
+      log("PLACE HOLDER")
     when 'Packet'
       # Packet endpoint has the account key
       packet_project_token = endpoint['project_token']
@@ -147,6 +149,8 @@ class Servers
         log("Will create new srver with #{fixed_args.inspect}")
         server = ep.servers.create(fixed_args)
         log("Created server #{server.to_json}")
+      when 'OpenStack'
+        log("PLACE HOLDER")
       when 'Packet'
         # Packet endpoint has the account key
         packet_project_token = endpoint['project_token']
@@ -211,6 +215,8 @@ class Servers
         ep = get_endpoint(endpoint)
         return [] unless ep
         ep.servers if ep
+      when 'OpenStack'
+        log("PLACE HOLDER")
       when 'Packet'
         # Packet endpoint has the account key
         packet_project_token = endpoint['project_token']
@@ -239,6 +245,8 @@ class Servers
     when 'AWS', 'Google'
       ep = get_endpoint(endpoint)
       ep.servers.get(id)
+    when 'OpenStack'
+      log("PLACE HOLDER")
     when 'Packet'
       # Packet endpoint has the account key
       packet_project_token = endpoint['project_token']
@@ -268,6 +276,8 @@ class Servers
     case endpoint["provider"]
     when 'AWS', 'Google'
       get(endpoint,id).reboot
+    when 'OpenStack'
+      log("PLACE HOLDER")
     when 'Packet'
       # Packet endpoint has the account key
       packet_project_token = endpoint['project_token']
@@ -303,6 +313,8 @@ class Servers
         server = ep.servers.get(id) if ep
         log("Could not find server for: #{id}") unless server
         server.destroy if server
+      when 'OpenStack'
+        log("PLACE HOLDER")
       when 'Packet'
         # Packet endpoint has the account key
         packet_project_token = endpoint['project_token']
@@ -359,6 +371,8 @@ class Servers
         log "ICMP access already enabled"
       end
     when 'Google' then true
+    when 'OpenStack'
+      log("PLACE HOLDER")
     when 'Packet' then true
     else
       raise "No idea how to handle #{endpoint["provider"]}"

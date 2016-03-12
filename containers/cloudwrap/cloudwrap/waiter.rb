@@ -25,6 +25,8 @@ loop do
       case ep['provider']
       when 'AWS', 'Google'
         servers[k["Key"]] = [rebar_id, endpoints[ep].servers.get(packet_device_id), endpoints[ep], ep]
+      when 'OpenStack'
+        log("PLACE HOLDER")
       when 'Packet'
         servers[k["Key"]] = [rebar_id, packet_device_id, nil, ep]
       end
@@ -55,6 +57,8 @@ loop do
           log "Server #{server.id} not ready, skipping"
           next
         end
+      when 'OpenStack'
+        log("PLACE HOLDER")
       when 'Packet'
         log "Testing server #{rebar_id} #{packet_device_id} state"
         response = nil
@@ -94,6 +98,8 @@ loop do
         private_dev_ip = server.private_ip_address
         private_dev_cidr = "32"
 
+      when 'OpenStack'
+        log("PLACE HOLDER")
       when 'Packet'
         # For now, make packet private and public the same.
         # The node can bind to either.
@@ -138,6 +144,8 @@ loop do
         answer = server.ssh("sudo -- ip addr | grep #{private_dev_ip} | awk '{ print $2 }' | awk -F/ '{ print $2 }'")
         private_dev_cidr = answer[0].stdout.strip
 
+      when 'OpenStack'
+        log("PLACE HOLDER")
       when 'Packet'
         log "Put keys to node"
         Tempfile.open("cloudwrap-keys") do |f|
@@ -174,8 +182,8 @@ loop do
       system("rebar nodes set #{rebar_id} attrib node-private-control-address to '{\"value\": \"#{private_dev_ip}/#{private_dev_cidr}\"}'")
       log "Marking server #{rebar_id} alive"
       Diplomat::Kv.delete(key)
-      Diplomat::Kv.delete("cloudwrap/keys/#{rebar_id}")
       system("rebar nodes update #{rebar_id} '{\"alive\": true, \"available\": true}'")
+      Diplomat::Kv.delete("cloudwrap/keys/#{rebar_id}")
       if ep && ep.respond_to?(:key_pairs)
         old_kp = ep.key_pairs.get(kp_name)
         old_kp.destroy if old_kp
