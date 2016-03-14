@@ -95,132 +95,55 @@ class Role < ActiveRecord::Base
   # before save is called if the state of the noderole has changed, so
   # roles that override these hooks MUST NOT do anything that calls
   # save on the noderole.
-  def sync_on_error(node_role, *args)
-    true
-  end
-
-  def sync_on_active(node_role, *args)
-    true
-  end
-
-  def sync_on_todo(node_role, *args)
-    true
-  end
-
-  def sync_on_transition(node_role, *args)
-    true
-  end
-
-  def sync_on_blocked(node_role, *args)
-    true
-  end
-
-  def sync_on_proposed(node_role, *args)
-    true
-  end
+  # sync_on_error
+  # sync_on_active(node_role, *args)
+  # sync_on_todo(node_role, *args)
+  # sync_on_transition(node_role, *args)
+  # sync_on_blocked(node_role, *args)
+  # sync_on_proposed(node_role, *args)
 
   # State Transistion Overrides
   # These are called after the relavent noderole has been saved to the
   # database, so they SHOULD NOT be used for anything that can fail.
-  def on_error(node_role, *args)
-    true
-  end
-
-  def on_active(node_role, *args)
-    true
-  end
-
-  def on_todo(node_role, *args)
-    true
-  end
-
-  def on_transition(node_role, *args)
-    true
-  end
-
-  def on_blocked(node_role, *args)
-    true
-  end
-
-  def on_proposed(node_role, *args)
-    true
-  end
-
-  # Event triggers for node creation and destruction.
-  # roles should override if they want to handle node addition
-  def on_node_create(node)
-    true
-  end
-
-  # Event triggers for node creation and destruction.
-  # roles should override if they want to handle node destruction
-  def on_node_delete(node)
-    true
-  end
-
-  # Event hook that will be called every time a node is saved if any attributes changed.
-  # Roles that are interested in watching nodes to see what has changed should
-  # implement this hook.
-  def on_node_change(node)
-    true
-  end
-
-  # Event hook that is called whenever a new deployment role is bound to a deployment.
-  # Roles that need do something on a per-deployment basis should override this
-  def on_deployment_create(dr)
-    true
-  end
-
-  # Event hook that is called whenever a deployment role is deleted from a deployment.
-  def on_deployment_delete(dr)
-    true
-  end
-
-  # Event triggers for node creation.
-  # roles should override if they want to handle network addition
-  def on_network_create(network)
-    true
-  end
-
-  # Event triggers for network destruction.
-  # roles should override if they want to handle network destruction
-  def on_network_delete(network)
-    true
-  end
-
-  # Event hook that will be called every time a network is saved if any attributes changed.
-  # Roles that are interested in watching networks to see what has changed should
-  # implement this hook.
-  #
-  # This does not include IP allocation/deallocation.
-  def on_network_change(network)
-    true
-  end
-
-  # Event hook that will be called every time a network allocation is created
-  def on_network_allocation_create(na)
-    true
-  end
-
-  # Event hook that will be called every time a network allocation is deleted
-  def on_network_allocation_delete(na)
-    true
-  end
+  # on_error(node_role, *args)
+  # on_active(node_role, *args)
+  # on_todo(node_role, *args)
+  # on_transition(node_role, *args)
+  # on_blocked(node_role, *args)
+  # on_proposed(node_role, *args)
+  # Event hook that is called after a noderole is created, but before it is
+  # committed.  This can be used to block the creation of a noderole by
+  # throwing an exception.
+  # on_node_bind(nr)
 
   # Event hook that is called whenever a noderole or a deployment role for this role is
   # committed.  It is called inline and synchronously with the actual commit, so it must be fast.
   # If it throws an exception, the commit will fail and the transaction around the commit
   # will be rolled back.
-  def on_commit(obj)
-    true
-  end
+  # on_commit(obj)
+  
+  # Event hook that is called whenever a new deployment role is bound to a deployment.
+  # Roles that need do something on a per-deployment basis should override this
+  # on_deployment_create(dr)
+  # on_deployment_delete(dr)
 
-  # Event hook that is called after a noderole is created, but before it is
-  # committed.  This can be used to block the creation of a noderole by
-  # throwing an exception.
-  def on_node_bind(nr)
-    true
-  end
+  # Event triggers for node creation and destruction.
+  # roles should override if they want to handle node addition
+  # on_node_create(node)
+  # on_node_delete(node)
+  # on_node_change(node)
+
+  # Event triggers for node creation.
+  # roles should override if they want to handle network addition
+  # on_network_create(network)
+  # on_network_delete(network)
+
+  # This does not include IP allocation/deallocation.
+  # on_network_change(network)
+
+  # Event hook that will be called every time a network allocation is created
+  # on_network_allocation_create(na)
+  # on_network_allocation_delete(na)
 
   def noop?
     jig.name.eql? 'noop'

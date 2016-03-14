@@ -251,16 +251,15 @@ class NodeRole < ActiveRecord::Base
       end
       res.save!
       res.rebind_attrib_parents
-      r.on_node_bind(res)
+      Event.fire(res, obj_class: 'role', obj_id: res.role.name, event: 'on_node_bind')
     end
 
     # We only call on_node_change when the node is available to prevent Rebar
     # from noticing changes it should not notice yet.
     # on_node_bind is specific callback for the adding node.  Let the other roles
     # know that the node has changed.
-    Role.all_cohorts.each do |r2|
-      Rails.logger.debug("Node: Calling #{r2.name} on_node_change for #{n.name}")
-      r2.on_node_change(n)
+    if n.available?
+      Event.fire(n, event: 'on_node_change')
     end if n.available?
 
     res
@@ -628,7 +627,7 @@ class NodeRole < ActiveRecord::Base
       if deployment_role.proposed?
         raise InvalidTransition.new(self,state,PROPOSED,"Cannot commit! unless deployment_role committed!")
       end
-      role.on_commit(self)
+      Event.fire(self, obj_class: 'role', obj_id: role.name, event: 'on_commit')
       update!(committed_data: proposed_data)
       block_or_todo
       if !node.alive && node.power[:on]
@@ -701,12 +700,11 @@ class NodeRole < ActiveRecord::Base
   def run_synchronous_hooks
     return yield unless changes['state']
     begin
-      meth = "sync_on_#{STATES[state]}".to_sym
-      Rails.logger.info("NodeRole: calling hook #{meth} for #{name}")
-      res = role.send(meth,self)
-      unless res
+      meth = "sync_on_#{STATES[state]}"
+      res = Event.fire(self, obj_class: "role", obj_id: role.name, event: meth)
+      if ! res.empty? && ! res.first
         self.runlog ||= ""
-        self.runlog << "Hook returned #{res.inspect}"
+        self.runlog << "Hook returned #{res.first.inspect}"
         raise "Hook failed"
       end
     rescue StandardError => e
@@ -723,18 +721,16 @@ class NodeRole < ActiveRecord::Base
 
   def run_hooks
     begin
-      meth = "on_#{STATES[state]}".to_sym
+      meth = "on_#{STATES[state]}"
       if proposed?
         # on_proposed only runs on initial noderole creation.
-        Rails.logger.debug("NodeRole: calling #{meth} hook for #{name}.")
-        role.send(meth,self)
+        Event.fire(self, obj_class: 'role', obj_id: role.name, event: meth)
         return
       end
       return unless previous_changes['state']
       if deployment.committed? && available &&
          ((!role.destructive) || (run_count == self.active? ? 1 : 0))
-        Rails.logger.debug("NodeRole #{name}: Calling #{meth} hook.")
-        role.send(meth,self)
+        Event.fire(self, obj_class: 'role', obj_id: role.name, event: meth)
       end
       if todo? && runnable?
         Rails.logger.info("NodeRole #{name} is runnable, kicking the annealer.")

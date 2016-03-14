@@ -31,6 +31,12 @@ roles:
       - rebar-installed-node
     flags:
       - implicit
+    events:
+      - endpoint: inproc://role:consul-config/on_deployment_create
+        selectors:
+          - event: on_deployment_create
+            obj_class: role
+            obj_id: consul-config
     attribs:
       - name: consul-disable-remote-exec
         description: 'Whether Consul is allowed to remotel execute programs'
@@ -139,6 +145,12 @@ roles:
       - consul-member
     provides:
       - consul
+    events:
+      - endpoint: inproc://role:consul-master/sync_on_todo
+        selectors:
+          - event: sync_on_todo
+            obj_class: role
+            obj_id: consul-master
     wants-attribs:
       - consul-acl-down-policy
       - consul-acl-default-policy
@@ -203,4 +215,10 @@ roles:
       - consul-master
     provides:
       - consul
-
+    events:
+      - endpoint: inproc://role:consul-member/sync_on_todo
+        selectors:
+          - event: sync_on_todo
+            obj_class: role
+            obj_id: consul-member
+            

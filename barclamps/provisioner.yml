@@ -27,6 +27,13 @@ roles:
     jig: role-provided
     flags:
       - service
+    events:
+      - endpoint: inproc://role:provisioner-service/on_node_delete
+        selectors:
+          - event: on_node_delete
+      - endpoint: inproc://role:provisioner-service/on_node_change
+        selectors:
+          - event: on_node_change
     attribs:
       - name: provisioner-default-os
         description: 'The default operating system the provisioner will deploy'
@@ -147,6 +154,16 @@ roles:
                   required: true
   - name: provisioner-docker-setup
     jig: chef
+    events:
+      - endpoint: inproc://role:provisioner-docker-setup/on_node_create
+        selectors:
+          - event: on_node_create
+      - endpoint: inproc://role:provisioner-docker-setup/on_node_change
+        selectors:
+          - event: on_node_change
+      - endpoint: inproc://role:provisioner-docker-setup/on_node_delete
+        selectors:
+          - event: on_node_delete
     conflicts:
       - rebar-docker-node
     requires:
@@ -174,6 +191,17 @@ roles:
   - name: provisioner-os-install
     jig: script
     icon: present_to_all
+    events:
+      - endpoint: inproc://role:provisioner-os-install/on_todo
+        selectors:
+          - event: on_todo
+            obj_class: role
+            obj_id: provisioner-os-install
+      - endpoint: inproc://role:provisioner-os-install/on_active
+        selectors:
+          - event: on_active
+            obj_class: role
+            obj_id: provisioner-os-install
     requires:
       - rebar-hardware-configured
     flags:

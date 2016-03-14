@@ -69,6 +69,21 @@ roles:
   - name: dns-mgmt_service
     jig: role-provided
     icon: local_library
+    events:
+      - endpoint: inproc://role:dns-mgmt_service/on_active
+        selectors:
+          - event: on_active
+            obj_class: role
+            obj_id: dns-mgmt_service
+      - endpoint: inproc://role:dns-mgmt_service/on_node_change
+        selectors:
+          - event: on_node_change
+      - endpoint: inproc://role:dns-mgmt_service/on_network_allocation_create
+        selectors:
+          - event: on_network_allocation_create
+      - endpoint: inproc://role:dns-mgmt_service/on_network_allocation_delete
+        selectors:
+          - event: on_network_allocation_delete
     flags:
       - service
     attribs:

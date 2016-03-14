@@ -500,11 +500,10 @@ class Node < ActiveRecord::Base
       end
     end
     # We only call on_node_change when the node is available to prevent Rebar
-    # from noticing changes it should not notice yet.
-    Role.all_cohorts.each do |r|
-      Rails.logger.debug("Node: Calling #{r.name} on_node_change for #{self.name}")
-      r.on_node_change(self)
-    end if available?
+    # from noticing changes it should not notice yet
+    if available?
+      Event.fire(self, event: 'on_node_change')
+    end
     if (previous_changes[:alive] || previous_changes[:available])
       if alive && available && node_roles.runnable.count > 0
         Rails.logger.info("Node: #{name} is alive and available, kicking the annealer.")
@@ -530,14 +529,10 @@ class Node < ActiveRecord::Base
   # Call the on_node_delete hooks.
   def on_destroy_hooks
     # do the low cohorts last
-    Rails.logger.info("Node: calling all role on_node_delete hooks for #{name}")
-    Role.all_cohorts_desc.each do |r|
-      begin
-        Rails.logger.info("Node: Calling #{r.name} on_node_delete for #{self.name}")
-        r.on_node_delete(self)
-      rescue StandardError => e
-        Rails.logger.error "node #{name} attempting to cleanup role #{r.name} failed with #{e.message}"
-      end
+    begin
+      Event.fire(self, event: 'on_node_delete')
+    rescue StandardError => e
+      Rails.logger.error "Node #{name}: on_node_delete failed with #{e.message}"
     end
   end
 
@@ -559,15 +554,11 @@ class Node < ActiveRecord::Base
     # Call all role on_node_create hooks with self.
     # These should happen synchronously.
     # do the low cohorts first
-    Rails.logger.info("Node: calling all role on_node_create hooks for #{name}")
-    Role.all_cohorts.each do |r|
-      Rails.logger.info("Node: Calling #{r.name} on_node_create for #{self.name}")
-      r.on_node_create(self)
-      if (admin && r.bootstrap)
-        Rails.logger.info("Node: Adding #{r.name} to #{self.name} (bootstrap)")
-        r.add_to_node(self)
-      end
-    end
+    Event.fire(self, event: 'on_node_create')
+    Role.all_cohorts.where(bootstrap: true).each do |r|
+      Rails.logger.info("Node: Adding #{r.name} to #{self.name} (bootstrap)")
+      r.add_to_node(self)
+    end if admin
   end
 
   def before_destroy_handler

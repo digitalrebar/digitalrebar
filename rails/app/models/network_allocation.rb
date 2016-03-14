@@ -58,11 +58,7 @@ class NetworkAllocation < ActiveRecord::Base
     # Call all role on_network_allocation_delete hooks with self.
     # These should happen synchronously.
     # do the low cohorts first
-    Rails.logger.info("Node: calling all role on_network_allocation_delete hooks for #{self}")
-    Role.all_cohorts.each do |r|
-      Rails.logger.info("Node: Calling #{r.name} on_network_allocation_delete for #{self}")
-      r.on_network_allocation_delete(self)
-    end
+    Event.fire(self, event: 'on_network_allocation_delete')
   end
 
   def on_create_hooks
@@ -71,11 +67,7 @@ class NetworkAllocation < ActiveRecord::Base
     # do the low cohorts first
     return if @after_create
     @after_create = true
-    Rails.logger.info("Node: calling all role on_network_allocation_create hooks for #{self}")
-    Role.all_cohorts.each do |r|
-      Rails.logger.info("Node: Calling #{r.name} on_network_allocation_create for #{self}")
-      r.on_network_allocation_create(self)
-    end
+    Event.fire(self, event: 'on_network_allocation_create')
   end
 
 end

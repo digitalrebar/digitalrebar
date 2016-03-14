@@ -40,6 +40,15 @@ roles:
       - cluster
     requires:
       - rebar-installed-node
+    events:
+      - endpoint: inproc://role:saltstack-master/on_proposed
+        selectors:
+          - event: on_proposed
+            obj_class: role
+            obj_id: saltstack-master
+      - endpoint: inproc://role:saltstack-master/on_proposed
+        selectors:
+          - event: on_node_delete
     attribs:
       - name: saltstack-master_ip
         description: 'IP that minions should use to talk to the SaltStack Master'
@@ -69,6 +78,12 @@ roles:
       - rebar-installed-node
     flags:
       - implicit
+    events:
+      - endpoint: inproc://role:saltstack-minion/on_active
+        selectors:
+          - event: on_active
+            obj_class: role
+            obj_id: saltstack-minion
     attribs:
       - name: saltstack-minion_public_key
         description: 'Public Key of Minioin'
