@@ -10,7 +10,7 @@ import (
 	"github.com/labstack/echo"
 )
 
-func listThings(c *echo.Context, thing keySaver) error {
+func listThings(c echo.Context, thing keySaver) error {
 	things := backend.list(thing)
 	res := make([]interface{}, len(things))
 	for i, obj := range things {
@@ -24,7 +24,7 @@ func listThings(c *echo.Context, thing keySaver) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-func createThing(c *echo.Context, newThing keySaver) error {
+func createThing(c echo.Context, newThing keySaver) error {
 	if err := c.Bind(&newThing); err != nil {
 		return c.JSON(http.StatusBadRequest, NewError(err.Error()))
 	}
@@ -43,18 +43,18 @@ func createThing(c *echo.Context, newThing keySaver) error {
 	return c.JSON(finalStatus, newThing)
 }
 
-func getThing(c *echo.Context, thing keySaver) error {
+func getThing(c echo.Context, thing keySaver) error {
 	if err := backend.load(thing); err != nil {
 		return c.NoContent(http.StatusNotFound)
 	}
 	return c.JSON(http.StatusOK, thing)
 }
 
-func updateThing(c *echo.Context, oldThing, newThing keySaver) error {
+func updateThing(c echo.Context, oldThing, newThing keySaver) error {
 	if err := backend.load(oldThing); err != nil {
 		return c.NoContent(http.StatusNotFound)
 	}
-	patch, err := ioutil.ReadAll(c.Request().Body)
+	patch, err := ioutil.ReadAll(c.Request().Body())
 	if err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func updateThing(c *echo.Context, oldThing, newThing keySaver) error {
 	return c.JSON(http.StatusAccepted, newThing)
 }
 
-func deleteThing(c *echo.Context, thing keySaver) error {
+func deleteThing(c echo.Context, thing keySaver) error {
 	if err := backend.remove(thing); err != nil {
 		return c.JSON(http.StatusConflict, NewError(fmt.Sprintf("Failed to delete %s: %v", thing.key(), err)))
 	}
