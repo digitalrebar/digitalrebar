@@ -16,7 +16,7 @@ que_worker() {
 }
 
 start_workers() {
-    que_worker NodeRoleRunner 10
+    que_worker NodeRoleRunner "${NODE_ROLE_RUNNERS:-10}"
     que_worker HighPriorityRunner 2
     disown -a
 }
