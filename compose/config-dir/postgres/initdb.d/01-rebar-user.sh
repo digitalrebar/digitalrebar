@@ -14,8 +14,12 @@ rebar_password=fred # GREG: SecureRandom.base64.gsub('=','3')
 rebar_user=rebar
 rebar_database=digitalrebar
 
-gosu postgres createuser -d -E -S -R -w ${rebar_user}
+gosu postgres createuser -d -E -S -R -w "${rebar_user}"
 gosu postgres psql -c "ALTER USER ${rebar_user} WITH ENCRYPTED PASSWORD '${rebar_password}';"
+if ! gosu postgres psql -d "$rebar_database" -c "select 1"; then
+    gosu postgres createdb "${rebar_database}" -O "${rebar_user}"
+fi
+gosu postgres psql -d "$rebar_database" -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto";'
 
 baseurl="http://127.0.0.1:8500/v1/kv/digitalrebar/private/database/digitalrebar"
 token="?token=$CONSUL_M_ACL"
