@@ -41,7 +41,7 @@ func (t *Template) Parse() (err error) {
 	return nil
 }
 
-func createTemplate(c *echo.Context) error {
+func createTemplate(c echo.Context) error {
 	finalStatus := http.StatusCreated
 	oldThing := &Template{UUID: c.P(0)}
 	newThing := &Template{UUID: c.P(0)}
@@ -50,7 +50,7 @@ func createTemplate(c *echo.Context) error {
 	} else {
 		oldThing = nil
 	}
-	buf, err := ioutil.ReadAll(c.Request().Body)
+	buf, err := ioutil.ReadAll(c.Request().Body())
 	if err != nil {
 		return fmt.Errorf("template: failed to read request body")
 	}

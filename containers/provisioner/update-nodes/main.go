@@ -7,6 +7,7 @@ import (
 
 	consul "github.com/hashicorp/consul/api"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/engine/standard"
 	mw "github.com/labstack/echo/middleware"
 	"github.com/labstack/gommon/log"
 )
@@ -70,69 +71,69 @@ func main() {
 	}
 	// bootenv methods
 	api.Get("/bootenvs",
-		func(c *echo.Context) error {
+		echo.HandlerFunc(func(c echo.Context) error {
 			return listThings(c, &BootEnv{})
-		})
+		}))
 	api.Post("/bootenvs",
-		func(c *echo.Context) error {
+		echo.HandlerFunc(func(c echo.Context) error {
 			return createThing(c, &BootEnv{})
-		})
+		}))
 	api.Get("/bootenvs/:name",
-		func(c *echo.Context) error {
+		echo.HandlerFunc(func(c echo.Context) error {
 			return getThing(c, &BootEnv{Name: c.P(0)})
-		})
+		}))
 	api.Patch("/bootenvs/:name",
-		func(c *echo.Context) error {
+		echo.HandlerFunc(func(c echo.Context) error {
 			return updateThing(c, &BootEnv{Name: c.P(0)}, &BootEnv{})
-		})
+		}))
 	api.Delete("/bootenvs/:name",
-		func(c *echo.Context) error {
+		echo.HandlerFunc(func(c echo.Context) error {
 			return deleteThing(c, &BootEnv{Name: c.P(0)})
-		})
+		}))
 	// machine methods
 	api.Get("/machines",
-		func(c *echo.Context) error {
+		echo.HandlerFunc(func(c echo.Context) error {
 			return listThings(c, &Machine{})
-		})
+		}))
 	api.Post("/machines",
-		func(c *echo.Context) error {
+		echo.HandlerFunc(func(c echo.Context) error {
 			return createThing(c, &Machine{})
-		})
+		}))
 	api.Get("/machines/:name",
-		func(c *echo.Context) error {
+		echo.HandlerFunc(func(c echo.Context) error {
 			return getThing(c, &Machine{Name: c.P(0)})
-		})
+		}))
 	api.Patch("/machines/:name",
-		func(c *echo.Context) error {
+		echo.HandlerFunc(func(c echo.Context) error {
 			return updateThing(c, &Machine{Name: c.P(0)}, &Machine{})
-		})
+		}))
 	api.Delete("/machines/:name",
-		func(c *echo.Context) error {
+		echo.HandlerFunc(func(c echo.Context) error {
 			return deleteThing(c, &Machine{Name: c.P(0)})
-		})
+		}))
 
 	// template methods
 	api.Get("/templates",
-		func(c *echo.Context) error {
+		echo.HandlerFunc(func(c echo.Context) error {
 			return listThings(c, &Template{})
-		})
+		}))
 	api.Post("/templates",
-		func(c *echo.Context) error {
+		echo.HandlerFunc(func(c echo.Context) error {
 			return createThing(c, &Template{})
-		})
-	api.Post("/templates/:uuid", createTemplate)
+		}))
+	api.Post("/templates/:uuid", echo.HandlerFunc(createTemplate))
 	api.Get("/templates/:uuid",
-		func(c *echo.Context) error {
+		echo.HandlerFunc(func(c echo.Context) error {
 			return getThing(c, &Template{UUID: c.P(0)})
-		})
+		}))
 	api.Patch("/templates/:uuid",
-		func(c *echo.Context) error {
+		echo.HandlerFunc(func(c echo.Context) error {
 			return updateThing(c, &Template{UUID: c.P(0)}, &Template{})
-		})
+		}))
 	api.Delete("/templates/:uuid",
-		func(c *echo.Context) error {
+		echo.HandlerFunc(func(c echo.Context) error {
 			return deleteThing(c, &Template{UUID: c.P(0)})
-		})
+		}))
 
-	api.Run(fmt.Sprintf(":%d", apiPort))
+	api.Run(standard.New(fmt.Sprintf(":%d", apiPort)))
 }

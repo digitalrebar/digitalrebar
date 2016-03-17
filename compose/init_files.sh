@@ -190,7 +190,7 @@ else
     else
         # Hmmm... we have no access to the Internet.  Pick an address with
         # global scope and hope for the best.
-        CONSUL_ADVERTISE=$(/sbin/ip -o -4 addr show scope global dev |head -1 |awk '{print $4}')
+        CONSUL_ADVERTISE=$(/sbin/ip -o -4 addr show scope global |head -1 |awk '{print $4}')
         CONSUL_ADVERTISE="${CONSUL_ADVERTISE%/*}"
     fi
 fi
