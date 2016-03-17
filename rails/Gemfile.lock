@@ -11,12 +11,6 @@ PATH
       rails
 
 PATH
-  remote: /opt/digitalrebar/rackn/contrail/rebar_engine/barclamp_contrail
-  specs:
-    barclamp_contrail (0.0.1)
-      rails
-
-PATH
   remote: /opt/digitalrebar/rackn/enterprise/rebar_engine/barclamp_rack_n
   specs:
     barclamp_rack_n (0.0.1)
@@ -520,7 +514,6 @@ DEPENDENCIES
   barclamp_bios!
   barclamp_burnin!
   barclamp_ceph!
-  barclamp_contrail!
   barclamp_ipmi!
   barclamp_kubernetes!
   barclamp_packstack!
