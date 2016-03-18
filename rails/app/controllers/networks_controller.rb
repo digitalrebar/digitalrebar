@@ -172,6 +172,10 @@ class NetworksController < ::ApplicationController
       # Sorry, but no changing of the admin conduit for now.
       params.delete(:conduit) if @network.name == "admin"
       params.delete(:v6prefix) if params[:v6prefix] == ""
+      # we need to reset the use_team flag if we only get a team mode
+      if params[:team_mode]
+        params[:use_team] = (params[:team_mode].to_i > 0) unless params[:use_team]
+      end
       if request.patch?
         patch(@network,%w{description vlan use_vlan v6prefix use_bridge team_mode use_team conduit configure pbr category group deployment_id})
       else

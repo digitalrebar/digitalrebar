@@ -321,7 +321,10 @@ class Network < ActiveRecord::Base
     # with conduits on other networks.  Ranges are not considered here.'
     Network.all.each do |net|
       unless Network.check_conduit_sanity(conduit, net.conduit)
-        errors.add(:conduit, "Network #{name}: Conduit mapping overlaps with network #{net.name}")
+        # unless this is the same network
+        unless name.eql? net.name
+          errors.add(:conduit, "Network #{name}: Conduit mapping overlaps with network #{net.name}")
+        end
       end
     end if conduit
 
