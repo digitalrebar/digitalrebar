@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# Copyright 2016, RackN Inc
 
 require 'net/ssh'
 require 'json'
@@ -8,6 +9,8 @@ require 'puma'
 require 'fog'
 require 'diplomat'
 require './common'
+# openstack uses the python API via CLI commands
+require './openstack'  
 
 class Servers
   extend Jimson::Handler
@@ -34,7 +37,7 @@ class Servers
     when 'Google'
       fixed_args[:public_key_path] = "#{kp_loc}.pub"
     when 'OpenStack'
-      log("PLACE HOLDER")
+      openstack_addkey(endpoint, kp_name, "#{kp_loc}.pub")
     when 'Packet'
       # Packet endpoint has the account key
       packet_project_token = endpoint['project_token']
@@ -150,7 +153,8 @@ class Servers
         server = ep.servers.create(fixed_args)
         log("Created server #{server.to_json}")
       when 'OpenStack'
-        log("PLACE HOLDER")
+        name = (fixed_args[:hostname] ? fixed_args[:hostname] : "rebar-cloudwrap-#{node_id}").split('.')[0]
+        openstack_create(endpoint, name)
       when 'Packet'
         # Packet endpoint has the account key
         packet_project_token = endpoint['project_token']
@@ -216,7 +220,7 @@ class Servers
         return [] unless ep
         ep.servers if ep
       when 'OpenStack'
-        log("PLACE HOLDER")
+        openstack_list(endpoint)
       when 'Packet'
         # Packet endpoint has the account key
         packet_project_token = endpoint['project_token']
@@ -246,7 +250,7 @@ class Servers
       ep = get_endpoint(endpoint)
       ep.servers.get(id)
     when 'OpenStack'
-      log("PLACE HOLDER")
+      openstack_get(endpoint, id)
     when 'Packet'
       # Packet endpoint has the account key
       packet_project_token = endpoint['project_token']
@@ -277,7 +281,7 @@ class Servers
     when 'AWS', 'Google'
       get(endpoint,id).reboot
     when 'OpenStack'
-      log("PLACE HOLDER")
+      openstack_reboot(endpoint,id)
     when 'Packet'
       # Packet endpoint has the account key
       packet_project_token = endpoint['project_token']
@@ -314,7 +318,7 @@ class Servers
         log("Could not find server for: #{id}") unless server
         server.destroy if server
       when 'OpenStack'
-        log("PLACE HOLDER")
+        openstack_delete(endpoint, id)
       when 'Packet'
         # Packet endpoint has the account key
         packet_project_token = endpoint['project_token']
@@ -371,8 +375,7 @@ class Servers
         log "ICMP access already enabled"
       end
     when 'Google' then true
-    when 'OpenStack'
-      log("PLACE HOLDER")
+    when 'OpenStack' then true
     when 'Packet' then true
     else
       raise "No idea how to handle #{endpoint["provider"]}"
