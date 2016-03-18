@@ -1,34 +1,32 @@
 package datatypes
 
-import "strconv"
-
 type User struct {
-	ID     int64  `json:"id"`
+	SimpleID
 	Name   string `json:"username"`
 	Email  string `json:"email"`
 	Admin  bool   `json:"is_admin"`
 	Locked bool   `json:"locked"`
 }
 
+// Id returns this attrib's ID or Name as a string.
+// The REST API allows them to be used interchangeably.
 func (o *User) Id() (string, error) {
-	if o.ID != 0 {
-		return strconv.FormatInt(o.ID, 10), nil
-	} else if o.Name != "" {
+	if o.Name != "" {
 		return o.Name, nil
-	} else {
-		return "", IDNotSet
 	}
+	return o.SimpleID.Id()
 }
 
+// SetId sets either the ID or the Name field, depending on whether
+// the passed-in string can be parsed as an int64 or not.
 func (o *User) SetId(s string) error {
-	if o.ID != 0 || o.Name != "" {
-		return SetIDErr
+	err := o.SimpleID.SetId(s)
+	if err == nil {
+		return nil
+	} else if err == SetIDErr {
+		return err
 	}
-	if id, err := strconv.ParseInt(s, 10, 64); err == nil {
-		o.ID = id
-	} else {
-		o.Name = s
-	}
+	o.Name = s
 	return nil
 }
 

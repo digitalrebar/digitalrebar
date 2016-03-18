@@ -1,6 +1,5 @@
 package datatypes
 
-import "strconv"
 import "github.com/guregu/null"
 
 // Network holds configuration for a specific network.
@@ -94,31 +93,30 @@ func (o *NetworkRange) ApiName() string {
 // AddressID is used for NetworkAllocation and NetworkRouter, as they
 // can be uniquely identified by either their ID or Address fields.
 type AddressID struct {
-	ID int64 `json:"id"`
+	SimpleID
 	// Address is an IPv4 or v6 address in CIDR format.
 	Address string `json:"address"`
 }
 
+// Id returns this attrib's ID or Name as a string.
+// The REST API allows them to be used interchangeably.
 func (o *AddressID) Id() (string, error) {
-	if o.ID != 0 {
-		return strconv.FormatInt(o.ID, 10), nil
-	} else if o.Address != "" {
+	if o.Address != "" {
 		return o.Address, nil
-	} else {
-		return "", IDNotSet
 	}
-
+	return o.SimpleID.Id()
 }
 
+// SetId sets either the ID or the Name field, depending on whether
+// the passed-in string can be parsed as an int64 or not.
 func (o *AddressID) SetId(s string) error {
-	if o.ID != 0 || o.Address != "" {
-		return SetIDErr
+	err := o.SimpleID.SetId(s)
+	if err == nil {
+		return nil
+	} else if err == SetIDErr {
+		return err
 	}
-	if id, err := strconv.ParseInt(s, 10, 64); err == nil {
-		o.ID = id
-	} else {
-		o.Address = s
-	}
+	o.Address = s
 	return nil
 }
 

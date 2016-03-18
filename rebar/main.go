@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	version            = "1.1.1"
+	version            = "1.1.2"
 	debug              = false
 	endpoint           = "https://127.0.0.1:3000"
 	username, password string
@@ -83,7 +83,7 @@ func makeCommandTree(singularName string,
 		Run: func(c *cobra.Command, args []string) {
 			objs := []interface{}{}
 			if err := client.List(maker().ApiName(), &objs); err != nil {
-				log.Fatalf("Error listing %v: %v", name, err.Error())
+				log.Fatalf("Error listing %v: %v", name, err)
 			}
 			fmt.Println(prettyJSON(objs))
 		},
@@ -101,7 +101,7 @@ func makeCommandTree(singularName string,
 				log.Fatalf("Matches not valid JSON\n%v", err)
 			}
 			if err := client.Match(maker().ApiName(), vals, &objs); err != nil {
-				log.Fatalf("Error getting matches for %v\nError:%v\n", singularName, err.Error())
+				log.Fatalf("Error getting matches for %v\nError:%v\n", singularName, err)
 			}
 			fmt.Println(prettyJSON(objs))
 		},
@@ -114,8 +114,8 @@ func makeCommandTree(singularName string,
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
 			obj := maker()
-			if client.Fetch(obj, args[0]) != nil {
-				log.Fatalf("Failed to fetch %v\n", singularName, args[0])
+			if err := client.Fetch(obj, args[0]); err != nil {
+				log.Fatalf("Failed to fetch %v: %v\n%v\n", singularName, args[0], err)
 			}
 			fmt.Println(prettyJSON(obj))
 		},
@@ -129,7 +129,7 @@ func makeCommandTree(singularName string,
 			}
 			obj := maker()
 			if err := client.Init(obj); err != nil {
-				log.Fatalf("Unable to fetch defaults for %v: %v\n", singularName, err.Error())
+				log.Fatalf("Unable to fetch defaults for %v: %v\n", singularName, err)
 			}
 			fmt.Println(prettyJSON(obj))
 		},
@@ -143,7 +143,7 @@ func makeCommandTree(singularName string,
 			}
 			obj := maker()
 			if err := client.Import(obj, []byte(args[0])); err != nil {
-				log.Fatalf("Unable to create new %v: %v\n", singularName, err.Error())
+				log.Fatalf("Unable to create new %v: %v\n", singularName, err)
 			}
 			fmt.Println(prettyJSON(obj))
 		},
@@ -207,7 +207,7 @@ func makeCommandTree(singularName string,
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
 			if err := client.Destroy(obj); err != nil {
-				log.Fatalf("Unable to destroy %v %v\nError: %v\n", singularName, args[0], err.Error())
+				log.Fatalf("Unable to destroy %v %v\nError: %v\n", singularName, args[0], err)
 			}
 			fmt.Printf("Deleted %v %v\n", singularName, args[0])
 		},
