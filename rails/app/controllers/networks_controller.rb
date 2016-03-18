@@ -83,7 +83,7 @@ class NetworksController < ::ApplicationController
     params.require(:group)
     params.require(:conduit)
     params.require(:deployment_id)
-    params.delete(:v6prefix) if params[:v6prefix] == ""
+    params.delete(:v6prefix) if params[:v6prefix] == "" or params[:v6prefix] == "none"
     params[:name] = "#{params[:category]}-#{params[:group]}"
     Network.transaction do
       @network = Network.create! params.permit(:name,

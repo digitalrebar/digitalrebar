@@ -106,4 +106,14 @@ class NetworkRangesController < ::ApplicationController
     render api_show @network_range
   end
 
+  # only works with ID, not name!
+  def destroy
+    @range = NetworkRange.find params[:id]
+    if params[:network_id]
+      raise "Range is not from the correct Network" unless @range.network_id = params[:network_id]
+    end
+    @range.destroy
+    render api_delete @range
+  end
+
 end

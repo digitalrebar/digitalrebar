@@ -14,7 +14,8 @@
           %td= text_field_tag :last, range.last, :size => 18
           %td
             %input.button{:type => "submit", :value => t('update')}
-
+            = link_to t('destroy'), "/api/v2/networks/#{network.id}/network_ranges/#{range.id}", :class => 'button', :'onclick'=>'location.reload();', :'data-remote' => true, :method => :delete, data: { confirm: "Are you certain you want to destroy range #{range.name}?" }
+            
     = form_for :network_range, :'data-remote' => true, :url => network_network_ranges_path(:network_id=>network.id, :api_version=>'v2'), :method=>:post, :html => { :method=>:post, :'data-type' => 'json',  :class => "formtastic", :remote=>true } do |f|
       %tr{ :class => cycle(:odd, :even) }
         %td
