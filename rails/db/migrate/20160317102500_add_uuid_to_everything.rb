@@ -27,8 +27,6 @@ class AddUuidToEverything < ActiveRecord::Migration
       deployments: Deployment,
       dns_name_entries: DnsNameEntry,
       dns_name_filters: DnsNameFilter,
-      event_selectors: EventSelector,
-      event_sinks: EventSink,
       groups: Group,
       hammers: Hammer,
       jigs: Jig,
