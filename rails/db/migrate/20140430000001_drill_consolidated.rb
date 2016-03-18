@@ -28,7 +28,7 @@ class DrillConsolidated < ActiveRecord::Migration
     end
     add_index :settings, [ :target_type, :target_id, :var ], :unique => true
 
-    create_table(:navs, :primary_key=>'name', :id=>false) do |t|
+    create_table :navs, primary_key: 'name', id: false do |t|
       t.text      :item
       t.text      :parent_item,   default: 'root'
       t.text      :name
@@ -52,7 +52,7 @@ class DrillConsolidated < ActiveRecord::Migration
       t.timestamps
     end
 
-    create_table(:users) do |t|
+    create_table :users do |t|
       ## Database authenticatable
       t.text   :email,              null: false, default: "", index: true
       t.text   :encrypted_password, null: false, default: ""
@@ -299,7 +299,7 @@ class DrillConsolidated < ActiveRecord::Migration
     #natural key
     add_index(:node_groups, [:node_id, :group_id], unique: true)
 
-    create_table "networks" do |t|
+    create_table :networks do |t|
       t.references   :deployment, null: false
       t.text         :name,       null: false, index: { unique: true }
       t.text         :description,null: false, default: ''
@@ -322,14 +322,14 @@ class DrillConsolidated < ActiveRecord::Migration
     # required constraint
     add_index(:networks, [:category, :group], unique: true)
 
-    create_table "network_routers" do |t|
+    create_table :network_routers do |t|
       t.references   :network,    null: false
       t.text         :address,    null: false
       t.integer      :pref,       null: false, default: 65536
       t.timestamps
     end
 
-    create_table "network_ranges" do |t|
+    create_table :network_ranges do |t|
       t.text         :name,       null: false
       t.references   :network,    null: false
       # Both of these should also be CIDRs.
@@ -344,9 +344,9 @@ class DrillConsolidated < ActiveRecord::Migration
       t.boolean      :use_team,   null: true
       t.boolean      :overlap,    null: false, default: false   # 20150325101300
     end
-    add_index "network_ranges", [:network_id, :name], unique: true
+    add_index :network_ranges, [:network_id, :name], unique: true
 
-    create_table "network_allocations" do |t|
+    create_table :network_allocations do |t|
       t.references   :node
       t.references   :network,    null: false
       t.references   :network_range, null: false
@@ -355,7 +355,7 @@ class DrillConsolidated < ActiveRecord::Migration
     end
 
     # 20150613153000
-    create_table "dns_name_filters" do |t|
+    create_table :dns_name_filters do |t|
       t.text        :name,        null: false, default: 'default'
       t.text        :matcher,     null: false, default: 'net.category == "admin"'
       t.integer     :priority,    null: false, default: 50, index: { unique: true }
@@ -364,7 +364,7 @@ class DrillConsolidated < ActiveRecord::Migration
       t.timestamps
     end
 
-    create_table "dns_name_entries" do |t|
+    create_table :dns_name_entries do |t|
       t.belongs_to  :network_allocation,    null: false
       t.belongs_to  :dns_name_filter,       null: false
       t.text        :name,                  null: false, default: ''
@@ -430,7 +430,7 @@ class DrillConsolidated < ActiveRecord::Migration
     add_index :audits, [:user_id, :user_type], :name => 'user_index'
 
     # 20150619171000
-    create_table "audit_trackers" do |t|
+    create_table :audit_trackers do |t|
       t.text         :tracker,       index: { unique: true }
       t.integer      :processed,     default: 0
     end

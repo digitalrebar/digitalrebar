@@ -91,7 +91,7 @@ class UsersController < ApplicationController
 
  # RESTful DELETE of the node resource
   def destroy
-    @user = User.find_by_id_or_username params[:id]
+    @user = User.find_key params[:id]
     @user.destroy
     render api_delete @user
   end
@@ -99,7 +99,8 @@ class UsersController < ApplicationController
   add_help(:create,[:username, :email, :password, :password_confirmation, :remember_me, :is_admin, :digest],[:post])
   
   def create
-    required_user_params
+    params.require(:username)
+    params.require(:email)
     @user = User.create! user_params
     if params[:digest]
       @user.digest_password(params[:password])
@@ -110,7 +111,7 @@ class UsersController < ApplicationController
 
   def update
     User.transaction do
-      @user = User.find_by_id_or_username(params[:id]).lock!
+      @user = User.find_key(params[:id]).lock!
       if request.patch?
         fields = %w{username email}
         fields << "is_admin" if current_user.is_admin && current_user.id != @user.id
@@ -128,7 +129,7 @@ class UsersController < ApplicationController
 
   add_help(:show,[:id],[:get])
   def show
-    @user = User.find_by_id_or_username params[:id]
+    @user = User.find_key params[:id]
     respond_to do |format|
       format.html { } # show.html.erb
       format.json { render api_show @user }
@@ -138,7 +139,6 @@ class UsersController < ApplicationController
   add_help(:unlock,[:id],[:delete]) 
   def unlock
     # TODO REFACTOR!
-    ret = fetch_user
     respond_with(@user)  do |format|
       @user.unlock_access! if (!@user.nil? and @user.access_locked?)
       format.html do
@@ -153,7 +153,6 @@ class UsersController < ApplicationController
   add_help(:lock,[:id],[:post])
   def lock
     # TODO REFACTOR!
-    ret = fetch_user
     respond_with(@user)  do |format|
       @user.lock_access! if (!@user.nil? and !@user.access_locked?)
       format.html do
@@ -333,7 +332,7 @@ class UsersController < ApplicationController
   def fetch_user
     ret = nil
     begin
-      @user = User.find_by_id_or_username((params[:user].nil? or params[:user][:id].nil?) ? \
+      @user = User.find_key((params[:user].nil? or params[:user][:id].nil?) ? \
       ((params[:user_id].nil?) ? params[:id] : params[:user_id]) : \
       params[:user][:id])
       ret = [200, ""]

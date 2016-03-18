@@ -26,11 +26,13 @@ module ApiHelper
 
   # for the top level classes (finders, etc)
   module ClassMethods
+    UUID_RE = /^[\h]{8}-[\h]{4}-[1-5][\h]{3}-[89abAB][\h]{3}-[\h]{12}$/
 
     # Helper to allow API to use ID or name
     def find_key(key)
       col,key = case
                 when db_id?(key) then [:id, key.to_i]
+                when UUID_RE.match(key) then [:uuid, key]
                 when key.is_a?(ActiveRecord::Base) then [:id, key.id]
                 when self.respond_to?(:name_column) then [name_column, key]
                 else [:name, key]
