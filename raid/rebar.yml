@@ -28,6 +28,12 @@ roles:
       - rebar-managed-node
     flags:
       - implicit
+    events:
+      - endpoint: inproc://role:raid-tools-install/on_active
+        selectors:
+          - event: on_active
+            obj_class: raid
+            obj_id: raid-tools-install
     attribs:
       - name: raid-drivers
         description: 'The backend drivers that the RAID barclamp can use'
