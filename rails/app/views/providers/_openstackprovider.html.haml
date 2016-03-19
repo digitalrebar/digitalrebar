@@ -1,7 +1,7 @@
 %tr
   %td{:colspan=>2}
-    %a{:href=>"http://openstack.org"}
-      %img{:src=>"https://www.openstack.org/assets/openstack-logo/R/openstack-cloud-software-vertical-web.png", :width=>138}
+    %a{:href=>"http://openstack.org", :target=>"_blank"}
+      = image_tag 'providers/openstack.png', :title=>"OpenStack", :width=>"138"
 %tr
   %td= t 'os-auth-url', :scope=>'providers.show.openstack'  
   %td= text_field_tag("auth_details[os-auth-url]", @item.auth_details['os-auth-url'], :size => 50)
