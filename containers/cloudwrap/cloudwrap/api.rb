@@ -37,7 +37,7 @@ class Servers
     when 'Google'
       fixed_args[:public_key_path] = "#{kp_loc}.pub"
     when 'OpenStack'
-      openstack_addkey(endpoint, kp_name, "#{kp_loc}.pub")
+      OpenStack::addkey(endpoint, kp_name, "#{kp_loc}.pub")
     when 'Packet'
       # Packet endpoint has the account key
       packet_project_token = endpoint['project_token']
@@ -154,7 +154,7 @@ class Servers
         log("Created server #{server.to_json}")
       when 'OpenStack'
         name = (fixed_args[:hostname] ? fixed_args[:hostname] : "rebar-cloudwrap-#{node_id}").split('.')[0]
-        openstack_create(endpoint, name)
+        OpenStack::create(endpoint, name)
       when 'Packet'
         # Packet endpoint has the account key
         packet_project_token = endpoint['project_token']
@@ -220,7 +220,7 @@ class Servers
         return [] unless ep
         ep.servers if ep
       when 'OpenStack'
-        openstack_list(endpoint)
+        OpenStack::list(endpoint)
       when 'Packet'
         # Packet endpoint has the account key
         packet_project_token = endpoint['project_token']
@@ -250,7 +250,7 @@ class Servers
       ep = get_endpoint(endpoint)
       ep.servers.get(id)
     when 'OpenStack'
-      openstack_get(endpoint, id)
+      OpenStack::get(endpoint, id)
     when 'Packet'
       # Packet endpoint has the account key
       packet_project_token = endpoint['project_token']
@@ -281,7 +281,7 @@ class Servers
     when 'AWS', 'Google'
       get(endpoint,id).reboot
     when 'OpenStack'
-      openstack_reboot(endpoint,id)
+      OpenStack::reboot(endpoint,id)
     when 'Packet'
       # Packet endpoint has the account key
       packet_project_token = endpoint['project_token']
@@ -318,7 +318,7 @@ class Servers
         log("Could not find server for: #{id}") unless server
         server.destroy if server
       when 'OpenStack'
-        openstack_delete(endpoint, id)
+        OpenStack::delete endpoint, id
       when 'Packet'
         # Packet endpoint has the account key
         packet_project_token = endpoint['project_token']

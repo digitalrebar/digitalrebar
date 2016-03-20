@@ -26,7 +26,7 @@ loop do
       when 'AWS', 'Google'
         servers[k["Key"]] = [rebar_id, endpoints[ep].servers.get(packet_device_id), endpoints[ep], ep]
       when 'OpenStack'
-        log("PLACE HOLDER")
+        servers[k["Key"]] = [rebar_id, openstack_device_id, nil, ep]
       when 'Packet'
         servers[k["Key"]] = [rebar_id, packet_device_id, nil, ep]
       end
@@ -58,7 +58,8 @@ loop do
           next
         end
       when 'OpenStack'
-        log("PLACE HOLDER")
+        log "Testing server #{rebar_id} #{openstack_device_id} state"
+        log "state check NOT implemented"
       when 'Packet'
         log "Testing server #{rebar_id} #{packet_device_id} state"
         response = nil
