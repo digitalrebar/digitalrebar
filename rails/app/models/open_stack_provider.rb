@@ -17,6 +17,45 @@ class OpenStackProvider < CloudProvider
 
   before_save :inject_packet
 
+  def self.template
+    { 
+      url: {
+        type: "img",
+        src: "https://www.openstack.org/assets/openstack-logo/R/openstack-cloud-software-vertical-web.png"
+      },
+  	  :'os_auth_url' => {
+        type: "text",
+        default: "",
+        length: 50,
+        name: I18n.t('os-auth-url', scope: "providers.show.openstack" )
+      },
+      :'os-username' => {
+        type: "text",
+        default: "",
+        length: 30,
+        name: I18n.t('os-username', scope: "providers.show.openstack" )
+      },
+      :"os-password" => {
+        type: "password",
+        default: "",
+        length: 30,
+        name: I18n.t('os-password', scope: "providers.show.openstack" )
+      },
+      :"os-project-name" => {
+        type: "text",
+        default: "",
+        length: 30,
+        name: I18n.t('os-project-name', scope: "providers.show.openstack" )
+      },
+      :"os-region-name" => {
+        type: "text",
+        default: "",
+        length: 30,
+        name: I18n.t('os-region-name', scope: "providers.show.openstack" )
+      }
+    }
+  end
+
   private
 
   def inject_packet

@@ -17,6 +17,39 @@ class PacketProvider < CloudProvider
 
   before_save :inject_packet
 
+  def self.template
+    { 
+      url: {
+        type: "img",
+        src: "https://www.packet.net/assets/images/logo-main.png"
+      },
+      token: {
+        type: "password",
+        default: "",
+        length: 30,
+        name: I18n.t('token', scope: "providers.show.packet" )
+      },
+      id: {
+        type: "text",
+        default: "",
+        length: 30,
+        name: I18n.t('id', scope: "providers.show.packet" )
+      },
+      facility: {
+        type: "text",
+        default: "ewr1",
+        length: 30,
+        name: I18n.t('facility', scope: "providers.show.packet" )
+      },
+      plan: {
+        type: "text",
+        default: "baremetal_1",
+        length: 30,
+        name: I18n.t('plan', scope: "providers.show.packet" )
+      }
+    }
+  end
+
   private
 
   def inject_packet

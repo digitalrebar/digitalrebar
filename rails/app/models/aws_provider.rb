@@ -17,6 +17,33 @@ class AwsProvider < CloudProvider
 
   before_save :inject_aws
 
+  def self.template
+    { 
+    	url: {
+    		type: "img",
+ 	   		src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/AmazonWebservices_Logo.svg/2000px-AmazonWebservices_Logo.svg.png", 	   		
+  		},
+    	access_key_id: {
+    		type: "text",
+    		default: "",
+    		length: 30,
+    		name: I18n.t('access_key_id', scope: "providers.show.aws" )
+  		},
+    	secret_access_key: {
+    		type: "password",
+    		default: "",
+    		length: 30,
+    		name: I18n.t('secret_access_key', scope: "providers.show.aws" )
+  		},
+    	region: {
+    		type: "text",
+    		default: "us-west-2",
+    		length: 30,
+    		name: I18n.t('region', scope: "providers.show.aws" )
+  		}
+    }
+  end
+
   private
 
   def inject_aws

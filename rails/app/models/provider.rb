@@ -38,4 +38,19 @@ class Provider < ActiveRecord::Base
     false
   end
 
+  def self.template
+    { 
+      url: {
+        type: "img",
+        src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/AmazonWebservices_Logo.svg/2000px-AmazonWebservices_Logo.svg.png",        
+      },
+      key: {
+        type: "text",
+        default: "",
+        length: 30,
+        name: I18n.t('access_key_id', scope: "providers.show.aws" )
+      }
+    }
+  end
+
 end

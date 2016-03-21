@@ -17,6 +17,27 @@ class GoogleProvider < CloudProvider
 
   before_save :inject_google
 
+  def self.template
+    { 
+    	url: {
+    		type: "img",
+ 	   		src: "https://cloud.google.com/_static/8fea0d66ce/images/new-gcp-logo.png"
+  		},
+    	access_key_id: {
+    		type: "project",
+    		default: "",
+    		length: 30,
+    		name: I18n.t('project', scope: "providers.show.google" )
+  		},
+    	secret_access_key: {
+    		type: "json_key",
+    		default: "",
+    		length: 30,
+    		name: I18n.t('json_key', scope: "providers.show.google" )
+  		}
+    }
+  end
+
   private
 
   def inject_google
