@@ -70,10 +70,12 @@ fi
 echo "Restoring docker-compose config info"
 zcat "$1/deploy_files.tar.gz" |tar -C compose -x -f -
 
+(cd compose; docker-compose create)
 # Restore the Consul database, then start the Consul database
 sudo mkdir -p compose/data-dir
 echo "Restoring Consul data"
 zcat "$1/consul.tar.gz" |sudo tar -C compose/data-dir -x -f -
+(cd compose; docker-compose start consul)
 
 # Arrange for the postgres container to restore itself from backup
 echo "Restoring Postgres data"
@@ -81,6 +83,13 @@ sudo mkdir -p compose/data-dir/postgresql/backup
 for f in pg_dump.gz pg_hba.conf pg_ident.conf postgresql.auto.conf postgresql.conf postmaster.opts; do
     sudo cp "$1/$f" "compose/data-dir/postgresql/backup/$f"
 done
+(cd compose; docker-compose start postgres)
+printf "Waiting on database restore to finish"
+while [[ -d compose/data-dir/postgresql/backup ]]; do
+    sleep 5
+    printf '.'
+done
+echo " Done."
 
 # Restore the Goiardi file data, then start Goiardi
 echo "Restoring Goiardi data"
@@ -88,4 +97,4 @@ zcat "$1/goiardi_files.tar.gz" |sudo tar -C compose/data-dir -x -f -
 
 # Start everything else
 echo "Restarting Digital Rebar"
-(cd compose; docker-compose up -d)
+(cd compose; docker-compose start)
