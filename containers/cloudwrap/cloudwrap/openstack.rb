@@ -14,10 +14,11 @@ module OpenStack
 
   # create server
   def self.create(endpoint, name, keyname, image="CentOS", flavor="2048")
+    endpoint["debug"] = true
     images = images(endpoint)
-    image_id = find_image(images, image)
+    image_id = match_image(images, image)
     flavors = flavors(endpoint)
-    flavor_id = find_flavor(flavors, flavor)
+    flavor_id = match_flavor(flavors, flavor)
     params = "--key-name \'#{keyname}\' " \
              "--image \'#{image_id}\' " \
              "--flavor \'#{flavor_id}\' " \
@@ -25,6 +26,7 @@ module OpenStack
     raw = base endpoint, "server create #{params}", "-f shell"
     o = unshell(raw)
     id = o["id"]
+    log "openstack created server #{name} as #{id}"
     return o rescue nil
   end
 
@@ -106,29 +108,19 @@ module OpenStack
 
   private
 
-  # find a flavor matching the requested type
-  def self.find_flavor(endpoint, match)
-    favors(endpoint).keys.first rescue []
-  end
-
-  # find an image matching the requested type
-  def self.find_image(endpoint, match)
-    images(endpoint).keys.first rescue []
-  end
-
   # retrieve the flavors
   def self.flavors(endpoint)
-    raw = base(endpoint, "openstack flavors list", "-f csv")
-
-    o = []
+    raw = base(endpoint, "flavor list", "-f csv")
+    o = uncsv raw, "ID"
+    log "OpenStack DEBUG flavors #{o.inspect}" if endpoint["debug"]
     return o
-
   end
 
   # retrieve the images
   def self.images(endpoint)
-    raw = base(endpoint, "openstack images list", "-f csv")
-    o = []
+    raw = base(endpoint, "image list", "-f csv")
+    o = uncsv raw, "ID"
+    log "OpenStack DEBUG images #{o.inspect}" if endpoint["debug"]
     return o
   end
 
@@ -145,11 +137,21 @@ module OpenStack
 
     o = nil
     if with_result
-      o = %x[#{full_cmd} #{with_result}] rescue nil
-      log "executed OpenStack command [#{cmd} #{with_result}] with result #{o}"
+      raw = %x[#{full_cmd} #{with_result}] rescue ""
+      log "OpenStack DEBUG raw result\n#{raw}" if endpoint["debug"]
+      log "executed OpenStack command [openstack #{cmd} #{with_result}]"
+      case with_result
+      when "-f csv"
+        o = raw.gsub("\",\"","|||").gsub("\"","").split("\r\n")
+      when "-f shell"
+        o = raw.split("\n")
+      else
+        o = raw.split("\n")
+      end
+      log "OpenStack DEBUG result\n#{o}" if endpoint["debug"]
     else
       o = system(full_cmd) rescue false
-      log "system call OpenStack command [#{cmd}] with result #{o}"
+      log "system call OpenStack command [openstack #{cmd}] with result #{o}"
     end
 
     return o
@@ -170,7 +172,7 @@ module OpenStack
     o = {}
     raw.each do |line|
       l = line.split('=')
-      o[l[0]] = l[1]
+      o[l[0]] = l[1].gsub!(/\A"|"\Z/, '')
     end
     return o
   end
@@ -178,14 +180,14 @@ module OpenStack
   # parse raw cvs voutput
   def self.uncsv(raw, key)
 
-    header = raw[0].split(",")
-    raw.delete[0]
+    header = raw[0].split("|||")
+    raw.delete_at 0
     o = {}
     raw.each do |line|
-      l = line.split(",")
+      l = line.split(/[|||,\,]/)
       oo = {}
-      header.each_index do |i,value|
-        oo[value] = l[i]
+      header.each_index do |i|
+        oo[header[i]] = ( l[i] rescue "" )
       end
       o[oo[key]] = oo
     end

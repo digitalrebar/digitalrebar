@@ -155,6 +155,7 @@ class Servers
       when 'OpenStack'
         name = (fixed_args[:hostname] ? fixed_args[:hostname] : "rebar-cloudwrap-#{node_id}").split('.')[0]
         server = OpenStack::create(endpoint, name, keyfile_name(node_id), fixed_args[:image_id], fixed_args[:flavor_id])
+        log("Created server #{server.to_json}")        
       when 'Packet'
         # Packet endpoint has the account key
         packet_project_token = endpoint['project_token']
@@ -198,6 +199,9 @@ class Servers
       when 'Google'
         Diplomat::Kv.put("cloudwrap/create/#{node_id}/#{server.name}",endpoint.to_json)
         ret = {id: server.name}
+      when 'OpenStack'
+        Diplomat::Kv.put("cloudwrap/create/#{node_id}/#{server['id']}",endpoint.to_json)
+        ret = server
       when 'Packet'
         Diplomat::Kv.put("cloudwrap/create/#{node_id}/#{server['id']}",endpoint.to_json)
         ret = server

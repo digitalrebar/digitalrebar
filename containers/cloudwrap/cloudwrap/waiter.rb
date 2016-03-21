@@ -19,21 +19,21 @@ loop do
     JSON.parse(response.body).each do |k|
       ep = JSON.parse(Base64.decode64(k["Value"]))
       endpoints[ep] ||= get_endpoint(ep)
-      packet_device_id = k["Key"].split("/",4)[-1]
+      cloudwrap_device_id = k["Key"].split("/",4)[-1]
       rebar_id = k["Key"].split("/",4)[-2]
 
       case ep['provider']
       when 'AWS', 'Google'
-        servers[k["Key"]] = [rebar_id, endpoints[ep].servers.get(packet_device_id), endpoints[ep], ep]
+        servers[k["Key"]] = [rebar_id, endpoints[ep].servers.get(cloudwrap_device_id), endpoints[ep], ep]
       when 'OpenStack'
-        servers[k["Key"]] = [rebar_id, openstack_device_id, nil, ep]
+        servers[k["Key"]] = [rebar_id, cloudwrap_device_id, nil, ep]
       when 'Packet'
-        servers[k["Key"]] = [rebar_id, packet_device_id, nil, ep]
+        servers[k["Key"]] = [rebar_id, cloudwrap_device_id, nil, ep]
       end
     end if response && response.code == 200
     servers.each do |key, val|
       rebar_id = val[0]
-      packet_device_id = server = val[1]
+      cloudwrap_device_id = server = val[1]
       ep = val[2]
       endpoint = val[3]
 
@@ -58,25 +58,25 @@ loop do
           next
         end
       when 'OpenStack'
-        log "Testing server #{rebar_id} #{openstack_device_id} state"
+        log "Testing server #{rebar_id} #{cloudwrap_device_id} state"
         log "state check NOT implemented"
       when 'Packet'
-        log "Testing server #{rebar_id} #{packet_device_id} state"
+        log "Testing server #{rebar_id} #{cloudwrap_device_id} state"
         response = nil
         begin
-          response = RestClient.get "https://api.packet.net/projects/#{endpoint['project_id']}/devices/#{packet_device_id}", content_type: :json, accept: :json, 'X-Auth-Token' => endpoint['project_token']
+          response = RestClient.get "https://api.packet.net/projects/#{endpoint['project_id']}/devices/#{cloudwrap_device_id}", content_type: :json, accept: :json, 'X-Auth-Token' => endpoint['project_token']
         rescue RestClient::ResourceNotFound => e2
-          log("Looking for #{packet_device_id}, but was delete - removing")
+          log("Looking for #{cloudwrap_device_id}, but was delete - removing")
           Diplomat::Kv.delete(key)
         rescue Exception => e
-          log("Looking for #{packet_device_id}, but got #{e.inspect}")
+          log("Looking for #{cloudwrap_device_id}, but got #{e.inspect}")
         end
         next if !response || response.code != 200
 
         device_data = JSON.parse(response.body)
 
         unless device_data['state'] == 'active'
-          log("Server #{packet_device_id} is #{device_data['state']}, skipping")
+          log("Server #{cloudwrap_device_id} is #{device_data['state']}, skipping")
           next
         end
       end
@@ -116,7 +116,7 @@ loop do
             ssh.exec!("date")
           end
         rescue Exception => e
-          log "Server #{packet_device_id} not sshable, skipping: #{e}"
+          log "Server #{cloudwrap_device_id} not sshable, skipping: #{e}"
           next
         end
       end
@@ -159,7 +159,7 @@ loop do
           begin
             Net::SCP.upload!(dev_ip, 'root', f.path, "/tmp/rebar_keys", { ssh: { keys: [ kp_loc ], paranoid: false } })
           rescue Exception => e
-            log "Server #{packet_device_id} failed to upload keys, skipping: #{e}"
+            log "Server #{cloudwrap_device_id} failed to upload keys, skipping: #{e}"
             next
           end
         end
@@ -172,7 +172,7 @@ loop do
             ssh.exec!("rm -f /tmp/rebar_keys")
           end
         rescue Exception => e
-          log "Server #{packet_device_id} not key updatable, skipping: #{e}"
+          log "Server #{cloudwrap_device_id} not key updatable, skipping: #{e}"
           next
         end
       end
