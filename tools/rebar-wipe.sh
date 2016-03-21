@@ -52,8 +52,7 @@ SYS_ID=$(rebar deployments show system | jq .id)
 # Determine of there is a raid-configure role on the node.
 # if so, add it back and a jbod configuration in the new deployment.
 #
-# GREG: Fix this
-#raid_controllers_info=$(rebar nodes get $node_id attrib raid-detected-controllers 2>/dev/null)
+raid_disk_count=$(rebar nodes get $node_id attrib raid-detected-controllers | jq -r '[.value[].disks|length] | add')
 
 #
 # Remove all the node roles in the current deployment (if not system)
@@ -74,12 +73,24 @@ fi
 # Move the node to the new env
 rebar nodes move $node_id to $WIPE_DEPLOYMENT
 
-# Add the raid-configure role back.
-# GREG: Fix this
-#rebar nodes bind $node_id to raid-configure
-
 # Add the decommision role
 rebar nodes bind $node_id to decommission
+
+# Add the raid-configure role back.
+if [[ $raid_disk_count != null ]] ; then
+    rebar nodes bind $node_id to raid-post-configure
+
+    echo '{ "value": [' > /tmp/disk.$$
+    comma=""
+    for ((i=0;i<$raid_disk_count;i++)); do
+      echo "$comma{ \"boot\": false, \"disks\": 1, \"name\": \"disk$i\", \"raid_level\": \"jbod\", \"size\": \"min\" }" >> /tmp/disk.$$
+      comma=","
+    done
+    echo '] }' >> /tmp/disk.$$
+
+    rebar nodes set $node_id attrib raid-wanted-volumes to "$(cat /tmp/disk.$$)"
+    rm -f /tmp/disk.$$
+fi
 
 # Mark the node into sledgehammer and reboot
 rebar nodes update $node_id '{ "bootenv": "sledgehammer" }'
