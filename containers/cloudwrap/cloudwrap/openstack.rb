@@ -18,7 +18,6 @@ module OpenStack
     image_id = find_image(images, image)
     flavors = flavors(endpoint)
     flavor_id = find_flavor(flavors, flavor)
-    keyname = "foo"
     params = "--key-name \'#{keyname}\' " \
              "--image \'#{image_id}\' " \
              "--flavor \'#{flavor_id}\' " \
@@ -32,7 +31,7 @@ module OpenStack
   # upload key
   def self.addkey(endpoint, name, key)
     log "OpenStack adding key #{key}"
-    base endpoint, "keypair create \'#{name}\' \'#{key}\'"
+    base endpoint, "keypair create --public-key \'#{key}\' \'#{name}\'"
   end
 
   # remove key
@@ -136,8 +135,8 @@ module OpenStack
   # provide the base CLI interface with correct flags
   def self.base(endpoint, cmd, with_result=nil)
 
-    log("OpenStack inputs #{endpoint}")
-    cmd = "openstack --os-username \'#{endpoint['os-username']}\' " \
+    #log("OpenStack inputs #{endpoint}")
+    full_cmd = "openstack --os-username \'#{endpoint['os-username']}\' " \
                     "--os-password \'#{endpoint['os-password']}\' " \
                     "--os-project-name \'#{endpoint['os-project-name']}\' " \
                     "--os-region-name \'#{endpoint['os-region-name']}\' " \
@@ -146,11 +145,12 @@ module OpenStack
 
     o = nil
     if with_result
-      o = %x[#{cmd} #{with_result}] rescue nil
+      o = %x[#{full_cmd} #{with_result}] rescue nil
+      log "executed OpenStack command [#{cmd} #{with_result}] with result #{o}"
     else
-      o = system(cmd) rescue false
+      o = system(full_cmd) rescue false
+      log "system call OpenStack command [#{cmd}] with result #{o}"
     end
-    log "executed OpenStack command #{cmd}"
 
     return o
 

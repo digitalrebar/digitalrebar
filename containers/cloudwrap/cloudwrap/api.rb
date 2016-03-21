@@ -154,7 +154,7 @@ class Servers
         log("Created server #{server.to_json}")
       when 'OpenStack'
         name = (fixed_args[:hostname] ? fixed_args[:hostname] : "rebar-cloudwrap-#{node_id}").split('.')[0]
-        OpenStack::create(endpoint, name)
+        server = OpenStack::create(endpoint, name, keyfile_name(node_id), fixed_args[:image_id], fixed_args[:flavor_id])
       when 'Packet'
         # Packet endpoint has the account key
         packet_project_token = endpoint['project_token']
