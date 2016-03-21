@@ -32,7 +32,7 @@ roles:
       - endpoint: inproc://role:raid-tools-install/on_active
         selectors:
           - event: on_active
-            obj_class: raid
+            obj_class: role
             obj_id: raid-tools-install
     attribs:
       - name: raid-drivers
