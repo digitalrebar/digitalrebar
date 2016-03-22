@@ -15,6 +15,14 @@
 
 class BarclampProvisioner::OsInstall < Role
 
+  def on_deployment_create(dr)
+    DeploymentRole.transaction do
+      sysdepl = Deployment.system
+      default_os = Attrib.get('provisioner-default-os',sysdepl)
+      Attrib.set('provisioner-target_os', dr, default_os)
+    end
+  end
+
   def on_todo(nr)
     node = nr.node
     return if (["local"].member? node.bootenv) || (nr.run_count > 0)

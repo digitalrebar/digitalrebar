@@ -128,6 +128,8 @@ class DeploymentRole < ActiveRecord::Base
   private
 
   def role_create_hook
+    return if @created
+    @created = true
     Rails.logger.info("Running on_deployment_create hook for #{role.name}")
     role.on_deployment_create(self)
   end
