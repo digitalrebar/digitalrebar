@@ -11,7 +11,7 @@ RUN mkdir -p /usr/local/sbin/ /usr/local/entrypoint.d /etc/rebar-data && \
          https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64 && \
     chmod 755 /usr/local/bin/rebar && \
     curl -fgL -o '/tmp/goball.tgz' \
-         'https://storage.googleapis.com/golang/go1.6.linux-amd64.tar.gz' && \
+         'https://storage.googleapis.com/golang/go1.5.3.linux-amd64.tar.gz' && \
     tar -C '/usr/local' -zxf /tmp/goball.tgz && rm /tmp/goball.tgz
 
 COPY docker-entrypoint.sh /sbin/docker-entrypoint.sh
