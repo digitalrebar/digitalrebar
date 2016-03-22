@@ -3,7 +3,10 @@
     "OS": {
         "Name": "debian-7",
         "Family": "debian",
-        "Version": "7"
+        "Version": "7",
+        "IsoFile": "debian-7-amd64-mini.iso",
+        "IsoUrl": "http://mirrors.kernel.org/debian/dists/wheezy/main/installer-amd64/current/images/netboot/mini.iso",
+        "IsoSha256": "8a05824f13357576900345899a9c2dff47375f1bfc2000dda4083ce9fbaf4030"
     },
     "Kernel": "linux",
     "Initrds": [ "initrd.gz" ],

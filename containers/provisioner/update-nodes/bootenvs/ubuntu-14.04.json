@@ -3,7 +3,10 @@
     "OS": {
         "Name": "ubuntu-14.04",
         "Family": "ubuntu",
-        "Version": "14.04"
+        "Version": "14.04",
+        "IsoFile": "ubuntu-14.04.3-server-amd64.iso",
+        "IsoUrl": "http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.3-server-amd64.iso",
+        "IsoSha256": "a3b345908a826e262f4ea1afeb357fd09ec0558cf34e6c9112cead4bb55ccdfb"
     },
     "Kernel": "install/netboot/ubuntu-installer/amd64/linux",
     "Initrds": [ "install/netboot/ubuntu-installer/amd64/initrd.gz" ],

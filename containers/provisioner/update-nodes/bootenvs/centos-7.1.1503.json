@@ -1,7 +1,10 @@
 {
     "Name": "centos-7.1.1503-install",
     "OS": {
-        "Name": "centos-7.1.1503"
+        "Name": "centos-7.1.1503",
+        "IsoFile": "CentOS-7-x86_64-Minimal-1503-01.iso",
+        "IsoUrl": "http://mirrors.kernel.org/centos/7.1.1503/isos/x86_64/CentOS-7-x86_64-Minimal-1503-01.iso",
+        "IsoSha256": "7cf1ac8da13f54d6be41e3ccf228dc5bb35792f515642755ff4780d5714d4278"
     },
     "Kernel": "images/pxeboot/vmlinuz",
     "Initrds": [ "images/pxeboot/initrd.img" ],
