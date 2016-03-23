@@ -43,6 +43,7 @@ goiardi:
 
 rebar_api:
   image: digitalrebar/dr_rebar_api:${DR_TAG}
+  restart: always
   privileged: true
   volumes:
     - ./digitalrebar:/opt/digitalrebar
