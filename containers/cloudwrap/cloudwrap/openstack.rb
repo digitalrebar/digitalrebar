@@ -161,7 +161,7 @@ module OpenStack
 
   # use Status "addresses"
   def self.public_v4(raw)
-    o= if raw =~ /public=([0-9.]*),/
+    o= if raw =~ /public:([0-9.]*),/
       $1
     else
       raw
@@ -175,7 +175,8 @@ module OpenStack
 
     o = {}
     raw.each do |line|
-      l = line.split('=')
+      # public is a hack because of multiple uses of EQUAL in OpenStack return
+      l = line.gsub("public=","public:").split('=')
       o[l[0]] = l[1].gsub!(/\A"|"\Z/, '')
     end
     return o
