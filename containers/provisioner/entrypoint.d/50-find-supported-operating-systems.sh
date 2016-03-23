@@ -35,7 +35,7 @@ for f in "$GOPATH/src/github.com/rackn/provisioner-mgmt/bootenvs"/*.json; do
         iso_shasum=$(jq -r '.OS.IsoSha256' < "$f")
         if [[ $iso_shasum && $iso_shasum != null ]]; then
             echo "Validating checksum for $ISO"
-            if ! (cd "$iso_dir"; sha256sums -c <(printf '%s  %s\n' "$iso_shasum" "$iso")); then
+            if ! (cd "$iso_dir"; sha256sum -c <(printf '%s  %s\n' "$iso_shasum" "$iso")); then
                 echo "ISO $iso download interrupted or corrupt -- checksums do not match"
                 continue
             fi
@@ -105,4 +105,4 @@ if which selinuxenabled && selinuxenabled; then
 fi
 
 set_service_attrib provisioner-service provisioner-available-oses "$avail_os_line"
-set_service_attrib provisioner-service provisioner-default-os "$default_os"
+set_service_attrib provisioner-service provisioner-default-os "{\"value\": \"$default_os\"}"
