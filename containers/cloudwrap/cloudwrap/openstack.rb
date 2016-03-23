@@ -13,12 +13,12 @@
 module OpenStack
 
   # create server
-  def self.create(endpoint, name, keyname, image="CentOS", flavor="2048")
+  def self.create(endpoint, name, keyname, image, flavor)
     endpoint["debug"] = true
     images = images(endpoint)
-    image_id = match_image(images, image)
+    image_id = match_image(images, image || "CentOS")
     flavors = flavors(endpoint)
-    flavor_id = match_flavor(flavors, flavor)
+    flavor_id = match_flavor(flavors, flavor || "2048")
     params = "--key-name \'#{keyname}\' " \
              "--image \'#{image_id}\' " \
              "--flavor \'#{flavor_id}\' " \
@@ -74,7 +74,8 @@ module OpenStack
   def self.get(endpoint, id)
     raw = base(endpoint, "server show \'#{id}\'", "-f shell")
     o = unshell raw
-    log("openstack.get #{o["name"]} is #{o["id"]}")
+    log "OpenStack.get server #{id} is #{o["name"]} + #{o["id"]}"
+    log "OpenStack.get DEBUG #{o.inspect}" if endpoint["debug"]
     return o
 
     # os-dcf:diskconfig="AUTO"
@@ -158,12 +159,15 @@ module OpenStack
 
   end
 
+  # use Status "addresses"
   def self.public_v4(raw)
-    if raw =~ /public=([0-9.]),/
-      return $0
+    o= if raw =~ /public=([0-9.]*),/
+      $1
     else
       raw
     end
+    log "OpenStack v4 address #{o} from #{raw}"
+    return o
   end
 
   # parse raw shell output
@@ -181,10 +185,10 @@ module OpenStack
   def self.uncsv(raw, key)
 
     header = raw[0].split("|||")
-    raw.delete_at 0
+    raw.delete_at 0 
     o = {}
     raw.each do |line|
-      l = line.split(/[|||,\,]/)
+      l = line.split(/\|\|\||,/)
       oo = {}
       header.each_index do |i|
         oo[header[i]] = ( l[i] rescue "" )
@@ -198,12 +202,14 @@ module OpenStack
   #   "ID","Name"
   # "149ae890-a138-4a35-9ad1-d9c31aa3750c","CoreOS"
   def self.match_image(images, request)
-    images.each do |k, v|
-      return k if v =~ request
+    if request
+      images.each do |k, v|
+        return k if v["Name"] =~ /#{request}/
+      end
     end
     # backup to CentOS
     images.each do |k, v|
-      return k if v =~ /CentOS/
+      return k if v["Name"] =~ /cent|Cent|CENT/
     end
     # if all else fails, return first image
     return images.keys.first
@@ -220,9 +226,9 @@ module OpenStack
       return k if values["RAM"] == request
     end
 
-    # assume % input, pick matching item
+    # assume % input, pick matching item    
     percent = ((request.to_i/100)*flavors.length).to_i
-    return favors.keys[percent] rescue flavors.keys.first
+    return favors.sort_by{ |k, v| v["RAM"].to_i }[percent] rescue flavors.keys.first
 
   end
 

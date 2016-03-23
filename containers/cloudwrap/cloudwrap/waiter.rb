@@ -9,10 +9,13 @@ require 'diplomat'
 require 'base64'
 require 'tempfile'
 require './common'
+# openstack uses the python API via CLI commands
+require './openstack'  
 
 loop do
   begin
     log "Finding endpoints of servers to check"
+    device_data = {}
     endpoints = {}
     servers = {}
     response = RestClient.get('http://localhost:8500/v1/kv/cloudwrap/create', params: {recurse: true}) rescue nil
@@ -52,14 +55,22 @@ loop do
       # State good?
       case endpoint['provider']
       when 'AWS', 'Google'
-        log "Testing server #{server.id}"
+        log "` #{server.id}"
         unless server.ready?
           log "Server #{server.id} not ready, skipping"
           next
         end
       when 'OpenStack'
-        log "Testing server #{rebar_id} #{cloudwrap_device_id} state"
-        log "state check NOT implemented"
+        log "Testing server #{rebar_id} as OpenStack #{cloudwrap_device_id} state"
+        device_data = OpenStack::get(endpoint, cloudwrap_device_id)
+        unless device_data['status'] == 'ACTIVE'
+          log("Server OpenStack #{cloudwrap_device_id} is #{device_data['status']}, skipping")
+          if device_data["status"] == nil
+            log("Looking for #{cloudwrap_device_id}, but was empty - removing")
+            Diplomat::Kv.delete(key)
+          end
+          next
+        end
       when 'Packet'
         log "Testing server #{rebar_id} #{cloudwrap_device_id} state"
         response = nil
@@ -100,7 +111,29 @@ loop do
         private_dev_cidr = "32"
 
       when 'OpenStack'
-        log("PLACE HOLDER")
+
+        dev_ip = OpenStack::public_v4(device_data['addresses'])
+        cidr = "32"
+        username = nil
+
+        log "Make sure node #{dev_ip} is ssh-able? (from #{device_data['addresses']})"
+        unless %w(ubuntu centos root dhc-user).find do |user|
+          begin
+            Net::SSH.start(dev_ip, user, { keys: [ kp_loc ], paranoid: false }) do |ssh|              
+              ssh.exec!("date") # capture all stderr and stdout output from a remote process
+            end
+            username = user
+          rescue Exception => e
+            log "Server user #{user} on #{cloudwrap_device_id} not sshable, skipping: #{e}"
+            next
+          end
+        end
+
+        # MISSING!
+        private_dev_ip = ""
+        private_dev_cidr = "32"
+      end
+
       when 'Packet'
         # For now, make packet private and public the same.
         # The node can bind to either.
