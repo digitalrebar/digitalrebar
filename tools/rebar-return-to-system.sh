@@ -55,6 +55,6 @@ fi
 rebar nodes move $node_id to $SYS_ID
 
 # Mark the node into sledgehammer and reboot
-rebar nodes update $node_id '{ "bootenv": "discovery" }'
+rebar nodes update $node_id '{ "bootenv": "sledgehammer" }'
 rebar nodes power $node_id reboot
 
