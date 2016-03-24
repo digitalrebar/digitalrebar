@@ -62,7 +62,7 @@ class BarclampBios::Dellrseries < BarclampBios::Driver
           min_length = (item.MinLength.text.to_i rescue nil) || 0
           max_length = (item.MaxLength.text.to_i rescue nil) || 65535
           validate_re = item.ValueExpression.text
-          validate_re = /#{validate_re.empty? ? '^.*$' : validate_re}/
+          validate_re = /#{(validate_re.nil? || validate_re.empty?) ? '^.*$' : validate_re}/
           i["validator"] = {
             "length" => (min_length..max_length),
             "regex" => validate_re

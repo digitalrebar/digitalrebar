@@ -93,6 +93,9 @@ roles:
       - name: raid-debug
         description: "Whether to run the RAID recipes with debugging enabled"
         map: 'raid/debug'
+        default: false
+        schema:
+          type: bool
   - name: raid-configure
     jig: role-provided
     flags:
