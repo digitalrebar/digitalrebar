@@ -115,28 +115,30 @@ loop do
         dev_ip = OpenStack::public_v4(device_data['addresses'])
         cidr = "32"
         username = nil
+        users = (endpoint['os-ssh-user'] || "ubuntu centos root").split(/\s|,/)
 
-        log "Make sure node #{dev_ip} is ssh-able? (from #{device_data['addresses']})"
-        unless %w(ubuntu centos root dhc-user).find do |user|
+        log "Make sure node #{dev_ip} is ssh-able? (user #{users}@#{device_data['addresses']})"
+        users.each do |user|
           begin
             Net::SSH.start(dev_ip, user, { keys: [ kp_loc ], paranoid: false }) do |ssh|              
               ssh.exec!("date") # capture all stderr and stdout output from a remote process
             end
             username = user
+            log "Server user #{username} on #{cloudwrap_device_id} works.  Proceeding..."
+            break
           rescue Exception => e
             log "Server user #{user} on #{cloudwrap_device_id} not sshable, skipping: #{e}"
-            next
           end
         end
 
         # MISSING!
         private_dev_ip = ""
         private_dev_cidr = "32"
-      end
 
       when 'Packet'
         # For now, make packet private and public the same.
         # The node can bind to either.
+        username = 'root'
         cidr = device_data['ip_addresses'][0]['cidr']
         dev_ip = device_data['ip_addresses'][0]['address']
         private_dev_ip = device_data['ip_addresses'][0]['address']
@@ -178,9 +180,7 @@ loop do
         answer = server.ssh("sudo -- ip addr | grep #{private_dev_ip} | awk '{ print $2 }' | awk -F/ '{ print $2 }'")
         private_dev_cidr = answer[0].stdout.strip
 
-      when 'OpenStack'
-        log("PLACE HOLDER")
-      when 'Packet'
+      when 'Packet', 'OpenStack'
         log "Put keys to node"
         Tempfile.open("cloudwrap-keys") do |f|
           pubkeys = JSON.parse(`rebar deployments get system attrib rebar-access_keys`)
@@ -190,7 +190,7 @@ loop do
           f.flush
           f.fsync
           begin
-            Net::SCP.upload!(dev_ip, 'root', f.path, "/tmp/rebar_keys", { ssh: { keys: [ kp_loc ], paranoid: false } })
+            Net::SCP.upload!(dev_ip, username, f.path, "/tmp/rebar_keys", { ssh: { keys: [ kp_loc ], paranoid: false } })
           rescue Exception => e
             log "Server #{cloudwrap_device_id} failed to upload keys, skipping: #{e}"
             next
@@ -199,8 +199,22 @@ loop do
 
         log "Put keys in place on node"
         begin
-          Net::SSH.start(dev_ip, 'root', { keys: [ kp_loc ], paranoid: false }) do |ssh|
+          Net::SSH.start(dev_ip, username, { keys: [ kp_loc ], paranoid: false }) do |ssh|
             # capture all stderr and stdout output from a remote process
+            if username!='root' && endpoint['provider']=='OpenStack'
+              # OpenStack accounts are not always root, add root
+              log "Adding root account for #{endpoint['provider']} from #{username} account"
+              ssh.exec!("sudo -- mkdir -p /root/.ssh")
+              ssh.exec!("sudo -- sed -i -r '/(PasswordAuthentication|PermitRootLogin)/d' /etc/ssh/sshd_config")
+              ssh.exec!("sudo -- printf '\nPasswordAuthentication %s\nPermitRootLogin %s\n' no yes >> /etc/ssh/sshd_config")
+              ssh.exec!("sudo -- service ssh restart")
+              ssh.exec!("sudo -- service sshd restart")
+              ssh.exec!("sudo -- mv /tmp/rebar_keys /root/.ssh/authorized_keys")
+              ssh.exec!("sudo -- chmod 600 /root/.ssh/authorized_keys")
+              ssh.exec!("sudo -- chown root:root /root/.ssh/authorized_keys")
+            else
+              log "Root account exists, just add the keys"
+            end
             ssh.exec!("cat /tmp/rebar_keys >> /root/.ssh/authorized_keys")
             ssh.exec!("rm -f /tmp/rebar_keys")
           end
@@ -221,25 +235,31 @@ loop do
       if ep && ep.respond_to?(:key_pairs)
         old_kp = ep.key_pairs.get(kp_name)
         old_kp.destroy if old_kp
-      elsif ep.nil? # Packet
-        # Packet endpoint has the account key
-        packet_project_token = endpoint['project_token']
+      elsif ep.nil? # Packet or OpenStack
 
-        found, wrong, key_id = get_packet_key_info(packet_project_token, kp_name, '')
-        if key_id
-          response = nil
-          begin
-            response = RestClient.delete "https://api.packet.net/ssh-keys/#{key_id}",
-                                         content_type: :json, accept: :json,
-                                         'X-Auth-Token' => packet_project_token
-          rescue Exception => e
-            log("Failed to remove key: #{e.inspect}")
-            return e.inspect
-          end
+        case endpoint['provider']
+        when "OpenStack"
+          OpenStack::deletekey endpoint, kp_name
+        when 'Packet'
+          # Packet endpoint has the account key
+          packet_project_token = endpoint['project_token']
 
-          if response.code != 204
-            log("Failed to delete device for #{endpoint} #{id}")
-            raise "Failed to delete device for #{endpoint} #{id}"
+          found, wrong, key_id = get_packet_key_info(packet_project_token, kp_name, '')
+          if key_id
+            response = nil
+            begin
+              response = RestClient.delete "https://api.packet.net/ssh-keys/#{key_id}",
+                                           content_type: :json, accept: :json,
+                                           'X-Auth-Token' => packet_project_token
+            rescue Exception => e
+              log("Failed to remove key: #{e.inspect}")
+              return e.inspect
+            end
+
+            if response.code != 204
+              log("Failed to delete device for #{endpoint} #{id}")
+              raise "Failed to delete device for #{endpoint} #{id}"
+            end
           end
         end
       end

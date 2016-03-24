@@ -38,7 +38,7 @@ module OpenStack
 
   # remove key
   def self.deletekey(endpoint, name)
-    log "OpenStack removed key #{key}"
+    log "OpenStack removed key '#{name}'"
     base endpoint, "keypair delete \'#{name}\'"
   end
 
