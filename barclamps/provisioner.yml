@@ -192,6 +192,11 @@ roles:
     jig: script
     icon: present_to_all
     events:
+      - endpoint: inproc://role:provisioner-os-install/on_deployment_create
+        selectors:
+          - event: on_deployment_create
+            obj_class: role
+            obj_id: provisioner-os-install
       - endpoint: inproc://role:provisioner-os-install/on_todo
         selectors:
           - event: on_todo
