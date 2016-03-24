@@ -68,6 +68,16 @@ roles:
         default: '/tftpboot'
         schema:
           type: str
+      - name: provisioner-default-boot-program
+        description: "Default boot program for initial PXE boot"
+        map: 'rebar/provisioner/boot_program'
+        default: 'ipxe'
+        schema:
+          type: str
+          required: true
+          enum:
+            - ipxe
+            - lpxelinux
       - name: provisioner-upstream_proxy
         description: "The upstream proxy the provisioner should use"
         map: 'rebar/provisioner/server/upstream_proxy'

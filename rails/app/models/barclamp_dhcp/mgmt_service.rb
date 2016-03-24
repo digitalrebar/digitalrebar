@@ -69,11 +69,13 @@ class BarclampDhcp::MgmtService < Service
     subnet = r.first.network.to_s
 
     next_server = nil
+    boot_program = 'ipxe'
     BarclampProvisioner::Service.all.each do |role|
       role.node_roles.each do |nr|
         services = Attrib.get('provisioner-webservers', nr)
         next unless services
 
+        boot_program = Attrib.get('provisioner-default-boot-program', nr)
         next_server = services[0]['address']
         break
       end
@@ -126,7 +128,11 @@ class BarclampDhcp::MgmtService < Service
 
     # Option 3 - gateway
     options[3] = network.network_router.address.addr if network and network.network_router
-    options[67] = '{{if (eq (index . 77) "iPXE") }}default.ipxe{{else if (eq (index . 93) "0")}}ipxe.pxe{{else}}ipxe.efi{{end}}'
+    if boot_program == 'ipxe'
+      options[67] = '{{if (eq (index . 77) "iPXE") }}default.ipxe{{else if (eq (index . 93) "0")}}ipxe.pxe{{else}}ipxe.efi{{end}}'
+    else
+      options[67] = 'discovery/lpxelinux.0'
+    end
 
     self.class.create_network(network.name, subnet, next_server, start_ip, end_ip, options)
     self.class.update_network(network.name, subnet, next_server, start_ip, end_ip, options)
@@ -315,7 +321,18 @@ class BarclampDhcp::MgmtService < Service
       options = {}
     else
       options = {}
-      options[67] = '{{if (eq (index . 77) "iPXE") }}default.ipxe{{else if (eq (index . 93) "0")}}ipxe.pxe{{else}}ipxe.efi{{end}}'
+      boot_program = 'ipxe'
+      BarclampProvisioner::Service.all.each do |role|
+        role.node_roles.each do |nr|
+          boot_program = Attrib.get('provisioner-default-boot-program', nr)
+          break
+        end
+      end
+      if boot_program == 'ipxe'
+        options[67] = '{{if (eq (index . 77) "iPXE") }}default.ipxe{{else if (eq (index . 93) "0")}}ipxe.pxe{{else}}ipxe.efi{{end}}'
+      else
+        options[67] = 'discovery/lpxelinux.0'
+      end
     end
     options.each do |k,v|
       hash["options"] ||= []
