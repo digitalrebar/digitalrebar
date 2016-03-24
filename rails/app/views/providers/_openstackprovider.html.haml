@@ -17,3 +17,6 @@
 %tr
   %td= t 'os-region-name', :scope=>'providers.show.openstack'	
   %td= text_field_tag("auth_details[os-region-name]", @item.auth_details['os-region-name'], :size => 30)
+%tr
+  %td= t 'os-ssh-user', :scope=>'providers.show.openstack' 
+  %td= text_field_tag("auth_details[os-ssh-user]", @item.auth_details['os-ssh-user'] || "ubuntu centos", :size => 30)

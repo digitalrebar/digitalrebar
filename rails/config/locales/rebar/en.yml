@@ -524,6 +524,7 @@ en:
         os-project-name: "Project Name"
         os-auth-url: "Auth URL"
         os-region-name: "Region Name"
+        os-ssh-user: "SSH User(s)"
   available_hammers:
     index:
       id: "ID"
