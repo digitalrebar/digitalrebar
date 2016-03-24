@@ -68,7 +68,7 @@ if [[ $DNS_TYPE != EXTERNAL ]] ; then
 
     cat >> /etc/dns-mgmt.conf <<EOF
 type = $DNS_TYPE
-server = $DNS_SERVER
+server = $DNS_SERVER_PARM
 $OTHER_PARMS
 EOF
     /usr/local/bin/rebar-dns-mgmt --backing_store=consul --data_dir=digitalrebar/dns/database &
