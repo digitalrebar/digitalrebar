@@ -19,20 +19,17 @@ RUN apt-get -y update \
   && apt-add-repository ppa:ansible/ansible \
   && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - \
   && apt-get -y update \
-  && apt-get -y install ruby2.1 ruby2.1-dev make cmake curl libxml2-dev libcurl4-openssl-dev libssl-dev build-essential jq sudo postgresql-client-9.4 libpq5 libpq-dev autoconf uuid-runtime ipmitool ansible python-netaddr python-dns python-pip \
-  && pip install dnspython \
-  && gem install bundler \
+  && apt-get -y install ruby2.1 ruby2.1-dev make cmake curl libxml2-dev libcurl4-openssl-dev libssl-dev build-essential jq sudo postgresql-client-9.4 libpq5 libpq-dev autoconf uuid-runtime ipmitool ansible python-netaddr python-dns python-pip
+RUN pip install dnspython
+RUN gem install bundler \
   && gem install net-http-digest_auth \
-  && gem install berkshelf \
-  && curl -fgL -o /usr/local/bin/rebar \
-         https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64 \
-  && chmod 755 /usr/local/bin/rebar \
-  && [ -d /opt/digitalrebar/core ] || git clone https://github.com/digitalrebar/core /opt/digitalrebar/core \
+  && gem install berkshelf 
+RUN test -d /opt/digitalrebar/core || git clone https://github.com/digitalrebar/core /opt/digitalrebar/core \
   && mkdir -p /var/run/rebar /var/cache/rebar/cookbooks /var/cache/rebar/gems /var/cache/rebar/bin /var/log/rebar \
   && chown -R rebar:rebar /opt/digitalrebar /var/run/rebar /var/cache/rebar /var/log/rebar /home/rebar/.ssh \
-  && chmod 755 /home/rebar/.ssh \
-  && su -l -c 'cd /opt/digitalrebar/core/rails; bundle install --path /var/cache/rebar/gems --standalone --binstubs /var/cache/rebar/bin' rebar \
-  && ln -s /var/cache/rebar/bin/puma /usr/bin/puma \
+  && chmod 755 /home/rebar/.ssh 
+RUN su -l -c 'cd /opt/digitalrebar/core/rails; bundle install --path /var/cache/rebar/gems --standalone --binstubs /var/cache/rebar/bin' rebar
+RUN ln -s /var/cache/rebar/bin/puma /usr/bin/puma \
   && ln -s /var/cache/rebar/bin/pumactl /usr/bin/pumactl \
   && chown rebar:rebar /home/rebar/.ssh/config \
   && chmod 644 /home/rebar/.ssh/config \
@@ -41,13 +38,18 @@ RUN apt-get -y update \
   && openssl x509 -req -days 365 -in /var/run/rebar/server.csr -signkey /var/run/rebar/server.key -out /var/run/rebar/server.crt \
   && rm /var/run/rebar/server.csr \
   && chmod 400 /var/run/rebar/server.key /var/run/rebar/server.crt \
-  && chown rebar:rebar /var/run/rebar/server.key /var/run/rebar/server.crt \
-  && curl -fgL -o '/tmp/chef.deb' \
+  && chown rebar:rebar /var/run/rebar/server.key /var/run/rebar/server.crt
+RUN curl -fgL -o '/tmp/chef.deb' \
        'https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/10.04/x86_64/chef_11.18.12-1_amd64.deb' \
   && dpkg -i /tmp/chef.deb && rm -f /tmp/chef.deb \
-  && sed -i '/\[ssh_connection\]/a ssh_args=' /etc/ansible/ansible.cfg \
-  && /usr/local/go/bin/go get -u github.com/VictorLowther/intelamt/amttool \
+  && sed -i '/\[ssh_connection\]/a ssh_args=' /etc/ansible/ansible.cfg
+RUN /usr/local/go/bin/go get -u github.com/VictorLowther/intelamt/amttool \
   && mv /go/bin/amttool /usr/local/bin/amttool \
   && /usr/local/go/bin/go get -u github.com/VictorLowther/wsman/wscli
+
+RUN curl -fgL -o /usr/local/bin/rebar \
+         https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64 \
+          && chmod 755 /usr/local/bin/rebar
+
 
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
