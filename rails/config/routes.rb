@@ -204,6 +204,12 @@ Rebar::Application.routes.draw do
             put :recall
             get :graph
           end
+          resources :events do
+            collection do
+              get 'sample'
+              post 'match'
+            end
+          end
           resources :event_selectors do
             collection do
               get 'sample'
