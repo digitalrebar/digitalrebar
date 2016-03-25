@@ -45,6 +45,12 @@ roles:
   - name: amt-discover
     jig: script
     type: 'BarclampIpmi::AmtDiscover'
+    events:
+      - endpoint: inproc://role:amt-discover/on_active
+        selectors:
+          - event: on_active
+            obj_class: role
+            obj_id: amt-discover
     flags:
       - implicit
       - discovery
@@ -79,6 +85,12 @@ roles:
     flags:
       - implicit
       - discovery
+    events:
+      - endpoint: inproc://role:ipmi-discover/on_active
+        selectors:
+          - event: on_active
+            obj_class: role
+            obj_id: ipmi-discover
     attribs:
       - name: ipmi-enable
         description: "Says whether to try and enable IPMI for this node"
@@ -282,6 +294,12 @@ roles:
     wants-attribs:
       - ipmi-enable
       - ipmi-detected-params
+    events:
+      - endpoint: inproc://role:ipmi-configure/on_active
+        selectors:
+          - event: on_active
+            obj_class: role
+            obj_id: ipmi-configure
     attribs:
       - name: ipmi-username
         description: "The username that will be used to access the IPMI controller remotely."
