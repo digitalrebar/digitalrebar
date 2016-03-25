@@ -82,24 +82,6 @@ class Node < ActiveRecord::Base
     Attrib.where(["attribs.role_id IS NULL OR attribs.role_id in (select role_id from node_roles where node_id = ?)",self.id])
   end
 
-  def self.find_key(key)
-      col,key = case
-                when db_id?(key) then [:id, key.to_i]
-                when key.is_a?(ActiveRecord::Base) then [:id, key.id]
-                when self.respond_to?(:name_column) then [name_column, key]
-                when key == "admin" then [:id,Node.find_by!(admin: true).id]
-                else [:name, key]
-                end
-    begin
-      find_by!(col => key)
-    rescue ActiveRecord::RecordNotFound => e
-      e.rebar_model = self
-      e.rebar_column = col
-      e.rebar_key = key
-      raise e
-    end
-  end
-
   def <=>(other)
     self.name <=> other.name
   end
