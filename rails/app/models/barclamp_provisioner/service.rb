@@ -19,22 +19,17 @@ require 'uri'
 class BarclampProvisioner::Service < Service
 
   def on_node_delete(node)
-    provisioner_delete(node.name)
+    provisioner_delete(node.uuid)
   end
 
   def on_node_change(node)
-    return unless node.previous_changes['bootenv'] or node.previous_changes['name']
+    return unless node.previous_changes['bootenv']
 
     if node.bootenv == 'unknown'
       Rails.logger.info("Node: #{name} bootenv set to unknown, forgetting about it")
-      provisioner_delete(node.name)
+      provisioner_delete(node.uuid)
       return
     end
-
-    if node.previous_changes['name']
-      provisioner_delete(node.previous_changes['name'][0])
-    end
-
     provisioner_create(node)
 
     return unless node.actions[:boot] and node.previous_changes['bootenv']
@@ -63,6 +58,7 @@ private
     provisioner_mgmt = Attrib.get('provisioner-management-servers',sysdepl)
     url = provisioner_mgmt[0]['url']
     payload = {'Name' => node.name,
+               'Uuid' => node.uuid,
                'Address' => node.addresses(:v4_only)[0].addr,
                'BootEnv' => node.bootenv,
                'Params' => {}
@@ -103,11 +99,11 @@ private
     Rails.logger.info("Node: #{node.name} transitioned to #{node.bootenv}")
   end
 
-  def provisioner_delete(name)
+  def provisioner_delete(uuid)
     sysdepl = Deployment.system
     provisioner_mgmt = Attrib.get('provisioner-management-servers',sysdepl)
     url = provisioner_mgmt[0]['url']
-    RestClient.delete("#{url}/machines/#{name}")
+    RestClient.delete("#{url}/machines/#{uuid}")
   end
 
 end

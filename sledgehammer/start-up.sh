@@ -20,7 +20,6 @@ RSYSLOGSERVICE=rsyslog
 # Some useful boot parameter matches
 ip_re='([0-9a-f.:]+/[0-9]+)'
 bootif_re='BOOTIF=([^ ]+)'
-host_re='rebar\.fqdn=([^ ]+)'
 provisioner_re='provisioner\.web=([^ ]+)'
 domain_re='option domain-name "([^"]+)'
 dns_servers_re='option domain-name-servers ([^;]+)'
