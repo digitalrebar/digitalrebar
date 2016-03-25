@@ -28,6 +28,13 @@ roles:
     jig: chef
     requires:
       - consul
+    events:
+      - endpoint: inproc://role:proxy-server/on_network_create
+        selectors:
+          - event: on_network_create
+      - endpoint: inproc://role:proxy-server/on_network_delete
+        selectors:
+          - event: on_network_delete
     attribs:
       - name: proxy-upstream_proxy
         description: "The upstream Web proxy that the proxy on the system will use"
@@ -66,6 +73,13 @@ roles:
                   pattern: '/\Ahttp:\/\/.+\z/'
   - name: proxy-client
     jig: script
+    events:
+      - endpoint: inproc://role:proxy-client/on_network_allocation_create
+        selectors:
+          - event: on_network_allocation_create
+      - endpoint: inproc://role:proxy-client/on_network_allocation_delete
+        selectors:
+          - event: on_network_allocation_delete
     flags:
       - implicit
     wants-attribs:

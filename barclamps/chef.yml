@@ -61,6 +61,17 @@ roles:
       - proxy-client
     flags:
       - implicit
+    events:
+      - endpoint: inproc://role:chef-client/on_node_delete
+        selectors:
+          - event: on_node_delete
+            obj_class: role
+            obj_id: chef-client
+      - endpoint: inproc://role:chef-client/sync_on_todo
+        selectors:
+          - event: sync_on_todo
+            obj_class: role
+            obj_id: chef-client
     wants-attribs:
       - chef-servers
   - name: chef-solo

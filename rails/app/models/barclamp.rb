@@ -235,6 +235,20 @@ class Barclamp < ActiveRecord::Base
                                :schema => attrib_writable ? attrib['schema']: nil,
                                :barclamp_id => barclamp.id)
         end if r && role['attribs']
+        role['events'].each do |event|
+          evt = EventSink.find_or_create_by!(endpoint: event['endpoint'])
+          evt_args={}
+          evt_args[:username] ||= event['username']
+          evt_args[:authenticator] ||= event['authenticator']
+          evt_args[:notes] ||= event['notes']
+          evt.update_attributes!(evt_args)
+          evt_selectors = evt.event_selectors.all
+          event['selectors'].each do |selector|
+            next if evt_selectors.any?{|sel| sel.selector == selector}
+            Rails.logger.info("Registering role #{role_name} to handle event #{event['endpoint']} #{selector['event']}")
+            EventSelector.create!(event_sink_id: evt.id, selector: selector)
+          end
+        end if r && role['events']
       end if bc['roles']
       bc['attribs'].each do |attrib|
         Rails.logger.info("Importing attrib #{attrib['name']} for barclamp #{barclamp.name}")

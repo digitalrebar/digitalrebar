@@ -299,6 +299,12 @@ class Network < ActiveRecord::Base
                        "type" => "str",
                        "required" => true,
                        "pattern" => '/[0-9a-f:]+/'})
+      es = EventSink.find_or_create_by!(endpoint: "inproc://role:#{role_name}/on_proposed")
+      EventSelector.create!(event_sink_id: es.id,
+                            selector: {
+                              'event' => 'on_proposed',
+                              'obj_class' => 'role',
+                              'obj_id' => role_name})
     end
   end
 
@@ -338,28 +344,19 @@ class Network < ActiveRecord::Base
   # Call the on_network_delete hooks.
   def on_destroy_hooks
     # do the low cohorts last
-    Rails.logger.info("Network: calling all role on_network_delete hooks for #{name}")
-    Role.all_cohorts_desc.each do |r|
-      begin
-        Rails.logger.info("Network: Calling #{r.name} on_network_delete for #{self.name}")
-        r.on_network_delete(self)
-      rescue Exception => e
-        Rails.logger.error "Network #{name} attempting to cleanup role #{r.name} failed with #{e.message}"
-      end
+    begin
+      Event.fire(self, event: 'on_network_delete')
+    rescue Exception => e
+      Rails.logger.error "Network: on_network_delete #{name} failed with #{e.message}"
     end
   end
 
   # Call the on_network_change hooks.
   def on_change_hooks
-    # do the low cohorts last
-    Rails.logger.info("Network: calling all role on_network_change hooks for #{name}")
-    Role.all_cohorts_desc.each do |r|
-      begin
-        Rails.logger.info("Network: Calling #{r.name} on_network_change for #{self.name}")
-        r.on_network_change(self)
-      rescue Exception => e
-        Rails.logger.error "Network #{name} attempting to change role #{r.name} failed with #{e.message}"
-      end
+    begin
+      Event.fire(self, event: 'on_network_change')
+    rescue Exception => e
+      Rails.logger.error "Network: on_network_change #{name} failed with #{e.message}"
     end
   end
 
@@ -369,11 +366,7 @@ class Network < ActiveRecord::Base
     # do the low cohorts first
     return if @after_create
     @after_create = true
-    Rails.logger.info("Network: calling all role on_network_create hooks for #{name}")
-    Role.all_cohorts.each do |r|
-      Rails.logger.info("Network: Calling #{r.name} on_network_create for #{self.name}")
-      r.on_network_create(self)
-    end
+    Event.fire(self, event: 'on_network_create')
   end
 
 end

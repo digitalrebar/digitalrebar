@@ -130,13 +130,12 @@ class DeploymentRole < ActiveRecord::Base
   def role_create_hook
     return if @created
     @created = true
-    Rails.logger.info("Running on_deployment_create hook for #{role.name}")
-    role.on_deployment_create(self)
+    Event.fire(self, obj_class: 'role', obj_id: role.name, event: 'on_deployment_create')
   end
 
   def role_delete_hook
     return false unless noderoles.count == 0
-    role.on_deployment_delete(self)
+    Event.fire(self, obj_class: 'role', obj_id: role.name, event: 'on_deployment_delete')
   end
 
 end

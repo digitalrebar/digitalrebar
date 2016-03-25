@@ -51,17 +51,12 @@ class NetworkRouter < ActiveRecord::Base
     # do the low cohorts last
     return if @after_create
     @after_create = true
-    Rails.logger.info("NetworkRouter: calling all role on_network_change hooks for #{network.name}")
-    Role.all_cohorts_desc.each do |r|
-      begin
-        Rails.logger.info("NetworkRouter: Calling #{r.name} on_network_change for #{self.network.name}")
-        r.on_network_change(self.network)
-      rescue Exception => e
-        Rails.logger.error "NetworkRouter #{self.address} attempting to change role #{r.name} failed with #{e.message}"
-      end
+    begin
+      Event.fire(self.network, event: 'on_network_change')
+    rescue Exception => e
+      Rails.logger.error "NetworkRouter: on_network_change #{self.address} failed with #{e.message}"
     end
   end
-
 
   def router_is_sane
     # A router is sane when its address is in a subnet covered by one of its ranges

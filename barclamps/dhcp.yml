@@ -40,6 +40,30 @@ roles:
     jig: role-provided
     flags:
       - service
+    events:
+      - endpoint: inproc://role:dhcp-mgmt_service/on_active
+        selectors:
+          - event: on_active
+            obj_class: role
+            obj_id: dhcp-mgmt_service
+      - endpoint: inproc://role:dhcp-mgmt_service/on_node_change
+        selectors:
+          - event: on_node_change
+      - endpoint: inproc://role:dhcp-mgmt_service/on_network_create
+        selectors:
+          - event: on_network_create
+      - endpoint: inproc://role:dhcp-mgmt_service/on_network_change
+        selectors:
+          - event: on_network_change
+      - endpoint: inproc://role:dhcp-mgmt_service/on_network_delete
+        selectors:
+          - event: on_network_delete
+      - endpoint: inproc://role:dhcp-mgmt_service/on_network_allocation_create
+        selectors:
+          - event: on_network_allocation_create
+      - endpoint: inproc://role:dhcp-mgmt_service/on_network_allocation_delete
+        selectors:
+          - event: on_network_allocation_delete
     attribs:
       - name: dhcp-management-servers
         description: 'DHCP Management servers that all Rebar admins should use'
