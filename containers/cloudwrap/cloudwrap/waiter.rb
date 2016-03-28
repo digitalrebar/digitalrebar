@@ -200,10 +200,11 @@ loop do
         log "Put keys in place on node"
         begin
           Net::SSH.start(dev_ip, username, { keys: [ kp_loc ], paranoid: false }) do |ssh|
+            log "SSH keysetup using `ssh #{username}@#{dev_ip} -i #{kp_loc}`"
             # capture all stderr and stdout output from a remote process
             if username!='root' && endpoint['provider']=='OpenStack'
               # OpenStack accounts are not always root, add root
-              log "Adding root account for #{endpoint['provider']} from #{username} account"
+              log "Adding root account for #{endpoint['provider']} from #{username}@#{dev_ip} account"
               ssh.exec!("sudo -- mkdir -p /root/.ssh")
               ssh.exec!("sudo -- sed -i -r '/(PasswordAuthentication|PermitRootLogin)/d' /etc/ssh/sshd_config")
               ssh.exec!("sudo -- printf '\nPasswordAuthentication %s\nPermitRootLogin %s\n' no yes >> /etc/ssh/sshd_config")
@@ -214,9 +215,9 @@ loop do
               ssh.exec!("sudo -- chown root:root /root/.ssh/authorized_keys")
             else
               log "Root account exists, just add the keys"
+              ssh.exec!("cat /tmp/rebar_keys >> /root/.ssh/authorized_keys")
+              ssh.exec!("rm -f /tmp/rebar_keys")
             end
-            ssh.exec!("cat /tmp/rebar_keys >> /root/.ssh/authorized_keys")
-            ssh.exec!("rm -f /tmp/rebar_keys")
           end
         rescue Exception => e
           log "Server #{cloudwrap_device_id} not key updatable, skipping: #{e}"
@@ -239,7 +240,7 @@ loop do
 
         case endpoint['provider']
         when "OpenStack"
-          OpenStack::deletekey endpoint, kp_name
+          # OpenStack::deletekey endpoint, kp_name 
         when 'Packet'
           # Packet endpoint has the account key
           packet_project_token = endpoint['project_token']
