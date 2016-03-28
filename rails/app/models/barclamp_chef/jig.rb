@@ -86,7 +86,7 @@ class BarclampChef::Jig < Jig
   end
 
   def create_node(node)
-    cb_nodename = node.name
+    cb_nodename = node.uuid
     Rails.logger.info("ChefJig Creating node #{cb_nodename}")
     prep_chef_auth
     cb_noderolename = node_role_name(cb_nodename)
