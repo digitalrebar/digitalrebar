@@ -52,6 +52,12 @@ class OpenStackProvider < CloudProvider
         default: "",
         length: 30,
         name: I18n.t('os-region-name', scope: "providers.show.openstack" )
+      },
+      :"os-debug" => {
+        type: "text",
+        default: "false",
+        length: 8,
+        name: I18n.t('os-debug', scope: "providers.show.openstack" )
       }
     }
   end
