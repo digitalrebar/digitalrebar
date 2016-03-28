@@ -74,7 +74,7 @@ module OpenStack
     raw = base(endpoint, "server show \'#{id}\'", "-f shell")
     o = unshell raw
     log "OpenStack.get server #{id} is #{o["name"]} + #{o["id"]}"
-    log "OpenStack.get DEBUG #{o.inspect}" if endpoint["debug"]
+    log "OpenStack.get DEBUG #{o.inspect}" if os_debug(endpoint)
     return o
 
     # os-dcf:diskconfig="AUTO"
@@ -112,7 +112,7 @@ module OpenStack
   def self.flavors(endpoint)
     raw = base(endpoint, "flavor list", "-f csv")
     o = uncsv raw, "ID"
-    log "OpenStack DEBUG flavors #{o.inspect}" if endpoint["debug"]
+    log "OpenStack DEBUG flavors #{o.inspect}" if os_debug(endpoint)
     return o
   end
 
@@ -120,7 +120,7 @@ module OpenStack
   def self.images(endpoint)
     raw = base(endpoint, "image list", "-f csv")
     o = uncsv raw, "ID"
-    log "OpenStack DEBUG images #{o.inspect}" if endpoint["debug"]
+    log "OpenStack DEBUG images #{o.inspect}" if os_debug(endpoint)
     return o
   end
 
@@ -138,7 +138,7 @@ module OpenStack
     o = nil
     if with_result
       raw = %x[#{full_cmd} #{with_result}] rescue ""
-      log "OpenStack DEBUG raw result\n#{raw}" if endpoint["debug"]
+      log "OpenStack DEBUG raw result\n#{raw}" if os_debug(endpoint)
       log "executed OpenStack command [openstack #{cmd} #{with_result}]"
       case with_result
       when "-f csv"
@@ -148,7 +148,7 @@ module OpenStack
       else
         o = raw.split("\n")
       end
-      log "OpenStack DEBUG result\n#{o}" if endpoint["debug"]
+      log "OpenStack DEBUG result\n#{o}" if os_debug(endpoint)
     else
       o = system(full_cmd) rescue false
       log "system call OpenStack command [openstack #{cmd}] with result #{o}"
@@ -160,7 +160,7 @@ module OpenStack
 
   # use Status "addresses"
   def self.public_v4(raw)
-    o= if raw =~ /public:([0-9.]*),/
+    o= if raw =~ /public=([0-9.]*),/
       $1
     else
       raw
@@ -174,8 +174,7 @@ module OpenStack
 
     o = {}
     raw.each do |line|
-      # public is a hack because of multiple uses of EQUAL in OpenStack return
-      l = line.gsub("public=","public:").split('=')
+      l = line.split('=', 2)
       o[l[0]] = l[1].gsub!(/\A"|"\Z/, '')
     end
     return o
@@ -197,6 +196,11 @@ module OpenStack
     end
     return o
 
+  end
+
+  def self.os_debug(endpoint)
+    return true if endpoint['os-debug'] and endpoint['os-debug']=="true"
+    return false
   end
 
   #   "ID","Name"
