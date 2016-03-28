@@ -285,7 +285,8 @@ add_provider() {
     \"os-project-name\": \"$PROVIDER_OS_PROJECT_NAME\",
     \"os-auth-url\": \"$PROVIDER_OS_AUTH_URL\",
     \"os-region-name\": \"$PROVIDER_OS_REGION_NAME\",
-    \"os-ssh-user\": \"$PROVIDER_OS_SSH_USER\"
+    \"os-ssh-user\": \"$PROVIDER_OS_SSH_USER\",
+    \"os-debug\": \"$PROVIDER_OS_DEBUG\"
   }
 }"
             rebar providers create "$provider"

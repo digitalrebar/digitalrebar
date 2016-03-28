@@ -240,7 +240,7 @@ loop do
 
         case endpoint['provider']
         when "OpenStack"
-          # OpenStack::deletekey endpoint, kp_name 
+          OpenStack::deletekey endpoint, kp_name 
         when 'Packet'
           # Packet endpoint has the account key
           packet_project_token = endpoint['project_token']

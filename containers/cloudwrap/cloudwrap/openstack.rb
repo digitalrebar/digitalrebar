@@ -14,7 +14,6 @@ module OpenStack
 
   # create server
   def self.create(endpoint, name, keyname, image, flavor)
-    endpoint["debug"] = true
     images = images(endpoint)
     image_id = match_image(images, image || "CentOS")
     flavors = flavors(endpoint)
