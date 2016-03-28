@@ -56,7 +56,7 @@ EOF
 
 # Mark us as alive.
 # Mark the node as alive.
-while ! rebar nodes update $HOSTNAME '{"alive": true}'; do sleep 5; done
+while ! rebar nodes update $REBAR_UUID '{"alive": true}'; do sleep 5; done
 
 # We are alive, and we should have a host entry created now.  Wait forever to do something.
 # The last line in this script must always be exit 0!!
