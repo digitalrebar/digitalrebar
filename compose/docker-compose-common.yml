@@ -178,6 +178,16 @@ forwarder:
     - "3000:3000"
     - "443:443"
 
+revproxy:
+  image: digitalrebar/dr_rev_proxy:${DR_TAG}
+  privileged: true
+  restart: always
+  volumes:
+    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+  env_file:
+    - ./common.env
+    - ./access.env
+
 node:
   image: digitalrebar/dr_node:${DR_TAG}
   privileged: true

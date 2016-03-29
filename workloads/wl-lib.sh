@@ -432,7 +432,7 @@ start_machine() {
     esac
 }
 
-known_containers=(provisioner dhcp dns dns-mgmt ntp chef webproxy logging debug node access ux)
+known_containers=(provisioner dhcp dns dns-mgmt ntp chef revproxy webproxy logging debug node access ux)
 known_workloads=(all docker kubernetes hardware ceph packstack docker-swarm enterprise mesosphere burnin k8s-contrail stackengine rackn ux)
 
 declare -A containers
