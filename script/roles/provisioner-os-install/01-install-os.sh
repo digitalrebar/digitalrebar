@@ -9,6 +9,12 @@ set -x
 set +e
 
 . /etc/profile.d/rebar-key.sh
+if ! [[ -f /etc/rebar-uuid ]]; then
+    echo "Must be run on a Sledgehammer that knows about node UUIDs"
+    exit 1
+fi
+
+REBAR_UUID="$(cat /etc/rebar-uuid)"
 
 # Nuke it all.
 declare vg pv maj min blocks name
@@ -41,7 +47,7 @@ while read maj min blocks name; do
     fi
 done < <(tac /proc/partitions)
 
-while ! rebar nodes get $HOSTNAME attrib provisioner-active-bootstate |grep -q -- '-install'; do
+while ! rebar nodes get $REBAR_UUID attrib provisioner-active-bootstate |grep -q -- '-install'; do
     sleep 1
 done
 
