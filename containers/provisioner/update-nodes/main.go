@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo/engine/standard"
 	mw "github.com/labstack/echo/middleware"
 	"github.com/labstack/gommon/log"
+	uuid "github.com/satori/go.uuid"
 )
 
 var machineKey, fileRoot, provisionerURL, commandURL string
@@ -45,6 +46,14 @@ func init() {
 		"command",
 		"http://localhost:3000",
 		"Public URL for the Command and Control server machines should communicate with")
+}
+
+func popMachine(param string) *Machine {
+	if _, err := uuid.FromString(param); err == nil {
+		return &Machine{Uuid: param}
+	} else {
+		return &Machine{Name: param}
+	}
 }
 
 func main() {
@@ -101,15 +110,16 @@ func main() {
 		}))
 	api.Get("/machines/:name",
 		echo.HandlerFunc(func(c echo.Context) error {
-			return getThing(c, &Machine{Name: c.P(0)})
+
+			return getThing(c, popMachine(c.P(0)))
 		}))
 	api.Patch("/machines/:name",
 		echo.HandlerFunc(func(c echo.Context) error {
-			return updateThing(c, &Machine{Name: c.P(0)}, &Machine{})
+			return updateThing(c, popMachine(c.P(0)), &Machine{})
 		}))
 	api.Delete("/machines/:name",
 		echo.HandlerFunc(func(c echo.Context) error {
-			return deleteThing(c, &Machine{Name: c.P(0)})
+			return deleteThing(c, popMachine(c.P(0)))
 		}))
 
 	// template methods

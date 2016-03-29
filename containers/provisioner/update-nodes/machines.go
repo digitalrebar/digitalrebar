@@ -12,6 +12,7 @@ import (
 // should manage the boot environment for.
 type Machine struct {
 	Name    string                 // The FQDN of the machine.
+	Uuid    string                 // the UUID of the machine
 	Address string                 // The IPv4 address that the machine PXE boots with.
 	BootEnv string                 // The boot environment that the machine should boot into.
 	Params  map[string]interface{} // Any additional parameters that may be needed for template expansion.
@@ -42,11 +43,15 @@ func (n *Machine) prefix() string {
 }
 
 func (n *Machine) key() string {
-	return path.Join(n.prefix(), n.Name)
+	if n.Uuid != "" {
+		return path.Join(n.prefix(), n.Uuid)
+	} else {
+		return path.Join(n.prefix(), n.Name)
+	}
 }
 
 func (n *Machine) newIsh() keySaver {
-	res := &Machine{Name: n.Name}
+	res := &Machine{Name: n.Name, Uuid: n.Uuid}
 	return keySaver(res)
 }
 

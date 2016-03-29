@@ -33,6 +33,13 @@ do
   sleep 1
 done
 
+if [[ ! -f /etc/rebar-uuid ]]; then
+    echo "Missing /etc/rebar-uuid!"
+    echo "You will need to register this server with Rebar manually,"
+    echo "and then add the node UUID to /etc/rebar-uuid"
+fi
+export REBAR_UUID="$(cat /etc/rebar-uuid)"
+
 if [[ -f /etc/rebar.install.key ]]; then
     export REBAR_KEY="$(cat /etc/rebar.install.key)"
 fi
@@ -47,14 +54,13 @@ export REBAR_ENDPOINT="{{.CommandURL}}"
 
 put_alive() {
     echo "Setting node alive=$1"
-    HOSTNAME={{.Machine.Name}}
-    rebar nodes update "$HOSTNAME" "{\"alive\": $1, \"bootenv\": \"local\"}"
-    while [[ $(rebar nodes get "$HOSTNAME" attrib provisioner-active-bootstate |jq -r '.value') != local ]]; do
+    rebar nodes update "$REBAR_UUID" "{\"alive\": $1, \"bootenv\": \"local\"}"
+    while [[ $(rebar nodes get "$REBAR_UUID" attrib provisioner-active-bootstate |jq -r '.value') != local ]]; do
         sleep 1
     done
 }
 
-# Force time (some OS already have this done)
+# Force time (some OS already have this done)q
 ntpdate "{{index (.Param "ntp_servers") 0}}" 2>/dev/null >/dev/null
 
 case $1 in
