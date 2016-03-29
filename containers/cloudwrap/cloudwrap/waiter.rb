@@ -112,7 +112,8 @@ loop do
 
       when 'OpenStack'
 
-        dev_ip = OpenStack::public_v4(device_data['addresses'])
+        addresses = OpenStack::addresses(device_data['addresses'])
+        dev_ip = addresses["public"][:v4] rescue "public_v4_not_defined"
         cidr = "32"
         username = nil
         users = (endpoint['os-ssh-user'] || "ubuntu centos root").split(/\s|,/)
@@ -131,9 +132,9 @@ loop do
           end
         end
 
-        # MISSING for Now!  Using Public IP.
-        private_dev_ip = dev_ip
+        private_dev_ip = addresses["private"][:v4] rescue "private_v4_not_defined"
         private_dev_cidr = "32"
+        log "OpenStack server public IP #{dev_ip} & private IP #{private_dev_ip}"
 
       when 'Packet'
         # For now, make packet private and public the same.
