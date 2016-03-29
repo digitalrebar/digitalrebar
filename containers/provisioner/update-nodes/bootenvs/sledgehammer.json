@@ -5,7 +5,7 @@
     },
     "Kernel": "vmlinuz0",
     "Initrds": [ "initrd0.img" ],
-    "BootParams": "rootflags=loop root=live:/sledgehammer.iso rootfstype=auto ro liveimg rd_NO_LUKS rd_NO_MD rd_NO_DM provisioner.web={{.ProvisionerURL}} rebar.web={{.CommandURL}} rebar.uuid={{.Machine.Name}} rebar.install.key={{.Param \"rebar-machine_key\"}}",
+    "BootParams": "rootflags=loop root=live:/sledgehammer.iso rootfstype=auto ro liveimg rd_NO_LUKS rd_NO_MD rd_NO_DM provisioner.web={{.ProvisionerURL}} rebar.web={{.CommandURL}} rebar.uuid={{.Machine.UUID}} rebar.install.key={{.Param \"rebar-machine_key\"}}",
     "RequiredParams": ["ntp_servers","provisioner-online","rebar-access_keys","rebar-machine_key"],
     "Templates": [
         {

@@ -37,7 +37,7 @@ if [[ $(cat /proc/cmdline) =~ $host_re ]]; then
     export REBAR_UUID="${BASH_REMATCH[1]}"
     if [[ $REBAR_UUID =~ $uuid_re ]]; then
         # Our rebar.uuid is really a UUID, get the hostname elsewhere.
-        export HOSTNAME="$(rebar nodes get "$REBAR_UUID" |jq -r '.name')"
+        export HOSTNAME="$(rebar nodes show "$REBAR_UUID" |jq -r '.name')"
     else
         # The 'uuid' we recieved is really the hostname.
         export HOSTNAME="$REBAR_UUID"
