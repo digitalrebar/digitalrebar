@@ -48,16 +48,10 @@ exec > /root/post-install.log 2>&1
 set -x
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 (cd /bin; curl -fgl -O "{{.ProvisionerURL}}/files/rebar"; chmod 755 rebar)
+
 export REBAR_ENDPOINT="{{.CommandURL}}"
 export REBAR_KEY="{{.Param "rebar-machine_key"}}"
 echo "$REBAR_KEY" >/etc/rebar.install.key
-export HOSTNAME="{{.Machine.Name}}"
-if [ -f /etc/sysconfig/network ] ; then
-      sed -i -e "s/HOSTNAME=.*/HOSTNAME=${HOSTNAME}/" /etc/sysconfig/network
-fi
-echo "${HOSTNAME#*.}" >/etc/domainname
-echo "$HOSTNAME" >/etc/hostname
-hostname "$HOSTNAME"
 
 # Use the install repo from the provisioner for local package installation
 cat >/etc/yum.repos.d/00-rebar-base.repo <<EOF
@@ -102,6 +96,25 @@ fi
 
 yum -y install jq
 
+node_json="$(rebar nodes show "{{.Machine.Name}}")" && \
+    HOSTNAME="$(jq -r '.name' <<<"$node_json")" && \
+    REBAR_UUID="$(jq -r '.uuid' <<< "$node_json")" 
+
+if ! [[ $HOSTNAME && $HOSTNAME != null && $REBAR_UUID && $REBAR_UUID != null ]]; then
+    echo "Unable to configure hostname and rebar uuid!"
+    sleep 9000
+    exit 1
+fi
+if [ -f /etc/sysconfig/network ] ; then
+      sed -i -e "s/HOSTNAME=.*/HOSTNAME=${HOSTNAME}/" /etc/sysconfig/network
+fi
+echo "${HOSTNAME#*.}" >/etc/domainname
+echo "$HOSTNAME" >/etc/hostname
+hostname "$HOSTNAME"
+export HOSTNAME
+
+echo "$REBAR_UUID" > /etc/rebar-uuid
+
 mkdir -p /root/.ssh
 cat >/root/.ssh/authorized_keys <<EOF
 {{ range $key := .Param "rebar-access_keys" }}{{$key}}{{ end }}
@@ -132,8 +145,8 @@ rm /etc/yum.repos.d/rebar-epel.repo
 
 # boot to runlevel 3 by default
 sed -i -e '/initdefault/ s/5/3/' /etc/inittab
-rebar nodes update "$HOSTNAME" '{"bootenv": "local"}'
-while [[ $(rebar nodes get "$HOSTNAME" attrib provisioner-active-bootstate |jq -r '.value') != local ]]; do
+rebar nodes update "$REBAR_UUID" '{"bootenv": "local"}'
+while [[ $(rebar nodes get "$REBAR_UUID" attrib provisioner-active-bootstate |jq -r '.value') != local ]]; do
     sleep 1
 done
 
