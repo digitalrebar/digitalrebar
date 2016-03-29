@@ -101,6 +101,15 @@ class ProvidersController < ApplicationController
     render api_delete @item
   end
 
+  # provide the JSON expected by available providers
+  def templates
+    render api_array({ "AwsProvider" => AwsProvider.template, 
+             "GoogleProvider" => GoogleProvider.template, 
+             "OpenStackProvider" => OpenStackProvider.template,
+             "PacketProvider" => PacketProvider.template
+            })
+  end
+
   private
 
   # address UI formatting

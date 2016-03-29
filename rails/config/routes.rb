@@ -175,6 +175,7 @@ Rebar::Application.routes.draw do
             collection do
               get 'sample'
               post 'match'
+              get 'templates'
             end
             resources :nodes
           end

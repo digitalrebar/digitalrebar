@@ -15,6 +15,10 @@
 
 class MetalProvider < Provider
 
+  def self.template
+  	{}
+  end
+
   def reboot_node(obj)
     obj.power.reboot
   end
