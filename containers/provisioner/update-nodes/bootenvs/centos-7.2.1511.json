@@ -36,12 +36,12 @@
         },
         {
             "Name": "compute.ks",
-            "Path": "machines/{{.Machine.Name}}/compute.ks",
+            "Path": "{{.Machine.Path}}/compute.ks",
             "UUID": "centos-7.ks.tmpl"
         },
         {
             "Name": "rebar_join.sh",
-            "Path": "machines/{{.Machine.Name}}/rebar_join.sh",
+            "Path": "{{.Machine.Path}}/rebar_join.sh",
             "UUID": "rebar-join.sh.tmpl"
         }
     ]

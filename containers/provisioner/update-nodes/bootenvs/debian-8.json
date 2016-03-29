@@ -41,17 +41,17 @@
         },
         {
             "Name": "seed",
-            "Path": "machines/{{.Machine.Name}}/seed",
+            "Path": "{{.Machine.Path}}/seed",
             "UUID": "net_seed.tmpl"
         },
         {
             "Name": "net-post-install.sh",
-            "Path": "machines/{{.Machine.Name}}/post-install.sh",
+            "Path": "{{.Machine.Path}}/post-install.sh",
             "UUID": "net-post-install.sh.tmpl"
         },
         {
             "Name": "rebar_join.sh",
-            "Path": "machines/{{.Machine.Name}}/rebar_join.sh",
+            "Path": "{{.Machine.Path}}/rebar_join.sh",
             "UUID": "rebar-join.sh.tmpl"
         }
     ]

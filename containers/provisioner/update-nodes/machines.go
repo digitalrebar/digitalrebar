@@ -50,6 +50,10 @@ func (n *Machine) key() string {
 	}
 }
 
+func (n *Machine) Path() string {
+	return n.key()
+}
+
 func (n *Machine) newIsh() keySaver {
 	res := &Machine{Name: n.Name, Uuid: n.Uuid}
 	return keySaver(res)
