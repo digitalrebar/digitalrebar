@@ -17,6 +17,7 @@ CONTAINERS['digitalrebar/cloudwrap']='cloudwrap'
 CONTAINERS['digitalrebar/managed-service']='managed-service'
 CONTAINERS['digitalrebar/dr_node']='node'
 CONTAINERS['digitalrebar/logging']='logging'
+CONTAINERS['digitalrebar/dr_rev_proxy']='rebar-rev-proxy'
 
 declare -A REPOS
 declare -A CONTAINER_PARENTS
