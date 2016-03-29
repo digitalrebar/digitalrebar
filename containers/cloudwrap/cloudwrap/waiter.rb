@@ -131,8 +131,8 @@ loop do
           end
         end
 
-        # MISSING!
-        private_dev_ip = ""
+        # MISSING for Now!  Using Public IP.
+        private_dev_ip = dev_ip
         private_dev_cidr = "32"
 
       when 'Packet'
