@@ -146,7 +146,7 @@ export REBAR_ENDPOINT="{{.CommandURL}}"
 export REBAR_KEY="{{.Param "rebar-machine_key"}}"
 echo "$REBAR_KEY" >/etc/rebar.install.key
 
-node_json="$(rebar nodes show "{{.Machine.Name}}")" && \
+node_json="$(rebar nodes show "{{.Machine.UUID}}")" && \
     HOSTNAME="$(jq -r '.name' <<<"$node_json")" && \
     REBAR_UUID="$(jq -r '.uuid' <<< "$node_json")" 
 

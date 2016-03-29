@@ -96,7 +96,7 @@ fi
 
 yum -y install jq
 
-node_json="$(rebar nodes show "{{.Machine.Name}}")" && \
+node_json="$(rebar nodes show "{{.Machine.UUID}}")" && \
     HOSTNAME="$(jq -r '.name' <<<"$node_json")" && \
     REBAR_UUID="$(jq -r '.uuid' <<< "$node_json")" 
 

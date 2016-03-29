@@ -34,6 +34,13 @@ func (n *Machine) ShortName() string {
 	return n.Name[:idx]
 }
 
+func (n *Machine) UUID() string {
+	if n.Uuid == "" {
+		return n.Name
+	}
+	return n.Uuid
+}
+
 func (n *Machine) Url() string {
 	return provisionerURL + "/" + n.key()
 }
@@ -42,12 +49,12 @@ func (n *Machine) prefix() string {
 	return "machines"
 }
 
+func (n *Machine) Path() string {
+	return path.Join(n.prefix(), n.UUID())
+}
+
 func (n *Machine) key() string {
-	if n.Uuid != "" {
-		return path.Join(n.prefix(), n.Uuid)
-	} else {
-		return path.Join(n.prefix(), n.Name)
-	}
+	return n.Path()
 }
 
 func (n *Machine) newIsh() keySaver {
