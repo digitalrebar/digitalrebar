@@ -412,7 +412,24 @@ start_machine() {
 
             rebar nodes create "$node"
             ;;
+        openstack)
+            node="{
+  \"name\": \"$1\",
+  \"provider\": \"$PROVIDER_NAME\",
+  \"hints\": {
+    \"use-proxy\": false,
+    \"use-ntp\": false,
+    \"use-dns\": false,
+    \"use-logging\": false,
+    \"provider-create-hint\": {
+      \"os-flavor\":\"4096\",
+      \"hostname\": \"$1\"
+    }
+  }
+}"
 
+            rebar nodes create "$node"
+            ;;
         system)
             # Assumes that ADMIN_IP is set
             # Assumes that OS==IP and it can ssh.
@@ -427,7 +444,7 @@ start_machine() {
             ssh root@$OS /root/join_rebar.sh $ADMIN_IP
             ;;
         *)
-            die "add_provider not implemented: $PROVIDER"
+            die "start_machine not implemented: $PROVIDER"
             ;;
     esac
 }

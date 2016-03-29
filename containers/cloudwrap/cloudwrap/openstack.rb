@@ -211,6 +211,12 @@ module OpenStack
         return k if v["Name"] =~ /#{request}/
       end
     end
+    # ok, maybe they were too specific - try w/ less
+    if request
+      images.each do |k, v|
+        return k if v["Name"] =~ /#{request[0..5]}/
+      end
+    end
     # backup to CentOS
     images.each do |k, v|
       return k if v["Name"] =~ /cent|Cent|CENT/
