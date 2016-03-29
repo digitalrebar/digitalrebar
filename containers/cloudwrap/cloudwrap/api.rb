@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# Copyright 2016, RackN Inc
 
 require 'net/ssh'
 require 'json'
@@ -8,6 +9,8 @@ require 'puma'
 require 'fog'
 require 'diplomat'
 require './common'
+# openstack uses the python API via CLI commands
+require './openstack'  
 
 class Servers
   extend Jimson::Handler
@@ -33,6 +36,8 @@ class Servers
       fixed_args[:key_name]=kp_name
     when 'Google'
       fixed_args[:public_key_path] = "#{kp_loc}.pub"
+    when 'OpenStack'
+      OpenStack::addkey(endpoint, kp_name, "#{kp_loc}.pub")
     when 'Packet'
       # Packet endpoint has the account key
       packet_project_token = endpoint['project_token']
@@ -147,6 +152,10 @@ class Servers
         log("Will create new srver with #{fixed_args.inspect}")
         server = ep.servers.create(fixed_args)
         log("Created server #{server.to_json}")
+      when 'OpenStack'
+        name = (fixed_args[:hostname] ? fixed_args[:hostname] : "rebar-cloudwrap-#{node_id}").split('.')[0]
+        server = OpenStack::create(endpoint, name, keyfile_name(node_id), fixed_args[:image_id], fixed_args[:flavor_id])
+        log("Created server #{server.to_json}")        
       when 'Packet'
         # Packet endpoint has the account key
         packet_project_token = endpoint['project_token']
@@ -190,6 +199,9 @@ class Servers
       when 'Google'
         Diplomat::Kv.put("cloudwrap/create/#{node_id}/#{server.name}",endpoint.to_json)
         ret = {id: server.name}
+      when 'OpenStack'
+        Diplomat::Kv.put("cloudwrap/create/#{node_id}/#{server['id']}",endpoint.to_json)
+        ret = server
       when 'Packet'
         Diplomat::Kv.put("cloudwrap/create/#{node_id}/#{server['id']}",endpoint.to_json)
         ret = server
@@ -211,6 +223,8 @@ class Servers
         ep = get_endpoint(endpoint)
         return [] unless ep
         ep.servers if ep
+      when 'OpenStack'
+        OpenStack::list(endpoint)
       when 'Packet'
         # Packet endpoint has the account key
         packet_project_token = endpoint['project_token']
@@ -239,6 +253,8 @@ class Servers
     when 'AWS', 'Google'
       ep = get_endpoint(endpoint)
       ep.servers.get(id)
+    when 'OpenStack'
+      OpenStack::get(endpoint, id)
     when 'Packet'
       # Packet endpoint has the account key
       packet_project_token = endpoint['project_token']
@@ -268,6 +284,8 @@ class Servers
     case endpoint["provider"]
     when 'AWS', 'Google'
       get(endpoint,id).reboot
+    when 'OpenStack'
+      OpenStack::reboot(endpoint,id)
     when 'Packet'
       # Packet endpoint has the account key
       packet_project_token = endpoint['project_token']
@@ -303,6 +321,8 @@ class Servers
         server = ep.servers.get(id) if ep
         log("Could not find server for: #{id}") unless server
         server.destroy if server
+      when 'OpenStack'
+        OpenStack::delete endpoint, id
       when 'Packet'
         # Packet endpoint has the account key
         packet_project_token = endpoint['project_token']
@@ -359,6 +379,7 @@ class Servers
         log "ICMP access already enabled"
       end
     when 'Google' then true
+    when 'OpenStack' then true
     when 'Packet' then true
     else
       raise "No idea how to handle #{endpoint["provider"]}"

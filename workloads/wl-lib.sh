@@ -70,6 +70,12 @@ validate_provider() {
             error=1
         fi
         ;;
+    openstack)
+        if [ "$PROVIDER_OS_AUTH_URL" == "" ] ; then
+            echo "You must define PROVIDER_OS_AUTH_URL (can be added to ~/.dr_info)"
+            error=1
+        fi
+        ;;
     system|local)
         ;;
     *)
@@ -263,6 +269,24 @@ add_provider() {
     \"provider\": \"Google\",
     \"google_project\": \"$PROVIDER_GOOGLE_PROJECT\",
     \"google_json_key\": $PROVIDER_GOOGLE_JSON_KEY
+  }
+}"
+            rebar providers create "$provider"
+            ;;
+        openstack)
+            export PROVIDER_NAME="openstack-provider"
+            provider="{
+  \"name\": \"$PROVIDER_NAME\",
+  \"description\": \"OpenStack Provider\",
+  \"type\": \"OpenStackProvider\",
+  \"auth_details\": {
+    \"os-username\": \"$PROVIDER_OS_USERNAME\",
+    \"os-password\": \"$PROVIDER_OS_PASSWORD\",
+    \"os-project-name\": \"$PROVIDER_OS_PROJECT_NAME\",
+    \"os-auth-url\": \"$PROVIDER_OS_AUTH_URL\",
+    \"os-region-name\": \"$PROVIDER_OS_REGION_NAME\",
+    \"os-ssh-user\": \"$PROVIDER_OS_SSH_USER\",
+    \"os-debug\": \"$PROVIDER_OS_DEBUG\"
   }
 }"
             rebar providers create "$provider"
