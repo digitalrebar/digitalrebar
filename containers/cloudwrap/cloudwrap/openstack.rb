@@ -18,10 +18,13 @@ module OpenStack
     image_id = match_image(images, image || "CentOS")
     flavors = flavors(endpoint)
     flavor_id = match_flavor(flavors, flavor || "2048")
+    nets = networks(endpoint)
     params = "--key-name \'#{keyname}\' " \
              "--image \'#{image_id}\' " \
-             "--flavor \'#{flavor_id}\' " \
-             "\'#{name}\'"
+             "--flavor \'#{flavor_id}\' "
+    params += "--nic \'net-id=#{network(nets,"pub")}\' "
+    params += "--nic \'net-id=#{network(nets,"pri")}\' "
+    params += "\'#{name}\'"
     raw = base endpoint, "server create #{params}", "-f shell"
     o = unshell(raw)
     id = o["id"]
@@ -73,8 +76,8 @@ module OpenStack
   def self.get(endpoint, id)
     raw = base(endpoint, "server show \'#{id}\'", "-f shell")
     o = unshell raw
-    log "OpenStack.get server #{id} is #{o["name"]} + #{o["id"]}"
-    log "OpenStack.get DEBUG #{o.inspect}" if os_debug(endpoint)
+    log "OpenStack get server #{id} is #{o["name"]} + #{o["id"]}"
+    log "OpenStack get DEBUG #{o.inspect}" if os_debug(endpoint)
     return o
 
     # os-dcf:diskconfig="AUTO"
@@ -119,15 +122,58 @@ module OpenStack
   # retrieve the images
   def self.images(endpoint)
     raw = base(endpoint, "image list", "-f csv")
-    o = uncsv raw, "ID"
+    o = uncsv(raw, "ID")
     log "OpenStack DEBUG images #{o.inspect}" if os_debug(endpoint)
+    return o
+  end
+
+  # use neutron to get the networks (eventually, this should be in OpenStack API)
+  def self.networks(endpoint)
+
+    o = netbase endpoint, "net-list", "-f csv"
+    r = uncsv(o, "id")
+    log "OpenStack networks DEBUG hash: #{r.inspect}" if os_debug(endpoint)
+    return r
+
+  end
+
+  def self.netbase(endpoint, cmd, with_result=nil)
+
+    full_cmd = "neutron --os-username \'#{endpoint['os-username']}\' " \
+                    "--os-password \'#{endpoint['os-password']}\' " \
+                    "--os-tenant-name \'#{endpoint['os-project-name']}\' " \
+                    "--os-region-name \'#{endpoint['os-region-name']}\' " \
+                    "--os-auth-url \'#{endpoint['os-auth-url']}\' " \
+                    "#{cmd}"
+
+    o = nil
+    if with_result
+      raw = %x[#{full_cmd} #{with_result}] rescue "ERROR: Command not executed"
+      unless os_debug(endpoint)
+        log "OpenStack Neutron executed command [openstack #{cmd} #{with_result}] > '#{raw.truncate(40)}'"
+      else
+        log "OpenStack Neutron DEBUG executed command\n#{full_cmd} #{with_result}"
+        log "OpenStack Neutron DEBUG raw result\n#{raw}" 
+      end
+      case with_result
+      when "-f csv"
+        o = raw.gsub("\",\"","|||").gsub("\"","").split("\r\n")
+      when "-f shell"
+        o = raw.split("\n")
+      else
+        o = raw.split("\n")
+      end
+      log "OpenStack Neutron DEBUG result\n#{o}" if os_debug(endpoint)
+    else
+      o = system(full_cmd) rescue false
+      log "system call OpenStack Neutron command [openstack #{cmd}] with result #{o}"
+    end
     return o
   end
 
   # provide the base CLI interface with correct flags
   def self.base(endpoint, cmd, with_result=nil)
 
-    #log("OpenStack inputs #{endpoint}")
     full_cmd = "openstack --os-username \'#{endpoint['os-username']}\' " \
                     "--os-password \'#{endpoint['os-password']}\' " \
                     "--os-project-name \'#{endpoint['os-project-name']}\' " \
@@ -137,9 +183,13 @@ module OpenStack
 
     o = nil
     if with_result
-      raw = %x[#{full_cmd} #{with_result}] rescue ""
-      log "OpenStack DEBUG raw result\n#{raw}" if os_debug(endpoint)
-      log "executed OpenStack command [openstack #{cmd} #{with_result}]"
+      raw = %x[#{full_cmd} #{with_result}] rescue "ERROR: Command not executed"
+      unless os_debug(endpoint)
+        log "OpenStack executed command [openstack #{cmd} #{with_result}] > '#{raw.truncate(40)}'"
+      else
+        log "OpenStack DEBUG executed command\n#{full_cmd} #{with_result}"
+        log "OpenStack DEBUG raw result\n#{raw}" 
+      end
       case with_result
       when "-f csv"
         o = raw.gsub("\",\"","|||").gsub("\"","").split("\r\n")
@@ -158,14 +208,29 @@ module OpenStack
 
   end
 
-  # use Status "addresses"
-  def self.public_v4(raw)
-    o= if raw =~ /public=([0-9.]*),/
-      $1
-    else
-      raw
+  def self.network(nets, name)
+    nets.each do |key, net|
+      return key if net["name"] =~ /#{name}/
     end
-    log "OpenStack v4 address #{o} from #{raw}"
+    return nil
+  end
+
+  def self.addresses(raw)
+    nics = raw.split(";")
+    o = {}
+    nics.each do |nic|
+      parse = nic.split("=")
+      name = parse.first.strip
+      addresses = parse[1].split(",")
+      v4 = nil
+      v6 = nil
+      addresses.each do |addr|
+        v4 = addr.strip if addr =~/\./
+        v6 = addr.strip if addr =~/\:/
+      end
+      o[name] = {v4: v4, v6: v6, name: name}
+    end
+    log "OpenStack addresses #{o} from #{raw}"
     return o
   end
 
