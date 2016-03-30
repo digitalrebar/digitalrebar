@@ -19,11 +19,15 @@ module OpenStack
     flavors = flavors(endpoint)
     flavor_id = match_flavor(flavors, flavor || "2048")
     nets = networks(endpoint)
+    pub_net = public_net(nets)
+    pri_net = private_net(nets)
+    first_net = nets.keys.first
     params = "--key-name \'#{keyname}\' " \
              "--image \'#{image_id}\' " \
              "--flavor \'#{flavor_id}\' "
-    params += "--nic \'net-id=#{network(nets,"pub")}\' "
-    params += "--nic \'net-id=#{network(nets,"pri")}\' "
+    params += "--nic \'net-id=#{pub_net}\' " if pub_net
+    params += "--nic \'net-id=#{pri_net}\' " if pri_net
+    params += "--nic \'net-id=#{first_net}\' " if !pri_net and !pub_net
     params += "\'#{name}\'"
     raw = base endpoint, "server create #{params}", "-f shell"
     o = unshell(raw)
@@ -208,9 +212,13 @@ module OpenStack
 
   end
 
-  def self.network(nets, name)
+  # to handle variation w/ OpenStack clouds, we have to reolve several possible names for public or private networks
+  def self.network(nets, names)
     nets.each do |key, net|
-      return key if net["name"] =~ /#{name}/
+      names.each do |name|
+        return key if net["name"] =~ /#{name}/im
+        return key if net[:name] =~ /#{name}/im
+      end
     end
     return nil
   end
@@ -228,10 +236,22 @@ module OpenStack
         v4 = addr.strip if addr =~/\./
         v6 = addr.strip if addr =~/\:/
       end
-      o[name] = {v4: v4, v6: v6, name: name}
+      o[name] = {"v4": v4, "v6": v6, "name": name}
     end
     log "OpenStack addresses #{o} from #{raw}"
     return o
+  end
+
+  # to handle variation w/ OpenStack clouds, we have to reolve several possible names for public or private networks
+  # order should be in likehood of correct match
+  def self.private_net(nets)
+    return network(nets, %w[private internal priv])
+  end
+
+  # to handle variation w/ OpenStack clouds, we have to reolve several possible names for public or private networks
+  # order should be in likehood of correct match
+  def self.public_net(nets)
+    return network(nets, %w[public ext-net external pub ext])
   end
 
   # parse raw shell output
