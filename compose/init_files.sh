@@ -45,7 +45,11 @@ function set_var_in_common_env {
 ACCESS_MODE="FORWARDER"
 FILES="base.yml"
 PROVISION_IT="NO"
-DR_TAG="latest"
+if [[ -f tag ]]; then
+    DR_TAG="$(cat tag)"
+elif [[ ! $DR_TAG ]]; then
+    DR_TAG="latest"
+fi
 ADD_DNS=false
 RUN_NTP="NO"
 
@@ -63,7 +67,7 @@ while [[ $1 == -* ]] ; do
       exit 0
       ;;
     --clean)
-        rm -f access.env services.env dc docker-compose.yml config-dir/api/config/networks/the_admin.json config-dir/api/config/networks/the_bmc.json
+        rm -f access.env services.env dc docker-compose.yml config-dir/api/config/networks/the_admin.json config-dir/api/config/networks/the_bmc.json tag
         $SUDO rm -rf data-dir
       exit 0
       ;;
@@ -221,6 +225,8 @@ EOF
 cat >config-dir/consul/server-advertise.json <<EOF
 {"advertise_addr": "${CONSUL_ADVERTISE}"}
 EOF
+
+echo "$DR_TAG" >tag
 
 # With remaining arguments
 if [ "$#" -gt 0 ] ; then

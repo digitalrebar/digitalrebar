@@ -22,6 +22,16 @@ if [[ ! -f compose/docker-compose-common.yml ]]; then
     exit 1
 fi
 
+missing=()
+for cmd in gzip sha512sum xz uuidgen docker docker-compose; do
+    which "$cmd" &>/dev/null || missing+=("$cmd")
+done
+
+if [[ $missing ]]; then
+    echo "Missing required commands: ${missing[*]}"
+    exit 1
+fi
+
 
 if [[ ! -f $1/sha512sums ]]; then
     echo "$1 does not contain a sha512sums file!"
@@ -30,10 +40,10 @@ fi
 
 (cd "$1"; sha512sum -c sha512sums) || exit 1
 
-required_files=(deploy_files.tar.gz consul.tar.gz pg_dump.gz
+required_files=(deploy_files.tar.xz consul.tar.xz pg_dump.gz
                 pg_hba.conf pg_ident.conf postgresql.auto.conf
                 postgresql.conf postmaster.opts
-                goiardi_files.tar.gz)
+                goiardi_files.tar.xz)
 
 for f in "${required_files[@]}"; do
     [[ -f $1/$f ]] && continue
@@ -51,6 +61,12 @@ in_docker() {
     docker exec "$container" "$@"
 }
 
+# Restore local images
+if [[ -f $1/images.tar.xz ]]; then
+    echo "Restoring docker images (this may take awhile)"
+    xz -d -c "$1/images.tar.xz" |docker load
+fi
+
 # Wipe out any currently-running containers
 (cd compose; docker-compose kill; docker-compose rm -f) || :
 
@@ -60,21 +76,26 @@ clean_files=(access.env config-dir data-dir docker-compose.yml services.env)
 
 # Extract the contents of the tftpboot directory.  This is the only
 # one we don't complain about if it does not exist
-if [[ -f $1/tftpboot.tar.gz ]]; then
+if [[ -f $1/tftpboot.tar.xz ]]; then
     echo "Restoring tftpboot"
     mkdir -p "$HOME/.cache/digitalrebar"
-    zcat "$1/tftpboot.tar.gz" | tar -C "$HOME/.cache/digitalrebar" -x -f -
+    xz -d -c "$1/tftpboot.tar.xz" | tar -C "$HOME/.cache/digitalrebar" -x -f -
 fi
 
 # Restore the local configuration options
 echo "Restoring docker-compose config info"
-zcat "$1/deploy_files.tar.gz" |tar -C compose -x -f -
+xz -d -c "$1/deploy_files.tar.xz" |tar -C compose -x -f -
 
-(cd compose; docker-compose create)
+if [[ -f "$1/tag" ]]; then
+    export DR_TAG="$(cat "$1/tag")"
+    cp "$1/tag" compose/tag
+fi
+
+(cd compose; docker-compose create postgres consul goiardi)
 # Restore the Consul database, then start the Consul database
 sudo mkdir -p compose/data-dir
 echo "Restoring Consul data"
-zcat "$1/consul.tar.gz" |sudo tar -C compose/data-dir -x -f -
+xz -d -c "$1/consul.tar.xz" |sudo tar -C compose/data-dir -x -f -
 (cd compose; docker-compose start consul)
 
 # Arrange for the postgres container to restore itself from backup
@@ -93,8 +114,17 @@ echo " Done."
 
 # Restore the Goiardi file data, then start Goiardi
 echo "Restoring Goiardi data"
-zcat "$1/goiardi_files.tar.gz" |sudo tar -C compose/data-dir -x -f -
+xz -d -c "$1/goiardi_files.tar.xz" |sudo tar -C compose/data-dir -x -f -
 
-# Start everything else
+# Start everything else.
 echo "Restarting Digital Rebar"
-(cd compose; docker-compose start)
+cd compose
+# If we need the forwarder, it will already be created.
+# If we need it, we have to start it first so that the dhcp container
+# (which uses the forwarder's network namespace) can properly link things together.
+if docker-compose config --services |grep -q forwarder; then
+    docker-compose start forwarder
+fi
+# Avoid recreating containers we just crated and started.
+docker-compose create --no-recreate
+docker-compose start
