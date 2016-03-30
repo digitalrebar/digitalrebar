@@ -63,10 +63,10 @@ loop do
       when 'OpenStack'
         log "Testing server #{rebar_id} as OpenStack #{cloudwrap_device_id} state"
         device_data = OpenStack::get(endpoint, cloudwrap_device_id)
-        unless device_data['status'] == 'ACTIVE'
+        unless device_data['status'] =~ /active/im
           log("Server OpenStack #{cloudwrap_device_id} is #{device_data['status']}, skipping")
-          if device_data["status"] == nil
-            log("Looking for #{cloudwrap_device_id}, but was empty - removing")
+          if device_data["status"] == nil or device_data["status"] =~ /error/im
+            log("OpenStack Looking for #{cloudwrap_device_id} but was '#{device_data["status"]}' - removing")
             Diplomat::Kv.delete(key)
           end
           next
@@ -113,7 +113,9 @@ loop do
       when 'OpenStack'
 
         addresses = OpenStack::addresses(device_data['addresses'])
-        dev_ip = addresses["public"][:v4] rescue "public_v4_not_defined"
+        public_name = OpenStack::public_net(addresses)
+        private_name = OpenStack::private_net(addresses)
+        dev_ip = addresses[public_name]["v4"] || addresses[public_name][:v4] rescue "public_v4_not_defined"
         cidr = "32"
         username = nil
         users = (endpoint['os-ssh-user'] || "ubuntu centos root").split(/\s|,/)
@@ -132,9 +134,9 @@ loop do
           end
         end
 
-        private_dev_ip = addresses["private"][:v4] rescue "private_v4_not_defined"
+        private_dev_ip = addresses[private_name]["v4"] || addresses[private_name][:v4] rescue "private_v4_not_defined"
         private_dev_cidr = "32"
-        log "OpenStack server public IP #{dev_ip} & private IP #{private_dev_ip}"
+        log "OpenStack server #{public_name} IP #{dev_ip} (public) & #{private_name} IP #{private_dev_ip} (private)"
 
       when 'Packet'
         # For now, make packet private and public the same.
