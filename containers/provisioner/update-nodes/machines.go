@@ -64,7 +64,11 @@ func (n *Machine) newIsh() keySaver {
 
 func (n *Machine) onChange(oldThing interface{}) error {
 	if old, ok := oldThing.(*Machine); ok && old != nil {
-		if old.Name != n.Name {
+		if old.Uuid != "" {
+			if old.Uuid != n.Uuid {
+				return fmt.Errorf("machine: Cannot change machine UUID %s", old.Uuid)
+			}
+		} else if old.Name != n.Name {
 			return fmt.Errorf("machine: Cannot change name of machine %s", old.Name)
 		}
 		oldBootEnv := &BootEnv{Name: old.BootEnv}
