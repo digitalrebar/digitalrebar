@@ -23,8 +23,8 @@ func get_frontend() (*Frontend, http.Handler) {
 	if err != nil {
 		log.Panic(err)
 	}
-	the_fe := NewFrontend("", "", cfg, fs)
-	handler := the_fe.RunServer(false)
+	the_fe := NewFrontend("", "", "", cfg, fs)
+	handler := the_fe.RunServer(false, "BASIC")
 	return the_fe, handler
 }
 
