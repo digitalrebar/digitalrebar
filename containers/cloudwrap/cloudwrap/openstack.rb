@@ -136,6 +136,8 @@ module OpenStack
 
     o = netbase endpoint, "net-list", "-f csv"
     r = uncsv(o, "id")
+    # HACK remove networks without active subnets - detect because the only have a 36 char subnet GUID
+    r.delete_if { |v, k| k["subnets"].size < 40}
     log "OpenStack networks DEBUG hash: #{r.inspect}" if os_debug(endpoint)
     return r
 
@@ -154,7 +156,7 @@ module OpenStack
     if with_result
       raw = %x[#{full_cmd} #{with_result}] rescue "ERROR: Command not executed"
       unless os_debug(endpoint)
-        log "OpenStack Neutron executed command [openstack #{cmd} #{with_result}] > '#{raw.truncate(40)}'"
+        log "OpenStack Neutron executed command [openstack #{cmd} #{with_result}] > '#{raw[0..40]}'"
       else
         log "OpenStack Neutron DEBUG executed command\n#{full_cmd} #{with_result}"
         log "OpenStack Neutron DEBUG raw result\n#{raw}" 
@@ -245,7 +247,7 @@ module OpenStack
   # to handle variation w/ OpenStack clouds, we have to reolve several possible names for public or private networks
   # order should be in likehood of correct match
   def self.private_net(nets)
-    return network(nets, %w[private internal priv])
+    return network(nets, %w[private internal servicenet priv])
   end
 
   # to handle variation w/ OpenStack clouds, we have to reolve several possible names for public or private networks
