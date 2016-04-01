@@ -69,6 +69,8 @@ while [ "$STATE" != "running" ] ; do
   sleep 5
   STATE=`aws ec2 describe-instances --instance-id $DEVICE_ID | jq -r .Reservations[0].Instances[0].State.Name`
 done
+# HACK give a little extra settle time
+sleep 10 
 
 # Get Public IP - HACK - should look it up
 IP=`aws ec2 describe-instances --instance-id $DEVICE_ID | jq -r .Reservations[0].Instances[0].PublicIpAddress`
