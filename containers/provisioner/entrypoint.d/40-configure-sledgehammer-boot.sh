@@ -1,6 +1,7 @@
 #!/bin/bash
 
-PROV_WEB="http://${EXTERNAL_IP%%/*}:${WEBPORT}"
+PROV_IP=${EXTERNAL_IP%%/*}
+PROV_WEB="http://${PROV_IP}:${WEBPORT}"
 # Make a pxelinux config file on stdout.
 pxelinux_cfg() {
     # $1 = name of the boot option
@@ -50,29 +51,29 @@ SLEDGE_ARGS=("rootflags=loop"
              "rd_NO_MD"
              "rd_NO_DM"
              "provisioner.web=$PROV_WEB"
+             "stage2=$PROV_WEB/discovery/stage2.img"
              "rebar.web=${EXTERNAL_REBAR_ENDPOINT}"
-             "rebar.state=discovery"
              "rebar.install.key=${REBAR_KEY}"
             )
 cat > "$TFTPROOT/default.ipxe" <<EOF
 #!ipxe
-chain $PROV_WEB/discovery/\${netX/ip}.ipxe && goto bail || goto sledgehammer
+chain tftp://$PROV_IP/discovery/\${netX/ip}.ipxe && goto bail || goto sledgehammer
 :sledgehammer
-kernel $PROV_WEB/discovery/vmlinuz0 ${SLEDGE_ARGS[@]} BOOTIF=01-\${netX/mac:hexhyp}
-initrd $PROV_WEB/discovery/initrd0.img
+kernel tftp://$PROV_IP/discovery/vmlinuz0 ${SLEDGE_ARGS[@]} BOOTIF=01-\${netX/mac:hexhyp}
+initrd tftp://$PROV_IP/discovery/stage1.img
 boot
 :bail
 exit
 EOF
 
 pxelinux_cfg "discovery" \
-             "$PROV_WEB/discovery/vmlinuz0" \
+             "/discovery/vmlinuz0" \
              "${SLEDGE_ARGS[*]}" \
-             "$PROV_WEB/discovery/initrd0.img" \
+             "/discovery/stage1.img" \
              > "${TFTPROOT}/discovery/pxelinux.cfg/default"
 
 elilo_cfg "discovery" \
-          "vmlinux0" \
+          "/discovery/vmlinuz0" \
           "${SLEDGE_ARGS[*]}" \
-          "initrd0.img" \
+          "/discovery/stage1.img" \
           > "${TFTPROOT}/discovery/elilo.conf"
