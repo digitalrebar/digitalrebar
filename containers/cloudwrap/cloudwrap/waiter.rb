@@ -196,6 +196,7 @@ loop do
             Net::SCP.upload!(dev_ip, username, f.path, "/tmp/rebar_keys", { ssh: { keys: [ kp_loc ], paranoid: false } })
           rescue Exception => e
             log "Server #{cloudwrap_device_id} failed to upload keys, skipping: #{e}"
+            system("rebar nodes set #{rebar_id} attrib node-control-address to '{\"value\": \"0.0.0.0/24\"}'")
             next
           end
         end
@@ -224,6 +225,7 @@ loop do
           end
         rescue Exception => e
           log "Server #{cloudwrap_device_id} not key updatable, skipping: #{e}"
+          system("rebar nodes set #{rebar_id} attrib node-control-address to '{\"value\": \"0.0.0.0/32\"}'")
           next
         end
       end
