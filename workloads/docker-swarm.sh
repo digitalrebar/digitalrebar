@@ -109,6 +109,15 @@ done
 # Commit it all and start
 rebar deployments commit $DEPLOYMENT_NAME
 
+
+# Lookup Manager Node IP
+MANAGER_IP=$(rebar nodes show "${DEPLOYMENT_NAME}-manager-0.neode.local" | jq --raw-output '.["node-control-address"]' | cut -d '/' -f 1)
+echo "To test Docker Swarm, docker -H tcp://$MANAGER_IP:2475 info"
+
+echo "To teardown, $0 $start_args --teardown=true --admin-ip=$ADMIN_IP $EXTRA"
+echo "To teardown but keep the admin node, add --keep_admin=true"
+echo "... config complete > converging Swarm ..."
+
 # Wait for the system to converge
 if ! rebar converge $DEPLOYMENT_NAME ; then
   die "Machines did NOT converge in docker-swarm"
@@ -117,11 +126,4 @@ fi
 if [ "$DEVICE_ID" != "" ] ; then
     EXTRA="--device-id=$DEVICE_ID"
 fi
-
-# Lookup Manager Node IP
-MANAGER_IP=$(rebar nodes show "${DEPLOYMENT_NAME}-manager-0.neode.local" | jq --raw-output '.["node-control-address"]' | cut -d '/' -f 1)
-echo "To test Docker Swarm, docker -H tcp://$MANAGER_IP:2475 info"
-
-echo "To teardown, $0 $start_args --teardown=true --admin-ip=$ADMIN_IP $EXTRA"
-echo "To teardown but keep the admin node, add --keep_admin=true"
-
+echo "Converge Compelete"

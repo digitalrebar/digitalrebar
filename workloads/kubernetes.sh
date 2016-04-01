@@ -337,6 +337,11 @@ fi
 # Commit it all and start
 rebar deployments commit $DEPLOYMENT_NAME
 
+echo "Access Digital Rebar UI, https://${ADMIN_IP}:3000"
+echo "To teardown, $0 $start_args --teardown=true --admin-ip=$ADMIN_IP $EXTRA"
+echo "To keep the admin node, add --keep_admin=true"
+echo "... config complete > converging Kubernetes ..."
+
 # Wait for the system to converge
 if ! rebar converge $DEPLOYMENT_NAME ; then
   die "Machines did NOT converge in kubernetes"
@@ -346,13 +351,10 @@ if [ "$DEVICE_ID" != "" ] ; then
     EXTRA="--device-id=$DEVICE_ID"
 fi
 
+echo "Converge Compelete"
+
 # Hint so user knows which IP to use for Master
 for ((i=0 ; i < $KUBERNETES_MASTER_COUNT; i++)) ; do
     MANAGER_IP=$(rebar nodes show "${DEPLOYMENT_NAME}-master-$i.${DNS_DOMAIN}" | jq --raw-output '.["node-control-address"]' | cut -d '/' -f 1)
     echo "To test Kubernetes, use Master $i at https://${MANAGER_IP}/ui"
 done
-
-echo "Access Digital Rebar UI, https://${ADMIN_IP}:3000"
-echo "To teardown, $0 $start_args --teardown=true --admin-ip=$ADMIN_IP $EXTRA"
-echo "To keep the admin node, add --keep_admin=true"
-
