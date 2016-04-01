@@ -110,10 +110,6 @@ done
 rebar deployments commit $DEPLOYMENT_NAME
 
 
-# Lookup Manager Node IP
-MANAGER_IP=$(rebar nodes show "${DEPLOYMENT_NAME}-manager-0.neode.local" | jq --raw-output '.["node-control-address"]' | cut -d '/' -f 1)
-echo "To test Docker Swarm, docker -H tcp://$MANAGER_IP:2475 info"
-
 echo "To teardown, $0 $start_args --teardown=true --admin-ip=$ADMIN_IP $EXTRA"
 echo "To teardown but keep the admin node, add --keep_admin=true"
 echo "... config complete > converging Swarm ..."
@@ -127,3 +123,9 @@ if [ "$DEVICE_ID" != "" ] ; then
     EXTRA="--device-id=$DEVICE_ID"
 fi
 echo "Converge Compelete"
+
+# Hint so user knows which IP to use for Master
+for ((i=0 ; i < $DOCKER_SWARM_MANAGER_COUNT; i++)) ; do
+    MANAGER_IP=$(rebar nodes show "${DEPLOYMENT_NAME}-manager-$i.neode.local" | jq --raw-output '.["node-control-address"]' | cut -d '/' -f 1)
+    echo "To test Docker Swarm Master $i, docker -H tcp://$MANAGER_IP:2475 info"
+done
