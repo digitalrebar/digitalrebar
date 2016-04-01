@@ -53,7 +53,7 @@
     command: mkdir -p {{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos
 
   - name: download Ubuntu ISO (SLOW, see https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
-    get_url: url=http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.3-server-amd64.iso dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso"
+    get_url: url=http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.4-server-amd64.iso dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso"
     when: "'--provisioner' in dr_services"
 
   - name: download Centos ISO (SLOW, see https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
