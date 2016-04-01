@@ -137,7 +137,7 @@ module OpenStack
     o = netbase endpoint, "net-list", "-f csv"
     r = uncsv(o, "id")
     # HACK remove networks without active subnets - detect because the only have a 36 char subnet GUID
-    r.delete_if { |v, k| k["subnets"].size < 40}
+    r.delete_if { |v, k| k["subnets"].b.gsub(/[a-f0-9-]+ /, '').size < 10}
     log "OpenStack networks DEBUG hash: #{r.inspect}" if os_debug(endpoint)
     return r
 
@@ -253,7 +253,7 @@ module OpenStack
   # to handle variation w/ OpenStack clouds, we have to reolve several possible names for public or private networks
   # order should be in likehood of correct match
   def self.public_net(nets)
-    return network(nets, %w[public ext-net external pub ext])
+    return network(nets, %w[public ext-net external default pub ext])
   end
 
   # parse raw shell output
