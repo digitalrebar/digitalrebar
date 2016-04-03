@@ -50,7 +50,7 @@ converge() {
     return 1
 }
 
-known_containers=(provisioner dhcp ntp dns dns-mgmt revproxy chef webproxy logging debug node access ux)
+known_containers=(provisioner dhcp ntp dns dns-mgmt revproxy trust-me chef webproxy logging debug node access ux)
 
 declare -A containers
 

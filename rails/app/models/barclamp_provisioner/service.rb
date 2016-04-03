@@ -53,6 +53,24 @@ class BarclampProvisioner::Service < Service
 
 private
 
+  def get_rest_resource(url)
+    # Validation Cert
+    store = OpenSSL::X509::Store.new
+    store.add_cert(OpenSSL::X509::Certificate.new(File.read('/var/run/rebar/ca.pem')))
+
+    # get client key and cert
+    client_cert = OpenSSL::X509::Certificate.new(File.read('/var/run/rebar/server.crt'))
+    client_key  = OpenSSL::PKey::RSA.new(File.read('/var/run/rebar/server.key'), '')
+
+    RestClient::Resource.new(
+      url,
+      :ssl_cert_store  =>  store,
+      :ssl_client_cert =>  client_cert,
+      :ssl_client_key  =>  client_key,
+      :verify_ssl      =>  OpenSSL::SSL::VERIFY_PEER
+    )
+  end
+
   def provisioner_create(node)
     sysdepl = Deployment.system
     provisioner_mgmt = Attrib.get('provisioner-management-servers',sysdepl)
@@ -64,7 +82,7 @@ private
                'Params' => {}
               }
     begin
-      response = RestClient.get("#{url}/bootenvs/#{node.bootenv}")
+      response = get_rest_resource("#{url}/bootenvs/#{node.bootenv}").get
     rescue => e
       Rails.logger.error("Node: provisioner manager #{url} does not know about bootenv #{node.bootenv}")
       raise "Provisioner management does not know about bootenv #{node.bootenv}"
@@ -90,7 +108,7 @@ private
       payload['Params'][param] = val
     end if bootenv_options['RequiredParams'] && !bootenv_options['RequiredParams'].empty?
     begin
-      response = RestClient.post("#{url}/machines",payload.to_json, content_type: :json)
+      response = get_rest_resource("#{url}/machines").post payload.to_json, content_type: :json
     rescue => e
       Rails.logger.error("Node: failed to switch #{node.name} to #{node.bootenv}\n#{e.response}")
       raise "Unable to change bootenv to #{node.bootenv}"
@@ -103,7 +121,7 @@ private
     sysdepl = Deployment.system
     provisioner_mgmt = Attrib.get('provisioner-management-servers',sysdepl)
     url = provisioner_mgmt[0]['url']
-    RestClient.delete("#{url}/machines/#{uuid}")
+    get_rest_resource("#{url}/machines/#{uuid}").delete
   end
 
 end
