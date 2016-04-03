@@ -120,7 +120,7 @@ func loadBalance(network, serviceName, serviceVersion string, reg Registry) (net
 
 // NewMultipleHostReverseProxy creates a reverse proxy handler
 // that will randomly select a host from the passed `targets`
-func NewMultipleHostReverseProxy(reg Registry) http.HandlerFunc {
+func NewMultipleHostReverseProxy(reg Registry, tlsConfig *tls.Config) http.HandlerFunc {
 	transport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		Dial: func(network, addr string) (net.Conn, error) {
@@ -132,7 +132,7 @@ func NewMultipleHostReverseProxy(reg Registry) http.HandlerFunc {
 			return LoadBalance(network, tmp[0], tmp[1], reg)
 		},
 		TLSHandshakeTimeout: 10 * time.Second,
-		TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig:     tlsConfig,
 	}
 	return func(w http.ResponseWriter, req *http.Request) {
 		name, version, err := ExtractNameVersion(reg, req.URL)

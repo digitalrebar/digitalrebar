@@ -18,6 +18,7 @@ function usage {
     echo "  --chef # Adds the chef component"
     echo "  --webproxy # Adds the webproxy component"
     echo "  --revproxy # Adds the revproxy component"
+    echo "  --trust-me # Adds the trust-me component"
     echo "  --logging # Adds the logging (kibana,elasticsearch+) components"
     echo "  --debug # Adds the cadviser components"
     echo "  --node # Adds the node component"
@@ -125,6 +126,9 @@ while [[ $1 == -* ]] ; do
       ;;
     --revproxy)
       FILES="$FILES revproxy.yml"
+      ;;
+    --trust-me)
+      FILES="$FILES trust-me.yml"
       ;;
     --debug)
       FILES="$FILES debug.yml"

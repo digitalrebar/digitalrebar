@@ -16,5 +16,4 @@ RUN apt-get update \
 
 COPY bind /etc/bind
 COPY dns-mgmt.conf /etc/dns-mgmt.conf
-COPY dns-mgmt-cert.conf /etc/dns-mgmt-cert.conf
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/

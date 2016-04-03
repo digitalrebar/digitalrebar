@@ -18,6 +18,7 @@ CONTAINERS['digitalrebar/managed-service']='managed-service'
 CONTAINERS['digitalrebar/dr_node']='node'
 CONTAINERS['digitalrebar/logging']='logging'
 CONTAINERS['digitalrebar/dr_rev_proxy']='rebar-rev-proxy'
+CONTAINERS['digitalrebar/dr_trust_me']='trust-me'
 
 declare -A REPOS
 declare -A CONTAINER_PARENTS

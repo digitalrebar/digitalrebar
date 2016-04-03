@@ -12,6 +12,9 @@ RUN mkdir -p /usr/local/sbin/ /usr/local/entrypoint.d /etc/rebar-data && \
     chmod 755 /usr/local/bin/rebar && \
     curl -fgL -o '/tmp/goball.tgz' \
          'https://storage.googleapis.com/golang/go1.6.linux-amd64.tar.gz' && \
-    tar -C '/usr/local' -zxf /tmp/goball.tgz && rm /tmp/goball.tgz
+    tar -C '/usr/local' -zxf /tmp/goball.tgz && rm /tmp/goball.tgz && \
+    /usr/local/go/bin/go get -u github.com/cloudflare/cfssl/cmd/cfssl && \
+    /usr/local/go/bin/go get -u github.com/cloudflare/cfssl/cmd/cfssljson && \
+    cp $GOPATH/bin/* /usr/local/bin
 
 COPY docker-entrypoint.sh /sbin/docker-entrypoint.sh

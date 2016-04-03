@@ -10,6 +10,17 @@ consul:
     - ./common.env
     - ./access.env
 
+trust_me:
+  image: digitalrebar/dr_trust_me
+  restart: always
+  volumes:
+    - ./data-dir/trust_me/:/var/cache/trust_me/
+    - ./config-dir/trust_me/:/etc/trust_me/
+    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+  env_file:
+    - ./common.env
+    - ./access.env
+
 postgres:
   image: digitalrebar/dr_postgres:${DR_TAG}
   restart: always
