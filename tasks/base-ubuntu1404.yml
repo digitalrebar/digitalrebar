@@ -13,6 +13,8 @@
       - wget
       - curl
       - python
+      - python-pycurl
+      - jq
     sudo: yes
   - name: Install Provisioner Prereqs [SLOW]
     apt: name={{ item }} state=latest

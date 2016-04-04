@@ -53,6 +53,8 @@ while [ "$STATE" != "RUNNING" ] ; do
   sleep 5
   STATE=`gcloud ${PROJECT_ID} compute instances describe $ZONE_NAME $DEVICE_ID --format=json | jq -r .status`
 done
+# HACK give a little extra settle time
+sleep 10 
 
 # Get Public IP - HACK - should look it up
 IP=`gcloud ${PROJECT_ID} compute instances describe $ZONE_NAME $DEVICE_ID --format=json | jq -r .networkInterfaces[0].accessConfigs[0].natIP`
