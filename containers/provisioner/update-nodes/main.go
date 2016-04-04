@@ -3,13 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
+	"github.com/gin-gonic/gin"
 	consul "github.com/hashicorp/consul/api"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/engine/standard"
-	mw "github.com/labstack/echo/middleware"
-	"github.com/labstack/gommon/log"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -18,7 +16,7 @@ var backEndType string
 var apiPort int64
 var client *consul.Client
 var backend storageBackend
-var api *echo.Echo
+var api *gin.Engine
 var logger *log.Logger
 
 func init() {
@@ -59,8 +57,7 @@ func popMachine(param string) *Machine {
 func main() {
 	// Some initial setup
 	flag.Parse()
-	logger = log.New("provisioner-mgmt")
-	logger.SetOutput(os.Stderr)
+	logger = log.New(os.Stderr, "provisioner-mgmt", log.LstdFlags|log.Lmicroseconds|log.LUTC)
 	var err error
 	switch backEndType {
 	case "consul":
@@ -70,80 +67,74 @@ func main() {
 	default:
 		logger.Fatalf("Unknown storage backend type %v\n", backEndType)
 	}
-	api = echo.New()
-	api.Use(mw.Logger())
-	api.Use(mw.Recover())
-	api.SetLogOutput(os.Stderr)
-	api.SetDebug(true)
+	api := gin.Default()
 	if err != nil {
 		logger.Fatal(err)
 	}
 	// bootenv methods
-	api.Get("/bootenvs",
-		echo.HandlerFunc(func(c echo.Context) error {
-			return listThings(c, &BootEnv{})
-		}))
-	api.Post("/bootenvs",
-		echo.HandlerFunc(func(c echo.Context) error {
-			return createThing(c, &BootEnv{})
-		}))
-	api.Get("/bootenvs/:name",
-		echo.HandlerFunc(func(c echo.Context) error {
-			return getThing(c, &BootEnv{Name: c.P(0)})
-		}))
-	api.Patch("/bootenvs/:name",
-		echo.HandlerFunc(func(c echo.Context) error {
-			return updateThing(c, &BootEnv{Name: c.P(0)}, &BootEnv{})
-		}))
-	api.Delete("/bootenvs/:name",
-		echo.HandlerFunc(func(c echo.Context) error {
-			return deleteThing(c, &BootEnv{Name: c.P(0)})
-		}))
+	api.GET("/bootenvs",
+		func(c *gin.Context) {
+			listThings(c, &BootEnv{})
+		})
+	api.POST("/bootenvs",
+		func(c *gin.Context) {
+			createThing(c, &BootEnv{})
+		})
+	api.GET("/bootenvs/:name",
+		func(c *gin.Context) {
+			getThing(c, &BootEnv{Name: c.Param(`name`)})
+		})
+	api.PATCH("/bootenvs/:name",
+		func(c *gin.Context) {
+			updateThing(c, &BootEnv{Name: c.Param(`name`)}, &BootEnv{})
+		})
+	api.DELETE("/bootenvs/:name",
+		func(c *gin.Context) {
+			deleteThing(c, &BootEnv{Name: c.Param(`name`)})
+		})
 	// machine methods
-	api.Get("/machines",
-		echo.HandlerFunc(func(c echo.Context) error {
-			return listThings(c, &Machine{})
-		}))
-	api.Post("/machines",
-		echo.HandlerFunc(func(c echo.Context) error {
-			return createThing(c, &Machine{})
-		}))
-	api.Get("/machines/:name",
-		echo.HandlerFunc(func(c echo.Context) error {
-
-			return getThing(c, popMachine(c.P(0)))
-		}))
-	api.Patch("/machines/:name",
-		echo.HandlerFunc(func(c echo.Context) error {
-			return updateThing(c, popMachine(c.P(0)), &Machine{})
-		}))
-	api.Delete("/machines/:name",
-		echo.HandlerFunc(func(c echo.Context) error {
-			return deleteThing(c, popMachine(c.P(0)))
-		}))
+	api.GET("/machines",
+		func(c *gin.Context) {
+			listThings(c, &Machine{})
+		})
+	api.POST("/machines",
+		func(c *gin.Context) {
+			createThing(c, &Machine{})
+		})
+	api.GET("/machines/:name", func(c *gin.Context) {
+		getThing(c, popMachine(c.Param(`name`)))
+	})
+	api.PATCH("/machines/:name",
+		func(c *gin.Context) {
+			updateThing(c, popMachine(c.Param(`name`)), &Machine{})
+		})
+	api.DELETE("/machines/:name",
+		func(c *gin.Context) {
+			deleteThing(c, popMachine(c.Param(`name`)))
+		})
 
 	// template methods
-	api.Get("/templates",
-		echo.HandlerFunc(func(c echo.Context) error {
-			return listThings(c, &Template{})
-		}))
-	api.Post("/templates",
-		echo.HandlerFunc(func(c echo.Context) error {
-			return createThing(c, &Template{})
-		}))
-	api.Post("/templates/:uuid", echo.HandlerFunc(createTemplate))
-	api.Get("/templates/:uuid",
-		echo.HandlerFunc(func(c echo.Context) error {
-			return getThing(c, &Template{UUID: c.P(0)})
-		}))
-	api.Patch("/templates/:uuid",
-		echo.HandlerFunc(func(c echo.Context) error {
-			return updateThing(c, &Template{UUID: c.P(0)}, &Template{})
-		}))
-	api.Delete("/templates/:uuid",
-		echo.HandlerFunc(func(c echo.Context) error {
-			return deleteThing(c, &Template{UUID: c.P(0)})
-		}))
+	api.GET("/templates",
+		func(c *gin.Context) {
+			listThings(c, &Template{})
+		})
+	api.POST("/templates",
+		func(c *gin.Context) {
+			createThing(c, &Template{})
+		})
+	api.POST("/templates/:uuid", createTemplate)
+	api.GET("/templates/:uuid",
+		func(c *gin.Context) {
+			getThing(c, &Template{UUID: c.Param(`uuid`)})
+		})
+	api.PATCH("/templates/:uuid",
+		func(c *gin.Context) {
+			updateThing(c, &Template{UUID: c.Param(`uuid`)}, &Template{})
+		})
+	api.DELETE("/templates/:uuid",
+		func(c *gin.Context) {
+			deleteThing(c, &Template{UUID: c.Param(`uuid`)})
+		})
 
-	api.Run(standard.New(fmt.Sprintf(":%d", apiPort)))
+	api.Run(fmt.Sprintf(":%d", apiPort))
 }

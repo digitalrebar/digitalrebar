@@ -7,74 +7,76 @@ import (
 	"net/http"
 
 	"github.com/VictorLowther/jsonpatch"
-	"github.com/labstack/echo"
+	"github.com/gin-gonic/gin"
 )
 
-func listThings(c echo.Context, thing keySaver) error {
+func listThings(c *gin.Context, thing keySaver) {
 	things := backend.list(thing)
 	res := make([]interface{}, len(things))
 	for i, obj := range things {
 		var buf interface{}
 		if err := json.Unmarshal(obj, &buf); err != nil {
-			return c.JSON(http.StatusInternalServerError,
+			c.JSON(http.StatusInternalServerError,
 				NewError(fmt.Sprintf("list: error unmarshalling %v: %v", string(obj), err)))
 		}
 		res[i] = buf
 	}
-	return c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, res)
 }
 
-func createThing(c echo.Context, newThing keySaver) error {
+func createThing(c *gin.Context, newThing keySaver) {
 	if err := c.Bind(&newThing); err != nil {
-		return c.JSON(http.StatusBadRequest, NewError(err.Error()))
+		c.JSON(http.StatusBadRequest, NewError(err.Error()))
 	}
 	finalStatus := http.StatusCreated
 	oldThing := newThing.newIsh()
 	if err := backend.load(oldThing); err == nil {
-		logger.Infof("backend: Updating %v\n", oldThing.key())
+		logger.Printf("backend: Updating %v\n", oldThing.key())
 		finalStatus = http.StatusAccepted
 	} else {
-		logger.Infof("backend: Creating %v\n", newThing.key())
+		logger.Printf("backend: Creating %v\n", newThing.key())
 		oldThing = nil
 	}
 	if err := backend.save(newThing, oldThing); err != nil {
-		return c.JSON(http.StatusConflict, NewError(err.Error()))
+		c.JSON(http.StatusConflict, NewError(err.Error()))
 	}
-	return c.JSON(finalStatus, newThing)
+	c.JSON(finalStatus, newThing)
 }
 
-func getThing(c echo.Context, thing keySaver) error {
+func getThing(c *gin.Context, thing keySaver) {
 	if err := backend.load(thing); err != nil {
-		return c.NoContent(http.StatusNotFound)
+		c.Data(http.StatusNotFound, gin.MIMEJSON, nil)
 	}
-	return c.JSON(http.StatusOK, thing)
+	c.JSON(http.StatusOK, thing)
 }
 
-func updateThing(c echo.Context, oldThing, newThing keySaver) error {
+func updateThing(c *gin.Context, oldThing, newThing keySaver) {
 	if err := backend.load(oldThing); err != nil {
-		return c.NoContent(http.StatusNotFound)
+		c.Data(http.StatusNotFound, gin.MIMEJSON, nil)
 	}
-	patch, err := ioutil.ReadAll(c.Request().Body())
+	patch, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
-		return err
+		c.Error(err)
+		c.Data(http.StatusExpectationFailed, gin.MIMEJSON, nil)
 	}
 	oldThingBuf, _ := json.Marshal(oldThing)
 	newThingBuf, err, loc := jsonpatch.ApplyJSON(oldThingBuf, patch)
 	if err != nil {
-		return c.JSON(http.StatusConflict, NewError(fmt.Sprintf("Failed to apply patch at %d: %v\n", loc, err)))
+		c.JSON(http.StatusConflict, NewError(fmt.Sprintf("Failed to apply patch at %d: %v\n", loc, err)))
 	}
 	if err := json.Unmarshal(newThingBuf, &newThing); err != nil {
-		return err
+		c.Error(err)
+		c.Data(http.StatusExpectationFailed, gin.MIMEJSON, nil)
 	}
 	if err := backend.save(newThing, oldThing); err != nil {
-		return c.JSON(http.StatusConflict, NewError(err.Error()))
+		c.JSON(http.StatusConflict, NewError(err.Error()))
 	}
-	return c.JSON(http.StatusAccepted, newThing)
+	c.JSON(http.StatusAccepted, newThing)
 }
 
-func deleteThing(c echo.Context, thing keySaver) error {
+func deleteThing(c *gin.Context, thing keySaver) {
 	if err := backend.remove(thing); err != nil {
-		return c.JSON(http.StatusConflict, NewError(fmt.Sprintf("Failed to delete %s: %v", thing.key(), err)))
+		c.JSON(http.StatusConflict, NewError(fmt.Sprintf("Failed to delete %s: %v", thing.key(), err)))
 	}
-	return c.NoContent(http.StatusAccepted)
+	c.Data(http.StatusAccepted, gin.MIMEJSON, nil)
 }

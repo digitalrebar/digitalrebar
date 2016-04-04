@@ -29,8 +29,8 @@ COPY start-up.sh /tmp/
 COPY update-nodes $GOPATH/src/github.com/rackn/provisioner-mgmt
 RUN /usr/local/go/bin/go get -u github.com/hashicorp/consul/api \
                                 github.com/VictorLowther/jsonpatch \
-                                github.com/labstack/echo \
-                                github.com/labstack/echo/middleware \
+                                github.com/gin-gonic/gin \
                                 github.com/satori/go.uuid \
     && cd "$GOPATH/src/github.com/rackn/provisioner-mgmt" \
     && /usr/local/go/bin/go build && cp provisioner-mgmt /usr/local/bin
+

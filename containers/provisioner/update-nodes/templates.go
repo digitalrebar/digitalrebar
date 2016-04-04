@@ -8,7 +8,7 @@ import (
 	"path"
 	"text/template"
 
-	"github.com/labstack/echo"
+	"github.com/gin-gonic/gin"
 )
 
 // Template represents a template that will be associated with a boot environment.
@@ -41,24 +41,25 @@ func (t *Template) Parse() (err error) {
 	return nil
 }
 
-func createTemplate(c echo.Context) error {
+func createTemplate(c *gin.Context) {
 	finalStatus := http.StatusCreated
-	oldThing := &Template{UUID: c.P(0)}
-	newThing := &Template{UUID: c.P(0)}
+	oldThing := &Template{UUID: c.Param(`uuid`)}
+	newThing := &Template{UUID: c.Param(`uuid`)}
 	if err := backend.load(oldThing); err == nil {
 		finalStatus = http.StatusAccepted
 	} else {
 		oldThing = nil
 	}
-	buf, err := ioutil.ReadAll(c.Request().Body())
+	buf, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
-		return fmt.Errorf("template: failed to read request body")
+		c.Error(fmt.Errorf("template: failed to read request body"))
+		c.Data(http.StatusExpectationFailed, gin.MIMEJSON, nil)
 	}
 	newThing.Contents = string(buf)
 	if err := backend.save(newThing, oldThing); err != nil {
-		return c.JSON(http.StatusInternalServerError, NewError(err.Error()))
+		c.JSON(http.StatusInternalServerError, NewError(err.Error()))
 	}
-	return c.JSON(finalStatus, newThing)
+	c.JSON(finalStatus, newThing)
 }
 
 func (t *Template) onChange(oldThing interface{}) error {
