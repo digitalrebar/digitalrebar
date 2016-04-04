@@ -52,12 +52,13 @@
   - name: Make cache dirs
     command: mkdir -p {{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos
 
-  - stat: path={{home_dir.stdout}}/digitalrebar/isos
+  - stat: path={{home_dir.stdout}}/digitalrebar/isos/*.iso
     register: local_isos
 
   - name: push ISO from local ~/digitalrebar/isos (FAST LOCAL but SLOW REMOTE!)
     synchronize: src="../isos/" dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/" rsync_path="rsync"
     when: local_isos is defined and "'--provisioner' in dr_services"
+    ignore_errors: yes
 
   - name: download Ubuntu ISO (SLOW, see https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
     get_url: url=http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.4-server-amd64.iso dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso"
