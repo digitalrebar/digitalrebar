@@ -78,7 +78,7 @@ roles:
       - name: provisioner-default-boot-program
         description: "Default boot program for initial PXE boot"
         map: 'rebar/provisioner/boot_program'
-        default: 'ipxe'
+        default: 'lpxelinux'
         schema:
           type: str
           required: true
