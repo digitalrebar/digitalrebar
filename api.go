@@ -34,28 +34,33 @@ func NewFrontend(cert_pem, key_pem, base_pem string, cfg Config, store LoadSaver
 		cfg:      cfg,
 		DhcpInfo: NewDataTracker(store),
 	}
-
+	fe.DhcpInfo.Lock()
 	fe.DhcpInfo.load_data()
+	fe.DhcpInfo.Unlock()
 
 	return fe
 }
 
 // List function
 func (fe *Frontend) GetAllSubnets(w rest.ResponseWriter, r *rest.Request) {
+	fe.DhcpInfo.Lock()
 	nets := make([]*Subnet, 0, len(fe.DhcpInfo.Subnets))
 	for _, net := range fe.DhcpInfo.Subnets {
 		nets = append(nets, net)
 	}
+	fe.DhcpInfo.Unlock()
 	w.WriteJson(nets)
 }
 
 // Get function
 func (fe *Frontend) GetSubnet(w rest.ResponseWriter, r *rest.Request) {
 	subnetName := r.PathParam("id")
-
+	fe.DhcpInfo.Lock()
 	if subnet, found := fe.DhcpInfo.Subnets[subnetName]; found {
+		fe.DhcpInfo.Unlock()
 		w.WriteJson(subnet)
 	} else {
+		fe.DhcpInfo.Unlock()
 		rest.Error(w, "Not Found", http.StatusNotFound)
 	}
 }
@@ -71,12 +76,13 @@ func (fe *Frontend) CreateSubnet(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
+	fe.DhcpInfo.Lock()
 	if err, code := fe.DhcpInfo.AddSubnet(s); err != nil {
+		fe.DhcpInfo.Unlock()
 		rest.Error(w, err.Error(), code)
 		return
 	}
-
+	fe.DhcpInfo.Unlock()
 	w.WriteJson(s)
 }
 
@@ -92,24 +98,27 @@ func (fe *Frontend) UpdateSubnet(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
+	fe.DhcpInfo.Lock()
 	if err, code := fe.DhcpInfo.ReplaceSubnet(subnetName, s); err != nil {
+		fe.DhcpInfo.Unlock()
 		rest.Error(w, err.Error(), code)
 		return
 	}
+	fe.DhcpInfo.Unlock()
 	w.WriteJson(s)
 }
 
 // Delete function
 func (fe *Frontend) DeleteSubnet(w rest.ResponseWriter, r *rest.Request) {
 	subnetName := r.PathParam("id")
-
+	fe.DhcpInfo.Lock()
 	err, code := fe.DhcpInfo.RemoveSubnet(subnetName)
 	if err != nil {
+		fe.DhcpInfo.Unlock()
 		rest.Error(w, err.Error(), code)
 		return
 	}
-
+	fe.DhcpInfo.Unlock()
 	w.WriteHeader(code)
 }
 
@@ -125,26 +134,28 @@ func (fe *Frontend) BindSubnet(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
+	fe.DhcpInfo.Lock()
 	err, code := fe.DhcpInfo.AddBinding(subnetName, binding)
 	if err != nil {
+		fe.DhcpInfo.Unlock()
 		rest.Error(w, err.Error(), code)
 		return
 	}
-
+	fe.DhcpInfo.Unlock()
 	w.WriteJson(binding)
 }
 
 func (fe *Frontend) UnbindSubnet(w rest.ResponseWriter, r *rest.Request) {
 	subnetName := r.PathParam("id")
 	mac := r.PathParam("mac")
-
+	fe.DhcpInfo.Lock()
 	err, code := fe.DhcpInfo.DeleteBinding(subnetName, mac)
 	if err != nil {
+		fe.DhcpInfo.Unlock()
 		rest.Error(w, err.Error(), code)
 		return
 	}
-
+	fe.DhcpInfo.Unlock()
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -161,12 +172,13 @@ func (fe *Frontend) NextServer(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	ip := net.ParseIP(r.PathParam("ip"))
-
+	fe.DhcpInfo.Lock()
 	if err, code := fe.DhcpInfo.SetNextServer(subnetName, ip, nextServer); err != nil {
+		fe.DhcpInfo.Unlock()
 		rest.Error(w, err.Error(), code)
 		return
 	}
-
+	fe.DhcpInfo.Unlock()
 	w.WriteJson(nextServer)
 }
 
