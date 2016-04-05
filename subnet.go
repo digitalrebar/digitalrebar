@@ -8,7 +8,6 @@ import (
 	"errors"
 	"log"
 	"net"
-	"sync"
 	"text/template"
 	"time"
 
@@ -52,7 +51,6 @@ type Binding struct {
 }
 
 type Subnet struct {
-	sync.RWMutex
 	Name              string
 	Subnet            *MyIPNet
 	NextServer        *net.IP `"json:,omitempty"`
@@ -89,8 +87,6 @@ type apiSubnet struct {
 }
 
 func (s *Subnet) MarshalJSON() ([]byte, error) {
-	s.RLock()
-	defer s.RUnlock()
 	as := &apiSubnet{
 		Name:              s.Name,
 		Subnet:            s.Subnet.String(),
@@ -120,8 +116,6 @@ func (s *Subnet) MarshalJSON() ([]byte, error) {
 }
 
 func (s *Subnet) UnmarshalJSON(data []byte) error {
-	s.Lock()
-	defer s.Unlock()
 	as := &apiSubnet{}
 	if err := json.Unmarshal(data, &as); err != nil {
 		return err
@@ -189,25 +183,19 @@ func (s *Subnet) UnmarshalJSON(data []byte) error {
 }
 
 func (subnet *Subnet) free_lease(dt *DataTracker, nic string) {
-	subnet.Lock()
 	lease := subnet.Leases[nic]
 	if lease != nil {
 		if dhcp.IPInRange(subnet.ActiveStart, subnet.ActiveEnd, lease.Ip) {
 			subnet.ActiveBits.Clear(uint(dhcp.IPRange(lease.Ip, subnet.ActiveStart) - 1))
 		}
 		delete(subnet.Leases, nic)
-		subnet.Unlock()
 		dt.save_data()
-	} else {
-		subnet.Unlock()
 	}
 }
 
 func (subnet *Subnet) find_info(dt *DataTracker, nic string) (*Lease, *Binding) {
-	subnet.RLock()
 	l := subnet.Leases[nic]
 	b := subnet.Bindings[nic]
-	subnet.RUnlock()
 	return l, b
 }
 
@@ -220,7 +208,6 @@ func firstClearBit(bs *bitset.BitSet) (uint, bool) {
 	return 0, false
 }
 
-// Assumes RWLock is held
 func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 	bit, success := firstClearBit(subnet.ActiveBits)
 	if success {
@@ -255,7 +242,6 @@ func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 
 func (subnet *Subnet) find_or_get_info(dt *DataTracker, nic string, suggest net.IP) (*Lease, *Binding) {
 	// Fast path to see if we have a good lease
-	subnet.RLock()
 	binding := subnet.Bindings[nic]
 	lease := subnet.Leases[nic]
 
@@ -268,17 +254,14 @@ func (subnet *Subnet) find_or_get_info(dt *DataTracker, nic string, suggest net.
 	// Resolve potential conflicts.
 	if lease != nil && binding != nil {
 		if lease.Ip.Equal(binding.Ip) {
-			subnet.RUnlock()
 			return lease, binding
 		}
 		lease = nil
 	}
-	subnet.RUnlock()
 
 	if lease == nil {
 		// Slow path to see if we have can get a lease
 		// Make sure nothing sneaked in
-		subnet.Lock()
 		lease = subnet.Leases[nic]
 		binding = subnet.Bindings[nic]
 		theip = nil
@@ -288,7 +271,6 @@ func (subnet *Subnet) find_or_get_info(dt *DataTracker, nic string, suggest net.
 		// Resolve potential conflicts.
 		if lease != nil && binding != nil {
 			if lease.Ip.Equal(binding.Ip) {
-				subnet.Unlock()
 				return lease, binding
 			}
 		}
@@ -297,7 +279,6 @@ func (subnet *Subnet) find_or_get_info(dt *DataTracker, nic string, suggest net.
 			var save_me bool
 			theip, save_me = subnet.getFreeIP()
 			if theip == nil {
-				subnet.Unlock()
 				if save_me {
 					dt.save_data()
 				}
@@ -310,7 +291,6 @@ func (subnet *Subnet) find_or_get_info(dt *DataTracker, nic string, suggest net.
 			Valid: true,
 		}
 		subnet.Leases[nic] = lease
-		subnet.Unlock()
 		dt.save_data()
 	}
 

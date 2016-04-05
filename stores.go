@@ -30,8 +30,6 @@ func NewFileStore(dbFile string) (*FileStore, error) {
 }
 
 func (fs *FileStore) Save(dt *DataTracker) error {
-	dt.Lock()
-	defer dt.Unlock()
 	data, err := json.Marshal(dt)
 	if err != nil {
 		return err
@@ -43,8 +41,6 @@ func (fs *FileStore) Save(dt *DataTracker) error {
 }
 
 func (fs *FileStore) Load(dt *DataTracker) error {
-	dt.Lock()
-	defer dt.Unlock()
 	data, err := ioutil.ReadFile(fs.backingDatabase)
 	if err != nil {
 		return err
@@ -81,8 +77,6 @@ func NewConsulStore(key string) (*ConsulStore, error) {
 }
 
 func (cs *ConsulStore) Load(dt *DataTracker) error {
-	dt.Lock()
-	defer dt.Unlock()
 	pair, _, err := cs.store.Get(cs.backingKey, nil)
 	if err != nil {
 		return err
@@ -91,8 +85,6 @@ func (cs *ConsulStore) Load(dt *DataTracker) error {
 }
 
 func (cs *ConsulStore) Save(dt *DataTracker) error {
-	dt.Lock()
-	defer dt.Unlock()
 	data, err := json.Marshal(dt)
 	if err != nil {
 		return err
