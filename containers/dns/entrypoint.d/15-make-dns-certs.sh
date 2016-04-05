@@ -8,7 +8,7 @@ while [[ $ca_string == "" ]] ; do
 done
 echo "$ca_string" > /etc/dns-mgmt-base-cert.pem
 
-generate_crt "dns" "dns-mgmt" "$IP,${EXTERNAL_IP%%/*},${HOSTNAME},127.0.0.1,localhost"
+generate_crt "dns" "dns-mgmt" "dns,dns-mgmt,$IP,${EXTERNAL_IP%%/*},${HOSTNAME},127.0.0.1,localhost"
 
 mv dns.pem /etc/dns-mgmt-https-cert.pem
 mv dns.csr /etc/dns-mgmt-https-csr.json

@@ -8,7 +8,7 @@ while [[ $ca_string == "" ]] ; do
 done
 echo "$ca_string" > /etc/prov-base-cert.pem
 
-generate_crt "prov" "provisioner" "$IP,${EXTERNAL_IP%%/*},${HOSTNAME},127.0.0.1,localhost"
+generate_crt "prov" "provisioner" "provisioner,provisioner-mgmt,$IP,${EXTERNAL_IP%%/*},${HOSTNAME},127.0.0.1,localhost"
 
 mv prov.pem /etc/prov-cert.pem
 mv prov.csr /etc/prov-csr.json

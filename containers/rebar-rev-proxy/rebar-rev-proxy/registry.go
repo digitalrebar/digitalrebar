@@ -27,7 +27,11 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
+	"net/url"
+	//"strings"
+	"regexp"
 	"sync"
 )
 
@@ -36,36 +40,64 @@ var lock sync.RWMutex
 
 // Common errors.
 var (
-	ErrServiceNotFound = errors.New("service name/version not found")
+	ErrServiceNotFound = errors.New("service tag not found")
 )
 
 // Registry is an interface used to lookup the target host
-// for a given service name / version pair.
+// for a given service tag.
 type Registry interface {
-	Add(name, version, endpoint string)                // Add an endpoint to our registry
-	Delete(name, version, endpoint string)             // Remove an endpoint to our registry
-	Failure(name, version, endpoint string, err error) // Mark an endpoint as failed.
-	Lookup(name, version string) ([]string, error)     // Return the endpoint list for the given service name/version
+	Add(tag, matcher, endpoint string)          // Add an endpoint to our registry
+	Delete(tag, endpoint string)                // Remove an endpoint to our registry
+	Failure(tag, endpoint string, err error)    // Mark an endpoint as failed.
+	LookupTag(tag string) ([]string, error)     // Return the endpoint list for the given service
+	ExtractTag(target *url.URL) (string, error) // Return the tag to use to find the endpoints for given service
 }
 
-// ConsulRegistry is a basic registry using the following format:
-// {
-//   "serviceName": {
-//     "serviceVersion": [
-//       "endpoint1:port",
-//       "endpoint2:port"
-//     ],
-//   },
-// }
-type DefaultRegistry map[string]map[string][]string
+type DefaultRegistry struct {
+	Map     map[string][]string
+	Matcher map[string]*regexp.Regexp
+}
 
-// Lookup return the endpoint list for the given service name/version.
-func (r DefaultRegistry) Lookup(name, version string) ([]string, error) {
-	lock.RLock()
-	targets, ok := r[name][version]
-	if !ok {
-		targets, ok = r["default"]["default"]
+type ConsulRegistry struct {
+	DefaultRegistry
+	// GREG: add routine to watch consul service catalog
+}
+
+// extractTag lookup the target path and extract the tag
+// It updates the target Path trimming part to get to tag
+func (r DefaultRegistry) ExtractTag(target *url.URL) (tag string, err error) {
+	path := target.Path
+	if len(path) > 1 && path[0] == '/' {
+		path = path[1:]
 	}
+
+	found := false
+	for itag, matcher := range r.Matcher {
+		matches := matcher.FindStringSubmatch(path)
+		if matches != nil {
+			target.Path = "/" + matches[1]
+			found = true
+			tag = itag
+			break
+		}
+	}
+
+	if !found {
+		_, err := r.LookupTag("rebarapi")
+		if err != nil {
+			return "", fmt.Errorf("Invalid path")
+		} else {
+			return "rebarapi", nil
+		}
+	}
+
+	return tag, nil
+}
+
+// Lookup return the endpoint list for the given service
+func (r DefaultRegistry) LookupTag(tag string) ([]string, error) {
+	lock.RLock()
+	targets, ok := r.Map[tag]
 	lock.RUnlock()
 	if !ok {
 		return nil, ErrServiceNotFound
@@ -73,40 +105,41 @@ func (r DefaultRegistry) Lookup(name, version string) ([]string, error) {
 	return targets, nil
 }
 
-// Failure marks the given endpoint for service name/version as failed.
-func (r DefaultRegistry) Failure(name, version, endpoint string, err error) {
+// Failure marks the given endpoint for service as failed.
+func (r DefaultRegistry) Failure(tag, endpoint string, err error) {
 	// Would be used to remove an endpoint from the rotation, log the failure, etc.
-	log.Printf("Error accessing %s/%s (%s): %s", name, version, endpoint, err)
+	log.Printf("Error accessing %s (%s): %s", tag, endpoint, err)
 }
 
-// Add adds the given endpoit for the service name/version.
-func (r DefaultRegistry) Add(name, version, endpoint string) {
+// Add adds the given endpoit for the service
+func (r DefaultRegistry) Add(tag, matcher, endpoint string) {
 	lock.Lock()
 	defer lock.Unlock()
 
-	service, ok := r[name]
+	service, ok := r.Map[tag]
 	if !ok {
-		service = map[string][]string{}
-		r[name] = service
+		service = []string{}
+		r.Map[tag] = service
+		r.Matcher[tag] = regexp.MustCompile(matcher)
 	}
-	service[version] = append(service[version], endpoint)
+	service = append(service, endpoint)
 }
 
 // Delete removes the given endpoit for the service name/version.
-func (r DefaultRegistry) Delete(name, version, endpoint string) {
+func (r DefaultRegistry) Delete(tag, endpoint string) {
 	lock.Lock()
 	defer lock.Unlock()
 
-	service, ok := r[name]
+	service, ok := r.Map[tag]
 	if !ok {
 		return
 	}
 begin:
-	for i, svc := range service[version] {
+	for i, svc := range service {
 		if svc == endpoint {
-			copy(service[version][i:], service[version][i+1:])
-			service[version][len(service[version])-1] = ""
-			service[version] = service[version][:len(service[version])-1]
+			copy(service[i:], service[i+1:])
+			service[len(service)-1] = ""
+			service = service[:len(service)-1]
 			goto begin
 		}
 	}

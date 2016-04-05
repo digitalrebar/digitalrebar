@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"regexp"
 
 	"flag"
 	"strconv"
@@ -25,30 +26,25 @@ func init() {
 }
 
 var ServiceRegistry = DefaultRegistry{
-	"service1": {
-		"v1": {
-			"192.168.99.100:3000",
-		},
-	},
-	"dhcp": {
-		"v1": {
+	Map: map[string][]string{
+		"dhcp": []string{
 			"192.168.99.100:6755",
 		},
-	},
-	"dns": {
-		"v1": {
+		"dns": []string{
 			"192.168.99.100:6754",
 		},
-	},
-	"provisioner": {
-		"v1": {
+		"provisioner": []string{
 			"192.168.99.100:8092",
 		},
-	},
-	"default": {
-		"default": {
+		"rebarapi": []string{
 			"192.168.99.100:3000",
 		},
+	},
+	Matcher: map[string]*regexp.Regexp{
+		"dhcp":        regexp.MustCompile("^dhcp/(.*)"),
+		"dns":         regexp.MustCompile("^dns/(.*)"),
+		"provisioner": regexp.MustCompile("^provisioner/(.*)"),
+		"rebarapi":    regexp.MustCompile("^rebarapi/(.*)"),
 	},
 }
 

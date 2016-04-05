@@ -9,7 +9,7 @@ while [[ $ca_string == "" ]] ; do
 done
 echo "$ca_string" > /var/run/rebar/ca.pem
 
-generate_crt "rebarapi" "rebar-api" "$IP,${EXTERNAL_IP%%/*},${HOSTNAME},localhost,127.0.0.1"
+generate_crt "rebarapi" "rebar-api" "rebarapi,rebar-api,$IP,${EXTERNAL_IP%%/*},${HOSTNAME},localhost,127.0.0.1"
 
 mv rebarapi-key.pem /var/run/rebar/server.key
 mv rebarapi.pem /var/run/rebar/server.crt
