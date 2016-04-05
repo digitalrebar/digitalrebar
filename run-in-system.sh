@@ -147,6 +147,21 @@ if [[ $ENV_VAR = "\"packet\": true," ]] ; then
 fi
 ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars "$JSON_STRING" digitalrebar.yml ${LC}
 
+# DHCP WARNING (if needed)
+if [[ $CON_VAR =~ dr_services(.*)--dhcp ]]; then
+    if [[ $IP =~ ^192.168.99. ]]; then
+        echo "Please verify, DHCP default Range (192.168.99.21-80) matches $IP range"
+    else
+        echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        echo "!!! CONFIGURATION WARNING"
+        echo "!!! Admin-Default DHCP range (192.168.99.21-80) does not match Admin subnet in $IP"
+        echo "!!! You will have to add site-specific DHCP range for Provisioning"
+        echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    fi
+else
+    echo "No DHCP continer requested"
+fi
+
 echo "=== HELPFUL COMMANDS ==="
 echo "repeat Ansible run: ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars \"$JSON_STRING\" digitalrebar.yml ${LC}"
 echo "Digital Rebar UI https://${IP}:3000"
