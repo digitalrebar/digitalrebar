@@ -2,6 +2,11 @@
   - name: Update repos
     command: yum makecache
     sudo: yes
+  - name: Install EPEL [SLOW]
+    yum: name={{ item }} state=latest
+    with_items:
+      - epel-release
+    sudo: yes
   - name: Install Prereqs [SLOW]
     yum: name={{ item }} state=latest
     with_items:
