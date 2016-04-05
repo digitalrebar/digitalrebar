@@ -169,6 +169,7 @@ class BarclampDhcp::MgmtService < Service
     return if na.network.category != 'admin'
 
     return unless na.address.v4?
+    loader = Attrib.get('provisioner-bootloader',na.node)
 
     # Get the mac addresses
     ActiveRecord::Base.connection.execute("select * from dhcp_database where name='#{na.node.name}'").each do |row|
@@ -187,7 +188,7 @@ class BarclampDhcp::MgmtService < Service
       end
 
       mac_list.each do |mac|
-        self.class.bind_node_ip_mac(na.network.name, mac, na.address.addr, row['bootenv'])
+        self.class.bind_node_ip_mac(na.network.name, mac, na.address.addr, row['bootenv'], loader)
       end
     end
   end
@@ -316,7 +317,7 @@ class BarclampDhcp::MgmtService < Service
     send_request_delete(url, service['cert'])
   end
 
-  def self.bind_node_ip_mac(name, mac, ip, bootenv)
+  def self.bind_node_ip_mac(name, mac, ip, bootenv, loader)
 
     hash = {
       "ip" => ip,
@@ -327,13 +328,13 @@ class BarclampDhcp::MgmtService < Service
       options = {}
     else
       options = {}
-      boot_program = 'lpxelinux'
+      boot_program = loader
       BarclampProvisioner::Service.all.each do |role|
         role.node_roles.each do |nr|
           boot_program = Attrib.get('provisioner-default-boot-program', nr)
           break
         end
-      end
+      end unless loader
       options[67] = bootloader(boot_program)
     end
     options.each do |k,v|

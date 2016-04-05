@@ -231,6 +231,15 @@ attribs:
    description: 'The node ID that provisioned this node.'
    map: 'rebar/provisioner/node_id'
    default: -1
+ - name: provisioner-bootloader
+   description: 'The bootloader to use for the machine when PXE booting'
+   map: 'rebar/provisioner/bootloader'
+   schema:
+     type: str
+     required: true
+     enum:
+       - ipxe
+       - lpxelinux
 
 providers:
   - name: metal
