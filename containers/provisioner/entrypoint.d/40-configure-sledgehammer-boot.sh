@@ -51,29 +51,29 @@ SLEDGE_ARGS=("rootflags=loop"
              "rd_NO_MD"
              "rd_NO_DM"
              "provisioner.web=$PROV_WEB"
-             "stage2=$PROV_WEB/discovery/stage2.img"
+             "stage2=$PROV_WEB/stage2.img"
              "rebar.web=${EXTERNAL_REBAR_ENDPOINT}"
              "rebar.install.key=${REBAR_KEY}"
             )
 cat > "$TFTPROOT/default.ipxe" <<EOF
 #!ipxe
-chain tftp://$PROV_IP/discovery/\${netX/ip}.ipxe && goto bail || goto sledgehammer
+chain tftp://$PROV_IP/\${netX/ip}.ipxe && goto bail || goto sledgehammer
 :sledgehammer
-kernel tftp://$PROV_IP/discovery/vmlinuz0 ${SLEDGE_ARGS[@]} BOOTIF=01-\${netX/mac:hexhyp}
-initrd tftp://$PROV_IP/discovery/stage1.img
+kernel tftp://$PROV_IP/vmlinuz0 ${SLEDGE_ARGS[@]} BOOTIF=01-\${netX/mac:hexhyp}
+initrd tftp://$PROV_IP/stage1.img
 boot
 :bail
 exit
 EOF
 
 pxelinux_cfg "discovery" \
-             "/discovery/vmlinuz0" \
+             "vmlinuz0" \
              "${SLEDGE_ARGS[*]}" \
-             "/discovery/stage1.img" \
-             > "${TFTPROOT}/discovery/pxelinux.cfg/default"
+             "stage1.img" \
+             > "${TFTPROOT}/pxelinux.cfg/default"
 
 elilo_cfg "discovery" \
-          "/discovery/vmlinuz0" \
+          "vmlinuz0" \
           "${SLEDGE_ARGS[*]}" \
-          "/discovery/stage1.img" \
-          > "${TFTPROOT}/discovery/elilo.conf"
+          "stage1.img" \
+          > "${TFTPROOT}/elilo.conf"

@@ -9,9 +9,14 @@ if [[ ! $PROV_SLEDGEHAMMER_URL ]] ; then
   exit 1
 fi
 
-for d in files nodes discovery/pxelinux.cfg; do
+for d in files machines pxelinux.cfg; do
     mkdir -p "${TFTPROOT}/$d"
 done
+
+# Backwards compatibility with older sledgehammer
+if ! [[ -L $TFTPROOT/nodes ]]; then
+    (cd "$TFTPROOT"; rm -rf nodes && ln -s machines nodes)
+fi
 cp /usr/local/bin/rebar "${TFTPROOT}/files/rebar"
 cp /tmp/start-up.sh "${TFTPROOT}/nodes/start-up.sh"
 cp /tmp/ipxe.* "${TFTPROOT}"
@@ -148,11 +153,21 @@ if [[ ! -f $SS_DIR/stage2.img ]]; then
     in_tmp rm -rf ss1
     rm -rf "$stage1_tmpdir"
 fi
-    
-    
+
+# Lift everything out of the discovery directory and replace it with a symlink
+# Symlink is for backwards compatibility
+if [[ ! -L $TFTPROOT/discovery ]]; then
+    for f in "${TFTPROOT}/discovery/"*; do
+        [[ -e $f ]] || continue
+        mv "$f" "${TFTPROOT}/${f##*/}"
+    done
+    rmdir "$TFTPROOT/discovery"
+    (cd "${TFTPROOT}"; ln -sf . discovery)
+fi
+
 # Extract lpxelinux and elilo
 (
-    cd "${TFTPROOT}/discovery"
+    cd "${TFTPROOT}"
     
     for f in syslinux-6.03/bios/com32/elflink/ldlinux/ldlinux.c32 \
                  syslinux-6.03/bios/core/lpxelinux.0; do
@@ -167,8 +182,9 @@ fi
 )
 
 # Make it the discovery image
-rm -f "${TFTPROOT}/discovery/"*.img "${TFTPROOT}/discovery/vmlinuz0" || :
-cp "$SS_DIR/"stage*.img "$SS_DIR/vmlinuz0" "${TFTPROOT}/discovery"
+
+(cd "$TFTPROOT"; rm initrd0.img stage*.img vmlinuz0) || :
+cp "$SS_DIR/"stage*.img "$SS_DIR/vmlinuz0" "$TFTPROOT"
 
 if which selinuxenabled && \
         selinuxenabled && \
