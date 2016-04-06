@@ -3,6 +3,7 @@
 
 ACCOUNT=${ACCOUNT:-"--user root"}
 LOGIN_USER=${LOGIN_USER:-root}
+DEPLOY_ADMIN=${DEPLOY_ADMIN:-system}
 
 # Load it up
 . workloads/wl-lib.sh
