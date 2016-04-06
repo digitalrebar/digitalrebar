@@ -53,7 +53,7 @@ cleanup() {
 
     while read dev fs type opts rest; do
         sudo umount -d -l "$fs"
-    done < <(tac /proc/self/mounts |grep -e "$CHROOT")
+    done < <(tac /proc/self/mounts |grep -e "sledgehammer/chroot")
     sudo rm -rf --one-file-system "$CHROOT"
 }
 
@@ -361,37 +361,271 @@ setup_sledgehammer_chroot() {
     sudo -H chroot "$CHROOT" /bin/sed -i -e '/keepcache/ s/0/1/' /etc/yum.conf
     sudo -H chroot "$CHROOT" /bin/sh -c "echo 'exclude = *.i386' >>/etc/yum.conf"
     # fourth, have yum bootstrap everything else into usefulness
-    chroot_install livecd-tools tar
+    chroot_install livecd-tools tar bsdtar
 }
 
 setup_sledgehammer_chroot
 sudo cp "$REBAR_DIR/sledgehammer/"* "$CHROOT/mnt"
 in_chroot mkdir -p /mnt/cache
 sudo mount --bind "$SLEDGEHAMMER_LIVECD_CACHE" "$CHROOT/mnt/cache"
-in_chroot touch /mnt/make_sledgehammer
-in_chroot chmod 777 /mnt/make_sledgehammer
-echo '#!/bin/bash' >>"$CHROOT/mnt/make_sledgehammer"
+in_chroot touch /mnt/make_sledgehammer /mnt/stage1_init /mnt/udhcpc_config
+in_chroot chmod 777 /mnt/make_sledgehammer /mnt/stage1_init /mnt/udhcpc_config
 if [[ $USE_PROXY = "1" ]]; then
     printf "\nexport no_proxy=%q http_proxy=%q\n" \
         "$no_proxy" "$http_proxy" >> "$CHROOT/mnt/make_sledgehammer"
     printf "\nexport NO_PROXY=%q HTTP_PROXY=%q\n" \
         "$no_proxy" "$http_proxy" >> "$CHROOT/mnt/make_sledgehammer"
 fi
-cat >> "$CHROOT/mnt/make_sledgehammer" <<EOF
+cat >> "$CHROOT/mnt/stage1_init" <<"EOF"
+#!/bin/ash
+export PATH=/bin
+echo "In Busybox"
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs dev /dev
+mount -t tmpfs root /newinitramfs
+mkdir /dev/pts
+mount -t devpts devpts /dev/pts
+xz -d -c -f lib.cpio.xz |cpio -id
+touch /dev/mdev.log /dev/mdev.seq
+echo '$MODALIAS=.* 0:0 660 @/bin/modprobe "$MODALIAS"' >/etc/mdev.conf
+echo /bin/mdev >/proc/sys/kernel/hotplug
+mdev -s
+# Load devices not loaded by mdev -s
+for i in /sys/class/net/*/uevent; do
+    printf 'add' > "$i"; 
+done 2>/dev/null; 
+unset i
+for i in /sys/bus/usb/devices/*; do
+    case "${i##*/}" in
+        [0-9]*-[0-9]*)
+	    printf 'add' > "$i/uevent";;
+    esac
+done; unset i
+# Load kernel modules, run twice.
+find /sys -name 'modalias' -type f -exec cat '{}' + | sort -u | xargs -n 1 modprobe  2>/dev/null
+find /sys -name 'modalias' -type f -exec cat '{}' + | sort -u | xargs -n 1 modprobe  2>/dev/null
+bootif=$(grep -o 'BOOTIF=[^ ]*' /proc/cmdline)
+nextone=$(grep -o 'stage2=[^ ]*' /proc/cmdline)
+if test -z "$bootif"; then
+    echo "Missing required parameter BOOTIF"
+fi
+
+if test -z "$nextone"; then
+    echo "Missing required parameter stage2"
+fi
+
+if test -z "$bootif" || test -z "$nextone"; then
+    sleep 99999
+    exit 1
+fi
+
+bootif=${bootif#*01-}
+bootif=${bootif//-/:}
+nextone=${nextone#*=}
+
+pxedev=""
+for dev in /sys/class/net/*; do
+    test -f "$dev/address" || continue
+    if test "$(cat "$dev/address")" = "$bootif"; then
+        pxedev=${dev##*/}
+        break
+    fi
+done
+if test -z "$pxedev"; then
+    echo "Failed to find network device we booted from"
+    echo "This should never happen"
+    exit 1
+fi
+echo "Configuring boot interface"
+ip link set "$pxedev" up
+udhcpc -R -a -i "$pxedev"
+echo "Fetching second-stage initramfs"
+(cd /tmp; wget "$nextone")
+(cd /newinitramfs; cpio -id < /tmp/"${nextone##*/}")
+echo "Switching to second-stage initramfs"
+modprobe loop
+modprobe squashfs
+mkdir /newinitramfs/.upper /newinitramfs/.work /newinitramfs/.lower
+mount -o ro -t squashfs /newinitramfs/stage2.squashfs /newinitramfs/.lower
+# This is such a hack
+insmod /newinitramfs/.lower/lib/modules/*/kernel/fs/overlayfs/overlay.ko
+mount -t overlay -olowerdir=/newinitramfs/.lower,upperdir=/newinitramfs/.upper,workdir=/newinitramfs/.work newroot /newinitramfs
+
+for fs in /dev /dev/pts /proc /sys; do
+    mkdir -p "/newinitramfs$fs"
+    mount --bind "$fs" "/newinitramfs$fs"
+done
+
+echo /sbin/hotplug >/proc/sys/kernel/hotplug
+pkill udhcpc
+exec switch_root /newinitramfs /sbin/init
+echo "This should never happen!"
+sleep 9999999
+EOF
+
+cat >> "$CHROOT/mnt/udhcpc_config" <<"EOF"
+#!/bin/sh
+# udhcpc script edited by Tim Riker <Tim@Rikers.org>
+
+RESOLV_CONF="/etc/resolv.conf"
+
+[ -n "$1" ] || { echo "Error: should be called from udhcpc"; exit 1; }
+
+NETMASK=""
+[ -n "$subnet" ] && NETMASK="netmask $subnet"
+BROADCAST="broadcast +"
+[ -n "$broadcast" ] && BROADCAST="broadcast $broadcast"
+
+case "$1" in
+    deconfig)
+        echo "Setting IP address 0.0.0.0 on $interface"
+        ifconfig $interface 0.0.0.0
+        ;;
+
+    renew|bound)
+        echo "Setting IP address $ip on $interface"
+        ifconfig $interface $ip $NETMASK $BROADCAST
+
+        if [ -n "$router" ] ; then
+            echo "Deleting routers"
+            while route del default gw 0.0.0.0 dev $interface ; do
+                :
+            done
+
+            metric=0
+            for i in $router ; do
+                echo "Adding router $i"
+                route add default gw $i dev $interface metric $metric
+                : $(( metric += 1 ))
+            done
+        fi
+
+        echo "Recreating $RESOLV_CONF"
+        # If the file is a symlink somewhere (like /etc/resolv.conf
+        # pointing to /run/resolv.conf), make sure things work.
+        realconf=$(readlink -f "$RESOLV_CONF" 2>/dev/null || echo "$RESOLV_CONF")
+        tmpfile="$realconf-$$"
+        > "$tmpfile"
+        [ -n "$domain" ] && echo "search $domain" >> "$tmpfile"
+        for i in $dns ; do
+            echo " Adding DNS server $i"
+            echo "nameserver $i" >> "$tmpfile"
+        done
+        mv "$tmpfile" "$realconf"
+        ;;
+esac
+
+exit 0
+EOF
+
+cat >> "$CHROOT/mnt/make_sledgehammer" <<"EOF"
+#!/bin/bash
 set -e
+set -x 
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 cd /mnt
 livecd-creator --config=sledgehammer.ks --cache=./cache -f sledgehammer
-rm -fr $SYSTEM_TFTPBOOT_DIR
-livecd-iso-to-pxeboot sledgehammer.iso
-(cd "$SYSTEM_TFTPBOOT_DIR"; sha1sum vmlinuz0 initrd0.img >sha1sums)
-rm /mnt/sledgehammer.iso
+rm -fr /mnt/tftpboot
+bsdtar --strip-components=1 -xf sledgehammer.iso \
+    isolinux/vmlinuz0 isolinux/initrd0.img LiveOS/squashfs.img
+mkdir /mnt/tftpboot
+mv vmlinuz0 "/mnt/tftpboot"
+# General purpose decompressor.
+decompress() {
+    # $1 = file to look at
+    local -A formats readers
+    formats['cat']='070701'
+    formats['xzcat']=$'\xfd7zXZ'
+    formats['lzop -d']=$'\x89LZO'
+    formats['zcat']='8b1f'
+    formats['lz4cat']='184d2204'
+    formats['lz4cat -l']='184c2102'
+    formats['bzcat']='BZh'
+    formats['lzcat']='5d'
+    readers['cat']='hexdump -n 6 -e "%c"'
+    readers['xzcat']='hexdump -n 6 -e "%c"'
+    readers['lzop -d']='hexdump -n 4 -e "%c"'
+    readers['zcat']='hexdump -n 2 -e "%x"'
+    readers['lz4cat']='hexdump -n 4 -e "%x"'
+    readers['lz4cat -l']='hexdump -n 4 -e "%x"'
+    readers['bzcat']='hexdump -n 3 -e "%c"'
+    readers['lzcat']='hexdump -n 3 -e "%x"'
+    local cmd= try=
+    for try in "${!formats[@]}"; do
+        [[ $(${readers["$try"]} "$1") = ${formats[$try]} ]] || continue
+        cmd="$try"
+        break
+    done
+    if [[ ! $cmd ]]; then
+        echo "Failed to find decompressor for $1" >&2
+        return 1
+    fi
+    $cmd < "$1"
+}
+# Utility for cutting an initramfs into 2 pieces
+cut_initramfs() {
+    # $1 = directory to place segments
+    # $2 = file to cut
+    # $3 = index to start at
+    local idx=${3:-0}
+    decompress "$2">"$1/scratch.img" || {
+        rm "$1/scratch.img"; return 1
+    }
+    local sep=$(grep -m 1 -P -o -a -b 'TRAILER!!!\x0*' "$1/scratch.img" |tr '\0' '-')
+    local frag=${sep#*:}
+    local startnext=$((${sep%%:*} + ${#frag}))
+    local endfirst=$((${sep%%:*} + ${#frag} - 1))
+    dd if="$1/scratch.img" count="$endfirst" iflag=count_bytes > "$1/ss$idx.img"
+    idx=$((idx + 1))
+    dd if="$1/scratch.img" skip="$startnext" iflag=skip_bytes > "$1/ss$idx.img"
+    rm "$1/scratch.img"
+}
+cut_initramfs '.' initrd0.img
+
+if [[ ! -f ss1.img ]]; then
+   echo "Cutting initial initramfs apart failed"
+   exit 1
+fi
+if ! grep -q 'early_cpio' ss0.img; then
+    echo "First initramfs missing early_cpio"
+    exit 1
+fi
+mkdir -p ss0/dev ss0/proc ss0/sys ss0/bin ss0/etc \
+       ss0/usr/share/udhcpc ss0/tmp ss0/newinitramfs \
+       ss1
+
+echo "Making stage1.img"
+(    cd ss0
+     bsdtar -xf ../ss0.img || :
+     bsdtar -xf ../ss1.img 'usr/lib/modules/*' 'usr/lib/firmware'
+     mv usr/lib .
+     (cd lib/modules/*/kernel/drivers; rm -rf ata md usb dca firewire scsi mmc cdrom gpu)
+     (cd lib/firmware; rm -rf radeon)
+     find lib |sort |cpio -o -R 0:0 --format=newc |xz -T0 -c >lib.cpio.xz
+     rm -rf lib
+     curl -o bin/busybox https://www.busybox.net/downloads/binaries/busybox-x86_64
+     (cd bin; chmod 755 busybox; ./busybox --install .)
+     cp ../stage1_init init
+     cp ../udhcpc_config usr/share/udhcpc/default.script
+     find |sort |cpio -o -R 0:0 --format=newc |gzip -9 >/mnt/tftpboot/stage1.img
+)
+echo "Making stage2.img"
+unsquashfs squashfs.img
+mount -o loop,ro squashfs-root/LiveOS/ext3fs.img ss1
+mksquashfs ss1 stage2.squashfs -comp xz -Xbcj x86
+umount ss1
+echo stage2.squashfs |cpio -o -R 0:0 --format=newc >/mnt/tftpboot/stage2.img
+
+(cd /mnt/tftpboot; sha1sum vmlinuz0 *.img >sha1sums)
 EOF
+chmod 755 "$CHROOT/mnt/make_sledgehammer" "$CHROOT/mnt/stage1_init" "$CHROOT/mnt/udhcpc_config"
 in_chroot ln -s /proc/self/mounts /etc/mtab
 in_chroot /mnt/make_sledgehammer
 cp -af "$CHROOT$SYSTEM_TFTPBOOT_DIR/"* "$SLEDGEHAMMER_IMAGE_DIR"
 in_chroot rm -rf $SYSTEM_TFTPBOOT_DIR
 
-if [[ -f $SLEDGEHAMMER_IMAGE_DIR/initrd0.img ]]; then
+if [[ -f $SLEDGEHAMMER_IMAGE_DIR/stage2.img ]]; then
     echo "New sledgehammer image in $SLEDGEHAMMER_IMAGE_DIR"
     echo "It has signature $signature"
     echo "To use it locally, modify the bootstrap recipe to refer to the new signature."
