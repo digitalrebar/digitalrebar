@@ -1,23 +1,34 @@
 # Copyright 2015, Greg Althaus
-# 
-# Licensed under the Apache License, Version 2.0 (the "License"); 
-# you may not use this file except in compliance with the License. 
-# You may obtain a copy of the License at 
-# 
-#  http://www.apache.org/licenses/LICENSE-2.0 
-# 
-# Unless required by applicable law or agreed to in writing, software 
-# distributed under the License is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-# See the License for the specific language governing permissions and 
-# limitations under the License. 
-# 
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 require 'resolv'
 require 'rest-client'
 require 'uri'
 
 class BarclampDhcp::MgmtService < Service
+
+  def self.bootloader(loader)
+    case loader
+    when 'ipxe'
+      '{{if (eq (index . 77) "iPXE") }}default.ipxe{{else if (eq (index . 93) "0")}}ipxe.pxe{{else}}ipxe.efi{{end}}'
+    when 'lpxelinux'
+      '{{if (eq (index . 93) "0")}}lpxelinux.0{{else}}bootx64.efi{{end}}'
+    else
+      Rails.logger.fatal("Unknown boot loader #{loader}")
+    end
+  end
 
   def do_transition(nr,data)
     wait_for_service(nr, data, 'dhcp-mgmt-service')
@@ -69,7 +80,7 @@ class BarclampDhcp::MgmtService < Service
     subnet = r.first.network.to_s
 
     next_server = nil
-    boot_program = 'ipxe'
+    boot_program = 'lpxelinux'
     BarclampProvisioner::Service.all.each do |role|
       role.node_roles.each do |nr|
         services = Attrib.get('provisioner-webservers', nr)
@@ -128,12 +139,7 @@ class BarclampDhcp::MgmtService < Service
 
     # Option 3 - gateway
     options[3] = network.network_router.address.addr if network and network.network_router
-    if boot_program == 'ipxe'
-      options[67] = '{{if (eq (index . 77) "iPXE") }}default.ipxe{{else if (eq (index . 93) "0")}}ipxe.pxe{{else}}ipxe.efi{{end}}'
-    else
-      options[67] = 'discovery/lpxelinux.0'
-    end
-
+    options[67] = self.class.bootloader(boot_program)
     self.class.create_network(network.name, subnet, next_server, start_ip, end_ip, options)
     self.class.update_network(network.name, subnet, next_server, start_ip, end_ip, options)
   end
@@ -163,6 +169,7 @@ class BarclampDhcp::MgmtService < Service
     return if na.network.category != 'admin'
 
     return unless na.address.v4?
+    loader = Attrib.get('provisioner-bootloader',na.node)
 
     # Get the mac addresses
     ActiveRecord::Base.connection.execute("select * from dhcp_database where name='#{na.node.name}'").each do |row|
@@ -180,8 +187,8 @@ class BarclampDhcp::MgmtService < Service
         end
       end
 
-      mac_list.each do |mac| 
-        self.class.bind_node_ip_mac(na.network.name, mac, na.address.addr, row['bootenv'])
+      mac_list.each do |mac|
+        self.class.bind_node_ip_mac(na.network.name, mac, na.address.addr, row['bootenv'], loader)
       end
     end
   end
@@ -207,7 +214,7 @@ class BarclampDhcp::MgmtService < Service
         end
       end
 
-      mac_list.each do |mac| 
+      mac_list.each do |mac|
         self.class.unbind_node_ip_mac(na.network.name, mac)
       end
     end
@@ -310,7 +317,7 @@ class BarclampDhcp::MgmtService < Service
     send_request_delete(url, service['cert'])
   end
 
-  def self.bind_node_ip_mac(name, mac, ip, bootenv)
+  def self.bind_node_ip_mac(name, mac, ip, bootenv, loader)
 
     hash = {
       "ip" => ip,
@@ -321,18 +328,14 @@ class BarclampDhcp::MgmtService < Service
       options = {}
     else
       options = {}
-      boot_program = 'ipxe'
+      boot_program = loader
       BarclampProvisioner::Service.all.each do |role|
         role.node_roles.each do |nr|
           boot_program = Attrib.get('provisioner-default-boot-program', nr)
           break
         end
-      end
-      if boot_program == 'ipxe'
-        options[67] = '{{if (eq (index . 77) "iPXE") }}default.ipxe{{else if (eq (index . 93) "0")}}ipxe.pxe{{else}}ipxe.efi{{end}}'
-      else
-        options[67] = 'discovery/lpxelinux.0'
-      end
+      end unless loader
+      options[67] = bootloader(boot_program)
     end
     options.each do |k,v|
       hash["options"] ||= []
@@ -353,4 +356,3 @@ class BarclampDhcp::MgmtService < Service
   end
 
 end
-

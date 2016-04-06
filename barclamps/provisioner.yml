@@ -78,7 +78,7 @@ roles:
       - name: provisioner-default-boot-program
         description: "Default boot program for initial PXE boot"
         map: 'rebar/provisioner/boot_program'
-        default: 'ipxe'
+        default: 'lpxelinux'
         schema:
           type: str
           required: true
@@ -231,6 +231,15 @@ attribs:
    description: 'The node ID that provisioned this node.'
    map: 'rebar/provisioner/node_id'
    default: -1
+ - name: provisioner-bootloader
+   description: 'The bootloader to use for the machine when PXE booting'
+   map: 'rebar/provisioner/bootloader'
+   schema:
+     type: str
+     required: true
+     enum:
+       - ipxe
+       - lpxelinux
 
 providers:
   - name: metal
