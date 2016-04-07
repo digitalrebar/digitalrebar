@@ -157,14 +157,14 @@ fi
 
 # Lift everything out of the discovery directory and replace it with a symlink
 # Symlink is for backwards compatibility
-if [[ ! -L $TFTPROOT/discovery ]]; then
+if [[ -d $TFTPROOT/discovery ]]; then
     for f in "${TFTPROOT}/discovery/"*; do
         [[ -e $f ]] || continue
         mv "$f" "${TFTPROOT}/${f##*/}"
     done
     rmdir "$TFTPROOT/discovery"
-    (cd "${TFTPROOT}"; ln -sf . discovery)
 fi
+[[ -L $TFTPROOT/discovery ]] || (cd "${TFTPROOT}"; ln -sf . discovery)
 
 # Extract lpxelinux and elilo
 (
