@@ -103,6 +103,8 @@ if [[ $TEARDOWN ]] ; then
     done
     # Destroy deployment
     rebar deployments destroy "$DEPLOYMENT_NAME"
+    # Clear playbooks
+    docker exec -it compose_rebar_api_1 sudo rm -rf /var/cache/rebar/ansible_playbook/kubernetes-deploy/
     exit 0
 fi
 
@@ -113,8 +115,12 @@ else
     echo "Verified System Ready @ $REBAR_ENDPOINT"
 fi
 
+# In case this is a reset, make sure that we've removed the old deployment & playbooks to force reload
+rebar deployments destroy "$DEPLOYMENT_NAME"
+docker exec -it compose_rebar_api_1 sudo rm -rf /var/cache/rebar/ansible_playbook/kubernetes-deploy/
+
 #
-# Start up machines for nodes
+# Start up machines for nodes (fast if they are already running)
 #
 echo "Creating $KUBERNETES_NODE_COUNT nodes on $REBAR_ENDPOINT"
 for ((i=1 ; i <= $KUBERNETES_NODE_COUNT; i++)) ; do
