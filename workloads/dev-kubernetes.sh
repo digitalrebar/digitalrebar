@@ -68,7 +68,7 @@ WL_KUBERNETES=true
 # Turn off provisioner by default
 CON_NO_PROVISIONER=true
 
-KEEP_ADMIN=false
+KEEP_ADMIN=true
 WAIT_ON_CONVERGE=true
 
 #
@@ -81,40 +81,44 @@ WAIT_ON_CONVERGE=true
 # provider will create.
 #
 DNS_DOMAIN=${DNS_DOMAIN:-rebar.local}
-
 KUBERNETES_NETWORKING=${KUBERNETES_NETWORKING:-flannel}
 KUBERNETES_NODE_COUNT=${KUBERNETES_NODE_COUNT:-3}
 DEPLOYMENT_NAME=${DEPLOYMENT_NAME:-kubs}
 DEPLOYMENT_OS=${DEPLOYMENT_OS:-centos7}
-REBAR_ENDPOINT=${REBAR_ENDPOINT:-https://${ADMIN_IP}:3000}
-REBAR_KEY=${REBAR_KEY:=rebar:rebar1}
+REBAR_ENDPOINT=${REBAR_ENDPOINT:-"https://$ADMIN_IP:3000"}
+REBAR_KEY=${REBAR_KEY:-"rebar:rebar1"}
+
+# test Rebar
+if ! rebar ping -E $REBAR_ENDPOINT; then
+    die "Rebar Must Be Running: tools/docker-admin --access=HOST --no-provisioner --no-dhcp"
+else
+    echo "Verified Admin @ $REBAR_ENDPOINT"
+fi
 
 if [[ $TEARDOWN ]] ; then
     for ((i=1 ; i <= $KUBERNETES_NODE_COUNT; i++)) ; do
         NAME="node${i}.${DNS_DOMAIN}"
         rebar nodes destroy $NAME
-        export REBAR_ENDPOINT=${REBAR_ENDPOINT} && vagrant destroy -f "node${i}"
+        export REBAR_ENDPOINT=$REBAR_ENDPOINT && vagrant destroy -f "node${i}"
     done
     # Destroy deployment
     rebar deployments destroy "$DEPLOYMENT_NAME"
     exit 0
 fi
 
-# test Rebar
-if ! rebar ping ; then
-    die "Rebar Must Be Running: tools/docker-admin --access=HOST --no-provisioner --no-dhcp"
-fi
-
 # Wait for the system to converge
-if ! rebar converge ; then
-    die "Admin node did NOT converge to completion"
+if ! rebar converge system -E $REBAR_ENDPOINT; then
+    die "Admin node $REBAR_ENDPOINT did NOT converge to completion"
+else
+    echo "Verified System Ready @ $REBAR_ENDPOINT"
 fi
 
 #
 # Start up machines for nodes
 #
+echo "Creating $KUBERNETES_NODE_COUNT nodes on $REBAR_ENDPOINT"
 for ((i=1 ; i <= $KUBERNETES_NODE_COUNT; i++)) ; do
-    export REBAR_ENDPOINT=$REBAR_ENDPOINT && vagrant up node${i}
+    export REBAR_ENDPOINT=$REBAR_ENDPOINT && vagrant up "node${i}"
     NODE_IP=$(rebar nodes show "node$i.${DNS_DOMAIN}" | jq --raw-output '.["node-control-address"]' | cut -d '/' -f 1)
     echo "Added Node $i at $NODE_IP"
 done
