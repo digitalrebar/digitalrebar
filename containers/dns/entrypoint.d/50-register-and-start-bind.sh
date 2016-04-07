@@ -73,8 +73,14 @@ $OTHER_PARMS
 EOF
     /usr/local/bin/rebar-dns-mgmt --backing_store=consul --data_dir=digitalrebar/dns/database --auth_mode=KEY &
 
+    # Add rev-proxy matcher
+    echo '^dns/(.*)' | kv_put digitalrebar/public/revproxy/dns-mgmt-service/matcher
+
     # Set up the management service
+    OSD=$SERVICE_DEPLOYMENT
+    SERVICE_DEPLOYMENT="$OSD\", \"revproxy"
     make_service "dns-mgmt" "6754" '{ "script": "pidof rebar-dns-mgmt","interval": "10s"}'
+    SERVICE_DEPLOYMENT=$OSD
 
     bind_service dns-mgmt_service
 

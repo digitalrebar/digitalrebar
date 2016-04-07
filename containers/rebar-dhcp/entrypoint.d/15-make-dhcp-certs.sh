@@ -10,7 +10,7 @@ echo "$ca_string" > /etc/dhcp-base-cert.pem
 
 
 HOSTS=`hostname`
-HOSTS="dhcp,dhcp-mgmt,$HOSTS,localhost"
+HOSTS="dhcp,dhcp-mgmt,dhcp-mgmt-service,$HOSTS,localhost"
 I_IP=`ip addr show | grep inet | grep -v inet6 | awk '{ print $2 }' | awk -F/ '{ print $1 }'|sed "s/ /,/g"`
 CI_IP=`echo $I_IP | sed "s/ /,/g"`
 HOSTS="$HOSTS,$CI_IP"

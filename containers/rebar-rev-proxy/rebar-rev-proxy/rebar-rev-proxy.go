@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"regexp"
 
 	"flag"
 	"strconv"
@@ -23,29 +22,6 @@ func init() {
 	flag.StringVar(&cacert_pem, "cacert_pem", "/etc/rev-proxy/ca.pem", "Path to cert file")
 	flag.IntVar(&listen_port, "listen_port", 8443, "Port to listen on")
 	flag.StringVar(&auth_filter, "auth_filter", "none", "Auth Filter to use. Either 'saml', 'none', or 'db'")
-}
-
-var ServiceRegistry = DefaultRegistry{
-	Map: map[string][]string{
-		"dhcp": []string{
-			"192.168.99.100:6755",
-		},
-		"dns": []string{
-			"192.168.99.100:6754",
-		},
-		"provisioner": []string{
-			"192.168.99.100:8092",
-		},
-		"rebarapi": []string{
-			"192.168.99.100:3000",
-		},
-	},
-	Matcher: map[string]*regexp.Regexp{
-		"dhcp":        regexp.MustCompile("^dhcp/(.*)"),
-		"dns":         regexp.MustCompile("^dns/(.*)"),
-		"provisioner": regexp.MustCompile("^provisioner/(.*)"),
-		"rebarapi":    regexp.MustCompile("^rebarapi/(.*)"),
-	},
 }
 
 func main() {
@@ -94,6 +70,9 @@ func main() {
 			fmt.Fprintf(w, "%v\n", ServiceRegistry)
 		})
 	}
+
+	println("starting consul")
+	go ServiceRegistry.WatchConsul()
 
 	println("ready")
 	log.Fatal(http.ListenAndServeTLS(":"+strconv.Itoa(listen_port), cert_pem, key_pem, nil))
