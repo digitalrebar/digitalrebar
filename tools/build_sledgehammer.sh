@@ -376,18 +376,35 @@ if [[ $USE_PROXY = "1" ]]; then
     printf "\nexport NO_PROXY=%q HTTP_PROXY=%q\n" \
         "$no_proxy" "$http_proxy" >> "$CHROOT/mnt/make_sledgehammer"
 fi
-cat >> "$CHROOT/mnt/stage1_init" <<"EOF"
+sed "s/::SIGNATURE::/$signature/" >> "$CHROOT/mnt/stage1_init" <<"EOF"
 #!/bin/ash
+
+fail() {
+    printf '%s\n' "$@"
+    echo "Dropping into shell for debugging"
+    echo "Contact RackN on Gitter in the digitalrebar/core channel for debugging"
+    echo "Exiting the shell will reboot the system"
+    /bin/ash -i
+    reboot
+}
+
 export PATH=/bin
-echo "In Busybox"
+export SIGNATURE="::SIGNATURE::"
+echo "Stage1 $SIGNATURE in Busybox"
+echo "You can download a copy of the Busybox source for this version at:"
+echo "http://opencrowbar.s3-website-us-east-1.amazonaws.com/busybox-source.tar.xz"
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
 mount -t devtmpfs dev /dev
 mount -t tmpfs root /newinitramfs
 mkdir /dev/pts
 mount -t devpts devpts /dev/pts
+echo "Extracting drivers and other kernel modules"
 xz -d -c -f lib.cpio.xz |cpio -id
+test -d "lib/modules/$(uname -r)" || fail "Stage1 kernel modules do not match running kernel $(uname -r)" "We will fail to find network devices" "Make sure Sledgehammer $SIGNATURE was downloaded properly."
+rm lib.cpio.xz
 touch /dev/mdev.log /dev/mdev.seq
+echo "Loading drivers"
 echo '$MODALIAS=.* 0:0 660 @/bin/modprobe "$MODALIAS"' >/etc/mdev.conf
 echo /bin/mdev >/proc/sys/kernel/hotplug
 mdev -s
@@ -405,20 +422,11 @@ done; unset i
 # Load kernel modules, run twice.
 find /sys -name 'modalias' -type f -exec cat '{}' + | sort -u | xargs -n 1 modprobe  2>/dev/null
 find /sys -name 'modalias' -type f -exec cat '{}' + | sort -u | xargs -n 1 modprobe  2>/dev/null
+echo "Parsing kernel parameters required for booting"
 bootif=$(grep -o 'BOOTIF=[^ ]*' /proc/cmdline)
-nextone=$(grep -o 'stage2=[^ ]*' /proc/cmdline)
-if test -z "$bootif"; then
-    echo "Missing required parameter BOOTIF"
-fi
-
-if test -z "$nextone"; then
-    echo "Missing required parameter stage2"
-fi
-
-if test -z "$bootif" || test -z "$nextone"; then
-    sleep 99999
-    exit 1
-fi
+nextone=$(grep -o 'provisioner.web=[^ ]*' /proc/cmdline)
+test -z "$bootif" && fail "Missing required parameter BOOTIF"
+test -z "$nextone" && fail "Missing required parameter provisioner.web"
 
 bootif=${bootif#*01-}
 bootif=${bootif//-/:}
@@ -432,25 +440,30 @@ for dev in /sys/class/net/*; do
         break
     fi
 done
-if test -z "$pxedev"; then
-    echo "Failed to find network device we booted from"
-    echo "This should never happen"
-    exit 1
-fi
+test -z "$pxedev" && fail "Failed to find network device we booted from"
 echo "Configuring boot interface"
 ip link set "$pxedev" up
 udhcpc -R -a -i "$pxedev"
 echo "Fetching second-stage initramfs"
-(cd /tmp; wget "$nextone")
-(cd /newinitramfs; cpio -id < /tmp/"${nextone##*/}")
+(cd /tmp; wget "$nextone/sledgehammer/$SIGNATURE/stage2.img") || \
+    fail "Failed to download stage2.img for $SIGNATURE"
+(cd /newinitramfs; cpio -id < /tmp/stage2.img)
+test -f /newinitramfs/$SIGNATURE.squashfs || \
+    fail "Stage2 image does not contain Stage2 squashfs"
+rm /tmp/stage2.img
 echo "Switching to second-stage initramfs"
 modprobe loop
 modprobe squashfs
 mkdir /newinitramfs/.upper /newinitramfs/.work /newinitramfs/.lower
-mount -o ro -t squashfs /newinitramfs/stage2.squashfs /newinitramfs/.lower
+mount -o ro -t squashfs "/newinitramfs/$SIGNATURE.squashfs" /newinitramfs/.lower || \
+    fail "Failed to mount $SIGNATURE.squashfs as Stage2 initramfs"
+test -d "/newinitramfs/.lower/lib/modules/$(uname -r)" || \
+    fail "Stage2 kernel modules do not match running kernel!"
 # This is such a hack
-insmod /newinitramfs/.lower/lib/modules/*/kernel/fs/overlayfs/overlay.ko
-mount -t overlay -olowerdir=/newinitramfs/.lower,upperdir=/newinitramfs/.upper,workdir=/newinitramfs/.work newroot /newinitramfs
+insmod "/newinitramfs/.lower/lib/modules/$(uname -r)/kernel/fs/overlayfs/overlay.ko" || \
+    fail "Failed to load overlayfs kernel module"
+mount -t overlay -olowerdir=/newinitramfs/.lower,upperdir=/newinitramfs/.upper,workdir=/newinitramfs/.work newroot /newinitramfs || \
+    fail "Failed to overlay a writeable filesystem over $SIGNATURE.squashfs"
 
 for fs in /dev /dev/pts /proc /sys; do
     mkdir -p "/newinitramfs$fs"
@@ -459,9 +472,9 @@ done
 
 echo /sbin/hotplug >/proc/sys/kernel/hotplug
 pkill udhcpc
+ip link set "$pxedev" down
 exec switch_root /newinitramfs /sbin/init
-echo "This should never happen!"
-sleep 9999999
+fail "Failed to switch to stage2 initramfs" "This should never happen"
 EOF
 
 cat >> "$CHROOT/mnt/udhcpc_config" <<"EOF"
@@ -519,11 +532,12 @@ esac
 exit 0
 EOF
 
-cat >> "$CHROOT/mnt/make_sledgehammer" <<"EOF"
+sed "s/::SIGNATURE::/$signature/" >> "$CHROOT/mnt/make_sledgehammer" <<"EOF"
 #!/bin/bash
 set -e
 set -x 
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+export SIGNATURE="::SIGNATURE::"
 cd /mnt
 livecd-creator --config=sledgehammer.ks --cache=./cache -f sledgehammer
 rm -fr /mnt/tftpboot
@@ -604,7 +618,7 @@ echo "Making stage1.img"
      (cd lib/firmware; rm -rf radeon)
      find lib |sort |cpio -o -R 0:0 --format=newc |xz -T0 -c >lib.cpio.xz
      rm -rf lib
-     curl -o bin/busybox https://www.busybox.net/downloads/binaries/busybox-x86_64
+     curl -fgL -o bin/busybox http://opencrowbar.s3-website-us-east-1.amazonaws.com/busybox
      (cd bin; chmod 755 busybox; ./busybox --install .)
      cp ../stage1_init init
      cp ../udhcpc_config usr/share/udhcpc/default.script
@@ -613,9 +627,9 @@ echo "Making stage1.img"
 echo "Making stage2.img"
 unsquashfs squashfs.img
 mount -o loop,ro squashfs-root/LiveOS/ext3fs.img ss1
-mksquashfs ss1 stage2.squashfs -comp xz -Xbcj x86
+mksquashfs ss1 $SIGNATURE.squashfs -comp xz -Xbcj x86
 umount ss1
-echo stage2.squashfs |cpio -o -R 0:0 --format=newc >/mnt/tftpboot/stage2.img
+echo $SIGNATURE.squashfs |cpio -o -R 0:0 --format=newc >/mnt/tftpboot/stage2.img
 
 (cd /mnt/tftpboot; sha1sum vmlinuz0 *.img >sha1sums)
 EOF
