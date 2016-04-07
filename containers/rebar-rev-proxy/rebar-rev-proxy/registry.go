@@ -205,7 +205,6 @@ func (c *ConsulRegistry) WatchConsul() {
 			if err != nil {
 				log.Printf("kv lookup err: %v", err)
 			} else {
-				log.Printf("kp.Value = %v", kp.Value)
 				if kp.Value != nil {
 					svcMatcher = string(kp.Value[:])
 				} else {
@@ -231,7 +230,6 @@ func (r *DefaultRegistry) ExtractTag(target *url.URL) (tag string, err error) {
 		path = path[1:]
 	}
 
-	fmt.Println("Current State: %v", r)
 	found := false
 	for itag, matcher := range r.Matcher {
 		matches := matcher.FindStringSubmatch(path)
