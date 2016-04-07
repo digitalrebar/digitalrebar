@@ -27,7 +27,7 @@ help_options["--kubernetes-local-release-dir=<String>"]="Directory to download b
 help_options["--kubernetes-log-level=<Int>"]="Kubernetes Log Level: 2"
 help_options["--kubernetes-users=<String>"]="JSON string of users with password and role"
 
-help_options["--kubernetes-cloud-provider=<String>"]="Is kubernetes in a cloud environment"
+help_options["--kubernetes-cloud-provider=<String>"]="Is kubernetes in a cloud environment (false or type)"
 help_options["--kubernetes-cloud-provider-type=<String>"]="Which cloud environment"
 
 help_options["--kubernetes-cluster-name=<String>"]="Name of cluster: cluster.local"
@@ -99,17 +99,17 @@ fi
 if [[ $PROVIDER == google ]] ; then
     KUBERNETES_OPENCONTRAIL_NO_ARP=${KUBERNETES_OPENCONTRAIL_NO_ARP:-true}
     KUBERNETES_CLOUD_PROVIDER_TYPE=${KUBERNETES_CLOUD_PROVIDER_TYPE:-google}
-    KUBERNETES_CLOUD_PROVIDER=${KUBERNETES_CLOUD_PROVIDER:-true}
+    KUBERNETES_CLOUD_PROVIDER=${KUBERNETES_CLOUD_PROVIDER:-gce}
 fi
 
 if [[ $PROVIDER == aws ]] ; then
     KUBERNETES_CLOUD_PROVIDER_TYPE=${KUBERNETES_CLOUD_PROVIDER_TYPE:-aws}
-    KUBERNETES_CLOUD_PROVIDER=${KUBERNETES_CLOUD_PROVIDER:-true}
+    KUBERNETES_CLOUD_PROVIDER=${KUBERNETES_CLOUD_PROVIDER:-aws}
 fi
 
 if [[ $PROVIDER == openstack ]] ; then
     KUBERNETES_CLOUD_PROVIDER_TYPE=${KUBERNETES_CLOUD_PROVIDER_TYPE:-openstack}
-    KUBERNETES_CLOUD_PROVIDER=${KUBERNETES_CLOUD_PROVIDER:-true}
+    KUBERNETES_CLOUD_PROVIDER=${KUBERNETES_CLOUD_PROVIDER:-generic}
 fi
 
 K_GATEWAY_COUNT_DEFAULT=0

@@ -24,7 +24,7 @@ help_options["--kubernetes-local-release-dir=<String>"]="Directory to download b
 help_options["--kubernetes-log-level=<Int>"]="Kubernetes Log Level: 2"
 help_options["--kubernetes-users=<String>"]="JSON string of users with password and role"
 
-help_options["--kubernetes-cloud-provider=<true|false>"]="Is kubernetes in a cloud environment"
+help_options["--kubernetes-cloud-provider=<String>"]="Is kubernetes in a cloud environment (false or type)"
 help_options["--kubernetes-cloud-provider-type=<String>"]="Which cloud environment"
 
 help_options["--kubernetes-cluster-name=<String>"]="Name of cluster: cluster.local"
