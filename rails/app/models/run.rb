@@ -82,9 +82,14 @@ class NodeRoleRun < Que::Job
       if (nr.wall["rebar_wall"]["reservations"] rescue nil)
         res = Hash.new
         nr.node.node_roles.each do |this_nr|
+          # We do ourselves last
+          next if nr.id == this_nr.id
+          # Use the local copy of this noderole instead of the stale one from the db.
           next unless (this_nr.wall["rebar_wall"]["reservations"] rescue nil)
           res.deep_merge!(this_nr.wall["rebar_wall"]["reservations"])
-          end
+        end
+        # Do this one last and not from a stale copy
+        res.deep_merge!(nr.wall["rebar_wall"]["reservations"])
         nr.node.hint_update({"reservations" => res})
       end
     rescue StandardError => e
