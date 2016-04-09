@@ -15,6 +15,7 @@ require './openstack'
 loop do
   begin
     log "Finding endpoints of servers to check"
+    debug_flag = false
     device_data = {}
     endpoints = {}
     servers = {}
@@ -63,6 +64,7 @@ loop do
       when 'OpenStack'
         log "Testing server #{rebar_id} as OpenStack #{cloudwrap_device_id} state"
         device_data = OpenStack::get(endpoint, cloudwrap_device_id)
+        debug_flag = OpenStack::os_debug(endpoint)
         unless device_data['status'] =~ /active/im
           log("Server OpenStack #{cloudwrap_device_id} is #{device_data['status']}, skipping")
           if device_data["status"] == nil or device_data["status"] =~ /error/im
@@ -112,14 +114,24 @@ loop do
 
       when 'OpenStack'
 
+        # this is an error state - we don't have any addresses!
+        if device_data['addresses'] == ""
+          log "OpenStack Server #{cloudwrap_device_id} did NOT get any addresses!, skipping"
+          next
+        end
         addresses = OpenStack::addresses(device_data['addresses'])
-        public_name = OpenStack::public_net(addresses)
-        private_name = OpenStack::private_net(addresses)
+        public_name = OpenStack::public_net(endpoint, addresses)
+        private_name = OpenStack::private_net(endpoint, addresses)
         dev_ip = addresses[public_name]["v4"] || addresses[public_name][:v4] rescue "public_v4_not_defined"
         cidr = "32"
         username = nil
         users = (endpoint['os-ssh-user'] || "ubuntu centos root").split(/\s|,/)
 
+        if dev_ip == "public_v4_not_defined"
+          log "OpenStack Server #{cloudwrap_device_id} is not publicly sshable, skipping"
+          # one day, this could have a Floating IP option
+          next
+        end
         log "Make sure node #{dev_ip} is ssh-able? (user #{users}@#{device_data['addresses']})"
         users.each do |user|
           begin
@@ -206,7 +218,11 @@ loop do
           Net::SSH.start(dev_ip, username, { keys: [ kp_loc ], paranoid: false }) do |ssh|
             log "SSH keysetup using `ssh #{username}@#{dev_ip} -i #{kp_loc}`"
             # capture all stderr and stdout output from a remote process
-            if username!='root' && endpoint['provider']=='OpenStack'
+            if username=='root'
+              log "Root account exists, just add the keys"
+              ssh.exec!("cat /tmp/rebar_keys >> /root/.ssh/authorized_keys")
+              ssh.exec!("rm -f /tmp/rebar_keys")
+            else
               # OpenStack accounts are not always root, add root
               log "Adding root account for #{endpoint['provider']} from #{username}@#{dev_ip} account"
               ssh.exec!("sudo -- mkdir -p /root/.ssh")
@@ -217,10 +233,8 @@ loop do
               ssh.exec!("sudo -- mv /tmp/rebar_keys /root/.ssh/authorized_keys")
               ssh.exec!("sudo -- chmod 600 /root/.ssh/authorized_keys")
               ssh.exec!("sudo -- chown root:root /root/.ssh/authorized_keys")
-            else
-              log "Root account exists, just add the keys"
-              ssh.exec!("cat /tmp/rebar_keys >> /root/.ssh/authorized_keys")
-              ssh.exec!("rm -f /tmp/rebar_keys")
+              #future, some providers encrypt the home drive and prevent our adding keys
+              # see http://ubuntuforums.org/showthread.php?t=1932058
             end
           end
         rescue Exception => e
@@ -269,7 +283,7 @@ loop do
           end
         end
       end
-      File::delete(kp_loc)
+      File::delete(kp_loc) unless debug_flag
     end
   rescue Exception => e
     log "Caught error, looping"
