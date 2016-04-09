@@ -198,7 +198,7 @@ revproxy:
   restart: always
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
-    - ./config-dir/rev-proxy/db-init.json:/etc/rev-proxy/db-init.json
+    - ./config-dir/rev-proxy/db-store.json:/etc/rev-proxy/db-store.json
   env_file:
     - ./common.env
     - ./access.env

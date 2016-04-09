@@ -2,71 +2,80 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"os"
-	"os/exec"
 
 	"github.com/hashicorp/consul/api"
+	"github.com/kmanley/go-http-auth"
 )
 
-type LoadSaver interface {
-	Save(*UserDB) error
-	Load(*UserDB) error
+/* Of the form:
+{
+  "rebar": {
+    "realm": "digitalrebar",
+    "capabilities": [],
+    "password": "rebar1",
+    "digestpassword": ""
+  }
+}
+*/
+
+type User struct {
+	Realm          string
+	Password       string
+	Digestpassword string
+	Capabilities   []string
 }
 
-type FileStore struct {
-	backingDatabase string
+type JsonData map[string]User
+
+type JsonFile struct {
+	auth.File
+	Data JsonData
 }
 
-func NewFileStore(dbFile, dbInit string) (*FileStore, error) {
-	info, err := os.Stat(dbFile)
+func reload_jsonfile(j *JsonFile) {
+	data, err := ioutil.ReadFile(j.Path)
 	if err != nil {
-		info, err = os.Stat(dbInit)
-		if err != nil {
-			return nil, err
-		}
-		cpCmd := exec.Command("cp", dbInit, dbFile)
-		err = cpCmd.Run()
-		if err != nil {
-			return nil, err
-		}
-		info, err = os.Stat(dbFile)
-		if err != nil {
-			return nil, err
-		}
+		panic(err)
 	}
-	if !info.Mode().IsRegular() {
-		return nil, fmt.Errorf("%s is not a regular file", dbFile)
-	}
-	return &FileStore{backingDatabase: dbFile}, nil
-}
-
-func (fs *FileStore) Save(dt *UserDB) error {
-	data, err := json.Marshal(dt)
+	json.Unmarshal(data, &j.Data)
 	if err != nil {
-		return err
+		panic(err)
 	}
-	if err := ioutil.WriteFile(fs.backingDatabase, data, 0700); err != nil {
-		return err
-	}
-	return nil
 }
 
-func (fs *FileStore) Load(dt *UserDB) error {
-	data, err := ioutil.ReadFile(fs.backingDatabase)
-	if err != nil {
-		return err
+func get_password(user, realm string, data JsonData, pwdtype string) string {
+	u_data, exists := data[user]
+	if !exists {
+		return ""
 	}
-	return json.Unmarshal(data, dt)
+	if pwdtype == "basic" {
+		return u_data.Password
+	}
+	return u_data.Digestpassword
 }
 
-type ConsulStore struct {
-	store      *api.KV
+/*
+  SecretProvider implementation based on json files.
+  reload file on changes. Will panic on syntax errors in
+  files.
+*/
+func JsonFileProvider(filename string, pwdtype string) (auth.SecretProvider, error) {
+	j := &JsonFile{File: auth.File{Path: filename}}
+	j.Reload = func() { reload_jsonfile(j) }
+	return func(user, realm string) string {
+		j.ReloadIfNeeded()
+		return get_password(user, realm, j.Data, pwdtype)
+	}, nil
+}
+
+type ConsulFile struct {
+	kv         *api.KV
 	backingKey string
+	Data       JsonData
 }
 
-func NewConsulStore(key, dbInit string) (*ConsulStore, error) {
+func JsonConsulProvider(key, dbInit string, pwdtype string) (auth.SecretProvider, error) {
 	client, err := api.NewClient(api.DefaultConfig())
 	if err != nil {
 		return nil, err
@@ -90,22 +99,22 @@ func NewConsulStore(key, dbInit string) (*ConsulStore, error) {
 			return nil, err
 		}
 	}
-	return &ConsulStore{store: store, backingKey: key}, nil
-}
 
-func (cs *ConsulStore) Load(dt *UserDB) error {
-	pair, _, err := cs.store.Get(cs.backingKey, nil)
+	cf := &ConsulFile{kv: store, backingKey: key}
+	pair, _, err = store.Get(key, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return json.Unmarshal(pair.Value, dt)
-}
+	err = json.Unmarshal(pair.Value, &cf.Data)
+	if err != nil {
+		return nil, err
+	}
 
-func (cs *ConsulStore) Save(dt *UserDB) error {
-	data, err := json.Marshal(dt)
-	if err != nil {
-		return err
-	}
-	_, err = cs.store.Put(&api.KVPair{Key: cs.backingKey, Value: data}, nil)
-	return err
+	// GREG: Start consul key watcher with lock to update json data
+
+	return func(user, realm string) string {
+		// GREG: Add lock
+		return get_password(user, realm, cf.Data, pwdtype)
+	}, nil
+
 }

@@ -11,5 +11,6 @@ COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 COPY rebar-rev-proxy $GOPATH/src/github.com/rackn/rebar-rev-proxy
 RUN /usr/local/go/bin/go get -u github.com/hashicorp/consul/api \
     && /usr/local/go/bin/go get -u github.com/RobotsAndPencils/go-saml \
+    && /usr/local/go/bin/go get -u github.com/kmanley/go-http-auth \
     && cd "$GOPATH/src/github.com/rackn/rebar-rev-proxy" \
     && /usr/local/go/bin/go build && cp rebar-rev-proxy /usr/local/bin
