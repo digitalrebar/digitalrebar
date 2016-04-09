@@ -1,25 +1,16 @@
+- template = OpenStackProvider.template
 %tr
   %td{:colspan=>2}
     %a{:href=>"http://openstack.org", :target=>"_blank"}
       = image_tag 'providers/openstack.png', :title=>"OpenStack", :width=>"138"
-%tr
-  %td= t 'os-auth-url', :scope=>'providers.show.openstack'  
-  %td= text_field_tag("auth_details[os-auth-url]", @item.auth_details['os-auth-url'], :size => 50)
-%tr
-  %td= t 'os-username', :scope=>'providers.show.openstack'
-  %td= text_field_tag("auth_details[os-username]", @item.auth_details['os-username'], :size => 30)
-%tr
-  %td= t 'os-password', :scope=>'providers.show.openstack'
-  %td= password_field_tag("auth_details[os-password]", @item.auth_details['os-password'], :size => 30)
-%tr
-  %td= t 'os-project-name', :scope=>'providers.show.openstack'	
-  %td= text_field_tag("auth_details[os-project-name]", @item.auth_details['os-project-name'], :size => 30)
-%tr
-  %td= t 'os-region-name', :scope=>'providers.show.openstack'	
-  %td= text_field_tag("auth_details[os-region-name]", @item.auth_details['os-region-name'], :size => 30)
-%tr
-  %td= t 'os-ssh-user', :scope=>'providers.show.openstack' 
-  %td= text_field_tag("auth_details[os-ssh-user]", @item.auth_details['os-ssh-user'] || "ubuntu centos", :size => 30)
-%tr
-  %td= t 'os-debug', :scope=>'providers.show.openstack'
-  %td= text_field_tag("auth_details[os-debug]", @item.auth_details['os-debug'] || "false", :size => 30)
+- template.each do |key, values|
+  -if values[:name]
+    %tr
+      %td= values[:name]
+      %td
+        - if values[:type] == "text"
+          = text_field_tag("auth_details[#{key}]", @item.auth_details[key.to_s] || values[:default], :size => values[:length])
+        - elsif values[:type] == "password"
+          = password_field_tag("auth_details[#{key}]", @item.auth_details[key.to_s], :size => values[:length])
+        - else
+          = "form for #{values[:type]} not implemented"
