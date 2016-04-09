@@ -23,7 +23,7 @@ class OpenStackProvider < CloudProvider
         type: "img",
         src: "https://www.openstack.org/assets/openstack-logo/R/openstack-cloud-software-vertical-web.png"
       },
-  	  :'os_auth_url' => {
+  	  :'os-auth-url' => {
         type: "text",
         default: "",
         length: 50,
@@ -58,6 +58,18 @@ class OpenStackProvider < CloudProvider
         default: "false",
         length: 8,
         name: I18n.t('os-debug', scope: "providers.show.openstack" )
+      },
+      :"os-network-external" => {
+        type: "text",
+        default: "auto",
+        length: 30,
+        name: I18n.t('os-network-external', scope: "providers.show.openstack" )
+      },
+      :"os-network-internal" => {
+        type: "text",
+        default: "auto",
+        length: 30,
+        name: I18n.t('os-network-internal', scope: "providers.show.openstack" )
       }
     }
   end
