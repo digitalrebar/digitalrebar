@@ -21,15 +21,17 @@ class GoogleProvider < CloudProvider
     { 
     	url: {
     		type: "img",
- 	   		src: "https://cloud.google.com/_static/8fea0d66ce/images/new-gcp-logo.png"
+ 	   		src: "https://cloud.google.com/_static/8fea0d66ce/images/new-gcp-logo.png",
+        href: "https://cloud.google.com",
+        title: "Google Compute Engine"
   		},
-    	access_key_id: {
-    		type: "project",
+    	google_project: {
+    		type: "text",
     		default: "",
     		length: 30,
     		name: I18n.t('project', scope: "providers.show.google" )
   		},
-    	secret_access_key: {
+    	google_json_key: {
     		type: "json_key",
     		default: "",
     		length: 30,

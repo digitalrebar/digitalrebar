@@ -21,7 +21,9 @@ class OpenStackProvider < CloudProvider
     { 
       url: {
         type: "img",
-        src: "https://www.openstack.org/assets/openstack-logo/R/openstack-cloud-software-vertical-web.png"
+        src: "https://www.openstack.org/assets/openstack-logo/R/openstack-cloud-software-vertical-web.png",
+        href: "https://openstack.org",
+        title: "OpenStack"
       },
   	  :'os-auth-url' => {
         type: "text",

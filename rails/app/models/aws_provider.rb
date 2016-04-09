@@ -21,7 +21,9 @@ class AwsProvider < CloudProvider
     { 
     	url: {
     		type: "img",
- 	   		src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/AmazonWebservices_Logo.svg/2000px-AmazonWebservices_Logo.svg.png", 	   		
+ 	   		src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/AmazonWebservices_Logo.svg/2000px-AmazonWebservices_Logo.svg.png", 	   		,
+        href: "https://aws.amazon.com",
+        title: "Amazon EC2"
   		},
     	access_key_id: {
     		type: "text",
