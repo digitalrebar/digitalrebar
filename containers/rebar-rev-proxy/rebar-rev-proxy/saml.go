@@ -10,9 +10,10 @@ import (
 )
 
 type SamlAuthFilter struct {
+	*http.ServeMux
 	saml.ServiceProviderSettings
-	cache map[string]*http.Request
-	myMux *http.ServeMux
+	cache   map[string]*http.Request
+	nextMux *http.ServeMux
 }
 
 func NewSamlAuthFilter(mux *http.ServeMux,
@@ -20,8 +21,8 @@ func NewSamlAuthFilter(mux *http.ServeMux,
 	key_path string) *SamlAuthFilter {
 
 	saf := &SamlAuthFilter{
-		myMux: mux,
-		cache: make(map[string]*http.Request),
+		nextMux: mux,
+		cache:   make(map[string]*http.Request),
 
 		ServiceProviderSettings: saml.ServiceProviderSettings{
 			PublicCertPath:              cert_path,
@@ -34,10 +35,11 @@ func NewSamlAuthFilter(mux *http.ServeMux,
 		},
 	}
 
-	saf.ServiceProviderSettings.Init()
+	saf.ServeMux = http.NewServeMux()
+	saf.ServeMux.HandleFunc("/", saf.Filter)
+	saf.ServeMux.HandleFunc("/login", saf.handleSamlResponse)
 
-	http.HandleFunc("/", saf.Filter)
-	http.HandleFunc("/login", saf.handleSamlResponse)
+	saf.ServiceProviderSettings.Init()
 
 	return saf
 }
@@ -131,7 +133,7 @@ func (saf *SamlAuthFilter) handleSamlResponse(w http.ResponseWriter, r *http.Req
 
 	req.Write(os.Stdout)
 
-	saf.myMux.ServeHTTP(w, req)
+	saf.nextMux.ServeHTTP(w, req)
 }
 
 func (saf *SamlAuthFilter) Filter(w http.ResponseWriter, r *http.Request) {
@@ -172,5 +174,5 @@ func (saf *SamlAuthFilter) Filter(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &cookie)
 	}
 
-	saf.myMux.ServeHTTP(w, r)
+	saf.nextMux.ServeHTTP(w, r)
 }
