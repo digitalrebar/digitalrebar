@@ -21,7 +21,9 @@ class PacketProvider < CloudProvider
     { 
       url: {
         type: "img",
-        src: "https://www.packet.net/assets/images/logo-main.png"
+        src: "https://www.packet.net/assets/images/logo-main.png",
+        href: "https://packet.net",
+        title: "Packet Host"
       },
       token: {
         type: "password",
