@@ -11,6 +11,9 @@
 /.vagrant/
 /compose/digitalrebar
 
+# upload tftpboot to .cache/digitalrebar stored here
+/tftpboot
+
 .#*
 *~
 *.dia.autosave
