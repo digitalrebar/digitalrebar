@@ -349,6 +349,12 @@ class ApplicationController < ActionController::Base
   #return true if we digest signed in
   def rebar_auth
     case
+    when request.headers["puma.socket"].peercert && !request.headers["HTTP_X_AUTHENTICATED_USERNAME"].nil?
+      username = request.headers["HTTP_X_AUTHENTICATED_USERNAME"]
+      session[:digest_user] = username
+      Rails.logger.info("Auth by key: #{username}")
+      @current_user = User.find_by(username: "rebar")
+      true
     when current_user then authenticate_user!
     when digest_request? then digest_auth!
     when request.path == '/api/license' then true  # specialized path for license & URL validation
@@ -362,4 +368,5 @@ class ApplicationController < ActionController::Base
       do_auth!
     end
   end
+
 end
