@@ -31,7 +31,7 @@ func init() {
 	flag.StringVar(&db_store_type, "db_store_type", "file", "Type of storage area to use: consul or file")
 	flag.StringVar(&db_file_name, "db_file_name", "/etc/rev-proxy/db-store.json", "Database storage or initialization file")
 	flag.StringVar(&db_consul_key, "db_consul_key", "digitalrebar/private/rebar-rev/db", "Key path for consul db")
-	flag.StringVar(&digest_realm, "digest_realm", "digitalrebar", "Default realm for authentication")
+	flag.StringVar(&digest_realm, "digest_realm", "Rebar", "Default realm for authentication")
 }
 
 func main() {
