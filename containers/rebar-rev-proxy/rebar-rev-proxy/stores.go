@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 
 	"github.com/hashicorp/consul/api"
 	"github.com/kmanley/go-http-auth"
@@ -11,7 +12,7 @@ import (
 /* Of the form:
 {
   "rebar": {
-    "realm": "digitalrebar",
+    "realm": "Rebar",
     "capabilities": [],
     "password": "rebar1",
     "digestpassword": ""
@@ -47,11 +48,14 @@ func reload_jsonfile(j *JsonFile) {
 func get_password(user, realm string, data JsonData, pwdtype string) string {
 	u_data, exists := data[user]
 	if !exists {
+		log.Printf("Failed login attempt - realm: %v no user: %v", realm, user)
 		return ""
 	}
 	if pwdtype == "basic" {
+		log.Printf("Basic login attempt - realm: %v user: %v", realm, user)
 		return u_data.Password
 	}
+	log.Printf("Digest login attempt - realm: %v user: %v", realm, user)
 	return u_data.Digestpassword
 }
 
