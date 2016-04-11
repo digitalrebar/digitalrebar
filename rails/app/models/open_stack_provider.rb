@@ -55,6 +55,12 @@ class OpenStackProvider < CloudProvider
         length: 30,
         name: I18n.t('os-region-name', scope: "providers.show.openstack" )
       },
+      :"os-ssh-user" => {
+        type: "text",
+        default: "centos ubuntu root",
+        length: 30,
+        name: I18n.t('os-ssh-user', scope: "providers.show.openstack" )
+      },
       :"os-debug" => {
         type: "text",
         default: "false",
