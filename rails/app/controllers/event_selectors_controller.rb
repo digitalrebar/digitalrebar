@@ -67,9 +67,10 @@ class EventSelectorsController < ApplicationController
   def create
     params.require(:event_sink_id)
     params.require(:selector)
+    event_sink = EventSink.find_key(params[:event_sink_id])
     EventSelector.transaction do
-      @event_selector = EventSelector.create!(params.permit(:envent_sink_id,
-                                                    :selector))
+      @event_selector = EventSelector.create!(event_sink_id: event_sink.id,
+                                              selector: params[:selector])
     end
     render api_show @event_selector
   end

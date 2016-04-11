@@ -736,6 +736,9 @@ class NodeRole < ActiveRecord::Base
         Rails.logger.info("NodeRole #{name} is runnable, kicking the annealer.")
         Run.run!
       elsif active?
+        if role.milestone
+          Event.fire(self, event: 'on_milestone')
+        end
         node.halt_if_bored(self) if role.powersave
         NodeRole.transaction do
           # Immediate children of an ACTIVE node go to TODO

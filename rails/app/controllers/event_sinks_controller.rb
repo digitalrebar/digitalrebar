@@ -64,7 +64,6 @@ class EventSinksController < ApplicationController
   end
 
   def create
-    params.require(:name)
     params.require(:endpoint)
     EventSink.transaction do
       @event_sink = EventSink.create!(params.permit(:endpoint,

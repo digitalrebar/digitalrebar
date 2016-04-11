@@ -21,6 +21,6 @@ class EventSelector < ActiveRecord::Base
   private
 
   def check_selector_sanity
-    errors.add("Selector missing required key #{k}") unless selector.key?('event')
+    errors.add("Selector missing required key event") unless selector.key?('event')
   end
 end

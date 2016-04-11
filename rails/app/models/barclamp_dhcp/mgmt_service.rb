@@ -20,11 +20,12 @@ require 'uri'
 class BarclampDhcp::MgmtService < Service
 
   def self.bootloader(loader)
+    # If the system is already using iPXE (e.g. KVM and friends), continue to use it.
     case loader
     when 'ipxe'
       '{{if (eq (index . 77) "iPXE") }}default.ipxe{{else if (eq (index . 93) "0")}}ipxe.pxe{{else}}ipxe.efi{{end}}'
     when 'lpxelinux'
-      '{{if (eq (index . 93) "0")}}lpxelinux.0{{else}}bootx64.efi{{end}}'
+      '{{if (eq (index . 77) "iPXE") }}default.ipxe{{else if (eq (index . 93) "0")}}lpxelinux.0{{else}}bootx64.efi{{end}}'
     else
       Rails.logger.fatal("Unknown boot loader #{loader}")
     end

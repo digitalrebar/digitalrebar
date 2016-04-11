@@ -13,6 +13,8 @@
 # limitations under the License.
 #
 
+require 'rest-client'
+
 class EventSink < ActiveRecord::Base
 
   validate :check_endpoint_sanity
@@ -40,6 +42,27 @@ class EventSink < ActiveRecord::Base
       else
         raise "EventSink.run for inproc:// only handles Role hooks for now"
       end
+    when 'http'
+      raise "http handler only accepts on_milestone for now" unless selector['event'] == 'on_milestone'
+      data = selector.dup
+      data['node'] = obj.node
+      data['role'] = {
+        'id' => obj.role.uuid,
+        'name' => obj.role.name
+      }
+      begin
+        RestClient::Request.execute(
+          method: :post,
+          url: endpoint,
+          timeout: 1,
+          payload: data.to_json,
+          headers: {
+            content_type: 'application/json',
+            accept: 'application/json'
+          })
+      rescue => e
+        Rails.logger.error("EventSink: error POSTing back to #{endpoint}: #{e.inspect}")
+      end
     else
       raise "Event handling method #{method} not implemented"
     end
@@ -51,6 +74,7 @@ class EventSink < ActiveRecord::Base
     method, sep, rest  = endpoint.partition('://')
     errors.add("Malformed endpoint #{endpoint}") if sep != '://'
     case method
+    when 'http' then true
     when 'inproc' then
       objklass, _, methpart = rest.partition(':')
       case objklass
