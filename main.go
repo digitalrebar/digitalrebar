@@ -49,6 +49,7 @@ func handler(w http.ResponseWriter, req *http.Request) {
 	} else {
 		log.Printf("Body:\n%v\n", string(body))
 	}
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func serve() {
