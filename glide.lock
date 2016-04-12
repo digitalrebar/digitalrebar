@@ -1,0 +1,23 @@
+hash: 88e99f7e3cbe0b5991796a671c3f1b8ce00feea7245c3f54a64df4efb08b3fbc
+updated: 2016-04-12T15:01:28.192330305-05:00
+imports:
+- name: github.com/digitalrebar/rebar-api
+  version: 3f42b8459ee9c4d1cfe70ef21fbb722094a66403
+  subpackages:
+  - client
+  - datatypes
+- name: github.com/guregu/null
+  version: 41961cea0328defc5f95c1c473f89ebf0d1813f6
+- name: github.com/VictorLowther/jsonpatch
+  version: bf36a043be1fdc3127cc160767769878824ed71f
+  subpackages:
+  - utils
+- name: golang.org/x/crypto
+  version: d68c3ecb62c850b645dc072a8d78006286bf81ca
+  subpackages:
+  - nacl/box
+  - curve25519
+  - nacl/secretbox
+  - salsa20/salsa
+  - poly1305
+devImports: []
