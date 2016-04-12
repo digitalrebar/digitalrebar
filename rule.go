@@ -80,7 +80,9 @@ type Action interface {
 	Run(*Rule) error
 }
 
-type LogAction struct{}
+type LogAction struct {
+	Log bool
+}
 
 func (l LogAction) Run(r *Rule) error {
 	log.Printf("Rule %s matched %s for node %s",

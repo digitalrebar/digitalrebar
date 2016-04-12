@@ -44,6 +44,13 @@ func init() {
 		Name:    "test logging rule",
 		Actions: []Action{&LogAction{}},
 	})
+
+	buf := []byte(`[{"Name":"test logging rule","Actions":[{"And":[{"Log":true}]}]}]`)
+	log.Printf("Rules: %v", string(buf))
+	if err := json.Unmarshal(buf, &rules); err != nil {
+		log.Panicf("Failed to unmarshal rules: %v", err)
+	}
+
 }
 
 func handler(w http.ResponseWriter, req *http.Request) {
