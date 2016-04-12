@@ -1,9 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -17,6 +17,7 @@ var (
 	debug                        = false
 	username, password, endpoint string
 	listen                       string
+	rules                        []*Rule
 )
 
 func init() {
@@ -39,16 +40,21 @@ func init() {
 	flag.StringVar(&endpoint, "endpoint", "", "API Endpoint for Digital Rebar")
 	flag.StringVar(&listen, "listen", "", "Address to listen on for postbacks from Digital Rebar")
 	flag.BoolVar(&debug, "debug", false, "Whether to run in debug mode")
+	rules = append(rules, &Rule{
+		Name:    "test logging rule",
+		Actions: []Action{&LogAction{}},
+	})
 }
 
 func handler(w http.ResponseWriter, req *http.Request) {
 	log.Printf("Got request from %v", req.RemoteAddr)
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		log.Printf("Error reading request body")
-	} else {
-		log.Printf("Body:\n%v\n", string(body))
+	event := &Event{}
+	if err := json.NewDecoder(req.Body).Decode(event); err != nil {
+		log.Printf("Error decoding body: %v", err)
+		w.WriteHeader(http.StatusExpectationFailed)
+		return
 	}
+	RunRules(rules, event)
 	w.WriteHeader(http.StatusAccepted)
 }
 
