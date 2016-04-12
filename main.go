@@ -40,15 +40,11 @@ func init() {
 	flag.StringVar(&endpoint, "endpoint", "", "API Endpoint for Digital Rebar")
 	flag.StringVar(&listen, "listen", "", "Address to listen on for postbacks from Digital Rebar")
 	flag.BoolVar(&debug, "debug", false, "Whether to run in debug mode")
-	rules = append(rules, &Rule{
-		Name:    "test logging rule",
-		Actions: []Action{&LogAction{}},
-	})
 
-	buf := []byte(`[{"Name":"test logging rule","Actions":[{"And":[{"Log":true}]}]}]`)
+	buf := []byte(`[{"Name":"test logging rule","Matchers":[{"Enabled": true}],"Actions":[{"Log":true}]}]`)
 	log.Printf("Rules: %v", string(buf))
 	if err := json.Unmarshal(buf, &rules); err != nil {
-		log.Panicf("Failed to unmarshal rules: %v", err)
+		log.Fatalf("Failed to unmarshal rules: %v", err)
 	}
 
 }
@@ -61,7 +57,7 @@ func handler(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusExpectationFailed)
 		return
 	}
-	RunRules(rules, event)
+	event.Process(rules)
 	w.WriteHeader(http.StatusAccepted)
 }
 

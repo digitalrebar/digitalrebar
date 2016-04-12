@@ -5,172 +5,232 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
-	"reflect"
 	"strings"
-	"sync"
-
-	"github.com/digitalrebar/rebar-api/client"
 )
 
-type Matcher interface {
-	Match(*Rule) (bool, error)
-}
+var matchTypes = []string{"And", "Or", "Not", "Script", "Enabled"}
+var actionTypes = []string{"Log"}
 
-type ScriptMatch string
+type Matcher func(*Event) (bool, error)
 
-func (s ScriptMatch) Match(r *Rule) (bool, error) {
-	cmd := exec.Command("/usr/bin/env", "bash", "-x")
-	cmd.Stdin = strings.NewReader(fmt.Sprintf("CLASSIFIER_ATTRIBS='%s'\n%s",
-		r.foundAttribJSON,
-		string(s)))
-	out, err := cmd.Output()
-	if err == nil {
-		log.Printf("Script rule %s ran successfully", r.Name)
-		log.Printf("%s", string(out))
+func matchAnd(funcs ...Matcher) Matcher {
+	return func(e *Event) (bool, error) {
+		for _, fn := range funcs {
+			ok, err := fn(e)
+			if err != nil {
+				return false, err
+			} else if !ok {
+				return false, nil
+			}
+		}
 		return true, nil
-	} else {
-		log.Printf("Script rule %s failed", r.Name)
-		exitErr, ok := err.(*exec.ExitError)
-		if ok {
-			log.Printf("%s", string(exitErr.Stderr))
-			return false, nil
+	}
+}
+
+func matchOr(funcs ...Matcher) Matcher {
+	return func(e *Event) (bool, error) {
+		for _, fn := range funcs {
+			ok, err := fn(e)
+			if err != nil {
+				return false, err
+			} else if ok {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
+}
+
+func matchNot(fn Matcher) Matcher {
+	return func(e *Event) (bool, error) {
+		ok, err := fn(e)
+		return !ok, err
+	}
+}
+
+func matchBool(b bool) Matcher {
+	return func(e *Event) (bool, error) {
+		return b, nil
+	}
+}
+
+func matchScript(script string) Matcher {
+	return func(e *Event) (bool, error) {
+		cmd := exec.Command("/usr/bin/env", "bash", "-x")
+		cmd.Stdin = strings.NewReader(fmt.Sprintf("CLASSIFIER_ATTRIBS='%s'\n%s",
+			e.attribsJSON(),
+			script))
+		out, err := cmd.Output()
+		if err == nil {
+			log.Printf("Script rule %s ran successfully", e.rule.Name)
+			log.Printf("%s", string(out))
+			return true, nil
 		} else {
-			log.Printf("Failed with error %v", err)
-			return false, err
+			log.Printf("Script rule %s failed", e.rule.Name)
+			exitErr, ok := err.(*exec.ExitError)
+			if ok {
+				log.Printf("%s", string(exitErr.Stderr))
+				return false, nil
+			} else {
+				log.Printf("Failed with error %v", err)
+				return false, err
+			}
 		}
 	}
 }
 
-type AndMatch struct {
-	And []Matcher
+type Action func(*Event) error
+
+func actionLog() Action {
+	return func(e *Event) error {
+		log.Printf("Event %s matched rule %s for node %s",
+			e.Name,
+			e.rule.Name,
+			e.Node.Name)
+		return nil
+	}
 }
 
-func (t *AndMatch) Match(rule *Rule) (bool, error) {
-	for _, m := range t.And {
-		if res, err := m.Match(rule); !res || err != nil {
-			return res, err
+func resolveMatchArray(op string, matchers []Matcher) Matcher {
+	switch op {
+	case "And":
+		return matchAnd(matchers...)
+	case "Or":
+		return matchOr(matchers...)
+	default:
+		log.Panicf("%s was op to resolveMatchArray, cannot happen")
+		return nil
+	}
+}
+
+func resolveMatcher(m map[string]interface{}) (Matcher, error) {
+	if len(m) != 1 {
+		return nil, fmt.Errorf("Matchers have exactly one key")
+	}
+	for _, t := range matchTypes {
+		if _, ok := m[t]; !ok {
+			continue
+		}
+		switch t {
+		case "And", "Or":
+			vals, ok := m[t].([]interface{})
+			if !ok {
+				return nil, fmt.Errorf("%s needs an Array", t)
+			}
+			res := make([]Matcher, len(vals))
+			for i, v := range vals {
+				realV, ok := v.(map[string]interface{})
+				if !ok {
+					return nil, fmt.Errorf("%s member %v must be a map", t, i)
+				}
+				j, err := resolveMatcher(realV)
+				if err != nil {
+					return nil, err
+				}
+				res[i] = j
+			}
+			return resolveMatchArray(t, res), nil
+		case "Not":
+			val, ok := m[t].(map[string]interface{})
+			if !ok {
+				return nil, fmt.Errorf("%s needs a map", t)
+			}
+			j, err := resolveMatcher(val)
+			if err != nil {
+				return nil, err
+			}
+			return matchNot(j), nil
+		case "Script":
+			j, ok := m[t].(string)
+			if !ok {
+				return nil, fmt.Errorf("%s needs a string", t)
+			}
+			return matchScript(j), nil
+		case "Enabled":
+			j, ok := m[t].(bool)
+			if !ok {
+				return nil, fmt.Errorf("%s needs a bool", t)
+			}
+			return matchBool(j), nil
+		default:
+			return nil, fmt.Errorf("Unknown matcher %s", t)
 		}
 	}
-	return true, nil
+	return nil, fmt.Errorf("Cannot unmarshal matcher for #%v", m)
 }
 
-type OrMatch struct {
-	Or []Matcher
-}
-
-func (t *OrMatch) Match(rule *Rule) (bool, error) {
-	for _, m := range t.Or {
-		if res, err := m.Match(rule); res || err != nil {
-			return res, err
+func resolveAction(a map[string]interface{}) (Action, error) {
+	if len(a) != 1 {
+		return nil, fmt.Errorf("Actions have exactly one key")
+	}
+	for _, t := range actionTypes {
+		if _, ok := a[t]; !ok {
+			continue
+		}
+		switch t {
+		case "Log":
+			return actionLog(), nil
+		default:
+			return nil, fmt.Errorf("Unknown action %s", t)
 		}
 	}
-	return false, nil
-}
-
-type NotMatch struct {
-	Not Matcher
-}
-
-func (t *NotMatch) Match(rule *Rule) (bool, error) {
-	res, err := t.Not.Match(rule)
-	return !res, err
-}
-
-type Action interface {
-	Run(*Rule) error
-}
-
-type LogAction struct {
-	Log bool
-}
-
-func (l LogAction) Run(r *Rule) error {
-	log.Printf("Rule %s matched %s for node %s",
-		r.Name,
-		r.event.Name,
-		r.event.Node.Name)
-	return nil
+	return nil, fmt.Errorf("Cannot unmarshal action for #%v", a)
 }
 
 type Rule struct {
-	sync.Mutex
-	Name            string
-	Description     string
-	WantsAttribs    []string
-	Matchers        []Matcher
-	Actions         []Action
-	event           *Event
-	foundAttribs    map[string]interface{}
-	foundAttribJSON string // JSON marshalling of attribs
+	Name         string
+	Description  string
+	WantsAttribs []string
+	Matchers     []Matcher
+	Actions      []Action
 }
 
-func (r *Rule) attribs() error {
-	val := reflect.ValueOf(r.event.Node)
-	for val.Kind() == reflect.Ptr {
-		val = reflect.Indirect(val)
+func (r *Rule) UnmarshalJSON(data []byte) error {
+	log.Printf("Unmarshalling rule %s", string(data))
+	type fakeRule struct {
+		Name         string
+		Description  string
+		WantsAttribs []string
+		Matchers     []map[string]interface{}
+		Actions      []map[string]interface{}
 	}
-	if val.Kind() != reflect.Struct {
-		log.Panicf("node in Rule does not point to a struct! This should never happen")
-	}
-	for _, attribName := range r.WantsAttribs {
-		field := val.FieldByName(attribName)
-		if field.IsValid() {
-			// The node has this attribute natively, use it.
-			r.foundAttribs[attribName] = field.Interface()
-		} else {
-			// We want an actual attrib, fetch and use it.
-			attr, err := client.FetchAttrib(r.event.Node, attribName, "")
-			if err != nil {
-				return err
-			}
-			r.foundAttribs[attribName] = attr.Value
-		}
-	}
-	buf, err := json.Marshal(&r.foundAttribs)
-	if err != nil {
+	res := &fakeRule{}
+	if err := json.Unmarshal(data, &res); err != nil {
 		return err
 	}
-	r.foundAttribJSON = string(buf)
+	r.Name = res.Name
+	r.Description = res.Description
+	r.WantsAttribs = res.WantsAttribs
+	r.Matchers = make([]Matcher, len(res.Matchers))
+	r.Actions = make([]Action, len(res.Actions))
+
+	for i, m := range res.Matchers {
+		j, err := resolveMatcher(m)
+		if err != nil {
+			return err
+		}
+		r.Matchers[i] = j
+	}
+
+	for i, a := range res.Actions {
+		j, err := resolveAction(a)
+		if err != nil {
+			return err
+		}
+		r.Actions[i] = j
+	}
 	return nil
 }
 
-func (r *Rule) Match(event *Event) (bool, error) {
-	r.Lock()
-	defer r.Unlock()
-	r.event = event
-	if err := r.attribs(); err != nil {
-		return false, err
-	}
-	res := &AndMatch{And: r.Matchers}
-	return res.Match(r)
+func (r *Rule) Match(e *Event) (bool, error) {
+	return matchAnd(r.Matchers...)(e)
 }
 
-func (r *Rule) Run() error {
+func (r *Rule) Run(e *Event) error {
 	for _, action := range r.Actions {
-		if err := action.Run(r); err != nil {
+		if err := action(e); err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-func RunRules(rules []*Rule, event *Event) {
-	ok := false
-	var err error
-	for _, rule := range rules {
-		ok, err = rule.Match(event)
-		if err != nil {
-			log.Printf("Error matching rule %s for event %s: %v",
-				rule.Name, rule.event.Name, err)
-			continue
-		}
-		if !ok {
-			continue
-		}
-		err = rule.Run()
-		if err != nil {
-			log.Printf("Error running actions for rule %s for event %s: %v",
-				rule.Name, rule.event.Name, err)
-		}
-	}
 }
