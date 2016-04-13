@@ -1,0 +1,2 @@
+This directory should contain the Identity Provider Certificate.
+The default name is idpcert.crt, but can be changed by configuration

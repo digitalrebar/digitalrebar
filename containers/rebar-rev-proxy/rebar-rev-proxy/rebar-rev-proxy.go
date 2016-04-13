@@ -21,6 +21,9 @@ var db_file_name string
 var db_consul_key string
 var db_initial_json_file string
 var digest_realm string
+var saml_idpssourl string
+var saml_idpssodescurl string
+var saml_idpcert string
 
 func init() {
 	flag.StringVar(&key_pem, "key_pem", "/etc/rev-proxy/server.key", "Path to key file")
@@ -32,6 +35,10 @@ func init() {
 	flag.StringVar(&db_file_name, "db_file_name", "/etc/rev-proxy/db-store.json", "Database storage or initialization file")
 	flag.StringVar(&db_consul_key, "db_consul_key", "digitalrebar/private/rebar-rev/db", "Key path for consul db")
 	flag.StringVar(&digest_realm, "digest_realm", "Rebar", "Default realm for authentication")
+
+	flag.StringVar(&saml_idpssourl, "saml_idpssourl", "https://dev-888522.oktapreview.com/app/rackndev888522_rackn_1/exk5ui8zc112R5ioP0h7/sso/saml", "Default Identity Provider SSO URL")
+	flag.StringVar(&saml_idpssodescurl, "saml_idpssodescurl", "http://www.okta.com/exk5ui8zc112R5ioP0h7", "Default Identity Provider SSO Descriptor URL")
+	flag.StringVar(&saml_idpcert, "saml_idpcert", "/etc/rev-proxy/saml-dir/idpcert.crt", "Default SAML SSO Cert")
 }
 
 func main() {
@@ -60,23 +67,25 @@ func main() {
 	tlsConfig.BuildNameToCertificate()
 
 	// Service multiplexer
-	var handler http.Handler
+	var auth_handler http.Handler
+	var base_handler http.Handler
 	myMux := http.NewServeMux()
 	myMux.HandleFunc("/", NewMultipleHostReverseProxy(ServiceRegistry, tlsConfig))
 	myMux.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "%v\n", ServiceRegistry)
 	})
-	handler = myMux
+	base_handler = myMux
 
 	if auth_filter == "basic" || auth_filter == "digest" {
 		var sp auth.SecretProvider
+		var cp CapabilityProvider
 		if db_store_type == "file" {
-			sp, err = JsonFileProvider(db_file_name, auth_filter)
+			sp, cp, err = JsonFileProvider(db_file_name, auth_filter)
 			if err != nil {
 				log.Fatal(err)
 			}
 		} else if db_store_type == "consul" {
-			sp, err = JsonConsulProvider(db_consul_key, db_file_name, auth_filter)
+			sp, cp, err = JsonConsulProvider(db_consul_key, db_file_name, auth_filter)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -92,19 +101,37 @@ func main() {
 		}
 
 		newMux := http.NewServeMux()
-		newMux.HandleFunc("/", auth.JustCheck(authenticator, myMux.ServeHTTP))
-		handler = newMux
+		// Override the builtin wrap function to include our capabilities.
+		newMux.HandleFunc("/", authenticator.Wrap(func(w http.ResponseWriter, ar *auth.AuthenticatedRequest) {
+			cap := cp(ar.Username, digest_realm)
+			t := register_user(ar.Username, digest_realm, cap)
+			add_token_info(t, w)
+
+			myMux.ServeHTTP(w, &ar.Request)
+		}))
+		auth_handler = newMux
 	} else if auth_filter == "saml" {
-		handler = NewSamlAuthFilter(myMux, cert_pem, key_pem)
+		auth_handler = NewSamlAuthFilter(myMux, cert_pem, key_pem, saml_idpssourl, saml_idpssodescurl, saml_idpcert)
 	} else if auth_filter == "none" {
 		// Do nothing
 	} else {
 		log.Fatal("Unknown auth_filter: %v", auth_filter)
 	}
 
+	tokenMux := http.NewServeMux()
+	tokenMux.HandleFunc("/api/license", NewMultipleHostReverseProxy(ServiceRegistry, tlsConfig))
+	tokenMux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+		token := has_token_info(req)
+		if token == nil && auth_handler != nil {
+			auth_handler.ServeHTTP(w, req)
+		} else {
+			base_handler.ServeHTTP(w, req)
+		}
+	})
+
 	println("starting consul")
 	go ServiceRegistry.WatchConsul()
 
 	println("ready")
-	log.Fatal(http.ListenAndServeTLS(":"+strconv.Itoa(listen_port), cert_pem, key_pem, handler))
+	log.Fatal(http.ListenAndServeTLS(":"+strconv.Itoa(listen_port), cert_pem, key_pem, tokenMux))
 }

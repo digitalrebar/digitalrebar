@@ -24,6 +24,26 @@ if [[ $REVPROXY_CONSUL_KEY ]] ; then
 	CONSULKEY="-db_consul_key $REVPROXY_CONSUL_KEY"
 fi
 
+if [[ $REVPROXY_SAML_IDP_CERT_FILE ]] ; then
+	SAMLCERT="-saml_idpcert $REVPROXY_SAML_IDP_CERT_FILE"
+fi
 
-/usr/local/bin/rebar-rev-proxy $LISTENPORT $AUTHFILTER $REALM $DBSTORETYPE $DBPATH $CONSULKEY &
+if [[ $REVPROXY_SAML_IDP_SSO_URL ]] ; then
+	SAMLIDPSSOURL="-saml_idpssourl $REVPROXY_SAML_IDP_SSO_URL"
+fi
+
+if [[ $REVPROXY_SAML_IDP_SSO_DESC_URL ]] ; then
+	SAMLIDPSSODESCURL="-saml_idpssodescurl $REVPROXY_SAML_IDP_SSO_DESC_URL"
+fi
+
+/usr/local/bin/rebar-rev-proxy \
+	$LISTENPORT \
+	$AUTHFILTER \
+	$REALM \
+	$DBSTORETYPE \
+	$DBPATH \
+	$SAMLCERT \
+	$SAMLIDPSSOURL \
+	$SAMLIDPSSODESCURL \
+	$CONSULKEY &
 
