@@ -54,12 +54,22 @@ func (r *Rule) UnmarshalJSON(data []byte) error {
 	r.MatchActions = make([]Action, len(res.MatchActions))
 	r.UnmatchActions = make([]Action, len(res.UnmatchActions))
 
+	if len(res.Matchers) == 0 {
+		log.Printf("Rule %s has no Matchers, which means it matches everything.", r.Name)
+		log.Printf("This is probably not what you want")
+	}
+
 	for i, m := range res.Matchers {
 		j, err := resolveMatcher(m)
 		if err != nil {
 			return err
 		}
 		r.Matchers[i] = j
+	}
+
+	if len(res.MatchActions) == 0 && len(res.UnmatchActions) == 0 {
+		log.Printf("Rule %s has no MatchActions or UnmatchActions, which means it does nothing.", r.Name)
+		log.Printf("This is probably not what you want")
 	}
 
 	for i, a := range res.MatchActions {
@@ -97,7 +107,8 @@ func (r *Rule) Fire(e *Event) (matched bool, matcherr error, runerr error) {
 	} else {
 		actions = r.UnmatchActions
 	}
-	for _, action := range actions {
+	for i, action := range actions {
+		log.Printf("Rule %s: running action %v", r.Name, i)
 		runerr = action(e)
 		if runerr != nil {
 			return

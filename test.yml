@@ -3,6 +3,7 @@
   Matchers:
     - Enabled: true
     - Script: "/bin/true"
-  Actions:
+  MatchActions:
     - Log: true
+    - Script: "/usr/bin/env"
     

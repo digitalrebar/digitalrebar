@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os/exec"
-	"strings"
 )
 
 var matchTypes = []string{"And", "Or", "Not", "Script", "Enabled"}
@@ -59,26 +57,7 @@ func matchBool(b bool) Matcher {
 
 func matchScript(script string) Matcher {
 	return func(e *Event) (bool, error) {
-		cmd := exec.Command("/usr/bin/env", "bash", "-x")
-		cmd.Stdin = strings.NewReader(fmt.Sprintf("CLASSIFIER_ATTRIBS='%s'\n%s",
-			e.attribsJSON(),
-			script))
-		out, err := cmd.Output()
-		if err == nil {
-			log.Printf("Script rule %s ran successfully", e.rule.Name)
-			log.Printf("%s", string(out))
-			return true, nil
-		} else {
-			log.Printf("Script rule %s failed", e.rule.Name)
-			exitErr, ok := err.(*exec.ExitError)
-			if ok {
-				log.Printf("%s", string(exitErr.Stderr))
-				return false, nil
-			} else {
-				log.Printf("Failed with error %v", err)
-				return false, err
-			}
-		}
+		return runScript(e, script)
 	}
 }
 
