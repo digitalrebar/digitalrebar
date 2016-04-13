@@ -1,0 +1,8 @@
+---
+- Name: 'test logging rule'
+  Matchers:
+    - Enabled: true
+    - Script: "/bin/true"
+  Actions:
+    - Log: true
+    
