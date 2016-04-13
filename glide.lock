@@ -1,11 +1,15 @@
-hash: 88e99f7e3cbe0b5991796a671c3f1b8ce00feea7245c3f54a64df4efb08b3fbc
-updated: 2016-04-12T15:01:28.192330305-05:00
+hash: ac1b5a02affa6e84985e049a36d89c01d4b75566c6ce18b0ba47830034d503d5
+updated: 2016-04-13T11:52:29.743303577-05:00
 imports:
+- name: github.com/cloudfoundry-incubator/candiedyaml
+  version: 5cef21e2e4f0fd147973b558d4db7395176bcd95
 - name: github.com/digitalrebar/rebar-api
   version: 3f42b8459ee9c4d1cfe70ef21fbb722094a66403
   subpackages:
   - client
   - datatypes
+- name: github.com/ghodss/yaml
+  version: 1a6f069841556a7bcaff4a397ca6e8328d266c2f
 - name: github.com/guregu/null
   version: 41961cea0328defc5f95c1c473f89ebf0d1813f6
 - name: github.com/VictorLowther/jsonpatch

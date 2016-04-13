@@ -7,7 +7,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/digitalrebar/rebar-api/client"
@@ -15,9 +17,10 @@ import (
 
 var (
 	debug                        = false
+	testRules                    = false
 	username, password, endpoint string
 	listen                       string
-	rules                        []*Rule
+	ruleFile                     string
 )
 
 func init() {
@@ -35,18 +38,13 @@ func init() {
 		username = key[0]
 		password = key[1]
 	}
+	flag.StringVar(&ruleFile, "rules", "", "File to read rules from")
 	flag.StringVar(&username, "username", "", "Username for Digital Rebar endpoint")
 	flag.StringVar(&password, "password", "", "Password for Digital Rebar endpoint")
 	flag.StringVar(&endpoint, "endpoint", "", "API Endpoint for Digital Rebar")
 	flag.StringVar(&listen, "listen", "", "Address to listen on for postbacks from Digital Rebar")
 	flag.BoolVar(&debug, "debug", false, "Whether to run in debug mode")
-
-	buf := []byte(`[{"Name":"test logging rule","Matchers":[{"Enabled": true}],"Actions":[{"Log":true}]}]`)
-	log.Printf("Rules: %v", string(buf))
-	if err := json.Unmarshal(buf, &rules); err != nil {
-		log.Fatalf("Failed to unmarshal rules: %v", err)
-	}
-
+	flag.BoolVar(&testRules, "testRules", false, "Exit after validating that the rules can be loaded")
 }
 
 func handler(w http.ResponseWriter, req *http.Request) {
@@ -70,6 +68,15 @@ func serve() {
 
 func main() {
 	flag.Parse()
+	if ruleFile == "" {
+		log.Fatalf("You must load rules with --rules ruleFile")
+	}
+	if err := loadRules(ruleFile); err != nil {
+		log.Fatal("Failed to load rules from %s:\n%v", ruleFile, err)
+	}
+	if testRules {
+		os.Exit(0)
+	}
 	if endpoint == "" {
 		if ep := os.Getenv("REBAR_ENDPOINT"); ep != "" {
 			endpoint = ep
@@ -98,6 +105,18 @@ func main() {
 	if err := client.Session(endpoint, username, password); err != nil {
 		log.Fatalf("Could not connect to Rebar: %v", err)
 	}
+	// Reload rules file on SIGHUP
+	hupChan := make(chan os.Signal, 1)
+	go func() {
+		for {
+			<-hupChan
+			if err := loadRules(ruleFile); err != nil {
+				log.Printf("Error loading rules from %s: %v", ruleFile, err)
+			}
+		}
+	}()
+	signal.Notify(hupChan, syscall.SIGHUP)
+
 	// Run the handler loop
 	go serve()
 

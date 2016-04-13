@@ -58,6 +58,8 @@ func (e *Event) attribsJSON() string {
 // slow and stupid, and will be replaced if it starts being a
 // bottleneck.
 func (e *Event) Process(rules []*Rule) {
+	ruleLock.Lock()
+	defer ruleLock.Unlock()
 	for _, rule := range rules {
 		e.rule = rule
 		if err := e.fetchAttribs(); err != nil {

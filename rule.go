@@ -2,8 +2,19 @@ package main
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
+	"sync"
+
+	// The nice thing about this YML package is that it parses
+	// from yaml to json, so we can use yml and json
+	// interchaneable without having to write two sets of struct
+	// tags and custom marshalling/unmarshalling code.
+	"github.com/ghodss/yaml"
 )
+
+var rules []*Rule
+var ruleLock sync.Mutex
 
 // Rule represents a list of Actions that shoudl be taken if an Event matches the Rule or not.
 type Rule struct {
@@ -24,7 +35,6 @@ type Rule struct {
 }
 
 func (r *Rule) UnmarshalJSON(data []byte) error {
-	log.Printf("Unmarshalling rule %s", string(data))
 	type fakeRule struct {
 		Name           string
 		Description    string
@@ -94,4 +104,20 @@ func (r *Rule) Fire(e *Event) (matched bool, matcherr error, runerr error) {
 		}
 	}
 	return
+}
+
+func loadRules(src string) error {
+	buf, err := ioutil.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	var newRules []*Rule
+	if err := yaml.Unmarshal(buf, &newRules); err != nil {
+		return err
+	}
+	ruleLock.Lock()
+	log.Printf("Loading rules from %s", src)
+	rules = newRules
+	ruleLock.Unlock()
+	return nil
 }

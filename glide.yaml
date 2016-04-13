@@ -3,3 +3,4 @@ import:
 - package: github.com/digitalrebar/rebar-api
   subpackages:
   - client
+- package: github.com/ghodss/yaml
