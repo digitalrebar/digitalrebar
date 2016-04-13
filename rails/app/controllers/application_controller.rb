@@ -333,11 +333,13 @@ class ApplicationController < ActionController::Base
       session[:digest_user] = u.username
       u.encrypted_password
     end
+    Rails.logger.info("digest auth for #{u ? u.username : "unknown"}: #{authed}")
     @current_user = u if authed
     authed
   end
 
   def do_auth!
+    Rails.logger.info("Fail through auth: do_auth!")
     session[:marker] = "login"
     session[:start] = Time.now
     respond_to do |format|
@@ -348,6 +350,9 @@ class ApplicationController < ActionController::Base
 
   #return true if we digest signed in
   def rebar_auth
+    Rails.logger.debug("peercert: #{request.headers["puma.socket"].peercert}")
+    Rails.logger.info("username header: #{request.headers["HTTP_X_AUTHENTICATED_USERNAME"]}")
+    Rails.logger.info("capability header: #{request.headers["HTTP_X_AUTHENTICATED_CAPABILITY"]}")
     case
     when request.headers["puma.socket"].peercert && !request.headers["HTTP_X_AUTHENTICATED_USERNAME"].nil?
       username = request.headers["HTTP_X_AUTHENTICATED_USERNAME"]
@@ -369,7 +374,6 @@ class ApplicationController < ActionController::Base
 	@current_user.save
         @current_user = User.find_by(username: username)
       end
-      session[:digest_user] = username
       cors_headers
       true
     when current_user then authenticate_user!
