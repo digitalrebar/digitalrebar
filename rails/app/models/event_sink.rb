@@ -46,10 +46,7 @@ class EventSink < ActiveRecord::Base
       raise "http handler only accepts on_milestone for now" unless selector['event'] == 'on_milestone'
       data = selector.dup
       data['node'] = obj.node
-      data['role'] = {
-        'id' => obj.role.uuid,
-        'name' => obj.role.name
-      }
+      data['role'] = obj.role
       begin
         RestClient::Request.execute(
           method: :post,
