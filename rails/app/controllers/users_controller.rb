@@ -22,9 +22,11 @@ class UsersController < ApplicationController
 
   add_help(:index,[],[:get])
 
-  skip_before_filter :rebar_auth, :only => [:options, :digest]
-  skip_before_filter :authenticate_user!, :only => [:options]
-  before_filter :digest_auth!, :only => [:digest]
+#  skip_before_filter :rebar_auth, :only => [:options, :digest]
+#  skip_before_filter :authenticate_user!, :only => [:options]
+#  before_filter :digest_auth!, :only => [:digest]
+
+  skip_before_filter :rebar_auth, :only => [:options]
 
   def cors_headers
     access_control = {

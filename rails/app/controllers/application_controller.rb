@@ -351,9 +351,26 @@ class ApplicationController < ActionController::Base
     case
     when request.headers["puma.socket"].peercert && !request.headers["HTTP_X_AUTHENTICATED_USERNAME"].nil?
       username = request.headers["HTTP_X_AUTHENTICATED_USERNAME"]
-      session[:digest_user] = username
+      capability = request.headers["HTTP_X_AUTHENTICATED_CAPABILITY"]
+      wants_admin = capability == "ADMIN"
       Rails.logger.info("Auth by key: #{username}")
-      @current_user = User.find_by(username: "rebar")
+      Rails.logger.info("headers['HTTP_ORIGIN'] = #{request.headers["HTTP_ORIGIN"]}")
+
+      email = "#{username}@internal.local"
+      if username =~ /@/ 
+	email = username
+        username = username.split("@")[0]
+      end
+
+      @current_user = User.create_with(email: email).find_or_create_by(username: username)
+      # Update the capabiilties
+      if @current_user.is_admin != wants_admin 
+        @current_user.is_admin = wants_admin
+	@current_user.save
+        @current_user = User.find_by(username: username)
+      end
+      session[:digest_user] = username
+      cors_headers
       true
     when current_user then authenticate_user!
     when digest_request? then digest_auth!
