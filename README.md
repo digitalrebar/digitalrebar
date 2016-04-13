@@ -2,6 +2,12 @@ This is the node classifier daemon for Digital Rebar.
 
 It listens for on_milestone events, and for each event it recieves it tests the event to see if it matches a set of user-provided rules, and for each rule it matches it takes appropriate action.
 
+## Building the tool:
+
+* Download and install glide: https://glide.sh/
+* Pull in the proper dependencies: glide install
+* Build the tool: go build
+
 ## Command line options:
 * -debug
   Whether to run in debug mode.  If passed, classifier will log extra debug logging.
@@ -21,7 +27,8 @@ It listens for on_milestone events, and for each event it recieves it tests the 
 ## The rules file:
 
 The rules file should contain a list of rules in YML format.  For a
-simple example, refer to the test.yml file.
+simple example, refer to the test.yml file.  The rule file will be
+reloaded if the classfier is sent a SIGHUP.
 
 ### An example rules file:
 
