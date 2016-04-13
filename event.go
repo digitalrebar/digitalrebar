@@ -8,6 +8,9 @@ import (
 	"github.com/digitalrebar/rebar-api/client"
 )
 
+// Event is what is recieved from the DigitalRebar core whenever
+// something of interest occurs.  The current definition is subject to
+// change as the needs of the Classifier grow.
 type Event struct {
 	Name         string       `json:"event"`
 	Node         *client.Node `json:"node"`
@@ -51,6 +54,9 @@ func (e *Event) attribsJSON() string {
 	return string(buf)
 }
 
+// Process the Rules against an event.  This implementation is very
+// slow and stupid, and will be replaced if it starts being a
+// bottleneck.
 func (e *Event) Process(rules []*Rule) {
 	for _, rule := range rules {
 		e.rule = rule
@@ -58,16 +64,23 @@ func (e *Event) Process(rules []*Rule) {
 			log.Printf("Failed to fetch attributes for node %v: %v", e.Node.Name, err)
 			continue
 		}
-		ok, err := rule.Match(e)
-		if err != nil {
-			log.Printf("Match failed for event %s rule %s: %s", e.Name, rule.Name, err)
-			continue
+		matched, matcherr, runerr := rule.Fire(e)
+		log.Printf("Rule %s matched event %s: %v",
+			rule.Name,
+			e.Name,
+			matched)
+		if matcherr != nil {
+			log.Printf("Rule %s had an error matching event %s: %v",
+				rule.Name,
+				e.Name,
+				matcherr)
 		}
-		if !ok {
-			continue
+		if runerr != nil {
+			log.Printf("Rule %s failed to fire properly for event %s: %v",
+				rule.Name,
+				e.Name,
+				runerr)
 		}
-		if err := rule.Run(e); err != nil {
-			log.Printf("Error running rule %s for event %s: %v", rule.Name, e.Name, err)
-		}
+
 	}
 }

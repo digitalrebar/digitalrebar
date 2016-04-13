@@ -9,6 +9,11 @@ import (
 
 var matchTypes = []string{"And", "Or", "Not", "Script", "Enabled"}
 
+// Matcher is what is used by Rules to determine whether they shouuld
+// fire for a given Event.  Right now, we only have the basic
+// combinators, a simple static boolean matcher, and a matcher that
+// runs a script and uses the exit value to determine whether it
+// matched or not.
 type Matcher func(*Event) (bool, error)
 
 func matchAnd(funcs ...Matcher) Matcher {

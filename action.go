@@ -7,6 +7,8 @@ import (
 
 var actionTypes = []string{"Log"}
 
+//Action is a thing that the Classifier will do for a Rule once the
+//Rule determines whether it should fire.
 type Action func(*Event) error
 
 func actionLog() Action {
