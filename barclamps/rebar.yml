@@ -25,18 +25,6 @@ barclamp:
 
 roles:
   # Rebar  Core
-  - name: rebar-admin-node
-    description: "Core Rebar Services Bundle"
-    jig: noop
-    icon: 'camera'
-    flags:
-      - milestone
-      - implicit
-    requires:
-      - rebar-access
-      - network-server
-      - network-lldpd
-      - rebar-installed-node
   - name: rebar-managed-node
     description: "Rebar Node Service Bundle"
     jig: noop
@@ -233,15 +221,6 @@ roles:
               - os: ubuntu-15.04
                 repos:
                   - deb http://ppa.launchpad.net/saltstack/salt/ubuntu vivid main
-          - name: openwsman
-            description: 'Installation source for OpenWSMAN binaries'
-            oses:
-              - os: centos-6
-                repos:
-                  - bare http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
-              - os: redhat-6
-                repos:
-                  - bare http://opencrowbar.s3-website-us-east-1.amazonaws.com/openwsman
           - name: vbernat
             description: 'vbernat is where we download lldpd for systems that do not have it.'
             oses:
