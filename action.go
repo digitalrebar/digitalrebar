@@ -36,7 +36,6 @@ func actionScript(script string) Action {
 }
 
 func resolveAction(a map[string]interface{}) (Action, error) {
-	log.Printf("Resolving action %#v", a)
 	if len(a) != 1 {
 		return nil, fmt.Errorf("Actions have exactly one key")
 	}

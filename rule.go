@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"sync"
@@ -13,10 +13,13 @@ import (
 	"github.com/ghodss/yaml"
 )
 
+// These should eventually be replaced by a rete network or something
+// similar if performance in the classifier starts to suffer.
 var rules []*Rule
+var namedRules = make(map[string]*Rule)
 var ruleLock sync.Mutex
 
-// Rule represents a list of Actions that shoudl be taken if an Event matches the Rule or not.
+// Rule represents a list of Actions that shoudl be taken if an Event matches the Rule.
 type Rule struct {
 	Name string // Short name of the Rule.  For human consumption
 	// only.
@@ -30,84 +33,22 @@ type Rule struct {
 	// then the Rule will match all Events
 	MatchActions []Action // List of Actions to run when the Rule
 	// matches the Event.
-	UnmatchActions []Action // List of Actions to run when the
-	// Rule does not match the Event.
 }
 
-func (r *Rule) UnmarshalJSON(data []byte) error {
-	type fakeRule struct {
-		Name           string
-		Description    string
-		WantsAttribs   []string
-		Matchers       []map[string]interface{}
-		MatchActions   []map[string]interface{}
-		UnmatchActions []map[string]interface{}
-	}
-	res := &fakeRule{}
-	if err := json.Unmarshal(data, &res); err != nil {
-		return err
-	}
-	r.Name = res.Name
-	r.Description = res.Description
-	r.WantsAttribs = res.WantsAttribs
-	r.Matchers = make([]Matcher, len(res.Matchers))
-	r.MatchActions = make([]Action, len(res.MatchActions))
-	r.UnmatchActions = make([]Action, len(res.UnmatchActions))
-
-	if len(res.Matchers) == 0 {
-		log.Printf("Rule %s has no Matchers, which means it matches everything.", r.Name)
-		log.Printf("This is probably not what you want")
-	}
-
-	for i, m := range res.Matchers {
-		j, err := resolveMatcher(m)
-		if err != nil {
-			return err
-		}
-		r.Matchers[i] = j
-	}
-
-	if len(res.MatchActions) == 0 && len(res.UnmatchActions) == 0 {
-		log.Printf("Rule %s has no MatchActions or UnmatchActions, which means it does nothing.", r.Name)
-		log.Printf("This is probably not what you want")
-	}
-
-	for i, a := range res.MatchActions {
-		j, err := resolveAction(a)
-		if err != nil {
-			return err
-		}
-		r.MatchActions[i] = j
-	}
-	for i, a := range res.UnmatchActions {
-		j, err := resolveAction(a)
-		if err != nil {
-			return err
-		}
-		r.UnmatchActions[i] = j
-	}
-	return nil
-}
-
-// Fire runs the Matchers against the Event, and runs either the
-// MatchActions or the UnmatchActions depending on whether the
-// Matchers matched.  If the rule failed to Fire, either matcherr or
-// runerr will container the error depending on whether there was an
-// error determining whether the rule failed to match the event or
-// there was an error running the relevant actions that should have
-// been run.
+// Fire runs the Matchers against the Event, and runs the MatchActions
+// if the Matchers matched.  If the rule failed to Fire, either
+// matcherr or runerr will container the error depending on whether
+// there was an error determining whether the rule failed to match the
+// event or there was an error running the actions.
 func (r *Rule) Fire(e *Event) (matched bool, matcherr error, runerr error) {
 	matched, matcherr = matchAnd(r.Matchers...)(e)
 	if matcherr != nil {
 		return
 	}
-	var actions []Action
-	if matched {
-		actions = r.MatchActions
-	} else {
-		actions = r.UnmatchActions
+	if !matched {
+		return
 	}
-	for i, action := range actions {
+	for i, action := range r.MatchActions {
 		log.Printf("Rule %s: running action %v", r.Name, i)
 		runerr = action(e)
 		if runerr != nil {
@@ -122,12 +63,71 @@ func loadRules(src string) error {
 	if err != nil {
 		return err
 	}
-	var newRules []*Rule
-	if err := yaml.Unmarshal(buf, &newRules); err != nil {
+	type fakeRule struct {
+		Name         string
+		Description  string
+		WantsAttribs []string
+		Matchers     []map[string]interface{}
+		MatchActions []map[string]interface{}
+	}
+	var newFakeRules []*fakeRule
+	if err := yaml.Unmarshal(buf, &newFakeRules); err != nil {
 		return err
+	}
+	newRules := make([]*Rule, len(newFakeRules))
+	newNamedRules := make(map[string]int)
+	for i, rule := range newFakeRules {
+		r := &Rule{}
+		r.Name = rule.Name
+		r.Description = rule.Description
+		r.WantsAttribs = rule.WantsAttribs
+		r.Matchers = make([]Matcher, len(rule.Matchers))
+		r.MatchActions = make([]Action, len(rule.MatchActions))
+		if r.Name != "" {
+			conflict, ok := newNamedRules[r.Name]
+			if ok {
+				return fmt.Errorf("Rule %d (name %s) has the same name as Rule %d", i, r.Name, conflict)
+			}
+			newNamedRules[r.Name] = i
+		}
+
+		if len(rule.Matchers) == 0 {
+			log.Printf("Rule %d (name: %s) has no Matchers, which means it matches everything.", i, r.Name)
+			log.Printf("This is probably not what you want")
+		}
+
+		for i, m := range rule.Matchers {
+			j, err := resolveMatcher(m)
+			if err != nil {
+				log.Printf("Rule %d (name: %s) failed to compile Matchers", i, r.Name)
+				log.Printf("%s", err)
+				return err
+			}
+			r.Matchers[i] = j
+		}
+
+		if len(rule.MatchActions) == 0 {
+			log.Printf("Rule %d (name: %s) has no MatchActions, which means it does nothing.", i, r.Name)
+			log.Printf("This is probably not what you want")
+		}
+
+		for i, a := range rule.MatchActions {
+			j, err := resolveAction(a)
+			if err != nil {
+				log.Printf("Rule %d (name: %s) failed to compile MatchActions", i, r.Name)
+				log.Printf("%s", err)
+
+				return err
+			}
+			r.MatchActions[i] = j
+		}
+		newRules[i] = r
 	}
 	ruleLock.Lock()
 	log.Printf("Loading rules from %s", src)
+	for name, i := range newNamedRules {
+		namedRules[name] = newRules[i]
+	}
 	rules = newRules
 	ruleLock.Unlock()
 	return nil

@@ -41,17 +41,15 @@ reloaded if the classfier is sent a SIGHUP.
       MatchActions:
         - Log: true
         - Script: "/usr/bin/env"
-      UnmatchActions:
-        - Log: true
-
+  
 ### Rule definition:
 
 A Rule is composed of the following fields:
 
 * Name
-  The name of the rule.  For human use only, the classifier does not care.
+  The name of the rule.  If present, it must be unique across all the rules.
 * Description
-  A brief description of what the rule does.  Also for human use only.
+  A brief description of what the rule does.  For human use only.
 * WantsAttribs
   A list of DigitalRebar attribs or node attributes that
   the rule Matchers will use to determine whether the Rule matches the
@@ -60,8 +58,6 @@ A Rule is composed of the following fields:
   A list of Matchers that must match in order for the MatchActions to run.
 * MatchActions
   A list of Actions that will be run if all the Matchers match.
-* UnmatchActions
-  A list of Actions that will be run unless all the Matchers match.
 
 #### Matchers:
 Currently, the classifier knows about 5 matchers:

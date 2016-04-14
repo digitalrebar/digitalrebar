@@ -72,7 +72,7 @@ func main() {
 		log.Fatalf("You must load rules with --rules ruleFile")
 	}
 	if err := loadRules(ruleFile); err != nil {
-		log.Fatal("Failed to load rules from %s:\n%v", ruleFile, err)
+		log.Fatalf("Failed to load rules from %s:\n%v", ruleFile, err)
 	}
 	if testRules {
 		os.Exit(0)
