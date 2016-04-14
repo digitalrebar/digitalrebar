@@ -355,6 +355,7 @@ class ApplicationController < ActionController::Base
     Rails.logger.info("capability header: #{request.headers["HTTP_X_AUTHENTICATED_CAPABILITY"]}")
     case
     when request.headers["puma.socket"].peercert && !request.headers["HTTP_X_AUTHENTICATED_USERNAME"].nil?
+      # This assumes that the rev-proxy is handling cors
       username = request.headers["HTTP_X_AUTHENTICATED_USERNAME"]
       capability = request.headers["HTTP_X_AUTHENTICATED_CAPABILITY"]
       wants_admin = capability == "ADMIN"
@@ -374,7 +375,7 @@ class ApplicationController < ActionController::Base
 	@current_user.save
         @current_user = User.find_by(username: username)
       end
-      cors_headers
+      session[:digest_user] = username
       true
     when current_user then authenticate_user!
     when digest_request? then digest_auth!
