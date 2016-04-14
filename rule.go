@@ -39,6 +39,16 @@ func (r *Rule) Match(e *Event) (bool, error) {
 	return matchAnd(r.Matchers...)(e)
 }
 
+func (r *Rule) RunActions(e *Event) error {
+	for i, action := range r.MatchActions {
+		log.Printf("Rule %s: running action %v", r.Name, i)
+		if err := action(e); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Fire runs the Matchers against the Event, and runs the MatchActions
 // if the Matchers matched.  If the rule failed to Fire, either
 // matcherr or runerr will container the error depending on whether
@@ -46,19 +56,10 @@ func (r *Rule) Match(e *Event) (bool, error) {
 // event or there was an error running the actions.
 func (r *Rule) Fire(e *Event) (matched bool, matcherr error, runerr error) {
 	matched, matcherr = r.Match(e)
-	if matcherr != nil {
+	if matcherr != nil || !matched {
 		return
 	}
-	if !matched {
-		return
-	}
-	for i, action := range r.MatchActions {
-		log.Printf("Rule %s: running action %v", r.Name, i)
-		runerr = action(e)
-		if runerr != nil {
-			return
-		}
-	}
+	runerr = r.RunActions(e)
 	return
 }
 
