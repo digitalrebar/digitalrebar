@@ -157,7 +157,7 @@ fi
 
 # Lift everything out of the discovery directory and replace it with a symlink
 # Symlink is for backwards compatibility
-if [[ -d $TFTPROOT/discovery ]]; then
+if [[ -d $TFTPROOT/discovery && ! -L $TFTPROOT/discovery ]]; then
     for f in "${TFTPROOT}/discovery/"*; do
         [[ -e $f ]] || continue
         mv "$f" "${TFTPROOT}/${f##*/}"
