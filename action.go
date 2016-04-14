@@ -15,7 +15,7 @@ type Action func(*Event) error
 func actionLog() Action {
 	return func(e *Event) error {
 		log.Printf("Event %s matched rule %s for node %s",
-			e.Name,
+			e.Selector["event"],
 			e.rule.Name,
 			e.Node.Name)
 		return nil
