@@ -1,5 +1,7 @@
 ---
 - Name: 'test logging rule'
+  WantsAttribs:
+    - number_of_drives
   Matchers:
     - Enabled: true
     - Script: "/bin/true"
