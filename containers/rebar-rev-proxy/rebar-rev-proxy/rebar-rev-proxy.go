@@ -43,6 +43,16 @@ func init() {
 	flag.StringVar(&external_ip, "external_ip", "127.0.0.1", "Server IP to advertise for SAML")
 }
 
+func add_cors_header(w http.ResponseWriter, req *http.Request) {
+	origin := req.Header.Get("Origin")
+	if origin != "" {
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Allow-Headers", "DR-AUTH-TOKEN,DR-AUTH-USER,X-Requested-With,Content-Type,Cookie,Authorization,WWW-Authenticate") // If-Modified-Since,If-None-Match,
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Expose-Headers", "DR-AUTH-TOKEN,DR-AUTH-USER,WWW-Authenticate, Set-Cookie, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Allow-Origin")
+	}
+}
+
 func main() {
 	flag.Parse()
 
@@ -123,6 +133,14 @@ func main() {
 	tokenMux := http.NewServeMux()
 	tokenMux.HandleFunc("/api/license", NewMultipleHostReverseProxy(ServiceRegistry, tlsConfig))
 	tokenMux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+		// Handle CORS BS
+		add_cors_header(w, req)
+		if req.Method == "OPTIONS" {
+			w.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD")
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
 		token := has_token_info(req)
 		if token == nil && auth_handler != nil {
 			auth_handler.ServeHTTP(w, req)
