@@ -13,13 +13,16 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"path"
 	"strings"
+	"text/template"
 
 	"github.com/VictorLowther/jsonpatch"
+	"golang.org/x/net/html"
 )
 
-type challenge struct {
+type challengeDigest struct {
 	Username   string
 	Password   string
 	Realm      string
@@ -34,9 +37,20 @@ type challenge struct {
 	NonceCount int
 }
 
+type challengeSAML struct {
+	Username string
+	Password string
+	Token    string
+}
+
+type challenge interface {
+	parseChallenge(resp *http.Response) error
+	authorize(method, uri string, req *http.Request) error
+}
+
 type rebarClient struct {
 	*http.Client
-	Challenge *challenge
+	Challenge challenge
 	URL       string
 }
 
@@ -61,25 +75,35 @@ func Session(URL, User, Password string) error {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	c := &rebarClient{
-		URL:       URL,
-		Client:    &http.Client{Transport: tr},
-		Challenge: &challenge{},
+		URL:    URL,
+		Client: &http.Client{Transport: tr},
 	}
 	// retrieve the digest info from the 301 message
 	resp, e := c.Head(c.URL + path.Join(API_PATH, "digest"))
 	if e != nil {
 		return e
 	}
-	if resp.StatusCode != 401 {
-		return fmt.Errorf("Expected Digest Challenge Missing on URL %s got %s", URL, resp.Status)
+	if resp.StatusCode != 401 && resp.StatusCode != 200 {
+		return fmt.Errorf("Expected Digest Challenge os SAML Redirect Missing on URL %s got %s", URL, resp.Status)
 	}
-	var err error
-	err = c.Challenge.parseChallenge(resp.Header.Get("WWW-Authenticate"))
+
+	// We may be SAML Auth
+	if resp.StatusCode == 200 {
+		c.Challenge = &challengeSAML{
+			Username: User,
+			Password: Password,
+		}
+	} else {
+		c.Challenge = &challengeDigest{
+			Username: User,
+			Password: Password,
+		}
+	}
+
+	err := c.Challenge.parseChallenge(resp)
 	if err != nil {
 		return err
 	}
-	c.Challenge.Username = User
-	c.Challenge.Password = Password
 	session = c
 	return nil
 }
@@ -95,11 +119,10 @@ func (c *rebarClient) basicRequest(method, uri string, objIn []byte) (resp *http
 	if err != nil {
 		return nil, err
 	}
-	auth, err := c.Challenge.authorize(method, path.Join(API_PATH, uri))
+	err = c.Challenge.authorize(method, path.Join(API_PATH, uri), req)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", auth)
 	if method == "PATCH" {
 		req.Header.Set("Content-Type", jsonpatch.ContentType)
 	} else {
@@ -128,14 +151,21 @@ func (c *rebarClient) request(method, uri string, objIn []byte) (objOut []byte, 
 	if err != nil {
 		return nil, err
 	}
+	if resp.Body != nil {
+		defer resp.Body.Close()
+	}
+
 	if resp.StatusCode == 401 {
-		err = c.Challenge.parseChallenge(resp.Header.Get("WWW-Authenticate"))
+		err = c.Challenge.parseChallenge(resp)
 		if err != nil {
 			return nil, err
 		}
 		resp, err = c.basicRequest(method, uri, objIn)
 		if err != nil {
 			return nil, err
+		}
+		if resp.Body != nil {
+			defer resp.Body.Close()
 		}
 	}
 	objOut, err = ioutil.ReadAll(resp.Body)
@@ -178,15 +208,15 @@ func kd(secret, data string) string {
 	return h(fmt.Sprintf("%s:%s", secret, data))
 }
 
-func (c *challenge) ha1() string {
+func (c *challengeDigest) ha1() string {
 	return h(fmt.Sprintf("%s:%s:%s", c.Username, c.Realm, c.Password))
 }
 
-func (c *challenge) ha2(method, uri string) string {
+func (c *challengeDigest) ha2(method, uri string) string {
 	return h(fmt.Sprintf("%s:%s", method, uri))
 }
 
-func (c *challenge) resp(method, uri, cnonce string) (string, error) {
+func (c *challengeDigest) resp(method, uri, cnonce string) (string, error) {
 	c.NonceCount++
 	if c.Qop == "auth" {
 		if cnonce != "" {
@@ -205,20 +235,20 @@ func (c *challenge) resp(method, uri, cnonce string) (string, error) {
 }
 
 // source https://code.google.com/p/mlab-ns2/source/browse/gae/ns/digest/digest.go#178
-func (c *challenge) authorize(method, uri string) (string, error) {
+func (c *challengeDigest) authorize(method, uri string, req *http.Request) error {
 	// Note that this is only implemented for MD5 and NOT MD5-sess.
 	// MD5-sess is rarely supported and those that do are a big mess.
 	if c.Algorithm != "MD5" {
-		return "", fmt.Errorf("Alg not implemented")
+		return fmt.Errorf("Alg not implemented")
 	}
 	// Note that this is NOT implemented for "qop=auth-int".  Similarly the
 	// auth-int server side implementations that do exist are a mess.
 	if c.Qop != "auth" && c.Qop != "" {
-		return "", fmt.Errorf("Alg not implemented")
+		return fmt.Errorf("Alg not implemented")
 	}
 	resp, err := c.resp(method, uri, "")
 	if err != nil {
-		return "", fmt.Errorf("Alg not implemented")
+		return fmt.Errorf("Alg not implemented")
 	}
 	sl := []string{fmt.Sprintf(`username="%s"`, c.Username)}
 	sl = append(sl, fmt.Sprintf(`realm="%s"`, c.Realm))
@@ -236,11 +266,13 @@ func (c *challenge) authorize(method, uri string) (string, error) {
 		sl = append(sl, fmt.Sprintf("nc=%08x", c.NonceCount))
 		sl = append(sl, fmt.Sprintf(`cnonce="%s"`, c.Cnonce))
 	}
-	return fmt.Sprintf("Digest %s", strings.Join(sl, ", ")), nil
+	req.Header.Set("Authorization", fmt.Sprintf("Digest %s", strings.Join(sl, ", ")))
+	return nil
 }
 
 // origin https://code.google.com/p/mlab-ns2/source/browse/gae/ns/digest/digest.go#90
-func (c *challenge) parseChallenge(input string) error {
+func (c *challengeDigest) parseChallenge(resp *http.Response) error {
+	input := resp.Header.Get("WWW-Authenticate")
 	const ws = " \n\r\t"
 	const qs = `"`
 	s := strings.Trim(input, ws)
@@ -273,5 +305,165 @@ func (c *challenge) parseChallenge(input string) error {
 			return fmt.Errorf("Challenge is bad, unexpected token: %s", sl)
 		}
 	}
+	return nil
+}
+
+type SamlCookieRequest struct {
+	Status       string
+	SessionToken string
+}
+
+func (c *challengeSAML) parseChallenge(resp *http.Response) error {
+	b64req := resp.Header.Get("DR-SAML-REQ")
+	samlurl := resp.Header.Get("DR-SAML-URL")
+
+	if b64req == "" || samlurl == "" {
+		return fmt.Errorf("Expected SAML challenge/assertion, but was missing")
+	}
+
+	surl, err := url.Parse(samlurl)
+	if err != nil {
+		fmt.Println("Failed to parse samlurl", err)
+		return err
+	}
+
+	// Using creds, get one-time cookie token.
+	surl.Path = "/api/v1/authn"
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	hc := &http.Client{Transport: tr}
+	t := template.New("saml-auth")
+	t, err = t.Parse("{ \"username\": \"{{.Username}}\", \"password\": \"{{.Password}}\", \"relayState\": \"/myapp/some/deep/link/i/want/to/return/to\", \"options\": { \"multiOptionalFactorEnroll\": false, \"warnBeforePasswordExpired\": false } }")
+	if err != nil {
+		fmt.Println("Failed to generate template", err)
+		return err
+	}
+	var doc bytes.Buffer
+	err = t.Execute(&doc, c)
+	if err != nil {
+		fmt.Println("Failed to execute template", err)
+		return err
+	}
+
+	auth_resp, err := hc.Post(surl.String(), "application/json", &doc)
+	if err != nil {
+		fmt.Println("Failed to get auth cookie", err)
+		return err
+	}
+	defer auth_resp.Body.Close()
+
+	objOut, err := ioutil.ReadAll(auth_resp.Body)
+	if err != nil {
+		fmt.Println("Failed to read get auth cookie body", err)
+		return err
+	}
+	var cookieData SamlCookieRequest
+	err = json.Unmarshal(objOut, &cookieData)
+	if err != nil {
+		fmt.Println("Failed to parse json return", err)
+		return err
+	}
+
+	// With one-time cookie token, validate the saml assertion
+	samlurl = samlurl + "&onetimetoken=" + cookieData.SessionToken
+	auth_request, err := http.NewRequest("PUT", samlurl, strings.NewReader(""))
+	auth_request.ContentLength = 0
+	auth_resp, err = hc.Do(auth_request)
+	if err != nil {
+		fmt.Println("Failed to auth with cookie")
+		return err
+	}
+	defer auth_resp.Body.Close()
+
+	url, form_data, err := find_form_data(auth_resp.Body)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	// Send response to DR
+	dr_auth_resp, err := hc.PostForm(*url, form_data)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	// Don't need body, just headers
+	if dr_auth_resp.Body != nil {
+		dr_auth_resp.Body.Close()
+	}
+
+	// Get redirect - DONE - record token.
+	if dr_auth_resp.StatusCode != 301 {
+		return fmt.Errorf("Should have received a redirect, but got %v", dr_auth_resp.StatusCode)
+	}
+
+	// Finally got the auth token!!
+	c.Token = dr_auth_resp.Header.Get("Dr-Auth-Token")
+
+	return nil
+}
+
+func find_form_data(r io.Reader) (*string, url.Values, error) {
+	doc, err := html.Parse(r)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Find first form
+	var f func(n *html.Node) *html.Node
+	f = func(n *html.Node) *html.Node {
+		if n.Type == html.ElementNode && n.Data == "form" {
+			return n
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			v := f(c)
+			if v != nil {
+				return v
+			}
+		}
+		return nil
+	}
+	form := f(doc)
+	if form == nil {
+		return nil, nil, fmt.Errorf("Expected form, but non found")
+	}
+
+	inputs := make(url.Values, 0)
+	f = func(n *html.Node) *html.Node {
+		if n.Type == html.ElementNode && n.Data == "input" {
+			var name string
+			var data string
+
+			for _, a := range n.Attr {
+				if a.Key == "name" {
+					name = a.Val
+				} else if a.Key == "value" {
+					data = a.Val
+				}
+			}
+
+			inputs[name] = []string{data}
+		}
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			f(c)
+		}
+		return nil
+	}
+	f(form)
+
+	var url string
+	for _, a := range form.Attr {
+		if a.Key == "action" {
+			url = a.Val
+		}
+	}
+
+	return &url, inputs, nil
+}
+
+func (c *challengeSAML) authorize(method, uri string, req *http.Request) error {
+	req.Header.Set("DR-AUTH-TOKEN", c.Token)
+	req.Header.Set("DR-AUTH-USER", c.Username)
 	return nil
 }
