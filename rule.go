@@ -35,13 +35,17 @@ type Rule struct {
 	// matches the Event.
 }
 
+func (r *Rule) Match(e *Event) (bool, error) {
+	return matchAnd(r.Matchers...)(e)
+}
+
 // Fire runs the Matchers against the Event, and runs the MatchActions
 // if the Matchers matched.  If the rule failed to Fire, either
 // matcherr or runerr will container the error depending on whether
 // there was an error determining whether the rule failed to match the
 // event or there was an error running the actions.
 func (r *Rule) Fire(e *Event) (matched bool, matcherr error, runerr error) {
-	matched, matcherr = matchAnd(r.Matchers...)(e)
+	matched, matcherr = r.Match(e)
 	if matcherr != nil {
 		return
 	}
