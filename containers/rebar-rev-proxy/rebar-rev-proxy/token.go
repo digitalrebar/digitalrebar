@@ -97,12 +97,12 @@ func has_token_info(req *http.Request) *Token {
 
 	t, ok := lookup_token(ts)
 	if !ok {
-		log.Println("Unknown token: ", ts)
+		log.Printf("For %v, Unknown token: %s\n", req, ts)
 		return nil
 	}
 
 	if !validate_token(t.Token, tu) {
-		log.Println("Invalid token: ", ts, "for", tu)
+		log.Printf("For %v, Invalid token: %s for %s\n", req, ts, tu)
 		return nil
 	}
 
@@ -115,7 +115,15 @@ func has_token_info(req *http.Request) *Token {
 	return &t
 }
 
-func add_token_info(t Token, w http.ResponseWriter) {
+func add_token_info(t Token, req *http.Request, w http.ResponseWriter) {
+	if req != nil {
+		req.Header.Set("X-Authenticated-Username", t.Username)
+		cap := t.Capabilities
+		if len(cap) > 0 && cap[0] != "None" {
+			req.Header.Set("X-Authenticated-Capability", cap[0])
+		}
+	}
+
 	cookie := http.Cookie{Name: "DrAuthToken", Value: t.Token, Path: "/"}
 	http.SetCookie(w, &cookie)
 	cookie = http.Cookie{Name: "DrAuthUser", Value: t.Username, Path: "/"}

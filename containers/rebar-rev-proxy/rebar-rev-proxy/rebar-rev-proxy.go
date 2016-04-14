@@ -105,7 +105,7 @@ func main() {
 		newMux.HandleFunc("/", authenticator.Wrap(func(w http.ResponseWriter, ar *auth.AuthenticatedRequest) {
 			cap := cp(ar.Username, digest_realm)
 			t := register_user(ar.Username, digest_realm, cap)
-			add_token_info(t, w)
+			add_token_info(t, &ar.Request, w)
 
 			myMux.ServeHTTP(w, &ar.Request)
 		}))

@@ -39,7 +39,7 @@ func reload_jsonfile(j *JsonFile) {
 	if err != nil {
 		panic(err)
 	}
-	json.Unmarshal(data, &j.Data)
+	err = json.Unmarshal(data, &j.Data)
 	if err != nil {
 		panic(err)
 	}

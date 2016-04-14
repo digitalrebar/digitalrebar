@@ -80,6 +80,10 @@ func (saf *SamlAuthFilter) generateSamlRequest(w http.ResponseWriter, req *http.
 		URL:               url,
 	}
 
+	// Add data as header for CLIs
+	w.Header().Set("DR-SAML-URL", data.URL)
+	w.Header().Set("DR-SAML-REQ", data.Base64AuthRequest)
+
 	t := template.New("saml")
 	t, err = t.Parse("<html><body style=\"display: none\" onload=\"document.frm.submit()\"><form method=\"post\" name=\"frm\" action=\"{{.URL}}\"><input type=\"hidden\" name=\"SAMLRequest\" value=\"{{.Base64AuthRequest}}\" /><input type=\"submit\" value=\"Submit\" /></form></body></html>")
 
@@ -143,7 +147,7 @@ func (saf *SamlAuthFilter) handleSamlResponse(w http.ResponseWriter, r *http.Req
 	println("Authorized by SAML: " + *samlID)
 
 	t := register_user(*samlID, "SAML", make([]string, 0, 0))
-	add_token_info(t, w)
+	add_token_info(t, req, w)
 
 	req.Write(os.Stdout)
 

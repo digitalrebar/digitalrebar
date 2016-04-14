@@ -150,7 +150,6 @@ func (c *ConsulRegistry) WatchConsul() {
 					knownSvc.ServiceAddress == svc.ServiceAddress &&
 					knownSvc.ServicePort == svc.ServicePort {
 					// Nothing changed, it goes in the untouched bucket.
-					log.Printf("%s has not changed config, ignoring", svcName)
 					untouchedServices[svcName] = knownSvc
 				} else {
 					// Something changed, it goes in the toRemove and
