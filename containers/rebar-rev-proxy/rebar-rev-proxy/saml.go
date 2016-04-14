@@ -19,6 +19,7 @@ type SamlAuthFilter struct {
 func NewSamlAuthFilter(mux *http.ServeMux,
 	cert_path string,
 	key_path string,
+	my_ipport string,
 	idpssourl string,
 	idpssodescurl string,
 	idpcert string) *SamlAuthFilter {
@@ -34,7 +35,7 @@ func NewSamlAuthFilter(mux *http.ServeMux,
 			IDPSSODescriptorURL:         idpssodescurl,
 			IDPPublicCertPath:           idpcert,
 			SPSignRequest:               true,
-			AssertionConsumerServiceURL: "https://192.168.99.100:8443/samlresponse",
+			AssertionConsumerServiceURL: "https://" + my_ipport + "/samlresponse",
 		},
 	}
 

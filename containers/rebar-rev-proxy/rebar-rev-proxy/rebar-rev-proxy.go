@@ -24,6 +24,7 @@ var digest_realm string
 var saml_idpssourl string
 var saml_idpssodescurl string
 var saml_idpcert string
+var external_ip string
 
 func init() {
 	flag.StringVar(&key_pem, "key_pem", "/etc/rev-proxy/server.key", "Path to key file")
@@ -39,6 +40,7 @@ func init() {
 	flag.StringVar(&saml_idpssourl, "saml_idpssourl", "https://dev-888522.oktapreview.com/app/rackndev888522_rackn_1/exk5ui8zc112R5ioP0h7/sso/saml", "Default Identity Provider SSO URL")
 	flag.StringVar(&saml_idpssodescurl, "saml_idpssodescurl", "http://www.okta.com/exk5ui8zc112R5ioP0h7", "Default Identity Provider SSO Descriptor URL")
 	flag.StringVar(&saml_idpcert, "saml_idpcert", "/etc/rev-proxy/saml-dir/idpcert.crt", "Default SAML SSO Cert")
+	flag.StringVar(&external_ip, "external_ip", "127.0.0.1", "Server IP to advertise for SAML")
 }
 
 func main() {
@@ -111,7 +113,7 @@ func main() {
 		}))
 		auth_handler = newMux
 	} else if auth_filter == "saml" {
-		auth_handler = NewSamlAuthFilter(myMux, cert_pem, key_pem, saml_idpssourl, saml_idpssodescurl, saml_idpcert)
+		auth_handler = NewSamlAuthFilter(myMux, cert_pem, key_pem, external_ip+":"+strconv.Itoa(listen_port), saml_idpssourl, saml_idpssodescurl, saml_idpcert)
 	} else if auth_filter == "none" {
 		// Do nothing
 	} else {

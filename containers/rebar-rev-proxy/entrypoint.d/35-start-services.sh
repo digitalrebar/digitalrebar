@@ -36,7 +36,7 @@ if [[ $REVPROXY_SAML_IDP_SSO_DESC_URL ]] ; then
 	SAMLIDPSSODESCURL="-saml_idpssodescurl $REVPROXY_SAML_IDP_SSO_DESC_URL"
 fi
 
-/usr/local/bin/rebar-rev-proxy \
+/usr/local/bin/rebar-rev-proxy --external_ip ${EXTERNAL_IP%%/*} \
 	$LISTENPORT \
 	$AUTHFILTER \
 	$REALM \
