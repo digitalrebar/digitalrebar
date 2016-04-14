@@ -27,8 +27,8 @@ class EventSink < ActiveRecord::Base
   def endpoint_method
     endpoint.partition('://')[0]
   end
-  
-  def run(obj, selector)
+
+  def run(event, obj, selector)
     meth, _, rest = endpoint.partition("://")
     case meth
     when 'inproc'
@@ -43,10 +43,40 @@ class EventSink < ActiveRecord::Base
         raise "EventSink.run for inproc:// only handles Role hooks for now"
       end
     when 'http'
-      raise "http handler only accepts on_milestone for now" unless selector['event'] == 'on_milestone'
-      data = selector.dup
-      data['node'] = obj.node
-      data['role'] = obj.role
+      data = {}
+      data['event'] = event
+      data['selector'] = selector
+      case
+      when obj.is_a?(NodeRole)
+        data['node'] = obj.node
+        data['role'] = obj.role
+        data['node_role'] = obj
+      when obj.is_a?(Node)
+        data['node'] = obj
+      when obj.is_a?(DeploymentRole)
+        data['deployment'] = obj.deployment
+        data['role'] = obj.role
+        data['deployment_role'] = obj
+      when obj.is_a?(Deployment)
+        data['deployment'] = obj
+      when obj.is_a?(Role)
+        data['role'] = obj
+      when obj.is_a?(Network)
+        data['network'] = obj
+      when obj.is_a?(NetworkAllocation)
+        data['network'] = obj.network
+        data['node'] = obj.node
+        data['network_range'] = obj.network_range
+        data['network_allocation'] = obj
+      when obj.is_a?(NetworkRange)
+        data['network'] = obj.network
+        data['network_range'] = obj
+      when obj.is_a?(NetworkRouter)
+        data['network'] = obj.network
+        data['network_router'] = obj
+      else
+        raise "http handler does not know how to handle #{obj.class.name}"
+      end
       begin
         RestClient::Request.execute(
           method: :post,
