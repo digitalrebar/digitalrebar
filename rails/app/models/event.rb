@@ -40,7 +40,7 @@ class Event < ActiveRecord::Base
       es = ms.event_sink
       Rails.logger.info("Event: #{params} matched #{ms.selector}")
       Rails.logger.info("Event: calling #{es.endpoint} for #{ms.selector} with #{obj.inspect}")
-      res << es.run(obj, ms.selector)
+      res << es.run(self,obj, ms.selector)
     end
     return res
   end
