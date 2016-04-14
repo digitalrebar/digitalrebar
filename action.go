@@ -10,20 +10,20 @@ var actionTypes = []string{"Log", "Script"}
 
 //Action is a thing that the Classifier will do for a Rule once the
 //Rule determines whether it should fire.
-type Action func(*Event) error
+type Action func(*runContext) error
 
 func actionLog() Action {
-	return func(e *Event) error {
+	return func(e *runContext) error {
 		log.Printf("Event %s matched rule %s for node %s",
-			e.Selector["event"],
+			e.event.Selector["event"],
 			e.rule.Name,
-			e.Node.Name)
+			e.event.Node.Name)
 		return nil
 	}
 }
 
 func actionScript(script string) Action {
-	return func(e *Event) error {
+	return func(e *runContext) error {
 		res, err := runScript(e, script)
 		if err != nil {
 			return err

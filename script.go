@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-func runScript(e *Event, script string) (bool, error) {
-	buf, err := json.Marshal(e)
+func runScript(e *runContext, script string) (bool, error) {
+	buf, err := json.Marshal(e.event)
 	if err != nil {
 		log.Panicf("Unable to marshal Event for a script run!")
 	}

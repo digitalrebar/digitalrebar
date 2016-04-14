@@ -12,10 +12,10 @@ var matchTypes = []string{"And", "Or", "Not", "Script", "Enabled"}
 // combinators, a simple static boolean matcher, and a matcher that
 // runs a script and uses the exit value to determine whether it
 // matched or not.
-type Matcher func(*Event) (bool, error)
+type Matcher func(*runContext) (bool, error)
 
 func matchAnd(funcs ...Matcher) Matcher {
-	return func(e *Event) (bool, error) {
+	return func(e *runContext) (bool, error) {
 		for _, fn := range funcs {
 			ok, err := fn(e)
 			if err != nil {
@@ -29,7 +29,7 @@ func matchAnd(funcs ...Matcher) Matcher {
 }
 
 func matchOr(funcs ...Matcher) Matcher {
-	return func(e *Event) (bool, error) {
+	return func(e *runContext) (bool, error) {
 		for _, fn := range funcs {
 			ok, err := fn(e)
 			if err != nil {
@@ -43,20 +43,20 @@ func matchOr(funcs ...Matcher) Matcher {
 }
 
 func matchNot(fn Matcher) Matcher {
-	return func(e *Event) (bool, error) {
+	return func(e *runContext) (bool, error) {
 		ok, err := fn(e)
 		return !ok, err
 	}
 }
 
 func matchBool(b bool) Matcher {
-	return func(e *Event) (bool, error) {
+	return func(e *runContext) (bool, error) {
 		return b, nil
 	}
 }
 
 func matchScript(script string) Matcher {
-	return func(e *Event) (bool, error) {
+	return func(e *runContext) (bool, error) {
 		return runScript(e, script)
 	}
 }
@@ -68,7 +68,7 @@ func resolveMatchArray(op string, matchers []Matcher) Matcher {
 	case "Or":
 		return matchOr(matchers...)
 	default:
-		log.Panicf("%s was op to resolveMatchArray, cannot happen")
+		log.Panicf("%s was op to resolveMatchArray, cannot happen", op)
 		return nil
 	}
 }

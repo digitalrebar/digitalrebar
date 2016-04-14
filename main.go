@@ -55,7 +55,8 @@ func handler(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusExpectationFailed)
 		return
 	}
-	event.Process(rules)
+	ctx := makeContext(event)
+	ctx.Process(rules)
 	w.WriteHeader(http.StatusAccepted)
 }
 

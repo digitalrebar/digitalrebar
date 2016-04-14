@@ -35,11 +35,11 @@ type Rule struct {
 	// matches the Event.
 }
 
-func (r *Rule) Match(e *Event) (bool, error) {
+func (r *Rule) Match(e *runContext) (bool, error) {
 	return matchAnd(r.Matchers...)(e)
 }
 
-func (r *Rule) RunActions(e *Event) error {
+func (r *Rule) RunActions(e *runContext) error {
 	for i, action := range r.MatchActions {
 		log.Printf("Rule %s: running action %v", r.Name, i)
 		if err := action(e); err != nil {
@@ -54,7 +54,7 @@ func (r *Rule) RunActions(e *Event) error {
 // matcherr or runerr will container the error depending on whether
 // there was an error determining whether the rule failed to match the
 // event or there was an error running the actions.
-func (r *Rule) Fire(e *Event) (matched bool, matcherr error, runerr error) {
+func (r *Rule) Fire(e *runContext) (matched bool, matcherr error, runerr error) {
 	matched, matcherr = r.Match(e)
 	if matcherr != nil || !matched {
 		return
