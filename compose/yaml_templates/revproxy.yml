@@ -9,6 +9,6 @@ revproxy:
 {{ END ACCESS_MODE==FORWARDER }}
 {{ START ACCESS_MODE==HOST }}
   ports:
-    - "8443:8443"
+    - "443:443"
 {{ END ACCESS_MODE==HOST }}
 

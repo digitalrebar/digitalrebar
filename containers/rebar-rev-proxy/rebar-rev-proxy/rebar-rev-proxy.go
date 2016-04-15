@@ -30,7 +30,7 @@ func init() {
 	flag.StringVar(&key_pem, "key_pem", "/etc/rev-proxy/server.key", "Path to key file")
 	flag.StringVar(&cert_pem, "cert_pem", "/etc/rev-proxy/server.crt", "Path to cert file")
 	flag.StringVar(&cacert_pem, "cacert_pem", "/etc/rev-proxy/ca.pem", "Path to cert file")
-	flag.IntVar(&listen_port, "listen_port", 8443, "Port to listen on")
+	flag.IntVar(&listen_port, "listen_port", 443, "Port to listen on")
 	flag.StringVar(&auth_filter, "auth_filter", "digest", "Auth Filter to use. Either 'saml', 'basic', 'digest', or 'none'")
 	flag.StringVar(&db_store_type, "db_store_type", "file", "Type of storage area to use: consul or file")
 	flag.StringVar(&db_file_name, "db_file_name", "/etc/rev-proxy/db-store.json", "Database storage or initialization file")

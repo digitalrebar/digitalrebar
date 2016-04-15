@@ -12,7 +12,17 @@ if [ "$forwarder" != "" ] ; then
     ip route add default via $forwarder
 fi
 
-make_service rebar-ux 443 '{"script": "curl -k -H \"Host=www.mydomain.com\" https://localhost:443","interval": "10s"}'
+if [[ ! $UX_PORT ]] ; then
+    UX_PORT=8443
+fi
+
+# Add rev-proxy matcher
+echo '^ux/(.*)' | kv_put digitalrebar/public/revproxy/rebar-ux-service/matcher
+
+OSD=$SERVICE_DEPLOYMENT
+SERVICE_DEPLOYMENT="$OSD\", \"revproxy"
+make_service rebar-ux $UX_PORT '{"script": "curl -k -H \"Host=www.mydomain.com\" https://localhost:443","interval": "10s"}'
+SERVICE_DEPLOYMENT=$OSD
 
 cd /opt/digitalrebar-ux
 
@@ -71,6 +81,6 @@ EOF
 openssl req -config example.conf -new -x509 -newkey rsa:2048 -keyout server.pem -out server.pem -days 365 -nodes -subj "/C=US/ST=Texas/L=Austin/O=RackN/OU=UX/CN=rackn.com"
 
 touch websecureport.log
-run_forever python simple-https.py >websecureport.log 2>&1 &
+run_forever python simple-https.py $UX_PORT >websecureport.log 2>&1 &
 
 tail -f websecureport.log
