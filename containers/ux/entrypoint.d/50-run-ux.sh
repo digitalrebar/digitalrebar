@@ -21,7 +21,7 @@ echo '^ux/(.*)' | kv_put digitalrebar/public/revproxy/rebar-ux-service/matcher
 
 OSD=$SERVICE_DEPLOYMENT
 SERVICE_DEPLOYMENT="$OSD\", \"revproxy"
-make_service rebar-ux $UX_PORT '{"script": "curl -k -H \"Host=www.mydomain.com\" https://localhost:443","interval": "10s"}'
+make_service rebar-ux $UX_PORT '{"script": "curl -k -H \"Host=www.mydomain.com\" https://localhost:$UX_PORT","interval": "10s"}'
 SERVICE_DEPLOYMENT=$OSD
 
 cd /opt/digitalrebar-ux
