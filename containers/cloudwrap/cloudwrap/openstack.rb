@@ -8,6 +8,9 @@
 #   os-project-name: '',
 #   os-auth-url: '',
 #   os-region-name: ''
+#   os-debug: 'false'
+#   os-network-internal: 'auto'
+#   os-network-external: 'auto'
 # }
 
 module OpenStack
@@ -35,8 +38,7 @@ module OpenStack
     params += "--nic \'net-id=#{pri_net}\' " if pri_net
     params += "--nic \'net-id=#{first_net}\' " if !pri_net and !pub_net
     params += "\'#{name}\'"
-    raw = base endpoint, "server create #{params}", "-f shell"
-    o = unshell(raw)
+    o = base endpoint, "server create #{params}"
     id = o["id"]
     log "openstack created server #{name} as #{id}"
     return o rescue nil
@@ -67,7 +69,7 @@ module OpenStack
 
   # get list of servers
   def self.list(endpoint)
-    raw = base(endpoint, "server list", "-f csv")
+    raw = base(endpoint, "server list")
     o = unarray raw, "ID"
     log("openstack.list found #{o.count} servers")
     return o
@@ -84,7 +86,7 @@ module OpenStack
 
   # get server details
   def self.get(endpoint, id)
-    o = base(endpoint, "server show \'#{id}\'", "-f json")
+    o = base(endpoint, "server show \'#{id}\'")
     log "OpenStack get server #{id} is #{o["name"]} + #{o["id"]}"
     log "OpenStack get DEBUG #{o.inspect}" if os_debug(endpoint)
     return o
@@ -94,7 +96,7 @@ module OpenStack
 
   # retrieve the flavors
   def self.flavors(endpoint)
-    raw = base(endpoint, "flavor list", "-f json")
+    raw = base(endpoint, "flavor list")
     o = unarray raw, "ID"
     log "OpenStack DEBUG flavors #{o.inspect}" if os_debug(endpoint)
     return o
@@ -102,7 +104,7 @@ module OpenStack
 
   # retrieve the images
   def self.images(endpoint)
-    raw = base(endpoint, "image list", "-f json")
+    raw = base(endpoint, "image list")
     o = unarray raw, "ID"
     o.delete_if { |v, k| !(k["Status"] =~ /active/i) }
     log "OpenStack DEBUG images #{o.inspect}" if os_debug(endpoint)
@@ -112,12 +114,12 @@ module OpenStack
   # get the networks
   def self.networks(endpoint)
 
-    raw = base endpoint, "network list", "-f json"
+    raw = base endpoint, "network list"
     r = unarray raw, "ID"
     # get details on each network to make better decisions (slow, but required)
     detail_map = ["admin_state_up", "status", "router_extenal"]
     r.each do |key, values|
-      detail = base endpoint, "network show \'#{key}\'", "-f json"
+      detail = base endpoint, "network show \'#{key}\'"
       detail_map.each { |d| r[key][d] = detail[d] }
     end
     # remove networks that are not active with subnets 
@@ -135,33 +137,19 @@ module OpenStack
                     "--os-project-name \'#{endpoint['os-project-name']}\' " \
                     "--os-region-name \'#{endpoint['os-region-name']}\' " \
                     "--os-auth-url \'#{endpoint['os-auth-url']}\' " \
-                    "#{cmd}"
+                    "#{cmd} -f json"
 
     o = nil
-    if with_result
-      raw = %x[#{full_cmd} #{with_result}] rescue "ERROR: Command not executed"
-      unless os_debug(endpoint)
-        log "OpenStack executed command [openstack #{cmd} #{with_result}] > '#{raw.truncate(40)}'"
-      else
-        log "OpenStack DEBUG executed command\n#{full_cmd} #{with_result}"
-        log "OpenStack DEBUG raw result\n#{raw}" 
-      end
-      case with_result
-      when "-f csv"
-        o = raw.gsub("\",\"","|||").gsub("\"","").split("\r\n")
-      when "-f shell"
-        o = raw.split("\n")
-      when "-f json"
-        o = JSON.parse(raw) rescue {}
-      else
-        o = raw.split("\n")
-      end
-      log "OpenStack DEBUG result\n#{o.inspect}" if os_debug(endpoint)
+    raw = %x[#{full_cmd} #{with_result}] rescue "ERROR: Command not executed"
+    unless os_debug(endpoint)
+      log "OpenStack executed command [openstack #{cmd} #{with_result}] > '#{raw.truncate(40)}'"
     else
-      o = system(full_cmd) rescue false
-      log "system call OpenStack command [openstack #{cmd}] with result #{o}"
+      log "OpenStack DEBUG executed command\n#{full_cmd} #{with_result}"
+      log "OpenStack DEBUG raw result\n#{raw}" 
     end
-
+    # we always ask for a JSON result
+    o = JSON.parse(raw) rescue {}
+    log "OpenStack DEBUG result\n#{o.inspect}" if os_debug(endpoint)
     return o
 
   end
@@ -221,7 +209,7 @@ module OpenStack
       external = {}
       nets.each do |k, v|
         unless v["router_external"]
-          external[k] = base endpoint, "network show \'#{k}\'", "-f json"
+          external[k] = base endpoint, "network show \'#{k}\'"
         end
         external[k] = v if v["router_external"]
       end
@@ -239,34 +227,6 @@ module OpenStack
 
   end
 
-  # parse raw shell output
-  def self.unshell(raw)
-
-    o = {}
-    raw.each do |line|
-      l = line.split('=', 2)
-      o[l[0]] = l[1].gsub!(/\A"|"\Z/, '')
-    end
-    return o
-  end
-
-  # parse raw cvs voutput
-  def self.uncsv(raw, key)
-
-    header = raw[0].split("|||")
-    raw.delete_at 0 
-    o = {}
-    raw.each do |line|
-      l = line.split(/\|\|\||,/)
-      oo = {}
-      header.each_index do |i|
-        oo[header[i]] = ( l[i] rescue "" )
-      end
-      o[oo[key]] = oo
-    end
-    return o
-  end
-
   # turn arrays into hashes w/ IDs
   def self.unarray(raw, key)
     o = {}
@@ -275,7 +235,7 @@ module OpenStack
   end
 
   def self.os_debug(endpoint)
-    return endpoint['os-debug'] and endpoint['os-debug']=="true"
+    return (endpoint['os-debug'] and endpoint['os-debug']=="true") rescue false
   end
 
   #   "ID","Name"
