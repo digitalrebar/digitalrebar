@@ -85,6 +85,7 @@ roles:
           enum:
             - ipxe
             - lpxelinux
+            - lpxelinux-only
       - name: provisioner-upstream_proxy
         description: "The upstream proxy the provisioner should use"
         map: 'rebar/provisioner/server/upstream_proxy'
@@ -240,6 +241,7 @@ attribs:
      enum:
        - ipxe
        - lpxelinux
+       - lpxelinux-only
 
 providers:
   - name: metal
