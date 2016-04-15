@@ -76,6 +76,7 @@ DNS.1       = localhost
 DNS.2       = 127.0.0.1
 DNS.3       = ${EIP:-127.0.1.1}
 DNS.4       = ${FIP:-127.0.2.1}
+DNS.5       = rebar-ux-service
 EOF
 
 openssl req -config example.conf -new -x509 -newkey rsa:2048 -keyout server.pem -out server.pem -days 365 -nodes -subj "/C=US/ST=Texas/L=Austin/O=RackN/OU=UX/CN=rackn.com"
