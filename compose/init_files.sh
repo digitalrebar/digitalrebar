@@ -18,7 +18,6 @@ function usage {
     echo "  --chef # Adds the chef component"
     echo "  --webproxy # Adds the webproxy component"
     echo "  --revproxy # Adds the revproxy component"
-    echo "  --trust-me # Adds the trust-me component"
     echo "  --logging # Adds the logging (kibana,elasticsearch+) components"
     echo "  --debug # Adds the cadviser components"
     echo "  --node # Adds the node component"
@@ -44,7 +43,7 @@ function set_var_in_common_env {
 }
 
 ACCESS_MODE="FORWARDER"
-FILES="base.yml"
+FILES="base.yml trust-me.yml"
 PROVISION_IT="NO"
 if [[ -f tag ]]; then
     DR_TAG="$(cat tag)"
@@ -126,9 +125,6 @@ while [[ $1 == -* ]] ; do
       ;;
     --revproxy)
       FILES="$FILES revproxy.yml"
-      ;;
-    --trust-me)
-      FILES="$FILES trust-me.yml"
       ;;
     --debug)
       FILES="$FILES debug.yml"
