@@ -4,3 +4,4 @@ import:
   subpackages:
   - client
 - package: github.com/ghodss/yaml
+- package: github.com/coddingtonbear/go-jsonselect

@@ -4,8 +4,11 @@
     - number_of_drives
   Matchers:
     - Enabled: true
-    - Script: "/bin/true"
+    - JSON: 
+        Selector: ':root .Attribs .number_of_drives:val(5)'
+        SaveAs: 'driveCount'
   MatchActions:
     - Log: true
-    - Script: "/usr/bin/env"
-    
+    - Script: |
+       echo "System has 5 drives"
+       env

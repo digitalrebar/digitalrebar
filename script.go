@@ -9,14 +9,13 @@ import (
 	"strings"
 )
 
-func runScript(e *runContext, script string) (bool, error) {
-	buf, err := json.Marshal(e.event)
+func runScript(e *RunContext, script string) (bool, error) {
+	buf, err := json.Marshal(e)
 	if err != nil {
 		log.Panicf("Unable to marshal Event for a script run!")
 	}
 	envVars := map[string]string{
-		"CLASSIFIER_ATTRIBS": e.attribsJSON(),
-		"CLASSIFIER_EVENT":   string(buf),
+		"CLASSIFIER_CONTEXT": string(buf),
 		"REBAR_ENDPOINT":     endpoint,
 		"REBAR_KEY":          fmt.Sprintf("%s:%s", username, password),
 	}
