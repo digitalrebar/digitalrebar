@@ -26,6 +26,8 @@ class BarclampDhcp::MgmtService < Service
       '{{if (eq (index . 77) "iPXE") }}default.ipxe{{else if (eq (index . 93) "0")}}ipxe.pxe{{else}}ipxe.efi{{end}}'
     when 'lpxelinux'
       '{{if (eq (index . 77) "iPXE") }}default.ipxe{{else if (eq (index . 93) "0")}}lpxelinux.0{{else}}bootx64.efi{{end}}'
+    when 'lpxelinux-only'
+      '{{if (eq (index . 93) "0")}}lpxelinux.0{{else}}bootx64.efi{{end}}'
     else
       Rails.logger.fatal("Unknown boot loader #{loader}")
     end
@@ -74,7 +76,11 @@ class BarclampDhcp::MgmtService < Service
 
     r = network.ranges.find_by(name: "dhcp")
     r = network.ranges.find_by(name: "host") unless r
-    return unless r
+    unless r
+      # All goes away, makes sure we pull it.
+      self.class.delete_network(network.name)
+      return
+    end
 
     start_ip = r.first.addr
     end_ip = r.last.addr
@@ -141,8 +147,11 @@ class BarclampDhcp::MgmtService < Service
     # Option 3 - gateway
     options[3] = network.network_router.address.addr if network and network.network_router
     options[67] = self.class.bootloader(boot_program)
-    self.class.create_network(network.name, subnet, next_server, start_ip, end_ip, options)
-    self.class.update_network(network.name, subnet, next_server, start_ip, end_ip, options)
+    begin
+      self.class.create_network(network.name, subnet, next_server, start_ip, end_ip, options)
+    rescue
+      self.class.update_network(network.name, subnet, next_server, start_ip, end_ip, options)
+    end
   end
 
   # Event triggers for node creation.
