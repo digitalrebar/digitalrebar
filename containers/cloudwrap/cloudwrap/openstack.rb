@@ -143,7 +143,7 @@ module OpenStack
     o = nil
     raw = %x[#{full_cmd}] rescue "ERROR: Command not executed"
     unless os_debug(endpoint)
-      log "OpenStack executed command [openstack #{cmd}] Got:\n#{raw}"
+      log "OpenStack --os-auth-url \'#{endpoint['os-auth-url']}\' #{cmd}\nOpenStack Returned: #{raw}"
     else
       log "OpenStack DEBUG executed command\n#{full_cmd}"
       log "OpenStack DEBUG raw result\n#{raw}" 
