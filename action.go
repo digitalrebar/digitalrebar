@@ -6,23 +6,25 @@ import (
 	"log"
 )
 
-var actionTypes = []string{"Log", "Script"}
-
 //Action is a thing that the Classifier will do for a Rule once the
 //Rule determines whether it should fire.
 type Action func(*RunContext) error
 
-func actionLog() Action {
+func actionLog() (Action, error) {
 	return func(e *RunContext) error {
 		log.Printf("Event %s matched rule %s for node %s",
 			e.Evt.Selector["event"],
 			e.rule.Name,
 			e.Evt.Node.Name)
 		return nil
-	}
+	}, nil
 }
 
-func actionScript(script string) Action {
+func actionScript(val interface{}) (Action, error) {
+	script, ok := val.(string)
+	if !ok {
+		return nil, errors.New("Script needs a string")
+	}
 	return func(e *RunContext) error {
 		res, err := runScript(e, script)
 		if err != nil {
@@ -32,26 +34,19 @@ func actionScript(script string) Action {
 			return errors.New("Script run failed")
 		}
 		return nil
-	}
+	}, nil
 }
 
 func resolveAction(a map[string]interface{}) (Action, error) {
 	if len(a) != 1 {
 		return nil, fmt.Errorf("Actions have exactly one key")
 	}
-	for _, t := range actionTypes {
-		if _, ok := a[t]; !ok {
-			continue
-		}
+	for t, v := range a {
 		switch t {
 		case "Log":
-			return actionLog(), nil
+			return actionLog()
 		case "Script":
-			j, ok := a[t].(string)
-			if !ok {
-				return nil, fmt.Errorf("%s needs a string", t)
-			}
-			return actionScript(j), nil
+			return actionScript(v)
 		default:
 			return nil, fmt.Errorf("Unknown action %s", t)
 		}
