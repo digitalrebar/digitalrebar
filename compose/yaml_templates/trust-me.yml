@@ -1,14 +1,14 @@
 
-ux:
+trust_me:
   extends:
     file: docker-compose-common.yml
-    service: ux
+    service: trust_me
 {{ START ACCESS_MODE==FORWARDER }}
   links:
     - forwarder:forwarder
 {{ END ACCESS_MODE==FORWARDER }}
 {{ START ACCESS_MODE==HOST }}
   ports:
-    - "8443:8443"
+    - "8888:8888"
 {{ END ACCESS_MODE==HOST }}
 

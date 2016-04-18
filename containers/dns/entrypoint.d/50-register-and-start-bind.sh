@@ -71,10 +71,16 @@ type = $DNS_TYPE
 server = $DNS_SERVER_PARM
 $OTHER_PARMS
 EOF
-    /usr/local/bin/rebar-dns-mgmt --backing_store=consul --data_dir=digitalrebar/dns/database &
+    /usr/local/bin/rebar-dns-mgmt --backing_store=consul --data_dir=digitalrebar/dns/database --auth_mode=KEY &
+
+    # Add rev-proxy matcher
+    echo '^dns/(.*)' | kv_put digitalrebar/public/revproxy/dns-mgmt-service/matcher
 
     # Set up the management service
+    OSD=$SERVICE_DEPLOYMENT
+    SERVICE_DEPLOYMENT="$OSD\", \"revproxy"
     make_service "dns-mgmt" "6754" '{ "script": "pidof rebar-dns-mgmt","interval": "10s"}'
+    SERVICE_DEPLOYMENT=$OSD
 
     bind_service dns-mgmt_service
 
@@ -84,8 +90,7 @@ EOF
        \"name\": \"$SERVICE_DEPLOYMENT\",
        \"access_name\": \"admin\",
        \"access_password\": \"admin\",
-       \"url\": \"https://admin:admin@${the_ip}:6754\",
-       \"cert\": $(jq -R -s '@text' </etc/dns-mgmt-https-cert.pem)
+       \"url\": \"https://admin:admin@${the_ip}:6754\"
       }]
 }"
     set_service_attrib dns-mgmt_service dns-management-servers "$attr"

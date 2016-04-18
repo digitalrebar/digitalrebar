@@ -12,4 +12,3 @@ RUN /usr/local/go/bin/go get -v github.com/rackn/rebar-dhcp \
 
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 COPY rebar-dhcp.conf /etc/rebar-dhcp.conf
-COPY rebar-dhcp-cert.conf /etc/rebar-dhcp-cert.conf

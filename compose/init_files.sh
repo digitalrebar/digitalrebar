@@ -43,7 +43,7 @@ function set_var_in_common_env {
 }
 
 ACCESS_MODE="FORWARDER"
-FILES="base.yml"
+FILES="base.yml trust-me.yml"
 PROVISION_IT="NO"
 if [[ -f tag ]]; then
     DR_TAG="$(cat tag)"

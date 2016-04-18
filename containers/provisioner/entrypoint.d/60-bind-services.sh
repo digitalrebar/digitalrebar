@@ -1,7 +1,7 @@
 #!/bin/bash
 
 prov_url="http://${EXTERNAL_IP%%/*}:${WEBPORT}"
-mgmt_url="http://${EXTERNAL_IP%%/*}:${APIPORT}"
+mgmt_url="https://${EXTERNAL_IP%%/*}:${APIPORT}"
 
 set_service_attrib provisioner-service provisioner-default-boot-program \
  "{\"value\": \"$PROVISIONER_BOOT_PROGRAM\"}"

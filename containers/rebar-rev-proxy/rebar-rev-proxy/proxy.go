@@ -24,19 +24,17 @@ SOFTWARE.
 Highly modified, but from: https://github.com/creack/goproxy
 */
 
-// ExtractNameVersion and LoadBalance can be overridden in order to customize
-// the behavior.
 package main
 
 import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"net"
 	"net/http"
 	"net/http/httputil"
-	"net/url"
 	"strings"
 	"time"
 )
@@ -46,51 +44,11 @@ var (
 	ErrInvalidService = errors.New("invalid service/version")
 )
 
-// ExtractNameVersion is called to lookup the service name / version from
-// the requested URL. It should update the URL's Path to reflect the target
-// expectation.
-var ExtractNameVersion = extractNameVersion
-
-// LoadBalance is the default balancer which will use a random endpoint
-// for the given service name/version.
-var LoadBalance = loadBalance
-
-// extractNameVersion lookup the target path and extract the name and version.
-// It updates the target Path trimming version and name.
-// Expected format: `/<name>/<version>/...`
-func extractNameVersion(reg Registry, target *url.URL) (name, version string, err error) {
-	path := target.Path
-	if len(path) > 1 && path[0] == '/' {
-		path = path[1:]
-	}
-	tmp := strings.Split(path, "/")
-	if len(tmp) < 2 {
-		_, err := reg.Lookup("default", "default")
-		if err != nil {
-			return "", "", fmt.Errorf("Invalid path")
-		} else {
-			return "default", "default", nil
-		}
-
-	}
-	name, version = tmp[0], tmp[1]
-	_, err = reg.Lookup(name, version)
-	if err != nil {
-		_, err = reg.Lookup("default", "default")
-		if err != nil {
-			return "", "", fmt.Errorf("Invalid path")
-		}
-		return "default", "default", nil
-	}
-	target.Path = "/" + strings.Join(tmp[2:], "/")
-	return name, version, nil
-}
-
 // loadBalance is a basic loadBalancer which randomly
 // tries to connect to one of the endpoints and try again
 // in case of failure.
-func loadBalance(network, serviceName, serviceVersion string, reg Registry) (net.Conn, error) {
-	endpoints, err := reg.Lookup(serviceName, serviceVersion)
+func loadBalance(network, endpointTag string, reg Registry) (net.Conn, error) {
+	endpoints, err := reg.LookupTag(endpointTag)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +64,7 @@ func loadBalance(network, serviceName, serviceVersion string, reg Registry) (net
 		// Try to connect
 		conn, err := net.Dial(network, endpoint)
 		if err != nil {
-			reg.Failure(serviceName, serviceVersion, endpoint, err)
+			reg.Failure(endpointTag, endpoint, err)
 			// Failure: remove the endpoint from the current list and try again.
 			endpoints = append(endpoints[:i], endpoints[i+1:]...)
 			continue
@@ -115,27 +73,24 @@ func loadBalance(network, serviceName, serviceVersion string, reg Registry) (net
 		return conn, nil
 	}
 	// No available endpoint.
-	return nil, fmt.Errorf("No endpoint available for %s/%s", serviceName, serviceVersion)
+	return nil, fmt.Errorf("No endpoint available for %s", endpointTag)
 }
 
 // NewMultipleHostReverseProxy creates a reverse proxy handler
 // that will randomly select a host from the passed `targets`
-func NewMultipleHostReverseProxy(reg Registry) http.HandlerFunc {
+func NewMultipleHostReverseProxy(reg Registry, tlsConfig *tls.Config) http.HandlerFunc {
 	transport := &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		Dial: func(network, addr string) (net.Conn, error) {
 			addr = strings.Split(addr, ":")[0]
-			tmp := strings.Split(addr, "/")
-			if len(tmp) != 2 {
-				return nil, ErrInvalidService
-			}
-			return LoadBalance(network, tmp[0], tmp[1], reg)
+			return loadBalance(network, addr, reg)
 		},
 		TLSHandshakeTimeout: 10 * time.Second,
-		TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig:     tlsConfig,
 	}
 	return func(w http.ResponseWriter, req *http.Request) {
-		name, version, err := ExtractNameVersion(reg, req.URL)
+		log.Printf("requested  url = %v\n", req.URL)
+		tag, err := reg.ExtractTag(req.URL)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -143,7 +98,8 @@ func NewMultipleHostReverseProxy(reg Registry) http.HandlerFunc {
 		(&httputil.ReverseProxy{
 			Director: func(req *http.Request) {
 				req.URL.Scheme = "https"
-				req.URL.Host = name + "/" + version
+				req.URL.Host = tag
+				log.Printf("translated url = %v\n", req.URL)
 			},
 			Transport: transport,
 		}).ServeHTTP(w, req)

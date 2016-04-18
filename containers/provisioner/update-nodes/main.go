@@ -1,9 +1,13 @@
 package main
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +22,7 @@ var client *consul.Client
 var backend storageBackend
 var api *gin.Engine
 var logger *log.Logger
+var cacert, cert, key string
 
 func init() {
 	flag.StringVar(&backEndType,
@@ -42,8 +47,20 @@ func init() {
 		"Public URL for the provisioner")
 	flag.StringVar(&commandURL,
 		"command",
-		"http://localhost:3000",
+		"https://localhost:3000",
 		"Public URL for the Command and Control server machines should communicate with")
+	flag.StringVar(&cacert,
+		"cacert",
+		"/etc/prov-base-cert.pem",
+		"Certificate to use for validation")
+	flag.StringVar(&cert,
+		"cert",
+		"/etc/prov-cert.pem",
+		"Certificate to use for replies")
+	flag.StringVar(&key,
+		"key",
+		"/etc/prov-key.pem",
+		"Private Key to use for replies")
 }
 
 func popMachine(param string) *Machine {
@@ -136,5 +153,30 @@ func main() {
 			deleteThing(c, &Template{UUID: c.Param(`uuid`)})
 		})
 
-	api.Run(fmt.Sprintf(":%d", apiPort))
+	caCert, err := ioutil.ReadFile(cacert)
+	if err != nil {
+		log.Fatal(err)
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	// Setup HTTPS client
+	tlsConfig := &tls.Config{
+		ClientCAs: caCertPool,
+		// NoClientCert
+		// RequestClientCert
+		// RequireAnyClientCert
+		// VerifyClientCertIfGiven
+		// RequireAndVerifyClientCert
+		ClientAuth: tls.RequireAndVerifyClientCert,
+	}
+	tlsConfig.BuildNameToCertificate()
+
+	s := &http.Server{
+		Addr:    fmt.Sprintf(":%d", apiPort),
+		Handler: api,
+	}
+	s.TLSConfig = tlsConfig
+
+	log.Fatal(s.ListenAndServeTLS(cert, key))
 }
