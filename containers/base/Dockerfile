@@ -6,7 +6,7 @@ ENV GOPATH /go
 RUN mkdir -p /usr/local/sbin/ /usr/local/entrypoint.d /etc/rebar-data && \
     apt-get update && \
     apt-get -y dist-upgrade && \
-    apt-get install -y curl unzip git jq && \
+    apt-get install -y curl unzip git jq build-essential && \
     curl -fgL -o /usr/local/bin/rebar \
          https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64 && \
     chmod 755 /usr/local/bin/rebar && \
