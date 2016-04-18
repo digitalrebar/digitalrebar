@@ -113,13 +113,9 @@ Takes true or false, and matches if it was passed true.
       
           
 * Script
-  Takes a shell script, and matches if the shell script exits with a zero status.
+  Takes a string which will be compiled against the RunContext using text/template into a shell script, and matches if the shell script exits with a zero status.
 The shell script will be passed the following extra environment variables:
 
-    * CLASSIFIER_ATTRIBS
-      A JSON blob of the attributes listed in the rule WantsAttribs
-    * CLASSIFIER_EVENT
-      The event in JSON format
     * REBAR_ENDPOINT
       The API endpoint that DigitalRebar lives on.
     * REBAR_KEY
@@ -131,12 +127,8 @@ Currently, the classifier knows about 2 actions:
 * Log
   Emit a logging message.
 * Script
-Takes a shell script, which will be passed the following extra environment variables:
+Takes a string which will be compiled against the RunContext using text/template into a shell script, which will be passed the following extra environment variables:
 
-    * CLASSIFIER_ATTRIBS
-      A JSON blob of the attributes listed in the rule WantsAttribs
-    * CLASSIFIER_EVENT
-      The event in JSON format
     * REBAR_ENDPOINT
       The API endpoint that DigitalRebar lives on.
     * REBAR_KEY
