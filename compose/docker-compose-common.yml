@@ -13,6 +13,7 @@ consul:
 trust_me:
   image: digitalrebar/dr_trust_me
   restart: always
+  privileged: true
   volumes:
     - ./data-dir/trust_me/:/var/cache/trust_me/
     - ./config-dir/trust_me/:/etc/trust_me/

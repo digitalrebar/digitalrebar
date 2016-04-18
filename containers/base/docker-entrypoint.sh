@@ -107,12 +107,11 @@ EOF
     local request="{ \"token\": \"$token\", \"request\": \"$(echo -n "$inner_request" | base64 -w0)\" }"
 
     # Get service info
-    local tm_addr=$(get_service "trust-me-service" | jq -r .[0].Address)
-    local tm_saddr=$(get_service "trust-me-service" | jq -r .[0].ServiceAddress)
+    local tm_addr=$(get_service "trust-me-service" | jq -r .[0].ServiceAddress)
     local tm_port=$(get_service "trust-me-service" | jq -r .[0].ServicePort)
 
     if [[ $tm_addr == "" || $tm_addr == "null" ]] ; then
-        tm_addr=$tm_saddr
+        tm_addr=$(get_service "trust-me-service" | jq -r .[0].Address)
     fi
     if [[ $tm_addr == "" || $tm_addr == "null" ]] ; then
         echo "Failed to find address of trust_me!"

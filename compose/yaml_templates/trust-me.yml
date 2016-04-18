@@ -4,8 +4,7 @@ trust_me:
     file: docker-compose-common.yml
     service: trust_me
 {{ START ACCESS_MODE==FORWARDER }}
-  links:
-    - forwarder:forwarder
+  net: "container:forwarder"
 {{ END ACCESS_MODE==FORWARDER }}
 {{ START ACCESS_MODE==HOST }}
   ports:
