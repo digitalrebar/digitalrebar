@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-#
-# workloads/kubernetes.sh
+# Copyright RackN 2016
+# workloads/dev-kubernetes.sh
 #
 
 start_args="$@"
@@ -13,9 +13,6 @@ start_args="$@"
 #
 help_options["--deployment-name=<String>"]="Deployment name to hold all the nodes"
 help_options["--deployment-os=<String>"]="Deployment OS: centos7 default"
-help_options["--teardown"]="Turn down deployment"
-help_options["--keep-admin"]="Keeps admin node running (modifies teardown)"
-help_options["--wait-on-converge=true|false"]="Wait for converge of admin - defaults to true"
 help_options["--dns-domain"]="Domain name to append to node names: neode.local"
 
 help_options["--kubernetes-master-count=<Number>"]="Number of masters to start"
@@ -71,7 +68,7 @@ WL_KUBERNETES=true
 # Turn off provisioner by default
 CON_NO_PROVISIONER=true
 
-KEEP_ADMIN=false
+KEEP_ADMIN=true
 WAIT_ON_CONVERGE=true
 
 #
@@ -83,115 +80,49 @@ WAIT_ON_CONVERGE=true
 # Make sure that the domain name matches the domain that the 
 # provider will create.
 #
-if [[ ! $DNS_DOMAIN ]] ; then
-    if [[ $PROVIDER == google ]] ; then
-        DNS_DOMAIN=c.${PROVIDER_GOOGLE_PROJECT}.internal
-    fi
-
-    if [[ $PROVIDER == aws ]] ; then
-        MY_REGION=${PROVIDER_AWS_REGION:-us-west-2}
-        DNS_DOMAIN=${MY_REGION}.compute.internal
-    fi
-
-    DNS_DOMAIN=${DNS_DOMAIN:-neode.local}
-fi
-
-if [[ $PROVIDER == google ]] ; then
-    KUBERNETES_OPENCONTRAIL_NO_ARP=${KUBERNETES_OPENCONTRAIL_NO_ARP:-true}
-    KUBERNETES_CLOUD_PROVIDER_TYPE=${KUBERNETES_CLOUD_PROVIDER_TYPE:-google}
-    KUBERNETES_CLOUD_PROVIDER=${KUBERNETES_CLOUD_PROVIDER:-gce}
-fi
-
-if [[ $PROVIDER == aws ]] ; then
-    KUBERNETES_CLOUD_PROVIDER_TYPE=${KUBERNETES_CLOUD_PROVIDER_TYPE:-aws}
-    KUBERNETES_CLOUD_PROVIDER=${KUBERNETES_CLOUD_PROVIDER:-aws}
-fi
-
-if [[ $PROVIDER == openstack ]] ; then
-    KUBERNETES_CLOUD_PROVIDER_TYPE=${KUBERNETES_CLOUD_PROVIDER_TYPE:-openstack}
-    KUBERNETES_CLOUD_PROVIDER=${KUBERNETES_CLOUD_PROVIDER:-generic}
-fi
-
-K_GATEWAY_COUNT_DEFAULT=0
+DNS_DOMAIN=${DNS_DOMAIN:-rebar.local}
 KUBERNETES_NETWORKING=${KUBERNETES_NETWORKING:-flannel}
-PROVIDER_GOOGLE_INSTANCE_TYPE=${PROVIDER_GOOGLE_INSTANCE_TYPE:-n1-standard-2}
-PROVIDER_AWS_INSTANCE_TYPE=${PROVIDER_AWS_INSTANCE_TYPE:-m3.medium}
-PROVIDER_OPENSTACK_INSTANCE_TYPE=${PROVIDER_OPENSTACK_INSTANCE_TYPE:-2048}
-if [[ $KUBERNETES_NETWORKING == opencontrail ]]; then
-    K_GATEWAY_COUNT_DEFAULT=1
-fi
-
-KUBERNETES_MASTER_COUNT=${KUBERNETES_MASTER_COUNT:-1}
 KUBERNETES_NODE_COUNT=${KUBERNETES_NODE_COUNT:-3}
-KUBERNETES_GATEWAY_COUNT=${KUBERNETES_GATEWAY_COUNT:-$K_GATEWAY_COUNT_DEFAULT}
 DEPLOYMENT_NAME=${DEPLOYMENT_NAME:-kubs}
 DEPLOYMENT_OS=${DEPLOYMENT_OS:-centos7}
+REBAR_ENDPOINT=${REBAR_ENDPOINT:-"https://$ADMIN_IP:3000"}
+REBAR_KEY=${REBAR_KEY:-"rebar:rebar1"}
 
-# GREG: VALIDATE PARMS
-# networking_mode == opencontrail|flannel
-# if opencontrail -> Gateway >= 1
-# if flannel -> Gateway = 0
-# Must have 1 master
-# Must have 1 node
-
-bring_up_admin "${DEPLOYMENT_NAME}-admin.${DNS_DOMAIN}"
+# test Rebar
+if ! rebar ping -E $REBAR_ENDPOINT; then
+    die "Rebar Must Be Running: tools/docker-admin --access=HOST --no-provisioner --no-dhcp"
+else
+    echo "Verified Admin @ $REBAR_ENDPOINT"
+fi
 
 if [[ $TEARDOWN ]] ; then
-    for ((i=0 ; i < $KUBERNETES_GATEWAY_COUNT; i++)) ; do
-        NAME="${DEPLOYMENT_NAME}-gateway-$i.${DNS_DOMAIN}"
+    for ((i=1 ; i <= $KUBERNETES_NODE_COUNT; i++)) ; do
+        NAME="node${i}.${DNS_DOMAIN}"
         rebar nodes destroy $NAME
+        export REBAR_ENDPOINT=$REBAR_ENDPOINT && vagrant destroy -f "node${i}"
     done
-    for ((i=0 ; i < $KUBERNETES_NODE_COUNT; i++)) ; do
-        NAME="${DEPLOYMENT_NAME}-node-$i.${DNS_DOMAIN}"
-        rebar nodes destroy $NAME
-    done
-    for ((i=0 ; i < $KUBERNETES_MASTER_COUNT; i++)) ; do
-        NAME="${DEPLOYMENT_NAME}-master-$i.${DNS_DOMAIN}"
-        rebar nodes destroy $NAME
-    done
-
     # Destroy deployment
     rebar deployments destroy "$DEPLOYMENT_NAME"
-
-    if [[ $KEEP_ADMIN == false ]] ; then
-        tear_down_admin "${DEPLOYMENT_NAME}-admin.${DNS_DOMAIN}"
-    fi
-
     exit 0
 fi
 
 # Wait for the system to converge
-if [[ ! $ADMIN_ALREADY_UP && $WAIT_ON_CONVERGE == true ]] ; then
-  if ! rebar converge ; then
-    die "Admin node did NOT converge to completion"
-  fi
+if ! rebar converge system -E $REBAR_ENDPOINT; then
+    die "Admin node $REBAR_ENDPOINT did NOT converge to completion"
+else
+    echo "Verified System Ready @ $REBAR_ENDPOINT"
 fi
-
-add_provider
-
-#
-# Start up machines for masters
-#
-for ((i=0 ; i < $KUBERNETES_MASTER_COUNT; i++)) ; do
-    NAME="${DEPLOYMENT_NAME}-master-$i.${DNS_DOMAIN}"
-    start_machine $NAME $DEPLOYMENT_OS
-done
 
 #
 # Start up machines for nodes
 #
-for ((i=0 ; i < $KUBERNETES_NODE_COUNT; i++)) ; do
-    NAME="${DEPLOYMENT_NAME}-node-$i.${DNS_DOMAIN}"
-    start_machine $NAME $DEPLOYMENT_OS
+echo "Creating $KUBERNETES_NODE_COUNT nodes on $REBAR_ENDPOINT"
+for ((i=1 ; i <= $KUBERNETES_NODE_COUNT; i++)) ; do
+    export REBAR_ENDPOINT=$REBAR_ENDPOINT && vagrant up "node${i}"
+    NODE_IP=$(rebar nodes show "node$i.${DNS_DOMAIN}" | jq --raw-output '.["node-control-address"]' | cut -d '/' -f 1)
+    echo "Added Node $i at $NODE_IP"
 done
 
-#
-# Start up machines for gateways
-#
-for ((i=0 ; i < $KUBERNETES_GATEWAY_COUNT; i++)) ; do
-    NAME="${DEPLOYMENT_NAME}-gateway-$i.${DNS_DOMAIN}"
-    start_machine $NAME $DEPLOYMENT_OS
-done
 
 # Create deployment
 rebar deployments create "{ \"name\": \"$DEPLOYMENT_NAME\" }"
@@ -227,7 +158,7 @@ if [[ $KUBERNETES_KUBE_SERVICE_ADDRESSES ]]; then
 fi
 
 if [[ $KUBERNETES_CLOUD_PROVIDER ]]; then
-    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-cloud-provider to "{ \"value\": ${KUBERNETES_CLOUD_PROVIDER_TYPE} }"
+    rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-cloud-provider to "{ \"value\": ${KUBERNETES_CLOUD_PROVIDER} }"
 fi
 if [[ $KUBERNETES_CLOUD_PROVIDER_TYPE ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-cloud-provider-type to "{ \"value\": \"${KUBERNETES_CLOUD_PROVIDER_TYPE}\" }"
@@ -284,28 +215,19 @@ fi
 rebar deployments commit $DEPLOYMENT_NAME
 
 # Add masters
-for ((i=0 ; i < $KUBERNETES_MASTER_COUNT; i++)) ; do
-    NAME="${DEPLOYMENT_NAME}-master-$i.${DNS_DOMAIN}"
-    rebar nodes move $NAME to $DEPLOYMENT_NAME
-    rebar nodes bind $NAME to kubernetes-master
-done
+NAME="node1.${DNS_DOMAIN}"
+rebar nodes move $NAME to $DEPLOYMENT_NAME
+rebar nodes bind $NAME to kubernetes-master
 
 # Add nodes
-for ((i=0 ; i < $KUBERNETES_NODE_COUNT; i++)) ; do
-    NAME="${DEPLOYMENT_NAME}-node-$i.${DNS_DOMAIN}"
+for ((i=2 ; i <= $KUBERNETES_NODE_COUNT; i++)) ; do
+    NAME="node${i}.${DNS_DOMAIN}"
     rebar nodes move $NAME to $DEPLOYMENT_NAME
     rebar nodes bind $NAME to kubernetes-node
 done
 
-# Add gateways
-for ((i=0 ; i < $KUBERNETES_GATEWAY_COUNT; i++)) ; do
-    NAME="${DEPLOYMENT_NAME}-gateway-$i.${DNS_DOMAIN}"
-    rebar nodes move $NAME to $DEPLOYMENT_NAME
-    rebar nodes bind $NAME to kubernetes-gateway
-done
-
 # Add deploy
-NAME="${DEPLOYMENT_NAME}-master-0.${DNS_DOMAIN}"
+NAME="node1.${DNS_DOMAIN}"
 rebar nodes bind $NAME to kubernetes-deploy
 
 # Add the add-ons and tests if needed/requested
@@ -337,9 +259,7 @@ fi
 # Commit it all and start
 rebar deployments commit $DEPLOYMENT_NAME
 
-echo "Access Digital Rebar UI, https://${ADMIN_IP}:3000"
-echo "To teardown, $0 $start_args --teardown=true --admin-ip=$ADMIN_IP $EXTRA"
-echo "To keep the admin node, add --keep_admin=true"
+echo "Access Digital Rebar UI, ${REBAR_ENDPOINT}"
 echo "... config complete > converging Kubernetes ..."
 
 # Wait for the system to converge
@@ -354,7 +274,5 @@ fi
 echo "Converge Compelete"
 
 # Hint so user knows which IP to use for Master
-for ((i=0 ; i < $KUBERNETES_MASTER_COUNT; i++)) ; do
-    MANAGER_IP=$(rebar nodes show "${DEPLOYMENT_NAME}-master-$i.${DNS_DOMAIN}" | jq --raw-output '.["node-control-address"]' | cut -d '/' -f 1)
-    echo "To test Kubernetes, use Master $i at https://${MANAGER_IP}/ui"
-done
+MANAGER_IP=$(rebar nodes show "node1.${DNS_DOMAIN}" | jq --raw-output '.["node-control-address"]' | cut -d '/' -f 1)
+echo "To test Kubernetes, use Master $i at https://${MANAGER_IP}/ui"
