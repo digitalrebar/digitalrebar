@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/VictorLowther/jsonpatch/utils"
 	js "github.com/coddingtonbear/go-jsonselect"
 )
 
@@ -49,7 +50,7 @@ func matchNot(val interface{}) (Matcher, error) {
 	if !ok {
 		return nil, errors.New("Not needs a map")
 	}
-	fn, err := resolveMatcher(res)
+	fn, err := ResolveMatcher(res)
 	if err != nil {
 		return nil, err
 	}
@@ -70,40 +71,22 @@ func matchEnabled(val interface{}) (Matcher, error) {
 }
 
 func matchJSON(val interface{}) (Matcher, error) {
-	selectorFrag, ok := val.(map[string]interface{})
-	if !ok {
-		return nil, errors.New("JSON needs an object")
+
+	type selector struct {
+		Selector    string
+		SaveAs      string
+		PickResults map[string]float64
 	}
-	if _, ok := selectorFrag["Selector"]; !ok {
+
+	s := &selector{}
+	if err := utils.Remarshal(val, &s); err != nil {
+		return nil, err
+	}
+
+	if s.Selector == "" {
 		return nil, errors.New("JSON requires a Selector")
 	}
-	selector, ok := selectorFrag["Selector"].(string)
-	if !ok {
-		return nil, errors.New("JSON.Selector must be a string")
-	}
-	resultsMap := map[string]int{}
-	var saveAs string
-	if _, ok := selectorFrag["Results"]; ok {
-		// We want to map results back into variables.
-		resultsMapFrag, ok := selectorFrag["PickResults"].(map[string]interface{})
-		if !ok {
-			return nil, errors.New("JSON.PickResults must be an object")
-		}
-		for varName, index := range resultsMapFrag {
-			idx, ok := index.(float64)
-			if !ok {
-				return nil, fmt.Errorf("JSON.PickResults[%s] must be numeric", varName)
-			}
-			resultsMap[varName] = int(idx)
-		}
-	}
-	saveAsFrag, ok := selectorFrag["SaveAs"]
-	if ok {
-		saveAs, ok = saveAsFrag.(string)
-		if !ok {
-			return nil, errors.New("JSON.SaveAs must be a string")
-		}
-	}
+
 	return func(e *RunContext) (bool, error) {
 		buf, err := json.Marshal(e)
 		if err != nil {
@@ -114,7 +97,7 @@ func matchJSON(val interface{}) (Matcher, error) {
 		if err != nil {
 			return false, err
 		}
-		res, err := parser.GetValues(selector)
+		res, err := parser.GetValues(s.Selector)
 		if err != nil {
 			return false, err
 		}
@@ -122,19 +105,20 @@ func matchJSON(val interface{}) (Matcher, error) {
 			return false, nil
 		}
 		log.Printf("JSON selector matched: %v", res)
-		if len(resultsMap) > 0 {
-			for varToSave, idx := range resultsMap {
+		if len(s.PickResults) > 0 {
+			for varToSave, fidx := range s.PickResults {
+				idx := int(fidx)
 				if idx >= len(res) {
 					return false, fmt.Errorf("Cannot save variable %s, requested index %d out of bounds: %v", varToSave, idx, res)
 				}
 				e.Vars[varToSave] = res[idx]
 			}
 		}
-		if saveAs != "" {
+		if s.SaveAs != "" {
 			if len(res) == 1 {
-				e.Vars[saveAs] = res[0]
+				e.Vars[s.SaveAs] = res[0]
 			} else {
-				e.Vars[saveAs] = res
+				e.Vars[s.SaveAs] = res
 			}
 		}
 		return true, nil
@@ -146,8 +130,12 @@ func matchScript(val interface{}) (Matcher, error) {
 	if !ok {
 		return nil, errors.New("Script needs a string")
 	}
+	tmpl, err := compileScript(script)
+	if err != nil {
+		return nil, err
+	}
 	return func(e *RunContext) (bool, error) {
-		return runScript(e, script)
+		return runScript(e, tmpl)
 	}, nil
 }
 
@@ -162,7 +150,7 @@ func resolveAndOr(op string, val interface{}) (Matcher, error) {
 		if !ok {
 			return nil, fmt.Errorf("%s member %v must be a map", op, i)
 		}
-		j, err := resolveMatcher(realV)
+		j, err := ResolveMatcher(realV)
 		if err != nil {
 			return nil, err
 		}
@@ -179,7 +167,48 @@ func resolveAndOr(op string, val interface{}) (Matcher, error) {
 	}
 }
 
-func resolveMatcher(m map[string]interface{}) (Matcher, error) {
+// ResolveMatcher compiles a map[string]interface{} with a single key-value pair
+// into a function with a Matcher signature.
+//
+// Recognized keys are:
+//
+// "And" and "Or", which expect their values to be arrays of key-value pairs that
+// can be compiled by ResolveMatch.  "And" will match if all of its matchers match,
+// and "Or" will match if any of its matchers match.  Both operators will only execute
+// enough of their matchers to determine if the overall matcher will succeed (for "Or"),
+// or fail (for "And").  If no matchers are passed, "And" will signal that it matched,
+// and "Or" will signal that it did not match.
+//
+// "Not", which expects its value to be a single key-value pair that can be compiled by
+// ResolveMatcher.  "Not" will invert the return value of its matcher.
+//
+// "Enabled", which expects its value to be a bool.  It will return the value of that
+// boolean without change, and (as the name suggests) is expected to enable and disable
+// rules for testing purposes.
+//
+// "JSON", which expects a struct with the following format:
+//   struct {
+//		Selector    string
+//		SaveAs      string
+//		PickResults map[string]float64
+//	 }
+// "Selector" is a string containing a JSON Selector matching the specification at http://jsonselect.org/#overview.
+// The selector will return an array of results containing each individual item from the RunContext that was passed into
+// the Matcher.
+// "SaveAs" is an optional variable name to save the results the selector returned.  If the selector returned exactly one item,
+// then just that item will be saved, otherwise the entire array of results will be saved.  You should craft
+// your selectors with that in mind.
+// "PickResults" is an optional map of variables names to selector indexes.  After the selector returns its results and they
+// have been optionally saved to the variable pointed to by SaveAs, PickResults will save data from the selector indexes to the
+// matching variable names.  If the selector results do not contain a requested index, then the match will fail with an error.
+// You should construct Selector and PickResults with that in mind.
+// In the absence of PickResults, a JSON match fails if nothing was selected or the Selector was invalid, otherwise it passes.
+//
+// "Script", which expects its value to be a string that will be parsed using text.Template.  The result of that parsing should
+// be a valid bash script.  When the Matcher is ran, the parsed script will be compiled using the passed RunContext.  If the compilation fails,
+// the match will fail with an error, so be sure to write your scripts with that in mind.  Otherwise, the matcher will pass if the script
+// exits with a zero and fail otherwise.
+func ResolveMatcher(m map[string]interface{}) (Matcher, error) {
 	if len(m) != 1 {
 		return nil, fmt.Errorf("Matchers have exactly one key")
 	}

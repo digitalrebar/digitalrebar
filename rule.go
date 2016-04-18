@@ -35,10 +35,12 @@ type Rule struct {
 	// matches the Event.
 }
 
+// Match runs the rule Matchers.  If all the Matchers match, then the rule is considered an overall Match.
 func (r *Rule) Match(e *RunContext) (bool, error) {
 	return matchAnd(r.Matchers...)(e)
 }
 
+// RunActions runs the rule MatchActions in order.  If any of them return an error, no further MatchActions will be run.
 func (r *Rule) RunActions(e *RunContext) error {
 	for i, action := range r.MatchActions {
 		log.Printf("Rule %s: running action %v", r.Name, i)
@@ -102,7 +104,7 @@ func loadRules(src string) error {
 		}
 
 		for i, m := range rule.Matchers {
-			j, err := resolveMatcher(m)
+			j, err := ResolveMatcher(m)
 			if err != nil {
 				log.Printf("Rule %d (name: %s) failed to compile Matchers", i, r.Name)
 				log.Printf("%s", err)
@@ -117,7 +119,7 @@ func loadRules(src string) error {
 		}
 
 		for i, a := range rule.MatchActions {
-			j, err := resolveAction(a)
+			j, err := ResolveAction(a)
 			if err != nil {
 				log.Printf("Rule %d (name: %s) failed to compile MatchActions", i, r.Name)
 				log.Printf("%s", err)

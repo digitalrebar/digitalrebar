@@ -25,8 +25,12 @@ func actionScript(val interface{}) (Action, error) {
 	if !ok {
 		return nil, errors.New("Script needs a string")
 	}
+	tmpl, err := compileScript(script)
+	if err != nil {
+		return nil, err
+	}
 	return func(e *RunContext) error {
-		res, err := runScript(e, script)
+		res, err := runScript(e, tmpl)
 		if err != nil {
 			return err
 		}
@@ -37,7 +41,16 @@ func actionScript(val interface{}) (Action, error) {
 	}, nil
 }
 
-func resolveAction(a map[string]interface{}) (Action, error) {
+// ResolveAction compiles a map[string]interface{} with a single key-value pair into a function matching
+// the Action type.  Recognized keys are:
+//
+// "Log", which causes the engine to emit a hard-coded logging message to stderr.  This is mainly for testing
+// purposes so far, but we may repurpose it to emit something useful later.
+//
+// "Script", which expects its value to be a string that will be parsed using text.Template.  The result of that parsing should
+// be a valid bash script.  When the Action is ran, the parsed script will be compiled using the passed RunContext.  If the compilation fails,
+// or the resultant script executes with a non-zero exit status, the Action will fail, otherwise it will pass.
+func ResolveAction(a map[string]interface{}) (Action, error) {
 	if len(a) != 1 {
 		return nil, fmt.Errorf("Actions have exactly one key")
 	}

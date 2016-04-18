@@ -1,23 +1,27 @@
 package main
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
-	"strings"
+	"text/template"
 )
 
-func runScript(e *RunContext, script string) (bool, error) {
-	buf, err := json.Marshal(e)
-	if err != nil {
-		log.Panicf("Unable to marshal Event for a script run!")
-	}
+func compileScript(script string) (*template.Template, error) {
+	res := template.New("script").Option("missingkey=error")
+	return res.Parse(script)
+}
+
+func runScript(e *RunContext, scriptTmpl *template.Template) (bool, error) {
 	envVars := map[string]string{
-		"CLASSIFIER_CONTEXT": string(buf),
-		"REBAR_ENDPOINT":     endpoint,
-		"REBAR_KEY":          fmt.Sprintf("%s:%s", username, password),
+		"REBAR_ENDPOINT": endpoint,
+		"REBAR_KEY":      fmt.Sprintf("%s:%s", username, password),
+	}
+	buf := &bytes.Buffer{}
+	if err := scriptTmpl.Execute(buf, e); err != nil {
+		return false, err
 	}
 
 	cmd := exec.Command("/usr/bin/env", "bash", "-x")
@@ -26,21 +30,19 @@ func runScript(e *RunContext, script string) (bool, error) {
 	for k, v := range envVars {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", k, v))
 	}
-	cmd.Stdin = strings.NewReader(script)
+	cmd.Stdin = buf
 	out, err := cmd.Output()
 	if err == nil {
 		log.Printf("Script rule %s ran successfully", e.rule.Name)
 		log.Printf("%s", string(out))
 		return true, nil
-	} else {
-		log.Printf("Script rule %s failed", e.rule.Name)
-		exitErr, ok := err.(*exec.ExitError)
-		if ok {
-			log.Printf("%s", string(exitErr.Stderr))
-			return false, nil
-		} else {
-			log.Printf("Failed with error %v", err)
-			return false, err
-		}
 	}
+	log.Printf("Script rule %s failed", e.rule.Name)
+	exitErr, ok := err.(*exec.ExitError)
+	if ok {
+		log.Printf("%s", string(exitErr.Stderr))
+		return false, nil
+	}
+	log.Printf("Failed with error %v", err)
+	return false, err
 }
