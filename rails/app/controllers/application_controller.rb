@@ -333,11 +333,13 @@ class ApplicationController < ActionController::Base
       session[:digest_user] = u.username
       u.encrypted_password
     end
+    Rails.logger.info("digest auth for #{u ? u.username : "unknown"}: #{authed}")
     @current_user = u if authed
     authed
   end
 
   def do_auth!
+    Rails.logger.info("Fail through auth: do_auth!")
     session[:marker] = "login"
     session[:start] = Time.now
     respond_to do |format|
@@ -348,7 +350,33 @@ class ApplicationController < ActionController::Base
 
   #return true if we digest signed in
   def rebar_auth
+    Rails.logger.debug("peercert: #{request.headers["puma.socket"].peercert}")
+    Rails.logger.info("username header: #{request.headers["HTTP_X_AUTHENTICATED_USERNAME"]}")
+    Rails.logger.info("capability header: #{request.headers["HTTP_X_AUTHENTICATED_CAPABILITY"]}")
     case
+    when request.headers["puma.socket"].peercert && !request.headers["HTTP_X_AUTHENTICATED_USERNAME"].nil?
+      # This assumes that the rev-proxy is handling cors
+      username = request.headers["HTTP_X_AUTHENTICATED_USERNAME"]
+      capability = request.headers["HTTP_X_AUTHENTICATED_CAPABILITY"]
+      wants_admin = capability == "ADMIN"
+      Rails.logger.info("Auth by key: #{username}")
+      Rails.logger.info("headers['HTTP_ORIGIN'] = #{request.headers["HTTP_ORIGIN"]}")
+
+      email = "#{username}@internal.local"
+      if username =~ /@/ 
+	email = username
+        username = username.split("@")[0]
+      end
+
+      @current_user = User.create_with(email: email).find_or_create_by(username: username)
+      # Update the capabiilties
+      if @current_user.is_admin != wants_admin 
+        @current_user.is_admin = wants_admin
+	@current_user.save
+        @current_user = User.find_by(username: username)
+      end
+      session[:digest_user] = username
+      true
     when current_user then authenticate_user!
     when digest_request? then digest_auth!
     when request.path == '/api/license' then true  # specialized path for license & URL validation
@@ -362,4 +390,5 @@ class ApplicationController < ActionController::Base
       do_auth!
     end
   end
+
 end

@@ -216,11 +216,4 @@ class SupportController < ApplicationController
     end
   end
   
-  def do_auth!
-    case
-    when request.fullpath.index("/get_cli") || request.fullpath.index("/logs") then digest_auth!
-    else
-      super
-    end
-  end
 end 

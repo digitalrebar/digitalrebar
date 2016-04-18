@@ -22,9 +22,8 @@ class UsersController < ApplicationController
 
   add_help(:index,[],[:get])
 
-  skip_before_filter :rebar_auth, :only => [:options, :digest]
+  skip_before_filter :rebar_auth, :only => [:options]
   skip_before_filter :authenticate_user!, :only => [:options]
-  before_filter :digest_auth!, :only => [:digest]
 
   def cors_headers
     access_control = {
@@ -39,7 +38,6 @@ class UsersController < ApplicationController
   def digest
     if request.get? or request.post? or request.head?
       if request.headers["HTTP_ORIGIN"]
-        cors_headers
         user = User.find_key session[:digest_user]
         if user
           render api_show(user), :status => :accepted
@@ -59,7 +57,7 @@ class UsersController < ApplicationController
     end
   end
 
-  # CORS header method
+  # CORS header method - not used for rev_proxy
   def options
     cors_headers
     response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD'

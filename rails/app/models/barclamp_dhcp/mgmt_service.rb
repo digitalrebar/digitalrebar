@@ -239,37 +239,37 @@ class BarclampDhcp::MgmtService < Service
     end
   end
 
-  def self.send_request_put(url, data, ca_string)
+  def self.get_base_resource(url)
     store = OpenSSL::X509::Store.new
-    store.add_cert(OpenSSL::X509::Certificate.new(ca_string))
+    store.add_cert(OpenSSL::X509::Certificate.new(File.read('/var/run/rebar/ca.pem')))
+
+    # get client key and cert
+    client_cert = OpenSSL::X509::Certificate.new(File.read('/var/run/rebar/server.crt'))
+    client_key  = OpenSSL::PKey::RSA.new(File.read('/var/run/rebar/server.key'), '')
 
     RestClient::Resource.new(
         url,
-        :ssl_cert_store =>  store,
-        :verify_ssl     =>  OpenSSL::SSL::VERIFY_PEER
-    ).put data.to_json, :content_type => :json, :accept => :json
+        :ssl_cert_store  =>  store,
+	:ssl_client_cert =>  client_cert,
+	:ssl_client_key  =>  client_key,
+        :verify_ssl      =>  OpenSSL::SSL::VERIFY_PEER
+    )
   end
 
-  def self.send_request_post(url, data, ca_string)
-    store = OpenSSL::X509::Store.new
-    store.add_cert(OpenSSL::X509::Certificate.new(ca_string))
-
-    RestClient::Resource.new(
-        url,
-        :ssl_cert_store =>  store,
-        :verify_ssl     =>  OpenSSL::SSL::VERIFY_PEER
-    ).post data.to_json, :content_type => :json, :accept => :json
+  def self.send_request_get(url)
+    get_base_resource(url).get
   end
 
-  def self.send_request_delete(url, ca_string)
-    store = OpenSSL::X509::Store.new
-    store.add_cert(OpenSSL::X509::Certificate.new(ca_string))
+  def self.send_request_put(url, data)
+    get_base_resource(url).put data.to_json, :content_type => :json, :accept => :json
+  end
 
-    RestClient::Resource.new(
-        url,
-        :ssl_cert_store =>  store,
-        :verify_ssl     =>  OpenSSL::SSL::VERIFY_PEER
-    ).delete
+  def self.send_request_post(url, data)
+    get_base_resource(url).post data.to_json, :content_type => :json, :accept => :json
+  end
+
+  def self.send_request_delete(url)
+    get_base_resource(url).delete
   end
 
   #
@@ -296,7 +296,7 @@ class BarclampDhcp::MgmtService < Service
 
     url = "#{service['url']}/subnets"
 
-    send_request_post(url, hash, service['cert'])
+    send_request_post(url, hash)
   end
 
   def self.update_network(name, subnet, next_server, start_ip, end_ip, options)
@@ -317,14 +317,14 @@ class BarclampDhcp::MgmtService < Service
 
     url = "#{service['url']}/subnets/#{name}"
 
-    send_request_put(url, hash, service['cert'])
+    send_request_put(url, hash)
   end
 
   def self.delete_network(name)
     service = get_service
     return unless service
     url = "#{service['url']}/subnets/#{name}"
-    send_request_delete(url, service['cert'])
+    send_request_delete(url)
   end
 
   def self.bind_node_ip_mac(name, mac, ip, bootenv, loader)
@@ -355,14 +355,14 @@ class BarclampDhcp::MgmtService < Service
     service = get_service
     return unless service
     url = "#{service['url']}/subnets/#{name}/bind"
-    send_request_post(url, hash, service['cert'])
+    send_request_post(url, hash)
   end
 
   def self.unbind_node_ip_mac(name, mac)
     service = get_service
     return unless service
     url = "#{service['url']}/subnets/#{name}/unbind/#{mac}"
-    send_request_post(url, hash, service['cert'])
+    send_request_post(url, hash)
   end
 
 end
