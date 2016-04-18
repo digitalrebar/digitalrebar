@@ -208,7 +208,7 @@ roles:
                   - rpm http://mirrors.kernel.org/fedora-epel/6/x86_64/epel-release-6-8.noarch.rpm
               - os: centos-7
                 repos:
-                  - rpm http://mirrors.kernel.org/fedora-epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+                  - rpm http://mirrors.kernel.org/fedora-epel/7/x86_64/e/epel-release-7-6.noarch.rpm
           - name: saltstack
             description: 'Installation source for up-to-date Saltstack binaries'
             oses:
