@@ -6,6 +6,12 @@
     - Script: |
         echo "Hello from {{.Evt.Node.UUID}} (AKA {{.Evt.Node.Name}})"
         echo "I an running because noderole {{.Evt.NodeRole.ID}} (for role {{.Evt.Role.Name}}) triggered {{.Evt.Selector.event}}"
+    - Delay:
+      - Duration: 30
+      - Script: |
+         echo "This should be delayed 30 seconds"
+         env
+      - Log: true
 - Name: 'test logging rule'
   WantsAttribs:
     - number_of_drives
