@@ -6,6 +6,9 @@ fi
 
 if [[ $REVPROXY_PORT ]] ; then
 	LISTENPORT="-listen_port $REVPROXY_PORT"
+else
+	REVPROXY_PORT=443
+	LISTENPORT="-listen_port $REVPROXY_PORT"
 fi
 
 if [[ $REVPROXY_REALM ]] ; then
@@ -46,4 +49,6 @@ fi
 	$SAMLIDPSSOURL \
 	$SAMLIDPSSODESCURL \
 	$CONSULKEY &
+
+make_service "rebar-rev-proxy" $REVPROXY_PORT '{"script": "pidof rebar-rev-proxy", "interval": "10s"}'
 
