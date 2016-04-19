@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/VictorLowther/jsonpatch/utils"
 	"github.com/digitalrebar/rebar-api/client"
 )
 
@@ -17,6 +18,12 @@ type RunContext struct {
 
 func makeContext(e *Event) *RunContext {
 	return &RunContext{Evt: e}
+}
+
+func cloneContext(c *RunContext) *RunContext {
+	clonedContext := &RunContext{}
+	utils.Remarshal(c, &clonedContext)
+	return clonedContext
 }
 
 func (e *RunContext) fetchAttribs() error {
