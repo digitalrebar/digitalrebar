@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/coddingtonbear/go-jsonselect"
 	"github.com/digitalrebar/rebar-api/client"
 )
 
@@ -69,6 +70,9 @@ func serve() {
 
 func main() {
 	flag.Parse()
+	if debug {
+		jsonselect.EnableLogger()
+	}
 	if ruleFile == "" {
 		log.Fatalf("You must load rules with --rules ruleFile")
 	}

@@ -2,6 +2,7 @@
 - Name: 'test script template rule'
   Matchers:
     - Enabled: true
+    - Eq: [{Val: true},{Val: true}]
   MatchActions:
     - Script: |
         echo "Hello from {{.Evt.Node.UUID}} (AKA {{.Evt.Node.Name}})"
@@ -14,14 +15,19 @@
       - Log: true
 - Name: 'test logging rule'
   WantsAttribs:
-    - number_of_drives
+    - disks
   Matchers:
     - Enabled: true
     - JSON: 
-        Selector: ':root .Attribs .number_of_drives:val(5)'
-        SaveAs: 'driveCount'
+        Selector: ':root .Attribs .disks :has( .removable:val(false) )'
+        SaveAs: 'harddisks'
+    - Len:
+        Var: harddisks
+        SaveAs: driveCount
+    - Gt:
+        - Var: driveCount
+        - Val: 3
   MatchActions:
     - Log: true
     - Script: |
-       echo "System has 5 drives"
-       env
+       echo "System has {{.Vars.driveCount}} drives, which is more than the 3 we were looking for"
