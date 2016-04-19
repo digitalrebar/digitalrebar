@@ -28,13 +28,9 @@ func delay_actions(e *RunContext, duration int, actions []Action) {
 	delay_chan <- a
 }
 
-func delaySecond(n int) {
-	time.Sleep(time.Duration(n) * time.Second)
-}
-
 func run_actions(duration int, e *RunContext, actions []Action) {
 	log.Printf("Waiting %d seconds for actions %v\n", duration, actions)
-	delaySecond(duration)
+	time.Sleep(time.Duration(duration) * time.Second)
 
 	for _, action := range actions {
 		err := action(e)

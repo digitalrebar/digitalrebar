@@ -50,10 +50,13 @@ func actionDelay(val interface{}) (Action, error) {
 		return nil, errors.New("Delay needs at least one nested action and a duration")
 	}
 
-	jj := array[0].(map[string]interface{})
+	delem, ok := array[0].(map[string]interface{})
+	if !ok {
+		return nil, errors.New("Delay needs a map as first element")
+	}
 
 	// First element must be a map with duration integer
-	dobj, ok := jj["Duration"]
+	dobj, ok := delem["Duration"]
 	if !ok {
 		return nil, errors.New("Delay needs a map with duration as first element")
 	}
@@ -65,7 +68,10 @@ func actionDelay(val interface{}) (Action, error) {
 	actions := make([]Action, 0, 0)
 	// The remaining elements must compile to actions
 	for _, e := range array[1:] {
-		element := e.(map[string]interface{})
+		element, ok := e.(map[string]interface{})
+		if !ok {
+			return nil, errors.New("Delay elements (after the first) should be actions")
+		}
 		subaction, err := ResolveAction(element)
 		if err != nil {
 			return nil, err
