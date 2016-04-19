@@ -19,7 +19,7 @@ VAGRANTFILE_API_VERSION = "2"
 ADMIN_OS_BOX = "ubuntu/trusty64"
 #BASE_OS_BOX = "ubuntu/trusty64"
 BASE_OS_BOX = "bento/centos-7.1"
-SLAVE_RAM = "2048"
+SLAVE_RAM = "4096"
 # Host Mode - MAC
 ADMIN_PREFIX = "192.168.99"
 ADMIN_IP = "#{ADMIN_PREFIX}.100"
@@ -42,7 +42,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   
     client.vm.box = ADMIN_OS_BOX
     client.vm.provider "virtualbox" do |vb|
-      vb.memory = "2048"
+      vb.memory = SLAVE_RAM
       vb.cpus = 2
     end
 
@@ -75,7 +75,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # for base, we don't avoid downloading large files      
 
     base.vm.provider "virtualbox" do |vb|
-      vb.memory = "4096"
+      vb.memory = "8192"
       vb.cpus = 4
     end
 

@@ -83,6 +83,8 @@ WAIT_ON_CONVERGE=true
 DNS_DOMAIN=${DNS_DOMAIN:-rebar.local}
 KUBERNETES_NETWORKING=${KUBERNETES_NETWORKING:-flannel}
 KUBERNETES_NODE_COUNT=${KUBERNETES_NODE_COUNT:-3}
+KUBERNETES_DNS=true
+KUBERNETES_DASH=true
 DEPLOYMENT_NAME=${DEPLOYMENT_NAME:-kubs}
 DEPLOYMENT_OS=${DEPLOYMENT_OS:-centos7}
 REBAR_ENDPOINT=${REBAR_ENDPOINT:-"https://$ADMIN_IP:3000"}
@@ -103,6 +105,8 @@ if [[ $TEARDOWN ]] ; then
     done
     # Destroy deployment
     rebar deployments destroy "$DEPLOYMENT_NAME"
+    # Clear playbooks
+    docker exec -it compose_rebar_api_1 sudo rm -rf /var/cache/rebar/ansible_playbook/kubernetes-deploy/
     exit 0
 fi
 
@@ -113,8 +117,13 @@ else
     echo "Verified System Ready @ $REBAR_ENDPOINT"
 fi
 
+# In case this is a reset, make sure that we've removed the old deployment & barclamp & playbooks to force reload
+rebar deployments destroy "$DEPLOYMENT_NAME"
+../core/bin/barclamp_import ../kubernetes
+docker exec -it compose_rebar_api_1 sudo rm -rf /var/cache/rebar/ansible_playbook/kubernetes-deploy/
+
 #
-# Start up machines for nodes
+# Start up machines for nodes (fast if they are already running)
 #
 echo "Creating $KUBERNETES_NODE_COUNT nodes on $REBAR_ENDPOINT"
 for ((i=1 ; i <= $KUBERNETES_NODE_COUNT; i++)) ; do
@@ -122,7 +131,6 @@ for ((i=1 ; i <= $KUBERNETES_NODE_COUNT; i++)) ; do
     NODE_IP=$(rebar nodes show "node$i.${DNS_DOMAIN}" | jq --raw-output '.["node-control-address"]' | cut -d '/' -f 1)
     echo "Added Node $i at $NODE_IP"
 done
-
 
 # Create deployment
 rebar deployments create "{ \"name\": \"$DEPLOYMENT_NAME\" }"
@@ -185,7 +193,6 @@ if [[ $KUBERNETES_OPENCONTRAIL_NO_ARP ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-opencontrail_no_arp to "{ \"value\": ${KUBERNETES_OPENCONTRAIL_NO_ARP} }"
 fi
 
-
 if [[ $KUBERNETES_ETCD_PEER_PORT ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-etcd_peer_port to "{ \"value\": ${KUBERNETES_ETCD_PEER_PORT} }"
 fi
@@ -196,6 +203,7 @@ fi
 if [[ $KUBERNETES_DNS == true ]]; then
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-dns_setup to "{ \"value\": true }"
 else
+    echo "WARNING - YOU NEED A DNS! (setting $KUBERNETES_DNS)"
     rebar deployments set $DEPLOYMENT_NAME attrib kubernetes-dns_setup to "{ \"value\": false }"
 fi
 if [[ $KUBERNETES_DNS_UPSTREAM ]]; then
