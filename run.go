@@ -20,10 +20,13 @@ func makeContext(e *Event) *RunContext {
 	return &RunContext{Evt: e}
 }
 
-func cloneContext(c *RunContext) *RunContext {
+func (c *RunContext) Clone() (*RunContext, error) {
 	clonedContext := &RunContext{}
-	utils.Remarshal(c, &clonedContext)
-	return clonedContext
+	if err := utils.Remarshal(c, &clonedContext); err != nil {
+		return nil, fmt.Errorf("Unable to clone context: %v", err)
+	}
+	clonedContext.rule = c.rule
+	return clonedContext, nil
 }
 
 func (e *RunContext) fetchAttribs() error {

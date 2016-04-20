@@ -19,7 +19,8 @@ var rules []*Rule
 var namedRules = make(map[string]*Rule)
 var ruleLock sync.Mutex
 
-// Rule represents a list of Actions that shoudl be taken if an Event matches the Rule.
+// Rule represents a list of Actions that shoudl be taken if an Event
+// matches the Rule.
 type Rule struct {
 	Name string // Short name of the Rule.  For human consumption
 	// only.
@@ -35,12 +36,14 @@ type Rule struct {
 	// matches the Event.
 }
 
-// Match runs the rule Matchers.  If all the Matchers match, then the rule is considered an overall Match.
+// Match runs the rule Matchers.  If all the Matchers match, then the
+// rule is considered an overall Match.
 func (r *Rule) Match(e *RunContext) (bool, error) {
 	return matchAnd(r.Matchers...)(e)
 }
 
-// RunActions runs the rule MatchActions in order.  If any of them return an error, no further MatchActions will be run.
+// RunActions runs the rule MatchActions in order.  If any of them
+// return an error, no further MatchActions will be run.
 func (r *Rule) RunActions(e *RunContext) error {
 	for i, action := range r.MatchActions {
 		log.Printf("Rule %s: running action %v", r.Name, i)
