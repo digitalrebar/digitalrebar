@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"reflect"
 
 	"github.com/VictorLowther/jsonpatch/utils"
 	js "github.com/coddingtonbear/go-jsonselect"
@@ -125,6 +126,185 @@ func matchJSON(val interface{}) (Matcher, error) {
 	}, nil
 }
 
+const (
+	badType = iota
+	boolType
+	intType
+	uintType
+	floatType
+	stringType
+)
+
+func baseType(t reflect.Value) int {
+	switch t.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return intType
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return uintType
+	case reflect.Float32, reflect.Float64:
+		return floatType
+	case reflect.String:
+		return stringType
+	default:
+		return badType
+	}
+
+}
+
+func canOrder(a, b int) bool {
+	if a == boolType || a == badType || b == boolType || b == badType {
+		return false
+	}
+	if a == b {
+		return true
+	}
+	if a == stringType || b == stringType {
+		return false
+	}
+	if a == floatType || b == floatType {
+		return false
+	}
+	return true
+}
+
+func lt(arg1, arg2 interface{}) (bool, error) {
+	a := reflect.ValueOf(arg1)
+	b := reflect.ValueOf(arg2)
+	aType := baseType(a)
+	bType := baseType(b)
+	if !canOrder(aType, bType) {
+		return false, fmt.Errorf("Types %s(%v) and %s(%v) do not have an ordering comparison", a.Kind(), arg1, b.Kind(), arg2)
+	}
+	switch aType {
+	case stringType:
+		return a.String() < b.String(), nil
+	case floatType:
+		return a.Float() < b.Float(), nil
+	case intType:
+		switch bType {
+		case intType:
+			return a.Int() < b.Int(), nil
+		case uintType:
+			return uint64(a.Int()) < b.Uint(), nil
+		}
+	case uintType:
+		switch bType {
+		case uintType:
+			return a.Uint() < b.Uint(), nil
+		case intType:
+			return a.Uint() < uint64(b.Int()), nil
+		}
+	}
+	log.Panicf("Tried to order %s and %s, reached impossible condition", a.Kind(), b.Kind())
+	return false, nil
+}
+
+func matchLen(val interface{}) (Matcher, error) {
+	type lenArg struct {
+		Var    string
+		SaveAs string
+	}
+	arg := &lenArg{}
+	if err := utils.Remarshal(val, &arg); err != nil {
+		return nil, err
+	}
+	if arg.Var == "" {
+		return nil, errors.New("Len requires a variable name")
+	}
+	if arg.SaveAs == "" {
+		return nil, errors.New("Len requires a variable to save the length into")
+	}
+	return func(e *RunContext) (bool, error) {
+		val, ok := e.Vars[arg.Var]
+		if !ok {
+			return false, fmt.Errorf("Len: variable %s not set", arg.Var)
+		}
+		reflectVal := reflect.ValueOf(val)
+		if !reflectVal.IsValid() {
+			log.Panicf("Var %s was not valid! This should never happen", arg.Var)
+		}
+		switch reflectVal.Kind() {
+		case reflect.Map, reflect.Slice, reflect.String:
+			e.Vars[arg.SaveAs] = float64(reflectVal.Len())
+			return true, nil
+		default:
+			return false, nil
+		}
+	}, nil
+
+}
+
+func matchCmp(op string, val interface{}) (Matcher, error) {
+	type cmpArgs struct {
+		Val interface{}
+		Var string
+	}
+	fixedArgs := make([]cmpArgs, 0, 2)
+	if err := utils.Remarshal(val, &fixedArgs); err != nil {
+		return nil, err
+	}
+	if len(fixedArgs) != 2 {
+		return nil, fmt.Errorf("%s: Expected a 2 element array", op)
+	}
+
+	for i, arg := range fixedArgs {
+		if (arg.Val == nil) == (arg.Var == "") {
+			return nil, fmt.Errorf("%s: Argument %d: Must have a Val or a Var, but not both", op, i)
+		}
+		switch op {
+		// Eq and Ne use reflect.DeepEqual, which can equality-check anything JSON compatible.
+		case "Lt", "Le", "Gt", "Ge":
+			if arg.Val != nil && baseType(reflect.ValueOf(arg.Val)) == badType {
+				// This is a comparison op that relies on ordering, but the type is not orderable.
+				return nil, fmt.Errorf("%s: Value argument %v is not an orderable type", op, arg.Val)
+			}
+		}
+	}
+	return func(e *RunContext) (bool, error) {
+		finalArgs := make([]interface{}, 2)
+		for i, arg := range fixedArgs {
+			if arg.Var != "" {
+				val, ok := e.Vars[arg.Var]
+				if !ok {
+					return false, fmt.Errorf("Unknown variable %s", arg.Var)
+				}
+				log.Printf("Fetching variable %s for %s: %v", arg.Var, op, val)
+				finalArgs[i] = val
+			} else {
+				finalArgs[i] = arg.Val
+			}
+		}
+		log.Printf("Comparing %v %s %v", finalArgs[0], op, finalArgs[1])
+		switch op {
+		case "Eq":
+			return reflect.DeepEqual(finalArgs[0], finalArgs[1]), nil
+		case "Ne":
+			return !reflect.DeepEqual(finalArgs[0], finalArgs[1]), nil
+		case "Lt":
+			return lt(finalArgs[0], finalArgs[1])
+		case "Gt":
+			return lt(finalArgs[1], finalArgs[0])
+		case "Le":
+			res, err := lt(finalArgs[0], finalArgs[1])
+			if !res && err == nil {
+				res = reflect.DeepEqual(finalArgs[0], finalArgs[1])
+			}
+			return res, err
+		case "Ge":
+			res, err := lt(finalArgs[1], finalArgs[0])
+			if !res && err == nil {
+				res = reflect.DeepEqual(finalArgs[0], finalArgs[1])
+			}
+			return res, err
+		default:
+			log.Panicf("Op %s not implemented! Should never reach here", op)
+		}
+		return false, nil
+
+	}, nil
+
+}
+
 func matchScript(val interface{}) (Matcher, error) {
 	script, ok := val.(string)
 	if !ok {
@@ -208,6 +388,24 @@ func resolveAndOr(op string, val interface{}) (Matcher, error) {
 // be a valid bash script.  When the Matcher is ran, the parsed script will be compiled using the passed RunContext.  If the compilation fails,
 // the match will fail with an error, so be sure to write your scripts with that in mind.  Otherwise, the matcher will pass if the script
 // exits with a zero and fail otherwise.
+//
+// "Eq", "Ne", "Lt", "Le", "Gt", "Ge", which are basic 2-item comparison functions that expect a 2 element array of structs matching
+// the following template:
+//    struct {
+//        Var string
+//        Val interface{}
+//    }
+// Exactly one of those fields shoud be set -- it is an error if neither or both of them are set.
+// If "Var" is set, it will look up the value in RunContext.Vars, and use that for the comparison, otherwise it will use the value supplied in "Val".
+// The matcher passes or fails based on the the comparison of the objects.
+//
+// "Len", which expects its value to be a struct with the following format:
+//    struct {
+//        Var string
+//        SaveAs string
+//    }
+// If the variable saved in Var is something with a length (an array, a map, or a string), the matcher will return true and save the
+// length of the variable in the variable named by SaveAs, otherwise it will return false.
 func ResolveMatcher(m map[string]interface{}) (Matcher, error) {
 	if len(m) != 1 {
 		return nil, fmt.Errorf("Matchers have exactly one key")
@@ -224,6 +422,10 @@ func ResolveMatcher(m map[string]interface{}) (Matcher, error) {
 			return matchEnabled(v)
 		case "JSON":
 			return matchJSON(v)
+		case "Eq", "Ne", "Lt", "Le", "Gt", "Ge":
+			return matchCmp(t, v)
+		case "Len":
+			return matchLen(v)
 		default:
 			return nil, fmt.Errorf("Unknown matcher %s", t)
 		}
