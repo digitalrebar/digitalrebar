@@ -51,6 +51,9 @@ reloaded if the classfier is sent a SIGHUP.
       MatchActions:
         - Log: true
         - Script: "/usr/bin/env"
+        - Delay:
+          - Duration: 30
+          - Log: true
 
 ### Rule definition:
 
@@ -164,5 +167,7 @@ Takes a string which will be compiled against the RunContext using text/template
       The API endpoint that DigitalRebar lives on.
     * REBAR_KEY
       The username:password for DigitalRebar
+* Delay
+Takes a map.  The first element of the map should have the key Duration with an integer value that represents the number of seconds to delay before running the following actions.  The rest of the elements of the map are additional actions as described above.
 
 
