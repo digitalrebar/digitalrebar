@@ -614,7 +614,7 @@ echo "Making stage1.img"
      bsdtar -xf ../ss0.img || :
      bsdtar -xf ../ss1.img 'usr/lib/modules/*' 'usr/lib/firmware'
      mv usr/lib .
-     (cd lib/modules/*/kernel/drivers; rm -rf ata md usb dca firewire scsi mmc cdrom gpu)
+     (cd lib/modules/*/kernel/drivers; rm -rf ata md usb firewire scsi mmc cdrom gpu)
      (cd lib/firmware; rm -rf radeon)
      find lib |sort |cpio -o -R 0:0 --format=newc |xz -T0 -c >lib.cpio.xz
      rm -rf lib
