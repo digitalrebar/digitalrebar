@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"regexp"
+	"strings"
 
 	"github.com/VictorLowther/jsonpatch/utils"
 	"github.com/digitalrebar/rebar-api/client"
@@ -18,6 +20,26 @@ type RunContext struct {
 
 func makeContext(e *Event) *RunContext {
 	return &RunContext{Evt: e}
+}
+
+func (c *RunContext) getVar(arg interface{}) (interface{}, error) {
+	varRef, ok := arg.(string)
+	if !ok {
+		return arg, nil
+	}
+	if strings.HasPrefix(varRef, `$`) {
+		log.Printf("Fetching variable %s", varRef)
+		arg, ok := c.Vars[strings.TrimPrefix(varRef, `$`)]
+		if !ok {
+			return nil, fmt.Errorf("Unknown variable %s", varRef)
+		}
+		return arg, nil
+	}
+	re := regexp.MustCompile(`^\\+\$`)
+	if re.MatchString(varRef) {
+		return strings.TrimPrefix(varRef, `\`), nil
+	}
+	return arg, nil
 }
 
 func (c *RunContext) Clone() (*RunContext, error) {

@@ -2,7 +2,7 @@
 - Name: 'test script template rule'
   Matchers:
     - Enabled: true
-    - Eq: [{Val: true},{Val: true}]
+    - Eq: [ true ,true]
   MatchActions:
     - Script: |
         echo "Hello from {{.Evt.Node.UUID}} (AKA {{.Evt.Node.Name}})"
@@ -24,9 +24,7 @@
     - Len:
         Var: harddisks
         SaveAs: driveCount
-    - Gt:
-        - Var: driveCount
-        - Val: 3
+    - Gt: [ '$driveCount', 3 ]
   MatchActions:
     - Log: true
     - Script: |
