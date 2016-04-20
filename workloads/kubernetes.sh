@@ -74,6 +74,9 @@ CON_NO_PROVISIONER=true
 KEEP_ADMIN=false
 WAIT_ON_CONVERGE=true
 
+# Make the kubernetes DNS default to true because false doesn't work
+KUBERNETES_DNS=true
+
 #
 # Process config and validate providers
 #
