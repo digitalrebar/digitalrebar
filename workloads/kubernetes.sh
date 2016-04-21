@@ -50,8 +50,9 @@ help_options["--kubernetes-dns-replicas=<Number>"]="Number of DNS replicas to ru
 help_options["--kubernetes-dns-namespace=<Kuberetenes Namespace>"]="Namespace to put the DNS service in"
 help_options["--kubernetes-dns-domain=<Domain String>"]="Domain of the internal Kubernetes DNS service"
 
-help_options["--kubernetes-ui=<true|false>"]="Use Kube-UI"
+help_options["--kubernetes-ui=<true|false>"]="Use Kube-UI - deprecated but still works"
 help_options["--kubernetes-dash=<true|false>"]="Use Kube-Dash"
+help_options["--kubernetes-dashboard=<true|false>"]="Use Kubernetes-Dashboard (default UI now)"
 help_options["--kubernetes-cluster-logging=<true|false>"]="Use cluster logging"
 help_options["--kubernetes-cluster-monitoring=<true|false>"]="Use cluster monitoring"
 help_options["--kubernetes-fabric8=<true|false>"]="Use Fabric8 console"
@@ -76,6 +77,8 @@ WAIT_ON_CONVERGE=true
 
 # Make the kubernetes DNS default to true because false doesn't work
 KUBERNETES_DNS=true
+# Make the kubernetes dashboard is there by default so add it
+KUBERNETES_DASHBOARD=true
 
 #
 # Process config and validate providers
@@ -317,6 +320,9 @@ if [[ $KUBERNETES_DNS == true ]]; then
 fi
 if [[ $KUBERNETES_UI == true ]]; then
     rebar nodes bind $NAME to kubernetes-ui
+fi
+if [[ $KUBERNETES_DASHBOARD == true ]]; then
+    rebar nodes bind $NAME to kubernetes-dashboard
 fi
 if [[ $KUBERNETES_DASH == true ]]; then
     rebar nodes bind $NAME to kubernetes-dash
