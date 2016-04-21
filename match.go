@@ -95,6 +95,9 @@ func matchJSON(val interface{}) (Matcher, error) {
 			return false, err
 		}
 		jsonOut := string(buf)
+		if debug {
+			log.Printf("Matching JSON selector %s to:\n%s", s.Selector, jsonOut)
+		}
 		parser, err := js.CreateParserFromString(jsonOut)
 		if err != nil {
 			return false, err
