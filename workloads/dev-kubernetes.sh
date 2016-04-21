@@ -47,8 +47,9 @@ help_options["--kubernetes-dns-replicas=<Number>"]="Number of DNS replicas to ru
 help_options["--kubernetes-dns-namespace=<Kuberetenes Namespace>"]="Namespace to put the DNS service in"
 help_options["--kubernetes-dns-domain=<Domain String>"]="Domain of the internal Kubernetes DNS service"
 
-help_options["--kubernetes-ui=<true|false>"]="Use Kube-UI"
+help_options["--kubernetes-ui=<true|false>"]="Use Kube-UI (deprecated UI)"
 help_options["--kubernetes-dash=<true|false>"]="Use Kube-Dash"
+help_options["--kubernetes-dashboard=<true|false>"]="Use Kubernetes-Dashboard (default ui now)"
 help_options["--kubernetes-cluster-logging=<true|false>"]="Use cluster logging"
 help_options["--kubernetes-cluster-monitoring=<true|false>"]="Use cluster monitoring"
 help_options["--kubernetes-fabric8=<true|false>"]="Use Fabric8 console"
@@ -84,6 +85,7 @@ DNS_DOMAIN=${DNS_DOMAIN:-rebar.local}
 KUBERNETES_NETWORKING=${KUBERNETES_NETWORKING:-flannel}
 KUBERNETES_NODE_COUNT=${KUBERNETES_NODE_COUNT:-3}
 KUBERNETES_DNS=true
+KUBERNETES_DASHBOARD=true
 KUBERNETES_DASH=true
 DEPLOYMENT_NAME=${DEPLOYMENT_NAME:-kubs}
 DEPLOYMENT_OS=${DEPLOYMENT_OS:-centos7}
@@ -244,6 +246,9 @@ if [[ $KUBERNETES_DNS == true ]]; then
 fi
 if [[ $KUBERNETES_UI == true ]]; then
     rebar nodes bind $NAME to kubernetes-ui
+fi
+if [[ $KUBERNETES_DASHBOARD == true ]]; then
+    rebar nodes bind $NAME to kubernetes-dashboard
 fi
 if [[ $KUBERNETES_DASH == true ]]; then
     rebar nodes bind $NAME to kubernetes-dash
