@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"strings"
 
 	"github.com/VictorLowther/jsonpatch/utils"
 	js "github.com/coddingtonbear/go-jsonselect"
@@ -106,6 +107,9 @@ func matchJSON(val interface{}) (Matcher, error) {
 			return false, nil
 		}
 		log.Printf("JSON selector matched: %v", res)
+		if s.SaveAs != "" {
+			e.Vars[s.SaveAs] = res
+		}
 		if len(s.PickResults) > 0 {
 			for varToSave, fidx := range s.PickResults {
 				idx := int(fidx)
@@ -115,13 +119,7 @@ func matchJSON(val interface{}) (Matcher, error) {
 				e.Vars[varToSave] = res[idx]
 			}
 		}
-		if s.SaveAs != "" {
-			if len(res) == 1 {
-				e.Vars[s.SaveAs] = res[0]
-			} else {
-				e.Vars[s.SaveAs] = res
-			}
-		}
+
 		return true, nil
 	}, nil
 }
@@ -235,65 +233,55 @@ func matchLen(val interface{}) (Matcher, error) {
 }
 
 func matchCmp(op string, val interface{}) (Matcher, error) {
-	type cmpArgs struct {
-		Val interface{}
-		Var string
-	}
-	fixedArgs := make([]cmpArgs, 0, 2)
-	if err := utils.Remarshal(val, &fixedArgs); err != nil {
-		return nil, err
-	}
-	if len(fixedArgs) != 2 {
+	fixedArgs, ok := val.([]interface{})
+	if !ok || len(fixedArgs) != 2 {
 		return nil, fmt.Errorf("%s: Expected a 2 element array", op)
 	}
 
-	for i, arg := range fixedArgs {
-		if (arg.Val == nil) == (arg.Var == "") {
-			return nil, fmt.Errorf("%s: Argument %d: Must have a Val or a Var, but not both", op, i)
+	for _, arg := range fixedArgs {
+		if varRef, ok := arg.(string); ok && strings.HasPrefix(varRef, `$`) {
+			continue
 		}
 		switch op {
-		// Eq and Ne use reflect.DeepEqual, which can equality-check anything JSON compatible.
+		// Eq and Ne use reflect.DeepEqual, which can
+		// equality-check anything JSON compatible.
 		case "Lt", "Le", "Gt", "Ge":
-			if arg.Val != nil && baseType(reflect.ValueOf(arg.Val)) == badType {
-				// This is a comparison op that relies on ordering, but the type is not orderable.
-				return nil, fmt.Errorf("%s: Value argument %v is not an orderable type", op, arg.Val)
+			if baseType(reflect.ValueOf(arg)) == badType {
+				// This is a comparison op that relies
+				// on ordering, but the type is not
+				// orderable.
+				return nil, fmt.Errorf("%s: Value argument %v is not an orderable type", op, arg)
 			}
 		}
 	}
 	return func(e *RunContext) (bool, error) {
-		finalArgs := make([]interface{}, 2)
 		for i, arg := range fixedArgs {
-			if arg.Var != "" {
-				val, ok := e.Vars[arg.Var]
-				if !ok {
-					return false, fmt.Errorf("Unknown variable %s", arg.Var)
-				}
-				log.Printf("Fetching variable %s for %s: %v", arg.Var, op, val)
-				finalArgs[i] = val
-			} else {
-				finalArgs[i] = arg.Val
+			arg, err := e.getVar(arg)
+			if err != nil {
+				return false, fmt.Errorf("Failed to fetch variable for %s on %v: %v", op, val, err)
 			}
+			fixedArgs[i] = arg
 		}
-		log.Printf("Comparing %v %s %v", finalArgs[0], op, finalArgs[1])
+		log.Printf("Comparing %v %s %v", fixedArgs[0], op, fixedArgs[1])
 		switch op {
 		case "Eq":
-			return reflect.DeepEqual(finalArgs[0], finalArgs[1]), nil
+			return reflect.DeepEqual(fixedArgs[0], fixedArgs[1]), nil
 		case "Ne":
-			return !reflect.DeepEqual(finalArgs[0], finalArgs[1]), nil
+			return !reflect.DeepEqual(fixedArgs[0], fixedArgs[1]), nil
 		case "Lt":
-			return lt(finalArgs[0], finalArgs[1])
+			return lt(fixedArgs[0], fixedArgs[1])
 		case "Gt":
-			return lt(finalArgs[1], finalArgs[0])
+			return lt(fixedArgs[1], fixedArgs[0])
 		case "Le":
-			res, err := lt(finalArgs[0], finalArgs[1])
+			res, err := lt(fixedArgs[0], fixedArgs[1])
 			if !res && err == nil {
-				res = reflect.DeepEqual(finalArgs[0], finalArgs[1])
+				res = reflect.DeepEqual(fixedArgs[0], fixedArgs[1])
 			}
 			return res, err
 		case "Ge":
-			res, err := lt(finalArgs[1], finalArgs[0])
+			res, err := lt(fixedArgs[1], fixedArgs[0])
 			if !res && err == nil {
-				res = reflect.DeepEqual(finalArgs[0], finalArgs[1])
+				res = reflect.DeepEqual(fixedArgs[0], fixedArgs[1])
 			}
 			return res, err
 		default:
@@ -347,24 +335,27 @@ func resolveAndOr(op string, val interface{}) (Matcher, error) {
 	}
 }
 
-// ResolveMatcher compiles a map[string]interface{} with a single key-value pair
-// into a function with a Matcher signature.
+// ResolveMatcher compiles a map[string]interface{} with a single
+// key-value pair into a function with a Matcher signature.
 //
 // Recognized keys are:
 //
-// "And" and "Or", which expect their values to be arrays of key-value pairs that
-// can be compiled by ResolveMatch.  "And" will match if all of its matchers match,
-// and "Or" will match if any of its matchers match.  Both operators will only execute
-// enough of their matchers to determine if the overall matcher will succeed (for "Or"),
-// or fail (for "And").  If no matchers are passed, "And" will signal that it matched,
-// and "Or" will signal that it did not match.
+// "And" and "Or", which expect their values to be arrays of key-value
+// pairs that can be compiled by ResolveMatch.  "And" will match if
+// all of its matchers match, and "Or" will match if any of its
+// matchers match.  Both operators will only execute enough of their
+// matchers to determine if the overall matcher will succeed (for
+// "Or"), or fail (for "And").  If no matchers are passed, "And" will
+// signal that it matched, and "Or" will signal that it did not match.
 //
-// "Not", which expects its value to be a single key-value pair that can be compiled by
-// ResolveMatcher.  "Not" will invert the return value of its matcher.
+// "Not", which expects its value to be a single key-value pair that
+// can be compiled by ResolveMatcher.  "Not" will invert the return
+// value of its matcher.
 //
-// "Enabled", which expects its value to be a bool.  It will return the value of that
-// boolean without change, and (as the name suggests) is expected to enable and disable
-// rules for testing purposes.
+// "Enabled", which expects its value to be a bool.  It will return
+// the value of that boolean without change, and (as the name
+// suggests) is expected to enable and disable rules for testing
+// purposes.
 //
 // "JSON", which expects a struct with the following format:
 //   struct {
@@ -372,40 +363,54 @@ func resolveAndOr(op string, val interface{}) (Matcher, error) {
 //		SaveAs      string
 //		PickResults map[string]float64
 //	 }
-// "Selector" is a string containing a JSON Selector matching the specification at http://jsonselect.org/#overview.
-// The selector will return an array of results containing each individual item from the RunContext that was passed into
-// the Matcher.
-// "SaveAs" is an optional variable name to save the results the selector returned.  If the selector returned exactly one item,
-// then just that item will be saved, otherwise the entire array of results will be saved.  You should craft
-// your selectors with that in mind.
-// "PickResults" is an optional map of variables names to selector indexes.  After the selector returns its results and they
-// have been optionally saved to the variable pointed to by SaveAs, PickResults will save data from the selector indexes to the
-// matching variable names.  If the selector results do not contain a requested index, then the match will fail with an error.
-// You should construct Selector and PickResults with that in mind.
-// In the absence of PickResults, a JSON match fails if nothing was selected or the Selector was invalid, otherwise it passes.
 //
-// "Script", which expects its value to be a string that will be parsed using text.Template.  The result of that parsing should
-// be a valid bash script.  When the Matcher is ran, the parsed script will be compiled using the passed RunContext.  If the compilation fails,
-// the match will fail with an error, so be sure to write your scripts with that in mind.  Otherwise, the matcher will pass if the script
+// "Selector" is a string containing a JSON Selector matching the
+// specification at http://jsonselect.org/#overview.  The selector
+// will return an array of results containing each individual item
+// from the RunContext that was passed into the Matcher.
+//
+// "SaveAs" is an optional variable name to save the results the
+// selector returned.  The entire array of results will be saved, even
+// if it is only one element long.
+//
+// "PickResults" is an optional map of variables names to selector
+// indexes.  After the selector returns its results and they have been
+// optionally saved to the variable pointed to by SaveAs, PickResults
+// will save data from the selector indexes to the matching variable
+// names.  If the selector results do not contain a requested index,
+// then the match will fail with an error.  You should construct
+// Selector and PickResults with that in mind.  In the absence of
+// PickResults, a JSON match fails if nothing was selected or the
+// Selector was invalid, otherwise it passes.
+//
+// "Script", which expects its value to be a string that will be
+// parsed using text.Template.  The result of that parsing should be a
+// valid bash script.  When the Matcher is ran, the parsed script will
+// be compiled using the passed RunContext.  If the compilation fails,
+// the match will fail with an error, so be sure to write your scripts
+// with that in mind.  Otherwise, the matcher will pass if the script
 // exits with a zero and fail otherwise.
 //
-// "Eq", "Ne", "Lt", "Le", "Gt", "Ge", which are basic 2-item comparison functions that expect a 2 element array of structs matching
-// the following template:
-//    struct {
-//        Var string
-//        Val interface{}
-//    }
-// Exactly one of those fields shoud be set -- it is an error if neither or both of them are set.
-// If "Var" is set, it will look up the value in RunContext.Vars, and use that for the comparison, otherwise it will use the value supplied in "Val".
-// The matcher passes or fails based on the the comparison of the objects.
+// "Eq", "Ne", "Lt", "Le", "Gt", "Ge", which are basic 2-item
+// comparison functions that expect a 2 element array of values.  If
+// the value is a string that begins with '$', the string will be
+// interpreted as the name of a variable.  If that variable has been
+// set, its value will be substituted.  To use a literal string
+// beginning with $, escape it with a \.  To begin with a literal \,
+// escape it with \\.
 //
-// "Len", which expects its value to be a struct with the following format:
+// "Len", which expects its value to be a struct with the following
+// format:
+//
 //    struct {
 //        Var string
 //        SaveAs string
 //    }
-// If the variable saved in Var is something with a length (an array, a map, or a string), the matcher will return true and save the
-// length of the variable in the variable named by SaveAs, otherwise it will return false.
+//
+// If the variable saved in Var is something with a length (an array,
+// a map, or a string), the matcher will return true and save the
+// length of the variable in the variable named by SaveAs, otherwise
+// it will return false.
 func ResolveMatcher(m map[string]interface{}) (Matcher, error) {
 	if len(m) != 1 {
 		return nil, fmt.Errorf("Matchers have exactly one key")

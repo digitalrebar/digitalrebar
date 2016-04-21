@@ -23,7 +23,7 @@ func delay_actions(e *RunContext, duration int, actions []Action) {
 	a := DeferredActions{
 		duration: duration,
 		actions:  actions,
-		context:  cloneContext(e),
+		context:  e,
 	}
 	delay_chan <- a
 }

@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"regexp"
+	"strings"
 
 	"github.com/VictorLowther/jsonpatch/utils"
 	"github.com/digitalrebar/rebar-api/client"
@@ -20,10 +22,33 @@ func makeContext(e *Event) *RunContext {
 	return &RunContext{Evt: e}
 }
 
-func cloneContext(c *RunContext) *RunContext {
+func (c *RunContext) getVar(arg interface{}) (interface{}, error) {
+	varRef, ok := arg.(string)
+	if !ok {
+		return arg, nil
+	}
+	if strings.HasPrefix(varRef, `$`) {
+		log.Printf("Fetching variable %s", varRef)
+		arg, ok := c.Vars[strings.TrimPrefix(varRef, `$`)]
+		if !ok {
+			return nil, fmt.Errorf("Unknown variable %s", varRef)
+		}
+		return arg, nil
+	}
+	re := regexp.MustCompile(`^\\+\$`)
+	if re.MatchString(varRef) {
+		return strings.TrimPrefix(varRef, `\`), nil
+	}
+	return arg, nil
+}
+
+func (c *RunContext) Clone() (*RunContext, error) {
 	clonedContext := &RunContext{}
-	utils.Remarshal(c, &clonedContext)
-	return clonedContext
+	if err := utils.Remarshal(c, &clonedContext); err != nil {
+		return nil, fmt.Errorf("Unable to clone context: %v", err)
+	}
+	clonedContext.rule = c.rule
+	return clonedContext, nil
 }
 
 func (e *RunContext) fetchAttribs() error {

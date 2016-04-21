@@ -80,7 +80,11 @@ func actionDelay(val interface{}) (Action, error) {
 	}
 
 	return func(e *RunContext) error {
-		delay_actions(e, int(duration), actions)
+		ctx, err := e.Clone()
+		if err != nil {
+			return err
+		}
+		delay_actions(ctx, int(duration), actions)
 		return nil
 	}, nil
 }
