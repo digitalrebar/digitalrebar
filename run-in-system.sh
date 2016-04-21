@@ -101,6 +101,14 @@ if [[ $DR_TAG ]] ; then
   TAG_VARS="\"dr_tag\": \"$DR_TAG\","
 fi
 
+CLA_VAR="\"dr_classifiers\": ["
+COMMA=""
+for c in "${classifiers[@]}"; do
+    CLA_VAR="$CLA_VAR $COMMA \"--classifier $c\""
+    COMMA=","
+done
+CLA_VAR="${CLA_VAR} ],"
+
 CON_VAR="\"dr_services\": ["
 COMMA=""
 for c in "${!containers[@]}"; do
@@ -124,6 +132,7 @@ JSON_STRING="{
   ${ACCESS_VAR}
   ${EXTRA_VARS}
   ${TAG_VARS}
+  ${CLA_VAR}
   ${CON_VAR}
   ${WL_VAR}
 }"

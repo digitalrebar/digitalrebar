@@ -455,6 +455,8 @@ known_workloads=(all docker kubernetes hardware ceph packstack docker-swarm ente
 declare -A containers
 declare -A workloads
 
+classifiers=()
+
 # Default the normal containers on, but they can be turned off.
 [[ ${containers["dns"]} ]] || containers["dns"]=true
 [[ ${containers["dns-mgmt"]} ]] || containers["dns-mgmt"]=true
@@ -544,6 +546,9 @@ while (( $# > 0 )); do
             if [[ $is_set = false ]]; then
                 die "Unknown workload arg: ${arg}"
             fi;;
+        --classifier)
+            classifiers+=("$arg_data")
+	    ;;
         --help|-h)
             usage
             exit 0
