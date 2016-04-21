@@ -22,6 +22,7 @@ function usage {
     echo "  --debug # Adds the cadviser components"
     echo "  --node # Adds the node component"
     echo "  --tag <TAG> # Uses that tag for builds and trees. default: latest"
+    echo "  --classifier name:rulepath # adds a classifier to the docker-compose file with that name and rule file"
     echo
     echo "  --external_ip <CIDR Address, default: 192.168.124.11/24> "
     echo "  --forwarder_ip <CIDR Address, default: 192.168.124.11/24> "
@@ -52,6 +53,7 @@ elif [[ ! $DR_TAG ]]; then
 fi
 ADD_DNS=false
 RUN_NTP="NO"
+REMOVE_FILES=""
 
 while [[ $1 == -* ]] ; do
   arg=$1
@@ -138,6 +140,24 @@ while [[ $1 == -* ]] ; do
     --ux)
       FILES="$FILES ux.yml"
       ;;
+    --classifier)
+      clinfo=$1
+      shift
+
+      clname=${clinfo%:*}
+      clpath=${clinfo##*:}
+
+      cat > /tmp/${clname}.yml <<EOF
+${clname}:
+  extends:
+    file: docker-compose-common.yml
+    service: classifier
+  volumes:
+    - ${clpath}:/etc/classifier/rules.yml
+EOF
+      FILES="$FILES /tmp/${clname}.yml"
+      REMOVE_FILES="$REMOVE_FILES /tmp/${clname}.yml"
+      ;;
   esac
 
 done
@@ -176,11 +196,19 @@ fi
 rm -f docker-compose.yml
 for i in $FILES
 do
+    fname=$i
+    if [[ $i != /* ]] ; then
+	    fname=yaml_templates/$i
+    fi
     # Fix Access Mode
-    sed "/START ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/,/END ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/d" yaml_templates/$i >> docker-compose.yml
+    sed "/START ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/,/END ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/d" $fname >> docker-compose.yml
 done
 sed "/ACCESS_MODE==/d" docker-compose.yml > dc.yml
 mv dc.yml docker-compose.yml
+
+if [[ $REMOVE_FILES ]] ; then
+	rm -f $REMOVE_FILES
+fi
 
 # Find the IP address we should have Consul advertise on
 if [[ $(uname -s) == Darwin ]]; then
