@@ -15,7 +15,6 @@ var delay_chan chan DeferredActions
 
 func init() {
 	delay_chan = make(chan DeferredActions, 100)
-	start_delayer()
 }
 
 func delay_actions(e *RunContext, duration int, actions []Action) {

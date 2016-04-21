@@ -17,6 +17,7 @@ import (
 )
 
 var (
+	version                      = false
 	debug                        = false
 	testRules                    = false
 	username, password, endpoint string
@@ -44,6 +45,7 @@ func init() {
 	flag.StringVar(&password, "password", "", "Password for Digital Rebar endpoint")
 	flag.StringVar(&endpoint, "endpoint", "", "API Endpoint for Digital Rebar")
 	flag.StringVar(&listen, "listen", "", "Address to listen on for postbacks from Digital Rebar")
+	flag.BoolVar(&version, "version", false, "Print version and exit")
 	flag.BoolVar(&debug, "debug", false, "Whether to run in debug mode")
 	flag.BoolVar(&testRules, "testRules", false, "Exit after validating that the rules can be loaded")
 }
@@ -70,6 +72,9 @@ func serve() {
 
 func main() {
 	flag.Parse()
+	if version {
+		log.Fatalf("Version: 0.1.0")
+	}
 	if debug {
 		jsonselect.EnableLogger()
 	}
@@ -110,6 +115,9 @@ func main() {
 	if err := client.Session(endpoint, username, password); err != nil {
 		log.Fatalf("Could not connect to Rebar: %v", err)
 	}
+
+	start_delayer()
+
 	// Reload rules file on SIGHUP
 	hupChan := make(chan os.Signal, 1)
 	go func() {
