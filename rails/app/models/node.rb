@@ -18,7 +18,7 @@ require 'open4'
 
 class Node < ActiveRecord::Base
 
-  audited
+  
 
   before_validation :default_population
   before_destroy    :before_destroy_handler

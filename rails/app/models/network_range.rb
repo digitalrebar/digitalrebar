@@ -14,7 +14,7 @@
 
 class NetworkRange < ActiveRecord::Base
 
-  audited
+  
 
   after_commit :on_change_hooks
 

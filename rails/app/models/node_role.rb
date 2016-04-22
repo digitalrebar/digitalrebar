@@ -17,7 +17,7 @@ require 'json'
 
 class NodeRole < ActiveRecord::Base
 
-  audited
+  
 
   after_commit :run_hooks, on: [:update, :create]
   around_save :run_synchronous_hooks

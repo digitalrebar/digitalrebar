@@ -28,7 +28,7 @@ class Jig < ActiveRecord::Base
 
   INTERNAL = ['test', 'noop', 'role-provided']
 
-  audited
+  
 
   #
   # Validate the name should unique

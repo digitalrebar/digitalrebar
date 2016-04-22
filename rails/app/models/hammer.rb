@@ -26,7 +26,7 @@
 
 class Hammer < ActiveRecord::Base
 
-  audited
+  
 
   belongs_to :node
   belongs_to :available_hammer

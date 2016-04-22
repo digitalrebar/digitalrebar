@@ -14,7 +14,7 @@
 
 class NetworkRouter < ActiveRecord::Base
 
-  audited
+  
 
   validate    :router_is_sane
   before_save :infer_address

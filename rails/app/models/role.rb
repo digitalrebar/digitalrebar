@@ -14,7 +14,7 @@
 
 class Role < ActiveRecord::Base
 
-  audited
+  
 
   class Role::MISSING_DEP < StandardError
   end

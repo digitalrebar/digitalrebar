@@ -119,7 +119,7 @@ end
 
 class Run < ActiveRecord::Base
 
-  audited
+  
 
   belongs_to :node
   belongs_to :node_role

@@ -28,7 +28,7 @@ class Deployment < ActiveRecord::Base
     ERROR => "error"
   }
 
-  audited
+  
 
   after_commit :run_if_any_runnable, on: :update
   after_create :add_phantom_node

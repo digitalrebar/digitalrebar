@@ -15,7 +15,7 @@
 
 class AvailableHammer < ActiveRecord::Base
 
-  audited
+  
   has_many :hammers
 
 end

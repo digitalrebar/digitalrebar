@@ -15,7 +15,7 @@
 
 class Barclamp < ActiveRecord::Base
 
-  audited
+  
 
   #
   # Validate the name should unique

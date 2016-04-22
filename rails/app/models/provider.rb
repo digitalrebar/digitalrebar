@@ -15,7 +15,7 @@
 
 class Provider < ActiveRecord::Base
 
-  audited
+  
   has_many :nodes
 
   def as_json(args = nil)

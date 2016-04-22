@@ -15,7 +15,7 @@
 
 class RoleRequireAttrib < ActiveRecord::Base
 
-  audited
+  
 
   belongs_to      :role
   has_one         :attrib,      :class_name => "Attrib", :foreign_key => "name", :primary_key => "attrib_name"

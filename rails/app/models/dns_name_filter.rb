@@ -14,7 +14,7 @@
 
 class DnsNameFilter < ActiveRecord::Base
 
-  audited
+  
 
   has_many :dns_name_entries,   :dependent => :destroy
 

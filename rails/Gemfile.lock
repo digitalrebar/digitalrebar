@@ -89,11 +89,6 @@ GEM
     addressable (2.3.8)
     amq-protocol (2.0.1)
     arel (6.0.3)
-    audited (4.2.0)
-      rails-observers (~> 0.1.2)
-    audited-activerecord (4.2.0)
-      activerecord (~> 4.0)
-      audited (= 4.2.0)
     bcrypt (3.1.10)
     berkshelf (4.0.1)
       addressable (~> 2.3.4)
@@ -323,8 +318,6 @@ GEM
       rails-deprecated_sanitizer (>= 1.0.1)
     rails-html-sanitizer (1.0.2)
       loofah (~> 2.0)
-    rails-observers (0.1.2)
-      activemodel (~> 4.0)
     railties (4.2.5)
       actionpack (= 4.2.5)
       activesupport (= 4.2.5)
@@ -510,7 +503,6 @@ PLATFORMS
 
 DEPENDENCIES
   active_scaffold
-  audited-activerecord (~> 4.2.0)
   barclamp_bios!
   barclamp_burnin!
   barclamp_ceph!

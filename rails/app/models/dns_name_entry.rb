@@ -14,7 +14,7 @@
 
 class DnsNameEntry < ActiveRecord::Base
 
-  audited
+  
 
   belongs_to :network_allocation
   belongs_to :dns_name_filter

@@ -17,7 +17,7 @@ require 'json'
 
 class DeploymentRole < ActiveRecord::Base
 
-  audited
+  
 
   after_commit :role_create_hook, on: :create
   before_destroy  :role_delete_hook
