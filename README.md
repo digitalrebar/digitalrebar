@@ -169,6 +169,7 @@ a \.  To begin with a literal \, escape it with \\.
 Currently, the classifier knows about 2 actions:
 
 * Log
+
   Emit a logging message.
 * Script
 
@@ -189,3 +190,34 @@ Takes a list of maps.  The first element of the list should have the
 key Duration with an integer value that represents the number of
 seconds to delay before running the following actions.  The rest of
 the elements of the list are Actions as described above.
+
+* Bind
+
+Takes YAML object with the following format:
+    
+    ---
+    NodeID: string
+    DeploymentID: string
+    RoleID: string
+    SaveAs: string
+    
+Exactly 2 of the ID fields must be filled, and which two determine
+what action Bind will take.
+
+  * NodeID and RoleID: a Role will be bound to a Node
+  * DeploymentID and NodeID: a Node will be moved to the Deployment
+  * RoleID and DeploymentID: a Role will be bound to the Deployment
+  
+If SaveAs is set, the resultant new object's unique identifier (if one was created) will be saved to the referenced variable.
+
+* Commit
+
+Takes a YAML object with the following format:
+
+    ---
+    NodeID: string
+    DeploymentID: string
+    DeploymentRoleID: string
+    NodeRoleID: string
+    
+Exactly one of the fields must be filled, and that thing will be committed.
