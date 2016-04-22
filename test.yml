@@ -29,3 +29,17 @@
     - Log: true
     - Script: |
        echo "System has {{.Vars.driveCount}} drives, which is more than the 3 we were looking for"
+- Name: 'test os install rule'
+  Matchers:
+    - JSON:
+        Selector: ':root .Evt .role .name:val("rebar-managed-node")'
+    - JSON:
+        Selector: ':root .Evt .node .uuid'
+        PickResults:
+          nodeName: 0
+  MatchActions:
+    - Bind:
+        NodeID: '$nodeName'
+        RoleID: 'rebar-installed-node'
+    - Commit:
+        NodeID: '$nodeName'
