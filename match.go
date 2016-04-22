@@ -258,33 +258,31 @@ func matchCmp(op string, val interface{}) (Matcher, error) {
 		}
 	}
 	return func(e *RunContext) (bool, error) {
-		for i, arg := range fixedArgs {
-			arg, err := e.getVar(arg)
-			if err != nil {
-				return false, fmt.Errorf("Failed to fetch variable for %s on %v: %v", op, val, err)
-			}
-			fixedArgs[i] = arg
+		a, err := e.getVar(fixedArgs)
+		if err != nil {
+			return false, fmt.Errorf("Failed to fetch variable for %s on %v: %v", op, val, err)
 		}
-		log.Printf("Comparing %v %s %v", fixedArgs[0], op, fixedArgs[1])
+		args := a.([]interface{})
+		log.Printf("Comparing %v %s %v", args[0], op, args[1])
 		switch op {
 		case "Eq":
-			return reflect.DeepEqual(fixedArgs[0], fixedArgs[1]), nil
+			return reflect.DeepEqual(args[0], args[1]), nil
 		case "Ne":
-			return !reflect.DeepEqual(fixedArgs[0], fixedArgs[1]), nil
+			return !reflect.DeepEqual(args[0], args[1]), nil
 		case "Lt":
-			return lt(fixedArgs[0], fixedArgs[1])
+			return lt(args[0], args[1])
 		case "Gt":
-			return lt(fixedArgs[1], fixedArgs[0])
+			return lt(args[1], args[0])
 		case "Le":
-			res, err := lt(fixedArgs[0], fixedArgs[1])
+			res, err := lt(args[0], args[1])
 			if !res && err == nil {
-				res = reflect.DeepEqual(fixedArgs[0], fixedArgs[1])
+				res = reflect.DeepEqual(args[0], args[1])
 			}
 			return res, err
 		case "Ge":
-			res, err := lt(fixedArgs[1], fixedArgs[0])
+			res, err := lt(args[1], args[0])
 			if !res && err == nil {
-				res = reflect.DeepEqual(fixedArgs[0], fixedArgs[1])
+				res = reflect.DeepEqual(args[0], args[1])
 			}
 			return res, err
 		default:
