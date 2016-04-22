@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/VictorLowther/jsonpatch/utils"
 	"github.com/digitalrebar/rebar-api/client"
 )
 
@@ -103,154 +102,131 @@ func actionCommit(val interface{}) (Action, error) {
 	return nil, nil
 }
 
-type binder struct {
-	NodeID       string
-	RoleID       string
-	DeploymentID string
-	SaveAs       string
+func bindNodeRole(c *RunContext, nodeID, roleID, saveAs string) error {
+	node := &client.Node{}
+	role := &client.Role{}
+	if err := client.Fetch(node, nodeID); err != nil {
+		return fmt.Errorf("Failed to load Node with id %s: %v", nodeID, err)
+	}
+	if err := client.Fetch(role, roleID); err != nil {
+		return fmt.Errorf("Failed to load Role with id %s: %v", roleID, err)
+	}
+	nr := &client.NodeRole{}
+	if err := client.Init(nr); err != nil {
+		return fmt.Errorf("Failed to initialize NodeRole: %v", err)
+	}
+	nr.RoleID = role.ID
+	nr.NodeID = node.ID
+	nr.DeploymentID = node.DeploymentID
+	if err := client.BaseCreate(nr); err != nil {
+		return fmt.Errorf("Failed to create noderole for node: %s role %s: %v",
+			nodeID,
+			roleID,
+			err)
+	}
+	if saveAs != "" {
+		c.Vars[saveAs], _ = nr.Id()
+	}
+	return nil
 }
 
-func normalizeRefs(c *RunContext, a, b string) (d, e string, err error) {
-	var aRef, bRef interface{}
-	d, e = a, b
-	aRef, err = c.getVar(a)
-	if err == nil {
-		bRef, err = c.getVar(b)
+func moveNode(nodeID, deplID string) error {
+	node := &client.Node{}
+	deployment := &client.Deployment{}
+	if err := client.Fetch(node, nodeID); err != nil {
+		return fmt.Errorf("Failed to fetch Node %s: %v", nodeID, err)
 	}
-	if err != nil {
-		return a, b, err
+	if err := client.Fetch(deployment, deplID); err != nil {
+		return fmt.Errorf("Failed to fetch deployment %s: %v", deplID, err)
 	}
-	var ok bool
-	d, ok = aRef.(string)
-	if !ok {
-		return a, b, fmt.Errorf("normalizeRefs: %#v is not a string", d)
+	if err := node.Move(deployment); err != nil {
+		return fmt.Errorf("Failed to move node %s to deployment %s: %v",
+			nodeID,
+			deplID,
+			err)
 	}
-	e, ok = bRef.(string)
-	if !ok {
-		return a, b, fmt.Errorf("normalizeRefs: %#v is not a string", d)
-	}
-	return
+	return nil
 }
 
-func bindNodeRole(b *binder) (Action, error) {
-	return func(c *RunContext) error {
-		nodeID, roleID, err := normalizeRefs(c, b.NodeID, b.RoleID)
-		if err != nil {
-			return fmt.Errorf("bindNodeRole: Lookup failed for %#v: %v", b, err)
-		}
-
-		node := &client.Node{}
-		role := &client.Role{}
-		if err := client.Fetch(node, nodeID); err != nil {
-			return fmt.Errorf("Failed to load Node with id %s: %v", nodeID, err)
-		}
-		if err := client.Fetch(role, roleID); err != nil {
-			return fmt.Errorf("Failed to load Role with id %s: %v", roleID, err)
-		}
-		nr := &client.NodeRole{}
-		if err := client.Init(nr); err != nil {
-			return fmt.Errorf("Failed to initialize NodeRole: %v", err)
-		}
-		nr.RoleID = role.ID
-		nr.NodeID = node.ID
-		nr.DeploymentID = node.DeploymentID
-		if err := client.BaseCreate(nr); err != nil {
-			return fmt.Errorf("Failed to create noderole for node: %s role %s: %v",
-				nodeID,
-				roleID,
-				err)
-		}
-		if b.SaveAs != "" {
-			c.Vars[b.SaveAs], _ = nr.Id()
-		}
-		return nil
-	}, nil
-
-}
-
-func moveNode(b *binder) (Action, error) {
-	return func(c *RunContext) error {
-		nodeID, deploymentID, err := normalizeRefs(c, b.NodeID, b.DeploymentID)
-		if err != nil {
-			return fmt.Errorf("moveNode: Lookup failed for %#v: %v", b, err)
-		}
-		node := &client.Node{}
-		deployment := &client.Deployment{}
-		if err := client.Fetch(node, nodeID); err != nil {
-			return fmt.Errorf("Failed to fetch Node %s: %v", nodeID, err)
-		}
-		if err := client.Fetch(deployment, deploymentID); err != nil {
-			return fmt.Errorf("Failed to fetch deployment %s: %v", deploymentID, err)
-		}
-		if err := node.Move(deployment); err != nil {
-			return fmt.Errorf("Failed to move node %s to deployment %s: %v",
-				nodeID,
-				deploymentID,
-				err)
-		}
-		return nil
-	}, nil
-}
-
-func bindDeploymentRole(b *binder) (Action, error) {
-	return func(c *RunContext) error {
-		deploymentID, roleID, err := normalizeRefs(c, b.DeploymentID, b.RoleID)
-		if err != nil {
-			return fmt.Errorf("bindDeploymentRole: Lookup failed for %#v: %v", b, err)
-		}
-		deployment := &client.Deployment{}
-		role := &client.Role{}
-		if err := client.Fetch(deployment, deploymentID); err != nil {
-			return fmt.Errorf("Failed to fetch deployement %s: %v", deploymentID, err)
-		}
-		if err := client.Fetch(role, roleID); err != nil {
-			return fmt.Errorf("Failed to fetch role %s: %v", roleID, err)
-		}
-		dr := &client.DeploymentRole{}
-		dr.DeploymentID = deployment.ID
-		dr.RoleID = role.ID
-		if err := client.BaseCreate(dr); err != nil {
-			return fmt.Errorf("Failed to create deploymentrole for deployment %s: role %s: %v",
-				deploymentID,
-				roleID,
-				err)
-		}
-		if b.SaveAs != "" {
-			c.Vars[b.SaveAs], _ = dr.Id()
-		}
-		return nil
-	}, nil
+func bindDeploymentRole(c *RunContext, deplID, roleID, saveAs string) error {
+	deployment := &client.Deployment{}
+	role := &client.Role{}
+	if err := client.Fetch(deployment, deplID); err != nil {
+		return fmt.Errorf("Failed to fetch deployement %s: %v", deplID, err)
+	}
+	if err := client.Fetch(role, roleID); err != nil {
+		return fmt.Errorf("Failed to fetch role %s: %v", roleID, err)
+	}
+	dr := &client.DeploymentRole{}
+	dr.DeploymentID = deployment.ID
+	dr.RoleID = role.ID
+	if err := client.BaseCreate(dr); err != nil {
+		return fmt.Errorf("Failed to create deploymentrole for deployment %s: role %s: %v",
+			deplID,
+			roleID,
+			err)
+	}
+	if saveAs != "" {
+		c.Vars[saveAs], _ = dr.Id()
+	}
+	return nil
 }
 
 func actionBind(val interface{}) (Action, error) {
-	b := &binder{}
-	if err := utils.Remarshal(val, &b); err != nil {
-		return nil, fmt.Errorf("Error extracting binding: %v", err)
+	b, ok := val.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Error extracting binding %#v", b)
 	}
 	present := 0
-	if b.NodeID != "" {
-		present++
-	}
-	if b.RoleID != "" {
-		present++
-	}
-	if b.DeploymentID != "" {
-		present++
+	for k, v := range b {
+		switch k {
+		case "NodeID", "RoleID", "DeploymentID":
+			present++
+		case "SaveAs":
+			x, ok := v.(string)
+			if !ok {
+				return nil, fmt.Errorf("SaveAs must be a string")
+			}
+			b[k] = x
+		default:
+			return nil, fmt.Errorf("bind: Unknown key %s", k)
+		}
 	}
 	if present != 2 {
 		return nil, fmt.Errorf("Bind action requires 2 things to bind, got %d: %#v", present, b)
 	}
-
-	if b.NodeID != "" && b.RoleID != "" {
-		return bindNodeRole(b)
-	}
-	if b.NodeID != "" && b.DeploymentID != "" {
-		return moveNode(b)
-	}
-	if b.RoleID != "" && b.DeploymentID != "" {
-		return bindDeploymentRole(b)
-	}
-	return nil, fmt.Errorf("Invalid binding: %#v", b)
+	return func(c *RunContext) error {
+		vars, err := c.getVar(b)
+		if err != nil {
+			return err
+		}
+		v := vars.(map[string]interface{})
+		var roleOK, deplOK, nodeOK bool
+		var roleID, deplID, nodeID, saveAs string
+		for k, val := range v {
+			switch k {
+			case "NodeID":
+				nodeID, nodeOK = val.(string)
+			case "RoleID":
+				roleID, roleOK = val.(string)
+			case "DeploymentID":
+				deplID, deplOK = val.(string)
+			case "SaveAs":
+				saveAs, _ = val.(string)
+			default:
+				log.Panicf("Cannot happen: %s", k)
+			}
+		}
+		if nodeOK && roleOK {
+			return bindNodeRole(c, nodeID, roleID, saveAs)
+		} else if nodeOK && deplOK {
+			return moveNode(nodeID, deplID)
+		} else if roleOK && deplOK {
+			return bindDeploymentRole(c, deplID, roleID, saveAs)
+		}
+		log.Panic("Cannot happen")
+		return nil
+	}, nil
 }
 
 func actionDelay(val interface{}) (Action, error) {

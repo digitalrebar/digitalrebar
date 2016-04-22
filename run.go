@@ -22,24 +22,46 @@ func makeContext(e *Event) *RunContext {
 	return &RunContext{Evt: e}
 }
 
+// I am going to hell for this
 func (c *RunContext) getVar(arg interface{}) (interface{}, error) {
-	varRef, ok := arg.(string)
-	if !ok {
-		return arg, nil
-	}
-	if strings.HasPrefix(varRef, `$`) {
-		log.Printf("Fetching variable %s", varRef)
-		arg, ok := c.Vars[strings.TrimPrefix(varRef, `$`)]
-		if !ok {
-			return nil, fmt.Errorf("Unknown variable %s", varRef)
+	switch v := arg.(type) {
+	case string:
+		if strings.HasPrefix(v, `$`) {
+			log.Printf("Fetching variable %s", v)
+			res, ok := c.Vars[strings.TrimPrefix(v, `$`)]
+			if !ok {
+				return nil, fmt.Errorf("Unknown variable %s", v)
+			}
+			return res, nil
 		}
+		re := regexp.MustCompile(`^\\+\$`)
+		if re.MatchString(v) {
+			return strings.TrimPrefix(v, `\`), nil
+		}
+		return v, nil
+	case []interface{}:
+		res := make([]interface{}, len(v))
+		for i, t := range v {
+			retVal, err := c.getVar(t)
+			if err != nil {
+				return nil, err
+			}
+			res[i] = retVal
+		}
+		return res, nil
+	case map[string]interface{}:
+		res := make(map[string]interface{})
+		for k, t := range v {
+			retVal, err := c.getVar(t)
+			if err != nil {
+				return nil, err
+			}
+			res[k] = retVal
+		}
+		return res, nil
+	default:
 		return arg, nil
 	}
-	re := regexp.MustCompile(`^\\+\$`)
-	if re.MatchString(varRef) {
-		return strings.TrimPrefix(varRef, `\`), nil
-	}
-	return arg, nil
 }
 
 func (c *RunContext) Clone() (*RunContext, error) {
