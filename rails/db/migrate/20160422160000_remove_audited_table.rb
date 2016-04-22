@@ -16,6 +16,7 @@
 class RemoveAuditedTable < ActiveRecord::Migration
 
   def self.up
-    drop_table :audited_events
+    drop_table :audits
+    drop_table :audit_trackers
   end
 end
