@@ -42,6 +42,7 @@ roles:
   - name: rebar-hardware-configured
     description: "Rebar Hardware Configured Checkpoint"
     jig: noop
+    icon: 'redeem'
     flags:
       - implicit
       - milestone
@@ -51,6 +52,7 @@ roles:
   - name: rebar-installed-node
     description: "Rebar Node Ready Checkpoint"
     jig: noop
+    icon: 'thumb up'
     flags:
       - milestone
       - implicit
@@ -61,6 +63,7 @@ roles:
   - name: rebar-docker-node
     description: "Docker Node Ready Checkpoint"
     jig: noop
+    icon: 'developer board'
     flags:
       - milestone
       - implicit
@@ -71,6 +74,13 @@ roles:
     provides:
       - rebar-managed-node
       - rebar-installed-node
+  - name: rebar-cloud-node
+    description: "Cloud Connected Checkpoint"
+    jig: noop
+    icon: 'cloud'
+    flags:
+      - milestone
+      - implicit
   - name: rebar-inventory
     description: "Rebar Inventory"
     flags:
