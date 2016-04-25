@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/digitalrebar/rebar-api/client"
 )
@@ -229,6 +230,64 @@ func actionBind(val interface{}) (Action, error) {
 	}, nil
 }
 
+func retryNodeRole(c *RunContext, nodeRoleId string) error {
+	nr := &client.NodeRole{}
+	if err := client.Fetch(nr, nodeRoleId); err != nil {
+		return fmt.Errorf("Failed to load NodeRole with id %s: %v", nodeRoleId, err)
+	}
+	if err := nr.Retry(); err != nil {
+		return fmt.Errorf("Failed to retry noderole: %s: %v",
+			nodeRoleId,
+			err)
+	}
+	return nil
+}
+
+func actionRetry(val interface{}) (Action, error) {
+	b, ok := val.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Error extracting retry binding %#v", b)
+	}
+	present := 0
+	for k, _ := range b {
+		switch k {
+		case "NodeRoleID":
+			present++
+		default:
+			return nil, fmt.Errorf("retry: Unknown key %s", k)
+		}
+	}
+	if present != 1 {
+		return nil, fmt.Errorf("Retry action requires 1 thing to retry, got %d: %#v", present, b)
+	}
+	return func(c *RunContext) error {
+		vars, err := c.getVar(b)
+		if err != nil {
+			return err
+		}
+		v := vars.(map[string]interface{})
+		var nodeRoleOK bool
+		var nodeRoleID string
+		for k, val := range v {
+			switch k {
+			case "NodeRoleID":
+				var nr_id float64
+				nr_id, nodeRoleOK = val.(float64)
+				if nodeRoleOK {
+					nodeRoleID = strconv.FormatFloat(nr_id, 'f', -1, 64)
+				}
+			default:
+				log.Panicf("Cannot happen: %s", k)
+			}
+		}
+		if nodeRoleOK {
+			return retryNodeRole(c, nodeRoleID)
+		}
+		log.Panic("Cannot happen")
+		return nil
+	}, nil
+}
+
 func actionDelay(val interface{}) (Action, error) {
 	array, ok := val.([]interface{})
 	if !ok {
@@ -312,6 +371,12 @@ func actionDelay(val interface{}) (Action, error) {
 //
 // If "SaveAs is set, the resultant new object's unique identifier (if
 // one was created) will be saved in the referenced variable
+//
+// "Retry", which causes a node role to be retried.
+//   struct {
+//     NodeRoleId string
+//   }
+// This causes the node role to be retried.
 func ResolveAction(a map[string]interface{}) (Action, error) {
 	if len(a) != 1 {
 		return nil, fmt.Errorf("Actions have exactly one key")
@@ -326,6 +391,8 @@ func ResolveAction(a map[string]interface{}) (Action, error) {
 			return actionDelay(v)
 		case "Bind":
 			return actionBind(v)
+		case "Retry":
+			return actionRetry(v)
 		case "Commit":
 			return actionCommit(v)
 		default:
