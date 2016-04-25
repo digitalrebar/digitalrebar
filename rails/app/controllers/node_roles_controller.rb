@@ -115,7 +115,7 @@ class NodeRolesController < ApplicationController
       raise "could not find role #{params[:id]}" unless role
       @node_role = NodeRole.find_by!(node_id: node.id, role_id: role.id)
     else
-      @node_role = NodeRole.find params[:id]
+      @node_role = NodeRole.find_key params[:id]
     end
     respond_to do |format|
       format.html {  }
@@ -171,7 +171,7 @@ class NodeRolesController < ApplicationController
                        NodeRole.find_by!(node_id: node.id, role_id: role.id).lock!
                      end
                    else
-                     NodeRole.find(key).lock!
+                     NodeRole.find_key(key).lock!
                    end
       # if you've been passed data then save it
       if request.patch?
@@ -190,7 +190,7 @@ class NodeRolesController < ApplicationController
   end
 
   def destroy
-    @node_role = NodeRole.find (params[:id] || params[:node_role_id])
+    @node_role = NodeRole.find_key (params[:id] || params[:node_role_id])
     @node_role.destroy
     respond_to do |format|
       format.html { redirect_to deployment_path(@node_role.deployment_id) }
@@ -199,7 +199,7 @@ class NodeRolesController < ApplicationController
   end
 
   def propose
-    @node_role = NodeRole.find params[:node_role_id]
+    @node_role = NodeRole.find_key params[:node_role_id]
     @node_role.propose!
     respond_to do |format|
       format.html { redirect_to node_role_path(@node_role.id) }
@@ -208,7 +208,7 @@ class NodeRolesController < ApplicationController
   end
 
   def commit
-    @node_role = NodeRole.find params[:node_role_id]
+    @node_role = NodeRole.find_key params[:node_role_id]
     @node_role.commit!
     respond_to do |format|
       format.html { redirect_to node_role_path(@node_role.id) }
@@ -218,7 +218,7 @@ class NodeRolesController < ApplicationController
 
   def retry
     params[:id] ||= params[:node_role_id]
-    @node_role = NodeRole.find params[:id]
+    @node_role = NodeRole.find_key params[:id]
     @node_role.todo!
     respond_to do |format|
       format.html { redirect_to node_role_path(@node_role.id) }
@@ -227,12 +227,12 @@ class NodeRolesController < ApplicationController
   end
 
   def parents
-    @node_role = NodeRole.find params[:node_role_id]
+    @node_role = NodeRole.find_key params[:node_role_id]
     render api_index NodeRole, @node_role.parents
   end
 
   def children
-    @node_role = NodeRole.find params[:node_role_id]
+    @node_role = NodeRole.find_key params[:node_role_id]
     render api_index NodeRole, @node_role.children
   end
 
