@@ -374,7 +374,7 @@ func actionDelay(val interface{}) (Action, error) {
 //
 // "Retry", which causes a node role to be retried.
 //   struct {
-//     NodeRoleId string
+//     NodeRoleId float64
 //   }
 // This causes the node role to be retried.
 func ResolveAction(a map[string]interface{}) (Action, error) {
