@@ -221,3 +221,12 @@ Takes a YAML object with the following format:
     NodeRoleID: string
     
 Exactly one of the fields must be filled, and that thing will be committed.
+
+* Retry
+
+Takes a YAML object with the following format:
+
+    ---
+    NodeRoleID: float64
+
+The specified NodeRole is retried.  The normal usage will be to get the node role id from the event.  This is a float.

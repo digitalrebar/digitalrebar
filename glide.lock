@@ -1,5 +1,5 @@
 hash: ae6768bd6d5a44bb8fa798f447747a7676afd35b424548edb751934da8547c10
-updated: 2016-04-18T11:12:27.911727345-05:00
+updated: 2016-04-25T12:02:15.678367351-05:00
 imports:
 - name: github.com/cloudfoundry-incubator/candiedyaml
   version: 5cef21e2e4f0fd147973b558d4db7395176bcd95
@@ -8,7 +8,7 @@ imports:
 - name: github.com/coddingtonbear/go-simplejson
   version: a582018feafb39c4884d1b03cad98b91e2804276
 - name: github.com/digitalrebar/rebar-api
-  version: 3f42b8459ee9c4d1cfe70ef21fbb722094a66403
+  version: 0b51cd78ae31dac3a01f3dee1c1815a855057460
   subpackages:
   - client
   - datatypes
@@ -21,11 +21,16 @@ imports:
   subpackages:
   - utils
 - name: golang.org/x/crypto
-  version: d68c3ecb62c850b645dc072a8d78006286bf81ca
+  version: e84a34b1eedf81a90fb4f502d02d64ad365ef937
   subpackages:
   - nacl/box
   - curve25519
   - nacl/secretbox
   - salsa20/salsa
   - poly1305
+- name: golang.org/x/net
+  version: b797637b7aeeed133049c7281bfa31dcc9ca42d6
+  subpackages:
+  - html
+  - html/atom
 devImports: []
