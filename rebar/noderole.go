@@ -1,9 +1,33 @@
 package main
 
-import "github.com/digitalrebar/rebar-api/client"
+import (
+	"fmt"
+	"log"
+
+	"github.com/digitalrebar/rebar-api/client"
+	"github.com/spf13/cobra"
+)
 
 func init() {
 	maker := func() client.Crudder { return &client.NodeRole{} }
 	singularName := "noderole"
-	app.AddCommand(makeCommandTree(singularName, maker))
+	nodes := makeCommandTree(singularName, maker)
+	nodes.AddCommand(&cobra.Command{
+		Use:   "retry [id]",
+		Short: "Force a node role to rerun itself",
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 1 {
+				log.Fatalf("%v requires one argument\n", c.UseLine())
+			}
+			obj := &client.NodeRole{}
+			if client.SetId(obj, args[0]) != nil {
+				log.Fatalf("Failed to parse ID %v for a NodeRole\n", args[0])
+			}
+			if err := obj.Retry(); err != nil {
+				log.Fatalf("Failed to retry %v\n%v\n", args[0], err)
+			}
+			fmt.Println(prettyJSON(obj))
+		},
+	})
+	app.AddCommand(nodes)
 }
