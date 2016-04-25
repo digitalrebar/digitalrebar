@@ -26,7 +26,13 @@
 
 class Hammer < ActiveRecord::Base
 
-  audited
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
 
   belongs_to :node
   belongs_to :available_hammer

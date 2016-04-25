@@ -17,7 +17,13 @@ require 'json'
 
 class NodeRole < ActiveRecord::Base
 
-  audited
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
 
   after_commit :run_hooks, on: [:update, :create]
   around_save :run_synchronous_hooks

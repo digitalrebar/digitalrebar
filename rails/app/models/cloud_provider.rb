@@ -20,6 +20,13 @@ class CloudProvider < Provider
 
   after_commit :register_endpoint, on: [:create, :update]
 
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
   def can_create_nodes
     true
   end

@@ -14,7 +14,13 @@
 
 class Role < ActiveRecord::Base
 
-  audited
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
 
   class Role::MISSING_DEP < StandardError
   end

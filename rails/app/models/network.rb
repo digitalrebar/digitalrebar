@@ -20,7 +20,13 @@ class Network < ActiveRecord::Base
   DEFAULTCONDUIT = '1g0'
   BMCCONDUIT     = 'bmc'
 
-  audited
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
 
   validate        :check_network_sanity
   after_commit    :add_role, on: :create

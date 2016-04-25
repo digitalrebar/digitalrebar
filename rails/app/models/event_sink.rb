@@ -17,6 +17,14 @@ require 'rest-client'
 
 class EventSink < ActiveRecord::Base
 
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
+  
   validate :check_endpoint_sanity
   has_many :event_selectors
 

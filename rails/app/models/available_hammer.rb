@@ -15,7 +15,15 @@
 
 class AvailableHammer < ActiveRecord::Base
 
-  audited
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
+
+  
   has_many :hammers
 
 end

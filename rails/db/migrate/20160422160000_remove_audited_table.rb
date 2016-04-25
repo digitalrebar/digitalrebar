@@ -1,4 +1,4 @@
-# Copyright 2015 RackN
+# Copyright 2016, RackN
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,22 +13,10 @@
 # limitations under the License.
 #
 
-class MetalProvider < Provider
+class RemoveAuditedTable < ActiveRecord::Migration
 
-  after_create      :load_uuid
-
-  def load_uuid
-    self.reload
+  def self.up
+    drop_table :audits
+    drop_table :audit_trackers
   end
-
-  private :load_uuid
-  
-  def self.template
-  	{}
-  end
-
-  def reboot_node(obj)
-    obj.power.reboot
-  end
-
 end

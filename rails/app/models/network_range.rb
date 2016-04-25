@@ -14,7 +14,13 @@
 
 class NetworkRange < ActiveRecord::Base
 
-  audited
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
 
   after_commit :on_change_hooks
 

@@ -15,6 +15,14 @@
 
 class SecureShellHammer < Hammer
 
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
+  
   # For now, assume that the SSH power manager is always applicable.
   # This may change if we start having non-Linux nodes.
   def self.probe(node)

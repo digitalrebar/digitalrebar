@@ -15,7 +15,13 @@
 
 class Barclamp < ActiveRecord::Base
 
-  audited
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
 
   #
   # Validate the name should unique

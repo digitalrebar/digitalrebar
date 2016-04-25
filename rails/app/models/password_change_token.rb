@@ -21,6 +21,14 @@ class PasswordChangeToken < ActiveRecord::Base
 
   belongs_to :user
   before_create :gen_key
+
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
   
   def as_json(opts = nil)
     opts ||= {}

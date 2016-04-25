@@ -15,7 +15,13 @@
 
 class RoleRequire < ActiveRecord::Base
 
-  audited
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
 
   belongs_to      :role
   belongs_to      :parent, class_name: Role, foreign_key: "required_role_id"
