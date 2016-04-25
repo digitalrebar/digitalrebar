@@ -18,7 +18,7 @@ require 'open4'
 
 class Node < ActiveRecord::Base
 
-  
+  after_create      :load_uuid
 
   before_validation :default_population
   before_destroy    :before_destroy_handler
@@ -552,6 +552,10 @@ class Node < ActiveRecord::Base
       end
       self.provider.delete_node(self)
     end
+  end
+
+  def load_uuid
+    self.reload
   end
 
 end

@@ -14,7 +14,13 @@
 
 class NetworkRouter < ActiveRecord::Base
 
-  
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
 
   validate    :router_is_sane
   before_save :infer_address

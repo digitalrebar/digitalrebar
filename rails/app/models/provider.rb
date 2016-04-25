@@ -15,6 +15,13 @@
 
 class Provider < ActiveRecord::Base
 
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
   
   has_many :nodes
 

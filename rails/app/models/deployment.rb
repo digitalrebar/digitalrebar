@@ -28,8 +28,13 @@ class Deployment < ActiveRecord::Base
     ERROR => "error"
   }
 
-  
+  after_create      :load_uuid
 
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
   after_commit :run_if_any_runnable, on: :update
   after_create :add_phantom_node
   before_destroy :release_nodes    # also prevent deleting if deployment is a system deployment

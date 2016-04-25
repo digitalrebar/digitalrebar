@@ -14,6 +14,14 @@
 
 class Service < Role
 
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
+  
   def wait_for_service(nr,data,service_name)
     runlog = []
     runlog << "Getting #{service_name} information from consul"

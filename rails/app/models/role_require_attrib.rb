@@ -15,7 +15,13 @@
 
 class RoleRequireAttrib < ActiveRecord::Base
 
-  
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
 
   belongs_to      :role
   has_one         :attrib,      :class_name => "Attrib", :foreign_key => "name", :primary_key => "attrib_name"

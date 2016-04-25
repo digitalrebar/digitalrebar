@@ -17,6 +17,14 @@ class OpenStackProvider < CloudProvider
 
   before_save :inject_packet
 
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
+
   def self.template
     { 
       url: {

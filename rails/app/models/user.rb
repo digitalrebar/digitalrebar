@@ -21,7 +21,13 @@ class User < ActiveRecord::Base
   # :recoverable, :registerable, :rememberable, :timeoutable, :token_authenticatable,
   # :trackable, :validatable
 
-  
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
 
   devise :database_authenticatable, :registerable,
          :rememberable, :trackable, :validatable, :recoverable,

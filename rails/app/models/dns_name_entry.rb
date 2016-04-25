@@ -14,7 +14,13 @@
 
 class DnsNameEntry < ActiveRecord::Base
 
-  
+  after_create      :load_uuid
+
+  def load_uuid
+    self.reload
+  end
+
+  private :load_uuid
 
   belongs_to :network_allocation
   belongs_to :dns_name_filter
