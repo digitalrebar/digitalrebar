@@ -76,8 +76,9 @@ class EventSelectorsController < ApplicationController
   end
 
   def destroy
-    render api_delete EventSelector
+    @es = EventSelector.find_key(params[:id])
+    @es.destroy
+    render api_delete @es
   end
-
 
 end
