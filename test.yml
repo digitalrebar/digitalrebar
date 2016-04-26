@@ -1,6 +1,11 @@
 ---
 - Name: 'test script template rule'
   Matchers:
+    - EventType:
+      - event: on_active
+        obj_class: role
+      - event: on_error
+        obj_class: role
     - Enabled: true
     - Eq: [ true ,true]
   MatchActions:
@@ -10,7 +15,7 @@
     - Delay:
       - Duration: 30
       - Script: |
-         echo "This should be delayed 30 seconds"
+         echo "This should be delayed 30 seconds: {{.Vars.eventType}}"
          env
       - Log: true
 - Name: 'test logging rule'
