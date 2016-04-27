@@ -43,8 +43,26 @@ function set_var_in_common_env {
   sed -i -e "s/^${var}=.*/${var}=${value}/" common.env
 }
 
-ACCESS_MODE="FORWARDER"
+function add_classifier {
+    local clname=$1
+    local clpath=$2
+
+    echo "Adding classifier: $clname $clpath"
+    cat > /tmp/${clname}.yml <<EOF
+cl_${clname}:
+  extends:
+    file: docker-compose-common.yml
+    service: classifier
+  volumes:
+    - ${clpath}:/etc/classifier/rules.yml
+EOF
+    FILES="$FILES /tmp/${clname}.yml"
+    REMOVE_FILES="$REMOVE_FILES /tmp/${clname}.yml"
+}
+
 FILES="base.yml trust-me.yml"
+REMOVE_FILES=""
+ACCESS_MODE="FORWARDER"
 PROVISION_IT="NO"
 if [[ -f tag ]]; then
     DR_TAG="$(cat tag)"
@@ -53,7 +71,6 @@ elif [[ ! $DR_TAG ]]; then
 fi
 ADD_DNS=false
 RUN_NTP="NO"
-REMOVE_FILES=""
 
 while [[ $1 == -* ]] ; do
   arg=$1
@@ -146,17 +163,7 @@ while [[ $1 == -* ]] ; do
 
       clname=${clinfo%:*}
       clpath=${clinfo##*:}
-
-      cat > /tmp/${clname}.yml <<EOF
-${clname}:
-  extends:
-    file: docker-compose-common.yml
-    service: classifier
-  volumes:
-    - ${clpath}:/etc/classifier/rules.yml
-EOF
-      FILES="$FILES /tmp/${clname}.yml"
-      REMOVE_FILES="$REMOVE_FILES /tmp/${clname}.yml"
+      add_classifier "$clname" "$clpath"
       ;;
   esac
 
@@ -191,6 +198,14 @@ else
     echo "ACCESS MODE: $ACCESS_MODE is not HOST or FORWARDER"
     exit 1
 fi
+
+# Find classifier files in repos
+# This is assumed to be run from in the compose directory.
+echo "Trying to find classifiers"
+while read clpath ; do
+    clname=$(basename $(dirname $clpath))
+    add_classifier "$clname" "$clpath"
+done < <(find ../.. -type f -name classifier.yml 2>/dev/null)
 
 # Process templates and build one big yml file for now.
 rm -f docker-compose.yml
