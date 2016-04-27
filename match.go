@@ -268,8 +268,26 @@ func getAttrib(val interface{}) (Matcher, error) {
 			return nil, fmt.Errorf("GetAttrib: Unknown key %s", k)
 		}
 	}
+
 	return func(c *RunContext) (bool, error) {
 		var attrSrc client.Attriber
+		fixedId, err := c.getVar(id)
+		if err != nil {
+			return false, err
+		}
+		id, ok := fixedId.(string)
+		if !ok {
+			return false, fmt.Errorf("GetAttrib: thing id %#v does not resolve to a String", fixedId)
+		}
+		fixedAttrSrc, err := c.getVar(attrSrc)
+		if err != nil {
+			return false, err
+		}
+		attr, ok = fixedAttrSrc.(string)
+		if !ok {
+			return false, fmt.Errorf("GetAttrib: attrib name %#v does not resolve to a String", fixedAttrSrc)
+		}
+
 		switch tgt {
 		case "Node":
 			attrSrc = &client.Node{}
