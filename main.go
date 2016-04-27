@@ -172,7 +172,7 @@ func validateDefaultSelector() error {
 func main() {
 	flag.Parse()
 	if version {
-		log.Fatalf("Version: 0.1.0")
+		log.Fatalf("Version: 0.2.0")
 	}
 	if debug {
 		jsonselect.EnableLogger()
