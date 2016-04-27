@@ -10,6 +10,7 @@ import (
 
 	"github.com/VictorLowther/jsonpatch/utils"
 	js "github.com/coddingtonbear/go-jsonselect"
+	"github.com/digitalrebar/rebar-api/client"
 )
 
 // Matcher is what is used by Rules to determine whether they shouuld
@@ -235,6 +236,145 @@ func matchLen(val interface{}) (Matcher, error) {
 
 }
 
+func getAttrib(val interface{}) (Matcher, error) {
+	thing, ok := val.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("GetAttrib: Expeected a map[string]interface{}, got #%v", val)
+	}
+	var tgt, attr, id, saveAs string
+	for k, fv := range thing {
+		v, ok := fv.(string)
+		if !ok {
+			fmt.Errorf("GetAttrib: values must be strings, not %#v", fv)
+		}
+		switch k {
+		case "Node", "Role", "Deployment", "NodeRole", "DeploymentRole":
+			if tgt != "" {
+				return nil, fmt.Errorf("GetAttrib: Already looking for %s, cannot also look for %s", tgt, k)
+			}
+			tgt = k
+			id = v
+		case "Attrib":
+			if attr != "" {
+				return nil, fmt.Errorf("GetAttrib: Already getting attrib %s, cannot also look for %s", attr, v)
+			}
+			attr = v
+		case "SaveAs":
+			if saveAs != "" {
+				return nil, fmt.Errorf("GetAttrib: Already saving attr to %s, cannot also save it to %s", saveAs, v)
+			}
+			saveAs = v
+		default:
+			return nil, fmt.Errorf("GetAttrib: Unknown key %s", k)
+		}
+	}
+	return func(c *RunContext) (bool, error) {
+		var attrSrc client.Attriber
+		switch tgt {
+		case "Node":
+			attrSrc = &client.Node{}
+		case "Role":
+			attrSrc = &client.Role{}
+		case "Deployment":
+			attrSrc = &client.Deployment{}
+		case "NodeRole":
+			attrSrc = &client.NodeRole{}
+		case "DeploymentRole":
+			attrSrc = &client.DeploymentRole{}
+		default:
+			log.Panicf("GetAttrib: lookup of %s cannot happen!", tgt)
+		}
+		if err := client.Fetch(attrSrc, id); err != nil {
+			return false, err
+		}
+		attrVal, err := client.FetchAttrib(attrSrc, attr, "")
+		if err != nil {
+			return false, err
+		}
+		c.Vars[saveAs] = attrVal.Value
+		return true, nil
+	}, nil
+}
+
+func getThingUUID(val interface{}) (Matcher, error) {
+	thing, ok := val.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Expected a map[string]interface{}")
+	}
+	if len(thing) != 2 {
+		return nil, fmt.Errorf("Get: Expected one thing to get")
+	}
+	var tgt, id, saveAs string
+	for k, fv := range thing {
+		v, ok := fv.(string)
+		if !ok {
+			return nil, fmt.Errorf("Get: values must be strings!")
+		}
+		switch k {
+		case "Node", "Role", "NodeRole", "Deployment", "DeploymentRole":
+			if tgt != "" {
+				return nil, fmt.Errorf("Get: already looking for %s, will not get %s", tgt, k)
+			}
+			tgt = k
+			id = v
+		case "SaveAs":
+			if saveAs != "" {
+				return nil, fmt.Errorf("Get: already saving as %s, refusing to save as %s", saveAs, v)
+			}
+			saveAs = v
+		default:
+			return nil, fmt.Errorf("Don't know how to get %s", id)
+		}
+	}
+	return func(c *RunContext) (bool, error) {
+		v, err := c.getVar(id)
+		if err != nil {
+			return false, err
+		}
+		id, ok := v.(string)
+		if !ok {
+			return false, fmt.Errorf("Get: %#v is not a string", v)
+		}
+		var uuid string
+		switch tgt {
+		case "Node":
+			obj := &client.Node{}
+			if err := client.Fetch(obj, id); err != nil {
+				return false, err
+			}
+			uuid = obj.UUID
+		case "Role":
+			obj := &client.Role{}
+			if err := client.Fetch(obj, id); err != nil {
+				return false, err
+			}
+			uuid = obj.UUID
+		case "Deployment":
+			obj := &client.Deployment{}
+			if err := client.Fetch(obj, id); err != nil {
+				return false, err
+			}
+			uuid = obj.UUID
+		case "NodeRole":
+			obj := &client.NodeRole{}
+			if err := client.Fetch(obj, id); err != nil {
+				return false, err
+			}
+			uuid = obj.UUID
+		case "DeploymentRole":
+			obj := &client.DeploymentRole{}
+			if err := client.Fetch(obj, id); err != nil {
+				return false, err
+			}
+			uuid = obj.UUID
+		default:
+			log.Panicf("Get: looking for %s, cannot happen!", tgt)
+		}
+		c.Vars[saveAs] = uuid
+		return true, nil
+	}, nil
+}
+
 func matchCmp(op string, val interface{}) (Matcher, error) {
 	fixedArgs, ok := val.([]interface{})
 	if !ok || len(fixedArgs) != 2 {
@@ -412,6 +552,43 @@ func resolveAndOr(op string, val interface{}) (Matcher, error) {
 // a map, or a string), the matcher will return true and save the
 // length of the variable in the variable named by SaveAs, otherwise
 // it will return false.
+//
+// "UUID", which expects its value to be a struct matching the
+// following format:
+//
+//    struct {
+//        Node string
+//        Role string
+//        Deployment string
+//        NodeRole string
+//        DeploymentRole string
+//        SaveAs string
+//    }
+//
+// Out if those fields, exactly one of Node, Role, Deployment,
+// NodeRole, and DeploymentRole should be filled, and their values must
+// resolve to an existing object of their type, otherwise the matcher will not match.
+// If there is such an object, its UUID will be saved in SaveAs.
+//
+// "GetAttrib", which expects its value to be a struct wuth the following format:
+//
+//    struct {
+//        Attrib string
+//        Node string
+//        Role string
+//        Deployment string
+//        NodeRole string
+//        DeploymentRole string
+//        SaveAs string
+//    }
+//
+//
+// Out if those fields, exactly one of Node, Role, Deployment,
+// NodeRole, and DeploymentRole should be filled, and their values
+// must resolve to an existing object of their type, otherwise the
+// matcher will not match.  Attrib must also be filled with the name
+// of the Attrib to fetch.  If the vlue of the attrib can be fetched
+// for the object, it will be saved in the variable named by SaveAs
 func ResolveMatcher(m map[string]interface{}) (Matcher, error) {
 	if len(m) != 1 {
 		return nil, fmt.Errorf("Matchers have exactly one key")
@@ -432,6 +609,10 @@ func ResolveMatcher(m map[string]interface{}) (Matcher, error) {
 			return matchCmp(t, v)
 		case "Len":
 			return matchLen(v)
+		case "UUID":
+			return getThingUUID(v)
+		case "GetAttrib":
+			return getAttrib(v)
 		default:
 			return nil, fmt.Errorf("Unknown matcher %s", t)
 		}

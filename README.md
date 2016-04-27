@@ -139,10 +139,10 @@ Takes true or false, and matches if it was passed true.
   following extra environment variables:
 
   * REBAR_ENDPOINT
-    
+
     The API endpoint that DigitalRebar lives on.
   * REBAR_KEY
-    
+
     The username:password for DigitalRebar
 
 * Eq, Ne, Lt, Le, Gt, Ge
@@ -164,6 +164,46 @@ a \.  To begin with a literal \, escape it with \\.
       ---
       Var: variable name to get the length of
       SaveAs: variable name to save the length to
+
+* UUID
+
+  Takes a YAML object that specifies the thing to get the UUID of and
+  the name of the variable to save it in.  The YAML object has the
+  follwing format:
+
+      ---
+      Node: string
+      Role: string
+      Deployment: string
+      NodeRole: string
+      DeploymentRole: string
+      SaveAs: string
+
+  Out of those fields, exactly one of Node, Role, Deployment,
+  NodeRole, or DeploymentRole should be present.  The UUID of the
+  object will be saved in the variable pointed to by SaveAs, otherwise
+  the matcher will fail.
+
+* GetAttrib
+
+  Takes a YAML object that specifies the attrib to get, the object to
+  get it from, and the variable to save the retrieved value to.  The
+  YAML object has the following format:
+
+      ---
+      Attrib: string
+      Node: string
+      Role: string
+      Deployment: string
+      NodeRole: string
+      DeploymentRole: string
+      SaveAs: string
+
+  Out of those fields, Attrib must be filled with the name of the
+  attrib to fetch, and exactly one of Node, Role, Deployment,
+  NodeRole, or DeploymentRole should be present.  The value of the
+  attrib will be saved in the variable referred to in SaveAs if it
+  could be retrieved, otherwise the matcher will fail.
 
 #### Actions:
 Currently, the classifier knows about 2 actions:
@@ -194,20 +234,20 @@ the elements of the list are Actions as described above.
 * Bind
 
 Takes YAML object with the following format:
-    
+
     ---
     NodeID: string
     DeploymentID: string
     RoleID: string
     SaveAs: string
-    
+
 Exactly 2 of the ID fields must be filled, and which two determine
 what action Bind will take.
 
   * NodeID and RoleID: a Role will be bound to a Node
   * DeploymentID and NodeID: a Node will be moved to the Deployment
   * RoleID and DeploymentID: a Role will be bound to the Deployment
-  
+
 If SaveAs is set, the resultant new object's unique identifier (if one was created) will be saved to the referenced variable.
 
 * Commit
@@ -219,5 +259,5 @@ Takes a YAML object with the following format:
     DeploymentID: string
     DeploymentRoleID: string
     NodeRoleID: string
-    
+
 Exactly one of the fields must be filled, and that thing will be committed.

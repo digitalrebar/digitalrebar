@@ -31,6 +31,10 @@
        echo "System has {{.Vars.driveCount}} drives, which is more than the 3 we were looking for"
 - Name: 'test os install rule'
   Matchers:
+    - GetAttrib:
+        Node: "system-phantom.internal.local"
+        Attrib: "disks"
+        SaveAs: "phantom-drives"
     - JSON:
         Selector: ':root .Evt .role .name:val("rebar-managed-node")'
     - JSON:
