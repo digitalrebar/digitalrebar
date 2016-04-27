@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/digitalrebar/rebar-api/client"
 )
@@ -271,11 +270,7 @@ func actionRetry(val interface{}) (Action, error) {
 		for k, val := range v {
 			switch k {
 			case "NodeRoleID":
-				var nr_id float64
-				nr_id, nodeRoleOK = val.(float64)
-				if nodeRoleOK {
-					nodeRoleID = strconv.FormatFloat(nr_id, 'f', -1, 64)
-				}
+				nodeRoleID, nodeRoleOK = val.(string)
 			default:
 				log.Panicf("Cannot happen: %s", k)
 			}
@@ -453,7 +448,7 @@ func actionDelay(val interface{}) (Action, error) {
 //
 // "Retry", which causes a node role to be retried.
 //   struct {
-//     NodeRoleId float64
+//     NodeRoleID string
 //   }
 // This causes the node role to be retried.
 //
