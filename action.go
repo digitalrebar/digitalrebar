@@ -288,6 +288,85 @@ func actionRetry(val interface{}) (Action, error) {
 	}, nil
 }
 
+func setAttrib(val interface{}) (Action, error) {
+	vals, ok := val.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("SetAttrib: Expected a map, got %#v", val)
+	}
+	var seenAttribName, seenVal bool
+	var tgt string
+	for k := range vals {
+		switch k {
+		case "NodeID", "DeploymentID", "DeploymentRoleID", "NodeRoleID":
+			if tgt != "" {
+				return nil, fmt.Errorf("SetAttrib: Already targeting %s, will not target %s", tgt, k)
+			}
+			tgt = k
+		case "Attrib":
+			seenAttribName = true
+		case "Value":
+			seenVal = true
+		default:
+			return nil, fmt.Errorf("SetVal: unknown parameter %s", k)
+		}
+	}
+	if tgt == "" || !seenAttribName || !seenVal {
+		return nil, fmt.Errorf("SetAttrib: Malformed argument: #%v", vals)
+	}
+	return func(c *RunContext) error {
+		val, err := c.getVar(vals)
+		if err != nil {
+			return err
+		}
+		fixedVals, ok := val.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("SetAttrib: Var resolution failed for %#v", val)
+		}
+		var attrVal interface{}
+		var id string
+		var tgt client.Attriber
+		attrib := &client.Attrib{}
+
+		for k, fv := range fixedVals {
+
+			switch k {
+			case "Attrib":
+				attrID, attrOk := fv.(string)
+				if !attrOk {
+					return fmt.Errorf("Attrib id %#v is not a string.", fv)
+				}
+				if err := client.Fetch(attrib, attrID); err != nil {
+					return err
+				}
+			case "Value":
+				attrVal = fv
+			case "NodeID":
+				tgt = &client.Node{}
+				id, ok = fv.(string)
+			case "DeploymentID":
+				tgt = &client.Deployment{}
+				id, ok = fv.(string)
+			case "DeploymentRoleID":
+				tgt = &client.DeploymentRole{}
+				id, ok = fv.(string)
+			case "NodeRoleID":
+				tgt = &client.NodeRole{}
+				id, ok = fv.(string)
+			default:
+				log.Panicf("SetAttrib: cannot happen processing %s", k)
+			}
+		}
+		if !ok {
+			return fmt.Errorf("SetAttrib: Failed to get ID of thing to set attrib on")
+		}
+		attrib.Value = attrVal
+		if err := client.Fetch(tgt, id); err != nil {
+			return err
+		}
+		return client.SetAttrib(tgt, attrib, "")
+	}, nil
+}
+
 func actionDelay(val interface{}) (Action, error) {
 	array, ok := val.([]interface{})
 	if !ok {
@@ -377,6 +456,25 @@ func actionDelay(val interface{}) (Action, error) {
 //     NodeRoleId float64
 //   }
 // This causes the node role to be retried.
+//
+// "SetAttrib", which expects its value to be a struct wuth the following format:
+//
+//    struct {
+//        Attrib string
+//        Node string
+//        Deployment string
+//        NodeRole string
+//        DeploymentRole string
+//        Value interface{}
+//    }
+//
+//
+// Out if those fields, exactly one of Node, Role, Deployment,
+// NodeRole, and DeploymentRole should be filled, and their values
+// must resolve to an existing object of their type, otherwise the
+// action will fail.  Attrib must be the name of the attribute to set,
+// and Value must be tbe value you want to set the attrib to for the
+// object.
 func ResolveAction(a map[string]interface{}) (Action, error) {
 	if len(a) != 1 {
 		return nil, fmt.Errorf("Actions have exactly one key")
@@ -395,6 +493,8 @@ func ResolveAction(a map[string]interface{}) (Action, error) {
 			return actionRetry(v)
 		case "Commit":
 			return actionCommit(v)
+		case "SetAttrib":
+			return setAttrib(v)
 		default:
 			return nil, fmt.Errorf("Unknown action %s", t)
 		}

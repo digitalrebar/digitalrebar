@@ -227,7 +227,7 @@ a \.  To begin with a literal \, escape it with \\.
   could be retrieved, otherwise the matcher will fail.
 
 #### Actions:
-Currently, the classifier knows about 2 actions:
+Currently, the classifier knows about the following actions:
 
 * Log
 
@@ -270,6 +270,27 @@ what action Bind will take.
   * RoleID and DeploymentID: a Role will be bound to the Deployment
 
 If SaveAs is set, the resultant new object's unique identifier (if one was created) will be saved to the referenced variable.
+
+* SetAttrib
+
+Takes a YAML object with the following format:
+
+    ---
+    Attrib: string
+    NodeID: string
+    DeploymentID: string
+    NodeRoleID: string
+    DeploymentRoleID: string
+    SaveAs: string
+    Value: anything
+
+Exactly one of the Node, Deployment, NodeRole, or DeploymentRole must
+be populated with something that uniquely identifies the object type
+in question.  The Attrib field must be the name of the attrib to set
+(which must be valid for the object in question), and the Value field
+must be the value to set it to.  Note that setting the attrib value
+does not commit the object, you must use a Commit action afterwards to
+commit the value.
 
 * Commit
 
