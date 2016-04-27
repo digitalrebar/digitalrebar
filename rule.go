@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"reflect"
 	"sync"
 
 	// The nice thing about this YML package is that it parses
@@ -17,6 +18,7 @@ import (
 // similar if performance in the classifier starts to suffer.
 var rules []*Rule
 var namedRules = make(map[string]*Rule)
+var eventTypes = make([]map[string]interface{}, 0, 0)
 var ruleLock sync.Mutex
 
 // Rule represents a list of Actions that shoudl be taken if an Event
@@ -29,6 +31,8 @@ type Rule struct {
 	WantsAttribs []string // List of attributes that should be
 	// fetched from Digital Rebar before running the Matchers.
 	Matchers []Matcher // List of Matchers that must match for the
+	// Events this rule should match - OR array list
+	EventSelectors []map[string]interface{}
 	// rule to be considered as matching the Event.  Matchers in
 	// this list will be AND'ed together, and if the list is empty
 	// then the Rule will match all Events
@@ -86,12 +90,14 @@ func loadRules(src string) error {
 	}
 	newRules := make([]*Rule, len(newFakeRules))
 	newNamedRules := make(map[string]int)
+	newEventTypes := make([]map[string]interface{}, 0, 0)
 	for i, rule := range newFakeRules {
 		r := &Rule{}
 		r.Name = rule.Name
 		r.Description = rule.Description
 		r.WantsAttribs = rule.WantsAttribs
 		r.Matchers = make([]Matcher, len(rule.Matchers))
+		r.EventSelectors = make([]map[string]interface{}, 0, 0)
 		r.MatchActions = make([]Action, len(rule.MatchActions))
 		if r.Name != "" {
 			conflict, ok := newNamedRules[r.Name]
@@ -107,13 +113,41 @@ func loadRules(src string) error {
 		}
 
 		for i, m := range rule.Matchers {
-			j, err := ResolveMatcher(m)
+			j, err := ResolveMatcher(r, m)
 			if err != nil {
 				log.Printf("Rule %d (name: %s) failed to compile Matchers", i, r.Name)
 				log.Printf("%s", err)
 				return err
 			}
 			r.Matchers[i] = j
+		}
+
+		// Apply the default event matcher if rule didn't specify anything.
+		if len(r.EventSelectors) == 0 {
+			tm := map[string]interface{}{
+				"EventType": defaultJSONSelectorList,
+			}
+			j, err := ResolveMatcher(r, tm)
+			if err != nil {
+				log.Printf("Rule %d (name: %s) failed to add default Event Matcher", i, r.Name)
+				log.Printf("%s", err)
+				return err
+			}
+			r.Matchers = append(r.Matchers, j)
+		}
+
+		// Add to list of events to register for, only add if not already present.
+		for _, e := range r.EventSelectors {
+			found := false
+			for _, et := range newEventTypes {
+				if reflect.DeepEqual(e, et) {
+					found = true
+					break
+				}
+			}
+			if !found {
+				newEventTypes = append(newEventTypes, e)
+			}
 		}
 
 		if len(rule.MatchActions) == 0 {
@@ -138,6 +172,7 @@ func loadRules(src string) error {
 	for name, i := range newNamedRules {
 		namedRules[name] = newRules[i]
 	}
+	eventTypes = newEventTypes
 	rules = newRules
 	ruleLock.Unlock()
 	return nil

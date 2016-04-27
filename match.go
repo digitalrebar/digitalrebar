@@ -48,12 +48,12 @@ func matchOr(funcs ...Matcher) Matcher {
 	}
 }
 
-func matchNot(val interface{}) (Matcher, error) {
+func matchNot(r *Rule, val interface{}) (Matcher, error) {
 	res, ok := val.(map[string]interface{})
 	if !ok {
 		return nil, errors.New("Not needs a map")
 	}
-	fn, err := ResolveMatcher(res)
+	fn, err := ResolveMatcher(r, res)
 	if err != nil {
 		return nil, err
 	}
@@ -73,15 +73,15 @@ func matchEnabled(val interface{}) (Matcher, error) {
 	}, nil
 }
 
+type JSONselector struct {
+	Selector    string
+	SaveAs      string
+	PickResults map[string]float64
+}
+
 func matchJSON(val interface{}) (Matcher, error) {
 
-	type selector struct {
-		Selector    string
-		SaveAs      string
-		PickResults map[string]float64
-	}
-
-	s := &selector{}
+	s := &JSONselector{}
 	if err := utils.Remarshal(val, &s); err != nil {
 		return nil, err
 	}
@@ -448,7 +448,7 @@ func matchScript(val interface{}) (Matcher, error) {
 	}, nil
 }
 
-func resolveAndOr(op string, val interface{}) (Matcher, error) {
+func resolveAndOr(r *Rule, op string, val interface{}) (Matcher, error) {
 	vals, ok := val.([]interface{})
 	if !ok {
 		return nil, fmt.Errorf("%s needs an Array", op)
@@ -459,7 +459,7 @@ func resolveAndOr(op string, val interface{}) (Matcher, error) {
 		if !ok {
 			return nil, fmt.Errorf("%s member %v must be a map", op, i)
 		}
-		j, err := ResolveMatcher(realV)
+		j, err := ResolveMatcher(r, realV)
 		if err != nil {
 			return nil, err
 		}
@@ -474,6 +474,65 @@ func resolveAndOr(op string, val interface{}) (Matcher, error) {
 		log.Panicf("%s was op to resolveMatchArray, cannot happen", op)
 		return nil, nil
 	}
+}
+
+func matchEventType(r *Rule, val interface{}) (Matcher, error) {
+	eventList, ok := val.([]map[string]interface{})
+	if !ok {
+		eventList2, ok := val.([]interface{})
+		if !ok {
+			return nil, fmt.Errorf("EventType needs an array of events: %v", val)
+		}
+		eventList = make([]map[string]interface{}, len(eventList2), len(eventList2))
+		for i, e := range eventList2 {
+			re, ok := e.(map[string]interface{})
+			if !ok {
+				return nil, errors.New("EventType needs an event as a key/value map")
+			}
+			eventList[i] = re
+		}
+	}
+
+	eventListJson, err := json.Marshal(eventList)
+	if err != nil {
+		return nil, err
+	}
+	eventListJsonString := string(eventListJson)
+
+	r.EventSelectors = eventList
+
+	return func(e *RunContext) (bool, error) {
+		selector := e.Evt.Selector
+		if debug {
+			log.Printf("Matching EventType selector %v to:\n%s", selector, eventListJsonString)
+		}
+		parser, err := js.CreateParserFromString(eventListJsonString)
+		if err != nil {
+			return false, err
+		}
+
+		selectorString := ""
+		first := true
+		for k, v := range selector {
+			if !first {
+				selectorString = selectorString + " object"
+			}
+			selectorString = selectorString + ":has(." + k + ":val(\"" + v + "\"))"
+			first = false
+		}
+
+		res, err := parser.GetValues(selectorString)
+		if err != nil {
+			return false, err
+		}
+		if len(res) == 0 {
+			return false, nil
+		}
+		log.Printf("EventType selector matched: %v", res)
+		e.Vars["eventType"] = res[0]
+
+		return true, nil
+	}, nil
 }
 
 // ResolveMatcher compiles a map[string]interface{} with a single
@@ -589,16 +648,19 @@ func resolveAndOr(op string, val interface{}) (Matcher, error) {
 // matcher will not match.  Attrib must also be filled with the name
 // of the Attrib to fetch.  If the vlue of the attrib can be fetched
 // for the object, it will be saved in the variable named by SaveAs
-func ResolveMatcher(m map[string]interface{}) (Matcher, error) {
+//
+// EventType, which expects its value to be a string or list of strings that
+// specify the list of events this rule should trigger for.
+func ResolveMatcher(r *Rule, m map[string]interface{}) (Matcher, error) {
 	if len(m) != 1 {
 		return nil, fmt.Errorf("Matchers have exactly one key")
 	}
 	for t, v := range m {
 		switch t {
 		case "And", "Or":
-			return resolveAndOr(t, v)
+			return resolveAndOr(r, t, v)
 		case "Not":
-			return matchNot(v)
+			return matchNot(r, v)
 		case "Script":
 			return matchScript(v)
 		case "Enabled":
@@ -613,6 +675,8 @@ func ResolveMatcher(m map[string]interface{}) (Matcher, error) {
 			return getThingUUID(v)
 		case "GetAttrib":
 			return getAttrib(v)
+		case "EventType":
+			return matchEventType(r, v)
 		default:
 			return nil, fmt.Errorf("Unknown matcher %s", t)
 		}

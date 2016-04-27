@@ -1,6 +1,6 @@
 This is the node classifier daemon for Digital Rebar.
 
-It listens for on_milestone events, and for each event it recieves it
+It listens for events, and for each event it recieves it
 tests the event to see if it matches a set of user-provided rules, and
 for each rule it matches it takes appropriate action.
 
@@ -35,6 +35,12 @@ for each rule it matches it takes appropriate action.
 
   If set, the classifier will just test the rulefile for validity and
   exit.
+* -jsonSelectorList
+
+  This defines the set of events that rules without the EventType matcher
+  should fire upon.  The value is a JSON encode array of maps that can
+  match events.  The default is '[{ "event": "on_milestone" }]' which
+  matches the on_milestone event.
 
 ## The rules file:
 
@@ -98,6 +104,21 @@ Currently, the classifier knows about the following matchers:
 * Enabled
 
 Takes true or false, and matches if it was passed true.
+* EventType
+
+Takes a list of key/value pairs to match events against.
+The aggregate set of events are registered as event selectors
+in the rebar api.  If unspecified, the default list of selectors
+are used for the rule from the command line.
+
+An example YAML would be:
+
+    ---
+    - event: 'on_active'
+      obj_class: 'role'
+      obj_id: 'rebar-inventory'
+
+A matched var, eventType, is created with the matched event name.
 * JSON
 
   Takes a YAML object of the following format:
