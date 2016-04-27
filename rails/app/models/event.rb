@@ -36,7 +36,7 @@ class Event < ActiveRecord::Base
     # This handles * and missing selectors (assumed to be true) - more could be done
     wherefrags = []
     params.each do |k,v|
-      wherefrags << "((\"event_selectors\".\"selector\" ->> '#{k.to_s}') IN (NULL, '*', '#{v}'))"
+      wherefrags << "(((event_selectors.selector ->> '#{k.to_s}') IS NULL) OR (event_selectors.selector @> '#{ {k.to_s => v}.to_json }'::jsonb))"
     end
     res = []
     matched_selectors = EventSelector.where(wherefrags.join(" AND ")).order(:id).distinct
