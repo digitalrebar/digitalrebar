@@ -477,7 +477,6 @@ func resolveAndOr(r *Rule, op string, val interface{}) (Matcher, error) {
 }
 
 func matchEventType(r *Rule, val interface{}) (Matcher, error) {
-	fmt.Printf("GREG: eT = %T %t %v\n", val, val, val)
 	eventList, ok := val.([]map[string]interface{})
 	if !ok {
 		eventList2, ok := val.([]interface{})
