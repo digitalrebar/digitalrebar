@@ -1,5 +1,5 @@
 hash: ae6768bd6d5a44bb8fa798f447747a7676afd35b424548edb751934da8547c10
-updated: 2016-04-25T12:02:15.678367351-05:00
+updated: 2016-04-27T16:43:57.338561751-05:00
 imports:
 - name: github.com/cloudfoundry-incubator/candiedyaml
   version: 5cef21e2e4f0fd147973b558d4db7395176bcd95
@@ -21,7 +21,7 @@ imports:
   subpackages:
   - utils
 - name: golang.org/x/crypto
-  version: e84a34b1eedf81a90fb4f502d02d64ad365ef937
+  version: d68c3ecb62c850b645dc072a8d78006286bf81ca
   subpackages:
   - nacl/box
   - curve25519
@@ -29,7 +29,7 @@ imports:
   - salsa20/salsa
   - poly1305
 - name: golang.org/x/net
-  version: b797637b7aeeed133049c7281bfa31dcc9ca42d6
+  version: 1aafd77e1e7f6849ad16a7bdeb65e3589a10b2bb
   subpackages:
   - html
   - html/atom
