@@ -33,14 +33,12 @@ class Event < ActiveRecord::Base
 
   def run(obj)
     Rails.logger.info("Event: event #{id} fired with params #{params.to_json}")
+    # This handles * and missing selectors (assumed to be true) - more could be done
     wherefrags = []
     params.each do |k,v|
-      wherefrags << "(event_selectors.selector @> '#{ {k.to_s => v}.to_json}'::jsonb)"
+      wherefrags << "(((event_selectors.selector ->> '#{k.to_s}') IS NULL) OR (event_selectors.selector @> '#{ {k.to_s => v}.to_json }'::jsonb))"
     end
     res = []
-    # This needs to handle wildcard subscriptions and more complex
-    # logic at some point in the future, but for now, straight
-    # equality matching will do.
     matched_selectors = EventSelector.where(wherefrags.join(" AND ")).order(:id).distinct
     self.event_selectors = matched_selectors.all.map{|es| es.uuid}
     self.save!

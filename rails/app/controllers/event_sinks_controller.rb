@@ -75,7 +75,9 @@ class EventSinksController < ApplicationController
   end
 
   def destroy
-    render api_delete EventSink
+    @es = EventSink.find_key(params[:id])
+    @es.destroy
+    render api_delete @es
   end
 
 
