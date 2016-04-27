@@ -309,6 +309,6 @@ Exactly one of the fields must be filled, and that thing will be committed.
 Takes a YAML object with the following format:
 
     ---
-    NodeRoleID: float64
+    NodeRoleID: string
 
-The specified NodeRole is retried.  The normal usage will be to get the node role id from the event.  This is a float.
+The specified NodeRole is retried.  The normal usage will be to get the node role uuid from the event.  This is a string.
