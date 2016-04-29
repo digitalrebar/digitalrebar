@@ -29,11 +29,11 @@ unless IPMI.ensure_access(node)
   return
 end
 mcinfo = IPMI.mc_info(node)
-laninfo = IPMI.laninfo(node)
 if mcinfo.empty?
   Chef::Log.info("Cannot validate that systems has a BMC.")
   return
 end
+laninfo = IPMI.laninfo(node)
 if laninfo.empty?
   Chef::Log.info("Cannot validate that BMC is remotely accessible")
   return

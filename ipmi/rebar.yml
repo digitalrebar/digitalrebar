@@ -239,10 +239,28 @@ roles:
                   "__sm_leaf": true
                   "op": "=="
                   "match": "32"
-                  "mfgr_id":
+                "mfgr_id":
                   "__sm_leaf": true
                   "op": "=="
                   "match": "47488"
+                  "score": 5
+          "super-micro-redfish-bmc":
+            "quirklist": ["ipmi-immutable-root"]
+            "match":
+              "bmcinfo":
+                "device_id":
+                  "__sm_leaf": true
+                  "match": "32"
+                  "op": "=="
+                "mfgr_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "10876"
+                  "score": 5
+                "product_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "2084 (0x0824)"
                   "score": 5
           "quanta-bmc":
             "quirklist": ["ipmi-immutable-root"]
@@ -265,11 +283,11 @@ roles:
                   "__sm_leaf": true
                   "op": "=="
                   "match": "32"
-                  "mfgr_id":
-                    "__sm_leaf": true
-                    "op": "=="
-                    "match": "20301"
-                    "score": 5
+                "mfgr_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "20301"
+                  "score": 5
         schema:
           type: map
           mapping:
