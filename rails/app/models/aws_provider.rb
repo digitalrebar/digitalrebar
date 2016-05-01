@@ -50,7 +50,13 @@ class AwsProvider < CloudProvider
     		default: "us-west-2",
     		length: 30,
     		name: I18n.t('region', scope: "providers.show.aws" )
-  		}
+  		},
+      vpc_id: {
+        type: "text",
+        default: "!default",
+        length: 30,
+        name: I18n.t('vpc_id', scope: "providers.show.aws" )
+      }
     }
   end
 
