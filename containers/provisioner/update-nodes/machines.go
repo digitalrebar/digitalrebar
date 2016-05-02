@@ -115,3 +115,7 @@ func (b *Machine) List() ([]*Machine, error) {
 	}
 	return res, nil
 }
+
+func (b *Machine) RebuildRebarData() error {
+	return nil
+}

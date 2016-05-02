@@ -123,3 +123,7 @@ func (t *Template) Render(dest io.Writer, params interface{}) error {
 	}
 	return nil
 }
+
+func (t *Template) RebuildRebarData() error {
+	return nil
+}
