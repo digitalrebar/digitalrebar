@@ -64,6 +64,11 @@ roles:
                             =: { type: str }
         default:
           - "match":
+              "chassis_manufacturer": "Supermicro"
+              "system_manufacturer": "iXsystems"
+              "system_product": "42X848"
+            "role": "bios-supermicro-configure"
+          - "match":
              "system_manufacturer": "Dell Inc."
              "system_product":
                "__sm_leaf": true,
@@ -181,6 +186,36 @@ roles:
         description: 'The permitted BIOS configurations for this node.'
     wants-attribs:
       - provisioner-webservers
+  - name: bios-supermicro-configure
+    jig: role-provided
+    events:
+      - endpoint: inproc://role:bios-supermicro-configure/on_proposed
+        selectors:
+          - event: on_proposed
+            obj_class: role
+            obj_id: bios-supermicro-configure
+    flags:
+      - leaverunlog
+    requires:
+      - bios-discover
+    wants-attribs:
+      - bios-config-sets
+      - ipmi-macaddr
+    attribs:
+      - name: bios-sum-archive
+        map: 'bios/supermicro/sum_archive'
+        description: 'The name of the SuperMicro Update Manager utility'
+        default: 'sum_1.6.0_Linux_x86_64_20160128.tar.gz'
+        schema:
+          type: str
+      - name: bios-sum-licenses
+        map: 'bios/supermicro/sum_licenses'
+        description: "The license keys for the SuperMicro systems"
+        schema:
+          type: map
+          mapping:
+            =:
+              type: string
   - name: bios-dell-rseries-configure
     jig: role-provided
     flags:
