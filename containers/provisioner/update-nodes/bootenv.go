@@ -332,7 +332,7 @@ func (b *BootEnv) explode_iso() error {
 }
 
 func (b *BootEnv) get_file(f *FileData) error {
-        logger.Printf("Downloading file: %s\n", f.Name)
+	logger.Printf("Downloading file: %s\n", f.Name)
 	filePath := b.PathFor("disk", f.Name)
 	if err := os.MkdirAll(path.Dir(filePath), 0755); err != nil {
 		return fmt.Errorf("file: Unable to create dir for %s: %v", filePath, err)
@@ -355,7 +355,7 @@ func (b *BootEnv) get_file(f *FileData) error {
 }
 
 func (b *BootEnv) validate_file(f *FileData) error {
-        logger.Printf("Validating file: %s\n", f.Name)
+	logger.Printf("Validating file: %s\n", f.Name)
 	filePath := b.PathFor("disk", f.Name)
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return fmt.Errorf("validate: File doesn't exist: %s\n", filePath)
@@ -497,32 +497,40 @@ func (b *BootEnv) List() ([]*BootEnv, error) {
 	return res, nil
 }
 
-/*
-preferred_oses['centos-7.2.1511']=0
-preferred_oses['centos-7.1.1503']=1
-preferred_oses['ubuntu-14.04']=2
-preferred_oses['ubuntu-15.04']=3
-preferred_oses['debian-8']=4
-preferred_oses['centos-6.6']=5
-preferred_oses['debian-7']=6
-preferred_oses['redhat-6.5']=7
-preferred_oses['ubuntu-12.04']=8
-*/
-
 func (b *BootEnv) RebuildRebarData() error {
+	preferred_oses := map[string]int{
+		"centos-7.2.1511": 0,
+		"centos-7.1.1503": 1,
+		"ubuntu-14.04":    2,
+		"ubuntu-15.04":    3,
+		"debian-8":        4,
+		"centos-6.6":      5,
+		"debian-7":        6,
+		"redhat-6.5":      7,
+		"ubuntu-12.04":    8,
+	}
+
 	attrValOSes := make(map[string]bool)
 	attrValOS := "STRING"
+	attrPref := 1000
 
 	bes, err := b.List()
 	if err != nil {
 		return err
 	}
 
-	// GREG: Deal with preferred
 	for _, be := range bes {
+		if !strings.HasSuffix(be.Name, "-install") {
+			continue
+		}
 		attrValOSes[be.OS.Name] = true
-		if attrValOS == "STRING" {
+		numPref, ok := preferred_oses[be.OS.Name]
+		if !ok {
+			numPref = 999
+		}
+		if numPref < attrPref {
 			attrValOS = be.OS.Name
+			attrPref = numPref
 		}
 	}
 

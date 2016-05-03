@@ -33,6 +33,7 @@ RUN /usr/local/go/bin/go get -u github.com/hashicorp/consul/api \
                                 github.com/VictorLowther/jsonpatch \
                                 github.com/gin-gonic/gin \
                                 github.com/satori/go.uuid \
+                                github.com/digitalrebar/rebar-api/client \
     && cd "$GOPATH/src/github.com/rackn/provisioner-mgmt" \
     && /usr/local/go/bin/go build && cp provisioner-mgmt /usr/local/bin
 
