@@ -109,6 +109,7 @@ class Servers
         fixed_args[:tags] = {"rebar:node-id" => node_id.to_s,
                              "Name" => my_name }
         fixed_args[:flavor_id] ||= 't2.micro'
+	fixed_args[:block_device_mappings] = { "DeviceName" => "/dev/sda1", "Ebs" => { "DeleteOnTermination" => true } }
         unless fixed_args[:image_id]
           log("Setting default image to an Ubuntu 14.04 based image")
           # These are hvm:ebs images
