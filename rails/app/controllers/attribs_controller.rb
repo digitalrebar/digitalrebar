@@ -106,7 +106,7 @@ class AttribsController < ApplicationController
         current_attrib["value"]=target.attribs.find(attrib.id).get(target)
         # Patch modifies in place and causes the below to not update.
         ca2 = attrib.as_json
-        ca2["value"]=target.attribs.find(attrib.id).get(target)
+        ca2["value"]=Marshal.load(Marshal.dump(current_attrib["value"]))
         Rails.logger.debug(current_attrib.inspect)
         Rails.logger.debug(ca2.inspect)
         Rails.logger.debug(request.raw_post)
