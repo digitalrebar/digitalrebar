@@ -215,7 +215,7 @@ roles:
           type: map
           mapping:
             =:
-              type: string
+              type: str
   - name: bios-dell-rseries-configure
     jig: role-provided
     flags:
