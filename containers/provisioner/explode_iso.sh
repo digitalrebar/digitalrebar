@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Explode iso $1 $2 $3"
+
 rhelish_re='^(redhat|centos|fedora)'
 
 os_name=$1
@@ -32,7 +34,7 @@ if [[ $os_name =~ $rhelish_re ]]; then
         createrepo -g "${groups[-1]}" .
     )
 fi
-touch "${os_install_dir}.extracting/.${iso}.rebar_canary"
+touch "${os_install_dir}.extracting/.${os_name}.rebar_canary"
 [[ -d "${os_install_dir}" ]] && rm -rf "${os_install_dir}"
 mv "${os_install_dir}.extracting" "${os_install_dir}"
 

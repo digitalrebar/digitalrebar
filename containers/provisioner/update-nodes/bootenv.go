@@ -286,20 +286,24 @@ func (b *BootEnv) DeleteRenderedTemplates(machine *Machine) {
 func (b *BootEnv) explode_iso() error {
 	// Only explode install things
 	if !strings.HasSuffix(b.Name, "-install") {
+		logger.Printf("Explode ISO: Skipping %s becausing not -install\n", b.Name)
 		return nil
 	}
 	// Only work on things that are requested.
 	if b.OS.IsoFile == "" {
+		logger.Printf("Explode ISO: Skipping %s becausing no iso image specified\n", b.Name)
 		return nil
 	}
 	// Have we already exploded this?  If file exists, then good!
-	canaryPath := b.PathFor("disk", "."+b.OS.IsoFile+".rebar_canary")
+	canaryPath := b.PathFor("disk", "."+b.OS.Name+".rebar_canary")
 	if _, err := os.Stat(canaryPath); err == nil {
+		logger.Printf("Explode ISO: Skipping %s becausing canary file, %s, in place\n", b.Name, canaryPath)
 		return nil
 	}
 
-	isoPath := filepath.Join(fileRoot, "isos")
+	isoPath := filepath.Join(fileRoot, "isos", b.OS.IsoFile)
 	if _, err := os.Stat(isoPath); os.IsNotExist(err) {
+		logger.Printf("Explode ISO: Skipping %s becausing iso doesn't exist: %s\n", b.Name, isoPath)
 		return nil
 	}
 
@@ -307,11 +311,13 @@ func (b *BootEnv) explode_iso() error {
 	if b.OS.IsoSha256 != "" {
 		f, err := os.Open(isoPath)
 		if err != nil {
+			logger.Printf("Explode ISO: For %s, failed to open iso file %s\n", b.Name, isoPath)
 			return err
 		}
 		defer f.Close()
 		hasher := sha256.New()
 		if _, err := io.Copy(hasher, f); err != nil {
+			logger.Printf("Explode ISO: For %s, failed to read iso file %s\n", b.Name, isoPath)
 			return err
 		}
 		hash := hex.EncodeToString(hasher.Sum(nil))
@@ -325,6 +331,7 @@ func (b *BootEnv) explode_iso() error {
 	cmdName := "/explode_iso.sh"
 	cmdArgs := []string{b.OS.Name, isoPath, path.Dir(canaryPath)}
 	if _, err := exec.Command(cmdName, cmdArgs...).Output(); err != nil {
+		logger.Printf("Explode ISO: Exec command failed for %s: %s\n", b.Name, err)
 		return err
 	}
 
