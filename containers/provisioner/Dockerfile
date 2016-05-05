@@ -26,12 +26,14 @@ RUN apt-get -y update \
 COPY tftpd.conf /etc/default/tftpd-hpa
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 COPY start-up.sh udhcpc_config stage1_init /tmp/
+COPY explode_iso.sh /
 
 COPY update-nodes $GOPATH/src/github.com/rackn/provisioner-mgmt
 RUN /usr/local/go/bin/go get -u github.com/hashicorp/consul/api \
                                 github.com/VictorLowther/jsonpatch \
                                 github.com/gin-gonic/gin \
                                 github.com/satori/go.uuid \
+                                github.com/digitalrebar/rebar-api/client \
     && cd "$GOPATH/src/github.com/rackn/provisioner-mgmt" \
     && /usr/local/go/bin/go build && cp provisioner-mgmt /usr/local/bin
 

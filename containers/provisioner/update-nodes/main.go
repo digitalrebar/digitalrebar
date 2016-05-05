@@ -9,20 +9,21 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
+	"github.com/digitalrebar/rebar-api/client"
 	"github.com/gin-gonic/gin"
-	consul "github.com/hashicorp/consul/api"
 	uuid "github.com/satori/go.uuid"
 )
 
 var machineKey, fileRoot, provisionerURL, commandURL string
 var backEndType string
 var apiPort int64
-var client *consul.Client
 var backend storageBackend
 var api *gin.Engine
 var logger *log.Logger
 var cacert, cert, key string
+var username, password, endpoint string
 
 func init() {
 	flag.StringVar(&backEndType,
@@ -61,6 +62,24 @@ func init() {
 		"key",
 		"/etc/prov-key.pem",
 		"Private Key to use for replies")
+
+	if ep := os.Getenv("REBAR_ENDPOINT"); ep != "" {
+		endpoint = ep
+	}
+	if kv := os.Getenv("REBAR_KEY"); kv != "" {
+		key := strings.SplitN(kv, ":", 2)
+		if len(key) < 2 {
+			log.Fatal("REBAR_KEY does not contain a username:password pair!")
+		}
+		if key[0] == "" || key[1] == "" {
+			log.Fatal("REBAR_KEY contains an invalid username:password pair!")
+		}
+		username = key[0]
+		password = key[1]
+	}
+	flag.StringVar(&username, "username", username, "Username for Digital Rebar endpoint")
+	flag.StringVar(&password, "password", password, "Password for Digital Rebar endpoint")
+	flag.StringVar(&endpoint, "endpoint", endpoint, "API Endpoint for Digital Rebar")
 }
 
 func popMachine(param string) *Machine {
@@ -75,6 +94,11 @@ func main() {
 	// Some initial setup
 	flag.Parse()
 	logger = log.New(os.Stderr, "provisioner-mgmt", log.LstdFlags|log.Lmicroseconds|log.LUTC)
+
+	if err := client.Session(endpoint, username, password); err != nil {
+		logger.Fatalf("Could not connect to Rebar: %v", err)
+	}
+
 	var err error
 	switch backEndType {
 	case "consul":

@@ -2,15 +2,22 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
 	"text/template"
+
+	"github.com/digitalrebar/rebar-api/client"
 )
 
 // RenderData is the struct that is passed to templates as a source of
@@ -73,16 +80,24 @@ type TemplateInfo struct {
 	contents  *Template
 }
 
+type FileData struct {
+	URL              string // The URL to get the file
+	Name             string // Name of file in the install directory
+	ValidationURL    string // The URL to get a checksum or signature file
+	ValidationMethod string // The method to validate the file.
+}
+
 // OsInfo holds information about the operating system this BootEnv maps to.
 // Most of this information is optional for now.
 type OsInfo struct {
-	Name      string // The name of the OS this BootEnv has.  Required.
-	Family    string // The family of operating system (linux distro lineage, etc)
-	Codename  string // The codename of the OS, if any.
-	Version   string // The version of the OS, if any.
-	IsoFile   string // The name of the ISO that the OS should install from.
-	IsoSha256 string // The SHA256 of the ISO file.  Used to check for corrupt downloads.
-	IsoUrl    string // The URL that the ISO can be downloaded from, if any.
+	Name      string      // The name of the OS this BootEnv has.  Required.
+	Family    string      // The family of operating system (linux distro lineage, etc)
+	Codename  string      // The codename of the OS, if any.
+	Version   string      // The version of the OS, if any.
+	IsoFile   string      // The name of the ISO that the OS should install from.
+	IsoSha256 string      // The SHA256 of the ISO file.  Used to check for corrupt downloads.
+	IsoUrl    string      // The URL that the ISO can be downloaded from, if any.
+	Files     []*FileData // A list of files to download along with an ISO.
 }
 
 func (o *OsInfo) InstallUrl() string {
@@ -268,6 +283,93 @@ func (b *BootEnv) DeleteRenderedTemplates(machine *Machine) {
 	}
 }
 
+func (b *BootEnv) explode_iso() error {
+	// Only explode install things
+	if !strings.HasSuffix(b.Name, "-install") {
+		logger.Printf("Explode ISO: Skipping %s becausing not -install\n", b.Name)
+		return nil
+	}
+	// Only work on things that are requested.
+	if b.OS.IsoFile == "" {
+		logger.Printf("Explode ISO: Skipping %s becausing no iso image specified\n", b.Name)
+		return nil
+	}
+	// Have we already exploded this?  If file exists, then good!
+	canaryPath := b.PathFor("disk", "."+b.OS.Name+".rebar_canary")
+	if _, err := os.Stat(canaryPath); err == nil {
+		logger.Printf("Explode ISO: Skipping %s becausing canary file, %s, in place\n", b.Name, canaryPath)
+		return nil
+	}
+
+	isoPath := filepath.Join(fileRoot, "isos", b.OS.IsoFile)
+	if _, err := os.Stat(isoPath); os.IsNotExist(err) {
+		logger.Printf("Explode ISO: Skipping %s becausing iso doesn't exist: %s\n", b.Name, isoPath)
+		return nil
+	}
+
+	// Sha256sum iso for correctness
+	if b.OS.IsoSha256 != "" {
+		f, err := os.Open(isoPath)
+		if err != nil {
+			logger.Printf("Explode ISO: For %s, failed to open iso file %s\n", b.Name, isoPath)
+			return err
+		}
+		defer f.Close()
+		hasher := sha256.New()
+		if _, err := io.Copy(hasher, f); err != nil {
+			logger.Printf("Explode ISO: For %s, failed to read iso file %s\n", b.Name, isoPath)
+			return err
+		}
+		hash := hex.EncodeToString(hasher.Sum(nil))
+		if hash != b.OS.IsoSha256 {
+			return fmt.Errorf("iso: Iso checksum bad.  Re-download image: %s: actual: %v expected: %v", isoPath, hash, b.OS.IsoSha256)
+		}
+	}
+
+	// Call extract script
+	// /explode_iso.sh b.OS.Name isoPath path.Dir(canaryPath)
+	cmdName := "/explode_iso.sh"
+	cmdArgs := []string{b.OS.Name, isoPath, path.Dir(canaryPath)}
+	if _, err := exec.Command(cmdName, cmdArgs...).Output(); err != nil {
+		logger.Printf("Explode ISO: Exec command failed for %s: %s\n", b.Name, err)
+		return err
+	}
+
+	return nil
+}
+
+func (b *BootEnv) get_file(f *FileData) error {
+	logger.Printf("Downloading file: %s\n", f.Name)
+	filePath := b.PathFor("disk", f.Name)
+	if err := os.MkdirAll(path.Dir(filePath), 0755); err != nil {
+		return fmt.Errorf("file: Unable to create dir for %s: %v", filePath, err)
+	}
+
+	fileDest, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer fileDest.Close()
+
+	resp, err := http.Get(f.URL)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	_, err = io.Copy(fileDest, resp.Body)
+	return err
+}
+
+func (b *BootEnv) validate_file(f *FileData) error {
+	logger.Printf("Validating file: %s\n", f.Name)
+	filePath := b.PathFor("disk", f.Name)
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return fmt.Errorf("validate: File doesn't exist: %s\n", filePath)
+	}
+	return nil
+}
+
 func (b *BootEnv) onChange(oldThing interface{}) error {
 	seenPxeLinux := false
 	seenELilo := false
@@ -293,6 +395,27 @@ func (b *BootEnv) onChange(oldThing interface{}) error {
 			return errors.New("bootenv: Missing elilo or pxelinux template")
 		}
 	}
+
+	// Make sure the ISO is exploded
+	if b.OS.IsoFile != "" {
+		logger.Printf("Exploding ISO for %s\n", b.OS.Name)
+		if err := b.explode_iso(); err != nil {
+			return err
+		}
+	}
+
+	// Make sure we download extra files
+	for _, f := range b.OS.Files {
+		if b.validate_file(f) != nil {
+			if err := b.get_file(f); err != nil {
+				return err
+			}
+		}
+		if err := b.validate_file(f); err != nil {
+			return err
+		}
+	}
+
 	if err := b.parseTemplates(); err != nil {
 		return err
 	}
@@ -350,6 +473,7 @@ func (b *BootEnv) onChange(oldThing interface{}) error {
 			}
 		}
 	}
+
 	return nil
 }
 
@@ -378,4 +502,91 @@ func (b *BootEnv) List() ([]*BootEnv, error) {
 		res[i] = bootenv
 	}
 	return res, nil
+}
+
+func (b *BootEnv) RebuildRebarData() error {
+	preferred_oses := map[string]int{
+		"centos-7.2.1511": 0,
+		"centos-7.1.1503": 1,
+		"ubuntu-14.04":    2,
+		"ubuntu-15.04":    3,
+		"debian-8":        4,
+		"centos-6.6":      5,
+		"debian-7":        6,
+		"redhat-6.5":      7,
+		"ubuntu-12.04":    8,
+	}
+
+	attrValOSes := make(map[string]bool)
+	attrValOS := "STRING"
+	attrPref := 1000
+
+	bes, err := b.List()
+	if err != nil {
+		return err
+	}
+
+	for _, be := range bes {
+		if !strings.HasSuffix(be.Name, "-install") {
+			continue
+		}
+		attrValOSes[be.OS.Name] = true
+		numPref, ok := preferred_oses[be.OS.Name]
+		if !ok {
+			numPref = 999
+		}
+		if numPref < attrPref {
+			attrValOS = be.OS.Name
+			attrPref = numPref
+		}
+	}
+
+	deployment := &client.Deployment{}
+	if err := client.Fetch(deployment, "system"); err != nil {
+		return err
+	}
+
+	role := &client.Role{}
+	if err := client.Fetch(role, "provisioner-service"); err != nil {
+		return err
+	}
+
+	drs := []*client.DeploymentRole{}
+	matcher := make(map[string]interface{})
+	matcher["role_id"] = role.ID
+	matcher["deployment_id"] = deployment.ID
+	if err := client.Match("deployment_roles", matcher, &drs); err != nil {
+		return err
+	}
+
+	var tgt client.Attriber
+	tgt = drs[0]
+
+	attrib := &client.Attrib{}
+	attrib.SetId("provisioner-available-oses")
+	attrib, err = client.GetAttrib(tgt, attrib, "")
+	if err != nil {
+		return err
+	}
+	attrib.Value = attrValOSes
+	if err := client.SetAttrib(tgt, attrib, ""); err != nil {
+		return err
+	}
+
+	attrib = &client.Attrib{}
+	attrib.SetId("provisioner-default-os")
+	attrib, err = client.GetAttrib(tgt, attrib, "")
+	if err != nil {
+		return err
+	}
+	attrib.Value = attrValOS
+	if err := client.SetAttrib(tgt, attrib, ""); err != nil {
+		return err
+	}
+
+	if err := client.Commit(tgt); err != nil {
+		return err
+	}
+
+	return nil
 }

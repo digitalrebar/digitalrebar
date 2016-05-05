@@ -18,6 +18,7 @@ type keySaver interface {
 	onChange(interface{}) error
 	onDelete() error
 	newIsh() keySaver
+	RebuildRebarData() error
 }
 
 type storageBackend interface {
@@ -166,6 +167,7 @@ func (cb *consulBackend) save(newThing keySaver, oldThing interface{}) error {
 	if _, err := cb.kv.Put(kp, nil); err != nil {
 		return fmt.Errorf("consul: Failed to save %s: %v", kp.Key, err)
 	}
+	err = newThing.RebuildRebarData()
 	return err
 }
 
@@ -194,5 +196,6 @@ func (cb *consulBackend) remove(s keySaver) error {
 	if _, err := cb.kv.Delete(key, nil); err != nil {
 		return fmt.Errorf("consul: Failed to delete %v: %v", key, err)
 	}
-	return nil
+	err := s.RebuildRebarData()
+	return err
 }
