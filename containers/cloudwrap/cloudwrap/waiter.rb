@@ -120,8 +120,8 @@ loop do
           next
         end
         addresses = OpenStack::addresses(device_data['addresses'])
-        public_name = OpenStack::public_net(endpoint, addresses)
-        private_name = OpenStack::private_net(endpoint, addresses)
+        public_name = OpenStack::public_net(endpoint, addresses, false)
+        private_name = OpenStack::private_net(endpoint, addresses, false)
         dev_ip = addresses[public_name]["v4"] || addresses[public_name][:v4] rescue "public_v4_not_defined"
         cidr = "32"
         username = nil

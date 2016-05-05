@@ -36,7 +36,7 @@ module OpenStack
              "--flavor \'#{flavor_id}\' "
     params += "--nic \'net-id=#{pub_net}\' " if pub_net
     params += "--nic \'net-id=#{pri_net}\' " if pri_net
-    params += "--nic \'net-id=#{first_net}\' " if !pri_net and !pub_net
+    params += "--nic \'net-id=#{first_net}\' " if !pri_net and !pub_net and first_net
     params += "\'#{name}\'"
     o = base endpoint, "server create #{params}"
     id = o["id"]
@@ -188,42 +188,53 @@ module OpenStack
 
   # to handle variation w/ OpenStack clouds, we have to reolve several possible names for public or private networks
   # order should be in likehood of correct match
-  def self.private_net(endpoint, nets)
-    case endpoint["os-network-internal"]
+  def self.private_net(endpoint, nets, allow_none = true)
+
+    names = endpoint["os-network-internal"]
+    names = "auto" if names == "none" and !allow_none
+
+    case names
     when 'none'
       return nil
     when 'auto', nil, ''
-      return network(nets, %w[private internal servicenet priv]) || nets.keys.first
+      return network(nets, %w[private internal servicenet priv]) 
     else
-      return network(nets, endpoint["os-network-internal"].split(/,|\s/))
+      return network(nets, names.split(/,|\s/))
     end
   end
 
   # to handle variation w/ OpenStack clouds, we have to reolve several possible names for public or private networks
   # order should be in likehood of correct match
-  def self.public_net(endpoint, nets)
+  def self.public_net(endpoint, nets, allow_none = true)
 
-    case endpoint["os-network-external"]
+    names = endpoint["os-network-external"]
+    names = "auto" if names == "none" and !allow_none
+
+    case names
     when 'none'
       return nil
     when 'auto', nil, ''
       external = {}
       nets.each do |k, v|
-        unless v["router_external"]
+        if v["router_external"]
+          external[k] = v
+        else
           external[k] = base endpoint, "network show \'#{k}\'"
         end
-        external[k] = v if v["router_external"]
+        # if we could not retrieve networks, keys are names
+        external[k] = {:name => k} if external[k] == {}
       end
+      log "OpenStack endpoint '#{names}' found external networks #{external.inspect}"
       case external.length
       when 0  # no externals, use original list based on name
-        return network(nets, %w[public ext-net external default pub ext])
+        return network(nets, %w[public publicnet ext-net external default pub ext])
       when 1  # one external, use it
         return external.keys.first
       else # several external, try name match
-        return network(external, %w[public ext-net external default pub ext])
+        return network(external, %w[public publicnet ext-net external default pub ext])
       end
     else
-      return network(nets, endpoint["os-network-external"].split(/,|\s/))
+      return network(nets, names.split(/,|\s/))
     end
 
   end
