@@ -101,36 +101,25 @@ class AttribsController < ApplicationController
         return
       end
       target.lock!
+      val = nil
       if request.patch?
         current_attrib = attrib.as_json
-        current_attrib["value"]=target.attribs.find(attrib.id).get(target)
-        # Patch modifies in place and causes the below to not update.
-        ca2 = attrib.as_json
-        ca2["value"]=Marshal.load(Marshal.dump(current_attrib["value"]))
-        Rails.logger.debug(current_attrib.inspect)
-        Rails.logger.debug(ca2.inspect)
-        Rails.logger.debug(request.raw_post)
-        ret = JSON::Patch.new(ca2,JSON.parse(request.raw_post)).call
-        updated = false
-        current_attrib.each_key do |k|
-          next if current_attrib[k] == ret[k]
-          if k != "value"
-            raise "Only allowed to update attrib value on attrib update"
-          end
-          updated = true
-        end
-        if updated
-          target.attribs.find(attrib.id).set(target,ret["value"], bucket)
-        end
+        current_attrib["value"]=attrib.get(target)
+        Rails.logger.debug("patch_attrib: starting with #{current_attrib["value"].inspect}")
+        Rails.logger.debug("patch_attrib: patch: #{request.raw_post}")
+        val = JSON::Patch.new(current_attrib,JSON.parse(request.raw_post)).call["value"]
+        Rails.logger.debug("patch attrib: patched to #{val}")
       else
         params[:value] = params[:attrib][:value] if params[:attrib]
         params.require(:value)
         params[:value] = params[:value].to_i if attrib.schema['type'] == 'int'
-        target.attribs.find(attrib.id).set(target,params[:value], bucket)
-        flash[:notice] = I18n.t('commit_required', :role => target.name)
-        ret = attrib.as_json
-        ret["value"] = params[:value]
+        val = params["value"]
       end
+      Rails.logger.debug("update_attrib: saving #{val} to #{target.class.name}:#{target.uuid}")
+      attrib.set(target,val, bucket)
+      flash[:notice] = I18n.t('commit_required', :role => target.name)
+      ret = attrib.as_json
+      ret["value"] = val
     end
     render json: ret, content_type: cb_content_type(attrib, "obj")
   end
