@@ -364,7 +364,7 @@ class Node < ActiveRecord::Base
     Node.transaction do
       reload
       update!(available: true)
-      node_roles.in_state(NodeRole::PROPOSED).order("cohort ASC").each do |nr|
+      node_roles.order("cohort ASC").each do |nr|
         nr.commit!
       end
     end

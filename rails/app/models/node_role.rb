@@ -627,17 +627,17 @@ class NodeRole < ActiveRecord::Base
   def commit!
     NodeRole.transaction do
       reload
-      unless proposed?
-        raise InvalidTransition.new(self,state,TODO,"Cannot commit! unless proposed")
-      end
       if deployment_role.proposed?
         raise InvalidTransition.new(self,state,PROPOSED,"Cannot commit! unless deployment_role committed!")
       end
-      Event.fire(self, obj_class: 'role', obj_id: role.name, event: 'on_commit')
-      update!(committed_data: proposed_data)
-      block_or_todo
-      if !node.alive && node.power[:on]
-        node.power.on
+
+      update!(committed_data: proposed_data) unless proposed_data.nil?
+      if proposed?
+        Event.fire(self, obj_class: 'role', obj_id: role.name, event: 'on_commit')
+        block_or_todo
+        if !node.alive && node.power[:on]
+          node.power.on
+        end
       end
       self
     end
