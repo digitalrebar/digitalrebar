@@ -98,6 +98,14 @@ in_docker goiardi pkill -CONT goiardi
 echo "Saving docker-compose config information"
 tar -C compose -c docker-compose.yml access.env services.env config-dir |xz -T0 -1 >"$dest/deploy_files.tar.xz"
 
+# Back up locally checked-out trees.  This assumes that everything was
+# checked out into a directory one level higher than what the backup
+# script is running with.
+echo "Saving current source code"
+(cd .. && tar --one-file-system --exclude=deploy/compose/data-dir -cp -f - .) |xz -T0 -1 >"$dest/source.tar.xz"
+
+cp restore.sh "$dest/restore.sh"
+
 # Backup the tftpboot directory
 # echo "Backing up tftpboot"
 # sudo tar -C "$HOME/.cache/digitalrebar" -c -f - tftpboot |xz -T0 -1 > "$dest/tftpboot.tar.xz"
