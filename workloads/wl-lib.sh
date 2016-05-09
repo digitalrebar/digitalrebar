@@ -571,9 +571,17 @@ if [[ $DEBUG == true ]] ; then
     set -x
 fi
 
+OLD_DR_TAG=$(cat compose/tag)
+if [[ $OLD_DR_TAG != $DR_TAG ]] ; then
+	echo "WARNING: ******************************"
+	echo "WARNING: Changing tags can be dangerous"
+	echo "WARNING: ******************************"
+	echo "$DR_TAG" > compose/tag
+fi
+
 validate_tools
 
-# GEts overridden when bringing up the admin node
+# Gets overridden when bringing up the admin node
 export REBAR_ENDPOINT=https://${ADMIN_IP%/*}:3000
 
 validate_provider $DEPLOY_ADMIN

@@ -11,7 +11,7 @@ consul:
     - ./access.env
 
 trust_me:
-  image: digitalrebar/dr_trust_me
+  image: digitalrebar/dr_trust_me:${DR_TAG}
   restart: always
   privileged: true
   volumes:
