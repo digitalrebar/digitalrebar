@@ -29,6 +29,7 @@ install-*.log
 /compose/tag
 /compose/data-dir
 
+/containers/tree_bag
 
 # Dynamically built by init_files.sh
 /compose/access.env

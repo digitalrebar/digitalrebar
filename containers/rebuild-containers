@@ -31,9 +31,34 @@ declare -A UNBUILT_CONTAINERS
 declare -A UNKNOWN_CONTAINERS
 declare -A PARENT_CONTAINER_REBUILT
 
+declare -A TREES
+# Trees to run from
+# Deploy is handled automatically
+TREES['core']='https://github.com/digitalrebar/core'
+TREES['hardware']='https://github.com/rackn/hardware'
+TREES['heartbeat']='https://github.com/rackn/heartbeat'
+TREES['kubernetes']='https://github.com/rackn/kubernetes'
+TREES['kargo']='https://github.com/rackn/kubernetes-kargo'
+TREES['opencontrail']='https://github.com/rackn/container-networking-ansible'
+TREES['ux']='https://github.com/rackn/digitalrebar-ux'
+TREES['enterprise']='https://github.com/rackn/enterprise'
+TREES['ceph']='https://github.com/rackn/ceph'
+TREES['burnin']='https://github.com/rackn/burnin'
+TREES['docker']='https://github.com/rackn/docker'
+TREES['docker-swarm']='https://github.com/rackn/docker-swarm'
+
+# GO Trees that should be tagged too
+TREES['forwarder']='https://github.com/digitalrebar/forwarder'
+TREES['rebar-api']='https://github.com/digitalrebar/rebar-api'
+TREES['gcfg']='https://github.com/digitalrebar/gcfg'
+TREES['classifier']='https://github.com/rackn/classifier'
+TREES['rebar-dhcp']='https://github.com/rackn/rebar-dhcp'
+TREES['rebar-dns-mgmt']='https://github.com/rackn/rebar-dns-mgmt'
+
 BUILD_TAG='latest'
 PULL_CONTAINERS=false
 PUSH_CONTAINERS=false
+TAG_TREES=false
 UPDATE_GIT=false
 FORCE_BUILD=false
 
@@ -158,6 +183,56 @@ sort_containers() {
     done |sort -n |awk '{print $2}'
 }
 
+tag_trees() {
+    local tree
+    local rel_base
+
+    rel_base=${BUILD_TAG%-*}
+
+    DEP_BRANCH=$(git status -b -s | grep \#\# | awk '{ print $2 }')
+    if [[ $DEP_BRANCH != $rel_base ]]; then
+	    echo "deployment should be on this branch: $rel_base"
+	    exit -1
+    fi
+
+    rm -rf tree_bag
+    mkdir -p tree_bag
+
+    cd tree_bag
+    for tree in "${!TREES[@]}"; do
+	    echo "Updating: $tree"
+	    git clone ${TREES[$tree]} $tree
+
+	    cd $tree
+
+	    base=$(git branch -a | egrep "remotes/origin/$rel_base\$")
+	    if [[ $base != $rel_base ]]; then
+		    echo "Making base branch: $rel_base"
+		    git branch $rel_base
+		    git checkout $rel_base
+		    git push origin $rel_base
+	    fi
+
+	    echo "Making tag: $BUILD_TAG"
+	    git checkout $rel_base
+	    git tag $BUILD_TAG
+	    git push origin $BUILD_TAG
+	    cd ..
+    done
+    cd ..
+
+    rm -rf tree_bag
+
+    # Update the tag
+    echo "$BUILD_TAG" > ../compose/tag
+    git commit -m "Update tag to $BUILD_TAG" ../compose/tag
+    git push origin $rel_base
+
+    # Update development - Assumes rebuild containers is run from the branch
+    git tag $BUILD_TAG
+    git push origin $BUILD_TAG
+}
+
 help() {
     cat <<EOF
 rebuild-containers rebuilds the container hierarchy that Rebar is
@@ -226,6 +301,10 @@ while (( $# != 0)); do
     shift
 done
 
+if [[ $UPDATE_GIT = true && $BUILD_TAG != latest ]]; then
+	TAG_TREES=true
+fi
+
 if [[ ${#UNKNOWN_CONTAINERS[@]} != 0 ]]; then
     echo "Cannot build unknown containers:"
     printf "\t%s\n" "${!UNKNOWN_CONTAINERS[@]}"
@@ -260,4 +339,5 @@ if [[ $UPDATE_GIT = true && ${#BUILT_CONTAINERS[@]} != 0 ]]; then
     git commit -m "Built containers: ${!BUILT_CONTAINERS[*]}"
     [[ $PUSH_CONTAINERS = true ]] && \
         git push origin "HEAD:containers-built-for-$(git rev-parse --short HEAD)"
+    [[ $TAG_TREES = true ]] && tag_trees
 fi
