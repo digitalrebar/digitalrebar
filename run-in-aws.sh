@@ -54,8 +54,10 @@ else
         echo "The group should allow ICMP ping, TCP ports 22, 443, 3000"
         exit -1
     fi
-  
-    DEVICE_ID=`aws ec2 run-instances --image-id $IID --count 1 --instance-type ${PROVIDER_AWS_ADMIN_INSTANCE_TYPE} --key-name $KEY_NAME --security-group-ids $SG_ID | jq -r .Instances[0].InstanceId`
+
+    DISK_INFO='[{ "DeviceName": "/dev/sda1", "Ebs": { "DeleteOnTermination": true } }]'
+
+    DEVICE_ID=`aws ec2 run-instances --image-id $IID --count 1 --block-device-mappings "$DISK_INFO" --instance-type ${PROVIDER_AWS_ADMIN_INSTANCE_TYPE} --key-name $KEY_NAME --security-group-ids $SG_ID | jq -r .Instances[0].InstanceId`
 
     # Set Name
     aws ec2 create-tags --resources $DEVICE_ID --tags Key=Name,Value=${NODENAME%%.*}
