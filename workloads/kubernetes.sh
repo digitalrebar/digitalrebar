@@ -346,6 +346,10 @@ fi
 # Commit it all and start
 rebar deployments commit $DEPLOYMENT_NAME
 
+if [ "$DEVICE_ID" != "" ] ; then
+    EXTRA="--device-id=$DEVICE_ID"
+fi
+
 echo "Access Digital Rebar UI, https://${ADMIN_IP}:3000"
 echo "To teardown, $0 $start_args --teardown=true --admin-ip=$ADMIN_IP $EXTRA"
 echo "To keep the admin node, add --keep_admin=true"
@@ -354,10 +358,6 @@ echo "... config complete > converging Kubernetes ..."
 # Wait for the system to converge
 if ! rebar converge $DEPLOYMENT_NAME ; then
   die "Machines did NOT converge in kubernetes"
-fi
-
-if [ "$DEVICE_ID" != "" ] ; then
-    EXTRA="--device-id=$DEVICE_ID"
 fi
 
 echo "Converge Compelete"
