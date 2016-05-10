@@ -189,9 +189,9 @@ tag_trees() {
 
     rel_base=${BUILD_TAG%-*}
 
-    DEP_BRANCH=$(git status -b -s | grep \#\# | awk '{ print $2 }')
+    DEP_BRANCH=$(git status -b -s | grep \#\# | awk '{ print $2 }' | awk -F. '{print $1}')
     if [[ $DEP_BRANCH != $rel_base ]]; then
-	    echo "deployment should be on this branch: $rel_base"
+	    echo "deployment should be on this branch: $rel_base $DEP_BRANCH"
 	    exit -1
     fi
 
