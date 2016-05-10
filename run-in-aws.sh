@@ -51,7 +51,8 @@ else
     SG_ID=$(aws ec2 describe-security-groups --group-names "digital rebar" | jq -r .SecurityGroups[0].GroupId)
     if [[ ! $SG_ID ]] ; then
         echo "Please create a security group called: 'digital rebar'"
-        echo "The group should allow ICMP ping, TCP ports 22, 443, 3000"
+        echo "The group should allow ICMP ping, TCP ports 22, 443, 3000, 8888, 8300, and 8301"
+        echo "If provisioner is turned on and to be used, add 4646 TCP port."
         exit -1
     fi
 
