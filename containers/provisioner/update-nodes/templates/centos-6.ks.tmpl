@@ -21,7 +21,7 @@ part /boot/efi --fstype vfat --size=512 --ondisk={{ .Param "operating-system-dis
 part swap --recommended
 part pv.6 --size=1 --grow --ondisk={{ .Param "operating-system-disk" }}
 volgroup {{ .Machine.ShortName }} --pesize=32768 pv.6
-logvol / --fstype ext4 --name=lv_root --vgname={{ .Machine.ShortName }} --size=1 --grow
+logvol / --fstype ext4 --name=lv_root --vgname={{ .Machine.ShortName }} --size=1 --grow --maxsize=10240
 text
 reboot
 
