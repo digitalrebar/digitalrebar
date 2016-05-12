@@ -17,14 +17,6 @@
 *.dia.autosave
 install-*.log
 
-# BDD files
-/BDD/erl_crash.dump
-/BDD/*.beam
-/BDD/default.config
-/BDD/dev.config
-/BDD/.*.erl.swp
-erl_crash.dump
-
 # Coverage 
 /core/rails/coverage/
 

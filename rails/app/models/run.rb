@@ -215,15 +215,13 @@ class Run < ActiveRecord::Base
         kill_run = false
         if r.node.nil?
           # The node that the run should have been perfomed on is gone.
-          # If this happens, something has gone Horribly Wrong, or
-          # BDD is playing very fast and loose with our referential integrity.
+          # If this happens, something has gone Horribly Wrong
           Rails.logger.error("Run: #{r.id} is present for a nonexistent node.")
           kill_run = true
         end
         if r.node_role.nil?
           # The noderole that requested the run is gone.
-          # Also either something gone Horribly Wrong or BDD murderating
-          # noderoles.
+          # Also either something gone Horribly Wrong 
           Rails.logger.error("Run: #{r.id} is present for a missing noderole.")
           kill_run = true
         end

@@ -40,10 +40,6 @@ script:
   - QUE_WORKER_COUNT=10 QUE_QUEUE=NodeRoleRunner bundle exec rake que:work &
   - bundle exec rails server -d
   - '(export REBAR_KEY=rebar:rebar1; cd ..; while ! bin/barclamp_import $PWD; do sleep 10; done)'
-  - cd ../BDD 
-  - erlc +debug_info *.erl
-  - erl -s bdd test travis -s init stop -noshell
-  - cd ../rails
   - kill `cat tmp/pids/server.pid`
   - pkill -f que:work
   - RAILS_ENV=test bundle exec rake db:migrate
@@ -53,5 +49,4 @@ script:
   - sleep 10
 
 after_failure:
-  - erl -s bdd failed travis -s init stop -noshell
   - tail -n 100 ../rails/log/development.log

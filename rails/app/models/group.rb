@@ -16,7 +16,6 @@
 class Group < ActiveRecord::Base
   
   CATEGORIES = %w(class rack tag ui)
-  # REMINDER: if you add a new group category, update the g(categories) list in BDD/groups_cb.erl!
 
   validates_format_of :name, :with=>/\A[a-zA-Z][_a-zA-Z0-9]*\z/, :message => I18n.t("db.lettersnumbers", :default=>"Name limited to [_a-zA-Z0-9]")
   validates_format_of :category, :with=>/\A[a-zA-Z][_a-zA-Z0-9]*\z/, :message => I18n.t("db.lettersnumbers", :default=>"Category limited to [_a-zA-Z0-9]")

@@ -124,8 +124,6 @@ Rebar::Application.routes.draw do
   scope 'support' do
     get 'logs', :controller => 'support', :action => 'logs'
     get 'get_cli', :controller => 'support', :action => 'get_cli'
-    # bootstrap used by BDD to create admin
-    post "bootstrap"     => "support#bootstrap_post", :as => :bootstrap_post
   end
 
   devise_for :users, { :path_prefix => 'my', :module => :devise, :class_name=> 'User' }

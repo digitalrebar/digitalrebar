@@ -424,7 +424,6 @@ en:
       asset_tag: Service Tag
       provider: "Provider"
       raid: RAID
-      bdd_marker: BDD Marker
       reserve: "Reserve"
       release: "Release"
       bootenv: "Boot Environment"
