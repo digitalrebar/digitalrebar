@@ -114,6 +114,15 @@ case {{.Env.OS.Name}} in
 'deb-src http://archive.canonical.com/ubuntu vivid partner'
 'deb http://security.ubuntu.com/ubuntu vivid-security main restricted universe multiverse'
 'deb-src http://security.ubuntu.com/ubuntu vivid-security main restricted universe multiverse');;
+    ubuntu-16.04*)
+        repocontents+=('deb http://us.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse'
+'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse'
+'deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse'
+'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse'
+'deb http://archive.canonical.com/ubuntu xenial partner'
+'deb-src http://archive.canonical.com/ubuntu xenial partner'
+'deb http://security.ubuntu.com/ubuntu xenial-security main restricted universe multiverse'
+'deb-src http://security.ubuntu.com/ubuntu xenial-security main restricted universe multiverse');;
     debian-7*)
         repocontents+=('deb http://ftp.us.debian.org/debian wheezy main contrib non-free'
 'deb-src http://ftp.us.debian.org/debian wheezy main contrib non-free'
