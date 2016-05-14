@@ -120,7 +120,7 @@ class ProvidersController < ApplicationController
     params[:auth_details].each do |key, value|
       if (value.is_a? String) and (key =~ /json/ or value.start_with?("{"))
         out[key] = JSON.parse(value) 
-      elsif value.is_a? String and value.start_with? == "!"
+      elsif value.is_a? String and value.start_with? "!"
         # noop, we are going to drop values that start with !
       else
         out[key] = value
