@@ -33,13 +33,13 @@ class AwsProvider < CloudProvider
         href: "https://aws.amazon.com",
         title: "Amazon EC2"
   		},
-    	access_key_id: {
+    	aws_access_key_id: {
     		type: "text",
     		default: "",
     		length: 30,
     		name: I18n.t('access_key_id', scope: "providers.show.aws" )
   		},
-    	secret_access_key: {
+    	aws_secret_access_key: {
     		type: "password",
     		default: "",
     		length: 30,
