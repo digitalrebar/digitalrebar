@@ -74,13 +74,6 @@ roles:
     provides:
       - rebar-managed-node
       - rebar-installed-node
-  - name: rebar-cloud-node
-    description: "Cloud Connected Checkpoint"
-    jig: noop
-    icon: 'cloud'
-    flags:
-      - milestone
-      - implicit
   - name: rebar-inventory
     description: "Rebar Inventory"
     flags:
