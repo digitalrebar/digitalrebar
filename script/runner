@@ -280,7 +280,7 @@ addr_port() {
     if [[ $1 =~ ':' ]]; then
         printf '[%s]:%d' "$1" "$2"
     else
-        printf '[%s]:%d' "$1" "$2"
+        printf '%s:%d' "$1" "$2"
     fi
 }   
 
