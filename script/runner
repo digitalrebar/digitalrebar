@@ -6,7 +6,6 @@ shopt -s nullglob extglob globstar
 export TMPDIR=$1
 export ROLE=$2
 
-
 # pkgs and services are hashes with the following format:
 # hash["pkg-or-svc-name"]="alt-os-name pkg-or-svc-name\n..."
 # os-identifier can be either an OS_TYPE or an OS_NAME
@@ -276,6 +275,14 @@ write_attribute_file_content() {
     mkdir -p "$loc"
     cp $2 "$loc/wall"
 }
+
+addr_port() {
+    if [[ $1 =~ ':' ]]; then
+        printf '[%s]:%d' "$1" "$2"
+    else
+        printf '[%s]:%d' "$1" "$2"
+    fi
+}   
 
 if ! (which jq &>/dev/null || install jq); then
     echo "JQ not installed and not installable.  The script jig requires it to function"
