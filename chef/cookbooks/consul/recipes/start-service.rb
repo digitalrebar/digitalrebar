@@ -40,7 +40,7 @@ firewall-cmd --add-port 8300/tcp
 firewall-cmd --add-port 8301/tcp
 firewall-cmd --add-port 8302/tcp
 EOF
-    only_if "which firewall-cmd"
+    only_if "which firewall-cmd && [[ $(firewall-cmd --state) != '*not running*' ]]"
   end
 
 when 'client'
@@ -80,26 +80,32 @@ end
 service_config[:advertise_addr] = service_config[:bind_addr]
 service_config.delete(:bind_addr)
 
-file node[:consul][:config_dir] + '/default.json' do
-  mode 0640
-  action :create
-  content JSON.pretty_generate(service_config, quirks_mode: true)
-end
-
 template '/etc/init.d/consul' do
   source 'consul-init.erb'
   mode 0755
   variables(
             consul_binary: "#{node[:consul][:install_dir]}/consul",
             config_dir: node[:consul][:config_dir],
-            )
-  notifies :restart, 'service[consul]', :immediately
+  )
+  notifies :start, 'service[consul]'
+end
+
+bash "reload systemctl daemon" do
+  code "systemctl daemon-reload"
+  only_if "[[ -x /bin/systemctl ]]"
+  ignore_failure true
 end
 
 service 'consul' do
   supports status: true, restart: true, reload: true
-  action [:enable, :start]
-  subscribes :restart, "file[#{node[:consul][:config_dir]}/default.json]"
+  action [:enable]
+end
+
+file node[:consul][:config_dir] + '/default.json' do
+  mode 0640
+  action :create
+  content JSON.pretty_generate(service_config, quirks_mode: true)
+  notifies :restart, 'service[consul]', :immediately
 end
 
 # Wait for consul leader to emerge.
