@@ -1,0 +1,57 @@
+hash: 4aa09d8d9e5a40f6c665676f2db77d2e976b52a086e52251985525e2264b664c
+updated: 2016-05-20T15:43:44.491610009-05:00
+imports:
+- name: github.com/digitalrebar/rebar-api
+  version: 0b51cd78ae31dac3a01f3dee1c1815a855057460
+  subpackages:
+  - client
+  - datatypes
+- name: github.com/gin-gonic/gin
+  version: 542be2fe77724f800fcab7eb6c01a4e597fb8506
+  subpackages:
+  - binding
+  - render
+- name: github.com/golang/protobuf
+  version: 2402d76f3d41f928c7902a765dfc872356dd3aad
+  subpackages:
+  - proto
+- name: github.com/guregu/null
+  version: 41961cea0328defc5f95c1c473f89ebf0d1813f6
+- name: github.com/hashicorp/consul
+  version: f6fef66e1bf17be4f3c9855fbec6de802ca6bd7d
+  subpackages:
+  - api
+- name: github.com/hashicorp/go-cleanhttp
+  version: 875fb671b3ddc66f8e2f0acc33829c8cb989a38d
+- name: github.com/hashicorp/serf
+  version: e4ec8cc423bbe20d26584b96efbeb9102e16d05f
+  subpackages:
+  - coordinate
+  - serf
+- name: github.com/manucorporat/sse
+  version: ee05b128a739a0fb76c7ebd3ae4810c1de808d6d
+- name: github.com/satori/go.uuid
+  version: f9ab0dce87d815821e221626b772e3475a0d2749
+- name: github.com/VictorLowther/jsonpatch
+  version: bf36a043be1fdc3127cc160767769878824ed71f
+  subpackages:
+  - utils
+- name: golang.org/x/crypto
+  version: 5bcd134fee4dd1475da17714aac19c0aa0142e2f
+  subpackages:
+  - nacl/box
+  - curve25519
+  - nacl/secretbox
+  - salsa20/salsa
+  - poly1305
+- name: golang.org/x/net
+  version: f315505cf3349909cdf013ea56690da34e96a451
+  subpackages:
+  - html
+  - context
+  - html/atom
+- name: gopkg.in/go-playground/validator.v8
+  version: c193cecd124b5cc722d7ee5538e945bdb3348435
+- name: gopkg.in/yaml.v2
+  version: a83829b6f1293c91addabc89d0571c246397bbf4
+devImports: []

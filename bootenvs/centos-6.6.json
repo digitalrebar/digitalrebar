@@ -1,0 +1,48 @@
+{
+    "Name": "centos-6.6-install",
+    "OS": {
+        "Name": "centos-6.6",
+        "IsoFile": "CentOS-6.6-x86_64-bin-DVD1.iso",
+        "IsoUrl": "http://mirrors.kernel.org/centos/6.6/isos/x86_64/CentOS-6.6-x86_64-bin-DVD1.iso",
+        "IsoSha256": "a63241b0f767afa1f9f7e59e6f0f00d6b8d19ed85936a7934222c03a92e61bf3"
+    },
+    "Kernel": "images/pxeboot/vmlinuz",
+    "Initrds": [ "images/pxeboot/initrd.img" ],
+    "BootParams": "ksdevice=bootif ks={{.Machine.Url}}/compute.ks method={{.Env.OS.InstallUrl}}",
+    "RequiredParams": [
+        "logging_servers",
+        "ntp_servers",
+        "operating-system-disk",
+        "provisioner-default-password-hash",
+        "proxy-servers",
+        "rebar-access_keys",
+        "rebar-machine_key"
+    ],
+    "Templates": [
+        {
+            "Name": "pxelinux",
+            "Path": "pxelinux.cfg/{{.Machine.HexAddress}}",
+            "UUID": "default-pxelinux.tmpl"
+        },
+        {
+            "Name": "elilo",
+            "Path": "{{.Machine.HexAddress}}.conf",
+            "UUID": "default-elilo.tmpl"
+        },
+        {
+            "Name": "ipxe",
+            "Path": "{{.Machine.Address}}.ipxe",
+            "UUID": "default-ipxe.tmpl"
+        },
+        {
+            "Name": "compute.ks",
+            "Path": "{{.Machine.Path}}/compute.ks",
+            "UUID": "centos-6.ks.tmpl"
+        },
+        {
+            "Name": "rebar_join.sh",
+            "Path": "{{.Machine.Path}}/rebar_join.sh",
+            "UUID": "rebar-join.sh.tmpl"
+        }
+    ]
+}

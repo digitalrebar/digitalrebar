@@ -1,0 +1,4 @@
+#!ipxe
+kernel {{.Env.PathFor "http" .Env.Kernel}} {{.BootParams}} BOOTIF=01-${netX/mac:hexhyp}
+initrd {{.Env.JoinInitrds "http"}}
+boot
