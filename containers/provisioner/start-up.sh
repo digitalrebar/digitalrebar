@@ -89,8 +89,10 @@ hostname "$HOSTNAME"
 # Force reliance on DNS
 echo '127.0.0.1 localhost' >/etc/hosts
 
+# Both of these are stupid hacks that should go away once providers manage aspects of networks
 control_ip=$(ip -o -4 addr show scope global dev "$BOOTDEV" |awk '{print $4}')
 rebar nodes set $REBAR_UUID attrib node-control-address to "{\"value\": \"${control_ip}\"}"
+rebar nodes set $REBAR_UUID attrib node-private-control-address to "{\"value\": \"${control_ip}\"}"
 
 # Always make sure we are marking the node not alive. It will comeback later.
 rebar nodes update $REBAR_UUID '{"alive": false, "bootenv": "sledgehammer"}'
