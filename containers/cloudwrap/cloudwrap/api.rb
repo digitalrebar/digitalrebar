@@ -98,6 +98,8 @@ class Servers
   def create(endpoint, node_id, args)
     log("Creating node #{node_id}")
     begin
+      # remove values that start with !
+      endpoint.delete_if { |key, value| value.is_a? String and value.start_with? "!" }
       ep = get_endpoint(endpoint)
       fixed_args = fix_hash(args)
 

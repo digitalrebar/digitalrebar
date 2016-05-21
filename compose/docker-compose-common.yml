@@ -82,6 +82,8 @@ cloudwrap:
   restart: always
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    #- ../containers/cloudwrap/cloudwrap/api.rb:/opt/cloudwrap/api.rb
+    #- ../containers/cloudwrap/cloudwrap/common.rb:/opt/cloudwrap/common.rb
   env_file:
     - ./common.env
     - ./access.env
