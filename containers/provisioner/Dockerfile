@@ -10,30 +10,21 @@ ENV APIPORT 8092
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 
 # Get Latest Go
-RUN apt-get -y update \
-  && apt-get -y install cmake bsdtar createrepo tftpd-hpa xz-utils unzip bsdmainutils \
-  && /usr/local/go/bin/go get -u github.com/VictorLowther/sws \
-  && cp "$GOPATH/bin/sws" /usr/local/bin \
-  && apt-get -y purge make cmake build-essential \
-  && curl -fgL -o /tmp/elilo.tar.gz \
-     http://downloads.sourceforge.net/project/elilo/elilo/elilo-3.16/elilo-3.16-all.tar.gz \
-  && curl -fgL -o /tmp/syslinux.tar.xz \
-     https://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.xz \
-  && curl -fgL -o /tmp/ipxe.efi http://boot.ipxe.org/ipxe.efi \
-  && curl -fgL -o /tmp/ipxe.pxe http://boot.ipxe.org/ipxe.pxe \
-  && curl -fgL -o /tmp/busybox https://www.busybox.net/downloads/binaries/busybox-x86_64
+RUN apt-get -y update && apt-get -y install bsdtar createrepo tftpd-hpa xz-utils unzip bsdmainutils
+RUN apt-get -y purge make build-essential
+RUN curl -fgL https://s3-us-west-2.amazonaws.com/rebar-sws/sws-linux-amd64 -o /usr/local/bin/sws && chmod 755 /usr/local/bin/sws
+RUN curl -fgL https://s3-us-west-2.amazonaws.com/rebar-provisioner-mgmt/provisioner-mgmt -o /usr/local/bin/provisioner-mgmt && chmod 755 /usr/local/bin/provisioner-mgmt
+RUN curl -fgL -o /tmp/elilo.tar.gz http://downloads.sourceforge.net/project/elilo/elilo/elilo-3.16/elilo-3.16-all.tar.gz
+RUN curl -fgL -o /tmp/syslinux.tar.xz https://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.xz
+RUN curl -fgL -o /tmp/ipxe.efi http://boot.ipxe.org/ipxe.efi
+RUN curl -fgL -o /tmp/ipxe.pxe http://boot.ipxe.org/ipxe.pxe
+RUN curl -fgL -o /tmp/busybox https://www.busybox.net/downloads/binaries/busybox-x86_64
 
 COPY tftpd.conf /etc/default/tftpd-hpa
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 COPY start-up.sh udhcpc_config stage1_init /tmp/
 COPY explode_iso.sh /
 
-COPY update-nodes $GOPATH/src/github.com/rackn/provisioner-mgmt
-RUN /usr/local/go/bin/go get -u github.com/hashicorp/consul/api \
-                                github.com/VictorLowther/jsonpatch \
-                                github.com/gin-gonic/gin \
-                                github.com/satori/go.uuid \
-                                github.com/digitalrebar/rebar-api/client \
-    && cd "$GOPATH/src/github.com/rackn/provisioner-mgmt" \
-    && /usr/local/go/bin/go build && cp provisioner-mgmt /usr/local/bin
+COPY update-nodes/templates/ /opt/provisioner-mgmt/templates
+COPY update-nodes/bootenvs/ /opt/provisioner-mgmt/bootenvs
 
