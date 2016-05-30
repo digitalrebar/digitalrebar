@@ -29,7 +29,7 @@ class OpenStackProvider < CloudProvider
     { 
       url: {
         type: "img",
-        src: "https://www.openstack.org/assets/openstack-logo/R/openstack-cloud-software-vertical-web.png",
+        src: "https://raw.githubusercontent.com/digitalrebar/core/develop/rails/app/assets/images/providers/openstack.png",
         href: "https://openstack.org",
         title: "OpenStack"
       },
