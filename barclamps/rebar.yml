@@ -52,7 +52,7 @@ roles:
   - name: rebar-installed-node
     description: "Rebar Node Ready Checkpoint"
     jig: noop
-    icon: 'thumb up'
+    icon: 'thumb_up'
     flags:
       - milestone
       - implicit
@@ -63,7 +63,7 @@ roles:
   - name: rebar-docker-node
     description: "Docker Node Ready Checkpoint"
     jig: noop
-    icon: 'developer board'
+    icon: 'developer_board'
     flags:
       - milestone
       - implicit
