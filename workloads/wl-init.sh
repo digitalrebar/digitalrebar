@@ -112,7 +112,7 @@ validate_tools() {
         if ! which ansible &>/dev/null; then
             echo "Please install Ansible!"
             if [[ $OS_FAMILY == darwin ]] ; then
-                echo "Something like: brew install ansible or pip install ansible"
+                echo "Something like: brew install ansible or pip install ansible python-netaddr"
             fi
             error=1
         fi
