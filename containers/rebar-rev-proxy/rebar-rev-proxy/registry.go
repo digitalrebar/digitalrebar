@@ -86,8 +86,16 @@ type Registry interface {
 
 type DefaultRegistry struct {
 	Map     map[string][]string
-	Matcher map[string]*regexp.Regexp
+	Matcher map[string]*MyRegExp
 	Default string
+}
+
+type MyRegExp struct {
+	RegExp *regexp.Regexp
+}
+
+func (s *MyRegExp) MarshalJSON() ([]byte, error) {
+	return []byte("\"" + s.RegExp.String() + "\""), nil
 }
 
 func stringInSlice(a string, list []string) bool {
@@ -105,7 +113,7 @@ type ConsulRegistry struct {
 
 func (c *ConsulRegistry) WatchConsul() {
 	c.Map = make(map[string][]string, 0)
-	c.Matcher = make(map[string]*regexp.Regexp, 0)
+	c.Matcher = make(map[string]*MyRegExp, 0)
 
 	client, err := api.NewClient(api.DefaultConfig())
 	if err != nil {
@@ -231,7 +239,7 @@ func (r *DefaultRegistry) ExtractTag(target *url.URL) (tag string, err error) {
 
 	found := false
 	for itag, matcher := range r.Matcher {
-		matches := matcher.FindStringSubmatch(path)
+		matches := matcher.RegExp.FindStringSubmatch(path)
 		if matches != nil {
 			target.Path = "/" + matches[1]
 			found = true
@@ -278,7 +286,7 @@ func (r *DefaultRegistry) Add(tag, matcher, endpoint string) {
 	if !ok {
 		service = []string{}
 		r.Map[tag] = service
-		r.Matcher[tag] = regexp.MustCompile(strings.TrimSpace(matcher))
+		r.Matcher[tag] = &MyRegExp{RegExp: regexp.MustCompile(strings.TrimSpace(matcher))}
 	}
 	r.Map[tag] = append(service, endpoint)
 }
