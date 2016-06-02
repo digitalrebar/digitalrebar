@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -84,7 +85,12 @@ func main() {
 	myMux := http.NewServeMux()
 	myMux.HandleFunc("/", NewMultipleHostReverseProxy(ServiceRegistry, tlsConfig))
 	myMux.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(w, "%v\n", ServiceRegistry)
+		b, err := json.Marshal(ServiceRegistry)
+		if err != nil {
+			fmt.Fprintf(w, "%s\n", err)
+			return
+		}
+		fmt.Fprintf(w, "%s", string(b))
 	})
 	base_handler = myMux
 
