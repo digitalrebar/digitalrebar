@@ -25,7 +25,6 @@ roles:
     jig: chef
     requires:
       - provisioner-service
-      - rebar-managed-node
     flags:
       - implicit
     events:
@@ -88,8 +87,8 @@ roles:
     flags:
       - discovery
       - implicit
-    attaches:
-      - rebar-hardware-configured
+    preceeds:
+      - rebar-managed-node
     requires:
       - raid-tools-install
     attribs:
@@ -109,6 +108,9 @@ roles:
       - destructive
     requires:
       - raid-discover
+      - rebar-managed-node
+    preceeds:
+      - rebar-hardware-configured
     attribs:
       - name: raid-enable
         description: "Whether or not to use the RAID controllers on a specific node."

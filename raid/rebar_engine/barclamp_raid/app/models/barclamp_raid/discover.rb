@@ -37,7 +37,6 @@ class BarclampRaid::Discover < Role
     # Force these nodes into the same deployment
     rpc_noderole = rpc_role.add_to_node(nr.node)
     chc_noderole = chc_role.add_to_node(nr.node)
-    rpc_noderole.add_child(chc_noderole)
   end
 
   def update_log(nr, string)
