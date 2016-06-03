@@ -34,10 +34,9 @@ roles:
     flags:
       - implicit
       - discovery
-    attaches:
-      - rebar-hardware-configured
-    requires:
+    preceeds:
       - rebar-managed-node
+    requires:
       - provisioner-service
     attribs:
       - name: bios-set-mapping
@@ -464,6 +463,8 @@ roles:
       - leaverunlog
     requires:
       - bios-discover
+    preceeds:
+      - rebar-hardware-configured
     wants-attribs:
       - bios-config-sets
       - ipmi-macaddr
@@ -488,6 +489,8 @@ roles:
       - leaverunlog
     requires:
       - bios-discover
+    preceeds:
+      - rebar-hardware-configured
     wants-attribs:
       - bios-config-sets
     attribs:

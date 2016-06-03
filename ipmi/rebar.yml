@@ -66,6 +66,8 @@ roles:
     type: 'BarclampIpmi::AmtConfigure'
     requires:
       - amt-discover
+    preceeds:
+      - rebar-managed-node
     wants-attribs:
       - node-control-address
       - amt-enable
@@ -78,7 +80,7 @@ roles:
           type: str
   - name: ipmi-discover
     jig: chef
-    attaches:
+    preceeds:
       - rebar-managed-node
     requires:
       - deployer-client
@@ -312,6 +314,8 @@ roles:
     wants-attribs:
       - ipmi-enable
       - ipmi-detected-params
+    preceeds:
+      - rebar-managed-node
     events:
       - endpoint: inproc://role:ipmi-configure/on_active
         selectors:

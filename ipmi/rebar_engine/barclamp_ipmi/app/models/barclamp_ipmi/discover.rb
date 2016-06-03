@@ -76,10 +76,6 @@ class BarclampIpmi::Discover < Role
       # Force the config role into the same deployment as the discover role
       ipmi_config = icr_role.add_to_node_in_deployment(nr.node, nr.deployment)
       ipmi_config.commit!
-      # Keep the noderole graph sane by making the managed_node role for this node
-      # depend on our newly-added ipmi config noderole.
-      Rails.logger.info("Making rebar-managed-node on #{nr.node.name} depend on ipmi-configure role.")
-      ipmi_config.add_child('rebar-managed-node')
     end
   end
 end

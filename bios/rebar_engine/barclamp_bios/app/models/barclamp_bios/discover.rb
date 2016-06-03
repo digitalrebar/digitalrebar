@@ -56,7 +56,6 @@ class BarclampBios::Discover < Role
         runlog << "Adding #{bc_role.name} to #{nr.node.name}"
         bc_noderole = bc_role.add_to_node(nr.node)
         chc_noderole = chc_role.add_to_node(nr.node)
-        bc_noderole.add_child(chc_noderole)
         nr.runlog = runlog.join("\n")
       end
     else
