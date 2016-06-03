@@ -257,6 +257,9 @@ class Role < ActiveRecord::Base
       RoleRequire.where(requires: name, required_role_id: nil).each do |rr|
         rr.resolve!
       end
+      RolePreceed.where(preceeds: name, child_role_id: nil).each do |pr|
+        pr.resolve!
+      end
       return true unless jig && jig.client_role_name &&
         !RoleRequire.exists?(role_id: id,
                              requires: jig.client_role_name)
@@ -264,9 +267,6 @@ class Role < ActiveRecord::Base
       # create a RoleRequire for it.
       RoleRequire.create!(role_id: id,
                           requires: jig.client_role_name)
-      RolePreceed.where(preceeds: name, child_role_id: nil).each do |pr|
-        pr.resolve!
-      end
     end
   end
 
