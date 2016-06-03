@@ -19,7 +19,7 @@ class BarclampIpmi::AmtDiscover < Role
     return unless nr.wall['amt']['enable']
     config_role = Role.find_by!(name: 'amt-configure')
     return if NodeRole.find_by(node_id: nr.node_id, role_id: config_role.id)
-    config_nr = config_role.add_to_node(nr.node)
+    config_nr = config_role.add_to_node_and_deployment(nr.node,nr.deployment)
     config_nr.commit!
     config_nr.add_child('rebar-managed-node')
   end

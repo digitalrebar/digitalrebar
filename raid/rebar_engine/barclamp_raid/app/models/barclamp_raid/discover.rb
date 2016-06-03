@@ -34,9 +34,9 @@ class BarclampRaid::Discover < Role
     rpc_role = Role.find_by!(name: 'raid-post-configure')
     chc_role = Role.find_by!(name: 'rebar-hardware-configured')
 
-    # Force these nodes into the same deployment as this node role.
-    rpc_noderole = rpc_role.add_to_node_in_deployment(nr.node, nr.deployment)
-    chc_noderole = chc_role.add_to_node_in_deployment(nr.node, nr.deployment)
+    # Force these nodes into the same deployment
+    rpc_noderole = rpc_role.add_to_node(nr.node)
+    chc_noderole = chc_role.add_to_node(nr.node)
     rpc_noderole.add_child(chc_noderole)
   end
 
