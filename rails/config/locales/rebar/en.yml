@@ -574,6 +574,7 @@ en:
       destructive: "Destructive"
       service: "Service"
       provides: "Provides"
+      preceeds: "Preceeds"
       conflicts: "Conflicts"
       server: "Server"
       description: "Description"

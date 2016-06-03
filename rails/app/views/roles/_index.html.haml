@@ -10,6 +10,7 @@
         %th= t '.description'
         %th= t '.flags'
         %th= t '.upstream'
+        %th= t '.preceeds'
         %th= t '.provides'
         %th= t '.conflicts'
     %tbody
@@ -31,6 +32,9 @@
           %td
             - role.parents.each do |p|
               = link_to p.name, role_path(p), :title=>p.description
+          %td
+            - role.preceeds.each do |r|
+              = link_to r, role_path(r)
           %td
             - role.provides.each do |r|
               = link_to r, role_path(r)
