@@ -209,7 +209,7 @@ roles:
             obj_class: role
             obj_id: provisioner-os-install
     requires:
-      - rebar-hardware-configured
+      - rebar-managed-node
     flags:
       - implicit
       - destructive

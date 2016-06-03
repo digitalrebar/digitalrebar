@@ -39,8 +39,30 @@ class Role < ActiveRecord::Base
   belongs_to      :barclamp
   belongs_to      :jig,               :foreign_key=>:jig_name, :primary_key=>:name
   has_many        :role_requires,     :dependent => :destroy
-  has_many        :active_role_requires, -> { where("required_role_id IS NOT NULL") }, class_name: "RoleRequire"
-  has_many        :role_requires_children, class_name: "RoleRequire", foreign_key: :requires, primary_key: :name
+  has_many        :active_role_requires,
+                  -> { where("required_role_id IS NOT NULL") },
+                  class_name: "RoleRequire"
+  has_many        :role_preceeds_parents,
+                  class_name: "RolePreceed",
+                  foreign_key: :child_role_id,
+                  primary_key: :id
+  has_many        :active_preceeds,
+                  -> { where("child_role_id IS NOT NULL") },
+                  class_name: "RolePreceed"
+  has_many        :role_requires_children,
+                  class_name: "RoleRequire",
+                  foreign_key: :requires,
+                  primary_key: :name
+  has_many        :role_preceeds_children,
+                  class_name: "RolePreceed",
+                  foreign_key: :preceeds,
+                  primary_key: :name
+  has_many        :preceeds_children,
+                  through: :active_preceeds,
+                  source: :child
+  has_many        :preceeds_parents,
+                  through: :role_preceeds_parents,
+                  source: :role
   has_many        :parents, through: :active_role_requires, source: :parent
   has_many        :children, through: :role_requires_children, source: :role
   has_many        :role_require_attribs, :dependent => :destroy
@@ -178,6 +200,10 @@ class Role < ActiveRecord::Base
       if c >= cohort
         update_column(:cohort,  c + 1)
       end
+      c = (Role.where("id in (select role_id from role_preceeds where child_role_id = ?)",id).maximum("cohort") || -1)
+      if c >= cohort
+        update_column(:cohort, c + 1)
+      end
     end
     children.where('cohort <= ?',cohort).each do |child|
       child.update_cohort
@@ -238,6 +264,9 @@ class Role < ActiveRecord::Base
       # create a RoleRequire for it.
       RoleRequire.create!(role_id: id,
                           requires: jig.client_role_name)
+      RolePreceed.where(preceeds: name, child_role_id: nil).each do |pr|
+        pr.resolve!
+      end
     end
   end
 

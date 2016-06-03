@@ -239,6 +239,23 @@ class NodeRole < ActiveRecord::Base
         query_parts << "(#{rent.id}, #{res.id})"
         tenative_cohort = rent.cohort + 1 if rent.cohort > tenative_cohort
       end
+      r.preceeds_parents.each do |pr|
+        pnr = NodeRole.find_by(node_id: n.id, role_id: pr.id)
+        pnr ||= NodeRole.find_by(deployment_id: d.id, role_id: pr.id) unless r.implicit?
+        if pnr
+          Rails.logger.info("NodeRole: Role #{pr.name} preceeds #{r.name}, binding #{res.id} to #{pnr.id}")
+          query_parts << "(#{pnr.id}, #{res.id})"
+        end
+      end
+      r.preceeds_children.each do |pr|
+        tnr = NodeRole.find_by(node_id: n.id, role_id: pr.id)
+        tnr ||= NodeRole.find_by(deployment_id: d.id, role_id: pr.id) unless pr.implicit?
+        if tnr
+          Rails.logger.info("NodeRole: Role #{pr.name} preceeds #{r.name}, binding #{tnr.id} to #{res.id}")
+          query_parts << "(#{res.id}, #{tnr.id})"
+        end
+      end
+
       unless query_parts.empty?
         ActiveRecord::Base.connection.execute("INSERT INTO node_role_pcms (parent_id, child_id) VALUES #{query_parts.join(', ')}")
       end

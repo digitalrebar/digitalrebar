@@ -15,14 +15,6 @@
 
 class RoleRequire < ActiveRecord::Base
 
-  after_create      :load_uuid
-
-  def load_uuid
-    self.reload
-  end
-
-  private :load_uuid
-
   belongs_to      :role
   belongs_to      :parent, class_name: Role, foreign_key: "required_role_id"
   alias_attribute :upstream, :parent
@@ -63,11 +55,18 @@ class RoleRequire < ActiveRecord::Base
     # Find all the roles that target_role depends on that depend on
     # source_role. If there are none, then adding this role cannot create
     # a dependency loop, and we are OK.
-    return true if Role.where("id in (
-                                  select role_id from all_role_requires
-                                  where role_id = ? AND required_role_name = ?)",
-                              source_role.id,
-                              target_role.name).empty?
+    no_conflicting_requires = target_role.all_children.where(name: requires).empty?
+    no_conflicting_preceeds = true
+    target_role.preceeds_children.each do |pc|
+      no_conflicting_preceeds = pc.all_children.where(name: requires).empty?
+      break unless no_conflicting_preceeds
+    end
+    return true if no_conflicting_requires && no_conflicting_preceeds
+    #no_conflicting_requires = Role.where("id in (
+    #                              select role_id from all_role_requires
+    #                              where role_id = ? AND required_role_name = ?)",
+    #                          source_role.id,
+    #                          target_role.name).empty?
     # Well, that is that. We will die, but we will be precise about why we die.
     errors[:base] << "RoleRequire: #{target_role.name} depending on #{requires} makes the role graph cyclic!"
     paths = Role.connection.select_all("select path from all_role_requires_paths where child_name = '#{source_role.name}' AND parent_name = '#{target_role.name}'")

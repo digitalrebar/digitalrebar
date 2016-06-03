@@ -47,6 +47,8 @@ roles:
       - implicit
       - milestone
       - powersave
+    preceeds:
+      - provisioner-os-install
     requires:
       - rebar-managed-node
   - name: rebar-installed-node
@@ -58,7 +60,6 @@ roles:
       - implicit
       - powersave
     requires:
-      - rebar-hardware-configured
       - provisioner-os-install
   - name: rebar-docker-node
     description: "Docker Node Ready Checkpoint"

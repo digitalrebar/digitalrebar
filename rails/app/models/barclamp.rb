@@ -27,15 +27,15 @@ class Barclamp < ActiveRecord::Base
   # Validate the name should unique
   # and that it starts with an alph and only contains alpha,digits,underscore
   #
-  validates_uniqueness_of :name, :case_sensitive => false, :message => I18n.t("db.notunique", :default=>"Name item must be unique")
-  validates_exclusion_of :name, :in => %w(framework api barclamp docs machines jigs roles groups users support application), :message => I18n.t("db.barclamp_excludes", :default=>"Illegal barclamp name")
+  validates_uniqueness_of :name, case_sensitive: false, message: I18n.t("db.notunique", default: "Name item must be unique")
+  validates_exclusion_of :name, in: %w(framework api barclamp docs machines jigs roles groups users support application), message:  I18n.t("db.barclamp_excludes", default: "Illegal barclamp name")
 
-  validates_format_of :name, :with=>/\A[a-zA-Z][_a-zA-Z0-9]*\z/, :message => I18n.t("db.lettersnumbers", :default=>"Name limited to [_a-zA-Z0-9]")
+  validates_format_of :name, with: /\A[a-zA-Z][_a-zA-Z0-9]*\z/, message: I18n.t("db.lettersnumbers", default: "Name limited to [_a-zA-Z0-9]")
 
   # Deployment
-  has_many          :roles,     :dependent => :destroy
-  has_many          :attribs,   :dependent => :destroy
-  belongs_to        :barclamp,  :dependent => :destroy
+  has_many          :roles,     dependent: :destroy
+  has_many          :attribs,   dependent: :destroy
+  belongs_to        :barclamp,  dependent: :destroy
   alias_attribute   :parent,    :barclamp
   serialize         :cfg_data
 
@@ -85,14 +85,14 @@ class Barclamp < ActiveRecord::Base
 
       source_url = bc['barclamp']["source_url"]
       barclamp.update_attributes!(
-        :description   => bc['barclamp']['description'] || bc['barclamp']['display'] || bc_name.humanize,
-        :version       => version,
-        :build_version => build_version,
-        :source_url    => source_url,
-        :source_path   => bc['barclamp']['source_path'],
-        :build_on      => gitdate,
-        :commit        => gitcommit,
-        :cfg_data      => bc)
+        description:   bc['barclamp']['description'] || bc['barclamp']['display'] || bc_name.humanize,
+        version:       version,
+        build_version: build_version,
+        source_url:    source_url,
+        source_path:   bc['barclamp']['source_path'],
+        build_on:      gitdate,
+        commit:        gitcommit,
+        cfg_data:      bc)
 
       # Load node maanger information, if any.
       bc['hammers'].each do |nm|
@@ -115,11 +115,11 @@ class Barclamp < ActiveRecord::Base
                      else
                        ["noop","test","role-provided"].include? jig_name
                      end
-        jig = jig_type.constantize.find_or_create_by!(:name => jig_name)
-        jig.update_attributes!(:order => 100,
-                               :active => jig_active,
-                               :description => jig_desc,
-                               :client_role_name => jig_client_role)
+        jig = jig_type.constantize.find_or_create_by!(name: jig_name)
+        jig.update_attributes!(order:            100,
+                               active:           jig_active,
+                               description:      jig_desc,
+                               client_role_name: jig_client_role)
       end if bc["jigs"]
 
       bc['providers'].each do |provider|
@@ -156,6 +156,7 @@ class Barclamp < ActiveRecord::Base
         description = role['description'] || role_name.gsub("-"," ").titleize
         role_provides = role['provides'] || []
         role_conflicts = role['conflicts'] || []
+        role_preceeds = role['preceeds'] || []
         role_metadata = role['metadata'] || {}
         icon = if role['icon']
           role['icon']
@@ -178,44 +179,49 @@ class Barclamp < ActiveRecord::Base
           end
         end
         # roles data import
-        r = role_type.find_or_create_by!(:name=>role_name,
-                                         :jig_name => role_jig.name,
-                                         :barclamp_id=>barclamp.id)
-        r.update_attributes!(:description=>description,
-                             :barclamp_id=>barclamp.id,
-                             :template=>{},
-                             :provides=>role_provides,
-                             :conflicts=>role_conflicts,
-                             :milestone=>flags.include?('milestone'),
-                             :library=>flags.include?('library'),
-                             :implicit=>flags.include?('implicit'),
-                             :bootstrap=>flags.include?('bootstrap'),
-                             :discovery=>flags.include?('discovery'),
-                             :abstract=>flags.include?('abstract'),
-                             :destructive=>flags.include?('destructive'),
-                             :service=>flags.include?('service'),
-                             :cluster=>flags.include?('cluster'),
-                             :powersave=>flags.include?('powersave'),
-                             :leaverunlog=>flags.include?('leaverunlog'),
-                             :metadata=>role_metadata,
-                             :icon=>icon)
+        r = role_type.find_or_create_by!(name:        role_name,
+                                         jig_name:    role_jig.name,
+                                         barclamp_id: barclamp.id)
+        r.update_attributes!(description: description,
+                             barclamp_id: barclamp.id,
+                             template:    {},
+                             provides:    role_provides,
+                             conflicts:   role_conflicts,
+                             preceeds:    role_preceeds,
+                             milestone:   flags.include?('milestone'),
+                             library:     flags.include?('library'),
+                             implicit:    flags.include?('implicit'),
+                             bootstrap:   flags.include?('bootstrap'),
+                             discovery:   flags.include?('discovery'),
+                             abstract:    flags.include?('abstract'),
+                             destructive: flags.include?('destructive'),
+                             service:     flags.include?('service'),
+                             cluster:     flags.include?('cluster'),
+                             powersave:   flags.include?('powersave'),
+                             leaverunlog: flags.include?('leaverunlog'),
+                             metadata:    role_metadata,
+                             icon:        icon)
         prerequisites.each do |rr|
           Rails.logger.info("Making #{r.name} depend on #{rr}")
-          RoleRequire.find_or_create_by!(:role_id => r.id, :requires => rr)
+          RoleRequire.find_or_create_by!(role_id: r.id, requires: rr)
         end
         attaches.each do |ar_name|
           ar = Role.find_by!(name: ar_name)
           Rails.logger.info("Making #{r.name} depend on #{ar.name}")
           RoleRequire.find_or_create_by!(role_id: ar.id, requires: r.name)
         end
-        RoleRequireAttrib.where(:role_id => r.id).delete_all
+        role_preceeds.each do |p_name|
+          Rails.logger.info("Making #{r.name} preceed #{p_name}")
+          RolePreceed.find_or_create_by!(role_id: r.id, preceeds: p_name)
+        end
+        RoleRequireAttrib.where(role_id: r.id).delete_all
         wanted_attribs.each do  |attr|
           attr_name = attr.is_a?(Hash) ? attr["name"] : attr
           attr_at = attr.is_a?(Hash) ? attr["at"] : nil
           Rails.logger.info("Making role #{r.name} want attribute #{attr_name}")
-          RoleRequireAttrib.create!(:role_id => r.id,
-                                    :attrib_name => attr_name,
-                                    :attrib_at => attr_at)
+          RoleRequireAttrib.create!(role_id: r.id,
+                                    attrib_name: attr_name,
+                                    attrib_at: attr_at)
         end
         role['attribs'].each do |attrib|
           Rails.logger.info("Importing attrib #{attrib['name']} for role #{role['name']} in barclamp #{barclamp.name}")
@@ -232,14 +238,14 @@ class Barclamp < ActiveRecord::Base
           attrib_default = attrib['default']
           attrib_writable = !!attrib['schema']
           a = attrib_type.find_or_create_by!(name: attrib_name)
-          a.update_attributes!(:description => attrib_desc,
-                               :map => attrib_map,
-                               :default => {"value" => attrib_default},
-                               :role_id => r.id,
-                               :ui_renderer => attrib_ui_renderer,
-                               :writable => attrib_writable,
-                               :schema => attrib_writable ? attrib['schema']: nil,
-                               :barclamp_id => barclamp.id)
+          a.update_attributes!(description: attrib_desc,
+                               map: attrib_map,
+                               default: {"value" => attrib_default},
+                               role_id: r.id,
+                               ui_renderer: attrib_ui_renderer,
+                               writable: attrib_writable,
+                               schema: attrib_writable ? attrib['schema']: nil,
+                               barclamp_id: barclamp.id)
         end if r && role['attribs']
         role['events'].each do |event|
           evt = EventSink.find_or_create_by!(endpoint: event['endpoint'])
@@ -268,17 +274,22 @@ class Barclamp < ActiveRecord::Base
         attrib_default = attrib['default']
         attrib_map = attrib['map'] || ""
         attrib_writable = !!attrib['schema']
-        a = attrib_type.find_or_create_by!(:name => attrib_name)
-        a.update_attributes!(:description => attrib_desc,
-                             :map => attrib_map,
-                             :writable => attrib_writable,
-                             :default => {"value" => attrib_default},
-                             :schema => attrib_writable ? attrib['schema']: nil,
-                             :barclamp_id => barclamp.id)
+        a = attrib_type.find_or_create_by!(name: attrib_name)
+        a.update_attributes!(description: attrib_desc,
+                             map: attrib_map,
+                             writable: attrib_writable,
+                             default: {"value" => attrib_default},
+                             schema: attrib_writable ? attrib['schema']: nil,
+                             barclamp_id: barclamp.id)
       end if bc['attribs']
       # add menut item if wizard enabled
       if bc['wizard']
-        Nav.find_or_create_by(item: "wizard_"+bc_name, parent_item: 'deploy', name: bc_name.titleize+" Wizard", description: bc['barclamp']['description'], path: "/barclamps/#{bc_name}/wizard", order: 5000)
+        Nav.find_or_create_by(item: "wizard_"+bc_name,
+                              parent_item: 'deploy',
+                              name: bc_name.titleize+" Wizard",
+                              description: bc['barclamp']['description'],
+                              path: "/barclamps/#{bc_name}/wizard",
+                              order: 5000)
       end
       barclamp
     end
