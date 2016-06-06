@@ -215,7 +215,7 @@ class IP
     def self.netmask_to_subnet(mask)
       bits = mask.split('.').inject(0){|acc,i| acc = (acc << 8) + i.to_i}
       res = 32
-      while bits[0] == 0
+      while bits[0] == 0 && res != 0
         res-=1
         bits >>= 1
       end
