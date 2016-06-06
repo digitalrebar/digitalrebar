@@ -422,6 +422,11 @@ done; unset i
 # Load kernel modules, run twice.
 find /sys -name 'modalias' -type f -exec cat '{}' + | sort -u | xargs -n 1 modprobe  2>/dev/null
 find /sys -name 'modalias' -type f -exec cat '{}' + | sort -u | xargs -n 1 modprobe  2>/dev/null
+# If we loaded mlx4_core, also load mlx4_en
+if test -d /sys/module/mlx4_core; then
+    modprobe mlx4_en
+    mdev -s
+fi
 echo "Parsing kernel parameters required for booting"
 bootif=$(grep -o 'BOOTIF=[^ ]*' /proc/cmdline)
 nextone=$(grep -o 'provisioner.web=[^ ]*' /proc/cmdline)
