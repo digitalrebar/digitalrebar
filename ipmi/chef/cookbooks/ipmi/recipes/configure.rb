@@ -25,6 +25,7 @@ node.set["rebar_wall"] ||= Mash.new
 node.set["rebar_wall"]["status"] ||= Mash.new
 node.set["rebar_wall"]["status"]["ipmi"] ||= Mash.new
 node.set["rebar_wall"]["status"]["ipmi"]["messages"] ||= []
+node.set["rebar_wall"]["status"]["ipmi"]["configured"] = false
 
 ipmiinfo = IPMI.mc_info(node)
 lan_current_cfg = IPMI.laninfo(node)
@@ -64,6 +65,7 @@ ruby_block "Set IPMI credentials and enable LAN channel access" do
     cmd_list.each do |cmd|
       IPMI.tool(node,cmd)
       raise "Failed to run #{cmd}" unless $?.exitstatus == 0
+      node.set["rebar_wall"]["status"]["ipmi"]["configured"] = true
     end
   end
   notifies :create, "ruby_block[Signal success in setting user creds]"
@@ -80,6 +82,7 @@ if node["quirks"].member?("ipmi-dell-dedicated-nic")
     block do
       IPMI.tool(node,"delloem lan set dedicated")
       raise "Unable to set IPMI to dedicated nic mode" unless $?.exitstatus == 0
+      node.set["rebar_wall"]["status"]["ipmi"]["configured"] = true
     end
     not_if { IPMI.tool(node,"delloem lan get").strip == "dedicated" }
   end
@@ -90,6 +93,7 @@ if node[:ipmi][:use_dhcp]
     block do
       IPMI.tool(node,"lan set #{chan} ipsrc dhcp")
       raise "Could not set IPMI to use DHCP" unless $?.exitstatus == 0
+      node.set["rebar_wall"]["status"]["ipmi"]["configured"] = true
     end
   end unless lan_current_cfg['ipsrc'] == "dhcp"
 else
@@ -103,6 +107,7 @@ else
     lan_cfg['ipaddr'] = address.addr
     lan_cfg['netmask'] = address.netmask
     lan_cfg['defgw ipaddr'] = (IP.coerce(opts["router"]["address"]).addr || "0.0.0.0" rescue "0.0.0.0")
+    node.set["rebar_wall"]["status"]["ipmi"]["configured"] = true
     break
   end
   unless address
@@ -119,8 +124,18 @@ else
       block do
         IPMI.tool(node,cmd)
         raise "Could not #{cmd}" unless $?.exitstatus == 0
+        node.set["rebar_wall"]["status"]["ipmi"]["configured"] = true
       end
     end
+  end
+end
+
+if node["quirks"].member?("ipmi-hard-reset-after-config") &&
+   node["rebar_wall"]["status"]["ipmi"]["configured"]
+  ruby_block "Hard reset IPMI controller after config has finished" do
+    sleep 30
+    IPMI.tool(node,"mc reset cold")
+    sleep 30
   end
 end
 
