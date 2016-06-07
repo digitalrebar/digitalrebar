@@ -159,7 +159,7 @@ roles:
                   "match": "256 (0x0100)"
                   "score": 3
           "hp-19-11-bmc":
-            "quirklist": ["ipmi-crossed-access-channels"]
+            "quirklist": ["ipmi-crossed-access-channels","ipmi-hard-reset-after-config"]
             "match":
               "bmcinfo":
                 "device_id":
