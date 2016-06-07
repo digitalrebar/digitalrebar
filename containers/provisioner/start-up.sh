@@ -75,8 +75,7 @@ else
     else
         echo "Node already committed, moving on"
     fi
-    dhclient -r
-    dhclient "$BOOTDEV"
+    dhclient -r && sleep 5 && dhclient "$BOOTDEV"
 fi
 echo "${REBAR_UUID}" > /etc/rebar-uuid
 # Set our hostname for everything else.
