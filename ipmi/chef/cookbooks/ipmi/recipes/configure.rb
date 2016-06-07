@@ -133,9 +133,11 @@ end
 if node["quirks"].member?("ipmi-hard-reset-after-config") &&
    node["rebar_wall"]["status"]["ipmi"]["configured"]
   ruby_block "Hard reset IPMI controller after config has finished" do
-    sleep 30
-    IPMI.tool(node,"mc reset cold")
-    sleep 30
+    block do
+      sleep 30
+      IPMI.tool(node,"mc reset cold")
+      sleep 30
+    end
   end
 end
 
