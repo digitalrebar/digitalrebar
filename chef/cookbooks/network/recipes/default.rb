@@ -561,42 +561,44 @@ if ["delete","reset"].member?(node["state"])
 end
 
 # Wait for the networks to come back
-node["rebar"]["network"].each do |netname,net|
-  next if net["conduit"] == "bmc"
-  unless net["targets"]
-    Chef::Log.info("Network #{netname} does not have any targets to ping.")
-    next
-  end
-  reachable = false
-  src_4, src_6 = net["addresses"].map{|a|IP.coerce(a)}.partition{|a|a.v4?}
-  tgt_4, tgt_6 = net["targets"].map{|a|IP.coerce(a)}.partition{|a|a.v4?}
-  # Figure out what address to try and ping.
-  target = nil
-  if !tgt_6.empty? && !src_6.empty?
-    # If our target and us nave an ipv6 address, try that.
-    target = tgt_6.first
-  elsif !tgt_4.empty? && !src_4.empty?
-    # Otherwise, try ipv4 if we both have one of those.
-    target = tgt_4.first
-  end
-  # We do not have compatible connectivity.
-  unless target
-    Chef::Log.info("No target addresses are in the same address family.")
-    next
-  end
-  60.times do
-    if target.reachable?
-      reachable = true
-      break
-    end
-    sleep 1
-  end
-  if reachable
-    Chef::Log.info("Network #{netname} is alive.")
-  else
-    Chef::Log.error("Network #{netname} is not alive.")
-  end
-end
+sleep 10
+
+#node["rebar"]["network"].each do |netname,net|
+#  next if net["conduit"] == "bmc"
+#  unless net["targets"]
+#    Chef::Log.info("Network #{netname} does not have any targets to ping.")
+#    next
+#  end
+#  reachable = false
+#  src_4, src_6 = net["addresses"].map{|a|IP.coerce(a)}.partition{|a|a.v4?}
+#  tgt_4, tgt_6 = net["targets"].map{|a|IP.coerce(a)}.partition{|a|a.v4?}
+#  # Figure out what address to try and ping.
+#  target = nil
+#  if !tgt_6.empty? && !src_6.empty?
+#    # If our target and us nave an ipv6 address, try that.
+#    target = tgt_6.first
+#  elsif !tgt_4.empty? && !src_4.empty?
+#    # Otherwise, try ipv4 if we both have one of those.
+#    target = tgt_4.first
+#  end
+#  # We do not have compatible connectivity.
+#  unless target
+#    Chef::Log.info("No target addresses are in the same address family.")
+#    next
+#  end
+#  60.times do
+#    if target.reachable?
+#      reachable = true
+#      break
+#    end
+#    sleep 1
+#  end
+#  if reachable
+#    Chef::Log.info("Network #{netname} is alive.")
+#  else
+#    Chef::Log.error("Network #{netname} is not alive.")
+#  end
+#end
 
 node.set["rebar_wall"] ||= Mash.new
 node.set["rebar_wall"]["network"] ||= Mash.new
