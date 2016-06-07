@@ -179,7 +179,13 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			log.Println("Ignoring request from unknown MAC address, ", nic)
 			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
 		}
-		if lease == nil || !lease.Ip.Equal(reqIP) {
+		if lease == nil {
+			h.info.Unlock()
+			log.Println("Requested IP not found in lease database: ", reqIP, " from ", nic)
+			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
+		}
+
+		if !lease.Ip.Equal(reqIP) {
 			h.info.Unlock()
 			log.Println("Requested IP doesn't match leased IP: ", reqIP, " ", lease.Ip, " ", nic)
 			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
