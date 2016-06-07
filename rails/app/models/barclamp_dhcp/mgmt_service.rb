@@ -61,13 +61,16 @@ class BarclampDhcp::MgmtService < Service
   end
 
   def on_active(nr)
+    Rails.logger.info('dhcp-mgmt on_active start - update subnet')
     Network.in_category('admin').each do |net|
       on_network_create(net)
     end
 
-    NetworkAllocation.all do |na|
+    Rails.logger.info('dhcp-mgmt on_active start - update individual nodes')
+    NetworkAllocation.all.each do |na|
       on_network_allocation_create(na)
     end
+    Rails.logger.info('dhcp-mgmt on_active start - done')
   end
 
   def build_network(network)
@@ -99,7 +102,7 @@ class BarclampDhcp::MgmtService < Service
       end
       break if next_server
     end
-    Rails.logger.fatal('Missing next_server') unless next_server
+    Rails.logger.info('Missing next_server') unless next_server
 
     options = {}
 
@@ -118,7 +121,7 @@ class BarclampDhcp::MgmtService < Service
       end
       break unless dns_server.empty?
     end
-    Rails.logger.fatal('Missing dns_server') unless dns_server.empty?
+    Rails.logger.info('Missing dns_server') unless dns_server.empty?
     unless dns_server.empty?
       options[6] = dns_server.join(',')
       options[15] = dns_domain
@@ -133,7 +136,7 @@ class BarclampDhcp::MgmtService < Service
       end
       break unless ntp_server.empty?
     end
-    Rails.logger.fatal('Missing ntp_server') unless ntp_server.empty?
+    Rails.logger.info('Missing ntp_server') unless ntp_server.empty?
     unless ntp_server.empty?
       ips = []
       ntp_server.each do |ns|
@@ -150,7 +153,12 @@ class BarclampDhcp::MgmtService < Service
     begin
       self.class.create_network(network.name, subnet, next_server, start_ip, end_ip, options)
     rescue
-      self.class.update_network(network.name, subnet, next_server, start_ip, end_ip, options)
+      begin
+        self.class.update_network(network.name, subnet, next_server, start_ip, end_ip, options)
+      rescue Exception => e
+        Rails.logger.fatal("Failed to update: #{network.name}: #{e.message}")
+        raise e
+      end
     end
   end
 
@@ -176,8 +184,10 @@ class BarclampDhcp::MgmtService < Service
   end
 
   def on_network_allocation_create(na)
+    Rails.logger.info("dhcp-mgmt on_network_allocation_create - #{na.address} net cat #{na.network.category}")
     return if na.network.category != 'admin'
 
+    Rails.logger.info("dhcp-mgmt on_network_allocation_create - v4? #{na.address.v4?}")
     return unless na.address.v4?
     loader = Attrib.get('provisioner-bootloader',na.node)
 
@@ -197,10 +207,12 @@ class BarclampDhcp::MgmtService < Service
         end
       end
 
+      Rails.logger.info("dhcp-mgmt on_network_allocation_create - mac_list #{mac_list}")
       mac_list.each do |mac|
         self.class.bind_node_ip_mac(na.network.name, mac, na.address.addr, row['bootenv'], loader)
       end
     end
+    Rails.logger.info("dhcp-mgmt on_network_allocation_create - done #{na.address}")
   end
 
   def on_network_allocation_delete(na)
@@ -328,6 +340,8 @@ class BarclampDhcp::MgmtService < Service
   end
 
   def self.bind_node_ip_mac(name, mac, ip, bootenv, loader)
+
+    Rails.logger.info("dhcp-mgmt bind_node_ip_mac - #{name} #{mac} #{ip} #{bootenv} #{loader}")
 
     hash = {
       "ip" => ip,
