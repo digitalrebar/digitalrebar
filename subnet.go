@@ -182,7 +182,7 @@ func (s *Subnet) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (subnet *Subnet) free_lease(dt *DataTracker, nic string) {
+func (subnet *Subnet) freeLease(dt *DataTracker, nic string) {
 	lease := subnet.Leases[nic]
 	if lease != nil {
 		//log.Printf("Freeing Lease for: %v\n", nic)
@@ -199,7 +199,7 @@ func (subnet *Subnet) free_lease(dt *DataTracker, nic string) {
 	}
 }
 
-func (subnet *Subnet) find_info(dt *DataTracker, nic string) (*Lease, *Binding) {
+func (subnet *Subnet) findInfo(dt *DataTracker, nic string) (*Lease, *Binding) {
 	l := subnet.Leases[nic]
 	b := subnet.Bindings[nic]
 	return l, b
@@ -226,7 +226,7 @@ func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 	}
 
 	// Free invalid or expired leases
-	save_me := false
+	saveMe := false
 	now := time.Now()
 	for k, lease := range subnet.Leases {
 		if now.After(lease.ExpireTime) {
@@ -234,7 +234,7 @@ func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 				subnet.ActiveBits.Clear(uint(dhcp.IPRange(subnet.ActiveStart, lease.Ip) - 1))
 			}
 			delete(subnet.Leases, k)
-			save_me = true
+			saveMe = true
 		}
 	}
 
@@ -248,10 +248,10 @@ func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 	}
 
 	// We got nothin'
-	return nil, save_me
+	return nil, saveMe
 }
 
-func (subnet *Subnet) find_or_get_info(dt *DataTracker, nic string, suggest net.IP) (*Lease, *Binding) {
+func (subnet *Subnet) findOrGetInfo(dt *DataTracker, nic string, suggest net.IP) (*Lease, *Binding) {
 	// Fast path to see if we have a good lease
 	binding := subnet.Bindings[nic]
 	lease := subnet.Leases[nic]
@@ -287,10 +287,10 @@ func (subnet *Subnet) find_or_get_info(dt *DataTracker, nic string, suggest net.
 		}
 
 		if theip == nil {
-			var save_me bool
-			theip, save_me = subnet.getFreeIP()
+			var saveMe bool
+			theip, saveMe = subnet.getFreeIP()
 			if theip == nil {
-				if save_me {
+				if saveMe {
 					dt.save_data()
 				}
 				return nil, nil
@@ -308,12 +308,12 @@ func (subnet *Subnet) find_or_get_info(dt *DataTracker, nic string, suggest net.
 	return lease, binding
 }
 
-func (s *Subnet) update_lease_time(dt *DataTracker, lease *Lease, d time.Duration) {
+func (s *Subnet) updateLeaseTime(dt *DataTracker, lease *Lease, d time.Duration) {
 	lease.ExpireTime = time.Now().Add(d)
 	dt.save_data()
 }
 
-func (s *Subnet) build_options(lease *Lease, binding *Binding, p dhcp.Packet) (dhcp.Options, time.Duration) {
+func (s *Subnet) buildOptions(lease *Lease, binding *Binding, p dhcp.Packet) (dhcp.Options, time.Duration) {
 	var lt time.Duration
 	if binding == nil {
 		lt = s.ActiveLeaseTime

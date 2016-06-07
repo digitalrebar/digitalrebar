@@ -131,7 +131,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 	switch msgType {
 
 	case dhcp.Discover:
-		lease, binding := subnet.find_or_get_info(h.info, nic, p.CIAddr())
+		lease, binding := subnet.findOrGetInfo(h.info, nic, p.CIAddr())
 		if lease == nil {
 			log.Println("Out of IPs for ", subnet.Name, ", ignoring, ", nic)
 			h.info.Unlock()
@@ -144,7 +144,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
 		}
 
-		options, lease_time := subnet.build_options(lease, binding, p)
+		options, lease_time := subnet.buildOptions(lease, binding, p)
 
 		reply := dhcp.ReplyPacket(p, dhcp.Offer,
 			h.ip,
@@ -172,7 +172,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
 		}
 
-		lease, binding := subnet.find_info(h.info, nic)
+		lease, binding := subnet.findInfo(h.info, nic)
 		// Ignore unknown MAC address
 		if ignore_anonymus && binding == nil {
 			h.info.Unlock()
@@ -191,9 +191,9 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
 		}
 
-		options, lease_time := subnet.build_options(lease, binding, p)
+		options, lease_time := subnet.buildOptions(lease, binding, p)
 
-		subnet.update_lease_time(h.info, lease, lease_time)
+		subnet.updateLeaseTime(h.info, lease, lease_time)
 
 		reply := dhcp.ReplyPacket(p, dhcp.ACK,
 			h.ip,
@@ -210,7 +210,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 		return reply
 
 	case dhcp.Release, dhcp.Decline:
-		subnet.free_lease(h.info, nic)
+		subnet.freeLease(h.info, nic)
 		h.info.Unlock()
 		reqIP := net.IP(options[dhcp.OptionRequestedIPAddress])
 		if reqIP == nil {
