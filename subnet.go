@@ -53,7 +53,7 @@ type Binding struct {
 type Subnet struct {
 	Name              string
 	Subnet            *MyIPNet
-	NextServer        *net.IP `"json:,omitempty"`
+	NextServer        *net.IP `json:",omitempty"`
 	ActiveStart       net.IP
 	ActiveEnd         net.IP
 	ActiveLeaseTime   time.Duration
