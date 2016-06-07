@@ -319,10 +319,10 @@ func (s *Subnet) build_options(lease *Lease, binding *Binding, p dhcp.Packet) (d
 
 	// Build renewal / rebinding time options
 	b := make([]byte, 4)
-	binary.BigEndian.PutUint32(b, uint32(lt)/2)
+	binary.BigEndian.PutUint32(b, uint32(lt/time.Second)/2)
 	opts[dhcp.OptionRenewalTimeValue] = b
 	b = make([]byte, 4)
-	binary.BigEndian.PutUint32(b, uint32(lt)*3/4)
+	binary.BigEndian.PutUint32(b, uint32(lt/time.Second)*3/4)
 	opts[dhcp.OptionRebindingTimeValue] = b
 
 	// fold in subnet options

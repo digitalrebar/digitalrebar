@@ -83,6 +83,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 	var subnet *Subnet
 	subnet = nil
 
+	nic := p.CHAddr().String()
 	giaddr := p.GIAddr()
 	h.info.Lock()
 	if !giaddr.Equal(net.IPv4zero) {
@@ -110,7 +111,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 
 		if ignore_anonymus {
 			// Search all subnets for a binding. First wins
-			log.Println("Looking up bound subnet for ", p.CHAddr().String())
+			log.Println("Looking up bound subnet for ", nic)
 			subnet = h.info.FindBoundIP(p.CHAddr())
 		}
 
@@ -122,25 +123,24 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 	}
 
 	if subnet == nil {
-		log.Println("Can not find subnet for packet, ignoring")
+		log.Println("Can not find subnet for packet, ignoring, ", nic)
 		h.info.Unlock()
 		return
 	}
 
-	nic := p.CHAddr().String()
 	switch msgType {
 
 	case dhcp.Discover:
 		lease, binding := subnet.find_or_get_info(h.info, nic, p.CIAddr())
 		if lease == nil {
-			log.Println("Out of IPs for ", subnet.Name, ", ignoring")
+			log.Println("Out of IPs for ", subnet.Name, ", ignoring, ", nic)
 			h.info.Unlock()
 			return nil
 		}
 		// Ignore unknown MAC address
 		if ignore_anonymus && binding == nil {
-			log.Println("Ignoring request from unknown MAC address")
 			h.info.Unlock()
+			log.Println("Ignoring request from unknown MAC address, ", nic)
 			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
 		}
 
@@ -151,8 +151,8 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			lease.Ip,
 			lease_time,
 			options.SelectOrderOrAll(options[dhcp.OptionParameterRequestList]))
-		log.Println("Discover: Handing out: ", reply.YIAddr(), " to ", reply.CHAddr())
 		h.info.Unlock()
+		log.Println("Discover: Handing out: ", reply.YIAddr(), " to ", reply.CHAddr())
 		return reply
 
 	case dhcp.Request:
@@ -168,18 +168,20 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 
 		if len(reqIP) != 4 || reqIP.Equal(net.IPv4zero) {
 			h.info.Unlock()
+			log.Println("Request: NAKing: zero req IP ", reqIP, " and ", h.ip)
 			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
 		}
 
 		lease, binding := subnet.find_info(h.info, nic)
 		// Ignore unknown MAC address
 		if ignore_anonymus && binding == nil {
-			log.Println("Ignoring request from unknown MAC address")
 			h.info.Unlock()
+			log.Println("Ignoring request from unknown MAC address, ", nic)
 			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
 		}
 		if lease == nil || !lease.Ip.Equal(reqIP) {
 			h.info.Unlock()
+			log.Println("Requested IP doesn't match leased IP: ", reqIP, " ", lease.Ip, " ", nic)
 			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
 		}
 
@@ -197,14 +199,18 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 		} else if subnet.NextServer != nil {
 			reply.SetSIAddr(*subnet.NextServer)
 		}
-		log.Println("Request: Handing out: ", reply.YIAddr(), " to ", reply.CHAddr())
 		h.info.Unlock()
+		log.Println("Request: Handing out: ", reply.YIAddr(), " to ", reply.CHAddr())
 		return reply
 
 	case dhcp.Release, dhcp.Decline:
-		nic := p.CHAddr().String()
 		subnet.free_lease(h.info, nic)
 		h.info.Unlock()
+		reqIP := net.IP(options[dhcp.OptionRequestedIPAddress])
+		if reqIP == nil {
+			reqIP = net.IP(p.CIAddr())
+		}
+		log.Println("Release/Decline: from: ", nic, " for ", reqIP)
 	}
 	return nil
 }
