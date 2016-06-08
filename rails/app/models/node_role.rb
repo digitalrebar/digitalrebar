@@ -152,7 +152,7 @@ class NodeRole < ActiveRecord::Base
 
   def all_children
     NodeRole.where("id in (select child_id from node_role_all_pcms where parent_id = ?)",id).
-      order('cohort DESC, id ASC')
+      order('cohort ASC, id ASC')
   end
 
   # lookup i18n version of state
