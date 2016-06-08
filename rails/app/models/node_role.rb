@@ -75,24 +75,7 @@ class NodeRole < ActiveRecord::Base
                           :join_table => "node_role_pcms",
                           :foreign_key => "parent_id",
                           :association_foreign_key => "child_id")
-  # node_role_all_pcms is a view that expands node_role_pcms
-  # to include all of the parents and children of a noderole,
-  # recursively.
-  has_and_belongs_to_many(:all_parents,
-                          -> { reorder('cohort DESC, id ASC') },
-                          :class_name => "NodeRole",
-                          :join_table => "node_role_all_pcms",
-                          :foreign_key => "child_id",
-                          :association_foreign_key => "parent_id",
-                          :delete_sql => "SELECT 1") # TODO: Figure out how to remove
-  has_and_belongs_to_many(:all_children,
-                          -> { reorder('cohort ASC, id ASC') },
-                          :class_name => "NodeRole",
-                          :join_table => "node_role_all_pcms",
-                          :foreign_key => "parent_id",
-                          :association_foreign_key => "child_id",
-                          :delete_sql => "SELECT 1") # TODO: Figure out how to remove
-
+  
   # Parent and child links based on noderole -> noderole attribute dependency.
   has_many        :parent_attrib_links, class_name: "NodeRoleAttribLink", foreign_key: "child_id", :dependent => :destroy
   has_many        :child_attrib_links,  class_name: "NodeRoleAttribLink", foreign_key: "parent_id", :dependent => :destroy
@@ -157,6 +140,19 @@ class NodeRole < ActiveRecord::Base
     def to_str
       to_s
     end
+  end
+
+  # node_role_all_pcms is a view that expands node_role_pcms
+  # to include all of the parents and children of a noderole,
+  # recursively.
+  def all_parents
+    NodeRole.where("id in (select parent_id from node_role_all_pcms where child_id = ?)",id).
+      order('cohort DESC, id ASC')
+  end
+
+  def all_children
+    NodeRole.where("id in (select child_id from node_role_all_pcms where parent_id = ?)",id).
+      order('cohort DESC, id ASC')
   end
 
   # lookup i18n version of state
@@ -652,12 +648,14 @@ class NodeRole < ActiveRecord::Base
       if proposed?
         Event.fire(self, obj_class: 'role', obj_id: role.name, event: 'on_commit')
         block_or_todo
-        if !node.alive && node.power[:on]
-          node.power.on
-        end
       end
-      self
+      if !node.alive && node.power[:on]
+        @do_power_on = true
+      else
+        @do_power_on = false
+      end
     end
+    self
   end
 
   # convenience methods
@@ -750,6 +748,8 @@ class NodeRole < ActiveRecord::Base
         Event.fire(self, obj_class: 'role', obj_id: role.name, event: meth)
         return
       end
+      node.power.on if @do_power_on
+
       return unless previous_changes['state']
       if deployment.committed? && available &&
          ((!role.destructive) || (run_count == self.active? ? 1 : 0))

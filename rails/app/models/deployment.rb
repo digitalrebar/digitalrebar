@@ -128,12 +128,14 @@ class Deployment < ActiveRecord::Base
 
   def commit
     Deployment.transaction do
-      deployment_roles.all.each{|dr|dr.commit if dr.proposed?}
-      node_roles.in_state(NodeRole::PROPOSED).each { |nr| nr.commit! }
       if proposed?
         write_attribute("state",COMMITTED)
         save!
       end
+    end
+    Deployment.transaction do
+      deployment_roles.all.each{|dr|dr.commit if dr.proposed?}
+      node_roles.in_state(NodeRole::PROPOSED).each { |nr| nr.commit! }
     end
     Run.run!
     self
