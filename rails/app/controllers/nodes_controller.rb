@@ -156,11 +156,7 @@ class NodesController < ApplicationController
       @poweraction = params[:poweraction].to_sym
       if @node.power.include? @poweraction
         result = @node.power.send(@poweraction) rescue nil
-        # special case for development
-        if result.nil?
-          render api_not_implemented(@poweraction, "see logs for internal error") unless Rails.env.development?
-          result = "development faked"
-        end
+        render api_not_implemented(@node, @poweraction, "see logs for internal error") if result.nil?
         render api_result({"id" => @node.id, "action" => @poweraction, "result" => result })
       else
         render api_not_implemented @node, @poweraction, @node.power.keys
