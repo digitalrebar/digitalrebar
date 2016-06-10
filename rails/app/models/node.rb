@@ -38,7 +38,6 @@ class Node < ActiveRecord::Base
   # Validate the name should unique (no matter the case)
   # and that it starts with a valid FQDN
   #
-  validates_uniqueness_of :name, :case_sensitive => false, :message => I18n.t("db.notunique", :default=>"Item must be unique")
   validates_format_of     :name, :with=>FQDN_RE, :message => I18n.t("db.fqdn", :default=>"Name must be a fully qualified domain name.")
   validates_length_of     :name, :maximum => 255
 
