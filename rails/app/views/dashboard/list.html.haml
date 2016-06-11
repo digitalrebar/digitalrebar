@@ -23,8 +23,8 @@
         - @nodes.each do |node|
           %tr.node{ :class => cycle(:odd, :even, :name => "nodes"), :id => node.id }
             %td{:style=>node.admin&&"font-weight: bold;"}
-              = link_to node.name, node_path(node.id), :title=> node.addresses.join(',')
-            %td= text_field_tag "node:#{node.id}:description".to_sym, "#{node.description || ""}", :size => 30
+              = text_field_tag "node:#{node.id}:name".to_sym, node.name, :size => 50
+            %td= text_field_tag "node:#{node.id}:description".to_sym, "#{node.description || ""}", :size => 50
             %td 
               - deployments = Deployment.all
               = select_tag "node:#{node.id}:deployment_id", options_from_collection_for_select(deployments, "id", "name", node.deployment.id)
