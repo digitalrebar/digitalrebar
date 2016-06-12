@@ -13,40 +13,22 @@
 # limitations under the License.
 #
 
-require 'securerandom'
-class Event < ActiveRecord::Base
-
-  after_create      :load_uuid
-
-  def load_uuid
-    self.reload
-  end
-
-  private :load_uuid
+class Event
   
   def self.fire(obj, params)
-    evt = Event.create!(params: params,
-                        target_class: obj.class.name,
-                        target: obj.to_json)
-    evt.run(obj)
-  end
-
-  def run(obj)
-    Rails.logger.info("Event: event #{id} fired with params #{params.to_json}")
+    Rails.logger.info("Event: event fired with params #{@params.to_json}")
     # This handles * and missing selectors (assumed to be true) - more could be done
     wherefrags = []
     params.each do |k,v|
       wherefrags << "(((event_selectors.selector ->> '#{k.to_s}') IS NULL) OR (event_selectors.selector @> '#{ {k.to_s => v}.to_json }'::jsonb))"
     end
     res = []
-    matched_selectors = EventSelector.where(wherefrags.join(" AND ")).order(:id).distinct
-    self.event_selectors = matched_selectors.all.map{|es| es.uuid}
-    self.save!
-    matched_selectors.each do |ms|
+    EventSelector.where(wherefrags.join(" AND ")).order(:id).distinct.each do |ms|
       es = ms.event_sink
-      Rails.logger.info("Event: #{params} matched #{ms.selector}")
-      Rails.logger.info("Event: calling #{es.endpoint} for #{ms.selector} with #{obj.inspect}")
-      res << es.run(self,obj, ms.selector)
+      Rails.logger.info("Event: #{@params} matched #{ms.selector}")
+      Rails.logger.info("Event: calling #{es.endpoint} for #{ms.selector}")
+      selector_params = {params: @params, target_class: obj.class.name, target: obj.to_json}
+      res << es.run(selector_params,obj, ms.selector)
     end
     return res
   end

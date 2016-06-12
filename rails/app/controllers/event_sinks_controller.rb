@@ -27,7 +27,7 @@ class EventSinksController < ApplicationController
     objs = EventSink.where(ok_params) if !ok_params.empty?
     respond_to do |format|
       format.html {}
-      format.json { render api_index Event, objs }
+      format.json { render api_index EventSink, objs }
     end
   end
 

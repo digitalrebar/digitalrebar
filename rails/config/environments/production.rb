@@ -29,8 +29,8 @@ Rebar::Application.configure do
   config.action_controller.allow_forgery_protection    = true
   config.eager_load = true
 
-  # See everything in the log (default is :info)
-  config.log_level = :info
+  # See everything in the log (default is :warn)
+  config.log_level = :warn
   # config.log_level = :debug
 
   # Use a different logger for distributed setups
