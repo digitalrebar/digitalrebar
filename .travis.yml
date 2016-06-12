@@ -29,6 +29,8 @@ before_script:
   - cp config/database.yml.travis config/database.yml
   - psql -c 'create database digitalrebar_dev;' -U postgres
   - psql -c 'create database digitalrebar_test;' -U postgres
+  - psql -d digitalrebar_dev -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto";' -U postgres
+  - psql -d digitalrebar_test -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto";' -U postgres
   - bundle install
 
 script: 
