@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # cleanup
-rm "0.4.1_linux_amd64.*"
+rm "consul_0.6.4_linux_amd64.*"
 rm "consul"
 # install consul
-wget 'https://dl.bintray.com/mitchellh/consul/0.4.1_linux_amd64.zip'
-unzip "0.4.1_linux_amd64.zip"
+wget 'https://releases.hashicorp.com/consul/0.6.4/consul_0.6.4_linux_amd64.zip'
+unzip "consul_0.6.4_linux_amd64.zip"
 # check
 ./consul --version
