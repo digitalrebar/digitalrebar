@@ -1,0 +1,5 @@
+DEFAULT {{.Env.Name}}
+PROMPT 0
+TIMEOUT 10
+LABEL {{.Env.Name}}
+  KERNEL pxechn.c32 esxi.0 -p /{{.Env.PathFor "tftp" ""}}/

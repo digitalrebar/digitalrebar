@@ -1,0 +1,24 @@
+#
+# Sample scripted installation file
+#
+
+# Accept the VMware End User License Agreement
+vmaccepteula
+
+# Set the root password for the DCUI and Tech Support Mode
+rootpw --iscrypted {{ .Param "provisioner-default-password-hash" }}
+
+# Install on the first local disk available on machine
+install --firstdisk --overwritevmfs
+
+# Set the network to DHCP on the first network adapter
+network --bootproto=dhcp --device=vmnic0
+
+reboot
+
+%post --ignorefailure
+
+curl -X PUT -k -u '{{.Param "rebar-machine_key"}} \
+    -H "Content-Type: application/json" \
+    '{{.CommandURL}}/api/v2/nodes/{{.Machine.UUID}}' \
+    --data-binary '{"bootenv": "local"}'

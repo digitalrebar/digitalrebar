@@ -171,9 +171,12 @@ fi
     cd "${TFTPROOT}"
     
     for f in syslinux-6.03/bios/com32/elflink/ldlinux/ldlinux.c32 \
-                 syslinux-6.03/bios/core/lpxelinux.0; do
-        tar xJf /tmp/syslinux.tar.xz "$f" -O >"${f##*/}"
+                 syslinux-6.03/bios/core/lpxelinux.0 \
+                 syslinux-6.03/bios/com32/modules/pxechn.c32 \
+                 syslinux-6.03/bios/com32/libutil/libutil.c32; do
+        tar xJf /tmp/syslinux-6.03.tar.xz "$f" -O >"${f##*/}"
     done
+    tar xJf /tmp/syslinux-3.86.tar.xz syslinux-3.86/core/pxelinux.0 -O > esxi.0
     tar xzf '/tmp/elilo.tar.gz' ./elilo-3.16-x86_64.efi
     tar xzf '/tmp/elilo.tar.gz' ./elilo-3.16-ia32.efi
     tar xzf '/tmp/elilo.tar.gz' ./elilo-3.16-ia64.efi
