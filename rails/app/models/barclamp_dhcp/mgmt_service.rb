@@ -61,21 +61,21 @@ class BarclampDhcp::MgmtService < Service
   end
 
   def on_active(nr)
-    Rails.logger.info('dhcp-mgmt on_active start - update subnet')
+    Rails.logger.debug('dhcp-mgmt on_active start - update subnet')
     Network.in_category('admin').each do |net|
       on_network_create(net)
     end
 
-    Rails.logger.info('dhcp-mgmt on_active start - update individual nodes')
+    Rails.logger.debug('dhcp-mgmt on_active start - update individual nodes')
     NetworkAllocation.all.each do |na|
       on_network_allocation_create(na)
     end
-    Rails.logger.info('dhcp-mgmt on_active start - done')
+    Rails.logger.debug('dhcp-mgmt on_active start - done')
   end
 
   def build_network(network)
     # For now, only do admin networks
-    return if network.category != 'admin'
+    return unless network.category == 'admin'
 
     r = network.ranges.find_by(name: "dhcp")
     r = network.ranges.find_by(name: "host") unless r
@@ -102,7 +102,7 @@ class BarclampDhcp::MgmtService < Service
       end
       break if next_server
     end
-    Rails.logger.info('Missing next_server') unless next_server
+    Rails.logger.debug('Missing next_server') unless next_server
 
     options = {}
 
@@ -121,7 +121,7 @@ class BarclampDhcp::MgmtService < Service
       end
       break unless dns_server.empty?
     end
-    Rails.logger.info('Missing dns_server') unless dns_server.empty?
+    Rails.logger.debug('Missing dns_server') unless dns_server.empty?
     unless dns_server.empty?
       options[6] = dns_server.join(',')
       options[15] = dns_domain
@@ -136,7 +136,7 @@ class BarclampDhcp::MgmtService < Service
       end
       break unless ntp_server.empty?
     end
-    Rails.logger.info('Missing ntp_server') unless ntp_server.empty?
+    Rails.logger.debug('Missing ntp_server') unless ntp_server.empty?
     unless ntp_server.empty?
       ips = []
       ntp_server.each do |ns|
@@ -184,62 +184,69 @@ class BarclampDhcp::MgmtService < Service
   end
 
   def on_network_allocation_create(na)
-    Rails.logger.info("dhcp-mgmt on_network_allocation_create - #{na.address} net cat #{na.network.category}")
-    return if na.network.category != 'admin'
+    Rails.logger.debug("dhcp-mgmt on_network_allocation_create - #{na.address} net cat #{na.network.category}")
+    return unless na.network.category == 'admin'
 
-    Rails.logger.info("dhcp-mgmt on_network_allocation_create - v4? #{na.address.v4?}")
+    Rails.logger.debug("dhcp-mgmt on_network_allocation_create - v4? #{na.address.v4?}")
     return unless na.address.v4?
     loader = Attrib.get('provisioner-bootloader',na.node)
 
     # Get the mac addresses
-    ActiveRecord::Base.connection.execute("select * from dhcp_database where name='#{na.node.name}'").each do |row|
-      ints = JSON.parse(row["discovered_macs"]) if row["discovered_macs"]
-      mac_list = row["hinted_macs"] ? JSON.parse(row["hinted_macs"]) : []
-      unless ints.nil?
-        ints.each do |net, net_data|
-          net_data.each do |field, field_data|
-            next if field != "addresses"
-            field_data.each do |addr, addr_data|
-              next if addr_data["family"] != "lladdr"
-              mac_list << addr unless mac_list.include? addr
-            end
+    ints = na.node.discovery['ohai']['network']['interfaces'] rescue nil
+    mac_list = na.node.hint['admin_macs'] || []
+    unless ints.nil?
+      ints.each do |net, net_data|
+        net_data.each do |field, field_data|
+          next if field != "addresses"
+          field_data.each do |addr, addr_data|
+            next if addr_data["family"] != "lladdr"
+            mac_list << addr unless mac_list.include? addr
           end
         end
       end
 
-      Rails.logger.info("dhcp-mgmt on_network_allocation_create - mac_list #{mac_list}")
+      Rails.logger.debug("dhcp-mgmt on_network_allocation_create - mac_list #{mac_list}")
       mac_list.each do |mac|
-        self.class.bind_node_ip_mac(na.network.name, mac, na.address.addr, row['bootenv'], loader)
+        begin
+          self.class.bind_node_ip_mac(na.network.name, mac, na.address.addr, na.node.bootenv, loader)
+        rescue Exception => e
+          Rails.logger.warn("Tring to remove DHCP binding for #{mac}: #{e.message}")
+        end
       end
     end
-    Rails.logger.info("dhcp-mgmt on_network_allocation_create - done #{na.address}")
+    Rails.logger.debug("dhcp-mgmt on_network_allocation_create - done #{na.address}")
   end
 
   def on_network_allocation_delete(na)
-    return if na.network.category != 'admin'
-
+    Rails.logger.debug("dhcp-mgmt on_network_allocation_delete - #{na.address} net cat #{na.network.category}")
+    return unless na.network.category == 'admin'
     return unless na.address.v4?
 
     # Get the mac addresses
-    ActiveRecord::Base.connection.execute("select * from dhcp_database where name='#{na.node.name}'").each do |row|
-      ints = JSON.parse(row["discovered_macs"]) if row["discovered_macs"]
-      mac_list = row["hinted_macs"] ? JSON.parse(row["hinted_macs"]) : []
-      unless ints.nil?
-        ints.each do |net, net_data|
-          net_data.each do |field, field_data|
-            next if field != "addresses"
-            field_data.each do |addr, addr_data|
-              next if addr_data["family"] != "lladdr"
-              mac_list << addr unless mac_list.include? addr
-            end
+    ints = na.node.discovery['ohai']['network']['interfaces'] rescue nil
+    mac_list = na.node.hint['admin_macs'] || []
+    Rails.logger.debug("dhcp-mgmt on_network_allocation_delete - ints = #{ints}  mac_list = #{mac_list}")
+    unless ints.nil?
+      ints.each do |net, net_data|
+        net_data.each do |field, field_data|
+          next if field != "addresses"
+          field_data.each do |addr, addr_data|
+            next if addr_data["family"] != "lladdr"
+            mac_list << addr unless mac_list.include? addr
           end
         end
       end
 
+      Rails.logger.debug("dhcp-mgmt on_network_allocation_delete - mac_list = #{mac_list}")
       mac_list.each do |mac|
-        self.class.unbind_node_ip_mac(na.network.name, mac)
+        begin
+          self.class.unbind_node_ip_mac(na.network.name, mac)
+        rescue Exception => e
+          Rails.logger.warn("Tring to remove DHCP binding for #{mac}: #{e.message}")
+        end
       end
     end
+    Rails.logger.debug("dhcp-mgmt on_network_allocation_delete - done")
   end
 
   def on_node_change(node)
@@ -372,10 +379,13 @@ class BarclampDhcp::MgmtService < Service
   end
 
   def self.unbind_node_ip_mac(name, mac)
+
+    Rails.logger.info("dhcp-mgmt unbind_node_ip_mac - #{name} #{mac}")
+
     service = get_service
     return unless service
-    url = "#{service['url']}/subnets/#{name}/unbind/#{mac}"
-    send_request_post(url, hash)
+    url = "#{service['url']}/subnets/#{name}/bind/#{mac}"
+    send_request_delete(url)
   end
 
 end
