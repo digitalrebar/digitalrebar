@@ -243,11 +243,10 @@ class BarclampDhcp::MgmtService < Service
   end
 
   def on_node_change(node)
-    if node.previous_changes[:bootenv] != node.bootenv
-      # Pay attention to bootenv change
-      node.network_allocations.each do |na|
-        on_network_allocation_create(na)
-      end
+    return unless node.previous_changes['bootenv']
+    # Pay attention to bootenv change
+    node.network_allocations.each do |na|
+      on_network_allocation_create(na)
     end
   end
 
