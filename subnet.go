@@ -145,7 +145,7 @@ func (s *Subnet) UnmarshalJSON(data []byte) error {
 		s.NextServer = &ip
 	}
 	if s.ActiveLeaseTime == 0 {
-		s.ActiveLeaseTime = 30 * time.Second
+		s.ActiveLeaseTime = 300 * time.Second
 	}
 	if s.ReservedLeaseTime == 0 {
 		s.ReservedLeaseTime = 2 * time.Hour
