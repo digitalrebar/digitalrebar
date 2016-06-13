@@ -16,7 +16,7 @@
 class Event
   
   def self.fire(obj, params)
-    Rails.logger.info("Event: event fired with params #{@params.to_json}")
+    Rails.logger.info("Event: event fired with params #{params.to_json}")
     # This handles * and missing selectors (assumed to be true) - more could be done
     wherefrags = []
     params.each do |k,v|
