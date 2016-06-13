@@ -42,6 +42,18 @@ func NewFrontend(cert_pem, key_pem, base_pem string, cfg Config, store LoadSaver
 	return fe
 }
 
+// Debug function to show active bits - mostly for debug at the moment
+func (fe *Frontend) DumpData(w rest.ResponseWriter, r *rest.Request) {
+	fe.DhcpInfo.Lock()
+	nets := make([]*Subnet, 0, len(fe.DhcpInfo.Subnets))
+	for _, net := range fe.DhcpInfo.Subnets {
+		nets = append(nets, net)
+		log.Println("Subnet: " + net.Name + " Active Bits = " + net.ActiveBits.DumpAsBits())
+	}
+	fe.DhcpInfo.Unlock()
+	w.WriteJson(nets)
+}
+
 // List function
 func (fe *Frontend) GetAllSubnets(w rest.ResponseWriter, r *rest.Request) {
 	fe.DhcpInfo.Lock()
@@ -201,6 +213,7 @@ func (fe *Frontend) RunServer(blocking bool, auth_mode string) http.Handler {
 	}
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
+		rest.Get("/dump", fe.DumpData),
 		rest.Get("/subnets", fe.GetAllSubnets),
 		rest.Get("/subnets/#id", fe.GetSubnet),
 		rest.Post("/subnets", fe.CreateSubnet),
