@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 
 	"github.com/ant0ine/go-json-rest/rest"
 )
@@ -134,6 +135,7 @@ func (fe *Frontend) BindSubnet(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	binding.Mac = strings.ToLower(binding.Mac)
 	fe.DhcpInfo.Lock()
 	err, code := fe.DhcpInfo.AddBinding(subnetName, binding)
 	if err != nil {
@@ -148,6 +150,7 @@ func (fe *Frontend) BindSubnet(w rest.ResponseWriter, r *rest.Request) {
 func (fe *Frontend) UnbindSubnet(w rest.ResponseWriter, r *rest.Request) {
 	subnetName := r.PathParam("id")
 	mac := r.PathParam("mac")
+	mac = strings.ToLower(mac)
 	fe.DhcpInfo.Lock()
 	err, code := fe.DhcpInfo.DeleteBinding(subnetName, mac)
 	if err != nil {
