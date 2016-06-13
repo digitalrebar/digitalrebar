@@ -24,7 +24,7 @@ Returns: a json array of subnet objects
     "next_server": [[]]
     "active_start": "192.168.124.22",
     "active_end": "192.168.124.92",
-    "active_lease_time": 30,
+    "active_lease_time": 300,
     "reserved_lease_time": 7200,
     "leases": [
       {
@@ -115,7 +115,7 @@ Data is in the format:
     "next_server": "192.168.124.10",
     "active_start": "192.168.124.22",
     "active_end": "192.168.124.92",
-    "active_lease_time": 30,
+    "active_lease_time": 300,
     "reserved_lease_time": 7200
 }
 ```
