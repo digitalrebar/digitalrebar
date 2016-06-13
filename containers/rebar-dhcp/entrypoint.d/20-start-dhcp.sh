@@ -6,7 +6,7 @@
 # Add rev-proxy matcher
 echo '^dhcp/(.*)' | kv_put digitalrebar/public/revproxy/dhcp-mgmt-service/matcher
 
-check_line="{\"tcp\": \"${IP%/*}:6755\", \"interval\": \"10s\", \"timeout\": \"2s\"}"
+check_line="{\"script\": \"curl --cacert /etc/dhcp-base-cert.pem --cert /etc/dhcp-https-cert.pem --key /etc/dhcp-https-key.pem https://${IP%/*}:6755/subnets > /dev/null 2>&1\", \"interval\": \"10s\", \"timeout\": \"2s\"}"
 make_service dhcp 67 "$check_line"
 
 OSD=$SERVICE_DEPLOYMENT
