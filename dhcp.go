@@ -83,7 +83,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 	var subnet *Subnet
 	subnet = nil
 
-	nic := p.CHAddr().String()
+	nic := strings.ToLower(p.CHAddr().String())
 	giaddr := p.GIAddr()
 	h.info.Lock()
 	if !giaddr.Equal(net.IPv4zero) {
@@ -112,7 +112,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 		if ignore_anonymus {
 			// Search all subnets for a binding. First wins
 			log.Println("Looking up bound subnet for ", nic)
-			subnet = h.info.FindBoundIP(p.CHAddr())
+			subnet = h.info.FindBoundIP(nic)
 		}
 
 		if subnet == nil {

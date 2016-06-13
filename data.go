@@ -23,10 +23,10 @@ func NewDataTracker(store LoadSaver) *DataTracker {
 	}
 }
 
-func (dt *DataTracker) FindBoundIP(mac net.HardwareAddr) *Subnet {
+func (dt *DataTracker) FindBoundIP(mac string) *Subnet {
 	for _, s := range dt.Subnets {
 		for _, b := range s.Bindings {
-			if b.Mac == mac.String() {
+			if b.Mac == mac {
 				return s
 			}
 		}
