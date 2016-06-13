@@ -14,7 +14,9 @@
 #
 
 # This is a little bit of a hack for now.
-return if node[:platform] == "coreos" || !node[:rebar][:providers][:use_logging]
+return if node[:platform] == "coreos" ||
+          node[:rebar_ohai][:in_docker] ||
+          !node[:rebar][:providers][:use_logging]
 
 package "rsyslog" unless Kernel.system("which rsyslogd")
 
