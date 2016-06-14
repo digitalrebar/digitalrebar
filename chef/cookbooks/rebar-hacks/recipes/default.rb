@@ -65,7 +65,7 @@ def sort_boot_order(bootargs,pxestate)
 end
 
 # This should really be its own recipe, but...
-if File.exists?("/sys/firmware/efi")
+if File.exists?("/sys/firmware/efi") && ! node[:rebar_ohai][:in_docker]
   bootargs = Mash.new
   bootargs["Entries"] = Array.new
   IO.popen("efibootmgr -v") do |p|

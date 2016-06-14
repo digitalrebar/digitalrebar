@@ -16,7 +16,7 @@
 return if node[:rebar_ohai][:in_docker]
 
 # Tell the kernel to reboot after 10 seconds on panic, if we want it to.
-if node["panic"] and node["panic"]["reboot"] == true
+if node["panic"] and node["panic"]["reboot"] == true and !File.exists?("/.dockerenv")
   if node["panic"]["timeout"]
     timeout = node["panic"]["timeout"]
   else

@@ -18,7 +18,7 @@
 #
 
 # This is a little bit of a hack for now.
-return if node[:platform] == "coreos"
+return if node[:platform] == "coreos" || node[:rebar_ohai][:in_docker]
 
 package_name = "lldpd"
 service_name = "lldpd"

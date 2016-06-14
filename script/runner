@@ -15,6 +15,22 @@ declare -A pkgs svcs
 # Figure out what Linux distro we are running on.
 export OS_TYPE= OS_VER= OS_NAME=
 
+fix_path() {
+    local -A pathparts
+    local part
+    local IFS=':'
+    for part in $PATH; do
+        pathparts["$part"]="true"
+    done
+    local wanted_pathparts=("/usr/local/bin" "/usr/local/sbin" "/bin" "/sbin" "/usr/bin" "/usr/sbin")
+    for part in "${wanted_pathparts[@]}"; do
+        [[ ${pathparts[$part]} ]] && continue
+        PATH="$part:$PATH"
+    done
+}
+fix_path
+unset fix_path
+
 if [[ -f /etc/os-release ]]; then
     . /etc/os-release
     OS_TYPE=${ID,,}
@@ -165,6 +181,9 @@ install() {
         debian)
             if_update_needed apt-get -y update
             apt-get -y install "${to_install[@]}";;
+        alpine)
+            if_update_needed apk update
+            apk add "${to_install[@]}";;
         *) echo "No idea how to install packages on $OS_NAME"
            exit 1;;
     esac

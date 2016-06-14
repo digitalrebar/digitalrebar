@@ -17,7 +17,7 @@
 
 provides "rebar_ohai"
 rebar_ohai Mash.new
-rebar_ohai[:in_docker] = File.executable?("/.dockerinit")
+rebar_ohai[:in_docker] = File.executable?("/.dockerenv")
 
 Gem.clear_paths
 outer_paths=%x{gem env gempath}.split(':')

@@ -21,6 +21,7 @@ Dpkg::Options {
 }
 EOF
         ;;
+    alpine);;
     *)
         echo "No idea how to handle $OS_TYPE"
         exit 1;;
@@ -38,6 +39,7 @@ if [[ $(read_attribute 'rebar/providers/use_proxy') = true ]]; then
             fi;;
         debian|ubuntu)
             printf 'Acquire::http::Proxy "%s";\n' "$http_proxy" > /etc/apt/apt.conf.d/00-proxy;;
+        alpine);;
     esac
 fi
 
