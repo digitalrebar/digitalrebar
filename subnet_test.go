@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/willf/bitset"
+	"net"
 	"testing"
+	"time"
 )
 
 func TestNewSubnet(t *testing.T) {
@@ -13,21 +16,6 @@ func TestNewSubnet(t *testing.T) {
 	assert.NotNil(t, subnet.Bindings, "Bindings must not be nil")
 	assert.NotNil(t, subnet.Options, "Options must not be nil")
 	assert.NotNil(t, subnet.ActiveBits, "ActiveBits must not be nil")
-}
-
-func TestMarshalJsonSubnet(t *testing.T) {
-	_, s := simpleSetup()
-
-	as := convertSubnetToApiSubnet(s)
-	s2, _ := convertApiSubnetToSubnet(as, nil)
-
-	b, e := s2.MarshalJSON()
-	assert.Nil(t, e, "Error should be nil")
-
-	s3 := &Subnet{}
-	e3 := s3.UnmarshalJSON(b)
-	assert.Nil(t, e3, "Error should be nil")
-	assert.Equal(t, s3, s2, "Subnet should be equal")
 }
 
 func TestFreeLeaseNoMatch(t *testing.T) {
@@ -129,4 +117,41 @@ func TestFirstClearBitLastBit(t *testing.T) {
 	i, s := firstClearBit(bs)
 	assert.Equal(t, i, uint(2), "First bit should be 2")
 	assert.True(t, s, "Success should be true")
+}
+
+func TestRunOutOfIps(t *testing.T) {
+	dt, s := simpleSetup()
+
+	for i := 5; i <= 25; i++ {
+		id := fmt.Sprintf("fred%d", i)
+		l, b := s.find_or_get_info(dt, id, net.ParseIP("0.0.0.0"))
+
+		assert.NotNil(t, l, "Lease should not be nil")
+		assert.Nil(t, b, "Binding should not be nil")
+
+		s.update_lease_time(dt, l, 360*time.Second)
+	}
+	l, b := s.find_or_get_info(dt, "fred26", net.ParseIP("0.0.0.0"))
+	assert.Nil(t, l, "Lease should not be nil")
+	assert.Nil(t, b, "Binding should not be nil")
+}
+
+func TestReleaseIp(t *testing.T) {
+	dt, s := simpleSetup()
+
+	for i := 5; i <= 25; i++ {
+		id := fmt.Sprintf("fred%d", i)
+		l, b := s.find_or_get_info(dt, id, net.ParseIP("0.0.0.0"))
+
+		assert.NotNil(t, l, "Lease should not be nil")
+		assert.Nil(t, b, "Binding should not be nil")
+
+		s.update_lease_time(dt, l, 360*time.Second)
+	}
+
+	s.free_lease(dt, "fred10")
+
+	l, b := s.find_or_get_info(dt, "fred26", net.ParseIP("0.0.0.0"))
+	assert.NotNil(t, l, "Lease should not be nil")
+	assert.Nil(t, b, "Binding should not be nil")
 }

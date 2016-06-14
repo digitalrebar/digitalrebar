@@ -185,8 +185,14 @@ func (s *Subnet) UnmarshalJSON(data []byte) error {
 func (subnet *Subnet) free_lease(dt *DataTracker, nic string) {
 	lease := subnet.Leases[nic]
 	if lease != nil {
+		//log.Printf("Freeing Lease for: %v\n", nic)
+		//log.Println("Current ActiveBits " + subnet.ActiveBits.DumpAsBits())
+		//log.Printf("test = %v\n", dhcp.IPInRange(subnet.ActiveStart, subnet.ActiveEnd, lease.Ip))
+
 		if dhcp.IPInRange(subnet.ActiveStart, subnet.ActiveEnd, lease.Ip) {
-			subnet.ActiveBits.Clear(uint(dhcp.IPRange(lease.Ip, subnet.ActiveStart) - 1))
+			//log.Printf("bit = %v\n", dhcp.IPRange(subnet.ActiveStart, lease.Ip)-1)
+			//log.Printf("ubit = %v\n", uint(dhcp.IPRange(subnet.ActiveStart, lease.Ip)-1))
+			subnet.ActiveBits.Clear(uint(dhcp.IPRange(subnet.ActiveStart, lease.Ip) - 1))
 		}
 		delete(subnet.Leases, nic)
 		dt.save_data()
@@ -209,10 +215,13 @@ func firstClearBit(bs *bitset.BitSet) (uint, bool) {
 }
 
 func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
+	//log.Println("Getting Free IP from " + subnet.Name)
+	//log.Println("Current ActiveBits " + subnet.ActiveBits.DumpAsBits())
 	bit, success := firstClearBit(subnet.ActiveBits)
 	if success {
 		subnet.ActiveBits.Set(bit)
 		ip := dhcp.IPAdd(subnet.ActiveStart, int(bit))
+		//log.Printf("Returning bit = %v ip = %v\n", bit, ip)
 		return &ip, true
 	}
 
@@ -222,17 +231,19 @@ func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 	for k, lease := range subnet.Leases {
 		if now.After(lease.ExpireTime) {
 			if dhcp.IPInRange(subnet.ActiveStart, subnet.ActiveEnd, lease.Ip) {
-				subnet.ActiveBits.Clear(uint(dhcp.IPRange(lease.Ip, subnet.ActiveStart) - 1))
+				subnet.ActiveBits.Clear(uint(dhcp.IPRange(subnet.ActiveStart, lease.Ip) - 1))
 			}
 			delete(subnet.Leases, k)
 			save_me = true
 		}
 	}
 
+	//log.Println("Second  ActiveBits " + subnet.ActiveBits.DumpAsBits())
 	bit, success = firstClearBit(subnet.ActiveBits)
 	if success {
 		subnet.ActiveBits.Set(bit)
 		ip := dhcp.IPAdd(subnet.ActiveStart, int(bit))
+		//log.Printf("Returning second pass bit = %v ip = %v\n", bit, ip)
 		return &ip, true
 	}
 
