@@ -26,6 +26,7 @@ node.set["rebar_wall"]["status"] ||= Mash.new
 node.set["rebar_wall"]["status"]["ipmi"] ||= Mash.new
 node.set["rebar_wall"]["status"]["ipmi"]["messages"] ||= []
 node.set["rebar_wall"]["status"]["ipmi"]["configured"] = false
+node.set["rebar_wall"]["status"]["ipmi"]["net_changed"] = false
 
 ipmiinfo = IPMI.mc_info(node)
 lan_current_cfg = IPMI.laninfo(node)
@@ -125,18 +126,23 @@ else
         IPMI.tool(node,cmd)
         raise "Could not #{cmd}" unless $?.exitstatus == 0
         node.set["rebar_wall"]["status"]["ipmi"]["configured"] = true
+        node.set["rebar_wall"]["status"]["ipmi"]["net_changed"] = true
       end
     end
   end
 end
 
-if node["quirks"].member?("ipmi-hard-reset-after-config") &&
-   node["rebar_wall"]["status"]["ipmi"]["configured"]
+if node["quirks"].member?("ipmi-hard-reset-after-config")
   ruby_block "Hard reset IPMI controller after config has finished" do
     block do
-      sleep 30
-      IPMI.tool(node,"mc reset cold")
-      sleep 30
+      if node["rebar_wall"]["status"]["ipmi"]["net_changed"]
+        Chef::Log.info("Resetting ILO")
+        sleep 30
+        IPMI.tool(node,"mc reset cold")
+        sleep 30
+      else
+        Chef::Log.info("Reset of ILO not needed")
+      end
     end
   end
 end
