@@ -13,15 +13,25 @@ echo "Extracting $iso for $os_name"
 mkdir -p "${os_install_dir}.extracting"
 if [[ $os_name = esxi* ]]; then
     # ESXi needs some special love extracting the files from the image.
-    # Note that this is likely to fail inside the container.
-    tmpdir="$(mktemp -d "/tmp/esx-XXXXXXXX")"
-    mount -o loop "$iso" "$tmpdir"
-    rsync -av "$tmpdir" "${os_install_dir}.extracting"
-    sync
-    umount "$tmpdir"
-    rm -rf "$tmpdir"
-    chmod +w "${os_install_dir}.extracting"/*
-    sed -e "s:/::g" -e "3s:^:prefix=/../${key}/install/\\n:" -i.bak "${os_install_dir}.extracting"/boot.cfg
+    # Specifically, bsdtar extracts everything in UPPERCASE,
+    # where everything else expects lowercase
+    (
+        cd "${os_install_dir}.extracting"
+        bsdtar -x -f "${iso}"
+        changed=true
+        while [[ $changed = true ]]; do
+            changed=false
+            while read d; do
+                [[ $d = . || $d = ${d,,} ]] && continue
+                mv "$d" "${d,,}"
+                changed=true
+            done < <(find . -type d |sort)
+        done
+        while read d; do
+            [[ $d = ${d,,} ]] && continue
+            mv "${d}" "${d,,}"
+        done < <(find . -type f |sort)
+    )
 else
     # Everything else just needs bsdtar
     (cd "${os_install_dir}.extracting"; bsdtar -x -f "${iso}")
@@ -37,6 +47,12 @@ fi
 touch "${os_install_dir}.extracting/.${os_name}.rebar_canary"
 [[ -d "${os_install_dir}" ]] && rm -rf "${os_install_dir}"
 mv "${os_install_dir}.extracting" "${os_install_dir}"
+
+# ESX needs an exact version of pxelinux, so add it.
+if [[ ! -f ${os_install_dir}/pxelinux.0 ]]; then
+    tar xJf /tmp/syslinux-3.86.tar.xz syslinux-3.86/core/pxelinux.0 -O >\
+        "${os_install_dir}/pxelinux.0"
+fi
 
 if which selinuxenabled && selinuxenabled; then
     restorecon -R -F /tftpboot
