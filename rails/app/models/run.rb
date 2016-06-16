@@ -141,22 +141,25 @@ class Run < ActiveRecord::Base
     [node_role.cohort, node_role_id, id]
   end
 
-  def self.empty?
-    Run.locked_transaction do
-      Run.all.count == 0
-    end
-  end
-
   # Be careful here, it is disturbingly easy to break the one-and-only-run
   # on a node at a time invariant.
   def self.run_runnable
     # Nothing is allowed to touch the Runs table while we are moving runs from
     # runnable to running.
-    Run.locked_transaction do
+    Run.transaction(isolation: :serializable) do
       # Pick exactly one runnable run per node
-      Run.find_by_sql("SELECT DISTINCT ON (node_id) * FROM runs where NOT running AND node_id NOT IN (SELECT node_id FROM runs WHERE running) ORDER BY node_id, id ASC").each do |r|
+      Run.find_by_sql(
+        "UPDATE runs SET running = true
+         WHERE id in (SELECT DISTINCT ON (node_id) id 
+                      FROM runs 
+                      WHERE NOT running 
+                      AND node_id NOT IN (SELECT node_id 
+                                          FROM runs 
+                                          WHERE running) 
+                      ORDER BY node_id, id  ASC)
+         RETURNING *").each do |r|
         job = NodeRoleRun.enqueue(r.id, queue: r.queue)
-        r.update!(running: true, job_id: job.attrs["job_id"])
+        r.update!(job_id: job.attrs["job_id"])
       end
     end
     Que.job_stats.each do |j|
@@ -173,8 +176,8 @@ class Run < ActiveRecord::Base
   # The main callers of this should mostly be events called from role triggers.
   def self.enqueue(nr)
     raise "cannot enqueue a nil node_role!" if nr.nil?
-    Run.locked_transaction do
-      queued_run = Run.find_by(node_role_id: nr.id, running: false)
+    Run.transaction do
+      queued_run = Run.where(node_role_id: nr.id, running: false).lock("FOR UPDATE").first
       if queued_run
         Rails.logger.debug("Run: Updating enqueued #{queued_run.id} with new run data for #{nr.name}")
         queued_run.update!(run_data: {"data" => nr.jig.stage_run(nr)})
@@ -190,7 +193,7 @@ class Run < ActiveRecord::Base
                   queue: "HighPriorityRunner",
                   run_data: {"data" =>  nr.jig.stage_run(nr)})
     end
-    run!
+    run_runnable
   end
 
   def self.queue_status(arg)
@@ -214,35 +217,13 @@ class Run < ActiveRecord::Base
   def self.run!
     # Before we do anything else, perform some preventative maintenance on the
     # run queue to make sure we don't lose runs.
-    Run.locked_transaction do
-      Run.all.each do |r|
-        kill_run = false
-        if r.node.nil?
-          # The node that the run should have been perfomed on is gone.
-          # If this happens, something has gone Horribly Wrong
-          Rails.logger.error("Run: #{r.id} is present for a nonexistent node.")
-          kill_run = true
-        end
-        if r.node_role.nil?
-          # The noderole that requested the run is gone.
-          # Also either something gone Horribly Wrong 
-          Rails.logger.error("Run: #{r.id} is present for a missing noderole.")
-          kill_run = true
-        end
-        if r.running && r.job_id
-          dj = r.que_job
-          if dj.nil?
-            # The run thinks it should be running, the delayed_job backing it
-            # has gone away.
-            Rails.logger.error("Run: #{r.id} is running, but missing job #{r.job_id}")
-            kill_run = true
-          end
-        end
-        next unless kill_run
-        if r.node_role
-          r.node_role.runlog = "Run: #{r.inspect} is invalid.  Deleting it."
-          r.node_role.error!
-        end
+    Run.transaction do
+      Run.find_by_sql("SELECT * FROM runs where 
+                       (node_id NOT IN (select id from nodes)) OR
+                       (node_role_id NOT IN (select id from node_roles)) OR
+                       (running AND (job_id IS NOT NULL) AND (job_id NOT IN (select job_id from que_jobs))) FOR UPDATE SKIP LOCKED").each do |r|
+        Rails.logger.error("Run: #{r.id} is invalid, deleting")
+        Rails.logger.debug("Run: Invalid run: #{r.to_json}")
         r.delete
       end
     end
@@ -252,8 +233,8 @@ class Run < ActiveRecord::Base
     # if there is not already something running or runnable on the
     # node for the noderole.
     handled = 0
-    Run.locked_transaction do
-      Rails.logger.debug(Run.queue_status("start"))
+    Rails.logger.debug(Run.queue_status("start"))
+    Run.transaction do
       # Find any runnable noderoles and see if they can be enqueued.
       # The logic here will only enqueue a noderole of the node does not
       # already have a noderole enqueued.
@@ -261,7 +242,8 @@ class Run < ActiveRecord::Base
       # fashion to run_runnable, but the resultant sql would be much hairier.
       NodeRole.runnable.
         where("node_id NOT IN (select r.node_id FROM runs r)").
-        order("cohort ASC, id ASC").each do |nr|
+        order("cohort ASC, id ASC").lock("FOR UPDATE SKIP LOCKED").each do |nr|
+        next if Run.where(node_id: nr.node_id).count != 0
         Rails.logger.info("Run: Creating new Run for #{nr.name}")
         # Take a snapshot of the data we want to hand to the jig's run
         # method.  We do this so that the jig gets fed data that is
