@@ -1,0 +1,15 @@
+#!/bin/bash
+if [[ ! $1 ]]; then
+    echo "Must pass the number of docker slaves to start" >&2
+    exit 1
+fi
+
+PROVISIONER_WEB="$(rebar nodes get 1 attrib provisioner-webservers |jq -r '.value |.[0] |.url')"
+REBAR_ENDPOINT="$(rebar nodes get 1 attrib rebar-api-servers |jq -r '.value |.[0] |.url')"
+
+for ((i=0;i<${1};i++)); do
+    docker run -d -e "REBAR_KEY=$REBAR_KEY" \
+           -e "REBAR_ENDPOINT=$REBAR_ENDPOINT" \
+           -e "PROVISIONER_WEB=$PROVISIONER_WEB" \
+           digitalrebar/slave
+done
