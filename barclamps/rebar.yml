@@ -268,6 +268,18 @@ hammers:
 
 attribs:
   # Rebar Core
+  - name: bios-vendor
+    map: 'ohai/dmi/bios/vendor'
+    description: 'BIOS vendor'
+  - name: bios-version
+    map: 'ohai/dmi/bios/version'
+    description: 'BIOS version'
+  - name: bios-release-date
+    map: 'ohai/dmi/bios/release_date'
+    description: 'BIOS release date'
+  - name: bios-revision
+    map: 'ohai/dmi/bios/bios_revision'
+    description: 'BIOS revision'
   - name: asset_tag
     map: 'ohai/dmi/base_board/asset_tag'
     description: 'BIOS configured system identifier'
