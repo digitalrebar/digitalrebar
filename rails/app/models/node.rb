@@ -353,7 +353,7 @@ class Node < ActiveRecord::Base
     end
   end
 
-  def commit!
+  def commit!(ignore_power=false)
     Role.all_cohorts.each do |r|
       if (!system && !admin && !is_docker_node? && r.discovery)
         r.add_to_node(self)
@@ -364,7 +364,7 @@ class Node < ActiveRecord::Base
       reload
       update!(available: true)
       node_roles.order("cohort ASC").each do |nr|
-        nr.commit!
+        nr.commit!(ignore_power)
       end
     end
   end
@@ -372,15 +372,20 @@ class Node < ActiveRecord::Base
   def redeploy!
     Node.transaction do
       reload
-      node_roles.update_all(run_count: 0, state: NodeRole::PROPOSED)
       update!(bootenv: "sledgehammer")
     end
-    if actions[:power][:reset]
+    if actions[:power][:cycle]
+      actions[:power].cycle
+    elsif actions[:power][:reset]
       actions[:power].reset
     else
       actions[:power].reboot
     end
-    commit!
+    Node.transaction do
+      reload
+      node_roles.update_all(run_count: 0, state: NodeRole::PROPOSED)
+    end
+    commit!(true)
   end
 
   def target
