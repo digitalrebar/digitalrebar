@@ -1,0 +1,2 @@
+#!/bin/bash
+docker ps -f=ancestor=digitalrebar/slave -q |xargs docker rm --force
