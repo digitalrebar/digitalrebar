@@ -23,7 +23,7 @@ RUN mkdir /docker-entrypoint-initdb.d
 
 RUN apt-key adv --keyserver ha.pool.sks-keyservers.net --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
 
-ENV PG_MAJOR 9.4
+ENV PG_MAJOR 9.5
 
 RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ jessie-pgdg main' $PG_MAJOR > /etc/apt/sources.list.d/pgdg.list
 
@@ -39,7 +39,7 @@ RUN mkdir -p /var/run/postgresql && chown -R postgres /var/run/postgresql
 
 # Consul for now
 RUN mkdir -p /tmp/consul && \
- curl -fL -o consul.zip https://releases.hashicorp.com/consul/0.6.3/consul_0.6.3_linux_amd64.zip && \
+ curl -fL -o consul.zip https://releases.hashicorp.com/consul/0.6.4/consul_0.6.4_linux_amd64.zip && \
  unzip consul.zip -d /usr/local/bin && rm consul.zip
 
 RUN mkdir -p /etc/consul.d

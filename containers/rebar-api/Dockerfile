@@ -19,7 +19,7 @@ RUN apt-get -y update \
   && apt-add-repository ppa:ansible/ansible \
   && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add - \
   && apt-get -y update \
-  && apt-get -y install ruby2.1 ruby2.1-dev make cmake curl libxml2-dev libcurl4-openssl-dev libssl-dev build-essential jq sudo postgresql-client-9.4 libpq5 libpq-dev autoconf uuid-runtime ipmitool ansible python-netaddr python-dns python-pip
+  && apt-get -y install ruby2.1 ruby2.1-dev make cmake curl libxml2-dev libcurl4-openssl-dev libssl-dev build-essential jq sudo postgresql-client-9.5 libpq5 libpq-dev autoconf uuid-runtime ipmitool ansible python-netaddr python-dns python-pip
 RUN pip install dnspython
 RUN gem install bundler \
   && gem install net-http-digest_auth \
