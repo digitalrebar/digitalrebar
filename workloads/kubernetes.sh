@@ -353,14 +353,14 @@ fi
 echo "Access Digital Rebar UI, https://${ADMIN_IP}:3000"
 echo "To teardown, $0 $start_args --teardown=true --admin-ip=$ADMIN_IP $EXTRA"
 echo "To keep the admin node, add --keep_admin=true"
-echo "... config complete > converging Kubernetes ..."
+echo "... config complete > converging Kubernetes ... (you can monitor via the UI)"
 
 # Wait for the system to converge
 if ! rebar converge $DEPLOYMENT_NAME ; then
   die "Machines did NOT converge in kubernetes"
 fi
 
-echo "Converge Compelete"
+echo "Converge Complete"
 
 # Hint so user knows which IP to use for Master
 for ((i=0 ; i < $KUBERNETES_MASTER_COUNT; i++)) ; do
