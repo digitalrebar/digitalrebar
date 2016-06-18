@@ -52,7 +52,7 @@ class CloudProvider < Provider
     # Nodes should always have rebar-joined-node.
     r = Role.find_by_name('rebar-joined-node')
     r.add_to_node(obj)
-    obj.commit!
+    obj.commit!(true)
   end
 
   def reboot_node(obj)

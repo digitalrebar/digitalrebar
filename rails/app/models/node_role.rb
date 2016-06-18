@@ -637,7 +637,7 @@ class NodeRole < ActiveRecord::Base
   end
 
   # Commit takes us back to TODO or BLOCKED, depending
-  def commit!
+  def commit!(ignore_power=false)
     NodeRole.transaction do
       reload
       if deployment_role.proposed?
@@ -649,8 +649,12 @@ class NodeRole < ActiveRecord::Base
         Event.fire(self, obj_class: 'role', obj_id: role.name, event: 'on_commit')
         block_or_todo
       end
-      if !node.alive && node.power[:on]
-        @do_power_on = true
+      unless ignore_power
+        if !node.alive && node.power[:on]
+          @do_power_on = true
+        else
+          @do_power_on = false
+        end
       else
         @do_power_on = false
       end

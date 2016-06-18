@@ -353,7 +353,7 @@ class Node < ActiveRecord::Base
     end
   end
 
-  def commit!
+  def commit!(ignore_power=false)
     Role.all_cohorts.each do |r|
       if (!system && !admin && !is_docker_node? && r.discovery)
         r.add_to_node(self)
@@ -364,23 +364,40 @@ class Node < ActiveRecord::Base
       reload
       update!(available: true)
       node_roles.order("cohort ASC").each do |nr|
-        nr.commit!
+        nr.commit!(ignore_power)
       end
     end
   end
 
   def redeploy!
+    Rails.logger.debug("Starting Redeploy for #{name}")
     Node.transaction do
+      Rails.logger.debug("redeploy: reloading #{name}")
       reload
-      node_roles.update_all(run_count: 0, state: NodeRole::PROPOSED)
+      Rails.logger.debug("redeploy: update bootenv for #{name}")
       update!(bootenv: "sledgehammer")
     end
-    if actions[:power][:reset]
+    Rails.logger.debug("redeploy: restart node for #{name}")
+    if actions[:power][:cycle]
+      Rails.logger.debug("redeploy: using cycle for #{name}")
+      actions[:power].cycle
+    elsif actions[:power][:reset]
+      Rails.logger.debug("redeploy: using reset for #{name}")
       actions[:power].reset
     else
+      Rails.logger.debug("redeploy: using reboot for #{name}")
       actions[:power].reboot
     end
-    commit!
+    Node.transaction do
+      Rails.logger.debug("redeploy: reloading2 #{name}")
+      reload
+      Rails.logger.debug("redeploy: update all node roles for #{name}")
+      node_roles.update_all(run_count: 0, state: NodeRole::PROPOSED)
+    end
+    Rails.logger.debug("redeploy: commit node #{name}")
+    val = commit!(true)
+    Rails.logger.debug("redeploy: done for #{name}")
+    val
   end
 
   def target
