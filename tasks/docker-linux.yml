@@ -21,7 +21,7 @@
     sudo: yes
 
   - name: Get Docker Compose
-    get_url: url="https://github.com/docker/compose/releases/download/1.5.0/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }}" dest=/usr/local/bin/docker-compose mode=0755
+    get_url: url="https://github.com/docker/compose/releases/download/1.7.1/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }}" dest=/usr/local/bin/docker-compose mode=0755
     sudo: yes
 
   - name: Allow docker access (without reboot)
