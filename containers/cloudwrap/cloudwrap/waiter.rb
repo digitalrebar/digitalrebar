@@ -56,7 +56,7 @@ loop do
       # State good?
       case endpoint['provider']
       when 'AWS', 'Google'
-        log "` #{server.id}"
+        log "` #{server.id}" rescue log "no server id"
         unless server.ready?
           log "Server #{server.id} not ready, skipping"
           next
