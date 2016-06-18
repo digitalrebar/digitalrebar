@@ -370,22 +370,34 @@ class Node < ActiveRecord::Base
   end
 
   def redeploy!
+    Rails.logger.debug("Starting Redeploy for #{name}")
     Node.transaction do
+      Rails.logger.debug("redeploy: reloading #{name}")
       reload
+      Rails.logger.debug("redeploy: update bootenv for #{name}")
       update!(bootenv: "sledgehammer")
     end
+    Rails.logger.debug("redeploy: restart node for #{name}")
     if actions[:power][:cycle]
+      Rails.logger.debug("redeploy: using cycle for #{name}")
       actions[:power].cycle
     elsif actions[:power][:reset]
+      Rails.logger.debug("redeploy: using reset for #{name}")
       actions[:power].reset
     else
+      Rails.logger.debug("redeploy: using reboot for #{name}")
       actions[:power].reboot
     end
     Node.transaction do
+      Rails.logger.debug("redeploy: reloading2 #{name}")
       reload
+      Rails.logger.debug("redeploy: update all node roles for #{name}")
       node_roles.update_all(run_count: 0, state: NodeRole::PROPOSED)
     end
-    commit!(true)
+    Rails.logger.debug("redeploy: commit node #{name}")
+    val = commit!(true)
+    Rails.logger.debug("redeploy: done for #{name}")
+    val
   end
 
   def target
