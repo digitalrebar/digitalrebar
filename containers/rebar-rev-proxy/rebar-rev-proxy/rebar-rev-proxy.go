@@ -26,6 +26,7 @@ var saml_idpssourl string
 var saml_idpssodescurl string
 var saml_idpcert string
 var external_ip string
+var forwarder_mode bool
 
 func init() {
 	flag.StringVar(&key_pem, "key_pem", "/etc/rev-proxy/server.key", "Path to key file")
@@ -42,6 +43,7 @@ func init() {
 	flag.StringVar(&saml_idpssodescurl, "saml_idpssodescurl", "http://www.okta.com/exk5ui8zc112R5ioP0h7", "Default Identity Provider SSO Descriptor URL")
 	flag.StringVar(&saml_idpcert, "saml_idpcert", "/etc/rev-proxy/saml-dir/idpcert.crt", "Default SAML SSO Cert")
 	flag.StringVar(&external_ip, "external_ip", "127.0.0.1", "Server IP to advertise for SAML")
+	flag.BoolVar(&forwarder_mode, "forwarder", false, "Add if the container is in forwarder mode")
 }
 
 func add_cors_header(w http.ResponseWriter, req *http.Request) {
