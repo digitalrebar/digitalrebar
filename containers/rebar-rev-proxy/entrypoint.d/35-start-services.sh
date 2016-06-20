@@ -39,7 +39,12 @@ if [[ $REVPROXY_SAML_IDP_SSO_DESC_URL ]] ; then
 	SAMLIDPSSODESCURL="-saml_idpssodescurl $REVPROXY_SAML_IDP_SSO_DESC_URL"
 fi
 
+if [[ $FORWARDER_IP && $forwarder ]]; then
+  FORWARDER_FLAG="-forwarder"
+fi
+
 /usr/local/bin/rebar-rev-proxy --external_ip ${EXTERNAL_IP%%/*} \
+  $FORWARDER \
 	$LISTENPORT \
 	$AUTHFILTER \
 	$REALM \
