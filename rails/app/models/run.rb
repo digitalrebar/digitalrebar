@@ -54,24 +54,41 @@ class NodeRoleRun < Que::Job
       destroy
       return
     end
-    nr = job.node_role
-    Rails.logger.info("Run: Queued job #{run_id} for #{nr.name} found.")
-    to_error = false
+    nr = nil
     # allows jigs to skip the active state as an exit condition
     # (allows for async jigs)
     mark_active = true
     begin
-      nr.transition!
-      unless nr.role.destructive && (nr.run_count > 0)
-        Rails.logger.info("Run: Queued job #{job.id} for #{nr.name} running!")
-        run_return = nr.jig.run(nr,job.run_data["data"])
-        # mark the run as active unless it returns the :async symbol
-        # when a jig returns this flag, then it needs to retry the node role for it to continue
-        mark_active = run_return != :async
-        Rails.logger.info("Run: Queued job #{job.id} for #{nr.name} finished, no exceptions raised.")
-      else
-        Rails.logger.info("Run: Queued job #{job.id} for #{nr.name} skipped due to destructiveness")
+      NodeRole.transaction do
+        nr = NodeRole.where(id: job.node_role_id).lock("FOR NO KEY UPDATE").first
+        nr.transition!
+        if nr.role.destructive && (nr.run_count > 0)
+          Rails.logger.info("Run: Queued job #{job.id} for #{nr.id} skipped due to destructiveness")
+          nr.active! if nr.node.alive? && nr.node.available? && mark_active
+          job.delete
+          destroy
+          return
+        end
       end
+      Rails.logger.info("Run: Queued job #{job.id} for #{nr.id} running!")
+      run_return = nr.jig.run(nr,job.run_data["data"])
+      # mark the run as active unless it returns the :async symbol
+      # when a jig returns this flag, then it needs to retry the node role for it to continue
+      mark_active = run_return != :async
+      Rails.logger.info("Run: Queued job #{job.id} for #{nr.id} finished, no exceptions raised.")
+    rescue StandardError => e
+      NodeRole.transaction do
+        nr = NodeRole.where(id: job.node_role_id).lock("FOR NO KEY UPDATE").first
+        nr.update(runlog: "#{nr.runlog}\n\n\n#{e.class.name}: #{e.message}\nBacktrace:\n#{e.backtrace.join("\n")}")
+        nr.error!
+        job.delete
+        destroy
+      end
+      Rails.logger.info("Run: Queued job #{job.id} for #{nr.name} failed, exceptions raised.")
+      Rails.logger.error("#{e.class.name}: #{e.message}\nBacktrace:\n#{e.backtrace.join("\n")}")
+      return
+    end
+    NodeRole.transaction do
       # Extract any new desired node attribs from the returned wall info
       nr.barclamp.attribs.where(role_id: nil).each do |a|
         val = a.simple_get(nr)
@@ -92,28 +109,12 @@ class NodeRoleRun < Que::Job
         res.deep_merge!(nr.wall["rebar_wall"]["reservations"])
         nr.node.hint_update({"reservations" => res})
       end
-    rescue StandardError => e
-      to_error = true
-      NodeRole.transaction do
-        nr.update!(runlog: "#{nr.runlog}\n\n\n#{e.class.name}: #{e.message}\nBacktrace:\n#{e.backtrace.join("\n")}")
-      end
-      Rails.logger.info("Run: Queued job #{job.id} for #{nr.name} failed, exceptions raised.")
-      Rails.logger.error("#{e.class.name}: #{e.message}\nBacktrace:\n#{e.backtrace.join("\n")}")
-    ensure
-      NodeRole.transaction do
-        nr.save!
-        Rails.logger.info("Run: Deleting finished job #{job.id}")
-        job.delete
-        if to_error
-          nr.error!
-        else
-          # Only go to active if the node is still alive -- the jig may
-          # have marked it as not alive.
-          nr.active! if nr.node.alive? && nr.node.available? && mark_active
-        end
-        destroy
-      end
+      Rails.logger.info("Run: Deleting finished job #{job.id}")
+      nr.active! if nr.node.alive? && nr.node.available? && mark_active
+      job.delete
+      destroy
     end
+    Run.run!
   end
 end
 
