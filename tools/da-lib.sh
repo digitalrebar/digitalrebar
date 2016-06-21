@@ -68,6 +68,8 @@ docker_admin_default_containers() {
     [[ ${containers["ntp"]} ]] || containers["ntp"]=true
     [[ ${containers["chef"]} ]] || containers["chef"]=true
     [[ ${containers["webproxy"]} ]] || containers["webproxy"]=true
+    [[ ${containers["revproxy"]} ]] || containers["revproxy"]=true
+    [[ ${containers["ux"]} ]] || containers["ux"]=true
     [[ ${containers["access"]} ]] || containers["access"]=FORWARDER
 }
 
@@ -165,6 +167,11 @@ bring_up_admin_containers() {
         $SUDO rm -rf "$mountdir/deploy/compose/digitalrebar"
         ln -s "$mountdir" \
            "$mountdir/deploy/compose/digitalrebar"
+    fi
+
+    if [[ ! -d $mountdir/digitalrebar-ux ]]; then
+        # Clone the digitalrebar-ux repo to a known location.
+        git clone https://github.com/rackn/digitalrebar-ux "$mountdir/digitalrebar-ux"
     fi
 
     mkdir -p "$HOME/.cache/digitalrebar/tftpboot"
