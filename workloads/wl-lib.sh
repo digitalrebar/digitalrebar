@@ -463,6 +463,11 @@ classifiers=()
 [[ ${containers["ntp"]} ]] || containers["ntp"]=true
 [[ ${containers["chef"]} ]] || containers["chef"]=true
 [[ ${containers["webproxy"]} ]] || containers["webproxy"]=true
+[[ ${containers["revproxy"]} ]] || containers["revproxy"]=true
+[[ ${containers["ux"]} ]] || containers["ux"]=true
+
+# Default include the ux workload as well.
+[[ ${workloads["ux"]} ]] || workloads["ux"]=true
 
 use_container() {
     ! [[ ! ${containers[$1]} || ${containers[$1]} == false ]]
