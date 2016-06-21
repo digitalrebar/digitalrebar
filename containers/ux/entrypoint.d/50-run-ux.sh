@@ -7,9 +7,10 @@ run_forever() (
     done
 )
 
-if [ "$forwarder" != "" ] ; then
+if [[ $FORWARDER_IP && $forwarder ]]; then
     ip route del default
     ip route add default via $forwarder
+    sleep 30
 fi
 
 if [[ ! $UX_PORT ]] ; then
@@ -21,7 +22,7 @@ echo '^ux/(.*)' | kv_put digitalrebar/public/revproxy/rebar-ux-service/matcher
 
 OSD=$SERVICE_DEPLOYMENT
 SERVICE_DEPLOYMENT="$OSD\", \"revproxy"
-make_service rebar-ux $UX_PORT "{\"script\": \"curl -k -H \\\"Host=www.mydomain.com\\\" https://localhost:$UX_PORT\",\"interval\": \"10s\"}"
+make_service "rebar-ux" $UX_PORT "{\"script\": \"curl -k -H \\\"Host=www.mydomain.com\\\" https://localhost:$UX_PORT\",\"interval\": \"10s\"}"
 SERVICE_DEPLOYMENT=$OSD
 
 cd /opt/digitalrebar-ux

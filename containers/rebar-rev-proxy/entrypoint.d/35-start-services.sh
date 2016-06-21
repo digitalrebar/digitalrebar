@@ -44,7 +44,7 @@ if [[ $FORWARDER_IP && $forwarder ]]; then
 fi
 
 /usr/local/bin/rebar-rev-proxy --external_ip ${EXTERNAL_IP%%/*} \
-  $FORWARDER \
+  $FORWARDER_FLAG \
 	$LISTENPORT \
 	$AUTHFILTER \
 	$REALM \
