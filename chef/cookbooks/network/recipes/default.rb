@@ -142,8 +142,10 @@ Dir.foreach(net_sysfs) do |ent|
   symlink = File.readlink(ent)
   matches = net_re.match(symlink)
   next unless matches && matches.length == 3
-  Chef::Log.info("Found #{matches[1]} => #{matches[2]}")
-  nics[split_pci(matches[1])] = matches[2]
+  nic_mac = File.read("#{ent}/address").strip.split(':').map{|e|e.to_i(16)}
+  nic_id = split_pci(matches[1]) + nic_mac
+  Chef::Log.info("Found #{nic_id} => #{matches[2]}")
+  nics[nic_id] = matches[2]
 end
 
 # If we need to force ordering away from the way the PCI addresses would
@@ -159,8 +161,6 @@ node["rebar"]["interface_map"].each do |ent|
 end if (node["rebar"]["interface_map"] rescue nil) && node[:dmi] && !node[:dmi].empty?
 
 Chef::Log.info("Not using any forcing entries") if forcing_ents.empty?
-
-bus_ents = nics.keys.sort
 Chef::Log.info("Found nics: #{nics.inspect}")
 
 # Bucketize the nics we found. This sorts the nics into at most
