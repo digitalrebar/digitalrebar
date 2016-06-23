@@ -286,4 +286,16 @@ class DeploymentsController < ApplicationController
     propose
   end
 
+  # PUT
+  # calls redeploy on all nodes in deployment
+  def redeploy
+    @deployment = Deployment.find_key(params[:id] || params[:name] || params[:deployment_id])
+    if @deployment
+      Rails.logger.debug("Starting Deployment Redeploy for #{@deployment.name} with #{@deployment.nodes.count}")
+      @deployment.nodes.each { |n| n.redeploy! }
+      Rails.logger.debug("Ended Deployment Redeploy for #{@deployment.name}")
+    end
+    render api_show @deployment
+  end
+
 end
