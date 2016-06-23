@@ -201,7 +201,7 @@ Rebar::Application.routes.draw do
             put :propose
             put :commit
             put :recall
-            get :graph
+            put :redeploy
           end
           resources :events do
             collection do
