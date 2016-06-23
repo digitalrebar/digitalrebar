@@ -51,7 +51,7 @@ module Rebar
     config.paths['log'] = "/var/log/rebar/production.log"
 
     config.rebar.version = '2.E'
-    config.rebar.docs = "https://github.com/digitalrebar/doc/blob/master/README.rst"
+    config.rebar.docs = "http://digital-rebar.readthedocs.io/en/latest/BOOK.html"
     config.rebar.chat_link = "https://gitter.im/digitalrebar/core"
     config.rebar.bootstrap_key = 'digitalrebar/private/bootstrap'
 
