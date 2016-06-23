@@ -81,7 +81,11 @@ class BarclampDhcp::MgmtService < Service
     r = network.ranges.find_by(name: "host") unless r
     unless r
       # All goes away, makes sure we pull it.
-      self.class.delete_network(network.name)
+      begin
+        self.class.delete_network(network.name)
+      rescue RestClient::ResourceNotFound
+        return
+      end
       return
     end
 
