@@ -99,6 +99,12 @@ class Jig < ActiveRecord::Base
     raise "Cannot call run on the top-level Jig!"
   end
 
+  # optional item, clears cached data for jig
+  # useful for jigs that pull files from internet like Ansible_Playbook
+  def flush()
+    Rails.logger.debug("jig.flush() not implemented for #{self.class}.  This is OK")
+  end
+
 private
 
   def make_role_requires

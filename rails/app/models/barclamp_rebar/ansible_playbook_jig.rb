@@ -245,6 +245,13 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     Rails.logger.info("AnsiblePlaybookJig Deleting node: #{node.name}")
   end
 
+  # remove playbook downloads so system gets fresh copy
+  def flush()
+    cache_dir = '/var/cache/rebar/ansible_playbook'
+    FileUtils.rmdir_p(cache_dir)
+    Rails.logger.info("AnsiblePlaybookJig flushed playbooks from #{cache_dir}")
+  end
+
 private
 
   def walk_nics(node, ip_str)

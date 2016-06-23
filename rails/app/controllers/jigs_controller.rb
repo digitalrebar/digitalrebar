@@ -65,6 +65,14 @@ class JigsController < ApplicationController
     render api_not_supported("post", "jigs")
   end
 
+  # PUT
+  # calls jig.flush to clear temporary data (if jig supports it)
+  def flush
+    @jig = Jig.find_key params[:jig_id]
+    @jig.flush
+    render api_show @jig    
+  end
+
   def activate
     jig = Jig.find_key params[:jig_id]
 
