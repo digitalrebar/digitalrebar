@@ -19,15 +19,20 @@ class BarclampRebar::Attrib::ProviderType < Attrib
   def get(data,source=:all, committed=false)
 
       from = __resolve(data)
-      d = case
+      p = case
           when from.is_a?(Node)
-            from.provider.class
+            from.provider
           when from.is_a?(NodeRole)
-            from.node.provider.class
+            from.node.provider
           else
-            ""
+            nil
       end
-      return d.downcase.subprovider("provider","")
+      # no data, return
+      return {} unless p
+      # make hash with info
+      o = { type: p.class.downcase.sub("provider",""), name: p.name }
+      o[:auth_details] = p.auth_details
+      return o
 
   end
 
