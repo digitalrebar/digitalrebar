@@ -351,8 +351,8 @@ if [ "$DEVICE_ID" != "" ] ; then
 fi
 
 echo "Access Digital Rebar UI, https://${ADMIN_IP}"
-echo "To teardown, $0 $start_args --teardown=true --admin-ip=$ADMIN_IP $EXTRA"
-echo "To keep the admin node, add --keep_admin=true"
+echo "To teardown, $0 $start_args --admin-ip=$ADMIN_IP $EXTRA --teardown=true --keep_admin=true"
+echo "To also remove the admin node, remove --keep_admin=true"
 echo "... config complete > converging Kubernetes ... (you can monitor via the UI)"
 
 # Wait for the system to converge
