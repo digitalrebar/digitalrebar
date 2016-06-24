@@ -71,7 +71,10 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
   end
 
   def run(nr,data)
-    role_yaml = nr.role.metadata
+    # pull metadata from barclamp
+    role_yaml = nr.role.barclamp.metadata 
+    # override with role metadata
+    role_yaml.merge nr.role.metadata
 
     die "Missing src path @ #{nr.role.name}" unless role_yaml['playbook_src_paths']
     die "Missing playbook path @ #{nr.role.name}" unless role_yaml['playbook_path']
