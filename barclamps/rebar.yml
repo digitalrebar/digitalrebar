@@ -23,6 +23,16 @@ barclamp:
   license: "Apache 2"
   license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
+wizard:
+  version: 2
+  name: "Install O/S"
+  description: "Provision Operating Systems on Discovered Hardware"
+  system_nodes: true
+  create_nodes: false
+  os: true
+  services:
+    docker-ready: optional
+
 roles:
   # Rebar  Core
   - name: rebar-managed-node
