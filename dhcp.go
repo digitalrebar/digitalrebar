@@ -133,7 +133,6 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 	log.Printf("%s: Config lock acquired: %s", xid(p), time.Now())
 	subnet := findSubnet(h, p)
 	if subnet == nil {
-		h.info.Unlock()
 		log.Printf("%s %s: No subnet for leases", msgType.String(), xid(p))
 		return nil
 	}
