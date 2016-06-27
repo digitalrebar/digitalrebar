@@ -174,4 +174,4 @@ fi
 
 echo "=== HELPFUL COMMANDS ==="
 echo "repeat Ansible run: ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars \"$JSON_STRING\" digitalrebar.yml ${LC}"
-echo "Digital Rebar UI https://${IP}:3000"
+echo "Digital Rebar UI https://${IP} (for RackN UX try https://${IP}/ux/ )"
