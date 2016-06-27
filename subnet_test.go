@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/willf/bitset"
 	"net"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/willf/bitset"
 )
 
 func TestNewSubnet(t *testing.T) {
@@ -23,7 +24,7 @@ func TestFreeLeaseNoMatch(t *testing.T) {
 
 	s.Leases["one"] = &Lease{}
 
-	s.free_lease(dt, "two")
+	s.freeLease(dt, "two")
 
 	assert.NotNil(t, s.Leases["one"], "Lease one should not be nil")
 	assert.Nil(t, s.Leases["two"], "Lease two should be nil")
@@ -39,7 +40,7 @@ func TestFreeLeaseMatch(t *testing.T) {
 	}
 	s.ActiveBits.Set(0)
 
-	s.free_lease(dt, "two")
+	s.freeLease(dt, "two")
 
 	assert.NotNil(t, s.Leases["one"], "Lease one should not be nil")
 	assert.Nil(t, s.Leases["two"], "Lease two should be nil")
@@ -49,7 +50,7 @@ func TestFreeLeaseMatch(t *testing.T) {
 func TestFindInfoNothing(t *testing.T) {
 	dt, s := simpleSetup()
 
-	l, b := s.find_info(dt, "fred")
+	l, b := s.findInfo(dt, "fred")
 
 	assert.Nil(t, l, "Lease should be nil")
 	assert.Nil(t, b, "Binding should be nil")
@@ -60,7 +61,7 @@ func TestFindInfoLeaseButNotBinding(t *testing.T) {
 
 	s.Leases["fred"] = &Lease{}
 
-	l, b := s.find_info(dt, "fred")
+	l, b := s.findInfo(dt, "fred")
 
 	assert.NotNil(t, l, "Lease should not be nil")
 	assert.Nil(t, b, "Binding should be nil")
@@ -71,7 +72,7 @@ func TestFindInfoBindingButNoLease(t *testing.T) {
 
 	s.Bindings["fred"] = &Binding{}
 
-	l, b := s.find_info(dt, "fred")
+	l, b := s.findInfo(dt, "fred")
 
 	assert.Nil(t, l, "Lease should be nil")
 	assert.NotNil(t, b, "Binding should not be nil")
@@ -83,7 +84,7 @@ func TestFindInfoLeaseAndBinding(t *testing.T) {
 	s.Leases["fred"] = &Lease{}
 	s.Bindings["fred"] = &Binding{}
 
-	l, b := s.find_info(dt, "fred")
+	l, b := s.findInfo(dt, "fred")
 
 	assert.NotNil(t, l, "Lease should not be nil")
 	assert.NotNil(t, b, "Binding should not be nil")
@@ -124,14 +125,14 @@ func TestRunOutOfIps(t *testing.T) {
 
 	for i := 5; i <= 25; i++ {
 		id := fmt.Sprintf("fred%d", i)
-		l, b := s.find_or_get_info(dt, id, net.ParseIP("0.0.0.0"))
+		l, b := s.findOrGetInfo(dt, id, net.ParseIP("0.0.0.0"))
 
 		assert.NotNil(t, l, "Lease should not be nil")
 		assert.Nil(t, b, "Binding should not be nil")
 
-		s.update_lease_time(dt, l, 360*time.Second)
+		s.updateLeaseTime(dt, l, 360*time.Second)
 	}
-	l, b := s.find_or_get_info(dt, "fred26", net.ParseIP("0.0.0.0"))
+	l, b := s.findOrGetInfo(dt, "fred26", net.ParseIP("0.0.0.0"))
 	assert.Nil(t, l, "Lease should not be nil")
 	assert.Nil(t, b, "Binding should not be nil")
 }
@@ -141,17 +142,17 @@ func TestReleaseIp(t *testing.T) {
 
 	for i := 5; i <= 25; i++ {
 		id := fmt.Sprintf("fred%d", i)
-		l, b := s.find_or_get_info(dt, id, net.ParseIP("0.0.0.0"))
+		l, b := s.findOrGetInfo(dt, id, net.ParseIP("0.0.0.0"))
 
 		assert.NotNil(t, l, "Lease should not be nil")
 		assert.Nil(t, b, "Binding should not be nil")
 
-		s.update_lease_time(dt, l, 360*time.Second)
+		s.updateLeaseTime(dt, l, 360*time.Second)
 	}
 
-	s.free_lease(dt, "fred10")
+	s.freeLease(dt, "fred10")
 
-	l, b := s.find_or_get_info(dt, "fred26", net.ParseIP("0.0.0.0"))
+	l, b := s.findOrGetInfo(dt, "fred26", net.ParseIP("0.0.0.0"))
 	assert.NotNil(t, l, "Lease should not be nil")
 	assert.Nil(t, b, "Binding should not be nil")
 }
