@@ -34,7 +34,7 @@ type JsonFile struct {
 	Data JsonData
 }
 
-func reload_jsonfile(j *JsonFile) {
+func reloadJsonfile(j *JsonFile) {
 	data, err := ioutil.ReadFile(j.Path)
 	if err != nil {
 		panic(err)
@@ -45,29 +45,29 @@ func reload_jsonfile(j *JsonFile) {
 	}
 }
 
-func get_password(user, realm string, data JsonData, pwdtype string) string {
-	u_data, exists := data[user]
+func getPassword(user, realm string, data JsonData, pwdtype string) string {
+	uData, exists := data[user]
 	if !exists {
 		log.Printf("Failed login attempt - realm: %v no user: %v", realm, user)
 		return ""
 	}
 	if pwdtype == "basic" {
 		log.Printf("Basic login attempt - realm: %v user: %v", realm, user)
-		return u_data.Password
+		return uData.Password
 	}
 	log.Printf("Digest login attempt - realm: %v user: %v", realm, user)
-	return u_data.Digestpassword
+	return uData.Digestpassword
 }
 
-func get_capabilities(user, realm string, data JsonData) []string {
-	u_data, exists := data[user]
+func getCapabilities(user, realm string, data JsonData) []string {
+	uData, exists := data[user]
 	if !exists {
 		return []string{}
 	}
-	if len(u_data.Capabilities) == 0 {
+	if len(uData.Capabilities) == 0 {
 		return []string{"Read-Only"}
 	}
-	return u_data.Capabilities
+	return uData.Capabilities
 }
 
 type CapabilityProvider func(user, realm string) []string
@@ -79,14 +79,14 @@ type CapabilityProvider func(user, realm string) []string
 */
 func JsonFileProvider(filename string, pwdtype string) (auth.SecretProvider, CapabilityProvider, error) {
 	j := &JsonFile{File: auth.File{Path: filename}}
-	j.Reload = func() { reload_jsonfile(j) }
+	j.Reload = func() { reloadJsonfile(j) }
 	return func(user, realm string) string {
 			j.ReloadIfNeeded()
-			return get_password(user, realm, j.Data, pwdtype)
+			return getPassword(user, realm, j.Data, pwdtype)
 		},
 		func(user, realm string) []string {
 			j.ReloadIfNeeded()
-			return get_capabilities(user, realm, j.Data)
+			return getCapabilities(user, realm, j.Data)
 		},
 		nil
 }
@@ -136,10 +136,10 @@ func JsonConsulProvider(key, dbInit string, pwdtype string) (auth.SecretProvider
 
 	return func(user, realm string) string {
 			// GREG: Add lock
-			return get_password(user, realm, cf.Data, pwdtype)
+			return getPassword(user, realm, cf.Data, pwdtype)
 		},
 		func(user, realm string) []string {
-			return get_capabilities(user, realm, cf.Data)
+			return getCapabilities(user, realm, cf.Data)
 		},
 		nil
 

@@ -14,39 +14,39 @@ import (
 	"github.com/kmanley/go-http-auth"
 )
 
-var cacert_pem, key_pem, cert_pem string
-var auth_filter string
-var listen_port int
-var db_store_type string
-var db_file_name string
-var db_consul_key string
-var db_initial_json_file string
-var digest_realm string
-var saml_idpssourl string
-var saml_idpssodescurl string
-var saml_idpcert string
-var external_ip string
-var forwarder_mode bool
+var cacertPem, keyPem, certPem string
+var authFilter string
+var listenPort int
+var dbStoreType string
+var dbFilename string
+var dbConsulKey string
+var dbInitialJsonFile string
+var digestRealm string
+var samlIdpssourl string
+var samlIdpssodescurl string
+var samlIdpcert string
+var externalIp string
+var forwarderMode bool
 
 func init() {
-	flag.StringVar(&key_pem, "key_pem", "/etc/rev-proxy/server.key", "Path to key file")
-	flag.StringVar(&cert_pem, "cert_pem", "/etc/rev-proxy/server.crt", "Path to cert file")
-	flag.StringVar(&cacert_pem, "cacert_pem", "/etc/rev-proxy/ca.pem", "Path to cert file")
-	flag.IntVar(&listen_port, "listen_port", 443, "Port to listen on")
-	flag.StringVar(&auth_filter, "auth_filter", "digest", "Auth Filter to use. Either 'saml', 'basic', 'digest', or 'none'")
-	flag.StringVar(&db_store_type, "db_store_type", "file", "Type of storage area to use: consul or file")
-	flag.StringVar(&db_file_name, "db_file_name", "/etc/rev-proxy/db-store.json", "Database storage or initialization file")
-	flag.StringVar(&db_consul_key, "db_consul_key", "digitalrebar/private/rebar-rev/db", "Key path for consul db")
-	flag.StringVar(&digest_realm, "digest_realm", "Rebar", "Default realm for authentication")
+	flag.StringVar(&keyPem, "keyPem", "/etc/rev-proxy/server.key", "Path to key file")
+	flag.StringVar(&certPem, "certPem", "/etc/rev-proxy/server.crt", "Path to cert file")
+	flag.StringVar(&cacertPem, "cacertPem", "/etc/rev-proxy/ca.pem", "Path to cert file")
+	flag.IntVar(&listenPort, "listenPort", 443, "Port to listen on")
+	flag.StringVar(&authFilter, "authFilter", "digest", "Auth Filter to use. Either 'saml', 'basic', 'digest', or 'none'")
+	flag.StringVar(&dbStoreType, "dbStoreType", "file", "Type of storage area to use: consul or file")
+	flag.StringVar(&dbFilename, "dbFilename", "/etc/rev-proxy/db-store.json", "Database storage or initialization file")
+	flag.StringVar(&dbConsulKey, "dbConsulKey", "digitalrebar/private/rebar-rev/db", "Key path for consul db")
+	flag.StringVar(&digestRealm, "digestRealm", "Rebar", "Default realm for authentication")
 
-	flag.StringVar(&saml_idpssourl, "saml_idpssourl", "https://dev-888522.oktapreview.com/app/rackndev888522_rackn_1/exk5ui8zc112R5ioP0h7/sso/saml", "Default Identity Provider SSO URL")
-	flag.StringVar(&saml_idpssodescurl, "saml_idpssodescurl", "http://www.okta.com/exk5ui8zc112R5ioP0h7", "Default Identity Provider SSO Descriptor URL")
-	flag.StringVar(&saml_idpcert, "saml_idpcert", "/etc/rev-proxy/saml-dir/idpcert.crt", "Default SAML SSO Cert")
-	flag.StringVar(&external_ip, "external_ip", "127.0.0.1", "Server IP to advertise for SAML")
-	flag.BoolVar(&forwarder_mode, "forwarder", false, "Add if the container is in forwarder mode")
+	flag.StringVar(&samlIdpssourl, "samlIdpssourl", "https://dev-888522.oktapreview.com/app/rackndev888522_rackn_1/exk5ui8zc112R5ioP0h7/sso/saml", "Default Identity Provider SSO URL")
+	flag.StringVar(&samlIdpssodescurl, "samlIdpssodescurl", "http://www.okta.com/exk5ui8zc112R5ioP0h7", "Default Identity Provider SSO Descriptor URL")
+	flag.StringVar(&samlIdpcert, "samlIdpcert", "/etc/rev-proxy/saml-dir/idpcert.crt", "Default SAML SSO Cert")
+	flag.StringVar(&externalIp, "externalIp", "127.0.0.1", "Server IP to advertise for SAML")
+	flag.BoolVar(&forwarderMode, "forwarder", false, "Add if the container is in forwarder mode")
 }
 
-func add_cors_header(w http.ResponseWriter, req *http.Request) {
+func addCorsHeader(w http.ResponseWriter, req *http.Request) {
 	origin := req.Header.Get("Origin")
 	if origin != "" {
 		w.Header().Set("Access-Control-Allow-Origin", origin)
@@ -60,13 +60,13 @@ func main() {
 	flag.Parse()
 
 	// Load client cert
-	cert, err := tls.LoadX509KeyPair(cert_pem, key_pem)
+	cert, err := tls.LoadX509KeyPair(certPem, keyPem)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Load CA cert
-	caCert, err := ioutil.ReadFile(cacert_pem)
+	caCert, err := ioutil.ReadFile(cacertPem)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,8 +82,8 @@ func main() {
 	tlsConfig.BuildNameToCertificate()
 
 	// Service multiplexer
-	var auth_handler http.Handler
-	var base_handler http.Handler
+	var authHandler http.Handler
+	var baseHandler http.Handler
 	myMux := http.NewServeMux()
 	myMux.HandleFunc("/", NewMultipleHostReverseProxy(ServiceRegistry, tlsConfig))
 	myMux.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
@@ -94,66 +94,66 @@ func main() {
 		}
 		fmt.Fprintf(w, "%s", string(b))
 	})
-	base_handler = myMux
+	baseHandler = myMux
 
-	if auth_filter == "basic" || auth_filter == "digest" {
+	if authFilter == "basic" || authFilter == "digest" {
 		var sp auth.SecretProvider
 		var cp CapabilityProvider
-		if db_store_type == "file" {
-			sp, cp, err = JsonFileProvider(db_file_name, auth_filter)
+		if dbStoreType == "file" {
+			sp, cp, err = JsonFileProvider(dbFilename, authFilter)
 			if err != nil {
 				log.Fatal(err)
 			}
-		} else if db_store_type == "consul" {
-			sp, cp, err = JsonConsulProvider(db_consul_key, db_file_name, auth_filter)
+		} else if dbStoreType == "consul" {
+			sp, cp, err = JsonConsulProvider(dbConsulKey, dbFilename, authFilter)
 			if err != nil {
 				log.Fatal(err)
 			}
 		} else {
-			log.Fatal("Unknown db_store_type: %v", db_store_type)
+			log.Fatal("Unknown dbStoreType: %v", dbStoreType)
 		}
 
 		var authenticator auth.AuthenticatorInterface
-		if auth_filter == "basic" {
-			authenticator = auth.NewBasicAuthenticator(digest_realm, sp)
+		if authFilter == "basic" {
+			authenticator = auth.NewBasicAuthenticator(digestRealm, sp)
 		} else {
-			authenticator = auth.NewDigestAuthenticator(digest_realm, sp)
+			authenticator = auth.NewDigestAuthenticator(digestRealm, sp)
 		}
 
 		newMux := http.NewServeMux()
 		// Override the builtin wrap function to include our capabilities.
 		newMux.HandleFunc("/", authenticator.Wrap(func(w http.ResponseWriter, ar *auth.AuthenticatedRequest) {
-			cap := cp(ar.Username, digest_realm)
-			t := register_user(ar.Username, digest_realm, cap)
-			add_token_info(t, &ar.Request, w)
+			cap := cp(ar.Username, digestRealm)
+			t := registerUser(ar.Username, digestRealm, cap)
+			addTokenInfo(t, &ar.Request, w)
 
 			myMux.ServeHTTP(w, &ar.Request)
 		}))
-		auth_handler = newMux
-	} else if auth_filter == "saml" {
-		auth_handler = NewSamlAuthFilter(myMux, cert_pem, key_pem, external_ip+":"+strconv.Itoa(listen_port), saml_idpssourl, saml_idpssodescurl, saml_idpcert)
-	} else if auth_filter == "none" {
+		authHandler = newMux
+	} else if authFilter == "saml" {
+		authHandler = NewSamlAuthFilter(myMux, certPem, keyPem, externalIp+":"+strconv.Itoa(listenPort), samlIdpssourl, samlIdpssodescurl, samlIdpcert)
+	} else if authFilter == "none" {
 		// Do nothing
 	} else {
-		log.Fatal("Unknown auth_filter: %v", auth_filter)
+		log.Fatal("Unknown authFilter: %v", authFilter)
 	}
 
 	tokenMux := http.NewServeMux()
 	tokenMux.HandleFunc("/api/license", NewMultipleHostReverseProxy(ServiceRegistry, tlsConfig))
 	tokenMux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		// Handle CORS BS
-		add_cors_header(w, req)
+		addCorsHeader(w, req)
 		if req.Method == "OPTIONS" {
 			w.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD")
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 
-		token := has_token_info(req)
-		if token == nil && auth_handler != nil {
-			auth_handler.ServeHTTP(w, req)
+		token := hasTokenInfo(req)
+		if token == nil && authHandler != nil {
+			authHandler.ServeHTTP(w, req)
 		} else {
-			base_handler.ServeHTTP(w, req)
+			baseHandler.ServeHTTP(w, req)
 		}
 	})
 
@@ -161,5 +161,5 @@ func main() {
 	go ServiceRegistry.WatchConsul()
 
 	println("ready")
-	log.Fatal(http.ListenAndServeTLS(":"+strconv.Itoa(listen_port), cert_pem, key_pem, tokenMux))
+	log.Fatal(http.ListenAndServeTLS(":"+strconv.Itoa(listenPort), certPem, keyPem, tokenMux))
 }

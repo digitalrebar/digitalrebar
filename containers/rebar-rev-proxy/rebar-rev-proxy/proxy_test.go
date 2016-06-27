@@ -9,21 +9,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func base_url(path string) string {
+func baseUrl(path string) string {
 	return "http://127.0.0.1" + path
 }
 
-func init_test() (Registry, *tls.Config) {
+func initTest() (Registry, *tls.Config) {
 	tlsConfig := &tls.Config{}
 
 	return ServiceRegistry, tlsConfig
 }
 
 func TestRequestBadAuth(t *testing.T) {
-	handler := NewMultipleHostReverseProxy(init_test())
+	handler := NewMultipleHostReverseProxy(initTest())
 
 	recorder := httptest.NewRecorder()
-	url := base_url("/nodes/dhcp/v1/subnets")
+	url := baseUrl("/nodes/dhcp/v1/subnets")
 	req, err := http.NewRequest("GET", url, nil)
 	assert.Nil(t, err)
 

@@ -17,7 +17,7 @@ type Token struct {
 }
 
 var tokencache map[string]Token
-var random_string string
+var randomString string
 
 var src = rand.NewSource(time.Now().UnixNano())
 
@@ -48,16 +48,16 @@ func RandString(n int) string {
 
 func init() {
 	tokencache = make(map[string]Token, 0)
-	random_string = RandString(64)
+	randomString = RandString(64)
 }
 
-func create_token(username string) string {
-	hash := md5.Sum([]byte(username + random_string))
+func createToken(username string) string {
+	hash := md5.Sum([]byte(username + randomString))
 	return base64.StdEncoding.EncodeToString(hash[:])
 }
 
-func register_user(username, realm string, capabilities []string) Token {
-	t := create_token(username)
+func registerUser(username, realm string, capabilities []string) Token {
+	t := createToken(username)
 
 	tok := Token{
 		Token:        t,
@@ -70,17 +70,17 @@ func register_user(username, realm string, capabilities []string) Token {
 	return tok
 }
 
-func lookup_token(token string) (Token, bool) {
+func lookupToken(token string) (Token, bool) {
 	t, ok := tokencache[token]
 	return t, ok
 }
 
-func validate_token(token, username string) bool {
-	return token == create_token(username)
+func validateToken(token, username string) bool {
+	return token == createToken(username)
 }
 
 // Updates request to have authentication components for down strream
-func has_token_info(req *http.Request) *Token {
+func hasTokenInfo(req *http.Request) *Token {
 	ts := req.Header.Get("DR-AUTH-TOKEN")
 	tu := req.Header.Get("DR-AUTH-USER")
 
@@ -95,13 +95,13 @@ func has_token_info(req *http.Request) *Token {
 		}
 	}
 
-	t, ok := lookup_token(ts)
+	t, ok := lookupToken(ts)
 	if !ok {
 		log.Printf("For %v, Unknown token: %s\n", req, ts)
 		return nil
 	}
 
-	if !validate_token(t.Token, tu) {
+	if !validateToken(t.Token, tu) {
 		log.Printf("For %v, Invalid token: %s for %s\n", req, ts, tu)
 		return nil
 	}
@@ -115,7 +115,7 @@ func has_token_info(req *http.Request) *Token {
 	return &t
 }
 
-func add_token_info(t Token, req *http.Request, w http.ResponseWriter) {
+func addTokenInfo(t Token, req *http.Request, w http.ResponseWriter) {
 	if req != nil {
 		req.Header.Set("X-Authenticated-Username", t.Username)
 		cap := t.Capabilities

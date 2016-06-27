@@ -17,9 +17,9 @@ type SamlAuthFilter struct {
 }
 
 func NewSamlAuthFilter(mux *http.ServeMux,
-	cert_path string,
-	key_path string,
-	my_ipport string,
+	certPath string,
+	keyPath string,
+	myIpport string,
 	idpssourl string,
 	idpssodescurl string,
 	idpcert string) *SamlAuthFilter {
@@ -29,13 +29,13 @@ func NewSamlAuthFilter(mux *http.ServeMux,
 		cache:   make(map[string]*http.Request),
 
 		ServiceProviderSettings: saml.ServiceProviderSettings{
-			PublicCertPath:              cert_path,
-			PrivateKeyPath:              key_path,
+			PublicCertPath:              certPath,
+			PrivateKeyPath:              keyPath,
 			IDPSSOURL:                   idpssourl,
 			IDPSSODescriptorURL:         idpssodescurl,
 			IDPPublicCertPath:           idpcert,
 			SPSignRequest:               true,
-			AssertionConsumerServiceURL: "https://" + my_ipport + "/samlresponse",
+			AssertionConsumerServiceURL: "https://" + myIpport + "/samlresponse",
 		},
 	}
 
@@ -46,8 +46,8 @@ func NewSamlAuthFilter(mux *http.ServeMux,
 	saf.ServiceProviderSettings.Init()
 
 	log.Println("SAML Filter built")
-	log.Printf(" - %15v = %v\n", "key_path", key_path)
-	log.Printf(" - %15v = %v\n", "cert_path", cert_path)
+	log.Printf(" - %15v = %v\n", "keyPath", keyPath)
+	log.Printf(" - %15v = %v\n", "certPath", certPath)
 	log.Printf(" - %15v = %v\n", "idpssourl", idpssourl)
 	log.Printf(" - %15v = %v\n", "idpssodescurl", idpssodescurl)
 	log.Printf(" - %15v = %v\n", "idpcert", idpcert)
@@ -147,8 +147,8 @@ func (saf *SamlAuthFilter) handleSamlResponse(w http.ResponseWriter, r *http.Req
 
 	println("Authorized by SAML: " + *samlID)
 
-	t := register_user(*samlID, "SAML", make([]string, 0, 0))
-	add_token_info(t, req, w)
+	t := registerUser(*samlID, "SAML", make([]string, 0, 0))
+	addTokenInfo(t, req, w)
 
 	req.Write(os.Stdout)
 
