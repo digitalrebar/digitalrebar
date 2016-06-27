@@ -325,6 +325,8 @@ en:
       propose: "Propose"
       correct: "Correct"
       anneal: "Annealer"
+      destroy: "Destroy"
+      redeploy: "Redeploy"
     graph:
       title: "%{deployment} Graph"
   deployment_roles:
@@ -396,6 +398,8 @@ en:
       attribs: "Attributes"
       name: "Name"
       description: "Description"
+      destroy: "Destroy"
+      redeploy: "Redeploy"
       value: "Value"
       name: Full Name
       mac: MAC Address
