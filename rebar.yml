@@ -277,7 +277,12 @@ roles:
       - name: template-value-2
         map: 'template/value_2'
         description: 'This value is set by the script that implements this role'
-        
+  - name: template-scrub-node
+    description: "Indicates that the node has finished its scrub operation"
+    jig: noop
+    requires:
+      - rebar-managed-node
+
 # Attribs defined at the top level of a rebar.yml are node-specific.
 # Otherwise, they operate the same as attribs that are bound to a role.
 attribs:

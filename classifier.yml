@@ -1,0 +1,51 @@
+---
+- Name: 'Scrub nodes moved to the cleanup deployment'
+  Matchers:
+    - EventType:
+        - event: on_node_move
+    - JSON:
+        Selector: ':root .Evt .node .uuid'
+        SaveAs: 'node-uuid'
+    - JSON:
+        Selector: ':root .Evt .deployment .name'
+        SaveAs: 'deployment-name'
+    - Eq: [ '$deployment-name', 'cleanup']
+  MatchActions:
+    - Bind:
+        NodeID: '$node-uid'
+        RoleID: template-scrub-node
+    - Commit:
+        NodeID: '$node-uuid'
+    - Script: |
+        rebar nodes scrub {{.Evt.Node.UUID}}
+        rebar nodes redeploy {{.Evt.Node.UUID}}
+        
+- Name: 'Move scrubbed nodes to the idle deployment'
+  Matchers:
+    EventType:
+      - event: on_active
+        obj_class: role
+        obj_id: template-scrub-node
+  MatchActions:
+    - Script: |
+        rebar nodes move {{.Evt.Node.UUID}} to idle
+        rebar nodes scrub {{.Evt.Node.UUID}}
+
+- Name: 'Set up nodes moved to the deploy deployment'
+  Matchers:
+    - EventType:
+        - event: on_node_move
+    - JSON:
+        Selector: ':root .Evt .node .uuid'
+        SaveAs: 'node-uuid'
+    - JSON:
+        Selector: ':root .Evt .deployment .name'
+        SaveAs: 'deployment-name'
+    - Eq: [ '$deployment-name', 'deploy']
+  MatchActions:
+    - Bind:
+        NodeID: '$node-uuid'
+        RoleID: template-echo-a-value-with-a-script
+    - Commit:
+        NodeID: '$node-uuid'
+        
