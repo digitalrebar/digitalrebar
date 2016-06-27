@@ -502,6 +502,7 @@ class Node < ActiveRecord::Base
     if available?
       Event.fire(self, event: 'on_node_change')
     end
+    Event.fire(self, event: 'on_node_move') if previous_changes[:deployment_id]
     if (previous_changes[:alive] || previous_changes[:available])
       if alive && available && node_roles.runnable.count > 0
         Rails.logger.info("Node: #{name} is alive and available, kicking the annealer.")
