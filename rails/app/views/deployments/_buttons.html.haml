@@ -1,4 +1,5 @@
-= link_to "Destroy", deployment_path(deployment.id, :api_version=>2), :class => 'button', :method => :delete, data: { confirm: "Are you certain you want to destroy deployment #{deployment.name}?" }
+= link_to t(".destroy"), deployment_path(deployment.id, :api_version=>2), :class => 'button', :method => :delete, data: { confirm: "Are you certain you want to destroy deployment #{deployment.name}?" }
+= link_to t('.redeploy'), "/api/v2/deployments/#{deployment.id}/redeploy", :class => 'button', :method=>:put, :'data-remote' => true
 - case
   - when deployment.proposed?
     = link_to t('.commit'), deployment_commit_path(deployment.id, :api_version=>2), :class => 'button', :method=>:put

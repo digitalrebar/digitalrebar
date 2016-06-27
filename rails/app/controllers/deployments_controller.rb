@@ -264,24 +264,6 @@ class DeploymentsController < ApplicationController
 
   end
 
-  def graph
-    @deployment = Deployment.find_key params[:deployment_id]
-    respond_to do |format|
-      format.html {  }
-      format.json {
-        graph = []
-        @deployment.node_roles.each do |nr|
-          vertex = { "id"=> nr.id, "name"=> "#{nr.node.name}: #{nr.role.name}", "data"=> {"$color"=>"#83548B"}, "$type"=>"square", "$dim"=>15, "adjacencies" =>[] }
-          nr.children.each do |c|
-            vertex["adjacencies"] << { "nodeTo"=> c.id, "nodeFrom"=> nr.id, "data"=> { "$color" => "#557EAA" } }
-          end
-          graph << vertex
-        end
-        render :json=>graph.to_json, :content_type=>cb_content_type(:list) 
-      }
-    end
-  end
-
   def propose
     @deployment = Deployment.find_key params[:deployment_id]
     @deployment.propose
@@ -302,6 +284,18 @@ class DeploymentsController < ApplicationController
 
   def recall
     propose
+  end
+
+  # PUT
+  # calls redeploy on all nodes in deployment
+  def redeploy
+    @deployment = Deployment.find_key(params[:id] || params[:name] || params[:deployment_id])
+    if @deployment
+      Rails.logger.debug("Starting Deployment Redeploy for #{@deployment.name} with #{@deployment.nodes.count}")
+      @deployment.nodes.each { |n| n.redeploy! }
+      Rails.logger.debug("Ended Deployment Redeploy for #{@deployment.name}")
+    end
+    render api_show @deployment
   end
 
 end
