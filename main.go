@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -57,8 +58,16 @@ func init() {
 func handler(w http.ResponseWriter, req *http.Request) {
 	log.Printf("Got request from %v", req.RemoteAddr)
 	event := &Event{}
-	if err := json.NewDecoder(req.Body).Decode(event); err != nil {
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		log.Printf("Error reading body: %v", err)
+		w.WriteHeader(http.StatusExpectationFailed)
+		return
+	}
+	req.Body.Close()
+	if err := json.Unmarshal(body, event); err != nil {
 		log.Printf("Error decoding body: %v", err)
+		log.Printf("Invalid body: %s", string(body))
 		w.WriteHeader(http.StatusExpectationFailed)
 		return
 	}
