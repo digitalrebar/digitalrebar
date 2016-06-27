@@ -1,0 +1,36 @@
+hash: 477868d1a27d587d6e438ead5f9d14c48b667fef0fd8651b9f2c78e165cb50e5
+updated: 2016-06-24T14:46:25.922949855-05:00
+imports:
+- name: github.com/ant0ine/go-json-rest
+  version: 3a807d6d8d36e0f9175d6c292030fce09bcbb2db
+  subpackages:
+  - rest
+  - rest/trie
+- name: github.com/digitalrebar/gcfg
+  version: dbdfaf2512657d28a5b98b64878b195a67698a71
+  subpackages:
+  - scanner
+  - token
+  - types
+- name: github.com/hashicorp/consul
+  version: 09cfda47ed103910a8e1af76fa378a7e6acd5310
+  subpackages:
+  - api
+- name: github.com/hashicorp/go-cleanhttp
+  version: 875fb671b3ddc66f8e2f0acc33829c8cb989a38d
+- name: github.com/hashicorp/serf
+  version: 6c4672d66fc6312ddde18399262943e21175d831
+  subpackages:
+  - coordinate
+  - serf
+- name: github.com/krolaw/dhcp4
+  version: ffbbb16f447b3e05b80e8ddecbb8ada36e2ae006
+- name: github.com/willf/bitset
+  version: 2e6e8094ef4745224150c88c16191c7dceaad16f
+- name: golang.org/x/net
+  version: bc3663df0ac92f928d419e31e0d2af22e683a5a2
+  subpackages:
+  - ipv4
+  - bpf
+  - internal/iana
+devImports: []
