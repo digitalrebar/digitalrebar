@@ -4,7 +4,8 @@
   %dt= t('.name')
   %dd
     = @node.name
-    = link_to "Destroy", node_path(@node.id, :api_version=>2), :class => 'button', :method => :delete, data: { confirm: "Are you certain you want to destroy #{@node.name}?" }
+    = link_to t('.destroy'), node_path(@node.id, :api_version=>2), :class => 'button', :method => :delete, data: { confirm: "Are you certain you want to destroy #{@node.name}?" }
+    = link_to t('.redeploy'), "/api/v2/nodes/#{@node.id}/redeploy", :class => 'button', :method=>:put, :'data-remote' => true
   = dl_item(t('.description'), @node.description || (t 'not_set'))
   %dt= t '.deployment'
   %dd
