@@ -16,9 +16,9 @@ network --bootproto=dhcp --device=vmnic0
 
 reboot
 
-%post --ignorefailure
+%post --ignorefailure=true --interpreter=busybox
 
-curl -X PUT -k -u '{{.Param "rebar-machine_key"}} \
+curl -X PUT -k -u '{{.Param "rebar-machine_key"}}' \
     -H "Content-Type: application/json" \
     '{{.CommandURL}}/api/v2/nodes/{{.Machine.UUID}}' \
     --data-binary '{"bootenv": "local"}'
