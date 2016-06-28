@@ -86,5 +86,22 @@ func init() {
 			fmt.Println(prettyJSON(res))
 		},
 	})
+	deployments.AddCommand(&cobra.Command{
+		Use:   "redeploy [id]",
+		Short: "Force everything in a deployment to redeploy from scratch",
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 1 {
+				log.Fatalf("%v requires one argument\n", c.UseLine())
+			}
+			obj := &client.Deployment{}
+			if client.SetId(obj, args[0]) != nil {
+				log.Fatalf("Failed to parse ID %v for a DeploymentRole\n", args[0])
+			}
+			if err := obj.Redeploy(); err != nil {
+				log.Fatalf("Failed to redeploy %v\n%v\n", args[0], err)
+			}
+			fmt.Println(prettyJSON(obj))
+		},
+	})
 	app.AddCommand(deployments)
 }
