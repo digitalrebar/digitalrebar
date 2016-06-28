@@ -1,5 +1,11 @@
 package main
 
+/*
+Copyright (c) 2016, Rackn Inc.
+Licensed under the terms of the Digital Rebar License.
+See LICENSE.md at the top of this repository for more information.
+*/
+
 import (
 	"encoding/json"
 	"errors"
