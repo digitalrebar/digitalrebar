@@ -364,6 +364,7 @@ en:
       active: Active
       conn: Connection
       client: Client
+      flush: "Flush"
     show:
       roles: "Roles"
       activate: "Activate"
