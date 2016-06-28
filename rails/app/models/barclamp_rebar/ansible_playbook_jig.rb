@@ -72,11 +72,11 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
   def run(nr,data)
     # pull metadata from barclamp
-    role_yaml = nr.role.barclamp.metadata 
+    role_yaml = nr.role.barclamp.metadata || {}
     # override with role metadata
-    role_yaml.merge nr.role.metadata
+    role_yaml.merge! nr.role.metadata
 
-    die "Missing src path @ #{nr.role.name}" unless role_yaml['playbook_src_paths']
+    die "Missing src path @ #{nr.role.name} in #{role_yaml}" unless role_yaml['playbook_src_paths']
     die "Missing playbook path @ #{nr.role.name}" unless role_yaml['playbook_path']
     die "Missing playbook file @ #{nr.role.name}" unless role_yaml['playbook_file']
 
@@ -251,7 +251,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
   # remove playbook downloads so system gets fresh copy
   def flush()
     cache_dir = '/var/cache/rebar/ansible_playbook'
-    FileUtils.rmdir_p(cache_dir)
+    system("rm -rf '#{cache_dir}'") rescue Rails.logger.info("AnsiblePlaybookJig did NOT flush playbooks from #{cache_dir}")
     Rails.logger.info("AnsiblePlaybookJig flushed playbooks from #{cache_dir}")
   end
 
