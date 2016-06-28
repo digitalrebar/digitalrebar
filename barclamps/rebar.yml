@@ -27,6 +27,7 @@ wizard:
   version: 2
   name: "Install O/S"
   description: "Provision Operating Systems on Discovered Hardware"
+  icon: "publish"
   system_nodes: true
   create_nodes: false
   os: true
