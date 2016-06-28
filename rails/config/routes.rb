@@ -298,6 +298,7 @@ Rebar::Application.routes.draw do
             put :debug
             put :undebug
             put :redeploy
+            put :scrub
             get 'addresses'
           end
           resources :hammers do

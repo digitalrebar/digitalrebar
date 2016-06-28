@@ -369,6 +369,16 @@ class Node < ActiveRecord::Base
     end
   end
 
+  def scrub!
+    Node.transaction do
+      to_scrub = node_roles.where(["deployment_id != :depl AND deployment_id NOT IN (select parent_id from all_deployment_parents where child_id = :depl)", {depl:  self.deployment_id}]).
+                 order('cohort DESC')
+      to_scrub.each do |ts|
+        ts.destroy
+      end
+    end
+  end
+
   def redeploy!
     Rails.logger.debug("Starting Redeploy for #{name}")
     Node.transaction do
