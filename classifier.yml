@@ -5,14 +5,16 @@
         - event: on_node_move
     - JSON:
         Selector: ':root .Evt .node .uuid'
-        SaveAs: 'node-uuid'
+        PickResults:
+          node-uuid: 0
     - JSON:
         Selector: ':root .Evt .deployment .name'
-        SaveAs: 'deployment-name'
-    - Eq: [ '$deployment-name', 'cleanup']
+        PickResults:
+          deployment-name: 0
+    - Eq: [ '$deployment-name', 'cleanup' ]
   MatchActions:
     - Bind:
-        NodeID: '$node-uid'
+        NodeID: '$node-uuid'
         RoleID: template-scrub-node
     - Commit:
         NodeID: '$node-uuid'
@@ -22,7 +24,7 @@
         
 - Name: 'Move scrubbed nodes to the idle deployment'
   Matchers:
-    EventType:
+    - EventType:
       - event: on_active
         obj_class: role
         obj_id: template-scrub-node
@@ -37,11 +39,13 @@
         - event: on_node_move
     - JSON:
         Selector: ':root .Evt .node .uuid'
-        SaveAs: 'node-uuid'
+        PickResults:
+          node-uuid: 0
     - JSON:
         Selector: ':root .Evt .deployment .name'
-        SaveAs: 'deployment-name'
-    - Eq: [ '$deployment-name', 'deploy']
+        PickResults:
+          deployment-name: 0
+    - Eq: [ '$deployment-name', 'deploy' ]
   MatchActions:
     - Bind:
         NodeID: '$node-uuid'
