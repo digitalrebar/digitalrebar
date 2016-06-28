@@ -30,7 +30,7 @@ class BarclampRebar::Attrib::ProviderType < Attrib
       # no data, return
       return {} unless p
       # make hash with info
-      o = { type: p.class.downcase.sub("provider",""), name: p.name }
+      o = { type: p.class.to_s.downcase.sub("provider",""), name: p.name }
       o[:auth_details] = p.auth_details
       return o
 
