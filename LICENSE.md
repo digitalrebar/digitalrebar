@@ -1,4 +1,6 @@
-OCBTemplate for OpenCrowbar is made available under Apache 2 license.
+# DIGITAL REBAR LICENSE (APL2)
+
+This Exentension to Digital Rebar is made available by RackN under the Apache 2 license.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -10,10 +12,4 @@ OCBTemplate for OpenCrowbar is made available under Apache 2 license.
     See the License for the specific language governing permissions and
     limitations under the License.
 
-COMPONENT LICENSES:
-
-Please see /doc/licenses for component license information
-
-ADDITIONAL COMPONENTS:
-
-Extensions to the OpenCrowbar framework may be offered under different licenses.  These licenses should be documented under the components relevant "/doc/licenses" directory.
+Copyright (c) 2016, Rackn Inc.
