@@ -20,6 +20,8 @@ require 'yaml'
 # Ansible Playbook Jig
 class BarclampRebar::AnsiblePlaybookJig < Jig
 
+  CACHE_DIR = '/var/cache/rebar/ansible_playbook'
+
   def exec_cmd(cmd, nr = nil)
     Rails.logger.debug("Local Running #{cmd}")
     out,err = '',''
@@ -90,11 +92,10 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     inventory_map = {} unless inventory_map
 
     # Load/Update cache
-    cache_dir = '/var/cache/rebar/ansible_playbook'
-    FileUtils.mkdir_p(cache_dir)
-    role_cache_dir = "#{cache_dir}/#{nr.role.name}"
+    FileUtils.mkdir_p(CACHE_DIR)
+    role_cache_dir = "#{CACHE_DIR}/#{nr.role.name}"
 
-    File.open("#{cache_dir}/lock", File::RDWR|File::CREAT, 0644) do |f1|
+    File.open("#{CACHE_DIR}/lock", File::RDWR|File::CREAT, 0644) do |f1|
       f1.flock(File::LOCK_EX)
 
       # Put sort in place
@@ -250,9 +251,8 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
   # remove playbook downloads so system gets fresh copy
   def flush()
-    cache_dir = '/var/cache/rebar/ansible_playbook'
-    system("rm -rf '#{cache_dir}'") rescue Rails.logger.info("AnsiblePlaybookJig did NOT flush playbooks from #{cache_dir}")
-    Rails.logger.info("AnsiblePlaybookJig flushed playbooks from #{cache_dir}")
+    system("rm -rf '#{CACHE_DIR}'") rescue Rails.logger.info("AnsiblePlaybookJig did NOT flush playbooks from #{CACHE_DIR}")
+    Rails.logger.info("AnsiblePlaybookJig flushed playbooks from #{CACHE_DIR}")
   end
 
 private
