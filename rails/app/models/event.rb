@@ -27,7 +27,7 @@ class Event
       es = ms.event_sink
       Rails.logger.info("Event: #{@params} matched #{ms.selector}")
       Rails.logger.info("Event: calling #{es.endpoint} for #{ms.selector}")
-      selector_params = {params: @params, target_class: obj.class.name, target: obj.to_json}
+      selector_params = {params: @params, target_class: obj.class.name, target: obj.as_json}
       res << es.run(selector_params,obj, ms.selector)
     end
     return res

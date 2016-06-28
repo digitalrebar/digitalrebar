@@ -179,6 +179,10 @@ class NodesController < ApplicationController
     node_action :redeploy!
   end
 
+  def scrub
+    node_action :scrub!
+  end
+
   def propose
     node_action :propose!
   end

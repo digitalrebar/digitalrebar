@@ -369,6 +369,16 @@ class Node < ActiveRecord::Base
     end
   end
 
+  def scrub!
+    Node.transaction do
+      to_scrub = node_roles.where(["deployment_id != :depl AND deployment_id NOT IN (select parent_id from all_deployment_parents where child_id = :depl)", {depl:  self.deployment_id}]).
+                 order('cohort DESC')
+      to_scrub.each do |ts|
+        ts.destroy
+      end
+    end
+  end
+
   def redeploy!
     Rails.logger.debug("Starting Redeploy for #{name}")
     Node.transaction do
@@ -502,6 +512,7 @@ class Node < ActiveRecord::Base
     if available?
       Event.fire(self, event: 'on_node_change')
     end
+    Event.fire(self, event: 'on_node_move') if previous_changes[:deployment_id]
     if (previous_changes[:alive] || previous_changes[:available])
       if alive && available && node_roles.runnable.count > 0
         Rails.logger.info("Node: #{name} is alive and available, kicking the annealer.")
