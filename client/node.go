@@ -66,6 +66,18 @@ func (o *Node) Redeploy() error {
 	return unmarshal(uri, buf, o)
 }
 
+// Scrub tries to delete any noderoles on a node that are not in the
+// deployment the node is currently a member of or any of that
+// deployment's parents.
+func (o *Node) Scrub() error {
+	uri := urlFor(o, "scrub")
+	buf, err := session.request("PUT", uri, nil)
+	if err != nil {
+		return err
+	}
+	return unmarshal(uri, buf, o)
+}
+
 // Satisfy salient interfaces
 func (o *Node) attribs()            {}
 func (o *Node) deploymentRoles()    {}

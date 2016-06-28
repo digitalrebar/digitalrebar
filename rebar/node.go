@@ -205,5 +205,22 @@ func init() {
 			fmt.Println(prettyJSON(obj))
 		},
 	})
+	nodes.AddCommand(&cobra.Command{
+		Use:   "scrub [id]",
+		Short: "Scrub all extraneous noderoles from a node",
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 1 {
+				log.Fatalf("%v requires one argument\n", c.UseLine())
+			}
+			obj := &client.Node{}
+			if client.SetId(obj, args[0]) != nil {
+				log.Fatalf("Failed to parse ID %v for a Node\n", args[0])
+			}
+			if err := obj.Scrub(); err != nil {
+				log.Fatalf("Failed to scrub %v\n%v\n", args[0], err)
+			}
+			fmt.Println(prettyJSON(obj))
+		},
+	})
 	app.AddCommand(nodes)
 }

@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	version            = "1.2.1"
+	version            = "1.2.2"
 	debug              = false
 	endpoint           = "https://127.0.0.1:3000"
 	username, password string
