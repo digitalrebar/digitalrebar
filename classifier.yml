@@ -1,4 +1,6 @@
 ---
+# For an explanation of these rules, see
+# https://github.com/rackn/classifier/blob/master/README.md
 - Name: 'Scrub nodes moved to the cleanup deployment'
   Matchers:
     - EventType:
