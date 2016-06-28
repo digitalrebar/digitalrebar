@@ -20,6 +20,8 @@ require 'yaml'
 # Ansible Playbook Jig
 class BarclampRebar::AnsiblePlaybookJig < Jig
 
+  CACHE_DIR = '/var/cache/rebar/ansible_playbook'
+
   def exec_cmd(cmd, nr = nil)
     Rails.logger.debug("Local Running #{cmd}")
     out,err = '',''
@@ -71,9 +73,12 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
   end
 
   def run(nr,data)
-    role_yaml = nr.role.metadata
+    # pull metadata from barclamp
+    role_yaml = nr.role.barclamp.metadata || {}
+    # override with role metadata
+    role_yaml.merge! nr.role.metadata
 
-    die "Missing src path @ #{nr.role.name}" unless role_yaml['playbook_src_paths']
+    die "Missing src path @ #{nr.role.name} in #{role_yaml}" unless role_yaml['playbook_src_paths']
     die "Missing playbook path @ #{nr.role.name}" unless role_yaml['playbook_path']
     die "Missing playbook file @ #{nr.role.name}" unless role_yaml['playbook_file']
 
@@ -87,11 +92,10 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     inventory_map = {} unless inventory_map
 
     # Load/Update cache
-    cache_dir = '/var/cache/rebar/ansible_playbook'
-    FileUtils.mkdir_p(cache_dir)
-    role_cache_dir = "#{cache_dir}/#{nr.role.name}"
+    FileUtils.mkdir_p(CACHE_DIR)
+    role_cache_dir = "#{CACHE_DIR}/#{nr.role.name}"
 
-    File.open("#{cache_dir}/lock", File::RDWR|File::CREAT, 0644) do |f1|
+    File.open("#{CACHE_DIR}/lock", File::RDWR|File::CREAT, 0644) do |f1|
       f1.flock(File::LOCK_EX)
 
       # Put sort in place
@@ -243,6 +247,12 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
   def delete_node(node)
     # Nothing to do, we build the inventory/all_vars files on the fly
     Rails.logger.info("AnsiblePlaybookJig Deleting node: #{node.name}")
+  end
+
+  # remove playbook downloads so system gets fresh copy
+  def flush()
+    system("rm -rf '#{CACHE_DIR}'") rescue Rails.logger.info("AnsiblePlaybookJig did NOT flush playbooks from #{CACHE_DIR}")
+    Rails.logger.info("AnsiblePlaybookJig flushed playbooks from #{CACHE_DIR}")
   end
 
 private

@@ -295,8 +295,12 @@ class Barclamp < ActiveRecord::Base
     end
   end
 
+  def metadata
+    cfg_data["metadata"] || {}
+  end
+
   def wizard
-    cfg_data["wizard"]
+    cfg_data["wizard"] || {}
   end
 
   def api_version

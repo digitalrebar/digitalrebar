@@ -6,6 +6,7 @@
       %th= t '.name'
       %th= t '.active'
       %th= t '.description'
+      %th
   %tbody
     - @jigs.each do |j|
       %tr.node{ :class => cycle(:odd, :even) }
@@ -16,3 +17,5 @@
           - else
             .led{:id => j.name, :class => 'proposed', :style => "float:left", :title=>t('inactive')}
         %td= j.description
+        %td= link_to t('.flush'), "/api/v2/jigs/#{j.id}/flush", :class => 'button', :method=>:put, :'data-remote' => true
+

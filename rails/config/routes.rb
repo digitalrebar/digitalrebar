@@ -280,6 +280,7 @@ Rebar::Application.routes.draw do
               post 'match'
             end
             put :activate
+            put :flush
           end
           resources :nodes do
             collection do
