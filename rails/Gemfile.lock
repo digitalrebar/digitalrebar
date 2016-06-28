@@ -16,6 +16,12 @@ PATH
     barclamp_raid (0.0.1)
       rails
 
+PATH
+  remote: /opt/digitalrebar/kubernetes/rebar_engine/barclamp_kubernetes
+  specs:
+    barclamp_kubernetes (0.0.1)
+      rails
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -475,6 +481,7 @@ DEPENDENCIES
   active_scaffold
   barclamp_bios!
   barclamp_ipmi!
+  barclamp_kubernetes!
   barclamp_raid!
   berkshelf
   bunny
@@ -518,4 +525,4 @@ DEPENDENCIES
   xml-simple
 
 BUNDLED WITH
-   1.12.5
+   1.11.2
