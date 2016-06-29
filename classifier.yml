@@ -8,6 +8,13 @@
 # It acts as an example of how complex automated workflows
 # cam be created using a combination of classifier rules and
 # workload-specific roles.
+#
+### PLEASE NOTE ###
+#
+# The layout of this file may change as the classifier matures.
+# Right now the classifier is in working proof of concept stage,
+# and there are several useability and interoperability improvements
+# on the table.
 - Name: 'Scrub nodes moved to the template-cleanup deployment'
   Matchers:
     - EventType:
