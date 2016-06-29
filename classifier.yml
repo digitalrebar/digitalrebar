@@ -1,7 +1,14 @@
 ---
 # For an explanation of these rules, see
 # https://github.com/rackn/classifier/blob/master/README.md
-- Name: 'Scrub nodes moved to the cleanup deployment'
+#
+# This ruleset will cycle any nodes placed in template-idle
+# through template-deploy to template-cleanup and back to
+# template-idle, where the cycling will start again.
+# It acts as an example of how complex automated workflows
+# cam be created using a combination of classifier rules and
+# workload-specific roles.
+- Name: 'Scrub nodes moved to the template-cleanup deployment'
   Matchers:
     - EventType:
         - event: on_node_move
@@ -13,7 +20,7 @@
         Selector: ':root .Evt .deployment .name'
         PickResults:
           deployment-name: 0
-    - Eq: [ '$deployment-name', 'cleanup' ]
+    - Eq: [ '$deployment-name', 'template-cleanup' ]
   MatchActions:
     - Bind:
         NodeID: '$node-uuid'
@@ -24,7 +31,7 @@
         rebar nodes scrub {{.Evt.Node.UUID}}
         rebar nodes redeploy {{.Evt.Node.UUID}}
         
-- Name: 'Move scrubbed nodes to the idle deployment'
+- Name: 'Move scrubbed nodes to the template-idle deployment'
   Matchers:
     - EventType:
       - event: on_active
@@ -32,10 +39,10 @@
         obj_id: template-scrub-node
   MatchActions:
     - Script: |
-        rebar nodes move {{.Evt.Node.UUID}} to idle
+        rebar nodes move {{.Evt.Node.UUID}} to template-idle
         rebar nodes scrub {{.Evt.Node.UUID}}
 
-- Name: 'Set up nodes moved to the deploy deployment'
+- Name: 'Set up nodes moved to the template-deploy deployment'
   Matchers:
     - EventType:
         - event: on_node_move
@@ -47,11 +54,35 @@
         Selector: ':root .Evt .deployment .name'
         PickResults:
           deployment-name: 0
-    - Eq: [ '$deployment-name', 'deploy' ]
+    - Eq: [ '$deployment-name', 'template-deploy' ]
   MatchActions:
     - Bind:
         NodeID: '$node-uuid'
         RoleID: template-echo-a-value-with-a-script
     - Commit:
         NodeID: '$node-uuid'
-        
+
+- Name: 'Clean up deployed nodes'
+  Matchers:
+    - EventType:
+        - event: on_active
+          obj_class: role
+          obj_id: template-echo-a-value-with-a-script
+  MatchActions:
+    - Script: |
+        rebar nodes move {{.Evt.Node.UUID}} to template-cleanup
+
+- Name: 'Deploy idle nodes'
+  Matchers:
+    - EventType:
+        - event: on_active
+          obj_class: role
+          obj_id: rebar-managed-node
+    - JSON:
+        Selector: ':root .Evt .deployment .name'
+        PickResults:
+          deployment-name: 0
+    - Eq: [ '$deployment-name', 'template-idle' ]
+  MatchActions:
+    - Script: |
+        rebar nodes move {{.Evt.Node.UUID}} to template-deploy
