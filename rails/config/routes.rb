@@ -320,6 +320,8 @@ Rebar::Application.routes.draw do
               post "lock"
               delete "lock", to: :unlock
               put "reset_password"
+              get "digest", to: :digest_password
+              get "capabilities"
             end
           end
           match 'digest' => "users#digest", as: :digest_url, via: [:get, :post, :head, :delete]

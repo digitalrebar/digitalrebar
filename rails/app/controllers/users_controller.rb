@@ -125,6 +125,17 @@ class UsersController < ApplicationController
     render api_show @user
   end
 
+  def digest_password
+      @user = User.find_key(params[:id])
+      render api_show @user.encrypted_password
+  end
+
+  def capabilities
+      @user = User.find_key(params[:id])
+      data = { "system" => "ADMIN" }
+      render api_show data
+  end
+
   add_help(:show,[:id],[:get])
   def show
     @user = User.find_key params[:id]
