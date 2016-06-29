@@ -140,7 +140,6 @@ func (m *JwtManager) AddTokenInfo(t *jwt.Token, w http.ResponseWriter, req *http
 		if !ok {
 			return jwt.NewValidationError("Missing id in claims", jwt.ValidationErrorId)
 		}
-		log.Printf("GREG: Setting user and cap header to: %s : ADMIN\n", claims.Id)
 		req.Header.Set("X-Authenticated-Username", claims.Id)
 		req.Header.Set("X-Authenticated-Capability", "ADMIN")
 	}

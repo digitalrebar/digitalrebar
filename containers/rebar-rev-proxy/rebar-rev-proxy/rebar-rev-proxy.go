@@ -12,7 +12,7 @@ import (
 	"strconv"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/kmanley/go-http-auth"
+	"github.com/hashicorp/consul/api"
 )
 
 var cacertPem, keyPem, certPem string
@@ -34,10 +34,7 @@ func init() {
 	flag.StringVar(&certPem, "certPem", "/etc/rev-proxy/server.crt", "Path to cert file")
 	flag.StringVar(&cacertPem, "cacertPem", "/etc/rev-proxy/ca.pem", "Path to cert file")
 	flag.IntVar(&listenPort, "listenPort", 443, "Port to listen on")
-	flag.StringVar(&authFilter, "authFilter", "digest", "Auth Filter to use. Either 'saml', 'basic', 'digest', or 'none'")
-	flag.StringVar(&dbStoreType, "dbStoreType", "file", "Type of storage area to use: consul or file")
-	flag.StringVar(&dbFilename, "dbFilename", "/etc/rev-proxy/db-store.json", "Database storage or initialization file")
-	flag.StringVar(&dbConsulKey, "dbConsulKey", "digitalrebar/private/rebar-rev/db", "Key path for consul db")
+	flag.StringVar(&authFilter, "authFilter", "digest", "Auth Filter to use. Either 'saml', 'digest', or 'none'")
 	flag.StringVar(&digestRealm, "digestRealm", "Rebar", "Default realm for authentication")
 
 	flag.StringVar(&samlIdpssourl, "samlIdpssourl", "https://dev-888522.oktapreview.com/app/rackndev888522_rackn_1/exk5ui8zc112R5ioP0h7/sso/saml", "Default Identity Provider SSO URL")
@@ -63,12 +60,14 @@ func main() {
 	// Load client cert
 	cert, err := tls.LoadX509KeyPair(certPem, keyPem)
 	if err != nil {
+		log.Printf("Failed to read client certs\n")
 		log.Fatal(err)
 	}
 
 	// Load CA cert
 	caCert, err := ioutil.ReadFile(cacertPem)
 	if err != nil {
+		log.Printf("Failed to read cacert\n")
 		log.Fatal(err)
 	}
 
@@ -82,8 +81,11 @@ func main() {
 	}
 	tlsConfig.BuildNameToCertificate()
 
-	randString := RandString(32)
-	// GREG: Create/Load signing key from consul.
+	randString, err := getTokenSecretKey()
+	if err != nil {
+		log.Printf("Failed to find/generate secret key\n")
+		log.Fatal(err)
+	}
 	tokenManager := NewJwtManager([]byte(randString),
 		JwtConfig{Method: jwt.SigningMethodHS256, TTL: 3600 * 24 * 3})
 
@@ -103,28 +105,8 @@ func main() {
 
 	// Setup Authfilter - consumes serviceMux
 	var authHandler http.Handler
-	if authFilter == "basic" || authFilter == "digest" {
-		var sp auth.SecretProvider
-		var cp CapabilityProvider
-		if dbStoreType == "file" {
-			sp, cp, err = JsonFileProvider(dbFilename, authFilter)
-			if err != nil {
-				log.Fatal(err)
-			}
-		} else if dbStoreType == "consul" {
-			sp, cp, err = JsonConsulProvider(dbConsulKey, dbFilename, authFilter)
-			if err != nil {
-				log.Fatal(err)
-			}
-		} else {
-			log.Fatal("Unknown dbStoreType: %v", dbStoreType)
-		}
-
-		if authFilter == "basic" {
-			authHandler = NewBasicAuthFilter(serviceMux, tokenManager, digestRealm, sp, cp)
-		} else {
-			authHandler = NewDigestAuthFilter(serviceMux, tokenManager, digestRealm, sp, cp)
-		}
+	if authFilter == "digest" {
+		authHandler = NewDigestAuthFilter(serviceMux, tokenManager, digestRealm, tlsConfig)
 	} else if authFilter == "saml" {
 		authHandler = NewSamlAuthFilter(serviceMux, tokenManager,
 			certPem, keyPem,
@@ -165,4 +147,41 @@ func main() {
 
 	println("ready")
 	log.Fatal(http.ListenAndServeTLS(":"+strconv.Itoa(listenPort), certPem, keyPem, tokenMux))
+}
+
+var tokenSecretKey string = "digitalrebar/private/revproxy/token/secret"
+
+func getTokenSecretKey() (string, error) {
+	client, err := api.NewClient(api.DefaultConfig())
+	if err != nil {
+		log.Printf("Failed to create consul client\n")
+		return "", err
+	}
+	if _, err := client.Agent().Self(); err != nil {
+		log.Printf("Failed to get consul agent\n")
+		return "", err
+	}
+
+	store := client.KV()
+	pair, _, err := store.Get(tokenSecretKey, nil)
+	if err != nil {
+		log.Printf("Failed to find: %v\n", tokenSecretKey)
+		return "", err
+	}
+	if pair == nil {
+		randString := RandString(32)
+		_, err = store.Put(&api.KVPair{Key: tokenSecretKey, Value: []byte(randString)}, nil)
+		if err != nil {
+			log.Printf("Failed to put: %v\n", tokenSecretKey)
+			return "", err
+		}
+	}
+
+	pair, _, err = store.Get(tokenSecretKey, nil)
+	if err != nil {
+		log.Printf("Failed to re-get: %v\n", tokenSecretKey)
+		return "", err
+	}
+
+	return string(pair.Value), nil
 }

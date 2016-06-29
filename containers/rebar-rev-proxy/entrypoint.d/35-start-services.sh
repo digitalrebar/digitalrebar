@@ -15,18 +15,6 @@ if [[ $REVPROXY_REALM ]] ; then
 	REALM="-digestRealm $REVPROXY_REALM"
 fi
 
-if [[ $REVPROXY_DB_STORE_TYPE ]] ; then
-	DBSTORETYPE="-dbStoreType $REVPROXY_DB_STORE_TYPE"
-fi
-
-if [[ $REVPROXY_DB_PATH ]] ; then
-	DBPATH="-dbFilename $REVPROXY_DB_PATH"
-fi
-
-if [[ $REVPROXY_CONSUL_KEY ]] ; then
-	CONSULKEY="-dbConsulKey $REVPROXY_CONSUL_KEY"
-fi
-
 if [[ $REVPROXY_SAML_IDP_CERT_FILE ]] ; then
 	SAMLCERT="-samlIdpcert $REVPROXY_SAML_IDP_CERT_FILE"
 fi
@@ -55,12 +43,9 @@ run_forever /usr/local/bin/rebar-rev-proxy --externalIp ${EXTERNAL_IP%%/*} \
 	$LISTENPORT \
 	$AUTHFILTER \
 	$REALM \
-	$DBSTORETYPE \
-	$DBPATH \
 	$SAMLCERT \
 	$SAMLIDPSSOURL \
-	$SAMLIDPSSODESCURL \
-	$CONSULKEY &
+	$SAMLIDPSSODESCURL &
 
 make_service "rebar-rev-proxy" $REVPROXY_PORT '{"script": "pidof rebar-rev-proxy", "interval": "10s"}'
 
