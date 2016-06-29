@@ -12,7 +12,7 @@ RUN apt-get -y update && \
     apt-get -y install ruby2.2 ruby2.2-dev make cmake curl build-essential jq libxml2-dev libcurl4-openssl-dev libssl-dev python2.7-dev python-pip && \
     gem install bundler && \
     mkdir -p /var/cache/cloudwrap/gems
-RUN pip install python-openstackclient && \
+RUN pip install pytz && \
 	pip install positional && \
 	pip install wrapt && \
 	pip install prettytable && \
@@ -23,7 +23,8 @@ RUN pip install python-openstackclient && \
 	pip install simplejson && \
 	pip install unicodecsv && \
 	pip install netifaces && \
-	pip install warlock
+	pip install warlock && \
+        pip install python-openstackclient
 
 COPY cloudwrap /opt/cloudwrap
 
