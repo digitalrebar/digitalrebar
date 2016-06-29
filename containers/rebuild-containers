@@ -31,6 +31,7 @@ declare -A BUILT_CONTAINERS
 declare -A UNBUILT_CONTAINERS
 declare -A UNKNOWN_CONTAINERS
 declare -A PARENT_CONTAINER_REBUILT
+declare -A CONTAINERS_TO_SKIP
 
 declare -A TREES
 # Trees to run from
@@ -149,6 +150,7 @@ container_is_up_to_date() (
 # Build a container if needed.
 build_container() {
     # $1 = container to build
+    [[ ${CONTAINERS_TO_SKIP[$1]} ]] && return
     local repo_dir="$CONTAINER_DIR/${CONTAINERS[$1]}"
     if container_is_up_to_date "$1"; then
         echo "Container $1 does not need rebuilding"
@@ -278,6 +280,9 @@ while (( $# != 0)); do
         --push)
             UPDATE_GIT=true
             PUSH_CONTAINERS=true;;
+        --skip)
+            CONTAINERS_TO_SKIP["$2"]=true
+            shift;;
         --update-git)
             UPDATE_GIT=true;;
         --force)
