@@ -1,23 +1,9 @@
 package main
 
 import (
-	"crypto/md5"
-	"encoding/base64"
-	"log"
 	"math/rand"
-	"net/http"
 	"time"
 )
-
-type Token struct {
-	Token        string
-	Username     string
-	Realm        string
-	Capabilities []string
-}
-
-var tokencache map[string]Token
-var randomString string
 
 var src = rand.NewSource(time.Now().UnixNano())
 
@@ -46,41 +32,9 @@ func RandString(n int) string {
 	return string(b)
 }
 
-func init() {
-	tokencache = make(map[string]Token, 0)
-	randomString = RandString(64)
-}
-
-func createToken(username string) string {
-	hash := md5.Sum([]byte(username + randomString))
-	return base64.StdEncoding.EncodeToString(hash[:])
-}
-
-func registerUser(username, realm string, capabilities []string) Token {
-	t := createToken(username)
-
-	tok := Token{
-		Token:        t,
-		Username:     username,
-		Realm:        realm,
-		Capabilities: capabilities,
-	}
-
-	tokencache[t] = tok
-	return tok
-}
-
-func lookupToken(token string) (Token, bool) {
-	t, ok := tokencache[token]
-	return t, ok
-}
-
-func validateToken(token, username string) bool {
-	return token == createToken(username)
-}
-
 // Updates request to have authentication components for down strream
-func hasTokenInfo(req *http.Request) *Token {
+/*
+func jjjhasTokenInfo(req *http.Request) *Token {
 	ts := req.Header.Get("DR-AUTH-TOKEN")
 	tu := req.Header.Get("DR-AUTH-USER")
 
@@ -114,20 +68,4 @@ func hasTokenInfo(req *http.Request) *Token {
 
 	return &t
 }
-
-func addTokenInfo(t Token, req *http.Request, w http.ResponseWriter) {
-	if req != nil {
-		req.Header.Set("X-Authenticated-Username", t.Username)
-		cap := t.Capabilities
-		if len(cap) > 0 && cap[0] != "None" {
-			req.Header.Set("X-Authenticated-Capability", cap[0])
-		}
-	}
-
-	cookie := http.Cookie{Name: "DrAuthToken", Value: t.Token, Path: "/"}
-	http.SetCookie(w, &cookie)
-	cookie = http.Cookie{Name: "DrAuthUser", Value: t.Username, Path: "/"}
-	http.SetCookie(w, &cookie)
-	w.Header().Set("DR-AUTH-TOKEN", t.Token)
-	w.Header().Set("DR-AUTH-USER", t.Username)
-}
+*/

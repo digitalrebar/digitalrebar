@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/kmanley/go-http-auth"
 )
 
@@ -50,9 +51,9 @@ func addCorsHeader(w http.ResponseWriter, req *http.Request) {
 	origin := req.Header.Get("Origin")
 	if origin != "" {
 		w.Header().Set("Access-Control-Allow-Origin", origin)
-		w.Header().Set("Access-Control-Allow-Headers", "DR-AUTH-TOKEN,DR-AUTH-USER,X-Requested-With,Content-Type,Cookie,Authorization,WWW-Authenticate") // If-Modified-Since,If-None-Match,
+		w.Header().Set("Access-Control-Allow-Headers", "DR-AUTH-TOKEN,X-Requested-With,Content-Type,Cookie,Authorization,WWW-Authenticate") // If-Modified-Since,If-None-Match,
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Expose-Headers", "DR-AUTH-TOKEN,DR-AUTH-USER,WWW-Authenticate, Set-Cookie, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Allow-Origin")
+		w.Header().Set("Access-Control-Expose-Headers", "DR-AUTH-TOKEN,WWW-Authenticate, Set-Cookie, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Allow-Origin")
 	}
 }
 
@@ -81,12 +82,15 @@ func main() {
 	}
 	tlsConfig.BuildNameToCertificate()
 
+	randString := RandString(32)
+	// GREG: Create/Load signing key from consul.
+	tokenManager := NewJwtManager([]byte(randString),
+		JwtConfig{Method: jwt.SigningMethodHS256, TTL: 3600 * 24 * 3})
+
 	// Service multiplexer
-	var authHandler http.Handler
-	var baseHandler http.Handler
-	myMux := http.NewServeMux()
-	myMux.HandleFunc("/", NewMultipleHostReverseProxy(ServiceRegistry, tlsConfig))
-	myMux.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
+	serviceMux := http.NewServeMux()
+	serviceMux.HandleFunc("/", NewMultipleHostReverseProxy(ServiceRegistry, tlsConfig))
+	serviceMux.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
 		b, err := json.Marshal(ServiceRegistry)
 		if err != nil {
 			fmt.Fprintf(w, "%s\n", err)
@@ -94,8 +98,11 @@ func main() {
 		}
 		fmt.Fprintf(w, "%s", string(b))
 	})
-	baseHandler = myMux
 
+	// GREG: Add user info lookup filter.
+
+	// Setup Authfilter - consumes serviceMux
+	var authHandler http.Handler
 	if authFilter == "basic" || authFilter == "digest" {
 		var sp auth.SecretProvider
 		var cp CapabilityProvider
@@ -113,31 +120,23 @@ func main() {
 			log.Fatal("Unknown dbStoreType: %v", dbStoreType)
 		}
 
-		var authenticator auth.AuthenticatorInterface
 		if authFilter == "basic" {
-			authenticator = auth.NewBasicAuthenticator(digestRealm, sp)
+			authHandler = NewBasicAuthFilter(serviceMux, tokenManager, digestRealm, sp, cp)
 		} else {
-			authenticator = auth.NewDigestAuthenticator(digestRealm, sp)
+			authHandler = NewDigestAuthFilter(serviceMux, tokenManager, digestRealm, sp, cp)
 		}
-
-		newMux := http.NewServeMux()
-		// Override the builtin wrap function to include our capabilities.
-		newMux.HandleFunc("/", authenticator.Wrap(func(w http.ResponseWriter, ar *auth.AuthenticatedRequest) {
-			cap := cp(ar.Username, digestRealm)
-			t := registerUser(ar.Username, digestRealm, cap)
-			addTokenInfo(t, &ar.Request, w)
-
-			myMux.ServeHTTP(w, &ar.Request)
-		}))
-		authHandler = newMux
 	} else if authFilter == "saml" {
-		authHandler = NewSamlAuthFilter(myMux, certPem, keyPem, externalIp+":"+strconv.Itoa(listenPort), samlIdpssourl, samlIdpssodescurl, samlIdpcert)
+		authHandler = NewSamlAuthFilter(serviceMux, tokenManager,
+			certPem, keyPem,
+			externalIp+":"+strconv.Itoa(listenPort),
+			samlIdpssourl, samlIdpssodescurl, samlIdpcert)
 	} else if authFilter == "none" {
-		// Do nothing
+		authHandler = serviceMux
 	} else {
 		log.Fatal("Unknown authFilter: %v", authFilter)
 	}
 
+	// Make token test filter
 	tokenMux := http.NewServeMux()
 	tokenMux.HandleFunc("/api/license", NewMultipleHostReverseProxy(ServiceRegistry, tlsConfig))
 	tokenMux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
@@ -149,11 +148,15 @@ func main() {
 			return
 		}
 
-		token := hasTokenInfo(req)
-		if token == nil && authHandler != nil {
+		token, err := tokenManager.Get(req)
+		if err != nil {
 			authHandler.ServeHTTP(w, req)
 		} else {
-			baseHandler.ServeHTTP(w, req)
+			err = tokenManager.AddTokenInfo(token, w, req)
+			if err != nil {
+				log.Printf("ati failed: %v\n", err)
+			}
+			serviceMux.ServeHTTP(w, req)
 		}
 	})
 

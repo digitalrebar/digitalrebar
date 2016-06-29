@@ -14,9 +14,10 @@ type SamlAuthFilter struct {
 	saml.ServiceProviderSettings
 	cache   map[string]*http.Request
 	nextMux *http.ServeMux
+	tm      *JwtManager
 }
 
-func NewSamlAuthFilter(mux *http.ServeMux,
+func NewSamlAuthFilter(mux *http.ServeMux, tm *JwtManager,
 	certPath string,
 	keyPath string,
 	myIpport string,
@@ -26,6 +27,7 @@ func NewSamlAuthFilter(mux *http.ServeMux,
 
 	saf := &SamlAuthFilter{
 		nextMux: mux,
+		tm:      tm,
 		cache:   make(map[string]*http.Request),
 
 		ServiceProviderSettings: saml.ServiceProviderSettings{
@@ -147,8 +149,11 @@ func (saf *SamlAuthFilter) handleSamlResponse(w http.ResponseWriter, r *http.Req
 
 	println("Authorized by SAML: " + *samlID)
 
-	t := registerUser(*samlID, "SAML", make([]string, 0, 0))
-	addTokenInfo(t, req, w)
+	t := saf.tm.New(*samlID)
+	err = saf.tm.AddTokenInfo(t, w, req)
+	if err != nil {
+		log.Printf("Add Token info had issues: %v\n", err)
+	}
 
 	req.Write(os.Stdout)
 
