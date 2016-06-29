@@ -133,7 +133,7 @@ class UsersController < ApplicationController
   def capabilities
       @user = User.find_key(params[:id])
       data = { "system" => "ADMIN" }
-      render api_show data
+      render json: data
   end
 
   add_help(:show,[:id],[:get])
