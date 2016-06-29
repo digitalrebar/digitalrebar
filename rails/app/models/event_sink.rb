@@ -56,6 +56,7 @@ class EventSink < ActiveRecord::Base
       data['selector'] = selector
       case
       when obj.is_a?(NodeRole)
+        data['deployment'] = obj.node.deployment
         data['node'] = obj.node
         data['role'] = obj.role
         data['node_role'] = obj
