@@ -101,19 +101,26 @@ func main() {
 		fmt.Fprintf(w, "%s", string(b))
 	})
 
-	// GREG: Add user info lookup filter.
+	// Setup capfilter - consumes serviceMux
+	capMux := http.NewServeMux()
+	capMux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+		user := req.Header.Get("X-Authenticated-Username")
+		caps := getUserString(tlsConfig, user, "capabilities")
+		req.Header.Set("X-Authenticated-Capability", caps)
+		serviceMux.ServeHTTP(w, req)
+	})
 
-	// Setup Authfilter - consumes serviceMux
+	// Setup Authfilter - consumes capMux
 	var authHandler http.Handler
 	if authFilter == "digest" {
-		authHandler = NewDigestAuthFilter(serviceMux, tokenManager, digestRealm, tlsConfig)
+		authHandler = NewDigestAuthFilter(capMux, tokenManager, digestRealm, tlsConfig)
 	} else if authFilter == "saml" {
-		authHandler = NewSamlAuthFilter(serviceMux, tokenManager,
+		authHandler = NewSamlAuthFilter(capMux, tokenManager,
 			certPem, keyPem,
 			externalIp+":"+strconv.Itoa(listenPort),
 			samlIdpssourl, samlIdpssodescurl, samlIdpcert)
 	} else if authFilter == "none" {
-		authHandler = serviceMux
+		authHandler = capMux
 	} else {
 		log.Fatal("Unknown authFilter: %v", authFilter)
 	}
@@ -138,7 +145,7 @@ func main() {
 			if err != nil {
 				log.Printf("ati failed: %v\n", err)
 			}
-			serviceMux.ServeHTTP(w, req)
+			capMux.ServeHTTP(w, req)
 		}
 	})
 

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -141,7 +140,6 @@ func (m *JwtManager) AddTokenInfo(t *jwt.Token, w http.ResponseWriter, req *http
 			return jwt.NewValidationError("Missing id in claims", jwt.ValidationErrorId)
 		}
 		req.Header.Set("X-Authenticated-Username", claims.Id)
-		req.Header.Set("X-Authenticated-Capability", "ADMIN")
 	}
 
 	signedString, err := m.Sign(t)
