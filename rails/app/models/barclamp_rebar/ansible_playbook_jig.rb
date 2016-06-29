@@ -78,7 +78,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     # override with role metadata
     role_yaml.merge! nr.role.metadata
 
-    die "Missing src path @ #{nr.role.name} in #{role_yaml}" unless role_yaml['playbook_src_paths']
+    die "Missing src path @ #{nr.role.name}" unless role_yaml['playbook_src_paths']
     die "Missing playbook path @ #{nr.role.name}" unless role_yaml['playbook_path']
     die "Missing playbook file @ #{nr.role.name}" unless role_yaml['playbook_file']
 
@@ -93,7 +93,9 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
     # Load/Update cache
     FileUtils.mkdir_p(CACHE_DIR)
-    role_cache_dir = "#{CACHE_DIR}/#{nr.role.name}"
+    role_cache_dir = CACHE_DIR
+    # Allow multiple playbooks in a single repo
+    role_cache_dir += "/#{nr.role.name}" unless role_yaml['playbook_combined_repo']
 
     File.open("#{CACHE_DIR}/lock", File::RDWR|File::CREAT, 0644) do |f1|
       f1.flock(File::LOCK_EX)
