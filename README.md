@@ -1,6 +1,6 @@
 # DigitalRebar Template Workload
 
-This is a working prototype workload that is intended to act as a working reference for buyilding your own workloads.
+This is a working prototype workload that is intended to act as a working reference for building your own workloads.
 
 ## Looking for DigitalRebar Resources?
 
