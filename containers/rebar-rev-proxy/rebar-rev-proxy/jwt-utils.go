@@ -1,6 +1,12 @@
 package main
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
+	"encoding/base64"
+	"errors"
+	"io"
 	"net/http"
 	"time"
 
@@ -95,11 +101,58 @@ func (m *JwtManager) New(user string) *jwt.Token {
 	return token
 }
 
+func encrypt(key []byte, text string) (string, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+
+	ciphertext := make([]byte, aes.BlockSize+len(text))
+
+	// iv =  initialization vector
+	iv := ciphertext[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return "", err
+	}
+
+	cfb := cipher.NewCFBEncrypter(block, iv)
+	cfb.XORKeyStream(ciphertext[aes.BlockSize:], []byte(text))
+
+	return base64.URLEncoding.EncodeToString(ciphertext), nil
+}
+
+func decrypt(key []byte, b64ciphertext string) (string, error) {
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+
+	ciphertext, err := base64.URLEncoding.DecodeString(b64ciphertext)
+
+	if len(ciphertext) < aes.BlockSize {
+		err = errors.New("ciphertext too short")
+		return "", err
+	}
+
+	iv := ciphertext[:aes.BlockSize]
+	ciphertext = ciphertext[aes.BlockSize:]
+
+	cfb := cipher.NewCFBDecrypter(block, iv)
+	cfb.XORKeyStream(ciphertext, ciphertext)
+
+	return string(ciphertext), nil
+}
+
 // Sign digitally signs a *jwt.Token using the token's method and the manager's
 // signing key to return a string
 func (m *JwtManager) Sign(token *jwt.Token) (string, error) {
 	jwtString, err := token.SignedString(m.key)
-	return jwtString, err
+	if err != nil {
+		return "", err
+	}
+
+	return encrypt(m.key, jwtString)
 }
 
 // Extractor for finding a token in a cookie.  Looks at each specified
@@ -118,14 +171,35 @@ func (e CookieExtractor) ExtractToken(req *http.Request) (string, error) {
 	return "", request.ErrNoTokenInRequest
 }
 
+// Tries Extractors in order until one returns a token string or an error occurs and decrypts the result
+type MultiDecryptExtractor struct {
+	Key        []byte
+	Extractors []request.Extractor
+}
+
+func (e MultiDecryptExtractor) ExtractToken(req *http.Request) (string, error) {
+	// loop over header names and return the first one that contains data
+	for _, extractor := range e.Extractors {
+		if tok, err := extractor.ExtractToken(req); tok != "" {
+			return decrypt(e.Key, tok)
+		} else if err != request.ErrNoTokenInRequest {
+			return "", err
+		}
+	}
+	return "", request.ErrNoTokenInRequest
+}
+
 // Get gets the signed JWT from the Authorization header. If the token is
 // missing, expired, or the signature does not validate, returns an error.
 func (m *JwtManager) Get(req *http.Request) (*jwt.Token, error) {
-	extractor := request.MultiExtractor{
-		CookieExtractor{"DrAuthToken"},
-		request.HeaderExtractor{"DR-AUTH-TOKEN"},
-		request.ArgumentExtractor{"token"},
-		request.AuthorizationHeaderExtractor,
+	extractor := MultiDecryptExtractor{
+		m.key,
+		[]request.Extractor{
+			CookieExtractor{"DrAuthToken"},
+			request.HeaderExtractor{"DR-AUTH-TOKEN"},
+			request.ArgumentExtractor{"token"},
+			request.AuthorizationHeaderExtractor,
+		},
 	}
 	return request.ParseFromRequestWithClaims(req, extractor, &jwt.StandardClaims{}, m.getKey)
 }
