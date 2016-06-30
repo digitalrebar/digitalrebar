@@ -1,4 +1,4 @@
-package main
+package engine
 
 /*
 Copyright (c) 2016, Rackn Inc.
@@ -16,16 +16,22 @@ import (
 	"github.com/digitalrebar/rebar-api/client"
 )
 
-// RunContext holds the running information for a given Event as it matches against the Rules.
-type RunContext struct {
-	Evt     *Event // The Event being matched against.
-	rule    *Rule
-	Attribs map[string]interface{} // The DigitalRebar attributes relavent to the object that the event relates to
-	Vars    map[string]interface{} // The variables that any given Matcher deems interesting.
+type ctx struct {
+	ruleSet     RuleSet
+	ruleIndexes []int
 }
 
-func makeContext(e *Event) *RunContext {
-	return &RunContext{Evt: e}
+// RunContext holds the running information for a given Event as it matches against the Rules.
+type RunContext struct {
+	Engine    *Engine                // The Engine that the Event is being processed with.
+	Evt       *Event                 // The Event being matched against.
+	ruleStack []int                  // The stack of rule indexes that we should Return to
+	ruleIdx   int                    // The index of the rule we are currently running.
+	stop      bool                   // Whether we should stop processing rules
+	ruleset   *RuleSet               // the Ruleset this context is processing.
+	rule      *Rule                  // the rule that is currently running
+	Attribs   map[string]interface{} // The DigitalRebar attributes relavent to the object that the event relates to
+	Vars      map[string]interface{} // The variables that any given Matcher deems interesting.
 }
 
 // I am going to hell for this
@@ -60,7 +66,6 @@ func (c *RunContext) getVar(arg interface{}) (interface{}, error) {
 		for k, t := range v {
 			retVal, err := c.getVar(t)
 			if err != nil {
-				return nil, err
 			}
 			res[k] = retVal
 		}
@@ -70,17 +75,18 @@ func (c *RunContext) getVar(arg interface{}) (interface{}, error) {
 	}
 }
 
-func (c *RunContext) Clone() (*RunContext, error) {
+func (c *RunContext) clone() (*RunContext, error) {
 	clonedContext := &RunContext{}
 	if err := utils.Remarshal(c, &clonedContext); err != nil {
 		return nil, fmt.Errorf("Unable to clone context: %v", err)
 	}
-	clonedContext.rule = c.rule
+	clonedContext.ruleset = c.ruleset
+	clonedContext.Engine = c.Engine
 	return clonedContext, nil
 }
 
-func (e *RunContext) fetchAttribs() error {
-	if len(e.rule.WantsAttribs) == 0 {
+func (e *RunContext) fetchAttribs(attribs []string) error {
+	if len(attribs) == 0 {
 		return nil
 	}
 	eventId, _ := e.Evt.Event.Id()
@@ -101,7 +107,7 @@ func (e *RunContext) fetchAttribs() error {
 	srcId, _ := attribSrc.Id()
 	log.Printf("Using %s %s as attrib source for event %s", attribSrcName, srcId, eventId)
 	e.Attribs = map[string]interface{}{}
-	for _, attribName := range e.rule.WantsAttribs {
+	for _, attribName := range attribs {
 		// We want an actual attrib, fetch and use it.
 		attr, err := client.FetchAttrib(attribSrc, attribName, "")
 		if err != nil {
@@ -112,36 +118,34 @@ func (e *RunContext) fetchAttribs() error {
 	return nil
 }
 
-// Process the Rules against an event.  This implementation is very
-// slow and stupid, and will be replaced if it starts being a
-// bottleneck.
-func (e *RunContext) Process(rules []*Rule) {
-	ruleLock.Lock()
-	defer ruleLock.Unlock()
-	for _, rule := range rules {
-		e.rule = rule
-		if err := e.fetchAttribs(); err != nil {
-			log.Printf("Error fetching attribs: %v", err)
+func (e *RunContext) processFrom(i int) {
+	log.Printf("Ruleset %s matched event %s at rule %d", e.ruleset.Name, e.Evt.Selector["event"], i)
+	e.ruleIdx = i
+	e.ruleStack = []int{}
+	e.stop = false
+	for e.ruleIdx < len(e.ruleset.Rules) && !e.stop {
+		e.rule = &e.ruleset.Rules[e.ruleIdx]
+		if err := e.fetchAttribs(e.rule.WantsAttribs); err != nil {
+			log.Printf("Ruleset %s rule %d: Error fetching attribs: %v", e.ruleset.Name, i, err)
 			continue
 		}
-		e.Vars = make(map[string]interface{})
-		matched, matcherr, runerr := rule.Fire(e)
-		log.Printf("Rule %s matched event %s: %v",
-			rule.Name,
-			e.Evt.Selector["name"],
-			matched)
+		matched, matcherr := e.rule.match(e)
 		if matcherr != nil {
-			log.Printf("Rule %s had an error matching event %s: %v",
-				rule.Name,
+			log.Printf("Ruleset %s rule %d: Error matching event %s: %v",
+				e.ruleset.Name,
+				e.ruleIdx,
 				e.Evt.Selector["name"],
 				matcherr)
 		}
-		if runerr != nil {
-			log.Printf("Rule %s failed to fire properly for event %s: %v",
-				rule.Name,
-				e.Evt.Selector["name"],
-				runerr)
+		if matched {
+			if runerr := e.rule.run(e); runerr != nil {
+				log.Printf("Ruleset %s rule %d: Failed to fire properly for event %s: %v",
+					e.ruleset.Name,
+					e.ruleIdx,
+					e.Evt.Selector["name"],
+					runerr)
+			}
 		}
-
+		e.ruleIdx++
 	}
 }

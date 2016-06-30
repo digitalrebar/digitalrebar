@@ -3,56 +3,63 @@
 # Licensed under the terms of the Digital Rebar License.
 # See LICENSE.md at the top of this repository for more information.
 
-- Name: 'test script template rule'
-  Matchers:
-    - EventType:
+Name: 'test ruleset'
+Active: false
+Description: "The test ruleset, used to exercise the classifier"
+Rules:
+  - EventSelectors:
       - event: on_active
         obj_class: role
       - event: on_error
         obj_class: role
-    - Enabled: true
-    - Eq: [ true ,true]
-  MatchActions:
-    - Script: |
-        echo "Hello from {{.Evt.Node.UUID}} (AKA {{.Evt.Node.Name}})"
-        echo "I an running because noderole {{.Evt.NodeRole.ID}} (for role {{.Evt.Role.Name}}) triggered {{.Evt.Selector.event}}"
-    - Delay:
-      - Duration: 30
+    Matchers:
+      - Enabled: true
+      - Eq: [ true ,true]
+    Actions:
       - Script: |
-         echo "This should be delayed 30 seconds: {{.Vars.eventType}}"
-         env
+          echo "Hello from {{.Evt.Node.UUID}} (AKA {{.Evt.Node.Name}})"
+          echo "I an running because noderole {{.Evt.NodeRole.ID}} (for role {{.Evt.Role.Name}}) triggered {{.Evt.Selector.event}}"
+      - Delay: 30
+      - Script: |
+          echo "This should be delayed 30 seconds: {{.Vars.eventType}}"
+          env
       - Log: true
-- Name: 'test logging rule'
-  WantsAttribs:
-    - disks
-  Matchers:
-    - Enabled: true
-    - JSON: 
-        Selector: ':root .Attribs .disks :has( .removable:val(false) )'
-        SaveAs: 'harddisks'
-    - Len:
-        Var: harddisks
-        SaveAs: driveCount
-    - Gt: [ '$driveCount', 3 ]
-  MatchActions:
-    - Log: true
-    - Script: |
-       echo "System has {{.Vars.driveCount}} drives, which is more than the 3 we were looking for"
-- Name: 'test os install rule'
-  Matchers:
-    - GetAttrib:
-        Node: "system-phantom.internal.local"
-        Attrib: "disks"
-        SaveAs: "phantom-drives"
-    - JSON:
-        Selector: ':root .Evt .role .name:val("rebar-managed-node")'
-    - JSON:
-        Selector: ':root .Evt .node .uuid'
-        PickResults:
-          nodeName: 0
-  MatchActions:
-    - Bind:
-        NodeID: '$nodeName'
-        RoleID: 'rebar-installed-node'
-    - Commit:
-        NodeID: '$nodeName'
+      - Return: true
+  - Name: 'test logging rule'
+    EventSelectors:
+      - event: on_milestone
+    WantsAttribs:
+      - disks
+    Matchers:
+      - Enabled: true
+      - JSON: 
+          Selector: ':root .Attribs .disks :has( .removable:val(false) )'
+          SaveAs: 'harddisks'
+      - Len:
+          Var: harddisks
+          SaveAs: driveCount
+      - Gt: [ '$driveCount', 3 ]
+    Actions:
+      - Log: true
+      - Script: |
+          echo "System has {{.Vars.driveCount}} drives, which is more than the 3 we were looking for"
+      - Call: 'test os install rule'
+  - Name: 'test os install rule'
+    Matchers:
+      - GetAttrib:
+          Node: "system-phantom.internal.local"
+          Attrib: "disks"
+          SaveAs: "phantom-drives"
+      - JSON:
+          Selector: ':root .Evt .role .name:val("rebar-managed-node")'
+      - JSON:
+          Selector: ':root .Evt .node .uuid'
+          PickResults:
+            nodeName: 0
+    Actions:
+      - Bind:
+          NodeID: '$nodeName'
+          RoleID: 'rebar-installed-node'
+      - Commit:
+          NodeID: '$nodeName'
+      - Return: true

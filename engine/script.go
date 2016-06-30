@@ -1,4 +1,4 @@
-package main
+package engine
 
 /*
 Copyright (c) 2016, Rackn Inc.
@@ -22,8 +22,8 @@ func compileScript(script string) (*template.Template, error) {
 
 func runScript(e *RunContext, scriptTmpl *template.Template) (bool, error) {
 	envVars := map[string]string{
-		"REBAR_ENDPOINT": endpoint,
-		"REBAR_KEY":      fmt.Sprintf("%s:%s", username, password),
+		"REBAR_ENDPOINT": e.Engine.rebarEndpoint,
+		"REBAR_KEY":      fmt.Sprintf("%s:%s", e.Engine.username, e.Engine.password),
 	}
 	buf := &bytes.Buffer{}
 	if err := scriptTmpl.Execute(buf, e); err != nil {
@@ -39,11 +39,11 @@ func runScript(e *RunContext, scriptTmpl *template.Template) (bool, error) {
 	cmd.Stdin = buf
 	out, err := cmd.Output()
 	if err == nil {
-		log.Printf("Script rule %s ran successfully", e.rule.Name)
+		log.Printf("Ruleset %s: Script rule %d ran successfully", e.ruleset.Name, e.ruleIdx)
 		log.Printf("%s", string(out))
 		return true, nil
 	}
-	log.Printf("Script rule %s failed", e.rule.Name)
+	log.Printf("Ruleset %s: Script rule %d failed", e.ruleset.Name, e.ruleIdx)
 	exitErr, ok := err.(*exec.ExitError)
 	if ok {
 		log.Printf("%s", string(exitErr.Stderr))

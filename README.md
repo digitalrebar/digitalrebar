@@ -1,3 +1,5 @@
+# DigitalRebar Event Classifier
+
 This is the node classifier daemon for Digital Rebar.
 
 It listens for events, and for each event it recieves it
@@ -11,115 +13,177 @@ for each rule it matches it takes appropriate action.
 * Build the tool: go build
 
 ## Command line options:
-* -debug
-
-  Whether to run in debug mode.  If passed, classifier will log extra
-  debug logging.
-* -rules [path-to-rulefile]
-
-  The rules that events should be matched against.  The contents of
+* -debug: Whether to run in debug mode.  If passed, classifier will log extra debug logging.
+* -rules [path-to-rulefile]: The rules that events should be matched against.  The contents of
   this file are described later.
-* -endpoint [url]
+* -endpoint [url]: The API endpoint for Digital Rebar.
+* -username: The username to log in to Digital Rebar with.
+* -password: The password for the Digital Rebar user.
+* -listen: The address:port that the classifier should listen for events on.
+* -testRules: If set, the classifier will just test the rulefile for validity and exit.
 
-  The API endpoint for Digital Rebar.
-* -username
+## Events
 
-  The username to log in to Digital Rebar with.
-* -password
+Events are emitted by the DigitalRebar core whenever something of interest happens.
+It is the job of the Classifier to listen to those Events and take action based on the
+Rulesets that the Classifier has loaded.  Think about how iptables works on Linux crossed
+with a rule-based expert system, and you will not be too far off the mark.
 
-  The password for the Digital Rebar user.
-* -listen
+### Event Definition
 
-  The address:port that the classifier should listen for events on.
-* -testRules
+An incoming Event is a blob of JSON that unmaps to the following structure:
 
-  If set, the classifier will just test the rulefile for validity and
-  exit.
-* -jsonSelectorList
+    type Event struct {
+        Selector          EventSelector             `json:"selector"`
+	      Event             *client.Event             `json:"event"`
+	      Node              *client.Node              `json:"node"`
+	      Role              *client.Role              `json:"role"`
+	      NodeRole          *client.NodeRole          `json:"node_role"`
+	      Deployment        *client.Deployment        `json:"deployment"`
+	      DeploymentRole    *client.DeploymentRole    `json:"deployment_role"`
+	      Network           *client.Network           `json:"network"`
+	      NetworkAllocation *client.NetworkAllocation `json:"network_allocation"`
+	      NetworkRange      *client.NetworkRange      `json:"network_range"`
+	      NetworkRouter     *client.NetworkRouter     `json:"network_router"`
+    }
 
-  This defines the set of events that rules without the EventType matcher
-  should fire upon.  The value is a JSON encode array of maps that can
-  match events.  The default is '[{ "event": "on_milestone" }]' which
-  matches the on_milestone event.
+Of those fields, only Selector and Event will be present in all Events.  The rest
+will be present depending on which object inside of Digital Rebar the event was
+created by:
 
-## The rules file:
+* NodeRole: NodeRole, Node, Role, and Deployment will be filled.
+* Node: Node and Deployment will be filled.
+* DeploymentRole: Deployment, Role, and DeploymentRole will be filled.
+* Deployment: only Deployment will be filled.
+* Role: only Role will be filled.
+* Network: only Network will be filled.
+* NetworkAllocation: Network, Node, NetworkRange, and NetworkAllocation will be filled.
+* NetworkRange: Network and NetworkRange will be filled.
+* NetworkRouter: Network and NetworkRouter will be filled.
 
-The rules file should contain a list of rules in YML format.  For a
-simple example, refer to the test.yml file.  The rule file will be
-reloaded if the classfier is sent a SIGHUP.
+#### EventSelector
+
+EventSelector is the parameters that Digital Rebar initially created the Event with.
+Serialized as YAML, it looks ike this:
+
+    ---
+    - event: 'on_active'
+      # The name of the event to match. The only mandatory field. 
+      obj_class: 'role'
+      # The class of the object that issued the event.
+      obj_id: 'rebar-inventory'
+      # The name of the object that issued the event.  In this case,
+      # it is the role named 'rebar-inventory'
+
+## Rulesets
+
+The rules file should contain a RuleSet in YML or JSON format.  
 
 ### An example rules file:
 
     ---
-    - Name: 'test logging rule'
-      WantsAttribs: []
-      Matchers:
-        - Enabled: true
-        - Script: "/bin/true"
-        - JSON:
-            Selector: ':root .Attribs .number_of_drives:val(5)'
-            SaveAs: 'driveCount'
-      MatchActions:
-        - Log: true
-        - Script: "/usr/bin/env"
-        - Delay:
-          - Duration: 30
+    # Copyright (c) 2016, Rackn Inc.
+    # Licensed under the terms of the Digital Rebar License.
+    # See LICENSE.md at the top of this repository for more information.
+
+    Name: 'test ruleset'
+    Active: false
+    Description: "The test ruleset, used to exercise the classifier"
+    Rules:
+      - EventSelectors:
+          - event: on_active
+            obj_class: role
+          - event: on_error
+            obj_class: role
+        Matchers:
+          - Enabled: true
+          - Eq: [ true ,true]
+        Actions:
+          - Script: |
+              echo "Hello from {{.Evt.Node.UUID}} (AKA {{.Evt.Node.Name}})"
+              echo "I an running because noderole {{.Evt.NodeRole.ID}} (for role {{.Evt.Role.Name}}) triggered {{.Evt.Selector.event}}"
+          - Delay: 30
+          - Script: |
+              echo "This should be delayed 30 seconds: {{.Vars.eventType}}"
+              env
           - Log: true
+          - Stop: true
+      - Name: 'test logging rule'
+        EventSelectors:
+          - event: on_milestone
+        WantsAttribs:
+          - disks
+        Matchers:
+          - Enabled: true
+          - JSON: 
+              Selector: ':root .Attribs .disks :has( .removable:val(false) )'
+              SaveAs: 'harddisks'
+          - Len:
+              Var: harddisks
+              SaveAs: driveCount
+          - Gt: [ '$driveCount', 3 ]
+        Actions:
+          - Log: true
+          - Script: |
+              echo "System has {{.Vars.driveCount}} drives, which is more than the 3 we were looking for"
+      - Name: 'test os install rule'
+        Matchers:
+          - GetAttrib:
+              Node: "system-phantom.internal.local"
+              Attrib: "disks"
+              SaveAs: "phantom-drives"
+          - JSON:
+              Selector: ':root .Evt .role .name:val("rebar-managed-node")'
+          - JSON:
+              Selector: ':root .Evt .node .uuid'
+              PickResults:
+                nodeName: 0
+        Actions:
+          - Bind:
+              NodeID: '$nodeName'
+              RoleID: 'rebar-installed-node'
+          - Commit:
+              NodeID: '$nodeName'
+          - Return: true
+
+### RuleSet definition:
+
+A RuleSet is composed of the following fields:
+* Name: The name of the RuleSet.  Every RuleSet must be named, and ruleset names must be unique.
+* Description: A description of a RuleSet.  Be as detailed as you want. 
+* Active: Whether the RuleSet is active.  If the RuleSet is not active, then none of 
+its rules will be used to process incoming Events.
+* Rules: The list of Rules for the RuleSet.
 
 ### Rule definition:
 
 A Rule is composed of the following fields:
 
-* Name
+* Name: The name of the rule. It is only required if the rule is the target of a Jump or Call action.
+Rule names in a RuleSet must be unique if they are present.
 
-  The name of the rule.  If present, it must be unique across all the
-  rules.
-* Description
+* EventSelectors: A list of selectors that describe the types of Events this Rule is interested in.
+ A matched var, eventType, is created with the matched event.
+* WantsAttribs: A list of DigitalRebar attribs or node attributes that the rule wants for Matchers 
+to determine whether the Rule matches the Event, or that the Actions may need to perform their actions.
 
-  A brief description of what the rule does.  For human use only.
-* WantsAttribs
+* Matchers: A list of Matchers that must match in order for the MatchActions to run.
 
-  A list of DigitalRebar attribs or node attributes that the rule
-  Matchers will use to determine whether the Rule matches the Event.
-* Matchers
-
-  A list of Matchers that must match in order for the MatchActions to
-  run.
-* MatchActions
-
-  A list of Actions that will be run if all the Matchers match.
+* MatchActions: A list of Actions that will be run if all the Matchers match.
 
 #### Matchers:
 Currently, the classifier knows about the following matchers:
 
-* And
+* And: Takes a list of Matchers, and matches iff all of them match.
 
-  Takes a list of Matchers, and matches iff all of them match.
-* Or
+* Or: Takes a list of Matchers, and matches if any of them match.
 
-  Takes a list of Matchers, and matches if any of them match.
-* Not
+* Not: Takes a single Matcher, and matches if it does not match.
 
-  Takes a single Matcher, and matches if it does not match.
-* Enabled
+* Enabled: Takes true or false, and matches if it was passed true.
 
-Takes true or false, and matches if it was passed true.
-* EventType
-
-Takes a list of key/value pairs to match events against.
-The aggregate set of events are registered as event selectors
-in the rebar api.  If unspecified, the default list of selectors
-are used for the rule from the command line.
-
-An example YAML would be:
-
-    ---
-    - event: 'on_active'
-      obj_class: 'role'
-      obj_id: 'rebar-inventory'
-
-A matched var, eventType, is created with the matched event name.
-* JSON
+* JSON: Extracts a value (or values) out of the JSON representation
+of the RunContext.
 
   Takes a YAML object of the following format:
 
@@ -131,66 +195,49 @@ A matched var, eventType, is created with the matched event name.
 
   The individual keys have the following meanings:
 
-  * Selector
+  * Selector: A JSONSelect selector fragment http://jsonselect.org/#overview.
+  This selector will be matched against the JSON serialization of
+  the RunContext that the rule is running in.  The Selector must
+  match at least one thing in the RunContext unless PickResults
+  was also specified, in which case it must match all of the
+  variables that PickResults was asked to fill in.
 
-    A JSONSelect selector fragment http://jsonselect.org/#overview.
-    This selector will be matched against the JSON serialization of
-    the RunContext that the rule is running in.  The Selector must
-    match at least one thing in the RunContext unless PickResults
-    was also specified, in which case it must match all of the
-    variables that PickResults was asked to fill in.
-  * SaveAs
+  * SaveAs: The name of the variable to save whatever the Selector
+  picked. SaveAs always saves the values it found in an array. If you
+  want to get individual items, you should use PickResults instead.
 
-    The name of the variable to save whatever the Selector
-    picked. If the selector only found one thing, that object will
-    be saved, otherwise an array comprised of all the found objects
-    will be saved.
-  * PickResults
+  * PickResults: An object whose keys indicate variables to save and
+  whose values indicate the index in the Selector results of the
+  value that should be saved.  If PickResults and SaveAs refer to
+  the same variable, PickResults wins.
 
-    An object whose keys indicate variables to save and
-    whose values indicate the index in the Selector results of the
-    value that should be saved.  If PickResults and SaveAs refer to
-    the same variable, PickResults wins.
+* Script: Takes a string which will be compiled against the RunContext using
+[text/template](https://golang.org/pkg/text/template/) into a shell script,  
+and matches if the shell script exits with a zero status.  The shell script 
+will be passed the following extra environment variables:
 
-* Script
+  * REBAR_ENDPOINT: The API endpoint that DigitalRebar lives on.
 
-  Takes a string which will be compiled against the RunContext using
-  text/template into a shell script, and matches if the shell script
-  exits with a zero status.  The shell script will be passed the
-  following extra environment variables:
+  * REBAR_KEY: The username:password for DigitalRebar
 
-  * REBAR_ENDPOINT
-
-    The API endpoint that DigitalRebar lives on.
-  * REBAR_KEY
-
-    The username:password for DigitalRebar
-
-* Eq, Ne, Lt, Le, Gt, Ge
-
-  Takes a 2 element array of values.  If the value is a string that
-begins with '$', the string will be interpreted as the name of a
-variable.  If that variable has been set, its value will be
+* Eq, Ne, Lt, Le, Gt, Ge: Takes a 2 element array of values.  
+If the value is a string that begins with '$', the string will be interpreted
+as the name of a variable.  If that variable has been set, its value will be
 substituted.  To use a literal string beginning with $, escape it with
 a \.  To begin with a literal \, escape it with \\.
 
-* Len
-
-  Takes a YAML object that points to a variable to check the length of
-  and a variable name to save the length to.  If the variable to check
-  has a meaningful Length (i.e, it is an Array, a Map, or a String),
-  that length is saved and the matcher returns true, otherwise it
-  returns false.  The YAML object has the following format:
+* Len: Takes a YAML object that points to a variable to check the length of
+and a variable name to save the length to.  If the variable to check
+has a meaningful Length (i.e, it is an Array, a Map, or a String),
+that length is saved and the matcher returns true, otherwise it
+returns false.  The YAML object has the following format:
 
       ---
       Var: variable name to get the length of
       SaveAs: variable name to save the length to
 
-* UUID
-
-  Takes a YAML object that specifies the thing to get the UUID of and
-  the name of the variable to save it in.  The YAML object has the
-  follwing format:
+* UUID: Takes a YAML object that specifies the thing to get the UUID of and
+the name of the variable to save it in.  The YAML object has the following format:
 
       ---
       Node: string
@@ -205,11 +252,9 @@ a \.  To begin with a literal \, escape it with \\.
   object will be saved in the variable pointed to by SaveAs, otherwise
   the matcher will fail.
 
-* GetAttrib
-
-  Takes a YAML object that specifies the attrib to get, the object to
-  get it from, and the variable to save the retrieved value to.  The
-  YAML object has the following format:
+* GetAttrib: Takes a YAML object that specifies the attrib to get, the object to
+get it from, and the variable to save the retrieved value to.  The
+YAML object has the following format:
 
       ---
       Attrib: string
@@ -229,86 +274,107 @@ a \.  To begin with a literal \, escape it with \\.
 #### Actions:
 Currently, the classifier knows about the following actions:
 
-* Log
+* Log: Emit a hardcoded logging message.
 
-  Emit a logging message.
-* Script
+* Script: Takes a string which will be compiled against the RunContext using
+[text/template](https://golang.org/pkg/text/template/) into a shell script,
+which will be passed the following extra environment variables:
 
-Takes a string which will be compiled against the RunContext using
-text/template into a shell script, which will be passed the following
-extra environment variables:
+  * REBAR_ENDPOINT: The API endpoint that DigitalRebar lives on.
 
-  * REBAR_ENDPOINT
+  * REBAR_KEY :The username:password for DigitalRebar
 
-    The API endpoint that DigitalRebar lives on.
-  * REBAR_KEY
+* Delay: Takes an integer representing the number of seconds the action should sleep for.
 
-    The username:password for DigitalRebar
+* Bind: Takes YAML object with the following format:
 
-* Delay
+      ---
+      NodeID: string
+      DeploymentID: string
+      RoleID: string
+      SaveAs: string
 
-Takes a list of maps.  The first element of the list should have the
-key Duration with an integer value that represents the number of
-seconds to delay before running the following actions.  The rest of
-the elements of the list are Actions as described above.
-
-* Bind
-
-Takes YAML object with the following format:
-
-    ---
-    NodeID: string
-    DeploymentID: string
-    RoleID: string
-    SaveAs: string
-
-Exactly 2 of the ID fields must be filled, and which two determine
-what action Bind will take.
+  Exactly 2 of the ID fields must be filled, and which two determine
+  what action Bind will take:
 
   * NodeID and RoleID: a Role will be bound to a Node
+
   * DeploymentID and NodeID: a Node will be moved to the Deployment
+
   * RoleID and DeploymentID: a Role will be bound to the Deployment
 
-If SaveAs is set, the resultant new object's unique identifier (if one was created) will be saved to the referenced variable.
+  If SaveAs is set, the resultant new object's unique identifier (if one was created) will be saved to the referenced variable.
 
-* SetAttrib
+* SetAttrib: Takes a YAML object with the following format:
 
-Takes a YAML object with the following format:
+      ---
+      Attrib: string
+      NodeID: string
+      DeploymentID: string
+      NodeRoleID: string
+      DeploymentRoleID: string
+      SaveAs: string
+      Value: anything
 
-    ---
-    Attrib: string
-    NodeID: string
-    DeploymentID: string
-    NodeRoleID: string
-    DeploymentRoleID: string
-    SaveAs: string
-    Value: anything
+  Exactly one of the Node, Deployment, NodeRole, or DeploymentRole must
+  be populated with something that uniquely identifies the object type
+  in question.  The Attrib field must be the name of the attrib to set
+  (which must be valid for the object in question), and the Value field
+  must be the value to set it to.  Note that setting the attrib value
+  does not commit the object, you must use a Commit action afterwards to
+  commit the value.
 
-Exactly one of the Node, Deployment, NodeRole, or DeploymentRole must
-be populated with something that uniquely identifies the object type
-in question.  The Attrib field must be the name of the attrib to set
-(which must be valid for the object in question), and the Value field
-must be the value to set it to.  Note that setting the attrib value
-does not commit the object, you must use a Commit action afterwards to
-commit the value.
+* Commit: Takes a YAML object with the following format:
 
-* Commit
+      ---
+      NodeID: string
+      DeploymentID: string
+      DeploymentRoleID: string
+      NodeRoleID: string
 
-Takes a YAML object with the following format:
+  Exactly one of the fields must be filled, and that thing will be committed.
 
-    ---
-    NodeID: string
-    DeploymentID: string
-    DeploymentRoleID: string
-    NodeRoleID: string
+* Retry: Takes a YAML object with the following format:
 
-Exactly one of the fields must be filled, and that thing will be committed.
+      ---
+      NodeRoleID: string
 
-* Retry
+  The specified NodeRole is retried.  The normal usage will be to get the node role
+  uuid from the event.  This is a string.
 
-Takes a YAML object with the following format:
+* Stop: Takes a boolean argument, which is ignored. 
+Stop tells the RunContext to stop processing rules after finishing with this one.
+Stop, Jump, Call, and Return are mutually exclusive -- only one of these can
+be present on any given Rule.
 
-    ---
-    NodeRoleID: string
+* Jump: Takes a string argument, which must be the name of the Rule to jump
+to when this Rule finishes processing successfully.  The named Rule to jump to
+must appear after the current Rule in the Rules list for this RuleSet.  This removes
+the possibility of rule processing entering an infinite loop.
 
-The specified NodeRole is retried.  The normal usage will be to get the node role uuid from the event.  This is a string.
+* Call: Behaves like (and has the same restrictions as) Jump, except that the
+RunContext will return control to the Rule defined after this one if it encounters
+a Return action.
+
+* Return: Takes a boolean argument, which is ignored.  Upon successful completion of the
+Rule actions, tells the RunContext to return to the rule after the most recent Call.  If
+no Call has been made, Return functions like Stop.
+
+## Flow of Events through RuleSets
+
+Upon recieving an Event, the following steps happen:
+
+1. The Classifier matches the Selector against the EventSelectors of the individual Rules.
+2. A RunContext is created for each RuleSet that contains a Rule that matches the EventSelector.
+3. Each RunContext is handed a RunList of Rules in its RuleSet to start execution at.
+4. Each RunContext starts executing Rules starting at the first Rule in its RunList.
+Each RunContext performs the next steps independently.
+5. Set the current Rule to the current entry in the RunList, then advance
+the RunList to the next entry. If there is no current entry, then stop.
+6. Execute the Matchers for the current Rule in order.
+If any do not match, move to the next Rule in the RuleSet and go to step 6.
+7. Execute the Actions in order. If any fail, go to step 5.
+7. If any control-flow Actions (Stop, Jump, Call, or Return) were present on the Rule,
+honor them, otherwise continue to the next Rule in the RuleSet.  Go to step 6.
+8. If the RunContext runs out of things to do (due to a Stop or Return action,
+or by running out of Rules in the RuleSet), go to step 5.

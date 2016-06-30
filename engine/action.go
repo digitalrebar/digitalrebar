@@ -1,4 +1,4 @@
-package main
+package engine
 
 /*
 Copyright (c) 2016, Rackn Inc.
@@ -10,25 +10,24 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/digitalrebar/rebar-api/client"
 )
 
-//Action is a thing that the Classifier will do for a Rule once the
-//Rule determines whether it should fire.
-type Action func(*RunContext) error
+type action func(*RunContext) error
 
-func actionLog() (Action, error) {
+func actionLog() (action, error) {
 	return func(e *RunContext) error {
-		log.Printf("Event %s matched rule %s for node %s",
+		log.Printf("Event %s matched ruleset %s for node %s",
 			e.Evt.Selector["event"],
-			e.rule.Name,
+			e.ruleset.Name,
 			e.Evt.Node.Name)
 		return nil
 	}, nil
 }
 
-func actionScript(val interface{}) (Action, error) {
+func actionScript(val interface{}) (action, error) {
 	script, ok := val.(string)
 	if !ok {
 		return nil, errors.New("Script needs a string")
@@ -56,7 +55,7 @@ func commitThis(thing client.Attriber, id string) error {
 	return client.Commit(thing)
 }
 
-func commitThing(thing, val string) (Action, error) {
+func commitThing(thing, val string) (action, error) {
 	return func(c *RunContext) error {
 		ref, err := c.getVar(val)
 		if err != nil {
@@ -86,7 +85,7 @@ func commitThing(thing, val string) (Action, error) {
 	}, nil
 }
 
-func actionCommit(val interface{}) (Action, error) {
+func actionCommit(val interface{}) (action, error) {
 	toCommit, ok := val.(map[string]interface{})
 	if !ok || len(toCommit) != 1 {
 		return nil, fmt.Errorf("Expected a single thing to commit, got %d: %#v", len(toCommit), toCommit)
@@ -178,7 +177,7 @@ func bindDeploymentRole(c *RunContext, deplID, roleID, saveAs string) error {
 	return nil
 }
 
-func actionBind(val interface{}) (Action, error) {
+func actionBind(val interface{}) (action, error) {
 	b, ok := val.(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf("Error extracting binding %#v", b)
@@ -235,26 +234,26 @@ func actionBind(val interface{}) (Action, error) {
 	}, nil
 }
 
-func retryNodeRole(c *RunContext, nodeRoleId string) error {
+func retryNodeRole(c *RunContext, nodeRoleID string) error {
 	nr := &client.NodeRole{}
-	if err := client.Fetch(nr, nodeRoleId); err != nil {
-		return fmt.Errorf("Failed to load NodeRole with id %s: %v", nodeRoleId, err)
+	if err := client.Fetch(nr, nodeRoleID); err != nil {
+		return fmt.Errorf("Failed to load NodeRole with id %s: %v", nodeRoleID, err)
 	}
 	if err := nr.Retry(); err != nil {
 		return fmt.Errorf("Failed to retry noderole: %s: %v",
-			nodeRoleId,
+			nodeRoleID,
 			err)
 	}
 	return nil
 }
 
-func actionRetry(val interface{}) (Action, error) {
+func actionRetry(val interface{}) (action, error) {
 	b, ok := val.(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf("Error extracting retry binding %#v", b)
 	}
 	present := 0
-	for k, _ := range b {
+	for k := range b {
 		switch k {
 		case "NodeRoleID":
 			present++
@@ -289,7 +288,7 @@ func actionRetry(val interface{}) (Action, error) {
 	}, nil
 }
 
-func setAttrib(val interface{}) (Action, error) {
+func setAttrib(val interface{}) (action, error) {
 	vals, ok := val.(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf("SetAttrib: Expected a map, got %#v", val)
@@ -368,50 +367,60 @@ func setAttrib(val interface{}) (Action, error) {
 	}, nil
 }
 
-func actionDelay(val interface{}) (Action, error) {
-	array, ok := val.([]interface{})
+func actionDelay(val interface{}) (action, error) {
+	secs, ok := val.(int)
 	if !ok {
-		return nil, errors.New("Delay needs nested actions")
+		return nil, errors.New("Delay needs the number of seconds to delay")
 	}
-	if len(array) < 2 {
-		return nil, errors.New("Delay needs at least one nested action and a duration")
-	}
-
-	delem, ok := array[0].(map[string]interface{})
-	if !ok {
-		return nil, errors.New("Delay needs a map as first element")
-	}
-
-	// First element must be a map with duration integer
-	dobj, ok := delem["Duration"]
-	if !ok {
-		return nil, errors.New("Delay needs a map with duration as first element")
-	}
-	duration, ok := dobj.(float64)
-	if !ok {
-		return nil, errors.New("Duration must contain an integer")
-	}
-
-	actions := make([]Action, 0, 0)
-	// The remaining elements must compile to actions
-	for _, e := range array[1:] {
-		element, ok := e.(map[string]interface{})
-		if !ok {
-			return nil, errors.New("Delay elements (after the first) should be actions")
-		}
-		subaction, err := ResolveAction(element)
-		if err != nil {
-			return nil, err
-		}
-		actions = append(actions, subaction)
-	}
-
 	return func(e *RunContext) error {
-		ctx, err := e.Clone()
-		if err != nil {
-			return err
+		time.Sleep(time.Duration(secs) * time.Second)
+		return nil
+	}, nil
+}
+
+func actionStop() (action, error) {
+	return func(e *RunContext) error {
+		e.stop = true
+		return nil
+	}, nil
+}
+
+func actionReturn() (action, error) {
+	return func(e *RunContext) error {
+		if len(e.ruleStack) == 0 {
+			e.stop = true
+		} else {
+			e.ruleIdx = e.ruleStack[len(e.ruleStack)-1]
+			e.ruleStack = e.ruleStack[:len(e.ruleStack)-1]
+
 		}
-		delay_actions(ctx, int(duration), actions)
+		return nil
+	}, nil
+}
+
+func actionJumpOrCall(rs *RuleSet, ruleIdx int, call bool, v interface{}) (action, error) {
+	tgt, ok := v.(string)
+	if !ok {
+		return nil, fmt.Errorf("Jump/Call argument not a string")
+	}
+	tgtIdx, ok := rs.namedRules[tgt]
+	if !ok {
+		return nil, fmt.Errorf("'%s' does not refer to a rule in ruleset '%s'", tgt, rs.Name)
+	}
+	if tgtIdx <= ruleIdx {
+		return nil, fmt.Errorf("Invalid jump/call from rule %d to %d (%s). Jumps must go forward", ruleIdx, tgtIdx, tgt)
+
+	}
+	log.Printf("Ruleset %s: Compiling call/jump from %d to %d (%s)",
+		rs.Name,
+		ruleIdx,
+		tgtIdx,
+		tgt)
+	return func(e *RunContext) error {
+		if call {
+			e.ruleStack = append(e.ruleStack, ruleIdx)
+		}
+		e.ruleIdx = tgtIdx - 1
 		return nil
 	}, nil
 }
@@ -476,7 +485,7 @@ func actionDelay(val interface{}) (Action, error) {
 // action will fail.  Attrib must be the name of the attribute to set,
 // and Value must be tbe value you want to set the attrib to for the
 // object.
-func ResolveAction(a map[string]interface{}) (Action, error) {
+func resolveAction(rs *RuleSet, ruleIdx int, a map[string]interface{}) (action, error) {
 	if len(a) != 1 {
 		return nil, fmt.Errorf("Actions have exactly one key")
 	}
@@ -496,6 +505,14 @@ func ResolveAction(a map[string]interface{}) (Action, error) {
 			return actionCommit(v)
 		case "SetAttrib":
 			return setAttrib(v)
+		case "Stop":
+			return actionStop()
+		case "Return":
+			return actionReturn()
+		case "Jump":
+			return actionJumpOrCall(rs, ruleIdx, false, v)
+		case "Call":
+			return actionJumpOrCall(rs, ruleIdx, true, v)
 		default:
 			return nil, fmt.Errorf("Unknown action %s", t)
 		}

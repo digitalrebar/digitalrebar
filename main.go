@@ -7,21 +7,21 @@ See LICENSE.md at the top of this repository for more information.
 */
 
 import (
-	"encoding/json"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
-	"reflect"
 	"strings"
 	"syscall"
 	"time"
 
+	"github.com/ghodss/yaml"
+
 	"github.com/coddingtonbear/go-jsonselect"
 	"github.com/digitalrebar/rebar-api/client"
+	"github.com/rackn/classifier/engine"
 )
 
 var (
@@ -30,12 +30,18 @@ var (
 	testRules                    = false
 	username, password, endpoint string
 	listen                       string
-	ruleFile                     string
-	jsonSelectorList             string
-	defaultJSONSelectorList      []map[string]interface{}
+	rulesetFile                  string
+	ruleEngine                   *engine.Engine
 )
 
-func init() {
+func serve() {
+	http.Handle("/", ruleEngine)
+	for {
+		log.Println(http.ListenAndServe(listen, nil))
+	}
+}
+
+func main() {
 	if ep := os.Getenv("REBAR_ENDPOINT"); ep != "" {
 		endpoint = ep
 	}
@@ -50,7 +56,7 @@ func init() {
 		username = key[0]
 		password = key[1]
 	}
-	flag.StringVar(&ruleFile, "rules", "", "File to read rules from")
+	flag.StringVar(&rulesetFile, "rules", "", "File to read rules from")
 	flag.StringVar(&username, "username", "", "Username for Digital Rebar endpoint")
 	flag.StringVar(&password, "password", "", "Password for Digital Rebar endpoint")
 	flag.StringVar(&endpoint, "endpoint", "", "API Endpoint for Digital Rebar")
@@ -58,133 +64,6 @@ func init() {
 	flag.BoolVar(&version, "version", false, "Print version and exit")
 	flag.BoolVar(&debug, "debug", false, "Whether to run in debug mode")
 	flag.BoolVar(&testRules, "testRules", false, "Exit after validating that the rules can be loaded")
-	flag.StringVar(&jsonSelectorList, "jsonSelectorList", "[ { \"event\": \"on_milestone\" } ]", "Default selector list for rules without EventTypes")
-}
-
-func handler(w http.ResponseWriter, req *http.Request) {
-	log.Printf("Got request from %v", req.RemoteAddr)
-	event := &Event{}
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		log.Printf("Error reading body: %v", err)
-		w.WriteHeader(http.StatusExpectationFailed)
-		return
-	}
-	req.Body.Close()
-	if err := json.Unmarshal(body, event); err != nil {
-		log.Printf("Error decoding body: %v", err)
-		log.Printf("Invalid body: %s", string(body))
-		w.WriteHeader(http.StatusExpectationFailed)
-		return
-	}
-	ctx := makeContext(event)
-	ctx.Process(rules)
-	w.WriteHeader(http.StatusAccepted)
-}
-
-func serve() {
-	http.HandleFunc("/", handler)
-	for {
-		log.Println(http.ListenAndServe(listen, nil))
-	}
-}
-
-func updateSinks() {
-	// Register us as an event sink, if not already registered.
-	finalEndpoint := fmt.Sprintf("http://%s/", listen)
-	eventSink := &client.EventSink{}
-	eventSinkMatch := make(map[string]interface{})
-	eventSinkMatch["endpoint"] = finalEndpoint
-	eventSinkMatches := make([]*client.EventSink, 0)
-	if err := client.Match(eventSink.ApiName(), eventSinkMatch, &eventSinkMatches); err != nil {
-		log.Fatalf("Error getting event sinks: %v", err)
-	}
-	if len(eventSinkMatches) > 0 {
-		eventSink = eventSinkMatches[0]
-		log.Printf("Event sink already present, moving on")
-	} else {
-		eventSink.Endpoint = finalEndpoint
-		log.Printf("Creating new event sink")
-		if err := client.BaseCreate(eventSink); err != nil {
-			log.Fatalf("Error creating event sink: %v", err)
-		}
-	}
-
-	// Get all of my selectors
-	selectorMatch := make(map[string]interface{})
-	selectorMatch["event_sink_id"] = eventSink.ID
-	eventSelector := &client.EventSelector{}
-	eventSelectorMatches := make([]*client.EventSelector, 0)
-	if err := client.Match(eventSelector.ApiName(), selectorMatch, &eventSelectorMatches); err != nil {
-		log.Fatalf("Error getting event selectors: %v", err)
-	}
-
-	// Get list of to make selectors
-	selectors := eventTypes
-
-	// Build lists of add, delete, already_present
-	add := make([]map[string]interface{}, 0, 0)
-	delete := make([]*client.EventSelector, 0, 0)
-	already_present := make([]*client.EventSelector, 0, 0)
-
-	// Negative Intersection new with old to get adds
-	for _, v := range selectors {
-		// v is selector struct
-
-		// Test to see if this selector is in our list.
-		doit := true
-		for _, e := range eventSelectorMatches {
-			if reflect.DeepEqual(e.Selector, v) {
-				doit = false
-				already_present = append(already_present, e)
-				break
-			}
-		}
-		if doit {
-			add = append(add, v)
-		}
-	}
-
-	// Negative Intersection old with new to get deletes
-	for _, v := range eventSelectorMatches {
-		found := false
-		for _, e := range already_present {
-			if v == e {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			delete = append(delete, v)
-		}
-	}
-
-	// Add new selectors
-	for _, v := range add {
-		eventSelector = &client.EventSelector{}
-		eventSelector.EventSinkID = eventSink.ID
-		eventSelector.Selector = v
-		log.Printf("Creating new event selector, %v", v)
-		if err := client.BaseCreate(eventSelector); err != nil {
-			log.Fatalf("Error creating event selector: %v", err)
-		}
-	}
-
-	// Delete old selectors
-	for _, v := range delete {
-		log.Printf("Deleting old event selector, %v", v)
-		if err := client.Destroy(v); err != nil {
-			log.Fatalf("Error destroying event selector: %v", err)
-		}
-	}
-}
-
-func validateDefaultSelector() error {
-	return json.Unmarshal([]byte(jsonSelectorList), &defaultJSONSelectorList)
-}
-
-func main() {
 	flag.Parse()
 	if version {
 		log.Fatalf("Version: 0.2.1")
@@ -192,16 +71,28 @@ func main() {
 	if debug {
 		jsonselect.EnableLogger()
 	}
-	if ruleFile == "" {
-		log.Fatalf("You must load rules with --rules ruleFile")
+	if rulesetFile == "" {
+		log.Fatalf("You must load rules with --rules rulesetFile")
 	}
-	if err := validateDefaultSelector(); err != nil {
-		log.Fatalf("Default Selector is invalid: %s\n%v", jsonSelectorList, err)
+
+	rsBuf, err := ioutil.ReadFile(rulesetFile)
+	if err != nil {
+		log.Fatalf("Failed to load rules from %s:\n%v", rulesetFile, err)
 	}
-	if err := loadRules(ruleFile); err != nil {
-		log.Fatalf("Failed to load rules from %s:\n%v", ruleFile, err)
+	theRules := engine.RuleSet{}
+	if err := yaml.Unmarshal(rsBuf, &theRules); err != nil {
+		log.Fatalln(err)
 	}
+
 	if testRules {
+		ruleEngine, _ = engine.NewEngine(listen, endpoint, username, password)
+		ruleEngine.Debug = debug
+		ruleEngine.Lock()
+		if err := ruleEngine.AddRuleSet(theRules); err != nil {
+			ruleEngine.DeleteRuleSet(theRules.Name)
+			ruleEngine.Unlock()
+			log.Fatalln(err)
+		}
 		os.Exit(0)
 	}
 	if endpoint == "" {
@@ -232,24 +123,49 @@ func main() {
 	if err := client.Session(endpoint, username, password); err != nil {
 		log.Fatalf("Could not connect to Rebar: %v", err)
 	}
-
-	start_delayer()
-
+	ruleEngine, err = engine.NewEngine(listen, endpoint, username, password)
+	if err != nil {
+		log.Fatalf("Error creating rule engine: %v", err)
+	}
+	ruleEngine.Debug = debug
+	ruleEngine.Lock()
+	if err := ruleEngine.AddRuleSet(theRules); err != nil {
+		ruleEngine.DeleteRuleSet(theRules.Name)
+		ruleEngine.Unlock()
+		log.Fatalln(err)
+	}
+	ruleEngine.Unlock()
 	// Run the handler loop
 	go serve()
 
-	// Update the sinks for the first time.
-	updateSinks()
+	// Clean up on SIGTERM
+	killChan := make(chan os.Signal, 1)
+	go func() {
+		<-killChan
+		ruleEngine.Stop()
+		os.Exit(0)
+	}()
+	signal.Notify(killChan, syscall.SIGTERM)
+	signal.Notify(killChan, syscall.SIGINT)
 
 	// Reload rules file on SIGHUP
 	hupChan := make(chan os.Signal, 1)
 	go func() {
 		for {
 			<-hupChan
-			if err := loadRules(ruleFile); err != nil {
-				log.Printf("Error loading rules from %s: %v", ruleFile, err)
+			rsBuf, err := ioutil.ReadFile(rulesetFile)
+			if err != nil {
+				log.Fatalf("Failed to load rules from %s:\n%v", rulesetFile, err)
+			}
+			theRules := engine.RuleSet{}
+			if err := yaml.Unmarshal(rsBuf, &theRules); err != nil {
+				log.Println(err)
 			} else {
-				updateSinks()
+				ruleEngine.Lock()
+				if err := ruleEngine.UpdateRuleSet(theRules); err != nil {
+					log.Println(err)
+				}
+				ruleEngine.Unlock()
 			}
 		}
 	}()
