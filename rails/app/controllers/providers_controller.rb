@@ -61,9 +61,9 @@ class ProvidersController < ApplicationController
     Provider.transaction do
       @item = Provider.find_key(params[:id]).lock!
       if request.patch?
-        patch(@item,%w{name item type description auth_details})
+        patch(@item,%w{name item type description auth_details tenant_id})
       else
-        @item.update_attributes!(params.permit(:name, :description, :type, :auth_details))
+        @item.update_attributes!(params.permit(:name, :description, :type, :auth_details, :tenant_id))
       end
     end
     respond_to do |format|
@@ -82,8 +82,12 @@ class ProvidersController < ApplicationController
     params.require(:name)
     params.require(:type)
     params.require(:auth_details)
+    unless params[:tenant_id]
+      params[:tenant_id] = @current_user.tenant_id
+    end
     @item = Provider.create!(name: params[:name],
                                  type: params[:type],
+				 tenant_id: params[:tenant_id],
                                  description: params[:description],
                                  auth_details: params[:auth_details])
     respond_to do |format|

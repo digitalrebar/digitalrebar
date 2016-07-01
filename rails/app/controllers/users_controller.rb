@@ -99,6 +99,12 @@ class UsersController < ApplicationController
   def create
     params.require(:username)
     params.require(:email)
+    unless params[:tenant_id]
+      params[:tenant_id] = @current_user.tenant_id
+    end
+    unless params[:current_tenant_id]
+      params[:current_tenant_id] = params[:tenant_id]
+    end
     @user = User.create! user_params
     if params[:digest]
       @user.digest_password(params[:password])
@@ -132,7 +138,7 @@ class UsersController < ApplicationController
 
   def capabilities
       @user = User.find_key(params[:id])
-      data = { "system" => "ADMIN" }
+      data = @user.cap_map
       render json: data
   end
 
@@ -291,7 +297,7 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    fields = [:username, :email, :password, :password_confirmation, :remember_me ]
+    fields = [:username, :email, :password, :password_confirmation, :remember_me, :tenant_id, :current_tenant_id ]
     fields << :is_admin if current_user.is_admin
     params.permit(*fields)
   end

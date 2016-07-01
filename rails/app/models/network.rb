@@ -193,6 +193,7 @@ class Network < ActiveRecord::Base
       NetworkRange.create!(name: "host-v6",
                            first: "#{v6prefix}::1/64",
                            last:  ((IP.coerce("#{v6prefix}::/64").broadcast) - 1).to_s,
+			   tenant_id: tenant_id,
                            network_id: id)
     end
   end
@@ -305,8 +306,10 @@ class Network < ActiveRecord::Base
                        "type" => "str",
                        "required" => true,
                        "pattern" => '/[0-9a-f:]+/'})
-      es = EventSink.find_or_create_by!(endpoint: "inproc://role:#{role_name}/on_proposed")
+      es = EventSink.find_or_create_by!(tenant_id: tenant_id,
+					endpoint: "inproc://role:#{role_name}/on_proposed")
       EventSelector.create!(event_sink_id: es.id,
+			    tenant_id: tenant_id,
                             selector: {
                               'event' => 'on_proposed',
                               'obj_class' => 'role',

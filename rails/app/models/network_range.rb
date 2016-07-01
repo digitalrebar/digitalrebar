@@ -115,6 +115,7 @@ class NetworkRange < ActiveRecord::Base
           if (self === suggestion) &&
               (NetworkAllocation.where(:address => suggestion.to_s).count == 0)
             res = NetworkAllocation.create!(:network_range_id => self.id,
+					    :tenant_id => tenant_id,
                                             :network_id => network_id,
                                             :node_id => node.id,
                                             :address => suggestion)
@@ -136,6 +137,7 @@ class NetworkRange < ActiveRecord::Base
             if (self === suggestion) &&
                 (NetworkAllocation.where(:address => suggestion.to_s).count == 0)
               res = NetworkAllocation.create!(:network_range_id => self.id,
+					      :tenant_id => tenant_id,
                                               :network_id => network_id,
                                               :node_id => node.id,
                                               :address => suggestion)
@@ -158,6 +160,7 @@ class NetworkRange < ActiveRecord::Base
             raise RangeError.new("#{fullname} is out of addresses!") unless addr
           end
           res = NetworkAllocation.create!(:network_range_id => self.id,
+					  :tenant_id => tenant_id,
                                           :network_id => network_id,
                                           :node_id => node.id,
                                           :address => addr.to_s)

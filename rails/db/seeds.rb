@@ -16,12 +16,15 @@
 # The data can then be loaded with the rake db:seed (or created alongside the db with db:setup).
 ActiveRecord::Base.transaction do
 
-  u = User.find_or_create_by!(username: 'rebar', is_admin: true)
+  t = Tenant.find_or_create_by!(name: 'system', description: "Global System Tenant")
+  t.save!
+
+  u = User.find_or_create_by!(username: 'rebar', is_admin: true, tenant_id: t.id, current_tenant_id: t.id)
   u.digest_password('rebar1')
   u.save!
 
   if Rails.env.development? or Rails.env.test?
-    u = User.find_or_create_by!(username: 'developer', is_admin: true)
+    u = User.find_or_create_by!(username: 'developer', is_admin: true, tenant_id: t.id, current_tenant_id: t.id)
     u.digest_password('d1g1t@l')
     u.save!
   end

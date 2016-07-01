@@ -64,11 +64,14 @@ class DeploymentsController < ApplicationController
         @parent = Deployment.system
       end
       params[:parent_id] = @parent.id
-      permits = [:name,:parent_id,:description]
+      permits = [:name,:parent_id,:description,:tenant_id]
     elsif Deployment.find_by(system: true)
       raise "Only one system deployment permitted"
     else
-      permits = [:name,:system,:description]
+      permits = [:name,:system,:description,:tenant_id]
+    end
+    unless params[:tenant_id]
+      params[:tenant_id] = @current_user.tenant_id
     end
     params.require(:name)
     Deployment.transaction do
@@ -87,10 +90,10 @@ class DeploymentsController < ApplicationController
     Deployment.transaction do
       @deployment = Deployment.find_key(params[:id]).lock!
       if request.patch?
-        patch(@deployment,%w{name description})
+        patch(@deployment,%w{name description tenant_id})
         render api_show @deployment
       else
-        @deployment.update_attributes!(params.permit(:name,:description))
+        @deployment.update_attributes!(params.permit(:name,:description,:tenant_id))
         respond_to do |format|
           format.html do
             redirect_to deployment_path(@deployment.id)

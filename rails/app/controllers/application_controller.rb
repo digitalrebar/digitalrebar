@@ -377,9 +377,14 @@ class ApplicationController < ActionController::Base
       end
       session[:digest_user] = username
       true
-    when current_user then authenticate_user!
-    when digest_request? then digest_auth!
-    when request.path == '/api/license' then true  # specialized path for license & URL validation
+    when current_user
+      val = authenticate_user!
+      @current_user = current_user if val
+      val
+    when digest_request?
+      digest_auth!
+    when request.path == '/api/license'
+      true  # specialized path for license & URL validation
     when (request.local? ||
           (/^::ffff:127\.0\.0\.1$/ =~ request.remote_ip)) &&
         File.exists?("/tmp/.rebar_in_bootstrap") &&

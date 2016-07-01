@@ -52,10 +52,11 @@ class EventSinksController < ApplicationController
     EventSink.transaction do
       @event_sink= event.find_key(params[:id]).lock!
       if request.patch?
-        patch(@event_sink,%w{endpoint username authenticator})
+        patch(@event_sink,%w{endpoint username authenticator notes tenant_id})
       else
         @event_sink.update_attributes!(params.permit(:endpoint,
                                                 :username,
+					        :tenant_id,
                                                 :authenticator,
                                                 :notes))
       end
@@ -65,9 +66,13 @@ class EventSinksController < ApplicationController
 
   def create
     params.require(:endpoint)
+    unless params[:tenant_id]
+      params[:tenant_id] = @current_user.tenant_id
+    end
     EventSink.transaction do
       @event_sink = EventSink.create!(params.permit(:endpoint,
                                                :username,
+					       :tenant_id,
                                                :authenticator,
                                                :notes))
     end

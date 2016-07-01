@@ -96,7 +96,7 @@ class DnsNameFilter < ActiveRecord::Base
           BarclampDns::MgmtService.add_ip_address(dne)
         end
       else
-        DnsNameEntry.create!(dns_name_filter: self, network_allocation: na, name: new_name, rr_type: (na.address.v4? ? 'A' : 'AAAA'))
+        DnsNameEntry.create!(dns_name_filter: self, network_allocation: na, name: new_name, rr_type: (na.address.v4? ? 'A' : 'AAAA'), tenant_id: na.tenant_id)
       end
       return true
     end

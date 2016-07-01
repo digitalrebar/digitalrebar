@@ -52,8 +52,11 @@ class DnsNameFiltersController < ::ApplicationController
     params.require(:service)
     params.require(:template)
     params.require(:name)
+    unless params[:tenant_id]
+      params[:tenant_id] = @current_user.tenant_id
+    end
     DnsNameFilter.transaction do
-      @filter = DnsNameFilter.create! params.permit(:name, :matcher, :priority, :service, :template)
+      @filter = DnsNameFilter.create! params.permit(:name, :matcher, :priority, :service, :template, :tenant_id)
     end
 
     respond_to do |format|
@@ -66,7 +69,7 @@ class DnsNameFiltersController < ::ApplicationController
   def update
     @filter = DnsNameFilter.find_key(params[:id])
 
-    @filter.update_attributes!(params.permit(:name, :matcher, :priority, :service, :template))
+    @filter.update_attributes!(params.permit(:name, :matcher, :priority, :service, :template, :tenant_id))
     respond_to do |format|
       format.html { render :action=>:show }
       format.json { render api_show @filter }

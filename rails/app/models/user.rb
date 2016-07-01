@@ -29,6 +29,9 @@ class User < ActiveRecord::Base
 
   private :load_uuid
 
+  has_many        :capabilities, through: :user_tenant_capabilities
+  has_many        :tenants,      through: :user_tenant_capabilities
+
   devise :database_authenticatable, :registerable,
          :rememberable, :trackable, :validatable, :recoverable,
          :lockable, :timeoutable, :authentication_keys => [:username]
@@ -72,6 +75,12 @@ class User < ActiveRecord::Base
     args ||= {}
     args[:methods] = :is_locked
     super(args)
+  end
+
+  # Build a map object for capabilities.
+  # { tenant_1_id: { cap: [], (parent: #) }, ... }
+  def cap_map
+    { 1 => [ "ADMIN" ] }
   end
 
   def digest_password(new_pass)

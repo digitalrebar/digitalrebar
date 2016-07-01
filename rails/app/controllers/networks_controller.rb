@@ -85,10 +85,14 @@ class NetworksController < ::ApplicationController
     params.require(:deployment_id)
     params.delete(:v6prefix) if params[:v6prefix] == "" or params[:v6prefix] == "none"
     params[:name] = "#{params[:category]}-#{params[:group]}"
+    unless params[:tenant_id]
+      params[:tenant_id] = @current_user.tenant_id
+    end
     Network.transaction do
       @network = Network.create! params.permit(:name,
                                                :conduit,
                                                :description,
+					       :tenant_id,
                                                :deployment_id,
                                                :vlan,
                                                :use_vlan,
@@ -111,8 +115,12 @@ class NetworksController < ::ApplicationController
           range_params.require(:network_id)
           range_params.require(:first)
           range_params.require(:last)
+	  unless range_params[:tenant_id]
+             range_params[:tenant_id] = @current_user.tenant_id
+	  end
           NetworkRange.create! range_params.permit(:name,
                                                    :network_id,
+						   :tenant_id,
                                                    :first,
                                                    :last,
                                                    :conduit,
@@ -134,7 +142,10 @@ class NetworksController < ::ApplicationController
         router_params.require(:network_id)
         router_params.require(:address)
         router_params.require(:pref)
-        NetworkRouter.create! router_params.permit(:network_id,:address,:pref)
+        unless router_params[:tenant_id]
+          router_params[:tenant_id] = @current_user.tenant_id
+        end
+        NetworkRouter.create! router_params.permit(:network_id,:address,:pref,:tenant_id)
         params.delete :router
       end
     end
@@ -177,9 +188,9 @@ class NetworksController < ::ApplicationController
         params[:use_team] = (params[:team_mode].to_i > 0) unless params[:use_team]
       end
       if request.patch?
-        patch(@network,%w{description vlan use_vlan v6prefix use_bridge team_mode use_team conduit configure pbr category group deployment_id})
+        patch(@network,%w{description vlan use_vlan v6prefix use_bridge team_mode use_team conduit configure pbr category group deployment_id :tenant_id})
       else
-        @network.update_attributes!(params.permit(:description, :vlan, :use_vlan, :v6prefix, :use_bridge, :team_mode, :use_team, :conduit, :configure, :pbr, :category, :group, :deployment_id))
+        @network.update_attributes!(params.permit(:description, :vlan, :use_vlan, :v6prefix, :use_bridge, :team_mode, :use_team, :conduit, :configure, :pbr, :category, :group, :deployment_id, :tenant_id))
       end
     end
     respond_to do |format|

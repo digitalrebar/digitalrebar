@@ -206,6 +206,9 @@ class NodesController < ApplicationController
       params.require(:name)
       params.require(:deployment_id)
       params.require(:provider_id)
+      unless params[:tenant_id]
+        params[:tenant_id] = @current_user.tenant_id
+      end
       hints = params[:hints] || {}
       Rails.logger.info("Node create params: #{params.inspect}")
       default_net = nil
@@ -213,6 +216,7 @@ class NodesController < ApplicationController
         @node = Node.create!(params.permit(:name,
                                            :description,
                                            :admin,
+					   :tenant_id,
                                            :deployment_id,
                                            :provider_id,
                                            :allocated,
@@ -255,6 +259,7 @@ class NodesController < ApplicationController
         @node.update_attributes!(params.permit(:name,
                                                :description,
                                                :target_role_id,
+					       :tenant_id,
                                                :deployment_id,
                                                :allocated,
                                                :available,

@@ -55,7 +55,7 @@ class BarclampsController < ApplicationController
     if request.patch?
       raise "PATCH update for barclamps not implemented!"
     end
-    @barclamp = Barclamp.import_or_update(params[:value])
+    @barclamp = Barclamp.import_or_update(params[:value], @current_user.current_tenant_id)
     respond_to do |format|
       format.html {  }
       format.json { render api_show @barclamp }
@@ -68,7 +68,7 @@ class BarclampsController < ApplicationController
 
   def create
     params.require(:value)
-    @barclamp = Barclamp.import_or_update(params[:value])
+    @barclamp = Barclamp.import_or_update(params[:value], @current_user.current_tenant_id)
     respond_to do |format|
       format.html {  }
       format.json { render api_show @barclamp }

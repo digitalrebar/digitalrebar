@@ -66,8 +66,12 @@ class NetworkRangesController < ::ApplicationController
     params.require(:name)
     params.require(:first)
     params.require(:last)
+    unless params[:tenant_id]
+      params[:tenant_id] = @current_user.tenant_id
+    end
     @range =  NetworkRange.create! params.permit(:name,
                                                  :network_id,
+						 :tenant_id,
                                                  :first,
                                                  :last,
                                                  :conduit,
@@ -89,9 +93,10 @@ class NetworkRangesController < ::ApplicationController
         @network_range = NetworkRange.find_by!(name: params[:name], network_id: params[:network_id]).lock!
       end
       if request.patch?
-        patch(@network_range,%w{name first last conduit vlan team_mode overlap use_vlan use_bridge use_team})
+        patch(@network_range,%w{name first last conduit vlan team_mode overlap use_vlan use_bridge use_team tenant_id})
       else
         @network_range.update_attributes!(params.permit(:name,
+							:tenant_id,
                                                         :first,
                                                         :last,
                                                         :conduit,

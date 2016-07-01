@@ -140,6 +140,7 @@ class NodeRolesController < ApplicationController
     depl ||= node.deployment
     begin
         @node_role = NodeRole.safe_create!(role_id: role.id,
+					   tenant_id: depl.tenant_id,
                                            node_id: node.id,
                                            deployment_id: depl.id)
     rescue StandardError => e
@@ -175,7 +176,7 @@ class NodeRolesController < ApplicationController
                    end
       # if you've been passed data then save it
       if request.patch?
-        patch(@node_role, %w{data run_count})
+        patch(@node_role, %w{data run_count tenant_id})
       else
         if params[:data]
           @node_role.data = params[:data]

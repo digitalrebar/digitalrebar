@@ -56,9 +56,9 @@ class EventSelectorsController < ApplicationController
     EventSelector.transaction do
       @event_selector= event.find_key(params[:id]).lock!
       if request.patch?
-        patch(@event_selector,%w{selector})
+        patch(@event_selector,%w{selector tenant_id})
       else
-        @event_selector.update_attributes!(params.permit(:selector))
+        @event_selector.update_attributes!(params.permit(:selector, :tenant_id))
       end
     end
     render api_show @event_selector
@@ -67,9 +67,13 @@ class EventSelectorsController < ApplicationController
   def create
     params.require(:event_sink_id)
     params.require(:selector)
+    unless params[:tenant_id]
+      params[:tenant_id] = @current_user.tenant_id
+    end
     event_sink = EventSink.find_key(params[:event_sink_id])
     EventSelector.transaction do
       @event_selector = EventSelector.create!(event_sink_id: event_sink.id,
+					      tenant_id: params[:tenant_id],
                                               selector: params[:selector])
     end
     render api_show @event_selector

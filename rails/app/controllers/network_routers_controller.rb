@@ -77,11 +77,14 @@ class NetworkRoutersController < ::ApplicationController
     params[:network_id] = network.id
     params.require(:network_id)
     params.require(:address)
+    unless params[:tenant_id]
+      params[:tenant_id] = @current_user.tenant_id
+    end
     # cannot create if existing 
     if network.router 
       render api_conflict network.router
     else
-      @router =  NetworkRouter.create! params.permit(:network_id,:address,:pref)
+      @router =  NetworkRouter.create! params.permit(:network_id,:address,:pref,:tenant_id)
       render api_show @router
     end
   end
@@ -99,9 +102,9 @@ class NetworkRoutersController < ::ApplicationController
         @network_router = NetworkRouter.find_key(params[:id]).lock!
       end
       if request.patch?
-        patch(@network_router,%w{address pref})
+        patch(@network_router,%w{address pref tenant_id})
       else
-        @network_router.update_attributes!(params.permit(:address,:pref))
+        @network_router.update_attributes!(params.permit(:address,:pref,:tenant_id))
       end
     end
     render api_show @network_router

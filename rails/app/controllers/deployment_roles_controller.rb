@@ -67,7 +67,10 @@ class DeploymentRolesController < ApplicationController
     params[:deployment_id] ||= Deployment.find_key(params[:deployment]).id
     params.require(:role_id)
     params.require(:deployment_id)
-    @deployment_role = DeploymentRole.create! params.permit(:data, :role_id, :deployment_id)
+    unless params[:tenant_id]
+      params[:tenant_id] = @current_user.tenant_id
+    end
+    @deployment_role = DeploymentRole.create! params.permit(:data, :role_id, :deployment_id, :tenant_id)
     respond_to do |format|
       format.html { redirect_to deployment_path(params[:deployment_id]) }
       format.json { render api_show @deployment_role }
@@ -81,6 +84,7 @@ class DeploymentRolesController < ApplicationController
         raise "Cannot PATCH deployment roles!"
       else
         params.require(:data)
+	@deployment_role.tenant_id = params[:tenant_id] if params[:tenant_id]
         @deployment_role.data = params[:data]
         @deployment_role.save!
       end
