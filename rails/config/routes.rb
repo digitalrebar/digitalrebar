@@ -28,7 +28,6 @@ Rebar::Application.routes.draw do
   get "annealer", :to => "node_roles#anneal", :as => :annealer
   resources :attribs
   resources :barclamps do
-    get :wizard
     post :wizard
     get :upload
   end
