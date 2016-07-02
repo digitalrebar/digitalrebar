@@ -396,4 +396,19 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  #
+  # Since we have the user, just get the cap map (don't parse the sent caps)
+  #
+  # Is CAP in tenant tree.
+  #
+  def validate_capability(t_id, cap)
+    cap_map = @current_user.cap_map
+
+    while cap_map[t_id] do
+      return true if cap_map[t_id]["capabilities"].include? cap
+      t_id = cap_map[t_id]["parent_id"]
+    end
+    false
+  end
+
 end

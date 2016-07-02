@@ -53,6 +53,10 @@ class DeploymentRolesController < ApplicationController
     else
       @deployment_role = DeploymentRole.find_key params[:id]
     end
+
+    # GREG: Message
+    raise ActiveRecord::RecordNotFound.new("GREG: MESSAGE: NOT FOUND") unless validate_capability(@deployment_role.tenant_id, "DEPLOYMENTROLE_READ")
+
     respond_to do |format|
       format.html {  }
       format.json { render api_show @deployment_role }

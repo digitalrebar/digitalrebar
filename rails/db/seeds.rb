@@ -93,6 +93,8 @@ ActiveRecord::Base.transaction do
   # utils
   Nav.find_or_create_by(item: 'utils', parent_item: 'root', name: 'nav.utils', description: 'nav.utils_description', path: "main_app.utils_path", order: 6000)
   Nav.find_or_create_by(item: 'manage_users', parent_item: 'utils', name: 'nav.manage_users', description: 'nav.manage_users_description', path: "main_app.users_path", order: 100)
+  Nav.find_or_create_by(item: 'manage_tenants', parent_item: 'utils', name: 'nav.manage_tenants', description: 'nav.manage_tenants_description', path: "main_app.tenants_path", order: 120)
+  Nav.find_or_create_by(item: 'manage_capabilities', parent_item: 'utils', name: 'nav.manage_capabilities', description: 'nav.manage_capabilities_description', path: "main_app.capabilities_path", order: 140)
   Nav.find_or_create_by(item: 'user_settings', parent_item: 'utils', name: 'nav.user_settings', description: 'nav.user_settings_description', path: "main_app.utils_settings_path", order: 200)
   Nav.find_or_create_by(item: 'jigs', parent_item: 'utils', name: 'nav.jigs', description: 'nav.jigs_description', path: "main_app.jigs_path", order: 300)
   Nav.find_or_create_by(item: 'hammers', parent_item: 'utils', name: 'nav.hammers', description: 'nav.hammers_description', path: "main_app.available_hammers_path", order: 1000)

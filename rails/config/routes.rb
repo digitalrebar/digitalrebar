@@ -56,6 +56,8 @@ Rebar::Application.routes.draw do
   resources :node_roles
   resources :roles
   resources :providers
+  resources :capabilities
+  resources :tenants
 
   resources :interfaces
   resources :networks do
@@ -141,6 +143,18 @@ Rebar::Application.routes.draw do
             end
           end
           resources :barclamps do
+            collection do
+              get 'sample'
+              post 'match'
+            end
+          end
+          resources :tenants do
+            collection do
+              get 'sample'
+              post 'match'
+            end
+          end
+          resources :capabilities do
             collection do
               get 'sample'
               post 'match'

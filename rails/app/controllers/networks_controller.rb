@@ -188,7 +188,7 @@ class NetworksController < ::ApplicationController
         params[:use_team] = (params[:team_mode].to_i > 0) unless params[:use_team]
       end
       if request.patch?
-        patch(@network,%w{description vlan use_vlan v6prefix use_bridge team_mode use_team conduit configure pbr category group deployment_id :tenant_id})
+        patch(@network,%w{description vlan use_vlan v6prefix use_bridge team_mode use_team conduit configure pbr category group deployment_id tenant_id})
       else
         @network.update_attributes!(params.permit(:description, :vlan, :use_vlan, :v6prefix, :use_bridge, :team_mode, :use_team, :conduit, :configure, :pbr, :category, :group, :deployment_id, :tenant_id))
       end
