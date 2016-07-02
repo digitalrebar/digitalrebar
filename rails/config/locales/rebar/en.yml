@@ -136,20 +136,6 @@ en:
     sign_out: "Sign Out"
     sign_out_description: "End the current session"
 
-    scaffold:
-      top: "Scaffolds"
-      top_description: "Developer Tools"
-      barclamps: "Barclamps"
-      jig: "DevOps Jig"
-      attribs: "Attributes"
-      nodes: "Nodes"
-      providers: "Providers"
-      groups: "Groups"
-      roles: "Roles"
-      deployments: "Deployments"
-      menus: "Menu Items"
-      jigs: "Jigs"
-
     error: Render Error
 
   # hints for node_role errors
