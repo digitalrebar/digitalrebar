@@ -93,30 +93,6 @@ Rebar::Application.routes.draw do
     get 'fail'          => "support#fail"
     get 'settings'      => "support#settings", :as => :utils_settings
     put 'settings(/:id/:value)' => "support#settings_put", :as => :utils_settings_put
-    namespace :scaffolds do
-      resources :attribs do as_routes end
-      resources :available_hammers do as_routes end
-      resources :barclamps do as_routes end
-      resources :deployment_roles do as_routes end
-      resources :deployments do as_routes end
-      resources :groups do as_routes end
-      resources :jigs do as_routes end
-      resources :navs do as_routes end
-      resources :network_allocations do as_routes end
-      resources :network_ranges do as_routes end
-      resources :network_routers do as_routes end
-      resources :networks do as_routes end
-      resources :providers do as_routes end
-      resources :dns_name_filters do as_routes end
-      resources :dns_name_entries do as_routes end
-      resources :nodes do as_routes end
-      resources :hammers do as_routes end
-      resources :node_roles do as_routes end
-      resources :node_role_attrib_links do as_routes end
-      resources :roles do as_routes end
-      resources :role_requires do as_routes end
-      resources :runs do as_routes end
-    end
   end
 
   # UI scope - legacy methods
