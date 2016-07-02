@@ -29,9 +29,6 @@ class User < ActiveRecord::Base
 
   private :load_uuid
 
-  has_many        :capabilities, through: :user_tenant_capabilities
-  has_many        :tenants,      through: :user_tenant_capabilities
-
   devise :database_authenticatable, :registerable,
          :rememberable, :trackable, :validatable, :recoverable,
          :lockable, :timeoutable, :authentication_keys => [:username]
@@ -80,7 +77,13 @@ class User < ActiveRecord::Base
   # Build a map object for capabilities.
   # { tenant_1_id: { cap: [], (parent: #) }, ... }
   def cap_map
-    { 1 => [ "ADMIN" ] }
+    results = UserTenantCapability.where(user_id: id).joins(:tenant).joins(:capability).select("capabilities.name", :tenant_id, :parent_id).group_by(&:tenant_id)
+    results.each do |k,v|
+      parent_id = nil
+      parent_id = v[0]["parent_id"] if v.length > 0
+      v.map! {|x| x["name"]}
+      results[k] = { "parent" => parent_id, "capabilities" => v }
+    end
   end
 
   def digest_password(new_pass)

@@ -19,14 +19,52 @@ ActiveRecord::Base.transaction do
   t = Tenant.find_or_create_by!(name: 'system', description: "Global System Tenant")
   t.save!
 
+  # Name, description
+  caps = [
+    [ "NODE_CREATE",    "Create Nodes" ],
+    [ "NODE_READ",      "Read Nodes" ],
+    [ "NODE_UPDATE",    "Update Nodes" ],
+    [ "NODE_DESTROY",   "Destroy Nodes" ],
+    [ "NODE_REDEPLOY",  "Redeploy Nodes" ],
+    [ "NODE_SCRUB",     "Scrub Nodes" ],
+    [ "NODE_POWER",     "Power actions on nodes" ],
+    [ "NODE_COMMIT",    "Commit nodes" ],
+    [ "NODE_PROPOSE",   "Propose nodes" ],
+
+    [ "DEPLOYMENT_CREATE",    "Create Deployments" ],
+    [ "DEPLOYMENT_READ",      "Read Deployments" ],
+    [ "DEPLOYMENT_UPDATE",    "Update Deployments" ],
+    [ "DEPLOYMENT_DESTROY",   "Destroy Deployments" ],
+    [ "DEPLOYMENT_REDEPLOY",  "Redeploy Deployments" ],
+    [ "DEPLOYMENT_COMMIT",    "Commit Deployments" ],
+    [ "DEPLOYMENT_PROPOSE",   "Propose Deployments" ],
+
+    [ "MACHINE_CREATE",   "Create Machines Only" ],
+    [ "MACHINE_ACCOUNT",  "Modify myself only" ]
+  ]
+  caps.each do |c|
+    cap = Capability.find_or_create_by!(name: c[0], description: c[1], source: "rebar-api")
+    cap.save!
+  end
+
   u = User.find_or_create_by!(username: 'rebar', is_admin: true, tenant_id: t.id, current_tenant_id: t.id)
   u.digest_password('rebar1')
   u.save!
+
+  caps.each do |c|
+    cap = Capability.find_by(name: c[0])
+    UserTenantCapability.create!(user_id: u.id, tenant_id: t.id, capability_id: cap.id)
+  end
 
   if Rails.env.development? or Rails.env.test?
     u = User.find_or_create_by!(username: 'developer', is_admin: true, tenant_id: t.id, current_tenant_id: t.id)
     u.digest_password('d1g1t@l')
     u.save!
+
+    caps.each do |c|
+      cap = Capability.find_by(name: c[0])
+      UserTenantCapability.create!(user_id: u.id, tenant_id: t.id, capability_id: cap.id)
+    end
   end
 
   Nav.find_or_create_by(item: 'root', name: 'nav.root', description: 'nav.root_description', path: "main_app.root_path", order: 0, development: true)

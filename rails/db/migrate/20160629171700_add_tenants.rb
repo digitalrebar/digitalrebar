@@ -32,12 +32,14 @@ class AddTenants < ActiveRecord::Migration
       t.timestamps
     end
 
-    create_table :user_tenant_capabilities, id: false do |t|
-      t.belongs_to :user
-      t.belongs_to :tenant
-      t.belongs_to :capability
+    create_table :user_tenant_capabilities do |t|
+      t.uuid        :uuid, nill: false, unique: true, default: 'gen_random_uuid()'
+      t.belongs_to  :user
+      t.belongs_to  :tenant
+      t.belongs_to  :capability
+      t.timestamps
     end
-    add_index(:user_tenant_capabilities, [:user_id, :tenant_id], unique: true)
+    add_index(:user_tenant_capabilities, [:user_id, :tenant_id])
   end
 
   def self.down
