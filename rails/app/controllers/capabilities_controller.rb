@@ -42,7 +42,7 @@ class CapabilitiesController < ::ApplicationController
     @capabilities = Capability.all
     respond_to do |format|
       format.html {}
-      format.json { render api_index Capability, @capabilites }
+      format.json { render api_index Capability, @capabilities.to_a }
     end
   end
 
