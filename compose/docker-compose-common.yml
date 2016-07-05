@@ -61,9 +61,6 @@ rebar_api:
     - ./digitalrebar:/opt/digitalrebar
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/api/config:/opt/digitalrebar/core/config
-    # development mapping for playbook authors
-    # example: - ./digitalrebar/kompos8:/var/cache/rebar/ansible_playbook/k8
-
   env_file:
     - ./common.env
     - ./access.env
@@ -85,7 +82,6 @@ cloudwrap:
   restart: always
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
-    # debugging maps
     #- ../containers/cloudwrap/cloudwrap/api.rb:/opt/cloudwrap/api.rb
     #- ../containers/cloudwrap/cloudwrap/common.rb:/opt/cloudwrap/common.rb
   env_file:
