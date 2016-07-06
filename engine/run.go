@@ -136,6 +136,7 @@ func (e *RunContext) processFrom(i int) {
 				e.ruleIdx,
 				e.Evt.Selector["name"],
 				matcherr)
+			e.stop = true
 		}
 		if matched {
 			if runerr := e.rule.run(e); runerr != nil {
@@ -144,6 +145,7 @@ func (e *RunContext) processFrom(i int) {
 					e.ruleIdx,
 					e.Evt.Selector["name"],
 					runerr)
+				e.stop = true
 			}
 		}
 		e.ruleIdx++
