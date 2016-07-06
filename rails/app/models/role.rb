@@ -129,6 +129,7 @@ class Role < ActiveRecord::Base
   # sync_on_transition(node_role, *args)
   # sync_on_blocked(node_role, *args)
   # sync_on_proposed(node_role, *args)
+  # sync_on_destroy(node_role, *args)
 
   # State Transistion Overrides
   # These are called after the relavent noderole has been saved to the

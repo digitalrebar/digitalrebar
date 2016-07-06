@@ -1,3 +1,27 @@
+PATH
+  remote: /opt/digitalrebar/hardware/bios/rebar_engine/barclamp_bios
+  specs:
+    barclamp_bios (0.0.1)
+      rails
+
+PATH
+  remote: /opt/digitalrebar/hardware/ipmi/rebar_engine/barclamp_ipmi
+  specs:
+    barclamp_ipmi (0.0.1)
+      rails
+
+PATH
+  remote: /opt/digitalrebar/hardware/raid/rebar_engine/barclamp_raid
+  specs:
+    barclamp_raid (0.0.1)
+      rails
+
+PATH
+  remote: /opt/digitalrebar/kubernetes/rebar_engine/barclamp_kubernetes
+  specs:
+    barclamp_kubernetes (0.0.1)
+      rails
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -455,6 +479,10 @@ PLATFORMS
 
 DEPENDENCIES
   active_scaffold
+  barclamp_bios!
+  barclamp_ipmi!
+  barclamp_kubernetes!
+  barclamp_raid!
   berkshelf
   bunny
   chef (~> 12.3)
@@ -497,4 +525,4 @@ DEPENDENCIES
   xml-simple
 
 BUNDLED WITH
-   1.12.5
+   1.11.2
