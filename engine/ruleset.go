@@ -33,15 +33,15 @@ type Rule struct {
 
 // Match runs the step Matchers.  If all the Matchers match, then the
 // step is considered an overall Match.
-func (r *Rule) match(e *RunContext) (bool, error) {
-	return matchAnd(r.matchers...)(e)
+func (r *Rule) match(c *RunContext) (bool, error) {
+	return matchAnd(r.matchers...)(c)
 }
 
 // RunActions runs the step MatchActions in order.  If any of them
 // return an error, no further MatchActions will be run.
-func (r *Rule) run(e *RunContext) error {
+func (r *Rule) run(c *RunContext) error {
 	for _, action := range r.actions {
-		if err := action(e); err != nil {
+		if err := action(c); err != nil {
 			return err
 		}
 	}

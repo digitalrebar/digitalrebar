@@ -85,69 +85,69 @@ func (c *RunContext) clone() (*RunContext, error) {
 	return clonedContext, nil
 }
 
-func (e *RunContext) fetchAttribs(attribs []string) error {
+func (c *RunContext) fetchAttribs(attribs []string) error {
 	if len(attribs) == 0 {
 		return nil
 	}
-	eventId, _ := e.Evt.Event.Id()
+	eventID, _ := c.Evt.Event.Id()
 	var attribSrc client.Attriber
 	var attribSrcName string
-	if e.Evt.Node != nil {
+	if c.Evt.Node != nil {
 		attribSrcName = "node"
-		attribSrc = e.Evt.Node
-	} else if e.Evt.Deployment != nil {
+		attribSrc = c.Evt.Node
+	} else if c.Evt.Deployment != nil {
 		attribSrcName = "deployment"
-		attribSrc = e.Evt.Deployment
-	} else if e.Evt.Role != nil {
+		attribSrc = c.Evt.Deployment
+	} else if c.Evt.Role != nil {
 		attribSrcName = "role"
-		attribSrc = e.Evt.Role
+		attribSrc = c.Evt.Role
 	} else {
-		return fmt.Errorf("Event %s does not have attrib sources", eventId)
+		return fmt.Errorf("Event %s does not have attrib sources", eventID)
 	}
-	srcId, _ := attribSrc.Id()
-	log.Printf("Using %s %s as attrib source for event %s", attribSrcName, srcId, eventId)
-	e.Attribs = map[string]interface{}{}
+	srcID, _ := attribSrc.Id()
+	log.Printf("Using %s %s as attrib source for event %s", attribSrcName, srcID, eventID)
+	c.Attribs = map[string]interface{}{}
 	for _, attribName := range attribs {
 		// We want an actual attrib, fetch and use it.
 		attr, err := client.FetchAttrib(attribSrc, attribName, "")
 		if err != nil {
-			return fmt.Errorf("Error fetching attrib %s for event %s", attribName, eventId)
+			return fmt.Errorf("Error fetching attrib %s for event %s", attribName, eventID)
 		}
-		e.Attribs[attribName] = attr.Value
+		c.Attribs[attribName] = attr.Value
 	}
 	return nil
 }
 
-func (e *RunContext) processFrom(i int) {
-	log.Printf("Ruleset %s matched event %s at rule %d", e.ruleset.Name, e.Evt.Selector["event"], i)
-	e.ruleIdx = i
-	e.ruleStack = []int{}
-	e.stop = false
-	for e.ruleIdx < len(e.ruleset.Rules) && !e.stop {
-		e.rule = &e.ruleset.Rules[e.ruleIdx]
-		if err := e.fetchAttribs(e.rule.WantsAttribs); err != nil {
-			log.Printf("Ruleset %s rule %d: Error fetching attribs: %v", e.ruleset.Name, i, err)
+func (c *RunContext) processFrom(i int) {
+	log.Printf("Ruleset %s matched event %s at rule %d", c.ruleset.Name, c.Evt.Selector["event"], i)
+	c.ruleIdx = i
+	c.ruleStack = []int{}
+	c.stop = false
+	for c.ruleIdx < len(c.ruleset.Rules) && !c.stop {
+		c.rule = &c.ruleset.Rules[c.ruleIdx]
+		if err := c.fetchAttribs(c.rule.WantsAttribs); err != nil {
+			log.Printf("Ruleset %s rule %d: Error fetching attribs: %v", c.ruleset.Name, i, err)
 			continue
 		}
-		matched, matcherr := e.rule.match(e)
+		matched, matcherr := c.rule.match(c)
 		if matcherr != nil {
 			log.Printf("Ruleset %s rule %d: Error matching event %s: %v",
-				e.ruleset.Name,
-				e.ruleIdx,
-				e.Evt.Selector["name"],
+				c.ruleset.Name,
+				c.ruleIdx,
+				c.Evt.Selector["name"],
 				matcherr)
-			e.stop = true
+			c.stop = true
 		}
 		if matched {
-			if runerr := e.rule.run(e); runerr != nil {
+			if runerr := c.rule.run(c); runerr != nil {
 				log.Printf("Ruleset %s rule %d: Failed to fire properly for event %s: %v",
-					e.ruleset.Name,
-					e.ruleIdx,
-					e.Evt.Selector["name"],
+					c.ruleset.Name,
+					c.ruleIdx,
+					c.Evt.Selector["name"],
 					runerr)
-				e.stop = true
+				c.stop = true
 			}
 		}
-		e.ruleIdx++
+		c.ruleIdx++
 	}
 }

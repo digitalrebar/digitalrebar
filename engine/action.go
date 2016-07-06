@@ -18,11 +18,11 @@ import (
 type action func(*RunContext) error
 
 func actionLog() (action, error) {
-	return func(e *RunContext) error {
+	return func(c *RunContext) error {
 		log.Printf("Event %s matched ruleset %s for node %s",
-			e.Evt.Selector["event"],
-			e.ruleset.Name,
-			e.Evt.Node.Name)
+			c.Evt.Selector["event"],
+			c.ruleset.Name,
+			c.Evt.Node.Name)
 		return nil
 	}, nil
 }
@@ -36,8 +36,8 @@ func actionScript(val interface{}) (action, error) {
 	if err != nil {
 		return nil, err
 	}
-	return func(e *RunContext) error {
-		res, err := runScript(e, tmpl)
+	return func(c *RunContext) error {
+		res, err := runScript(c, tmpl)
 		if err != nil {
 			return err
 		}
@@ -372,26 +372,26 @@ func actionDelay(val interface{}) (action, error) {
 	if !ok {
 		return nil, errors.New("Delay needs the number of seconds to delay")
 	}
-	return func(e *RunContext) error {
+	return func(c *RunContext) error {
 		time.Sleep(time.Duration(secs) * time.Second)
 		return nil
 	}, nil
 }
 
 func actionStop() (action, error) {
-	return func(e *RunContext) error {
-		e.stop = true
+	return func(c *RunContext) error {
+		c.stop = true
 		return nil
 	}, nil
 }
 
 func actionReturn() (action, error) {
-	return func(e *RunContext) error {
-		if len(e.ruleStack) == 0 {
-			e.stop = true
+	return func(c *RunContext) error {
+		if len(c.ruleStack) == 0 {
+			c.stop = true
 		} else {
-			e.ruleIdx = e.ruleStack[len(e.ruleStack)-1]
-			e.ruleStack = e.ruleStack[:len(e.ruleStack)-1]
+			c.ruleIdx = c.ruleStack[len(c.ruleStack)-1]
+			c.ruleStack = c.ruleStack[:len(c.ruleStack)-1]
 
 		}
 		return nil
@@ -416,11 +416,11 @@ func actionJumpOrCall(rs *RuleSet, ruleIdx int, call bool, v interface{}) (actio
 		ruleIdx,
 		tgtIdx,
 		tgt)
-	return func(e *RunContext) error {
+	return func(c *RunContext) error {
 		if call {
-			e.ruleStack = append(e.ruleStack, ruleIdx)
+			c.ruleStack = append(c.ruleStack, ruleIdx)
 		}
-		e.ruleIdx = tgtIdx - 1
+		c.ruleIdx = tgtIdx - 1
 		return nil
 	}, nil
 }

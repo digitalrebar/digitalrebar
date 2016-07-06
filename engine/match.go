@@ -26,9 +26,9 @@ import (
 type matcher func(*RunContext) (bool, error)
 
 func matchAnd(funcs ...matcher) matcher {
-	return func(e *RunContext) (bool, error) {
+	return func(c *RunContext) (bool, error) {
 		for _, fn := range funcs {
-			ok, err := fn(e)
+			ok, err := fn(c)
 			if err != nil {
 				return false, err
 			} else if !ok {
@@ -40,9 +40,9 @@ func matchAnd(funcs ...matcher) matcher {
 }
 
 func matchOr(funcs ...matcher) matcher {
-	return func(e *RunContext) (bool, error) {
+	return func(c *RunContext) (bool, error) {
 		for _, fn := range funcs {
-			ok, err := fn(e)
+			ok, err := fn(c)
 			if err != nil {
 				return false, err
 			} else if ok {
@@ -62,8 +62,8 @@ func matchNot(r *Rule, val interface{}) (matcher, error) {
 	if err != nil {
 		return nil, err
 	}
-	return func(e *RunContext) (bool, error) {
-		ok, err := fn(e)
+	return func(c *RunContext) (bool, error) {
+		ok, err := fn(c)
 		return !ok, err
 	}, nil
 }
@@ -73,7 +73,7 @@ func matchEnabled(val interface{}) (matcher, error) {
 	if !ok {
 		return nil, errors.New("Enabled needs a bool")
 	}
-	return func(e *RunContext) (bool, error) {
+	return func(c *RunContext) (bool, error) {
 		return b, nil
 	}, nil
 }
@@ -95,13 +95,13 @@ func matchJSON(val interface{}) (matcher, error) {
 		return nil, errors.New("JSON requires a Selector")
 	}
 
-	return func(e *RunContext) (bool, error) {
-		buf, err := json.Marshal(e)
+	return func(c *RunContext) (bool, error) {
+		buf, err := json.Marshal(c)
 		if err != nil {
 			return false, err
 		}
 		jsonOut := string(buf)
-		if e.Engine.Debug {
+		if c.Engine.Debug {
 			log.Printf("Matching JSON selector %s to:\n%s", s.Selector, jsonOut)
 		}
 		parser, err := js.CreateParserFromString(jsonOut)
@@ -117,7 +117,7 @@ func matchJSON(val interface{}) (matcher, error) {
 		}
 		log.Printf("JSON selector matched: %v", res)
 		if s.SaveAs != "" {
-			e.Vars[s.SaveAs] = res
+			c.Vars[s.SaveAs] = res
 		}
 		if len(s.PickResults) > 0 {
 			for varToSave, fidx := range s.PickResults {
@@ -125,7 +125,7 @@ func matchJSON(val interface{}) (matcher, error) {
 				if idx >= len(res) {
 					return false, fmt.Errorf("Cannot save variable %s, requested index %d out of bounds: %v", varToSave, idx, res)
 				}
-				e.Vars[varToSave] = res[idx]
+				c.Vars[varToSave] = res[idx]
 			}
 		}
 
@@ -221,8 +221,8 @@ func matchLen(val interface{}) (matcher, error) {
 	if arg.SaveAs == "" {
 		return nil, errors.New("Len requires a variable to save the length into")
 	}
-	return func(e *RunContext) (bool, error) {
-		val, ok := e.Vars[arg.Var]
+	return func(c *RunContext) (bool, error) {
+		val, ok := c.Vars[arg.Var]
 		if !ok {
 			return false, fmt.Errorf("Len: variable %s not set", arg.Var)
 		}
@@ -232,7 +232,7 @@ func matchLen(val interface{}) (matcher, error) {
 		}
 		switch reflectVal.Kind() {
 		case reflect.Map, reflect.Slice, reflect.String:
-			e.Vars[arg.SaveAs] = float64(reflectVal.Len())
+			c.Vars[arg.SaveAs] = float64(reflectVal.Len())
 			return true, nil
 		default:
 			return false, nil
@@ -420,8 +420,8 @@ func matchCmp(op string, val interface{}) (matcher, error) {
 			}
 		}
 	}
-	return func(e *RunContext) (bool, error) {
-		a, err := e.getVar(fixedArgs)
+	return func(c *RunContext) (bool, error) {
+		a, err := c.getVar(fixedArgs)
 		if err != nil {
 			return false, fmt.Errorf("Failed to fetch variable for %s on %v: %v", op, val, err)
 		}
@@ -466,8 +466,8 @@ func matchScript(val interface{}) (matcher, error) {
 	if err != nil {
 		return nil, err
 	}
-	return func(e *RunContext) (bool, error) {
-		return runScript(e, tmpl)
+	return func(c *RunContext) (bool, error) {
+		return runScript(c, tmpl)
 	}, nil
 }
 

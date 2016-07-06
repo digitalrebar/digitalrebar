@@ -20,13 +20,13 @@ func compileScript(script string) (*template.Template, error) {
 	return res.Parse(script)
 }
 
-func runScript(e *RunContext, scriptTmpl *template.Template) (bool, error) {
+func runScript(c *RunContext, scriptTmpl *template.Template) (bool, error) {
 	envVars := map[string]string{
-		"REBAR_ENDPOINT": e.Engine.rebarEndpoint,
-		"REBAR_KEY":      fmt.Sprintf("%s:%s", e.Engine.username, e.Engine.password),
+		"REBAR_ENDPOINT": c.Engine.rebarEndpoint,
+		"REBAR_KEY":      fmt.Sprintf("%s:%s", c.Engine.username, c.Engine.password),
 	}
 	buf := &bytes.Buffer{}
-	if err := scriptTmpl.Execute(buf, e); err != nil {
+	if err := scriptTmpl.Execute(buf, c); err != nil {
 		return false, err
 	}
 
@@ -39,11 +39,11 @@ func runScript(e *RunContext, scriptTmpl *template.Template) (bool, error) {
 	cmd.Stdin = buf
 	out, err := cmd.Output()
 	if err == nil {
-		log.Printf("Ruleset %s: Script rule %d ran successfully", e.ruleset.Name, e.ruleIdx)
+		log.Printf("Ruleset %s: Script rule %d ran successfully", c.ruleset.Name, c.ruleIdx)
 		log.Printf("%s", string(out))
 		return true, nil
 	}
-	log.Printf("Ruleset %s: Script rule %d failed", e.ruleset.Name, e.ruleIdx)
+	log.Printf("Ruleset %s: Script rule %d failed", c.ruleset.Name, c.ruleIdx)
 	exitErr, ok := err.(*exec.ExitError)
 	if ok {
 		log.Printf("%s", string(exitErr.Stderr))
