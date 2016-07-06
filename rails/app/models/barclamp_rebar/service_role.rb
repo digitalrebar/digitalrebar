@@ -28,20 +28,40 @@ class BarclampRebar::ServiceRole < Role
   def collect_addresses(nr, *args)
 
     aname = "#{nr.role.name}-addresses"
+    netname = "#{nr.role.name}-network"
     addresses = []
 
-    d = nr.deployment
-    d.node_roles.where(role_id: nr.role_id).each do |nrs|
-      if nrs.active?
-        n = nrs.node
-        str_addr = n.get_attrib('node-control-address')
-        str_addr ||= n.addresses.first.addr.to_s 
-        addresses << str_addr
-      end
-    end
+    # when we deal w/ node_roles, we want transactions for protection
+    DeploymentRole.transaction do
 
-    Rails.logger.info("Updating #{nr.role.name} #{aname}: #{addresses.inspect}")
-    Attrib.set(aname,nr.deployment_role,addresses)
+      # look up network type from attrib maps
+      # use node-control-address or private-node-control-address
+      # for internal networking, you can use v4/network_name or v6/network_name
+      map = Attrib.get(netname,nr) || "node-control-address"
+
+      d = nr.deployment
+      # find all the similar node_roles in the deployment
+      d.node_roles.where(role_id: nr.role_id).each do |nrs|
+        # we only want the active ones, all others are suspect
+        if nrs.active?
+          n = nrs.node
+          case map.split("/")[0]
+          when "v4"
+            str_addr ||= n.address(:v4_only, [map.split("/")[1]]).to_s
+          when "v6"
+            str_addr ||= n.address(:v6_only, [map.split("/")[1]]).to_s
+          else
+            str_addr = n.get_attrib(map) rescue n.address.to_s
+          end
+          addresses << str_addr if str_addr
+        end
+      end
+
+      # set the address on the deployment role (THIS IS SHARED, NOT ON THE NODE_ROLE)
+      Rails.logger.info("Updating #{nr.role.name} #{aname}: #{addresses.inspect}")
+      Attrib.set(aname,nr.deployment_role,addresses)
+
+    end
 
     true
 
