@@ -39,6 +39,19 @@ ActiveRecord::Base.transaction do
     [ "DEPLOYMENT_COMMIT",    "Commit Deployments" ],
     [ "DEPLOYMENT_PROPOSE",   "Propose Deployments" ],
 
+    [ "CAPABILITY_CREATE",    "Create Capabilities" ],
+    [ "CAPABILITY_READ",      "Read Capabilities" ],
+    [ "CAPABILITY_UPDATE",    "Update Capabilities" ],
+    [ "CAPABILITY_DESTROY",   "Destroy Capabilities" ],
+
+    [ "TENANT_CREATE",    "Create Tenants" ],
+    [ "TENANT_READ",      "Read Tenants" ],
+    [ "TENANT_UPDATE",    "Update Tenants" ],
+    [ "TENANT_DESTROY",   "Destroy Tenants" ],
+
+    [ "TENANT_USER_ADD_CAPABILITIY",   "Add Capability to User in Tenant" ],
+    [ "TENANT_USER_DESTROY_CAPABILITIY",   "Remove Capability from User in Tenant" ],
+
     [ "MACHINE_CREATE",   "Create Machines Only" ],
     [ "MACHINE_ACCOUNT",  "Modify myself only" ]
   ]

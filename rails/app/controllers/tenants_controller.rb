@@ -24,6 +24,7 @@ class TenantsController < ::ApplicationController
     objs = []
     ok_params = params.permit(attrs)
     objs = Tenant.where(ok_params) if !ok_params.empty?
+    objs = [] unless validate_capability(@tenant.id, "TENANT_READ") # GREG: Really filter
     respond_to do |format|
       format.html {}
       format.json { render api_index Tenant, objs }
@@ -32,6 +33,10 @@ class TenantsController < ::ApplicationController
 
   def show
     @tenant = Tenant.find_key params[:id]
+    @tenant = nil unless validate_tenant(@tenant.id, "TENANT_READ")
+    unless @tenant
+      raise "GREG: Make nicer: Should be 404"
+    end
     respond_to do |format|
       format.html { }
       format.json { render api_show @tenant }
@@ -40,6 +45,7 @@ class TenantsController < ::ApplicationController
   
   def index
     @tenants = Tenant.all
+    @tenants = [] unless validate_capability(@tenant.id, "TENANT_READ") # GREG: Really filter
     respond_to do |format|
       format.html {}
       format.json { render api_index Tenant, @tenants }
@@ -47,6 +53,9 @@ class TenantsController < ::ApplicationController
   end
 
   def create
+    unless validate_tenant(@tenant.id, "TENANT_CREATE")
+      raise "GREG: Make nicer: Should be 409"
+    end
     unless params[:parent_id]
       params[:parent_id] = @current_user.tenant_id
     end
@@ -63,6 +72,9 @@ class TenantsController < ::ApplicationController
   end
 
   def update
+    unless validate_tenant(@tenant.id, "TENANT_UPDATE")
+      raise "GREG: Make nicer: Should be 409"
+    end
     Tenant.transaction do
       @tenant = Tenant.find_key(params[:id]).lock!
       if request.patch?
@@ -78,12 +90,18 @@ class TenantsController < ::ApplicationController
   end
 
   def destroy
+    unless validate_tenant(@tenant.id, "TENANT_DESTROY")
+      raise "GREG: Make nicer: Should be 409"
+    end
     @tenant = Tenant.find_key(params[:id])
     @tenant.destroy
     render api_delete @tenant
   end
 
   def edit
+    unless validate_tenant(@tenant.id, "TENANT_UPDATE")
+      raise "GREG: Make nicer: Should be 409"
+    end
     @tenant = Tenant.find_key params[:id]
     respond_to do |format|
       format.html {  }

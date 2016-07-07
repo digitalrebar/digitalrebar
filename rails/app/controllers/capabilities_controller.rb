@@ -24,6 +24,7 @@ class CapabilitiesController < ::ApplicationController
     objs = []
     ok_params = params.permit(attrs)
     objs = Capability.where(ok_params) if !ok_params.empty?
+    objs = [] unless validate_capability(@current_user.current_tenant_id, "CAPABILITY_READ")
     respond_to do |format|
       format.html {}
       format.json { render api_index Capability, objs }
@@ -32,6 +33,10 @@ class CapabilitiesController < ::ApplicationController
 
   def show
     @capability = Capability.find_key params[:id]
+    @capability = nil unless validate_capability(@current_user.current_tenant_id, "CAPABILITY_READ")
+    unless @capability
+      raise "GREG: Make nicer: Should be 404"
+    end
     respond_to do |format|
       format.html { }
       format.json { render api_show @capability }
@@ -40,6 +45,7 @@ class CapabilitiesController < ::ApplicationController
   
   def index
     @capabilities = Capability.all
+    @capabilities = [] unless validate_capability(@current_user.current_tenant_id, "CAPABILITY_READ")
     respond_to do |format|
       format.html {}
       format.json { render api_index Capability, @capabilities.to_a }
@@ -47,12 +53,14 @@ class CapabilitiesController < ::ApplicationController
   end
 
   def create
+    unless validate_capability(@current_user.current_tenant_id, "CAPABILITY_CREATE")
+      raise "GREG: Make nicer: Should be 409"
+    end
     Capability.transaction do
       @capability = Capability.create! params.permit(:name,
                                              :description,
                                              :source)
     end
-
     respond_to do |format|
       format.html { redirect_to :action=>:index }
       format.json { render api_show @capability }
@@ -60,6 +68,9 @@ class CapabilitiesController < ::ApplicationController
   end
 
   def update
+    unless validate_capability(@current_user.current_tenant_id, "CAPABILITY_UPDATE")
+      raise "GREG: Make nicer: Should be 409"
+    end
     Capability.transaction do
       @capability = Capability.find_key(params[:id]).lock!
       if request.patch?
@@ -75,6 +86,9 @@ class CapabilitiesController < ::ApplicationController
   end
 
   def destroy
+    unless validate_capability(@current_user.current_tenant_id, "CAPABILITY_DESTROY")
+      raise "GREG: Make nicer: Should be 409"
+    end
     @capability = Capability.find_key(params[:id])
     @capability.destroy
     render api_delete @capability

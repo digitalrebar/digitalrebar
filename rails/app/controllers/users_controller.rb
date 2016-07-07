@@ -110,7 +110,10 @@ class UsersController < ApplicationController
       @user.digest_password(params[:password])
       @user.save!
     end
-    render api_show @user
+    respond_to do |format|
+      format.html { } # show.html.erb
+      format.json { render api_show @user }
+    end
   end
 
   def update
@@ -122,13 +125,17 @@ class UsersController < ApplicationController
         patch(@user,fields)
       else
         @user.update_attributes!(user_params)
-        if params[:digest]
-          @user.digest_password(params[:password])
-          @user.save!
-        end
+        @user.save!
+      end
+      if params[:digest]
+        @user.digest_password(params[:password])
+        @user.save!
       end
     end
-    render api_show @user
+    respond_to do |format|
+      format.html { } # show.html.erb
+      format.json { render api_show @user }
+    end
   end
 
   def digest_password
