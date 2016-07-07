@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 import (
 	"encoding/json"
@@ -19,7 +17,7 @@ type Node struct {
 
 // PowerActions gets the available power actions for this node.
 func (o *Node) PowerActions() ([]string, error) {
-	buf, err := session.request("GET", urlFor(o, "power"), nil)
+	buf, err := o.client().request("GET", urlFor(o, "power"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -31,12 +29,12 @@ func (o *Node) PowerActions() ([]string, error) {
 // guaranteed to be atomic.
 func (o *Node) Move(depl *Deployment) error {
 	o.DeploymentID = depl.ID
-	return Update(o)
+	return o.client().Update(o)
 }
 
 // Power performs a power management action for the node.
 func (o *Node) Power(action string) error {
-	_, err := session.request("PUT", fmt.Sprintf("%v?poweraction=%v", urlFor(o, "power"), action), nil)
+	_, err := o.client().request("PUT", fmt.Sprintf("%v?poweraction=%v", urlFor(o, "power"), action), nil)
 	return err
 }
 
@@ -46,26 +44,25 @@ func (o *Node) Power(action string) error {
 func (o *Node) ActiveBootstate() string {
 	attr := &Attrib{}
 	attr.Name = "provisioner-active-bootstate"
-	attr, err := GetAttrib(o, attr, "")
+	attr, err := o.client().GetAttrib(o, attr, "")
 	if err != nil {
 		return ""
 	}
-	if res, ok := attr.Value.(string); !ok {
-		return ""
-	} else {
+	if res, ok := attr.Value.(string); ok {
 		return res
 	}
+	return ""
 }
 
 // Redeploy has a node redeploy itself from scratch.  This includes wiping out the
 // filesystems, reconfiguring hardware, and reinstalling the OS and all roles.
 func (o *Node) Redeploy() error {
 	uri := urlFor(o, "redeploy")
-	buf, err := session.request("PUT", uri, nil)
+	buf, err := o.client().request("PUT", uri, nil)
 	if err != nil {
 		return err
 	}
-	return unmarshal(uri, buf, o)
+	return o.client().unmarshal(uri, buf, o)
 }
 
 // Scrub tries to delete any noderoles on a node that are not in the
@@ -73,11 +70,11 @@ func (o *Node) Redeploy() error {
 // deployment's parents.
 func (o *Node) Scrub() error {
 	uri := urlFor(o, "scrub")
-	buf, err := session.request("PUT", uri, nil)
+	buf, err := o.client().request("PUT", uri, nil)
 	if err != nil {
 		return err
 	}
-	return unmarshal(uri, buf, o)
+	return o.client().unmarshal(uri, buf, o)
 }
 
 // Satisfy salient interfaces
@@ -95,7 +92,7 @@ func (o *Node) providers()          {}
 func (o *Node) Deployment() (res *Deployment, err error) {
 	res = &Deployment{}
 	res.ID = o.DeploymentID
-	err = Read(res)
+	err = o.client().Read(res)
 	return res, err
 }
 
@@ -106,12 +103,12 @@ type Noder interface {
 }
 
 // Nodes returns all the Nodes.
-func Nodes(scope ...Noder) (res []*Node, err error) {
+func (c *Client) Nodes(scope ...Noder) (res []*Node, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "nodes")
 	res = make([]*Node, 0)
-	return res, List(path.Join(paths...), &res)
+	return res, c.List(path.Join(paths...), &res)
 }

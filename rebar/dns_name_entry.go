@@ -1,9 +1,9 @@
 package main
 
-import "github.com/digitalrebar/rebar-api/client"
+import "github.com/digitalrebar/rebar-api/api"
 
 func init() {
-	maker := func() client.Crudder { return &client.DnsNameEntry{} }
+	maker := func() api.Crudder { return &api.DnsNameEntry{} }
 	singularName := "dnsnameentry"
 	app.AddCommand(makeCommandTree(singularName, maker))
 }

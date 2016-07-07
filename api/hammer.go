@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 import (
 	"path"
@@ -22,12 +20,12 @@ type Hammerer interface {
 }
 
 // Hammers returns all of the Hammers.
-func Hammers(scope ...Hammerer) (res []*Hammer, err error) {
+func (c *Client) Hammers(scope ...Hammerer) (res []*Hammer, err error) {
 	res = make([]*Hammer, 0)
 	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "hammers")
-	return res, List(path.Join(paths...), &res)
+	return res, c.List(path.Join(paths...), &res)
 }

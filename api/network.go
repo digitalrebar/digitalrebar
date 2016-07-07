@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 import (
 	"errors"
@@ -23,7 +21,7 @@ type Network struct {
 func (o *Network) Role() (role *Role, err error) {
 	role = &Role{}
 	role.Name = fmt.Sprintf("network-%v", o.Name)
-	return role, Read(role)
+	return role, o.client().Read(role)
 }
 
 // AutoRanges returns the NetworkRanges in a Network for a specific Node.
@@ -38,17 +36,17 @@ func (o *Network) AutoRanges(node *Node) ([]*NetworkRange, error) {
 	}
 	uri := path.Join(o.ApiName(), netId, "auto_ranges", nodeId)
 	res := make([]*NetworkRange, 0)
-	return res, List(uri, &res)
+	return res, o.client().List(uri, &res)
 }
 
 // ForAddress allows you to look up the network that contains this address.
 func (o *Network) ForAddress(addr string) error {
 	p := fmt.Sprintf("%v?address=%v", o.ApiName(), url.QueryEscape(addr))
-	buf, err := session.request("GET", p, nil)
+	buf, err := o.client().request("GET", p, nil)
 	if err != nil {
 		return err
 	}
-	return unmarshal(p, buf, o)
+	return o.client().unmarshal(p, buf, o)
 }
 
 // Satisfy salient interfaces
@@ -63,14 +61,14 @@ type Networker interface {
 }
 
 // Networks returns all of the Networks.
-func Networks(scope ...Networker) (res []*Network, err error) {
+func (c *Client) Networks(scope ...Networker) (res []*Network, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "networks")
 	res = make([]*Network, 0)
-	return res, List(path.Join(paths...), &res)
+	return res, c.List(path.Join(paths...), &res)
 }
 
 // NetworkRange wraps datatypes.NetworkRange to provide the client API
@@ -84,7 +82,7 @@ type NetworkRange struct {
 func (o *NetworkRange) Network() (*Network, error) {
 	res := &Network{}
 	res.ID = o.NetworkID
-	return res, Read(res)
+	return res, o.client().Read(res)
 }
 
 func (o *NetworkRange) networkAllocations() {}
@@ -96,14 +94,14 @@ type NetworkRanger interface {
 }
 
 // NetworkRanges returns all of the NetworkRanges
-func NetworkRanges(scope ...NetworkRanger) (res []*NetworkRange, err error) {
+func (c *Client) NetworkRanges(scope ...NetworkRanger) (res []*NetworkRange, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "network_ranges")
 	res = make([]*NetworkRange, 0)
-	return res, List(path.Join(paths...), &res)
+	return res, c.List(path.Join(paths...), &res)
 }
 
 // NetworkAllocation wraps datatypes.NetworkAllocation to provide the client API.
@@ -118,7 +116,7 @@ func (o *NetworkAllocation) Node() (*Node, error) {
 	res := &Node{}
 	if o.NodeID.Valid {
 		res.ID = o.NodeID.Int64
-		return res, Read(res)
+		return res, o.client().Read(res)
 	}
 	return nil, errors.New("NetworkAllocation not bound to a Node")
 }
@@ -128,7 +126,7 @@ func (o *NetworkAllocation) Network() (*Network, error) {
 	res := &Network{}
 	if o.NetworkID.Valid {
 		res.ID = o.NetworkID.Int64
-		return res, Read(res)
+		return res, o.client().Read(res)
 	}
 	return nil, errors.New("NetworkAllocation not bound to a Network")
 }
@@ -140,14 +138,14 @@ type NetworkAllocater interface {
 }
 
 // NetworkAllocations returns all of the NetworkAllocations.
-func NetworkAllocations(scope ...NetworkAllocater) (res []*NetworkAllocation, err error) {
+func (c *Client) NetworkAllocations(scope ...NetworkAllocater) (res []*NetworkAllocation, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "network_allocations")
 	res = make([]*NetworkAllocation, 0)
-	return res, List(path.Join(paths...), &res)
+	return res, c.List(path.Join(paths...), &res)
 }
 
 // NetworkRouter wraps datatypes.NetworkRouter to provide the client API.
@@ -161,7 +159,7 @@ type NetworkRouter struct {
 func (o *NetworkRouter) Network() (*Network, error) {
 	res := &Network{}
 	res.ID = o.NetworkID
-	return res, Read(res)
+	return res, o.client().Read(res)
 }
 
 // NetworkRouterer is anything that a NetworkRouter can be bound to.
@@ -171,12 +169,12 @@ type NetworkRouterer interface {
 }
 
 // Networks returns all of the Networks.
-func NetworkRouters(scope ...NetworkRouterer) (res []*NetworkRouter, err error) {
+func (c *Client) NetworkRouters(scope ...NetworkRouterer) (res []*NetworkRouter, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "network_routers")
 	res = make([]*NetworkRouter, 0)
-	return res, List(path.Join(paths...), &res)
+	return res, c.List(path.Join(paths...), &res)
 }

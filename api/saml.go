@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 import (
 	"bytes"

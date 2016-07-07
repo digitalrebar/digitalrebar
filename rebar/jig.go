@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/digitalrebar/rebar-api/client"
+	"github.com/digitalrebar/rebar-api/api"
 	"github.com/spf13/cobra"
 )
 
 func addJiggerCommands(singularName string,
-	maker func() client.Crudder,
+	maker func() api.Crudder,
 	res *cobra.Command) {
-	if _, ok := maker().(client.Jigger); !ok {
+	if _, ok := maker().(api.Jigger); !ok {
 		return
 	}
 	cmd := &cobra.Command{
@@ -21,11 +21,11 @@ func addJiggerCommands(singularName string,
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := maker().(client.Jigger)
-			if client.SetId(obj, args[0]) != nil {
+			obj := maker().(api.Jigger)
+			if session.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
-			objs, err := client.Jigs(obj)
+			objs, err := session.Jigs(obj)
 			if err != nil {
 				log.Fatalf("Failed to get jigss for %v(%v)\n", singularName, args[0])
 			}
@@ -36,7 +36,7 @@ func addJiggerCommands(singularName string,
 }
 
 func init() {
-	maker := func() client.Crudder { return &client.Jig{} }
+	maker := func() api.Crudder { return &api.Jig{} }
 	singularName := "jig"
 	app.AddCommand(makeCommandTree(singularName, maker))
 }

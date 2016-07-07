@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 import (
 	"path"
@@ -21,22 +19,22 @@ type NodeRoler interface {
 	nodeRoles()
 }
 
-func NodeRoles(scope ...NodeRoler) (res []*NodeRole, err error) {
+func (c *Client) NodeRoles(scope ...NodeRoler) (res []*NodeRole, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "node_roles")
 	res = make([]*NodeRole, 0)
-	return res, List(path.Join(paths...), &res)
+	return res, c.List(path.Join(paths...), &res)
 }
 
 // Force the noderole to retry
 func (o *NodeRole) Retry() error {
 	uri := urlFor(o, "retry")
-	buf, err := session.request("PUT", uri, nil)
+	buf, err := o.client().request("PUT", uri, nil)
 	if err != nil {
 		return err
 	}
-	return unmarshal(uri, buf, o)
+	return o.client().unmarshal(uri, buf, o)
 }

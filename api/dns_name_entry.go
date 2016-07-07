@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 import "github.com/digitalrebar/rebar-api/datatypes"
 
@@ -13,7 +11,7 @@ type DnsNameEntry struct {
 }
 
 // DnsNameEntrys fetches all of the DnsNameEntrys in Rebar.
-func DnsNameEntrys() (res []*DnsNameEntry, err error) {
+func (c *Client) DnsNameEntrys() (res []*DnsNameEntry, err error) {
 	res = make([]*DnsNameEntry, 0)
-	return res, List("dns_name_entries", &res)
+	return res, c.List("dns_name_entries", &res)
 }

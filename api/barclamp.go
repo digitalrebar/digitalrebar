@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 import "github.com/digitalrebar/rebar-api/datatypes"
 
@@ -13,7 +11,7 @@ type Barclamp struct {
 }
 
 // Barclamps returns all of the Barclamps.
-func Barclamps() (res []*Barclamp, err error) {
+func (c *Client) Barclamps() (res []*Barclamp, err error) {
 	res = make([]*Barclamp, 0)
-	return res, List("barclamps", &res)
+	return res, c.List("barclamps", &res)
 }

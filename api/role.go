@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 import (
 	"path"
@@ -28,12 +26,12 @@ type Roler interface {
 }
 
 // Roles returns all the Roles.
-func Roles(scope ...Roler) (res []*Role, err error) {
+func (c *Client) Roles(scope ...Roler) (res []*Role, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "roles")
 	res = make([]*Role, 0)
-	return res, List(path.Join(paths...), &res)
+	return res, c.List(path.Join(paths...), &res)
 }

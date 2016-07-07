@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 import (
 	"crypto/rand"
@@ -50,14 +48,14 @@ func (p *PasswordChangeToken) UnmarshalJSON(buf []byte) error {
 }
 
 // Users returns all the Users in the system
-func Users() (res []*User, err error) {
+func (c *Client) Users() (res []*User, err error) {
 	res = make([]*User, 0)
-	return res, List("users", &res)
+	return res, c.List("users", &res)
 }
 
 // StartPasswordReset fetches a PasswordChangeToken for this user.
 func (u *User) StartPasswordReset() (*PasswordChangeToken, error) {
-	buf, err := session.request("GET", urlFor(u, "start_password_reset"), nil)
+	buf, err := u.client().request("GET", urlFor(u, "start_password_reset"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +85,7 @@ func (u *User) CompletePasswordReset(tok *PasswordChangeToken, newPassword strin
 		base64.StdEncoding.EncodeToString(pubKey[:]),
 		base64.StdEncoding.EncodeToString(nonce[:]),
 		base64.StdEncoding.EncodeToString(encPayload))
-	_, err = session.request("POST", urlFor(u, "complete_password_reset"), []byte(body))
+	_, err = u.client().request("POST", urlFor(u, "complete_password_reset"), []byte(body))
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 // Apache 2 License 2015 by Rob Hirschfeld for RackN portions of
 // source based on
@@ -23,7 +21,8 @@ type challenge interface {
 	authorize(method, uri string, req *http.Request) error
 }
 
-type rebarClient struct {
+// Client wraps http.Client to add our auth primitives.
+type Client struct {
 	*http.Client
 	Challenge challenge
 	URL       string
@@ -33,11 +32,9 @@ type rebarClient struct {
 // connection.  This file implements all of the basic REST and HTTP
 // operations that Rebar uses.
 
-// OCB assumes global session created with NewClient
-var session *rebarClient
-
 const (
-	// The Rebar API to call.  This will be prepended to every
+	// API_PATH is where the API lives at the Client.
+	// This will be prepended to every
 	// url passed to one of the request functions.
 	API_PATH = "/api/v2"
 )
@@ -45,21 +42,21 @@ const (
 // Session establishes a new connection to Rebar.  You must call
 // this function before using any other functions in the rebar
 // package.  Session stores its information in a private global variable.
-func Session(URL, User, Password string) error {
+func Session(URL, User, Password string) (*Client, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	c := &rebarClient{
+	c := &Client{
 		URL:    URL,
 		Client: &http.Client{Transport: tr},
 	}
 	// retrieve the digest info from the 301 message
 	resp, e := c.Head(c.URL + path.Join(API_PATH, "digest"))
 	if e != nil {
-		return e
+		return nil, e
 	}
 	if resp.StatusCode != 401 && resp.StatusCode != 200 {
-		return fmt.Errorf("Expected Digest Challenge os SAML Redirect Missing on URL %s got %s", URL, resp.Status)
+		return nil, fmt.Errorf("Expected Digest Challenge os SAML Redirect Missing on URL %s got %s", URL, resp.Status)
 	}
 
 	// We may be SAML Auth
@@ -77,13 +74,12 @@ func Session(URL, User, Password string) error {
 
 	err := c.Challenge.parseChallenge(resp)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	session = c
-	return nil
+	return c, nil
 }
 
-func (c *rebarClient) basicRequest(method, uri string, objIn []byte) (resp *http.Response, err error) {
+func (c *Client) basicRequest(method, uri string, objIn []byte) (resp *http.Response, err error) {
 	var body io.Reader
 
 	if objIn != nil {
@@ -121,7 +117,7 @@ func (c *rebarClient) basicRequest(method, uri string, objIn []byte) (resp *http
 // objIn is the raw data to be passed in the request body
 // objOut is the raw request body (if any)
 // err is the error of any occurred.
-func (c *rebarClient) request(method, uri string, objIn []byte) (objOut []byte, err error) {
+func (c *Client) request(method, uri string, objIn []byte) (objOut []byte, err error) {
 	resp, err := c.basicRequest(method, uri, objIn)
 	if err != nil {
 		return nil, err
@@ -154,7 +150,7 @@ func (c *rebarClient) request(method, uri string, objIn []byte) (objOut []byte, 
 }
 
 // list is a helper specialized to get lists of objects.
-func (c *rebarClient) list(res interface{}, uri ...string) (err error) {
+func (c *Client) list(res interface{}, uri ...string) (err error) {
 	buf, err := c.request("GET", path.Join(uri...), nil)
 	if err != nil {
 		return err
@@ -162,7 +158,7 @@ func (c *rebarClient) list(res interface{}, uri ...string) (err error) {
 	return json.Unmarshal(buf, &res)
 }
 
-func (c *rebarClient) match(vals map[string]interface{}, res interface{}, uri ...string) (err error) {
+func (c *Client) match(vals map[string]interface{}, res interface{}, uri ...string) (err error) {
 	inbuf, err := json.Marshal(vals)
 	buf, err := c.request("POST",
 		path.Join(path.Join(uri...), "match"),

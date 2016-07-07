@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/digitalrebar/rebar-api/client"
+	"github.com/digitalrebar/rebar-api/api"
 	"github.com/guregu/null"
 	"github.com/spf13/cobra"
 )
 
 func addNetworkerCommands(singularName string,
-	maker func() client.Crudder,
+	maker func() api.Crudder,
 	res *cobra.Command) {
-	if _, ok := maker().(client.Networker); !ok {
+	if _, ok := maker().(api.Networker); !ok {
 		return
 	}
 	cmd := &cobra.Command{
@@ -22,11 +22,11 @@ func addNetworkerCommands(singularName string,
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := maker().(client.Networker)
-			if client.SetId(obj, args[0]) != nil {
+			obj := maker().(api.Networker)
+			if session.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
-			objs, err := client.Networks(obj)
+			objs, err := session.Networks(obj)
 			if err != nil {
 				log.Fatalf("Failed to get networks for %v(%v)\n%v\n", singularName, args[0], err)
 			}
@@ -37,9 +37,9 @@ func addNetworkerCommands(singularName string,
 }
 
 func addNetworkRangerCommands(singularName string,
-	maker func() client.Crudder,
+	maker func() api.Crudder,
 	res *cobra.Command) {
-	if _, ok := maker().(client.NetworkRanger); !ok {
+	if _, ok := maker().(api.NetworkRanger); !ok {
 		return
 	}
 	cmd := &cobra.Command{
@@ -49,11 +49,11 @@ func addNetworkRangerCommands(singularName string,
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := maker().(client.NetworkRanger)
-			if err := client.SetId(obj, args[0]); err != nil {
+			obj := maker().(api.NetworkRanger)
+			if err := session.SetId(obj, args[0]); err != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n%v\n", args[0], singularName, err)
 			}
-			objs, err := client.NetworkRanges(obj)
+			objs, err := session.NetworkRanges(obj)
 			if err != nil {
 				log.Fatalf("Failed to get networkRanges for %v(%v)\n%v\n", singularName, args[0], err)
 			}
@@ -64,9 +64,9 @@ func addNetworkRangerCommands(singularName string,
 }
 
 func addNetworkAllocaterCommands(singularName string,
-	maker func() client.Crudder,
+	maker func() api.Crudder,
 	res *cobra.Command) {
-	if _, ok := maker().(client.NetworkAllocater); !ok {
+	if _, ok := maker().(api.NetworkAllocater); !ok {
 		return
 	}
 	cmd := &cobra.Command{
@@ -76,11 +76,11 @@ func addNetworkAllocaterCommands(singularName string,
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := maker().(client.NetworkAllocater)
-			if err := client.SetId(obj, args[0]); err != nil {
+			obj := maker().(api.NetworkAllocater)
+			if err := session.SetId(obj, args[0]); err != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n%v\n", args[0], singularName, err)
 			}
-			objs, err := client.NetworkAllocations(obj)
+			objs, err := session.NetworkAllocations(obj)
 			if err != nil {
 				log.Fatalf("Failed to get networkallocations for %v(%v)\n%v\n", singularName, args[0], err)
 			}
@@ -91,9 +91,9 @@ func addNetworkAllocaterCommands(singularName string,
 }
 
 func addNetworkRouterCommands(singularName string,
-	maker func() client.Crudder,
+	maker func() api.Crudder,
 	res *cobra.Command) {
-	if _, ok := maker().(client.NetworkRouterer); !ok {
+	if _, ok := maker().(api.NetworkRouterer); !ok {
 		return
 	}
 	cmd := &cobra.Command{
@@ -103,11 +103,11 @@ func addNetworkRouterCommands(singularName string,
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := maker().(client.NetworkRouterer)
-			if err := client.SetId(obj, args[0]); err != nil {
+			obj := maker().(api.NetworkRouterer)
+			if err := session.SetId(obj, args[0]); err != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n%v\n", args[0], singularName, err)
 			}
-			objs, err := client.NetworkRouters(obj)
+			objs, err := session.NetworkRouters(obj)
 			if err != nil {
 				log.Fatalf("Failed to get networkrouters for %v(%v)\n%v\n", singularName, args[0], err)
 			}
@@ -118,7 +118,7 @@ func addNetworkRouterCommands(singularName string,
 }
 
 func init() {
-	maker := func() client.Crudder { return &client.Network{} }
+	maker := func() api.Crudder { return &api.Network{} }
 	network := makeCommandTree("network", maker)
 	cmds := []*cobra.Command{
 		&cobra.Command{
@@ -128,8 +128,8 @@ func init() {
 				if len(args) != 1 {
 					log.Fatalf("%v requires 1 argument\n", c.UseLine())
 				}
-				obj := &client.Network{}
-				if err := client.Import(obj, []byte(args[0])); err != nil {
+				obj := &api.Network{}
+				if err := session.Import(obj, []byte(args[0])); err != nil {
 					log.Fatalf("Unable to import network: %v\n", err)
 				}
 				fmt.Println(prettyJSON(obj))
@@ -142,37 +142,37 @@ func init() {
 				if len(args) != 3 {
 					log.Fatalf("%v requires 2 arguments\n", c.UseLine())
 				}
-				node := &client.Node{}
-				network := &client.Network{}
-				if err := client.Fetch(node, args[2]); err != nil {
+				node := &api.Node{}
+				network := &api.Network{}
+				if err := session.Fetch(node, args[2]); err != nil {
 					log.Fatalf("Unable to fetch node\n%v\n", err)
 				}
-				if err := client.Fetch(network, args[0]); err != nil {
+				if err := session.Fetch(network, args[0]); err != nil {
 					log.Fatalf("Unable to fetch network\n%v\n", err)
 				}
 				ranges, err := network.AutoRanges(node)
 				if err != nil {
 					log.Fatalln("Failed to get auto ranges for network", err)
 				}
-				res := make([]*client.NetworkAllocation, len(ranges))
+				res := make([]*api.NetworkAllocation, len(ranges))
 				unwind := true
 				defer func() {
 					if unwind {
 						for _, allocation := range res {
 							if allocation != nil {
-								client.Destroy(allocation)
+								session.Destroy(allocation)
 							}
 						}
 					}
 				}()
 
 				for i, netRange := range ranges {
-					alloc := &client.NetworkAllocation{}
+					alloc := &api.NetworkAllocation{}
 					alloc.NodeID = null.IntFrom(node.ID)
 					alloc.NetworkID = null.IntFrom(network.ID)
 					alloc.NetworkRangeID = null.IntFrom(netRange.ID)
 
-					if err := client.BaseCreate(alloc); err != nil {
+					if err := session.BaseCreate(alloc); err != nil {
 						log.Fatalf("Unable to create new NetworkAllocation: %v", err)
 					}
 					res[i] = alloc
@@ -188,21 +188,21 @@ func init() {
 				if len(args) != 5 && len(args) != 7 {
 					log.Fatalf("%v requires 3 or 4 arguments", c.UseLine())
 				}
-				node := &client.Node{}
-				if err := client.Fetch(node, args[0]); err != nil {
+				node := &api.Node{}
+				if err := session.Fetch(node, args[0]); err != nil {
 					log.Fatalln("Unable to fetch node from Rebar\n%v\n", err)
 				}
-				netRange := &client.NetworkRange{}
-				if err := client.SetId(netRange, args[4]); err != nil {
+				netRange := &api.NetworkRange{}
+				if err := session.SetId(netRange, args[4]); err != nil {
 					vals := map[string]interface{}{}
 					vals["name"] = args[4]
-					network := &client.Network{}
-					if err := client.Fetch(network, args[2]); err != nil {
+					network := &api.Network{}
+					if err := session.Fetch(network, args[2]); err != nil {
 						log.Fatalln("Unable to fetch network from Rebar\n%v\n", err)
 					}
 					vals["network_id"] = network.ID
-					netRanges := []*client.NetworkRange{}
-					if err := client.Match(netRange.ApiName(), vals, &netRanges); err != nil {
+					netRanges := []*api.NetworkRange{}
+					if err := session.Match(netRange.ApiName(), vals, &netRanges); err != nil {
 						log.Fatalf("Unable to fetch ranges matching %#v\n%v\n", netRange, err)
 					}
 					if len(netRanges) != 1 {
@@ -210,18 +210,18 @@ func init() {
 					}
 					netRange = netRanges[0]
 				} else {
-					if err := client.Read(netRange); err != nil {
+					if err := session.Read(netRange); err != nil {
 						log.Fatalln("Unable to fetch network range\n%v\n", err)
 					}
 				}
-				alloc := &client.NetworkAllocation{}
+				alloc := &api.NetworkAllocation{}
 				alloc.NetworkID = null.IntFrom(netRange.NetworkID)
 				alloc.NetworkRangeID = null.IntFrom(netRange.ID)
 				alloc.NodeID = null.IntFrom(node.ID)
 				if len(args) == 7 {
 					alloc.Address = args[6]
 				}
-				if err := client.BaseCreate(alloc); err != nil {
+				if err := session.BaseCreate(alloc); err != nil {
 					log.Fatalf("Unable to add node to network\n%v\n", err)
 				}
 				fmt.Println(prettyJSON(alloc))
@@ -230,11 +230,11 @@ func init() {
 	}
 	network.AddCommand(cmds...)
 	app.AddCommand(network)
-	maker = func() client.Crudder { return &client.NetworkRange{} }
+	maker = func() api.Crudder { return &api.NetworkRange{} }
 	networkrange := makeCommandTree("networkrange", maker)
 	app.AddCommand(networkrange)
-	maker = func() client.Crudder { return &client.NetworkAllocation{} }
+	maker = func() api.Crudder { return &api.NetworkAllocation{} }
 	app.AddCommand(makeCommandTree("networkallocation", maker))
-	maker = func() client.Crudder { return &client.NetworkRouter{} }
+	maker = func() api.Crudder { return &api.NetworkRouter{} }
 	app.AddCommand(makeCommandTree("networkrouter", maker))
 }

@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/digitalrebar/rebar-api/client"
+	"github.com/digitalrebar/rebar-api/api"
 	"github.com/spf13/cobra"
 )
 
 func addRolerCommands(singularName string,
-	maker func() client.Crudder,
+	maker func() api.Crudder,
 	res *cobra.Command) {
-	if _, ok := maker().(client.Roler); !ok {
+	if _, ok := maker().(api.Roler); !ok {
 		return
 	}
 	res.AddCommand(&cobra.Command{
@@ -21,11 +21,11 @@ func addRolerCommands(singularName string,
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := maker().(client.Roler)
-			if client.SetId(obj, args[0]) != nil {
+			obj := maker().(api.Roler)
+			if session.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
-			objs, err := client.Roles(obj)
+			objs, err := session.Roles(obj)
 			if err != nil {
 				log.Fatalf("Failed to get roles for %v(%v)\n", singularName, args[0])
 			}
@@ -35,7 +35,7 @@ func addRolerCommands(singularName string,
 }
 
 func init() {
-	maker := func() client.Crudder { return &client.Role{} }
+	maker := func() api.Crudder { return &api.Role{} }
 	singularName := "role"
 	app.AddCommand(makeCommandTree(singularName, maker))
 }

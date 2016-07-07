@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 import (
 	"errors"
@@ -21,7 +19,7 @@ func (o *Deployment) Parent() (res *Deployment, err error) {
 	res = &Deployment{}
 	if o.ParentID.Valid {
 		res.ID = o.ParentID.Int64
-		return res, Read(res)
+		return res, o.client().Read(res)
 	}
 	return nil, errors.New("Deployment has no parent")
 }
@@ -32,11 +30,11 @@ func (o *Deployment) Parent() (res *Deployment, err error) {
 // deployment.
 func (o *Deployment) Redeploy() error {
 	uri := urlFor(o, "redeploy")
-	buf, err := session.request("PUT", uri, nil)
+	buf, err := o.client().request("PUT", uri, nil)
 	if err != nil {
 		return err
 	}
-	return unmarshal(uri, buf, o)
+	return o.client().unmarshal(uri, buf, o)
 }
 
 // Satisfy salient interfaces
@@ -54,12 +52,12 @@ type Deploymenter interface {
 }
 
 // Deployments returns all of the Deployments.
-func Deployments(scope ...Deploymenter) (res []*Deployment, err error) {
+func (c *Client) Deployments(scope ...Deploymenter) (res []*Deployment, err error) {
 	res = make([]*Deployment, 0)
 	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "deployments")
-	return res, List(path.Join(paths...), &res)
+	return res, c.List(path.Join(paths...), &res)
 }

@@ -10,13 +10,13 @@ import (
 	"path/filepath"
 
 	"github.com/VictorLowther/yaml"
-	"github.com/digitalrebar/rebar-api/client"
+	"github.com/digitalrebar/rebar-api/api"
 	"github.com/digitalrebar/rebar-api/datatypes"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	maker := func() client.Crudder { return &client.Barclamp{} }
+	maker := func() api.Crudder { return &api.Barclamp{} }
 	singularName := "barclamp"
 	barclamps := makeCommandTree(singularName, maker)
 	barclamps.AddCommand(&cobra.Command{
@@ -54,7 +54,7 @@ func init() {
 				log.Fatal(err)
 			}
 			loadPaths = append(loadPaths, subBarclamps...)
-			res := make([]*client.Barclamp, len(loadPaths))
+			res := make([]*api.Barclamp, len(loadPaths))
 
 			for i, toLoad := range loadPaths {
 				f, err := os.Open(toLoad)
@@ -81,8 +81,8 @@ func init() {
 				if err != nil {
 					log.Fatalf("Error marshalling %v to JSON: %v", toLoad, err)
 				}
-				bc := &client.Barclamp{}
-				if err := client.Import(bc, jsonBuf); err != nil {
+				bc := &api.Barclamp{}
+				if err := session.Import(bc, jsonBuf); err != nil {
 					log.Fatalf("Error importing %v: %v", toLoad, err)
 				}
 				res[i] = bc

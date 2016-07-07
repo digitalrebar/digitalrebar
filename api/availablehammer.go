@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 import "github.com/digitalrebar/rebar-api/datatypes"
 
@@ -15,7 +13,7 @@ func (o *AvailableHammer) hammers() {}
 
 // AvailableHammers returns all of the available Hammers that can be
 // bound to a node.
-func AvailableHammers() (res []*AvailableHammer, err error) {
+func (c *Client) AvailableHammers() (res []*AvailableHammer, err error) {
 	res = make([]*AvailableHammer, 0)
-	return res, List("available_hammers", &res)
+	return res, c.List("available_hammers", &res)
 }

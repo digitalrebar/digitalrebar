@@ -1,10 +1,10 @@
 package main
 
-import "github.com/digitalrebar/rebar-api/client"
+import "github.com/digitalrebar/rebar-api/api"
 
 func init() {
 
-	maker := func() client.Crudder { return &client.AvailableHammer{} }
+	maker := func() api.Crudder { return &api.AvailableHammer{} }
 	singularName := "availablehammer"
 	app.AddCommand(makeCommandTree(singularName, maker))
 }

@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 // Apache 2 License 2015 by Rob Hirschfeld for RackN
 
@@ -28,6 +26,7 @@ type Timestamps struct {
 type apiHelper struct {
 	lastJson []byte
 	fetchUrl string
+	c        *Client
 }
 
 func (o *apiHelper) setLastJSON(b []byte) {
@@ -47,6 +46,14 @@ func (o *apiHelper) lastFetch() string {
 	return o.fetchUrl
 }
 
+func (o *apiHelper) client() *Client {
+	return o.c
+}
+
+func (o *apiHelper) setClient(c *Client) {
+	o.c = c
+}
+
 // Crudder is the interface that a type must satisfy for the client
 // API to be able to manage it.
 type Crudder interface {
@@ -57,6 +64,8 @@ type Crudder interface {
 	lastJSON() []byte
 	setLastFetch(string)
 	lastFetch() string
+	client() *Client
+	setClient(*Client)
 }
 
 // Calculate the API endpoint that should be used to reference this object.
@@ -68,7 +77,7 @@ func urlFor(o Crudder, parts ...string) string {
 	return path.Join(append([]string{o.ApiName(), id}, parts...)...)
 }
 
-func unmarshal(path string, buf []byte, o Crudder) error {
+func (c *Client) unmarshal(path string, buf []byte, o Crudder) error {
 	err := json.Unmarshal(buf, &o)
 	if err != nil {
 		return err
@@ -76,6 +85,7 @@ func unmarshal(path string, buf []byte, o Crudder) error {
 	lastbuf, _ := json.Marshal(o)
 	o.setLastJSON(lastbuf)
 	o.setLastFetch(path)
+	o.setClient(c)
 	return nil
 }
 
@@ -83,9 +93,9 @@ func unmarshal(path string, buf []byte, o Crudder) error {
 // object.  This template will have its fields set to the database
 // defaults.  It returns the path used to fetch the sample JSON, the
 // JSON itself, and an error.
-func SampleJSON(o Crudder) (string, []byte, error) {
+func (c *Client) SampleJSON(o Crudder) (string, []byte, error) {
 	uri := path.Join(o.ApiName(), "sample")
-	buf, err := session.request("GET", uri, nil)
+	buf, err := c.request("GET", uri, nil)
 	return uri, buf, err
 }
 
@@ -93,53 +103,53 @@ func SampleJSON(o Crudder) (string, []byte, error) {
 // the server.  You should always call Init() on any new object you
 // intend to call Create() on in the future to ensure that the
 // defaults for the fields are populated correctly.
-func Init(o Crudder) error {
-	uri, buf, err := SampleJSON(o)
+func (c *Client) Init(o Crudder) error {
+	uri, buf, err := c.SampleJSON(o)
 	if err != nil {
 		return err
 	}
-	return unmarshal(uri, buf, o)
+	return c.unmarshal(uri, buf, o)
 }
 
 // Read fetches the object from the server.  The ID must have been
 // populated with a previous SetId() call.
-func Read(o Crudder) error {
+func (c *Client) Read(o Crudder) error {
 	uri := urlFor(o)
-	buf, err := session.request("GET", uri, nil)
+	buf, err := c.request("GET", uri, nil)
 	if err != nil {
 		return err
 	}
-	return unmarshal(uri, buf, o)
+	return c.unmarshal(uri, buf, o)
 }
 
 // Fetch combines SetID() and Read().
-func Fetch(o Crudder, id string) error {
-	if err := SetId(o, id); err != nil {
+func (c *Client) Fetch(o Crudder, id string) error {
+	if err := c.SetId(o, id); err != nil {
 		return err
 	}
-	return Read(o)
+	return c.Read(o)
 }
 
 // BaseCreate creates an object on the server. It does NOT prepoulate
 // otherwise unused fields with their default vaules.
-func BaseCreate(o Crudder) error {
+func (c *Client) BaseCreate(o Crudder) error {
 	inbuf, err := json.Marshal(o)
 	if err != nil {
 		return err
 	}
 	uri := o.ApiName()
-	outbuf, err := session.request("POST", uri, inbuf)
+	outbuf, err := c.request("POST", uri, inbuf)
 	if err != nil {
 		return err
 	}
-	return unmarshal(uri, outbuf, o)
+	return c.unmarshal(uri, outbuf, o)
 }
 
 // Create creates a new object on the server.  The new object will consist
 // of the results of merging Init(o) with toMerge.  This will ensure that
 // all of the otherwise unused fields on the object will be set to their defaults.
-func Create(o Crudder, toMerge interface{}) error {
-	if err := Init(o); err != nil {
+func (c *Client) Create(o Crudder, toMerge interface{}) error {
+	if err := c.Init(o); err != nil {
 		return err
 	}
 	var initBuf interface{}
@@ -150,19 +160,19 @@ func Create(o Crudder, toMerge interface{}) error {
 	if err := utils.Remarshal(merged, o); err != nil {
 		return err
 	}
-	return BaseCreate(o)
+	return c.BaseCreate(o)
 }
 
 // Import also creates a new object on the server, but it passes the JSON in inBuf through unchanged.
 // It is intended to be used for object types where we have special-case handling on the server side
 // for parameters that are not part of the basic object definition.
-func Import(o Crudder, inBuf []byte) error {
+func (c *Client) Import(o Crudder, inBuf []byte) error {
 	uri := o.ApiName()
-	buf, err := session.request("POST", uri, inBuf)
+	buf, err := c.request("POST", uri, inBuf)
 	if err != nil {
 		return err
 	}
-	return unmarshal(uri, buf, o)
+	return c.unmarshal(uri, buf, o)
 }
 
 func safeMergeJSON(target, toMerge []byte) ([]byte, error) {
@@ -193,28 +203,28 @@ func safeMergeJSON(target, toMerge []byte) ([]byte, error) {
 // Create creates a new object on the server, merging in the
 // JSON that toMerge contains to initially populate the fields.
 // The passed-in Crudder will be overwritten with the new object.
-func CreateJSON(o Crudder, toMerge []byte) error {
+func (c *Client) CreateJSON(o Crudder, toMerge []byte) error {
 	var buf interface{}
 	if err := json.Unmarshal(toMerge, &buf); err != nil {
 		return err
 	}
-	return Create(o, buf)
+	return c.Create(o, buf)
 }
 
 // Destroy removes this object from the server.
-func Destroy(o Crudder) error {
-	_, err := session.request("DELETE", urlFor(o), nil)
+func (c *Client) Destroy(o Crudder) error {
+	_, err := c.request("DELETE", urlFor(o), nil)
 	return err
 }
 
 // Patch attempts to update the object with patch, which must be an RFC6902 JSON Patch.
-func Patch(o Crudder, patch []byte) error {
+func (c *Client) Patch(o Crudder, patch []byte) error {
 	uri := urlFor(o)
-	outbuf, err := session.request("PATCH", uri, patch)
+	outbuf, err := c.request("PATCH", uri, patch)
 	if err != nil {
 		return err
 	}
-	return unmarshal(uri, outbuf, o)
+	return c.unmarshal(uri, outbuf, o)
 }
 
 // MakePatch generates a JSON Patch that describes the difference between the last time
@@ -235,18 +245,18 @@ func MakePatch(o Crudder) ([]byte, error) {
 // or replace stanzas to ensure that the server has all the
 // information it needs to safely update the object or reject updates
 // if things have changed.
-func Update(o Crudder) error {
+func (c *Client) Update(o Crudder) error {
 	patch, err := MakePatch(o)
 	if err != nil {
 		return err
 	}
-	return Patch(o, patch)
+	return c.Patch(o, patch)
 }
 
 // UpdateJSON tries to update Crudder with toMerge, which should be a
 // JSON blob with keys that correspond to the Crudder's struct fields
 // when serialzed to JSON.
-func UpdateJSON(o Crudder, toMerge []byte) error {
+func (c *Client) UpdateJSON(o Crudder, toMerge []byte) error {
 	buf := o.lastJSON()
 	if len(buf) == 0 {
 		return fmt.Errorf("Cannot update an object that has never been fetched")
@@ -259,10 +269,10 @@ func UpdateJSON(o Crudder, toMerge []byte) error {
 	if err != nil {
 		return err
 	}
-	return Patch(o, patch)
+	return c.Patch(o, patch)
 }
 
-func updatePaths(p string, val interface{}) {
+func (c *Client) updatePaths(p string, val interface{}) {
 	v := reflect.ValueOf(val)
 	for v.Kind() == reflect.Ptr {
 		v = reflect.Indirect(v)
@@ -284,6 +294,7 @@ func updatePaths(p string, val interface{}) {
 		lastbuf, _ := json.Marshal(o)
 		o.setLastJSON(lastbuf)
 		o.setLastFetch(path.Join(p, id))
+		o.setClient(c)
 	}
 }
 
@@ -291,18 +302,18 @@ func updatePaths(p string, val interface{}) {
 // ApiPath() matchiing the key/value pairs in vals (the keys of which
 // should be named the same as the JSON firld names you want to match
 // against), and res is where to put the results.
-func Match(path string, vals map[string]interface{}, res interface{}) error {
-	err := session.match(vals, res, path)
-	updatePaths(path, res)
+func (c *Client) Match(path string, vals map[string]interface{}, res interface{}) error {
+	err := c.match(vals, res, path)
+	c.updatePaths(path, res)
 	return err
 
 }
 
 // List fetches all the object available from path, and unmarshals
 // them into res.
-func List(path string, res interface{}) error {
-	err := session.list(res, path)
-	updatePaths(path, res)
+func (c *Client) List(path string, res interface{}) error {
+	err := c.list(res, path)
+	c.updatePaths(path, res)
 	return err
 }
 
@@ -314,6 +325,7 @@ func List(path string, res interface{}) error {
 // An error will be returned if the object already has a set Name or ID field,
 // or if the object does not have a Name field and the passed string cannot be
 // parsed to an int64
-func SetId(o Crudder, id string) error {
+func (c *Client) SetId(o Crudder, id string) error {
+	o.setClient(c)
 	return o.SetId(id)
 }

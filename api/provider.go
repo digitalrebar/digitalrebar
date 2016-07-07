@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 import (
 	"path"
@@ -22,12 +20,12 @@ type Providerer interface {
 }
 
 // Providers returns all of the Providers.
-func Providers(scope ...Providerer) (res []*Provider, err error) {
+func (c *Client) Providers(scope ...Providerer) (res []*Provider, err error) {
 	res = make([]*Provider, 0)
 	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "providers")
-	return res, List(path.Join(paths...), &res)
+	return res, c.List(path.Join(paths...), &res)
 }

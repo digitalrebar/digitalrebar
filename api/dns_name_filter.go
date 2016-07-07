@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 import "github.com/digitalrebar/rebar-api/datatypes"
 
@@ -13,7 +11,7 @@ type DnsNameFilter struct {
 }
 
 // DnsNameFilters lists all the DNS name filters in the system.
-func DnsNameFilters() (res []*DnsNameFilter, err error) {
+func (c *Client) DnsNameFilters() (res []*DnsNameFilter, err error) {
 	res = make([]*DnsNameFilter, 0)
-	return res, List("dns_name_filters", &res)
+	return res, c.List("dns_name_filters", &res)
 }

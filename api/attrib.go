@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 import (
 	"fmt"
@@ -32,14 +30,14 @@ type Attriber interface {
 // will be joined with "attribs" and we will attempt to fetch the
 // Attribs from there.  This behaviour exists because the REST API
 // allows you to perform scoped fetches.
-func Attribs(scope ...Attriber) (res []*Attrib, err error) {
+func (c *Client) Attribs(scope ...Attriber) (res []*Attrib, err error) {
 	res = make([]*Attrib, 0)
 	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "attribs")
-	return res, List(path.Join(paths...), &res)
+	return res, c.List(path.Join(paths...), &res)
 }
 
 // GetAttrib gets an attrib in the context of an Attriber.  The
@@ -52,7 +50,7 @@ func Attribs(scope ...Attriber) (res []*Attrib, err error) {
 //    * "wall"
 //    * "note"
 //    * "all"
-func GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, err error) {
+func (c *Client) GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, err error) {
 	res = &Attrib{}
 	id, err := a.Id()
 	if err == datatypes.IDNotSet {
@@ -63,19 +61,19 @@ func GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, err error) {
 	if bucket != "" {
 		uri = fmt.Sprintf("%v?bucket=%v", uri, bucket)
 	}
-	outbuf, err := session.request("GET", uri, nil)
+	outbuf, err := c.request("GET", uri, nil)
 	if err != nil {
 		return res, err
 	}
-	return res, unmarshal(uri, outbuf, res)
+	return res, c.unmarshal(uri, outbuf, res)
 }
 
 // FetchAttrib behaves the same as GetAttrib, but accepts the name of an
 // attrib instead of an attrib.
-func FetchAttrib(o Attriber, attr, bucket string) (res *Attrib, err error) {
+func (c *Client) FetchAttrib(o Attriber, attr, bucket string) (res *Attrib, err error) {
 	res = &Attrib{}
 	res.SetId(attr)
-	return GetAttrib(o, res, bucket)
+	return c.GetAttrib(o, res, bucket)
 }
 
 // SetAttrib sets the value of an attrib in the context of
@@ -83,7 +81,7 @@ func FetchAttrib(o Attriber, attr, bucket string) (res *Attrib, err error) {
 //
 //    * "user"
 //    * "note"
-func SetAttrib(o Attriber, a *Attrib, bucket string) error {
+func (c *Client) SetAttrib(o Attriber, a *Attrib, bucket string) error {
 	if bucket == "" {
 		bucket = "user"
 	}
@@ -93,28 +91,28 @@ func SetAttrib(o Attriber, a *Attrib, bucket string) error {
 	if err != nil {
 		return err
 	}
-	outbuf, err := session.request("PATCH", uri, patch)
+	outbuf, err := c.request("PATCH", uri, patch)
 	if err != nil {
 		return err
 	}
-	return unmarshal(uri, outbuf, a)
+	return c.unmarshal(uri, outbuf, a)
 }
 
 // Propose readies an Attriber to accept new values via SetAttrib.
-func Propose(o Attriber) error {
-	outbuf, err := session.request("PUT", urlFor(o, "propose"), nil)
+func (c *Client) Propose(o Attriber) error {
+	outbuf, err := c.request("PUT", urlFor(o, "propose"), nil)
 	if err != nil {
 		return err
 	}
-	return unmarshal(urlFor(o), outbuf, o)
+	return c.unmarshal(urlFor(o), outbuf, o)
 }
 
 // Commit makes the values set on the Attriber via SetAttrib visible
 // to the rest of the Rebar infrastructure.
-func Commit(o Attriber) error {
-	outbuf, err := session.request("PUT", urlFor(o, "commit"), nil)
+func (c *Client) Commit(o Attriber) error {
+	outbuf, err := c.request("PUT", urlFor(o, "commit"), nil)
 	if err != nil {
 		return err
 	}
-	return unmarshal(urlFor(o), outbuf, o)
+	return c.unmarshal(urlFor(o), outbuf, o)
 }

@@ -1,6 +1,4 @@
-package client
-
-// Deprecated: use api instead. client will not be updated
+package api
 
 import (
 	"path"
@@ -24,14 +22,14 @@ func (o *DeploymentRole) nodeRoles() {}
 func (o *DeploymentRole) Deployment() (res *Deployment, err error) {
 	res = &Deployment{}
 	res.ID = o.DeploymentID
-	return res, Read(res)
+	return res, o.client().Read(res)
 }
 
 // Role returns the Role that this DeploymentRole is bound to.
 func (o *DeploymentRole) Role() (res *Role, err error) {
 	res = &Role{}
 	res.ID = o.RoleID
-	return res, Read(res)
+	return res, o.client().Read(res)
 }
 
 // DeploymentRoler is an interface that anything that has related
@@ -42,12 +40,12 @@ type DeploymentRoler interface {
 }
 
 // DeploymentRoles returns all the DeplymentRoles at the passed Path.
-func DeploymentRoles(scope ...DeploymentRoler) (res []*DeploymentRole, err error) {
+func (c *Client) DeploymentRoles(scope ...DeploymentRoler) (res []*DeploymentRole, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
 		paths[i] = urlFor(scope[i])
 	}
 	paths = append(paths, "deployment_roles")
 	res = make([]*DeploymentRole, 0)
-	return res, List(path.Join(paths...), &res)
+	return res, c.List(path.Join(paths...), &res)
 }

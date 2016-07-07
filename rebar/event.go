@@ -1,15 +1,15 @@
 package main
 
-import "github.com/digitalrebar/rebar-api/client"
+import "github.com/digitalrebar/rebar-api/api"
 
 func init() {
 	app.AddCommand(makeCommandTree("event",
-		func() client.Crudder { return &client.Event{} },
+		func() api.Crudder { return &api.Event{} },
 	))
 	app.AddCommand(makeCommandTree("eventsink",
-		func() client.Crudder { return &client.EventSink{} },
+		func() api.Crudder { return &api.EventSink{} },
 	))
 	app.AddCommand(makeCommandTree("eventselector",
-		func() client.Crudder { return &client.EventSelector{} },
+		func() api.Crudder { return &api.EventSelector{} },
 	))
 }
