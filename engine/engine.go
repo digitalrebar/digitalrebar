@@ -1,38 +1,43 @@
 package engine
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"reflect"
-	"strings"
 	"sync"
 
 	"github.com/digitalrebar/rebar-api/client"
+	"github.com/pborman/uuid"
 )
+
+// This is effectively condensed cache/dispatch structure for
+// individual rule.EventSelector entries.  It is updated
+// whenever a RuleSet is added, modified, or deleted,
+// and allows for fast dispatch of Events directly to relavent Rules
+// Instead of searching all the Rules to figure out which ones apply to
+// any given Event, we search through this instead, which by desigh has
+// exactly one entry per unique Selector we care about.
+type etInvoker struct {
+	selector    EventSelector
+	ruleIndexes map[string][]int
+}
 
 // Engine holds all the necessary information to run RuleSets.
 type Engine struct {
 	sync.RWMutex
 	ruleSets           map[string]*RuleSet
 	eventEndpoint      string
-	apiEndpoint        string
 	rebarEndpoint      string
 	username, password string
 	Debug              bool
-
-	eventSelectors []etInvoker
+	eventSelectors     []etInvoker
 }
 
 // NewEngine creates a new Engine for running Rulesets.
 // The parameters are as follows:
 //
-// listen: the local address:port that this Engine should accept
-// incoming Events and API requests at.  Right now, the Engine
-// will listen for Events at http://address:port/events and API
-// requests at http://address:port/api/
+// listen: the URL that the Engine listens to events at.
+// This is needed because
 //
 // rebarEndpoint: the URL to contact the Rebar API at.
 //
@@ -43,10 +48,10 @@ func NewEngine(listen, rebarEndpoint, username, password string) (*Engine, error
 		username:       username,
 		password:       password,
 		eventEndpoint:  fmt.Sprintf("http://%s/events", listen),
-		apiEndpoint:    fmt.Sprintf("http://%s/api/", listen),
 		ruleSets:       map[string]*RuleSet{},
 		eventSelectors: []etInvoker{},
 	}
+
 	if err := res.registerSink(); err != nil {
 		return nil, err
 	}
@@ -94,7 +99,9 @@ func (e *Engine) registerSink() error {
 	return client.BaseCreate(sink)
 }
 
-func (e *Engine) updateSinks() {
+// Called whenever we add/update/remove RuleSets. It makes sure
+// that the proper EventSelectors are registered with DigitalRebar.
+func (e *Engine) updateSelectors() {
 	// If there is no rebarEndpoint, we are in testing mode.
 	if e.rebarEndpoint == "" {
 		return
@@ -169,27 +176,30 @@ func (e *Engine) updateSinks() {
 
 // Stop gracefully shuts down, deregistering all our selectors and sinks
 func (e *Engine) Stop() {
+	// Note that the lock is not released.
 	e.Lock()
 	for rs := range e.ruleSets {
-		e.DeleteRuleSet(rs)
+		e.deleteRuleSet(rs)
 	}
 	es, _ := e.eventSink()
 	client.Destroy(es)
 }
 
-func (e *Engine) updateRules(rs RuleSet) error {
+// Update e.eventselectors whenever a Ruleset is added or changed.
+func (e *Engine) updateRules(rs RuleSet) (RuleSet, error) {
 	err := rs.compile(e)
 	if err != nil {
-		return err
+		return rs, err
 	}
+	rs.Version = uuid.NewRandom()
 	e.ruleSets[rs.Name] = &rs
 	for i := range rs.Rules {
 		rule := &rs.Rules[i]
-		for _, e := range rule.EventSelectors {
+		for _, es := range rule.EventSelectors {
 			found := false
-			for k := range rs.engine.eventSelectors {
+			for k := range e.eventSelectors {
 				evt := &rs.engine.eventSelectors[k]
-				if reflect.DeepEqual(e, evt.selector) {
+				if reflect.DeepEqual(es, evt.selector) {
 					found = true
 					if _, ok := evt.ruleIndexes[rs.Name]; ok {
 						log.Printf("Adding ruleset %s rule %d to selector %v", rs.Name, i, evt.selector)
@@ -206,49 +216,70 @@ func (e *Engine) updateRules(rs RuleSet) error {
 			if !found {
 				log.Printf("Creating selector %v for ruleset %s rule %d", e, rs.Name, i)
 
-				rs.engine.eventSelectors = append(rs.engine.eventSelectors, etInvoker{e, map[string][]int{rs.Name: []int{i}}})
+				e.eventSelectors = append(e.eventSelectors, etInvoker{es, map[string][]int{rs.Name: []int{i}}})
 			}
 		}
 	}
-	e.updateSinks()
-	return nil
+	e.updateSelectors()
+	return rs, nil
 }
 
 // RuleSets returns a slice of RuleSets that the Engine will use to process
 // incoming Events.  The Engine must be read-locked or exclusively locked
 // to call this.
 func (e *Engine) RuleSets() []RuleSet {
+	e.RLock()
 	res := make([]RuleSet, 0, len(e.ruleSets))
 	for _, rs := range e.ruleSets {
 		res = append(res, *rs)
 	}
+	e.RUnlock()
 	return res
 }
 
+// RuleSet looks up a RuleSet by name and either returns it and true
+// or returns an empty RuleSet and false.
+func (e *Engine) RuleSet(name string) (RuleSet, bool) {
+	e.RLock()
+	rs, ok := e.ruleSets[name]
+	e.RUnlock()
+	if ok {
+		return *rs, ok
+	}
+	return RuleSet{}, ok
+}
+
 // AddRuleSet adds a RuleSet to the Engine.
-// The Engine must be exclusively locked to call this.
-func (e *Engine) AddRuleSet(rs RuleSet) error {
+func (e *Engine) AddRuleSet(rs RuleSet) (RuleSet, error) {
+	e.Lock()
+	defer e.Unlock()
 	if _, ok := e.ruleSets[rs.Name]; ok {
-		return fmt.Errorf("RuleSet %s already exists, and duplicates are not allowed", rs.Name)
+		return rs, fmt.Errorf("RuleSet %s already exists, and duplicates are not allowed", rs.Name)
 	}
 	log.Printf("Adding ruleset %s", rs.Name)
 	return e.updateRules(rs)
 }
 
 // UpdateRuleSet updates the Engine with the new RuleSet.
-// The Engine must be exclusively locked to call this.
-func (e *Engine) UpdateRuleSet(rs RuleSet) error {
-	if _, ok := e.ruleSets[rs.Name]; !ok {
-		return fmt.Errorf("RuleSet %s is not a member of this engine", rs.Name)
+func (e *Engine) UpdateRuleSet(rs RuleSet) (RuleSet, error) {
+	e.Lock()
+	defer e.Unlock()
+	currentRuleSet, ok := e.ruleSets[rs.Name]
+	if !ok {
+		return rs, fmt.Errorf("RuleSet %s is not a member of this engine", rs.Name)
 	}
+	if !uuid.Equal(currentRuleSet.Version, rs.Version) {
+		return rs, fmt.Errorf("RuleSet %s version mismatch: ours %v, theirs %v",
+			rs.Name,
+			currentRuleSet.Version,
+			rs.Version)
+	}
+
 	log.Printf("Updating ruleset %s", rs.Name)
 	return e.updateRules(rs)
 }
 
-// DeleteRuleSet deletes the named RuleSet from the Engine.
-// The Engine must ne exclusively locked to call this.
-func (e *Engine) DeleteRuleSet(name string) {
-	log.Printf("Deleting ruleset %s", name)
+func (e *Engine) deleteRuleSet(name string) {
 	delete(e.ruleSets, name)
 	// Process selectors for this engine to drop ones that
 	// no longer have references
@@ -261,6 +292,26 @@ func (e *Engine) DeleteRuleSet(name string) {
 		newSelectors = append(newSelectors, et)
 	}
 	e.eventSelectors = newSelectors
+	e.updateSelectors()
+}
+
+// DeleteRuleSet deletes the named RuleSet from the Engine.
+func (e *Engine) DeleteRuleSet(name string, version uuid.UUID) error {
+	log.Printf("Deleting ruleset %s", name)
+	e.Lock()
+	defer e.Unlock()
+	rs, ok := e.ruleSets[name]
+	if !ok {
+		return fmt.Errorf("RuleSet %s does not exist", name)
+	}
+	if !uuid.Equal(version, rs.Version) {
+		return fmt.Errorf("Ruleset %s version mismatch: ours %v, theirs %v",
+			rs.Name,
+			rs.Version,
+			version)
+	}
+	e.deleteRuleSet(name)
+	return nil
 }
 
 func (e *Engine) runRules(toRun []ctx, evt *Event) {
@@ -278,22 +329,8 @@ func (e *Engine) runRules(toRun []ctx, evt *Event) {
 	}
 }
 
-func (e *Engine) handleEvent(w http.ResponseWriter, req *http.Request) {
-	log.Printf("Got request from %v", req.RemoteAddr)
-	evt := &Event{}
-	body, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		log.Printf("Error reading body: %v", err)
-		w.WriteHeader(http.StatusExpectationFailed)
-		return
-	}
-	req.Body.Close()
-	if err := json.Unmarshal(body, evt); err != nil {
-		log.Printf("Error decoding body: %v", err)
-		log.Printf("Invalid body: %s", string(body))
-		w.WriteHeader(http.StatusExpectationFailed)
-		return
-	}
+// HandleEvent should be called with an Event for the Engine to process.
+func (e *Engine) HandleEvent(evt *Event) {
 	e.RLock()
 	toRun := []ctx{}
 	for _, invoker := range e.eventSelectors {
@@ -301,35 +338,16 @@ func (e *Engine) handleEvent(w http.ResponseWriter, req *http.Request) {
 			continue
 		}
 		for k, v := range invoker.ruleIndexes {
+			// Skip inactive rulesets.
+			if rs, ok := e.ruleSets[k]; !ok || !rs.Active {
+				continue
+			}
+			// Make sure we save a copy of the ruleset to run, instead of a
+			// pointer to it.  This makes async running of rules from a ruleset
+			// not race with potential API updates of that ruleset.
 			toRun = append(toRun, ctx{*e.ruleSets[k], v})
 		}
 	}
 	e.RUnlock()
-	if runSync, ok := evt.Selector["sync"]; runSync == "true" && ok {
-		e.runRules(toRun, evt)
-		w.WriteHeader(http.StatusAccepted)
-	} else {
-		w.WriteHeader(http.StatusAccepted)
-		go e.runRules(toRun, evt)
-	}
-}
-
-func (e *Engine) handleAPI(w http.ResponseWriter, req *http.Request) {
-	w.WriteHeader(http.StatusNotImplemented)
-}
-
-// ServeHTTP allows an Engine to act as an HTTP endpoint for handling
-// incoming events and API requests.
-//
-// Note that something else must set up the required http server
-// infrastructure, and right now we assume we are at the top of the request path.
-func (e *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	log.Printf("Recieved call: %s %s", req.Method, req.RequestURI)
-	if req.Method == "POST" && req.URL.Path == "/events" {
-		e.handleEvent(w, req)
-	} else if strings.HasPrefix(req.URL.Path, "/api/") {
-		e.handleAPI(w, req)
-	} else {
-		w.WriteHeader(http.StatusBadRequest)
-	}
+	e.runRules(toRun, evt)
 }

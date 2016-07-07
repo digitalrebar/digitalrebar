@@ -392,7 +392,6 @@ func actionReturn() (action, error) {
 		} else {
 			c.ruleIdx = c.ruleStack[len(c.ruleStack)-1]
 			c.ruleStack = c.ruleStack[:len(c.ruleStack)-1]
-
 		}
 		return nil
 	}, nil
@@ -420,6 +419,7 @@ func actionJumpOrCall(rs *RuleSet, ruleIdx int, call bool, v interface{}) (actio
 		if call {
 			c.ruleStack = append(c.ruleStack, ruleIdx)
 		}
+		// subtract 1 here because the main run loop will add one back to it.
 		c.ruleIdx = tgtIdx - 1
 		return nil
 	}, nil

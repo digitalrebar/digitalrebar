@@ -7,6 +7,7 @@ See LICENSE.md at the top of this repository for more information.
 */
 
 import (
+	"encoding/json"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -15,9 +16,10 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
-	"time"
 
 	"github.com/ghodss/yaml"
+	"github.com/gin-gonic/gin"
+	"github.com/pborman/uuid"
 
 	"github.com/coddingtonbear/go-jsonselect"
 	"github.com/digitalrebar/rebar-api/client"
@@ -27,21 +29,119 @@ import (
 var (
 	version                      = false
 	debug                        = false
-	testRules                    = false
+	router                       = gin.Default()
 	username, password, endpoint string
 	listen                       string
-	rulesetFile                  string
 	ruleEngine                   *engine.Engine
 )
 
-func serve() {
-	http.Handle("/", ruleEngine)
-	for {
-		log.Println(http.ListenAndServe(listen, nil))
+func handleEvent(c *gin.Context) {
+	log.Printf("Got request from %v", c.Request.RemoteAddr)
+	evt := &engine.Event{}
+	body, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		log.Printf("Error reading body: %v", err)
+		c.AbortWithError(http.StatusExpectationFailed, err)
+		return
+	}
+	c.Request.Body.Close()
+	if err := json.Unmarshal(body, evt); err != nil {
+		log.Printf("Error decoding body: %v", err)
+		log.Printf("Invalid body: %s", string(body))
+		c.AbortWithError(http.StatusExpectationFailed, err)
+		return
+	}
+	if runSync, ok := evt.Selector["sync"]; runSync == "true" && ok {
+		ruleEngine.HandleEvent(evt)
+		c.Status(http.StatusAccepted)
+	} else {
+		c.Status(http.StatusAccepted)
+		go ruleEngine.HandleEvent(evt)
 	}
 }
 
+func createRuleset(c *gin.Context) {
+	ruleSet := engine.RuleSet{}
+	body, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		log.Printf("Error reading body: %v", err)
+		c.AbortWithError(http.StatusExpectationFailed, err)
+		return
+	}
+	c.Request.Body.Close()
+	if err := yaml.Unmarshal(body, &ruleSet); err != nil {
+		log.Printf("Error decoding body: %v", err)
+		log.Printf("Invalid body: %s", string(body))
+		c.AbortWithError(http.StatusExpectationFailed, err)
+		return
+	}
+	ruleSet, err = ruleEngine.AddRuleSet(ruleSet)
+	if err != nil {
+		log.Printf("Failed to add ruleset %s: %v", ruleSet.Name, err)
+		c.AbortWithError(http.StatusConflict, err)
+		return
+	}
+	c.JSON(http.StatusCreated, ruleSet)
+}
+
+func listRulesets(c *gin.Context) {
+	ruleSets := ruleEngine.RuleSets()
+	c.JSON(http.StatusOK, ruleSets)
+}
+
+func showRuleset(c *gin.Context) {
+	name := c.Param("name")
+	rs, ok := ruleEngine.RuleSet(name)
+	if !ok {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+	c.JSON(http.StatusOK, rs)
+}
+
+func updateRuleset(c *gin.Context) {
+	name := c.Param("name")
+	newRuleSet := engine.RuleSet{}
+	body, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		log.Printf("Error reading body: %v", err)
+		c.AbortWithError(http.StatusExpectationFailed, err)
+		return
+	}
+	c.Request.Body.Close()
+	if err := yaml.Unmarshal(body, &newRuleSet); err != nil {
+		log.Printf("Error decoding body: %v", err)
+		log.Printf("Invalid body: %s", string(body))
+		c.AbortWithError(http.StatusExpectationFailed, err)
+		return
+	}
+	if name != newRuleSet.Name {
+		log.Printf("Cannot change name from %s to %s", name, newRuleSet.Name)
+		c.AbortWithStatus(http.StatusConflict)
+		return
+	}
+
+	newRuleSet, err = ruleEngine.UpdateRuleSet(newRuleSet)
+	if err != nil {
+		log.Printf("Error updating ruleset %s: %v", name, err)
+		c.AbortWithError(http.StatusConflict, err)
+		return
+	}
+	c.JSON(http.StatusOK, newRuleSet)
+}
+
+func deleteRuleset(c *gin.Context) {
+	name := c.Param("name")
+	version := c.Query("version")
+	if err := ruleEngine.DeleteRuleSet(name, uuid.Parse(version)); err != nil {
+		c.AbortWithError(http.StatusNotFound, err)
+		return
+	}
+	c.Status(http.StatusOK)
+}
+
 func main() {
+	var err error
 	if ep := os.Getenv("REBAR_ENDPOINT"); ep != "" {
 		endpoint = ep
 	}
@@ -56,14 +156,12 @@ func main() {
 		username = key[0]
 		password = key[1]
 	}
-	flag.StringVar(&rulesetFile, "rules", "", "File to read rules from")
 	flag.StringVar(&username, "username", "", "Username for Digital Rebar endpoint")
 	flag.StringVar(&password, "password", "", "Password for Digital Rebar endpoint")
 	flag.StringVar(&endpoint, "endpoint", "", "API Endpoint for Digital Rebar")
 	flag.StringVar(&listen, "listen", "", "Address to listen on for postbacks from Digital Rebar")
 	flag.BoolVar(&version, "version", false, "Print version and exit")
 	flag.BoolVar(&debug, "debug", false, "Whether to run in debug mode")
-	flag.BoolVar(&testRules, "testRules", false, "Exit after validating that the rules can be loaded")
 	flag.Parse()
 	if version {
 		log.Fatalf("Version: 0.2.1")
@@ -71,30 +169,7 @@ func main() {
 	if debug {
 		jsonselect.EnableLogger()
 	}
-	if rulesetFile == "" {
-		log.Fatalf("You must load rules with --rules rulesetFile")
-	}
 
-	rsBuf, err := ioutil.ReadFile(rulesetFile)
-	if err != nil {
-		log.Fatalf("Failed to load rules from %s:\n%v", rulesetFile, err)
-	}
-	theRules := engine.RuleSet{}
-	if err := yaml.Unmarshal(rsBuf, &theRules); err != nil {
-		log.Fatalln(err)
-	}
-
-	if testRules {
-		ruleEngine, _ = engine.NewEngine(listen, endpoint, username, password)
-		ruleEngine.Debug = debug
-		ruleEngine.Lock()
-		if err := ruleEngine.AddRuleSet(theRules); err != nil {
-			ruleEngine.DeleteRuleSet(theRules.Name)
-			ruleEngine.Unlock()
-			log.Fatalln(err)
-		}
-		os.Exit(0)
-	}
 	if endpoint == "" {
 		if ep := os.Getenv("REBAR_ENDPOINT"); ep != "" {
 			endpoint = ep
@@ -128,15 +203,6 @@ func main() {
 		log.Fatalf("Error creating rule engine: %v", err)
 	}
 	ruleEngine.Debug = debug
-	ruleEngine.Lock()
-	if err := ruleEngine.AddRuleSet(theRules); err != nil {
-		ruleEngine.DeleteRuleSet(theRules.Name)
-		ruleEngine.Unlock()
-		log.Fatalln(err)
-	}
-	ruleEngine.Unlock()
-	// Run the handler loop
-	go serve()
 
 	// Clean up on SIGTERM
 	killChan := make(chan os.Signal, 1)
@@ -148,32 +214,18 @@ func main() {
 	signal.Notify(killChan, syscall.SIGTERM)
 	signal.Notify(killChan, syscall.SIGINT)
 
-	// Reload rules file on SIGHUP
-	hupChan := make(chan os.Signal, 1)
-	go func() {
-		for {
-			<-hupChan
-			rsBuf, err := ioutil.ReadFile(rulesetFile)
-			if err != nil {
-				log.Fatalf("Failed to load rules from %s:\n%v", rulesetFile, err)
-			}
-			theRules := engine.RuleSet{}
-			if err := yaml.Unmarshal(rsBuf, &theRules); err != nil {
-				log.Println(err)
-			} else {
-				ruleEngine.Lock()
-				if err := ruleEngine.UpdateRuleSet(theRules); err != nil {
-					log.Println(err)
-				}
-				ruleEngine.Unlock()
-			}
-		}
-	}()
-	signal.Notify(hupChan, syscall.SIGHUP)
+	router.POST("/events", handleEvent)
+	router.GET("/api/v0/rulesets/", listRulesets)
+	router.GET("/api/v0/rulesets/:name", showRuleset)
+	router.POST("/api/v0/rulesets/", createRuleset)
+	router.PUT("/api/v0/rulesets/:name", updateRuleset)
+	router.DELETE("/api/v0/rulesets/:name", deleteRuleset)
 
 	// Wait forever
 	log.Printf("Ready to handle events\n")
 	for {
-		time.Sleep(100 * time.Second)
+		if err := router.Run(listen); err != nil {
+			log.Printf("API failed: %v", err)
+		}
 	}
 }

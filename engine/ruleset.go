@@ -107,8 +107,3 @@ func (rs *RuleSet) compile(e *Engine) error {
 	}
 	return nil
 }
-
-type etInvoker struct {
-	selector    EventSelector
-	ruleIndexes map[string][]int
-}
