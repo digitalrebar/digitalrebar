@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/digitalrebar/rebar-api/client"
+	"github.com/digitalrebar/rebar-api/api"
 	"github.com/spf13/cobra"
 )
 
 func addHammererCommands(singularName string,
-	maker func() client.Crudder,
+	maker func() api.Crudder,
 	res *cobra.Command) {
-	if _, ok := maker().(client.Hammerer); !ok {
+	if _, ok := maker().(api.Hammerer); !ok {
 		return
 	}
 	cmd := &cobra.Command{
@@ -21,11 +21,11 @@ func addHammererCommands(singularName string,
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := maker().(client.Hammerer)
-			if client.SetId(obj, args[0]) != nil {
+			obj := maker().(api.Hammerer)
+			if session.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
-			objs, err := client.Hammers(obj)
+			objs, err := session.Hammers(obj)
 			if err != nil {
 				log.Fatalf("Failed to get hammerss for %v(%v)\n", singularName, args[0])
 			}
@@ -36,7 +36,7 @@ func addHammererCommands(singularName string,
 }
 
 func init() {
-	maker := func() client.Crudder { return &client.Hammer{} }
+	maker := func() api.Crudder { return &api.Hammer{} }
 	singularName := "hammer"
 	app.AddCommand(makeCommandTree(singularName, maker))
 }

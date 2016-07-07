@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/digitalrebar/rebar-api/client"
+	"github.com/digitalrebar/rebar-api/api"
 	"github.com/spf13/cobra"
 )
 
 func addProvidererCommands(singularName string,
-	maker func() client.Crudder,
+	maker func() api.Crudder,
 	res *cobra.Command) {
-	if _, ok := maker().(client.Providerer); !ok {
+	if _, ok := maker().(api.Providerer); !ok {
 		return
 	}
 	cmd := &cobra.Command{
@@ -21,11 +21,11 @@ func addProvidererCommands(singularName string,
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
-			obj := maker().(client.Providerer)
-			if client.SetId(obj, args[0]) != nil {
+			obj := maker().(api.Providerer)
+			if session.SetId(obj, args[0]) != nil {
 				log.Fatalf("Failed to parse ID %v for an %v\n", args[0], singularName)
 			}
-			objs, err := client.Providers(obj)
+			objs, err := session.Providers(obj)
 			if err != nil {
 				log.Fatalf("Failed to get providerss for %v(%v)\n", singularName, args[0])
 			}
@@ -36,7 +36,7 @@ func addProvidererCommands(singularName string,
 }
 
 func init() {
-	maker := func() client.Crudder { return &client.Provider{} }
+	maker := func() api.Crudder { return &api.Provider{} }
 	singularName := "provider"
 	app.AddCommand(makeCommandTree(singularName, maker))
 }
