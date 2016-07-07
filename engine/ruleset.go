@@ -74,6 +74,7 @@ type RuleSet struct {
 }
 
 func (rs *RuleSet) compile(e *Engine) error {
+	rs.namedRules = map[string]int{}
 	for i := range rs.Rules {
 		rule := &rs.Rules[i]
 		// Make sure we don't have conflicting rule names
@@ -91,6 +92,7 @@ func (rs *RuleSet) compile(e *Engine) error {
 		rule.matchers = make([]matcher, len(rule.Matchers))
 		rule.actions = make([]action, len(rule.Actions))
 		for l, m := range rule.Matchers {
+			log.Printf("Compiling ruleset %s rule %d matcher %d", rs.Name, i, l)
 			match, err := resolveMatcher(rule, m)
 			if err != nil {
 				return err
@@ -98,6 +100,7 @@ func (rs *RuleSet) compile(e *Engine) error {
 			rule.matchers[l] = match
 		}
 		for l, a := range rule.Actions {
+			log.Printf("Compiling ruleset %s rule %d action %d", rs.Name, i, l)
 			action, err := resolveAction(rs, i, a)
 			if err != nil {
 				return err

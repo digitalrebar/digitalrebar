@@ -22,7 +22,6 @@ import (
 	"github.com/pborman/uuid"
 
 	"github.com/coddingtonbear/go-jsonselect"
-	"github.com/digitalrebar/rebar-api/client"
 	"github.com/rackn/classifier/engine"
 )
 
@@ -162,8 +161,8 @@ func main() {
 	flag.StringVar(&password, "password", "", "Password for Digital Rebar endpoint")
 	flag.StringVar(&endpoint, "endpoint", "", "API Endpoint for Digital Rebar")
 	flag.StringVar(&listen, "listen", "", "Address to listen on for postbacks from Digital Rebar")
-	flag.StringVar(&backingStore, "file", "Backing store to use for RuleSets.  Permitted values are 'file' and 'consul'")
-	flag.StringVar(&dataDir, "/var/cache/classifier", "Path to store data at")
+	flag.StringVar(&backingStore, "backing", "file", "Backing store to use for RuleSets.  Permitted values are 'file' and 'consul'")
+	flag.StringVar(&dataDir, "dataloc", "/var/cache/classifier", "Path to store data at")
 	flag.BoolVar(&version, "version", false, "Print version and exit")
 	flag.BoolVar(&debug, "debug", false, "Whether to run in debug mode")
 	flag.Parse()
@@ -198,9 +197,6 @@ func main() {
 	}
 	if listen == "" {
 		log.Fatalf("No address to listen on passed with --listen")
-	}
-	if err := client.Session(endpoint, username, password); err != nil {
-		log.Fatalf("Could not connect to Rebar: %v", err)
 	}
 
 	var bs engine.LoadSaver

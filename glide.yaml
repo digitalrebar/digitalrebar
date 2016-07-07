@@ -2,7 +2,7 @@ package: github.com/rackn/classifier
 import:
 - package: github.com/digitalrebar/rebar-api
   subpackages:
-  - client
+  - api
 - package: github.com/ghodss/yaml
 - package: github.com/coddingtonbear/go-jsonselect
 - package: github.com/gin-gonic/gin

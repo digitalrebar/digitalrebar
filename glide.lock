@@ -1,5 +1,5 @@
-hash: a5b995da682e04e0b31ef1c7b58fe34acf2b4ad916575ee158101f14b243e85d
-updated: 2016-07-07T10:29:41.328435726-05:00
+hash: b8cf60e64e2fb4abf13dd6a30d6c6e169b8f165491524c586507f59b61ff8662
+updated: 2016-07-07T16:07:37.546952332-05:00
 imports:
 - name: github.com/cloudfoundry-incubator/candiedyaml
   version: 99c3df83b51532e3615f851d8c2dbb638f5313bf
@@ -8,8 +8,9 @@ imports:
 - name: github.com/coddingtonbear/go-simplejson
   version: a582018feafb39c4884d1b03cad98b91e2804276
 - name: github.com/digitalrebar/rebar-api
-  version: fe95aba763528b50da37109699583a4e373f08a4
+  version: b06089decc4973a407c1bf6d72a4e5650339b5f6
   subpackages:
+  - api
   - client
   - datatypes
 - name: github.com/ghodss/yaml
@@ -25,6 +26,16 @@ imports:
   - proto
 - name: github.com/guregu/null
   version: 41961cea0328defc5f95c1c473f89ebf0d1813f6
+- name: github.com/hashicorp/consul
+  version: 64e3033d3c7f80af3f925f4665a9bc1af75d6153
+  subpackages:
+  - api
+- name: github.com/hashicorp/go-cleanhttp
+  version: ad28ea4487f05916463e2423a55166280e8254b5
+- name: github.com/hashicorp/serf
+  version: 6c4672d66fc6312ddde18399262943e21175d831
+  subpackages:
+  - coordinate
 - name: github.com/manucorporat/sse
   version: ee05b128a739a0fb76c7ebd3ae4810c1de808d6d
 - name: github.com/pborman/uuid
@@ -44,8 +55,8 @@ imports:
 - name: golang.org/x/net
   version: f315505cf3349909cdf013ea56690da34e96a451
   subpackages:
-  - html
   - context
+  - html
   - html/atom
 - name: gopkg.in/go-playground/validator.v8
   version: c193cecd124b5cc722d7ee5538e945bdb3348435

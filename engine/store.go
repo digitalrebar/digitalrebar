@@ -40,6 +40,7 @@ func NewFileStore(dbFile string) (*FileStore, error) {
 	if os.IsNotExist(err) {
 		err = ioutil.WriteFile(dbFile, []byte("{}"), 0600)
 	}
+	info, err = os.Stat(dbFile)
 	if err != nil {
 		return nil, err
 	}

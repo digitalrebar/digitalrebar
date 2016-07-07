@@ -368,12 +368,12 @@ func setAttrib(val interface{}) (action, error) {
 }
 
 func actionDelay(val interface{}) (action, error) {
-	secs, ok := val.(int)
+	secs, ok := val.(float64)
 	if !ok {
-		return nil, errors.New("Delay needs the number of seconds to delay")
+		return nil, fmt.Errorf("Delay got %T %#v, needed a float64", val, val)
 	}
 	return func(c *RunContext) error {
-		time.Sleep(time.Duration(secs) * time.Second)
+		time.Sleep(time.Duration(int(secs)) * time.Second)
 		return nil
 	}, nil
 }

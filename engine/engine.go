@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/digitalrebar/rebar-api/client"
+	"github.com/digitalrebar/rebar-api/api"
 	"github.com/pborman/uuid"
 )
 
@@ -32,6 +32,7 @@ type Engine struct {
 	rebarEndpoint      string
 	username, password string
 	Debug              bool
+	rClient            *api.Client
 	eventSelectors     []etInvoker
 }
 
@@ -55,9 +56,6 @@ func NewEngine(backingStore LoadSaver, listen, rebarEndpoint, username, password
 		eventSelectors: []etInvoker{},
 	}
 
-	if err := res.registerSink(); err != nil {
-		return nil, err
-	}
 	buf, err := res.backingStore.Load()
 	if err != nil {
 		return nil, err
@@ -65,6 +63,23 @@ func NewEngine(backingStore LoadSaver, listen, rebarEndpoint, username, password
 	if err := json.Unmarshal(buf, &res.ruleSets); err != nil {
 		return nil, fmt.Errorf("Unable to load initial database: %v", err)
 	}
+	for _, rs := range res.ruleSets {
+		rs.compile(res)
+	}
+	if res.rebarEndpoint != "" {
+		sess, err := api.Session(res.rebarEndpoint, res.username, res.password)
+		if err != nil {
+			log.Fatalf("Could not connect to Rebar: %v", err)
+		}
+		res.rClient = sess
+		log.Printf("Attached to Rebar at %v", res.rClient.URL)
+	}
+
+	if err := res.registerSink(); err != nil {
+		return nil, err
+	}
+	res.updateSelectors()
+
 	return res, nil
 }
 
@@ -78,16 +93,16 @@ func (e *Engine) save() {
 	}
 }
 
-func (e *Engine) eventSink() (*client.EventSink, error) {
+func (e *Engine) eventSink() (*api.EventSink, error) {
 	// If there is no rebarEndpoint, we are in testing mode.
 	if e.rebarEndpoint == "" {
 		return nil, nil
 	}
 	// Register us as an event sink, if not already registered.
-	res := &client.EventSink{}
+	res := &api.EventSink{}
 	matcher := map[string]interface{}{"endpoint": e.eventEndpoint}
-	matches := []*client.EventSink{}
-	if err := client.Match(res.ApiName(), matcher, &matches); err != nil {
+	matches := []*api.EventSink{}
+	if err := e.rClient.Match(res.ApiName(), matcher, &matches); err != nil {
 		return nil, err
 	}
 	if len(matches) == 0 {
@@ -113,10 +128,10 @@ func (e *Engine) registerSink() error {
 		log.Printf("Already listening at %s", e.eventEndpoint)
 		return nil
 	}
-	sink = &client.EventSink{}
+	sink = &api.EventSink{}
 	sink.Endpoint = e.eventEndpoint
 	log.Printf("Creating new event sink at %s", e.eventEndpoint)
-	return client.BaseCreate(sink)
+	return e.rClient.BaseCreate(sink)
 }
 
 // Called whenever we add/update/remove RuleSets. It makes sure
@@ -126,21 +141,50 @@ func (e *Engine) updateSelectors() {
 	if e.rebarEndpoint == "" {
 		return
 	}
+	for _, rs := range e.ruleSets {
+		for i := range rs.Rules {
+			rule := &rs.Rules[i]
+			for _, es := range rule.EventSelectors {
+				found := false
+				for k := range e.eventSelectors {
+					evt := &e.eventSelectors[k]
+					if reflect.DeepEqual(es, evt.selector) {
+						found = true
+						if _, ok := evt.ruleIndexes[rs.Name]; ok {
+							log.Printf("Adding ruleset %s rule %d to selector %v", rs.Name, i, evt.selector)
+							evt.ruleIndexes[rs.Name] = append(evt.ruleIndexes[rs.Name], i)
+						} else {
+							log.Printf("Adding ruleset %s rule %d to selector %v", rs.Name, i, evt.selector)
+							evt.ruleIndexes = map[string][]int{rs.Name: []int{i}}
+						}
+					}
+					if found {
+						break
+					}
+				}
+				if !found {
+					log.Printf("Creating selector %v for ruleset %s rule %d", e, rs.Name, i)
+
+					e.eventSelectors = append(e.eventSelectors, etInvoker{es, map[string][]int{rs.Name: []int{i}}})
+				}
+			}
+		}
+	}
 	sink, err := e.eventSink()
 	if err != nil {
 		log.Fatalf("No event sink available for %s", e.eventEndpoint)
 	}
 	matcher := map[string]interface{}{"event_sink_id": sink.ID}
-	matches := []*client.EventSelector{}
-	selector := &client.EventSelector{}
-	if err := client.Match(selector.ApiName(), matcher, &matches); err != nil {
+	matches := []*api.EventSelector{}
+	selector := &api.EventSelector{}
+	if err := e.rClient.Match(selector.ApiName(), matcher, &matches); err != nil {
 		log.Fatalf("Error getting event selectors: %v", err)
 	}
 
 	// Build lists of add, delete, already_present
 	add := []EventSelector{}
-	delete := []*client.EventSelector{}
-	alreadyPresent := []*client.EventSelector{}
+	delete := []*api.EventSelector{}
+	alreadyPresent := []*api.EventSelector{}
 
 	// Negative Intersection new with old to get adds
 	for _, v := range e.eventSelectors {
@@ -176,19 +220,19 @@ func (e *Engine) updateSelectors() {
 
 	// Add new selectors
 	for _, v := range add {
-		selector = &client.EventSelector{}
+		selector = &api.EventSelector{}
 		selector.EventSinkID = sink.ID
 		selector.Selector = v.forRebar()
-		log.Printf("Creating new event selector, %v", v)
-		if err := client.BaseCreate(selector); err != nil {
+		log.Printf("Creating new event selector, %#v", v)
+		if err := e.rClient.BaseCreate(selector); err != nil {
 			log.Fatalf("Error creating event selector: %v", err)
 		}
 	}
 
 	// Delete old selectors
 	for _, v := range delete {
-		log.Printf("Deleting old event selector, %v", v)
-		if err := client.Destroy(v); err != nil {
+		log.Printf("Deleting old event selector, %#v", v.Selector)
+		if err := e.rClient.Destroy(v); err != nil {
 			log.Fatalf("Error destroying event selector: %v", err)
 		}
 	}
@@ -202,7 +246,7 @@ func (e *Engine) Stop() {
 		e.deleteRuleSet(rs)
 	}
 	es, _ := e.eventSink()
-	client.Destroy(es)
+	e.rClient.Destroy(es)
 }
 
 // Update e.eventselectors whenever a Ruleset is added or changed.
@@ -214,33 +258,6 @@ func (e *Engine) updateRules(rs RuleSet) (RuleSet, error) {
 	rs.Version = uuid.NewRandom()
 	e.ruleSets[rs.Name] = &rs
 	e.save()
-	for i := range rs.Rules {
-		rule := &rs.Rules[i]
-		for _, es := range rule.EventSelectors {
-			found := false
-			for k := range e.eventSelectors {
-				evt := &rs.engine.eventSelectors[k]
-				if reflect.DeepEqual(es, evt.selector) {
-					found = true
-					if _, ok := evt.ruleIndexes[rs.Name]; ok {
-						log.Printf("Adding ruleset %s rule %d to selector %v", rs.Name, i, evt.selector)
-						evt.ruleIndexes[rs.Name] = append(evt.ruleIndexes[rs.Name], i)
-					} else {
-						log.Printf("Adding ruleset %s rule %d to selector %v", rs.Name, i, evt.selector)
-						evt.ruleIndexes = map[string][]int{rs.Name: []int{i}}
-					}
-				}
-				if found {
-					break
-				}
-			}
-			if !found {
-				log.Printf("Creating selector %v for ruleset %s rule %d", e, rs.Name, i)
-
-				e.eventSelectors = append(e.eventSelectors, etInvoker{es, map[string][]int{rs.Name: []int{i}}})
-			}
-		}
-	}
 	e.updateSelectors()
 	return rs, nil
 }
