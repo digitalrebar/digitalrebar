@@ -24,7 +24,7 @@ class TenantsController < ::ApplicationController
     objs = []
     ok_params = params.permit(attrs)
     objs = Tenant.where(ok_params) if !ok_params.empty?
-    objs = [] unless validate_capability(@tenant.id, "TENANT_READ") # GREG: Really filter
+#    objs = [] unless validate_capability(@tenant.id, "TENANT_READ") # GREG: Really filter
     respond_to do |format|
       format.html {}
       format.json { render api_index Tenant, objs }
@@ -45,7 +45,7 @@ class TenantsController < ::ApplicationController
   
   def index
     @tenants = Tenant.all
-    @tenants = [] unless validate_capability(@tenant.id, "TENANT_READ") # GREG: Really filter
+#    @tenants = [] unless validate_capability(@tenant.id, "TENANT_READ") # GREG: Really filter
     respond_to do |format|
       format.html {}
       format.json { render api_index Tenant, @tenants }
