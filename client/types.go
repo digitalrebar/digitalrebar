@@ -1,5 +1,7 @@
 package client
 
+// Deprecated: use api instead. client will not be updated
+
 // Apache 2 License 2015 by Rob Hirschfeld for RackN
 
 import (

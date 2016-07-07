@@ -1,5 +1,7 @@
 package client
 
+// Deprecated: use api instead. client will not be updated
+
 import (
 	"crypto/rand"
 	"encoding/base64"
