@@ -13,6 +13,24 @@ type LoadSaver interface {
 	Load() ([]byte, error)
 }
 
+type MemoryStore []byte
+
+func NewMemoryStore() MemoryStore {
+	return MemoryStore([]byte("{}"))
+}
+
+func (m MemoryStore) Save(buf []byte) error {
+	m = make([]byte, 0, len(buf))
+	m = append(m, buf...)
+	return nil
+}
+
+func (m MemoryStore) Load() []byte {
+	res := make([]byte, 0, len(m))
+	res = append(res, m...)
+	return res
+}
+
 type FileStore struct {
 	backingDatabase string
 }

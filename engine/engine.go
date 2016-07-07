@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"reflect"
@@ -25,6 +26,7 @@ type etInvoker struct {
 // Engine holds all the necessary information to run RuleSets.
 type Engine struct {
 	sync.RWMutex
+	backingStore       LoadSaver
 	ruleSets           map[string]*RuleSet
 	eventEndpoint      string
 	rebarEndpoint      string
@@ -42,8 +44,9 @@ type Engine struct {
 // rebarEndpoint: the URL to contact the Rebar API at.
 //
 // username, password: The username and password to use to communicate with Rebar.
-func NewEngine(listen, rebarEndpoint, username, password string) (*Engine, error) {
+func NewEngine(backingStore LoadSaver, listen, rebarEndpoint, username, password string) (*Engine, error) {
 	res := &Engine{
+		backingStore:   backingStore,
 		rebarEndpoint:  rebarEndpoint,
 		username:       username,
 		password:       password,
@@ -55,7 +58,24 @@ func NewEngine(listen, rebarEndpoint, username, password string) (*Engine, error
 	if err := res.registerSink(); err != nil {
 		return nil, err
 	}
+	buf, err := res.backingStore.Load()
+	if err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(buf, &res.ruleSets); err != nil {
+		return nil, fmt.Errorf("Unable to load initial database: %v", err)
+	}
 	return res, nil
+}
+
+func (e *Engine) save() {
+	buf, err := json.Marshal(e.ruleSets)
+	if err == nil {
+		err = e.backingStore.Save(buf)
+	}
+	if err != nil {
+		log.Fatalf("Failed to save rulesets: %v", err)
+	}
 }
 
 func (e *Engine) eventSink() (*client.EventSink, error) {
@@ -193,6 +213,7 @@ func (e *Engine) updateRules(rs RuleSet) (RuleSet, error) {
 	}
 	rs.Version = uuid.NewRandom()
 	e.ruleSets[rs.Name] = &rs
+	e.save()
 	for i := range rs.Rules {
 		rule := &rs.Rules[i]
 		for _, es := range rule.EventSelectors {
@@ -311,6 +332,7 @@ func (e *Engine) DeleteRuleSet(name string, version uuid.UUID) error {
 			version)
 	}
 	e.deleteRuleSet(name)
+	e.save()
 	return nil
 }
 

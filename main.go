@@ -32,6 +32,8 @@ var (
 	router                       = gin.Default()
 	username, password, endpoint string
 	listen                       string
+	backingStore                 string
+	dataDir                      string
 	ruleEngine                   *engine.Engine
 )
 
@@ -160,6 +162,8 @@ func main() {
 	flag.StringVar(&password, "password", "", "Password for Digital Rebar endpoint")
 	flag.StringVar(&endpoint, "endpoint", "", "API Endpoint for Digital Rebar")
 	flag.StringVar(&listen, "listen", "", "Address to listen on for postbacks from Digital Rebar")
+	flag.StringVar(&backingStore, "file", "Backing store to use for RuleSets.  Permitted values are 'file' and 'consul'")
+	flag.StringVar(&dataDir, "/var/cache/classifier", "Path to store data at")
 	flag.BoolVar(&version, "version", false, "Print version and exit")
 	flag.BoolVar(&debug, "debug", false, "Whether to run in debug mode")
 	flag.Parse()
@@ -198,7 +202,20 @@ func main() {
 	if err := client.Session(endpoint, username, password); err != nil {
 		log.Fatalf("Could not connect to Rebar: %v", err)
 	}
-	ruleEngine, err = engine.NewEngine(listen, endpoint, username, password)
+
+	var bs engine.LoadSaver
+	switch backingStore {
+	case "consul":
+		bs, err = engine.NewConsulStore(dataDir)
+	case "file":
+		bs, err = engine.NewFileStore(dataDir + "/database")
+	default:
+		log.Fatalf("Unknown backing store %s", backingStore)
+	}
+	if err != nil {
+		log.Fatalf("Failed to create backing store %s at %s: %v", backingStore, dataDir, err)
+	}
+	ruleEngine, err = engine.NewEngine(bs, listen, endpoint, username, password)
 	if err != nil {
 		log.Fatalf("Error creating rule engine: %v", err)
 	}
