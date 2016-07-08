@@ -170,4 +170,79 @@ class DashboardController < ApplicationController
     end
   end
 
+  def wizard
+    #@bc = Barclamp.find_key params[:barclamp_id]
+
+    name = params[:name]
+    metal_os = params[:os]
+    provider = params[:provider]
+    deployment_size = params[:deployment_size]
+    nodes = params[:nodes]
+    metalNodes = nodes.select{|i| i[:node_id] > 0}
+    cloudNodes = nodes - metalNodes
+
+    roles = []
+    nodes.each do |n|
+      roles += n[:roles] || []
+    end
+    roles.uniq!
+
+    # milestone for OS assignment
+    cin = Role.find_key 'rebar-installed-node'
+    roles << cin
+
+    # use ids for each role
+    roles.map! { |r| Role.find(r).id }
+
+    throw "Deployment Name is required" unless name
+
+    d = Deployment.find_or_create_by!(name: name, parent: Deployment.system)
+
+    # set the roles in the deployment
+    roles = roles.sort_by { |r| r.cohort }
+    roles.each do |r|
+      r.add_to_deployment d
+    end
+
+
+    # put the nodes into the deployment (need to be done first)
+    Node.transaction do
+      nodes.each do |nid, os|
+        n = Node.find nid
+        n.deployment = d
+        n.save!
+        # and set operating systems for selected nodes (unless docker)
+        Rails.logger.debug "Barclamp wizard: set #{n.name} into deployment #{d.name}"
+        if n.is_docker_node?
+          Rails.logger.info "Barclamp wizard: NOT assigning #{os} to node #{n.name} because it's DOCKER"
+        elsif os == "noos"
+          Rails.logger.info "Barclamp wizard: NO os assignment for node #{n.name} in deployment #{d.name}"
+        else
+          Attrib.set "provisioner-target_os", n, os, :user if os
+          Rails.logger.info "Barclamp wizard: assigning #{os} to node #{n.name} in deployment #{d.name}"
+        end
+      end
+    end
+
+    # we need to do this in cohort order!
+    roles = roles.sort_by { |r, n| Role.find(r).cohort }
+
+    # set the roles on each node
+    roles.each do |rid, nodes|
+      r = Role.find rid
+      Rails.logger.info "Barclamp wizard: deployment-role #{r.name} added to deployment #{d.name}"
+      nodes.each do |nid|
+        n = Node.find nid
+        r.add_to_node_in_deployment(n, d) unless n.is_docker_node? and r.id == cin
+        Rails.logger.info "Barclamp wizard: #{r.name} adding node #{n.name} in deployment #{d.name}"
+      end
+      Rails.logger.debug "Barclamp wizard: made all changes for role #{r.name}"
+    end
+
+    Rails.logger.debug "Barclamp wizard: opening deployment #{deployment_path(:id=>d.id)}"
+    redirect_to deployment_path(:id=>d.id)
+  
+
+  end
+
 end
