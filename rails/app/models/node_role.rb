@@ -484,7 +484,7 @@ class NodeRole < ActiveRecord::Base
     res.deep_merge(all_my_data)
   end
 
- # Gather all of the attribute data needed for a single noderole run.
+  # Gather all of the attribute data needed for a single noderole run.
   # It should be run to create whatever information will be needed
   # for the actual run before doing the actual run in a delayed job.
   # RETURNS the attribute data needed for a single noderole run.
@@ -712,6 +712,8 @@ class NodeRole < ActiveRecord::Base
       all_children.order("cohort DESC").each do |c|
         c.destroy
       end
+      # if we can destroy, then we also need to run the sync_on_delete method
+      Event.fire(self, obj_class: "role", obj_id: role.name, event: "sync_on_destroy")
       return true
     end
   end

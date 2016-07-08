@@ -9,9 +9,8 @@
     %dd= link_to @role.jig_name, jig_path(@role.jig_name)
     %dt= t '.barclamp' 
     %dd= link_to @role.barclamp.name, barclamp_path(@role.barclamp.id), :title=>@role.barclamp.description
-    - if Rails.env.development?
-      %dt= t '.type'
-      %dd= "[#{@role.class.to_s}]"
+    %dt= t '.type'
+    %dd= "[#{@role.class.to_s}]"
     - if @role.github and (current_user.settings(:docs).sources rescue false)
       %dt= t '.source'
       %dd= link_to @role.github, @role.github
