@@ -176,7 +176,11 @@ class DashboardController < ApplicationController
     name = params[:name]
     metal_os = params[:os]
     provider = params[:provider]
-    deployment_size = params[:deployment_size]
+
+    provider_id = Provider.find_key(provider[:name]).id if provider
+    provider_os = provider[:os]
+    provider_id ||= Provider.find_by!(name: 'metal').id
+
     nodes = params[:nodes]
     metalNodes = nodes.select{|i| i[:node_id] > 0}
     cloudNodes = nodes - metalNodes
@@ -187,12 +191,16 @@ class DashboardController < ApplicationController
     end
     roles.uniq!
 
+
     # milestone for OS assignment
     cin = Role.find_key 'rebar-installed-node'
     roles << cin
 
     # use ids for each role
     roles.map! { |r| Role.find(r).id }
+
+    node_roles = {} # map[role_id][]node_id
+    roles.each { |r| node_roles[r] = [] }
 
     throw "Deployment Name is required" unless name
 
@@ -207,39 +215,87 @@ class DashboardController < ApplicationController
 
     # put the nodes into the deployment (need to be done first)
     Node.transaction do
-      nodes.each do |nid, os|
-        n = Node.find nid
-        n.deployment = d
-        n.save!
+      metalNodes.each do |n|
+        node = Node.find n[:node_id]
+        os = n[:os]
+        node.deployment = d
+        node.save!
+
+        n[:roles].each do |r|
+          node_roles[r] << node.id
+        end
         # and set operating systems for selected nodes (unless docker)
-        Rails.logger.debug "Barclamp wizard: set #{n.name} into deployment #{d.name}"
+        Rails.logger.debug "Wizard: set #{n.name} into deployment #{d.name}"
         if n.is_docker_node?
-          Rails.logger.info "Barclamp wizard: NOT assigning #{os} to node #{n.name} because it's DOCKER"
+          Rails.logger.info "Wizard: NOT assigning #{os} to node #{n.name} because it's DOCKER"
         elsif os == "noos"
-          Rails.logger.info "Barclamp wizard: NO os assignment for node #{n.name} in deployment #{d.name}"
+          Rails.logger.info "Wizard: NO os assignment for node #{n.name} in deployment #{d.name}"
         else
           Attrib.set "provisioner-target_os", n, os, :user if os
-          Rails.logger.info "Barclamp wizard: assigning #{os} to node #{n.name} in deployment #{d.name}"
+          Rails.logger.info "Wizard: assigning #{os} to node #{n.name} in deployment #{d.name}"
+        end
+      end
+
+      nodeIndex = 0
+      cloudNodes.each do |n|
+        n[:nodes] = []
+        hints = n[:hints] || {
+          'use-proxy' => false,
+          'use-ntp' => false,
+          'use-dns' => false,
+          'use-logging' => false,
+          'provider-create-hint': {
+            'hostname': name + "-" + nodeIndex.to_s
+          }
+        }
+
+        if n[:provider]
+          node_provider = n[:provider][:name]
+          node_provider_id = provider.find_key(n[:provider][:name]).id
+          node_provider_os = n[:provider][:os] || provider_os
+        else
+          node_provider = provider[:name]
+          node_provider_id = provider_id
+          node_provider_os = provider_os
+        end
+
+        (n[:node_count] || 1).times do |i|
+
+          node = Node.create!({
+            name: name + "-" + nodeIndex.to_s + "." + node_provider + ".neode.org",
+            description: "created by rebar",
+            deployment_id: d.id,
+            provider_id: node_provider_id,
+            system: false,
+          })
+          # Set any hints we got with node creation.
+          hints.each do |k, v|
+            Attrib.set(k, node, v)
+          end
+
+          n[:nodes] << node
+
+          n[:roles].each do |r|
+            node_roles[r] << node.id
+          end
+          nodeIndex += 1
         end
       end
     end
 
-    # we need to do this in cohort order!
-    roles = roles.sort_by { |r, n| Role.find(r).cohort }
-
     # set the roles on each node
-    roles.each do |rid, nodes|
+    node_roles.each do |rid, nodes|
       r = Role.find rid
-      Rails.logger.info "Barclamp wizard: deployment-role #{r.name} added to deployment #{d.name}"
+      Rails.logger.info "Wizard: deployment-role #{r.name} added to deployment #{d.name}"
       nodes.each do |nid|
         n = Node.find nid
         r.add_to_node_in_deployment(n, d) unless n.is_docker_node? and r.id == cin
-        Rails.logger.info "Barclamp wizard: #{r.name} adding node #{n.name} in deployment #{d.name}"
+        Rails.logger.info "Wizard: #{r.name} adding node #{n.name} in deployment #{d.name}"
       end
-      Rails.logger.debug "Barclamp wizard: made all changes for role #{r.name}"
+      Rails.logger.debug "Wizard: made all changes for role #{r.name}"
     end
 
-    Rails.logger.debug "Barclamp wizard: opening deployment #{deployment_path(:id=>d.id)}"
+    Rails.logger.debug "Wizard: opening deployment #{deployment_path(:id=>d.id)}"
     redirect_to deployment_path(:id=>d.id)
   
 
