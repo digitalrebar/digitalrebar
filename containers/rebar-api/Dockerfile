@@ -4,7 +4,7 @@ FROM digitalrebar/deploy-service-wrapper
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 
 RUN groupadd -r rebar && useradd -r -u 1000 -g rebar -p '$6$afAL.34B$T2WR6zycEe2q3DktVtbH2orOroblhR6uCdo5n3jxLsm47PBm9lwygTbv3AjcmGDnvlh0y83u2yprET8g9/mve.' -m -d /home/rebar -s /bin/bash rebar \
-  && mkdir -p /opt/digitalrebar /etc/sudoers.d /home/rebar/.ssh /var/run/rebar \
+  && mkdir -p /opt/digitalrebar /etc/sudoers.d /home/rebar/.ssh /var/run/rebar /var/cache/rebar/ansible_playbook \
   && chown rebar:rebar /var/run/rebar
 
 COPY rebar_sudoer /etc/sudoers.d/rebar
