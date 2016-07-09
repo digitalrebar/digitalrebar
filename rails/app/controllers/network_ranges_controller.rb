@@ -23,7 +23,7 @@ class NetworkRangesController < ::ApplicationController
     attrs = NetworkRange.attribute_names.map{|a|a.to_sym}
     objs = []
     ok_params = params.permit(attrs)
-    objs = NetworkRange.where(ok_params) if !ok_params.empty?
+    objs = validate_match(ok_params, :tenant_id, "NETWORK", NetworkRange)
     respond_to do |format|
       format.html {}
       format.json { render api_index NetworkRange, objs }
@@ -33,10 +33,12 @@ class NetworkRangesController < ::ApplicationController
   def index
     @list = if params.has_key? :network_id or params.has_key? :network
               network =  Network.find_key params[:network_id] || params[:network]
-              network.network_ranges
+              network.network_ranges.to_a
             else
-              NetworkRange.all
+              NetworkRange.all.to_a
             end
+    t_ids = build_tenant_list("NETWORK_READ")
+    @list.delete_if { |x| !t_ids.include? x.tenant_id }
     respond_to do |format|
       format.html { }
       format.json { render api_index NetworkRange, @list }
@@ -50,6 +52,7 @@ class NetworkRangesController < ::ApplicationController
     else
       @range = NetworkRange.find_key(params[:id])
     end
+    validate_read(@range.tenant_id, "NETWORK", NetworkRange, params[:id])
     respond_to do |format|
       format.html {
                     @list = [@range]
@@ -69,6 +72,7 @@ class NetworkRangesController < ::ApplicationController
     unless params[:tenant_id]
       params[:tenant_id] = @current_user.tenant_id
     end
+    validate_create(params[:tenant_id], "NETWORK", NetworkRange)
     @range =  NetworkRange.create! params.permit(:name,
                                                  :network_id,
 						 :tenant_id,
@@ -92,6 +96,7 @@ class NetworkRangesController < ::ApplicationController
       else
         @network_range = NetworkRange.find_by!(name: params[:name], network_id: params[:network_id]).lock!
       end
+      validate_update(@network_range.tenant_id, "NETWORK", NetworkRange, @network_range.id)
       if request.patch?
         patch(@network_range,%w{name first last conduit vlan team_mode overlap use_vlan use_bridge use_team tenant_id})
       else
@@ -117,6 +122,7 @@ class NetworkRangesController < ::ApplicationController
     if params[:network_id]
       raise "Range is not from the correct Network" unless @range.network_id = params[:network_id]
     end
+    validate_destroy(@range.tenant_id, "NETWORK", NetworkRange, params[:id])
     @range.destroy
     render api_delete @range
   end

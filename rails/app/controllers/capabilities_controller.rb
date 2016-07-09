@@ -33,10 +33,7 @@ class CapabilitiesController < ::ApplicationController
 
   def show
     @capability = Capability.find_key params[:id]
-    @capability = nil unless validate_capability(@current_user.current_tenant_id, "CAPABILITY_READ")
-    unless @capability
-      raise "GREG: Make nicer: Should be 404"
-    end
+    validate_read(@current_user.current_tenant_id, "CAPABILITY", Capability, params[:id])
     respond_to do |format|
       format.html { }
       format.json { render api_show @capability }
@@ -44,8 +41,11 @@ class CapabilitiesController < ::ApplicationController
   end
   
   def index
-    @capabilities = Capability.all
-    @capabilities = [] unless validate_capability(@current_user.current_tenant_id, "CAPABILITY_READ")
+    if validate_capability(@current_user.current_tenant_id, "CAPABILITY_READ")
+      @capabilities = Capability.all
+    else
+      @capabilities = []
+    end
     respond_to do |format|
       format.html {}
       format.json { render api_index Capability, @capabilities.to_a }
@@ -53,9 +53,7 @@ class CapabilitiesController < ::ApplicationController
   end
 
   def create
-    unless validate_capability(@current_user.current_tenant_id, "CAPABILITY_CREATE")
-      raise "GREG: Make nicer: Should be 409"
-    end
+    validate_create(@current_user.current_tenant_id, "CAPABILITY", Capability)
     Capability.transaction do
       @capability = Capability.create! params.permit(:name,
                                              :description,
@@ -68,9 +66,7 @@ class CapabilitiesController < ::ApplicationController
   end
 
   def update
-    unless validate_capability(@current_user.current_tenant_id, "CAPABILITY_UPDATE")
-      raise "GREG: Make nicer: Should be 409"
-    end
+    validate_update(@current_user.current_tenant_id, "CAPABILITY", Capability, params[:id])
     Capability.transaction do
       @capability = Capability.find_key(params[:id]).lock!
       if request.patch?
@@ -86,15 +82,14 @@ class CapabilitiesController < ::ApplicationController
   end
 
   def destroy
-    unless validate_capability(@current_user.current_tenant_id, "CAPABILITY_DESTROY")
-      raise "GREG: Make nicer: Should be 409"
-    end
+    validate_destroy(@current_user.tenant_id, "CAPABILITY", Capability, params[:id])
     @capability = Capability.find_key(params[:id])
     @capability.destroy
     render api_delete @capability
   end
 
   def edit
+    validate_update(@current_user.current_tenant_id, "CAPABILITY", Capability, params[:id])
     @capability = Capability.find_key params[:id]
     respond_to do |format|
       format.html {  }

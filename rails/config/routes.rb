@@ -153,6 +153,7 @@ Rebar::Application.routes.draw do
               get 'sample'
               post 'match'
             end
+            resources :users
           end
           resources :capabilities do
             collection do
@@ -193,12 +194,6 @@ Rebar::Application.routes.draw do
             put :commit
             put :recall
             put :redeploy
-          end
-          resources :events do
-            collection do
-              get 'sample'
-              post 'match'
-            end
           end
           resources :event_selectors do
             collection do

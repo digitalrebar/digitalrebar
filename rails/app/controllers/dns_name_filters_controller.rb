@@ -23,26 +23,28 @@ class DnsNameFiltersController < ::ApplicationController
     attrs = DnsNameFilter.attribute_names.map{|a|a.to_sym}
     objs = []
     ok_params = params.permit(attrs)
-    objs = DnsNameFilter.where(ok_params) if !ok_params.empty?
+    objs = validate_match(ok_params, :tenant_id, "NETWORK", DnsNameFilter)
     respond_to do |format|
       format.html {}
       format.json { render api_index DnsNameFilter, objs }
     end
   end
   
-  def show
-    @filter = DnsNameFilter.find_key params[:id]
-    respond_to do |format|
-      format.html { }
-      format.json { render api_show @filter }
-    end
-  end
-
   def index
-    @filters = DnsNameFilter.order('priority ASC')
+    t_ids = build_tenant_list("NETWORK_READ")
+    @filters = DnsNameFilter.where(tenant_id: t_ids).order('priority ASC')
     respond_to do |format|
       format.html {}
       format.json { render api_index DnsNameFilter, @filters }
+    end
+  end
+
+  def show
+    @filter = DnsNameFilter.find_key params[:id]
+    validate_read(@filter.tenant_id, "NETWORK", DnsNameFilter, params[:id])
+    respond_to do |format|
+      format.html { }
+      format.json { render api_show @filter }
     end
   end
 
@@ -55,6 +57,7 @@ class DnsNameFiltersController < ::ApplicationController
     unless params[:tenant_id]
       params[:tenant_id] = @current_user.tenant_id
     end
+    validate_create(params[:tenant_id], "NETWORK", DnsNameFilter)
     DnsNameFilter.transaction do
       @filter = DnsNameFilter.create! params.permit(:name, :matcher, :priority, :service, :template, :tenant_id)
     end
@@ -68,7 +71,7 @@ class DnsNameFiltersController < ::ApplicationController
 
   def update
     @filter = DnsNameFilter.find_key(params[:id])
-
+    validate_update(@filter.tenant_id, "NETWORK", DnsNameFilter, params[:id])
     @filter.update_attributes!(params.permit(:name, :matcher, :priority, :service, :template, :tenant_id))
     respond_to do |format|
       format.html { render :action=>:show }
@@ -78,6 +81,7 @@ class DnsNameFiltersController < ::ApplicationController
 
   def destroy
     @filter = DnsNameFilter.find_key(params[:id])
+    validate_destroy(@filter.tenant_id, "NETWORK", DnsNameFilter, params[:id])
     @filter.destroy
     respond_to do |format|
       format.html { redirect_to dns_name_filters_path() }
@@ -87,6 +91,7 @@ class DnsNameFiltersController < ::ApplicationController
 
   def edit
     @dnf = DnsNameFilter.find_key params[:id]
+    validate_update(@dnf.tenant_id, "NETWORK", DnsNameFilter, params[:id])
     respond_to do |format|
       format.html {  }
     end

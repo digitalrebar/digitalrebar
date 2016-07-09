@@ -52,6 +52,7 @@ class JigsController < ApplicationController
   def update
     Jig.transaction do
       @jig = Jig.find_key(params[:id]).lock!
+      validate_update(@current_user.tenant_id, "BARCLAMP", Jig, params[:id])
       if request.patch?
         patch(@jig,%w{description active server client_name key})
       else
@@ -69,12 +70,14 @@ class JigsController < ApplicationController
   # calls jig.flush to clear temporary data (if jig supports it)
   def flush
     @jig = Jig.find_key params[:jig_id]
+    validate_update(@current_user.tenant_id, "BARCLAMP", Jig, params[:jig_id])
     @jig.flush
     render api_show @jig    
   end
 
   def activate
     jig = Jig.find_key params[:jig_id]
+    validate_update(@current_user.tenant_id, "BARCLAMP", Jig, params[:jig_id])
 
     # if this is test, we remap all external roles to test
     if jig.name == 'test'

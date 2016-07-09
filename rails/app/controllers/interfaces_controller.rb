@@ -15,6 +15,8 @@
 class InterfacesController < ::ApplicationController
   respond_to :html, :json
 
+  # GREG: What the heck to do with this??
+
   def match
     attrs = Interface.attribute_names.map{|a|a.to_sym}
     objs = []

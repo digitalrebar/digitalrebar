@@ -18,10 +18,16 @@ class GroupsController < ApplicationController
   def index
     @list = if params.has_key? :node_id
       n = Node.find_key params[:node_id]
-      n.groups
+      if validate_capability(n.tenant_id, "NODE_READ")
+        n.groups
+      else
+        []
+      end
     else
-      Group.all
+      Group.all.to_a
     end
+    t_ids = build_tenant_list("GROUP_READ")
+    @list.delete_if { |x| !t_ids.include? x.tenant_id }
     respond_to do |format|
       format.html { }
       format.json { render api_index Group, @list }
@@ -30,6 +36,7 @@ class GroupsController < ApplicationController
 
   def show
     @group = Group.find_key params[:id]
+    validate_read(@group.tenant_id, "GROUP", Group, params[:id])
     respond_to do |format|
       format.html { }
       format.json { render api_show @group }
@@ -42,6 +49,7 @@ class GroupsController < ApplicationController
     unless params[:tenant_id]
       params[:tenant_id] = @current_user.tenant_id
     end
+    validate_create(params[:tenant_id], "GROUP", Group)
     @group = Group.create! params.permit(:name, :description, :category, :tenant_id)
     respond_to do |format|
       format.html { redirect_to group_path(@group.id)}
@@ -52,15 +60,16 @@ class GroupsController < ApplicationController
   def update
     params[:category] = params[:category].first if params[:category].kind_of?(Array)
     @group = Group.find_key(params[:id])
+    validate_update(@group.tenant_id, "GROUP", Group, params[:id])
     @group.update_attributes!(params.permit(:name, :description, :category, :tenant_id))
     render api_show @group
   end
 
   def destroy
     @group = Group.find_key(params[:id])
+    validate_destroy(@group.tenant_id, "GROUP", Group, params[:id])
     @group.destroy
     render api_delete @group
   end
-
   
 end

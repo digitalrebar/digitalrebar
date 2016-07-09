@@ -25,9 +25,14 @@ class Tenant < ActiveRecord::Base
 
   private :load_uuid
 
-  belongs_to      :parent,       class_name: "Tenant"
-  has_many        :users,        through: :user_tenant_capabilities 
-  has_many        :capabilities, through: :user_tenant_capabilities 
+  belongs_to  :parent,       class_name: "Tenant"
+  has_many    :user_tenant_capabilities
+  has_many    :users,        -> { distinct }, through: :user_tenant_capabilities
+  has_many    :children,     class_name: "Tenant", foreign_key: "parent_id"
+
+  def all_children
+    Tenant.where(["id IN (select child_id from all_tenant_parents where parent_id = :ten)", {ten: self.id}])
+  end
 
 end
 

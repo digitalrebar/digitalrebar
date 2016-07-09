@@ -40,11 +40,21 @@ class AddTenants < ActiveRecord::Migration
       t.timestamps
     end
     add_index(:user_tenant_capabilities, [:user_id, :tenant_id])
+
+    create_view :all_tenant_parents,
+                'with recursive d (parent_id, child_id) as (
+                   select parent_id, id from tenants where parent_id IS NOT NULL
+                     union
+                     select dp.parent_id, d.child_id from d, tenants dp
+                       where dp.id = d.parent_id )
+                 select parent_id, child_id from d where parent_id IS NOT NULL;'
   end
 
   def self.down
     drop_table :tenants
     drop_table :capabilities
     drop_table :user_tenant_capabilites
+    drop_view :all_tenant_parents
   end
 end
+

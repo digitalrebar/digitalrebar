@@ -15,6 +15,8 @@
 #
 class HammersController < ApplicationController
 
+  # GREG: REturn when we have a node running
+
   def sample
     render api_sample(Hammer)
   end
@@ -54,6 +56,7 @@ class HammersController < ApplicationController
   def update
     Hammer.transaction do
       @nm = Hammer.find_key(params[:id]).lock!
+      validate_update(@current_user.tenant_id, "BARCLAMP", Hammer, params[:id])
       if request.patch?
         patch(@nm,%w{priority endpoint username authenticator})
       else

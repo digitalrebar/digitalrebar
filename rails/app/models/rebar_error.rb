@@ -13,5 +13,5 @@
 # limitations under the License. 
 # 
 
-class RebarException < Exception
+class RebarError < StandardError
 end

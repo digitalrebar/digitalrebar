@@ -72,7 +72,7 @@ class UsersController < ApplicationController
     attrs = User.attribute_names.map{|a|a.to_sym}
     objs = []
     ok_params = params.permit(attrs)
-    objs = User.where(ok_params) if !ok_params.empty?
+    objs = validate_match(ok_params, :tenant_id, "USER", User)
     respond_to do |format|
       format.html {}
       format.json { render api_index User, objs }
@@ -80,7 +80,8 @@ class UsersController < ApplicationController
   end
   
   def index
-    @users = User.all
+    t_ids = build_tenant_list("USER_READ")
+    @users = User.where(tenant_id: t_ids)
     respond_to do |format|
       format.html { }
       format.json { render api_index User, @users }
@@ -90,6 +91,7 @@ class UsersController < ApplicationController
  # RESTful DELETE of the node resource
   def destroy
     @user = User.find_key params[:id]
+    validate_destroy(@user.tenant_id, "USER", User, params[:id])
     @user.destroy
     render api_delete @user
   end
@@ -105,6 +107,7 @@ class UsersController < ApplicationController
     unless params[:current_tenant_id]
       params[:current_tenant_id] = params[:tenant_id]
     end
+    validate_create(params[:tenant_id], "USER", User)
     @user = User.create! user_params
     if params[:digest]
       @user.digest_password(params[:password])
@@ -119,6 +122,7 @@ class UsersController < ApplicationController
   def update
     User.transaction do
       @user = User.find_key(params[:id]).lock!
+      validate_update(@user.tenant_id, "USER", User, params[:id])
       if request.patch?
         fields = %w{username email}
         fields << "is_admin" if current_user.is_admin && current_user.id != @user.id
@@ -140,11 +144,13 @@ class UsersController < ApplicationController
 
   def digest_password
       @user = User.find_key(params[:id])
+      validate_action(@user.tenant_id, "USER", User, params[:id], "READ_DIGEST")
       render api_show @user.encrypted_password
   end
 
   def capabilities
       @user = User.find_key(params[:id])
+      validate_action(@user.tenant_id, "USER", User, params[:id], "READ_CAPABILITIES")
       data = @user.cap_map
       render json: data
   end
@@ -152,6 +158,7 @@ class UsersController < ApplicationController
   add_help(:show,[:id],[:get])
   def show
     @user = User.find_key params[:id]
+    validate_read(@user.tenant_id, "USER", User, params[:id])
     respond_to do |format|
       format.html { } # show.html.erb
       format.json { render api_show @user }

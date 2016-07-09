@@ -23,39 +23,33 @@ class TenantsController < ::ApplicationController
     attrs = Tenant.attribute_names.map{|a|a.to_sym}
     objs = []
     ok_params = params.permit(attrs)
-    objs = Tenant.where(ok_params) if !ok_params.empty?
-#    objs = [] unless validate_capability(@tenant.id, "TENANT_READ") # GREG: Really filter
+    objs = validate_match(ok_params, :id, "TENANT", Tenant)
     respond_to do |format|
       format.html {}
       format.json { render api_index Tenant, objs }
     end
   end
 
-  def show
-    @tenant = Tenant.find_key params[:id]
-    @tenant = nil unless validate_tenant(@tenant.id, "TENANT_READ")
-    unless @tenant
-      raise "GREG: Make nicer: Should be 404"
-    end
-    respond_to do |format|
-      format.html { }
-      format.json { render api_show @tenant }
-    end
-  end
-  
   def index
-    @tenants = Tenant.all
-#    @tenants = [] unless validate_capability(@tenant.id, "TENANT_READ") # GREG: Really filter
+    tenant_ids = build_tenant_list("TENANT_READ")
+    @tenants = Tenant.where(id: tenant_ids)
     respond_to do |format|
       format.html {}
       format.json { render api_index Tenant, @tenants }
     end
   end
 
-  def create
-    unless validate_tenant(@tenant.id, "TENANT_CREATE")
-      raise "GREG: Make nicer: Should be 409"
+  def show
+    @tenant = Tenant.find_key params[:id]
+    validate_read(@tenant.id, "TENANT", Tenant, params[:id])
+    respond_to do |format|
+      format.html { }
+      format.json { render api_show @tenant }
     end
+  end
+  
+  def create
+    validate_create(@current_user.current_tenant_id, "TENANT", Tenant)
     unless params[:parent_id]
       params[:parent_id] = @current_user.tenant_id
     end
@@ -72,11 +66,9 @@ class TenantsController < ::ApplicationController
   end
 
   def update
-    unless validate_tenant(@tenant.id, "TENANT_UPDATE")
-      raise "GREG: Make nicer: Should be 409"
-    end
     Tenant.transaction do
       @tenant = Tenant.find_key(params[:id]).lock!
+      validate_update(@tenant.id, "TENANT", Tenant, params[:id])
       if request.patch?
         patch(@tenant,%w{description name parent_id})
       else
@@ -90,19 +82,15 @@ class TenantsController < ::ApplicationController
   end
 
   def destroy
-    unless validate_tenant(@tenant.id, "TENANT_DESTROY")
-      raise "GREG: Make nicer: Should be 409"
-    end
     @tenant = Tenant.find_key(params[:id])
+    validate_destroy(@tenant.id, "TENANT", Tenant, params[:id])
     @tenant.destroy
     render api_delete @tenant
   end
 
   def edit
-    unless validate_tenant(@tenant.id, "TENANT_UPDATE")
-      raise "GREG: Make nicer: Should be 409"
-    end
     @tenant = Tenant.find_key params[:id]
+    validate_update(@tenant.id, "TENANT", Tenant, params[:id])
     respond_to do |format|
       format.html {  }
     end

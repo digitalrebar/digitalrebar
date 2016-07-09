@@ -23,7 +23,7 @@ class ProvidersController < ApplicationController
     attrs = Provider.attribute_names.map{|a|a.to_sym}
     objs = []
     ok_params = params.permit(attrs)
-    objs = Provider.where(ok_params) if !ok_params.empty?
+    objs = validate_match(ok_params, :tenant_id, "PROVIDER", Provider)
     respond_to do |format|
       format.html {}
       format.json { render api_index Provider, objs }
@@ -33,10 +33,17 @@ class ProvidersController < ApplicationController
   # API GET /api/v2/providers
   def index
     @list = if params.has_key?(:node_id)
-      Node.find_key(params[:node_id]).providers
+      n=Node.find_key(params[:node_id])
+      if validate_capability(n.tenant_id, "NODE_READ")
+        n.providers.to_a
+      else
+        []
+      end
     else
-      Provider.all
+      Provider.all.to_a
     end
+    t_ids = build_tenant_list("PROVIDER_READ")
+    @list.delete_if { |x| !t_ids.include? x.tenant_id }
     respond_to do |format|
       format.html {  }
       format.json { render api_index Provider, @list }
@@ -45,11 +52,14 @@ class ProvidersController < ApplicationController
 
   def show
     @item = if params[:id] == 'create'
+      # GREG: WTF??? Why does show create?!?!?
       t = params[:new][:type]
+      validate_create(@current_user.current_tenant_id, "PROVIDER", Provider)
       Provider.new(name: t.downcase, id: -1, type: t, description: I18n.t('not_set'))
     else
       Provider.find_key(params[:id])
     end
+    validate_read(@item.tenant_id, "PROVIDER", Provider, params[:id])
     respond_to do |format|
       format.html { render :show  }
       format.json { render api_show @item }
@@ -60,6 +70,7 @@ class ProvidersController < ApplicationController
     hashfix if params[:auth_details].is_a? Hash # address UI formatting
     Provider.transaction do
       @item = Provider.find_key(params[:id]).lock!
+      validate_update(@item.tenant_id, "PROVIDER", Provider, params[:id])
       if request.patch?
         patch(@item,%w{name item type description auth_details tenant_id})
       else
@@ -85,6 +96,7 @@ class ProvidersController < ApplicationController
     unless params[:tenant_id]
       params[:tenant_id] = @current_user.tenant_id
     end
+    validate_create(params[:tenant_id], "PROVIDER", Provider)
     @item = Provider.create!(name: params[:name],
                                  type: params[:type],
 				 tenant_id: params[:tenant_id],
@@ -101,6 +113,7 @@ class ProvidersController < ApplicationController
 
   def destroy
     @item = Provider.find_key(params[:id])
+    validate_destroy(@item.tenant_id, "PROVIDER", Provider, params[:id])
     @item.destroy
     render api_delete @item
   end

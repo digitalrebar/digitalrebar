@@ -25,7 +25,7 @@ class NetworksController < ::ApplicationController
     attrs = Network.attribute_names.map{|a|a.to_sym}
     objs = []
     ok_params = params.permit(attrs)
-    objs = Network.where(ok_params) if !ok_params.empty?
+    objs = validate_match(ok_params, :tenant_id, "NETWORK", Network)
     respond_to do |format|
       format.html {}
       format.json { render api_index Network, objs }
@@ -35,6 +35,8 @@ class NetworksController < ::ApplicationController
   def auto_ranges
     @network = Network.find_key params[:id]
     @node = Node.find_key params[:node_id]
+    validate_read(@network.tenant_id, "NETWORK", Network, params[:id])
+    validate_read(@node.tenant_id, "NODE", Node, params[:node_id])
     ranges = @network.auto_ranges(@node)
     render api_index NetworkRange, ranges
   end
@@ -46,6 +48,7 @@ class NetworksController < ::ApplicationController
     rescue 
       @network = Network.find_key params[:id]
     end
+    validate_read(@network.tenant_id, "NETWORK", Network, @network.id)
     respond_to do |format|
       format.html { }
       format.json { render api_show @network }
@@ -55,13 +58,16 @@ class NetworksController < ::ApplicationController
   def index
     if (params[:address])
       @network = Network.lookup_network(params[:address], (params[:category] || "admin"))
+      validate_read(@network.tenant_id, "NETWORK", Network, @network.id)
       render api_show @network
       return
     elsif (params[:category])
-      @networks = Network.in_category(params[:category])
+      @networks = Network.in_category(params[:category]).to_a
     else
-      @networks = Network.all
+      @networks = Network.all.to_a
     end
+    t_ids = build_tenant_list("NETWORK_READ")
+    @networks.delete_if { |x| !t_ids.include? x.tenant_id }
     respond_to do |format|
       format.html {}
       format.json { render api_index Network, @networks }
@@ -88,6 +94,7 @@ class NetworksController < ::ApplicationController
     unless params[:tenant_id]
       params[:tenant_id] = @current_user.tenant_id
     end
+    validate_create(params[:tenant_id], "NETWORK", Network)
     Network.transaction do
       @network = Network.create! params.permit(:name,
                                                :conduit,
@@ -158,8 +165,10 @@ class NetworksController < ::ApplicationController
   end
 
   def map
-    @networks = Network.all
-    @nodes = Node.non_system.sort
+    t_ids = build_tenant_list("NETWORK_READ")
+    @networks = Network.where(tenant_id: t_ids)
+    t_ids = build_tenant_list("NODE_READ")
+    @nodes = Node.where(tenant_id: t_ids).non_system.sort
   end
 
   # Allocations for a node in a network.
@@ -168,11 +177,9 @@ class NetworksController < ::ApplicationController
     network = Network.find_key params[:id]
     raise "Must include a node parameter" unless params.key?(:node)
     nodename = params[:node]
-    if nodename.is_a?(String) && nodename == "admin"
-      node = Node.admin.where(:available => true).first
-    else
-      node = Node.find_key nodename
-    end
+    node = Node.find_key nodename
+    validate_read(network.tenant_id, "NETWORK", Network, params[:id])
+    validate_read(node.tenant_id, "NODE", Node, nodename)
     render :json => network.node_allocations(node).map{|a|a.to_s}, :content_type=>cb_content_type(:allocations, "array")
   end
 
@@ -187,6 +194,7 @@ class NetworksController < ::ApplicationController
       if params[:team_mode]
         params[:use_team] = (params[:team_mode].to_i > 0) unless params[:use_team]
       end
+      validate_update(@network.tenant_id, "NETWORK", Network, params[:id])
       if request.patch?
         patch(@network,%w{description vlan use_vlan v6prefix use_bridge team_mode use_team conduit configure pbr category group deployment_id tenant_id})
       else
@@ -201,6 +209,7 @@ class NetworksController < ::ApplicationController
 
   def destroy
     @network = Network.find_key(params[:id])
+    validate_destroy(@network.tenant_id, "NETWORK", Network, params[:id])
     @network.destroy
     render api_delete @network
   end
@@ -218,6 +227,8 @@ class NetworksController < ::ApplicationController
   def allocate_ip
     network = Network.find_key(params[:id])
     node = Node.find_key(params[:node_id])
+    validate_action(network.tenant_id, "NETWORK", Network, params[:network_id], "ALLOCATE")
+    validate_update(node.tenant_id, "NODE", Node, params[:node_id])
     if ! params[:range]
       ret = network.auto_allocate(node)
     else
@@ -232,6 +243,9 @@ class NetworksController < ::ApplicationController
     raise ArgumentError.new("Cannot deallocate addresses for now")
     node = Node.find_key(params[:node_id])
     allocation = NetworkAllocation.where(:address => params[:cidr], :node_id => node.id)
+
+    validate_action(allocation.tenant_id, "NETWORK", NetworkAllocation, params[:cidr], "DEALLOCATE")
+    validate_update(node.tenant_id, "NODE", Node, params[:node_id])
     allocation.destroy
   end
 
@@ -250,6 +264,7 @@ class NetworksController < ::ApplicationController
 
   def edit
     @network = Network.find_key params[:id]
+    validate_update(@network.tenant_id, "NETWORK", Network, params[:id])
     respond_to do |format|
       format.html {  }
     end

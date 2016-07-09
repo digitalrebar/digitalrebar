@@ -23,7 +23,7 @@ class DnsNameEntriesController < ::ApplicationController
     attrs = DnsNameEntry.attribute_names.map{|a|a.to_sym}
     objs = []
     ok_params = params.permit(attrs)
-    objs = DnsNameEntry.where(ok_params) if !ok_params.empty?
+    objs = validate_match(ok_params, :tenant_id, "NETWORK", DnsNameEntry)
     respond_to do |format|
       format.html {}
       format.json { render api_index DnsNameEntry, objs }
@@ -32,6 +32,7 @@ class DnsNameEntriesController < ::ApplicationController
   
   def show
     @entry = DnsNameEntry.find_key params[:id]
+    validate_read(@entry.tenant_id, "NETWORK", DnsNameEntry, params[:id])
     respond_to do |format|
       format.html { }
       format.json { render api_show @entry }
@@ -39,7 +40,10 @@ class DnsNameEntriesController < ::ApplicationController
   end
 
   def index
-    @entries = DnsNameEntry.all.includes(network_allocation: [:node]).includes(:dns_name_filter)
+    tenant_ids = build_tenant_list("NETWORK_READ")
+    @entries = DnsNameEntry.where(tenant_id: tenant_ids)
+                           .includes(network_allocation: [:node])
+			   .includes(:dns_name_filter)
     respond_to do |format|
       format.html {}
       format.json { render api_index DnsNameEntry, @entries }

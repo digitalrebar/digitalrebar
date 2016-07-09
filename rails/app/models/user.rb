@@ -51,6 +51,22 @@ class User < ActiveRecord::Base
 
   scope  :admin,              -> { where(:is_admin => true) }
 
+  has_many    :user_tenant_capabilities
+  has_many    :tenants,       -> { distinct }, through: :user_tenant_capabilities
+
+  # Build a map object for capabilities.
+  # { tenant_1_id: { cap: [], (parent: #) }, ... }
+  def cap_map
+    results = UserTenantCapability.where(user_id: self.id).joins(:tenant).joins(:capability).select("capabilities.name", :tenant_id, :parent_id).group_by(&:tenant_id)
+    results.each do |k,v|
+      parent_id = nil
+      parent_id = v[0]["parent_id"] if v.length > 0
+      v.map! {|x| x["name"]}
+      results[k] = { "parent" => parent_id, "capabilities" => v }
+    end
+    results
+  end
+
   def self.name_column
     :username
   end
@@ -72,18 +88,6 @@ class User < ActiveRecord::Base
     args ||= {}
     args[:methods] = :is_locked
     super(args)
-  end
-
-  # Build a map object for capabilities.
-  # { tenant_1_id: { cap: [], (parent: #) }, ... }
-  def cap_map
-    results = UserTenantCapability.where(user_id: id).joins(:tenant).joins(:capability).select("capabilities.name", :tenant_id, :parent_id).group_by(&:tenant_id)
-    results.each do |k,v|
-      parent_id = nil
-      parent_id = v[0]["parent_id"] if v.length > 0
-      v.map! {|x| x["name"]}
-      results[k] = { "parent" => parent_id, "capabilities" => v }
-    end
   end
 
   def digest_password(new_pass)

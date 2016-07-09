@@ -15,6 +15,8 @@
 
 class NodeRolesController < ApplicationController
 
+# GREG: THink about NODE or Deployment for cap testing.
+
   def sample
     render api_sample(NodeRole)
   end
@@ -32,7 +34,8 @@ class NodeRolesController < ApplicationController
     changed_nodes = []
     changed_deployments = []
     NodeRole.transaction do  # performance optimization
-      nrs = NodeRole.all
+      t_ids = build_tenant_list("NODE_READ")
+      nrs = NodeRole.where(tenant_id: t_ids)
       nrs.each do |nr|
         age = Time.now - nr.updated_at
         next if nr.state >= 0 && age >= recent
@@ -46,7 +49,8 @@ class NodeRolesController < ApplicationController
     out[:changed][:deployments] = changed_deployments.uniq
 
     Provider.transaction do
-      Provider.all.each do |p|
+      t_ids = build_tenant_list("PROVIDER_READ")
+      Provider.where(tenant_id: t_ids).each do |p|
         age = Time.now - p.updated_at
         next if age >= recent
         out[:changed][:providers] << p.id
@@ -57,15 +61,18 @@ class NodeRolesController < ApplicationController
     # compare nodes to passed nodes json list.
     # return the deleted ones that are not currently nodes from the UX list
     if request.put? and params[:nodes] 
-      nodes = Node.all.map{ |n| n.id }
+      t_ids = build_tenant_list("NODE_READ")
+      nodes = Node.where(tenant_id: t_ids).map{ |n| n.id }
       out[:deleted][:nodes] = (params[:nodes] - nodes) rescue []
     end
     if request.put? and params[:deployments]
-      deployments = Deployment.all.map{ |d| d.id }
+      t_ids = build_tenant_list("DEPLOYMENT_READ")
+      deployments = Deployment.where(tenant_id: t_ids).map{ |d| d.id }
       out[:deleted][:deployments] = (params[:deployments] - deployments) rescue []
     end
     if request.put? and params[:providers]
-      providers = Provider.all.map{ |p| p.id }
+      t_ids = build_tenant_list("PROVIDER_READ")
+      providers = Provider.where(tenant_id: t_ids).map{ |p| p.id }
       out[:deleted][:providers] = (params[:providers] - providers) rescue []
     end
 
@@ -77,7 +84,7 @@ class NodeRolesController < ApplicationController
     attrs = NodeRole.attribute_names.map{|a|a.to_sym}
     objs = []
     ok_params = params.permit(attrs)
-    objs = NodeRole.where(ok_params) if !ok_params.empty?
+    objs = validate_match(ok_params, :tenant_id, "NODE", NodeRole)
     respond_to do |format|
       format.html {}
       format.json { render api_index NodeRole, objs }
@@ -92,7 +99,9 @@ class NodeRolesController < ApplicationController
                 Deployment.find_key(params[:deployment_id]).node_roles
               else
                 NodeRole.all
-              end).order("cohort asc, id asc")
+              end).order("cohort asc, id asc").to_a
+      t_ids = build_tenant_list("NODE_READ")
+      @list.delete_if { |x| !t_ids.include? x.tenant_id }
       if params.has_key? :runlog
         @list = @list.clone
         limit = params[:runlog] || "80"
@@ -117,6 +126,7 @@ class NodeRolesController < ApplicationController
     else
       @node_role = NodeRole.find_key params[:id]
     end
+    validate_read(@node_role.tenant_id, "NODE", NodeRole, @node_role.id)
     respond_to do |format|
       format.html {  }
       format.json { render api_show @node_role }
@@ -139,6 +149,7 @@ class NodeRolesController < ApplicationController
     role = Role.find_key(params[:role] || params[:role_id] || nr_roles)
     depl ||= node.deployment
     begin
+        validate_create(@depl.tenant_id, "DEPLOYMENT", Deployment)
         @node_role = NodeRole.safe_create!(role_id: role.id,
 					   tenant_id: depl.tenant_id,
                                            node_id: node.id,
@@ -174,6 +185,7 @@ class NodeRolesController < ApplicationController
                    else
                      NodeRole.find_key(key).lock!
                    end
+      validate_update(@node_role.tenant_id, "NODE", NodeRole, key)
       # if you've been passed data then save it
       if request.patch?
         patch(@node_role, %w{data run_count tenant_id})
@@ -192,6 +204,7 @@ class NodeRolesController < ApplicationController
 
   def destroy
     @node_role = NodeRole.find_key (params[:id] || params[:node_role_id])
+    validate_destroy(@node_role.tenant_id, "DEPLOYMENT", NodeRole, @node_role.id)
     @node_role.destroy
     respond_to do |format|
       format.html { redirect_to deployment_path(@node_role.deployment_id) }
@@ -201,6 +214,7 @@ class NodeRolesController < ApplicationController
 
   def propose
     @node_role = NodeRole.find_key params[:node_role_id]
+    validate_action(@node_role.tenant_id, "DEPLOYMENT", NodeRole, @node_role.id, "PROPOSE")
     @node_role.propose!
     respond_to do |format|
       format.html { redirect_to node_role_path(@node_role.id) }
@@ -210,6 +224,7 @@ class NodeRolesController < ApplicationController
 
   def commit
     @node_role = NodeRole.find_key params[:node_role_id]
+    validate_action(@node_role.tenant_id, "DEPLOYMENT", NodeRole, @node_role.id, "COMMIT")
     @node_role.commit!
     respond_to do |format|
       format.html { redirect_to node_role_path(@node_role.id) }
@@ -220,6 +235,7 @@ class NodeRolesController < ApplicationController
   def retry
     params[:id] ||= params[:node_role_id]
     @node_role = NodeRole.find_key params[:id]
+    validate_action(@node_role.tenant_id, "DEPLOYMENT", NodeRole, @node_role.id, "RETRY")
     @node_role.todo!
     respond_to do |format|
       format.html { redirect_to node_role_path(@node_role.id) }
@@ -229,23 +245,30 @@ class NodeRolesController < ApplicationController
 
   def parents
     @node_role = NodeRole.find_key params[:node_role_id]
-    render api_index NodeRole, @node_role.parents
+    @list = @node_role.parents.to_a
+    t_ids = build_tenant_list("DEPLOYMENT_READ")
+    @list.delete_if { |x| !t_ids.include? x.tenant_id }
+    render api_index NodeRole, @list
   end
 
   def children
     @node_role = NodeRole.find_key params[:node_role_id]
-    render api_index NodeRole, @node_role.children
+    @list = @node_role.children.to_a
+    t_ids = build_tenant_list("DEPLOYMENT_READ")
+    @list.delete_if { |x| !t_ids.include? x.tenant_id }
+    render api_index NodeRole, @list
   end
 
   def anneal
+    t_ids = build_tenant_list("DEPLOYMENT_READ")
     respond_to do |format|
       format.html { }
       format.json {
-        if NodeRole.committed.in_state(NodeRole::ERROR).count > 0
+        if NodeRole.where(tenant_id: t_ids).committed.in_state(NodeRole::ERROR).count > 0
           render :json => { "message" => "failed" }, :status => 409
-        elsif NodeRole.committed.in_state(NodeRole::TRANSITION).count > 0
+        elsif NodeRole.where(tenant_id: t_ids).committed.in_state(NodeRole::TRANSITION).count > 0
           render :json => { "message" => "working" }, :status => 202
-        elsif NodeRole.committed.in_state(NodeRole::TODO).count > 0
+        elsif NodeRole.where(tenant_id: t_ids).committed.in_state(NodeRole::TODO).count > 0
           render :json => { "message" => "scheduled" }, :status => 202
         else
           render :json => { "message" => "finished" }, :state => 200
