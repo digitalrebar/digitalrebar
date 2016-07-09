@@ -13,10 +13,10 @@ import (
 	"github.com/hashicorp/consul/api"
 )
 
-var myIPsubnets, myIface string
+var myIPsubnet, myIface string
 
 func init() {
-	flag.StringVar(&myIPsubnets, "ip", "192.168.124.11/24", "IP to register services as")
+	flag.StringVar(&myIPsubnet, "ip", "192.168.124.11/24", "IP to register services as")
 	flag.StringVar(&myIface, "iface", "eth0", "Network interface to use")
 }
 
@@ -33,21 +33,12 @@ func ClearChains(ipt *iptables.IPTables) {
 func main() {
 	flag.Parse()
 
-	ips := strings.Split(myIPsubnets, ",")
-	var myIPNet *net.IPNet
-	var myIPsubnet string
 	myIPs := make([]string, 0, 0)
-	for _, ip := range ips {
-		myIP, t, err := net.ParseCIDR(ip)
-		if err != nil {
-			log.Fatal("Failed to parse ip: ", ips, " ", err)
-		}
-		if myIPNet == nil {
-			myIPNet = t
-			myIPsubnet = ip
-		}
-		myIPs = append(myIPs, myIP.String())
+	myIP, myIPNet, err := net.ParseCIDR(myIPsubnet)
+	if err != nil {
+		log.Fatal("Failed to parse ip: ", myIPsubnet, " ", err)
 	}
+	myIPs = append(myIPs, myIP.String())
 
 	iface, err := net.InterfaceByName(myIface)
 	if err != nil {
@@ -60,7 +51,6 @@ func main() {
 	}
 
 	haveOurIP := false
-	internalAddrs := make([]string, 0, len(addrs))
 	for _, addr := range addrs {
 		thisIP, thisIPNet, _ := net.ParseCIDR(addr.String())
 		// Only care about addresses that are not link-local.
@@ -74,7 +64,7 @@ func main() {
 		if thisIPNet.String() == myIPNet.String() {
 			haveOurIP = true
 		} else {
-			internalAddrs = append(internalAddrs, thisIPNet.String())
+			myIPs = append(myIPs, thisIP.String())
 		}
 	}
 
@@ -106,13 +96,6 @@ func main() {
 	ClearChains(ipt)
 
 	ipt.AppendUnique("nat", "POSTROUTING", "-o", myIface, "-j", "MASQUERADE")
-	// Turn on masquerading for all internal -> external connections
-	// for _, addr := range internalAddrs {
-	// 	ipt.AppendUnique("nat", "POSTROUTING", "-s", addr, "-j", "MASQUERADE")
-	// 	if err != nil {
-	// 		log.Printf("Add Masquerade failed: %v\n", err)
-	// 	}
-	// }
 
 	knownServices := make(map[string]*api.CatalogService)
 	for {
