@@ -187,7 +187,7 @@ func main() {
 			strs = append(strs, "udp")
 			strs = append(strs, "-m")
 			strs = append(strs, "udp")
-			if svcPort != "3000" && svcPort != "443" {
+			if svcPort != "3000" {
 				strs = append(strs, "-d")
 				strs = append(strs, myIP.String())
 			}
@@ -204,7 +204,7 @@ func main() {
 			strs = append(strs, "tcp")
 			strs = append(strs, "-m")
 			strs = append(strs, "tcp")
-			if svcPort != "3000" && svcPort != "443" {
+			if svcPort != "3000" {
 				strs = append(strs, "-d")
 				strs = append(strs, myIP.String())
 			}
@@ -221,7 +221,7 @@ func main() {
 			strs = append(strs, "tcp")
 			strs = append(strs, "-m")
 			strs = append(strs, "tcp")
-			if svcPort != "3000" && svcPort != "443" {
+			if svcPort != "3000" {
 				strs = append(strs, "-d")
 				strs = append(strs, myIP.String())
 			}
@@ -236,7 +236,7 @@ func main() {
 			strs = append(strs, "udp")
 			strs = append(strs, "-m")
 			strs = append(strs, "udp")
-			if svcPort != "3000" && svcPort != "443" {
+			if svcPort != "3000" {
 				strs = append(strs, "-d")
 				strs = append(strs, myIP.String())
 			}
@@ -260,7 +260,7 @@ func main() {
 			strs = append(strs, "udp")
 			strs = append(strs, "-m")
 			strs = append(strs, "udp")
-			if svcPort != "3000" && svcPort != "443" {
+			if svcPort != "3000" {
 				strs = append(strs, "-d")
 				strs = append(strs, myIP.String())
 			}
@@ -277,7 +277,7 @@ func main() {
 			strs = append(strs, "tcp")
 			strs = append(strs, "-m")
 			strs = append(strs, "tcp")
-			if svcPort != "3000" && svcPort != "443" {
+			if svcPort != "3000" {
 				strs = append(strs, "-d")
 				strs = append(strs, myIP.String())
 			}
@@ -294,7 +294,7 @@ func main() {
 			strs = append(strs, "tcp")
 			strs = append(strs, "-m")
 			strs = append(strs, "tcp")
-			if svcPort != "3000" && svcPort != "443" {
+			if svcPort != "3000" {
 				strs = append(strs, "-d")
 				strs = append(strs, myIP.String())
 			}
@@ -309,7 +309,7 @@ func main() {
 			strs = append(strs, "udp")
 			strs = append(strs, "-m")
 			strs = append(strs, "udp")
-			if svcPort != "3000" && svcPort != "443" {
+			if svcPort != "3000" {
 				strs = append(strs, "-d")
 				strs = append(strs, myIP.String())
 			}
