@@ -322,6 +322,12 @@ func main() {
 				strs = append(strs, "-j")
 				strs = append(strs, "ACCEPT")
 				ipt.AppendUnique("filter", "FORWARD", strs...)
+
+				// external ip is first in the list everyone gets that.
+				// if we are 3000 or 443, we get all the list
+				if svcPort != "3000" && svcPort != "443" {
+					break
+				}
 			}
 
 			log.Println("registering service: ", svcName)
