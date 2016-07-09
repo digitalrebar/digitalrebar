@@ -43,7 +43,14 @@ if [[ $FORWARDER_IP && $forwarder ]]; then
   FORWARDER_FLAG="-forwarder"
 fi
 
-/usr/local/bin/rebar-rev-proxy --external_ip ${EXTERNAL_IP%%/*} \
+run_forever() (
+  while true; do
+    "$@"
+    sleep 5
+  done
+)
+
+run_forever /usr/local/bin/rebar-rev-proxy --external_ip ${EXTERNAL_IP%%/*} \
   $FORWARDER_FLAG \
 	$LISTENPORT \
 	$AUTHFILTER \
