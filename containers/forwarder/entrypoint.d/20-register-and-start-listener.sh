@@ -15,5 +15,5 @@ cat >> /etc/consul.d/forwarder.json <<EOF
 EOF
 consul reload
 
-/usr/local/bin/forwarder -ip $FORWARDER_IP &
+/usr/local/bin/forwarder -ip "${FORWARDER_IP}${FORWARDER_OTHER_IPS}" &
 
