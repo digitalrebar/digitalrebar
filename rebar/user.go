@@ -21,8 +21,8 @@ func init() {
 				if len(args) != 1 {
 					log.Fatalf("%v requires 1 arguments", c.UseLine())
 				}
-				obj := &client.User{}
-				if err := client.Fetch(obj, args[0]); err != nil {
+				obj := &api.User{}
+				if err := session.Fetch(obj, args[0]); err != nil {
 					log.Fatalln("Unable to fetch user from the server", err)
 				}
 				capmap, err := obj.Capabilities()

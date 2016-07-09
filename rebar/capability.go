@@ -1,9 +1,9 @@
 package main
 
-import "github.com/digitalrebar/rebar-api/client"
+import "github.com/digitalrebar/rebar-api/api"
 
 func init() {
 	app.AddCommand(makeCommandTree("capability",
-		func() client.Crudder { return &client.Capability{} },
+		func() api.Crudder { return &api.Capability{} },
 	))
 }
