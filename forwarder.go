@@ -13,10 +13,10 @@ import (
 	"github.com/hashicorp/consul/api"
 )
 
-var myIPsubnet, myIface string
+var myIPsubnets, myIface string
 
 func init() {
-	flag.StringVar(&myIPsubnet, "ip", "192.168.124.11/24", "IP to register services as")
+	flag.StringVar(&myIPsubnets, "ip", "192.168.124.11/24", "IP to register services as")
 	flag.StringVar(&myIface, "iface", "eth0", "Network interface to use")
 }
 
@@ -33,9 +33,20 @@ func ClearChains(ipt *iptables.IPTables) {
 func main() {
 	flag.Parse()
 
-	myIP, myIPNet, err := net.ParseCIDR(myIPsubnet)
-	if err != nil {
-		log.Fatal("Failed to parse ip: ", myIPsubnet, " ", err)
+	ips := strings.Split(myIPsubnets, ",")
+	var myIPNet *net.IPNet
+	var myIPsubnet string
+	myIPs := make([]string, 0, 0)
+	for _, ip := range ips {
+		myIP, t, err := net.ParseCIDR(ip)
+		if err != nil {
+			log.Fatal("Failed to parse ip: ", ips, " ", err)
+		}
+		if myIPNet == nil {
+			myIPNet = t
+			myIPsubnet = ip
+		}
+		myIPs = append(myIPs, myIP.String())
 	}
 
 	iface, err := net.InterfaceByName(myIface)
@@ -182,69 +193,69 @@ func main() {
 
 			// Whack DNAT + forwarding rules
 			// We don't particularly care if they fail.
-			strs := make([]string, 0)
-			strs = append(strs, "-p")
-			strs = append(strs, "udp")
-			strs = append(strs, "-m")
-			strs = append(strs, "udp")
-			if svcPort != "3000" {
+			for _, ip := range myIPs {
+				strs := make([]string, 0)
+				strs = append(strs, "-p")
+				strs = append(strs, "udp")
+				strs = append(strs, "-m")
+				strs = append(strs, "udp")
 				strs = append(strs, "-d")
-				strs = append(strs, myIP.String())
-			}
-			strs = append(strs, "--dport")
-			strs = append(strs, svcPort)
-			strs = append(strs, "-j")
-			strs = append(strs, "DNAT")
-			strs = append(strs, "--to-destination")
-			strs = append(strs, svcAddr)
-			ipt.Delete("nat", "PREROUTING", strs...)
+				strs = append(strs, ip)
+				strs = append(strs, "--dport")
+				strs = append(strs, svcPort)
+				strs = append(strs, "-j")
+				strs = append(strs, "DNAT")
+				strs = append(strs, "--to-destination")
+				strs = append(strs, svcAddr)
+				ipt.Delete("nat", "PREROUTING", strs...)
 
-			strs = make([]string, 0)
-			strs = append(strs, "-p")
-			strs = append(strs, "tcp")
-			strs = append(strs, "-m")
-			strs = append(strs, "tcp")
-			if svcPort != "3000" {
+				strs = make([]string, 0)
+				strs = append(strs, "-p")
+				strs = append(strs, "tcp")
+				strs = append(strs, "-m")
+				strs = append(strs, "tcp")
 				strs = append(strs, "-d")
-				strs = append(strs, myIP.String())
-			}
-			strs = append(strs, "--dport")
-			strs = append(strs, svcPort)
-			strs = append(strs, "-j")
-			strs = append(strs, "DNAT")
-			strs = append(strs, "--to-destination")
-			strs = append(strs, svcAddr)
-			ipt.Delete("nat", "PREROUTING", strs...)
+				strs = append(strs, ip)
+				strs = append(strs, "--dport")
+				strs = append(strs, svcPort)
+				strs = append(strs, "-j")
+				strs = append(strs, "DNAT")
+				strs = append(strs, "--to-destination")
+				strs = append(strs, svcAddr)
+				ipt.Delete("nat", "PREROUTING", strs...)
 
-			strs = make([]string, 0)
-			strs = append(strs, "-p")
-			strs = append(strs, "tcp")
-			strs = append(strs, "-m")
-			strs = append(strs, "tcp")
-			if svcPort != "3000" {
+				strs = make([]string, 0)
+				strs = append(strs, "-p")
+				strs = append(strs, "tcp")
+				strs = append(strs, "-m")
+				strs = append(strs, "tcp")
 				strs = append(strs, "-d")
-				strs = append(strs, myIP.String())
-			}
-			strs = append(strs, "--dport")
-			strs = append(strs, svcPort)
-			strs = append(strs, "-j")
-			strs = append(strs, "ACCEPT")
-			ipt.Delete("filter", "FORWARD", strs...)
+				strs = append(strs, ip)
+				strs = append(strs, "--dport")
+				strs = append(strs, svcPort)
+				strs = append(strs, "-j")
+				strs = append(strs, "ACCEPT")
+				ipt.Delete("filter", "FORWARD", strs...)
 
-			strs = make([]string, 0)
-			strs = append(strs, "-p")
-			strs = append(strs, "udp")
-			strs = append(strs, "-m")
-			strs = append(strs, "udp")
-			if svcPort != "3000" {
+				strs = make([]string, 0)
+				strs = append(strs, "-p")
+				strs = append(strs, "udp")
+				strs = append(strs, "-m")
+				strs = append(strs, "udp")
 				strs = append(strs, "-d")
-				strs = append(strs, myIP.String())
+				strs = append(strs, ip)
+				strs = append(strs, "--dport")
+				strs = append(strs, svcPort)
+				strs = append(strs, "-j")
+				strs = append(strs, "ACCEPT")
+				ipt.Delete("filter", "FORWARD", strs...)
+
+				// external ip is first in the list everyone gets that.
+				// if we are 3000 or 443, we get all the list
+				if svcPort != "3000" && svcPort != "443" {
+					break
+				}
 			}
-			strs = append(strs, "--dport")
-			strs = append(strs, svcPort)
-			strs = append(strs, "-j")
-			strs = append(strs, "ACCEPT")
-			ipt.Delete("filter", "FORWARD", strs...)
 		}
 		// Add new services we do care about
 		for svcName, svc := range wantedServices {
@@ -255,76 +266,70 @@ func main() {
 			svcPort := fmt.Sprintf("%d", svc.ServicePort)
 
 			// Add DNAT + forwarding rules
-			strs := make([]string, 0)
-			strs = append(strs, "-p")
-			strs = append(strs, "udp")
-			strs = append(strs, "-m")
-			strs = append(strs, "udp")
-			if svcPort != "3000" {
+			for _, ip := range myIPs {
+				strs := make([]string, 0)
+				strs = append(strs, "-p")
+				strs = append(strs, "udp")
+				strs = append(strs, "-m")
+				strs = append(strs, "udp")
 				strs = append(strs, "-d")
-				strs = append(strs, myIP.String())
-			}
-			strs = append(strs, "--dport")
-			strs = append(strs, svcPort)
-			strs = append(strs, "-j")
-			strs = append(strs, "DNAT")
-			strs = append(strs, "--to-destination")
-			strs = append(strs, svcAddr)
-			ipt.AppendUnique("nat", "PREROUTING", strs...)
+				strs = append(strs, ip)
+				strs = append(strs, "--dport")
+				strs = append(strs, svcPort)
+				strs = append(strs, "-j")
+				strs = append(strs, "DNAT")
+				strs = append(strs, "--to-destination")
+				strs = append(strs, svcAddr)
+				ipt.AppendUnique("nat", "PREROUTING", strs...)
 
-			strs = make([]string, 0)
-			strs = append(strs, "-p")
-			strs = append(strs, "tcp")
-			strs = append(strs, "-m")
-			strs = append(strs, "tcp")
-			if svcPort != "3000" {
+				strs = make([]string, 0)
+				strs = append(strs, "-p")
+				strs = append(strs, "tcp")
+				strs = append(strs, "-m")
+				strs = append(strs, "tcp")
 				strs = append(strs, "-d")
-				strs = append(strs, myIP.String())
-			}
-			strs = append(strs, "--dport")
-			strs = append(strs, svcPort)
-			strs = append(strs, "-j")
-			strs = append(strs, "DNAT")
-			strs = append(strs, "--to-destination")
-			strs = append(strs, svcAddr)
-			ipt.AppendUnique("nat", "PREROUTING", strs...)
+				strs = append(strs, ip)
+				strs = append(strs, "--dport")
+				strs = append(strs, svcPort)
+				strs = append(strs, "-j")
+				strs = append(strs, "DNAT")
+				strs = append(strs, "--to-destination")
+				strs = append(strs, svcAddr)
+				ipt.AppendUnique("nat", "PREROUTING", strs...)
 
-			strs = make([]string, 0)
-			strs = append(strs, "-p")
-			strs = append(strs, "tcp")
-			strs = append(strs, "-m")
-			strs = append(strs, "tcp")
-			if svcPort != "3000" {
+				strs = make([]string, 0)
+				strs = append(strs, "-p")
+				strs = append(strs, "tcp")
+				strs = append(strs, "-m")
+				strs = append(strs, "tcp")
 				strs = append(strs, "-d")
-				strs = append(strs, myIP.String())
-			}
-			strs = append(strs, "--dport")
-			strs = append(strs, svcPort)
-			strs = append(strs, "-j")
-			strs = append(strs, "ACCEPT")
-			ipt.AppendUnique("filter", "FORWARD", strs...)
+				strs = append(strs, ip)
+				strs = append(strs, "--dport")
+				strs = append(strs, svcPort)
+				strs = append(strs, "-j")
+				strs = append(strs, "ACCEPT")
+				ipt.AppendUnique("filter", "FORWARD", strs...)
 
-			strs = make([]string, 0)
-			strs = append(strs, "-p")
-			strs = append(strs, "udp")
-			strs = append(strs, "-m")
-			strs = append(strs, "udp")
-			if svcPort != "3000" {
+				strs = make([]string, 0)
+				strs = append(strs, "-p")
+				strs = append(strs, "udp")
+				strs = append(strs, "-m")
+				strs = append(strs, "udp")
 				strs = append(strs, "-d")
-				strs = append(strs, myIP.String())
+				strs = append(strs, ip)
+				strs = append(strs, "--dport")
+				strs = append(strs, svcPort)
+				strs = append(strs, "-j")
+				strs = append(strs, "ACCEPT")
+				ipt.AppendUnique("filter", "FORWARD", strs...)
 			}
-			strs = append(strs, "--dport")
-			strs = append(strs, svcPort)
-			strs = append(strs, "-j")
-			strs = append(strs, "ACCEPT")
-			ipt.AppendUnique("filter", "FORWARD", strs...)
 
 			log.Println("registering service: ", svcName)
 			asr := api.AgentServiceRegistration{
 				Name:    strings.TrimPrefix(svc.ServiceName, "internal-"),
 				Tags:    svc.ServiceTags,
 				Port:    svc.ServicePort,
-				Address: myIP.String(),
+				Address: myIPs[0],
 			}
 			err = agent.ServiceRegister(&asr)
 			if err != nil {
