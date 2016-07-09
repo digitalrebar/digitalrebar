@@ -245,8 +245,8 @@ else
         CONSUL_ADVERTISE="${CONSUL_ADVERTISE%/*}"
     fi
 fi
-FORWARDER_OTHER_IP=$(/sbin/ip -o -4 addr show scope global |awk '{print $4}')
-FORWARDER_OTHER_IP="$(echo $FORWARDER_OTHER_IP | tr " " ,),127.0.0.1/8"
+FORWARDER_OTHER_IPS=$(/sbin/ip -o -4 addr show scope global |awk '{print $4}')
+FORWARDER_OTHER_IPS="$(echo $FORWARDER_OTHER_IPS | tr " " ,),127.0.0.1/8"
 # If we did not get and address to listen on, we are pretty much boned anyways
 if [[ ! $CONSUL_ADVERTISE ]]; then
     echo "Could not find an address for Consul to listen on!"
@@ -258,7 +258,7 @@ CONSUL_JOIN="$CONSUL_ADVERTISE"
 cat >access.env <<EOF
 EXTERNAL_IP=$EXTERNAL_IP
 FORWARDER_IP=$FORWARDER_IP
-FORWARDER_OTHER_IP=$FORWARDER_OTHER_IP
+FORWARDER_OTHER_IPS=,$FORWARDER_OTHER_IPS
 CONSUL_JOIN=$CONSUL_JOIN
 DR_START_TIME=$(date +%s)
 RUN_NTP=$RUN_NTP
