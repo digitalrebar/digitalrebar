@@ -18,6 +18,7 @@ if ! rebar -U rebar -P rebar1 users show machine-install; then
         echo "Could not create machine-install user!"
         exit 1
     fi
+
     echo "$REBAR_KEY" >/etc/rebar.install.key
     kv_put digitalrebar/private/api/keys/machine_key </etc/rebar.install.key
 else
