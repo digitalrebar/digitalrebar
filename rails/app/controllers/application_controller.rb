@@ -478,7 +478,7 @@ class ApplicationController < ActionController::Base
   end
 
   def validate_update(t_id, cap_base, klass, key)
-    validate_action(t_id, cap, cap_base, klass, key, "UPDATE")
+    validate_action(t_id, cap_base, klass, key, "UPDATE")
   end
 
   def validate_read(t_id, cap_base, klass, key)

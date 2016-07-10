@@ -149,7 +149,7 @@ class NodeRolesController < ApplicationController
     role = Role.find_key(params[:role] || params[:role_id] || nr_roles)
     depl ||= node.deployment
     begin
-        validate_create(@depl.tenant_id, "DEPLOYMENT", Deployment)
+        validate_create(depl.tenant_id, "DEPLOYMENT", Deployment)
         @node_role = NodeRole.safe_create!(role_id: role.id,
 					   tenant_id: depl.tenant_id,
                                            node_id: node.id,

@@ -23,7 +23,7 @@ class DeploymentRolesController < ApplicationController
     attrs = DeploymentRole.attribute_names.map{|a|a.to_sym}
     objs = []
     ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "DEPLOYMENT", Deployment)
+    objs = validate_match(ok_params, :tenant_id, "DEPLOYMENT", DeploymentRole)
     respond_to do |format|
       format.html {}
       format.json { render api_index DeploymentRole, objs }

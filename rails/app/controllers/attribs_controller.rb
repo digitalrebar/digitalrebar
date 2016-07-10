@@ -165,7 +165,7 @@ class AttribsController < ApplicationController
     end
   end
 
-  def build_capability_name(target, action)
+  def build_capability_name(target)
     case
     when target.is_a?(Node) then [ "NODE", target.tenant_id ]
     when target.is_a?(NodeRole) then [ "NODE", target.node.tenant_id ]
