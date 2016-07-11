@@ -61,11 +61,12 @@ class UserTenantCapabilitiesController < ::ApplicationController
   end
   
   def create
-    [ :tenant_id, :user_id, :capability_id ].each do |tag|
-      if params[tag] and params[tag].is_a?(String)
-        params[tag] = params[tag].to_i
-      end
-    end
+    c = Capability.find_key params[:capability_id]
+    params[:capability_id] = c.id
+    t = Tenant.find_key params[:tenant_id]
+    params[:tenant_id] = t.id
+    u = User.find_key params[:user_id]
+    params[:user_id] = u.id
 
     validate_action(params[:tenant_id], "USER_TENANT_CAPABILITY", UserTenantCapability, params.to_s, "ADD")
 
