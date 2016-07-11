@@ -149,7 +149,7 @@ class NodeRolesController < ApplicationController
     role = Role.find_key(params[:role] || params[:role_id] || nr_roles)
     depl ||= node.deployment
     begin
-        validate_create(depl.tenant_id, "DEPLOYMENT", Deployment)
+        validate_create(node.tenant_id, "NODE", NodeRole)
         @node_role = NodeRole.safe_create!(role_id: role.id,
 					   tenant_id: depl.tenant_id,
                                            node_id: node.id,
@@ -204,7 +204,7 @@ class NodeRolesController < ApplicationController
 
   def destroy
     @node_role = NodeRole.find_key (params[:id] || params[:node_role_id])
-    validate_destroy(@node_role.tenant_id, "DEPLOYMENT", NodeRole, @node_role.id)
+    validate_destroy(@node_role.tenant_id, "NODE", NodeRole, @node_role.id)
     @node_role.destroy
     respond_to do |format|
       format.html { redirect_to deployment_path(@node_role.deployment_id) }
@@ -214,7 +214,7 @@ class NodeRolesController < ApplicationController
 
   def propose
     @node_role = NodeRole.find_key params[:node_role_id]
-    validate_action(@node_role.tenant_id, "DEPLOYMENT", NodeRole, @node_role.id, "PROPOSE")
+    validate_action(@node_role.tenant_id, "NODE", NodeRole, @node_role.id, "PROPOSE")
     @node_role.propose!
     respond_to do |format|
       format.html { redirect_to node_role_path(@node_role.id) }
@@ -224,7 +224,7 @@ class NodeRolesController < ApplicationController
 
   def commit
     @node_role = NodeRole.find_key params[:node_role_id]
-    validate_action(@node_role.tenant_id, "DEPLOYMENT", NodeRole, @node_role.id, "COMMIT")
+    validate_action(@node_role.tenant_id, "NODE", NodeRole, @node_role.id, "COMMIT")
     @node_role.commit!
     respond_to do |format|
       format.html { redirect_to node_role_path(@node_role.id) }
@@ -235,7 +235,7 @@ class NodeRolesController < ApplicationController
   def retry
     params[:id] ||= params[:node_role_id]
     @node_role = NodeRole.find_key params[:id]
-    validate_action(@node_role.tenant_id, "DEPLOYMENT", NodeRole, @node_role.id, "RETRY")
+    validate_action(@node_role.tenant_id, "NODE", NodeRole, @node_role.id, "RETRY")
     @node_role.todo!
     respond_to do |format|
       format.html { redirect_to node_role_path(@node_role.id) }
@@ -246,7 +246,7 @@ class NodeRolesController < ApplicationController
   def parents
     @node_role = NodeRole.find_key params[:node_role_id]
     @list = @node_role.parents.to_a
-    t_ids = build_tenant_list("DEPLOYMENT_READ")
+    t_ids = build_tenant_list("NODE_READ")
     @list.delete_if { |x| !t_ids.include? x.tenant_id }
     render api_index NodeRole, @list
   end
@@ -254,13 +254,13 @@ class NodeRolesController < ApplicationController
   def children
     @node_role = NodeRole.find_key params[:node_role_id]
     @list = @node_role.children.to_a
-    t_ids = build_tenant_list("DEPLOYMENT_READ")
+    t_ids = build_tenant_list("NODE_READ")
     @list.delete_if { |x| !t_ids.include? x.tenant_id }
     render api_index NodeRole, @list
   end
 
   def anneal
-    t_ids = build_tenant_list("DEPLOYMENT_READ")
+    t_ids = build_tenant_list("NODE_READ")
     respond_to do |format|
       format.html { }
       format.json {
