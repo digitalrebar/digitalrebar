@@ -13,14 +13,17 @@ for each rule it matches it takes appropriate action.
 * Build the tool: go build
 
 ## Command line options:
-* -debug: Whether to run in debug mode.  If passed, rule engine will log extra debug logging.
-* -rules [path-to-rulefile]: The rules that events should be matched against.  The contents of
-  this file are described later.
-* -endpoint [url]: The API endpoint for Digital Rebar.
-* -username: The username to log in to Digital Rebar with.
-* -password: The password for the Digital Rebar user.
-* -listen: The address:port that the rule engine should listen for events on.
-* -testRules: If set, the rule engine will just test the rulefile for validity and exit.
+* backing: Backing store to use for RuleSets.  Permitted values are 'file' and 'consul' (default "file")
+* cacert: Path to certificate to use for API and Event validation (default "/etc/rule-engine/cacert.pem")
+* cert: Path to certificate to use for replies (default "/etc/rule-engine/cert.pem")
+* dataloc: Path to store data at (default "/var/cache/rule-engine")
+* debug: Whether to run in debug mode
+* endpoint: API Endpoint for Digital Rebar
+* key: Path to private key for the reply cert (default "/etc/rule-engine/key.pem")
+* listen: Address for the API and the event listener to listen on.
+* password: Password for Digital Rebar endpoint
+* username: Username for Digital Rebar endpoint
+* version: Print version and exit
 
 ## Events
 
