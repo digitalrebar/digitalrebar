@@ -400,8 +400,8 @@ class ApplicationController < ActionController::Base
       Rails.logger.info("headers['HTTP_ORIGIN'] = #{request.headers["HTTP_ORIGIN"]}")
 
       email = "#{username}@internal.local"
-      if username =~ /@/ 
-	email = username
+      if username =~ /@/
+        email = username
         username = username.split("@")[0]
       end
 
@@ -409,7 +409,7 @@ class ApplicationController < ActionController::Base
       # Update the capabiilties
       if @current_user.is_admin != wants_admin 
         @current_user.is_admin = wants_admin
-	@current_user.save
+        @current_user.save
         @current_user = User.find_by(username: username)
       end
       session[:digest_user] = username
@@ -443,7 +443,7 @@ class ApplicationController < ActionController::Base
 
     while cap_map[t_id] do
       return true if cap_map[t_id]["capabilities"].include? cap
-      t_id = cap_map[t_id]["parent_id"]
+      t_id = cap_map[t_id]["parent"]
     end
     false
   end
@@ -460,10 +460,10 @@ class ApplicationController < ActionController::Base
     found = false
     while cap_map[t_id] do
       if cap_map[t_id]["capabilities"].include? cap
-	found = true
-	break
+        found = true
+        break
       end
-      t_id = cap_map[t_id]["parent_id"]
+      t_id = cap_map[t_id]["parent"]
     end
 
     if found
@@ -476,8 +476,8 @@ class ApplicationController < ActionController::Base
     return [] unless t
 
     t_ids = []
-    t.children.map {|x| x.id }.each do |t_id|
-      t_ids << self.build_tenant_list(cap, cap_map, t_id)
+    t.children.map {|x| x.id }.each do |nt|
+      t_ids << self.build_tenant_list(cap, cap_map, nt)
     end
 
     return t_ids.flatten
@@ -488,10 +488,10 @@ class ApplicationController < ActionController::Base
     unless validate_capability(t_id, "#{cap_base}_#{action}")
       if validate_capability(t_id, "#{cap_base}_READ")
         raise RebarForbiddenError.new(key, klass)
-      else                              
+      else
         raise RebarNotFoundError.new(key, klass)
-      end                                                         
-    end 
+      end
+    end
   end
 
   def validate_update(t_id, cap_base, klass, key)

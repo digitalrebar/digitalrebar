@@ -95,18 +95,19 @@ class UsersController < ApplicationController
     @user.destroy
     render api_delete @user
   end
-  
+
   add_help(:create,[:username, :email, :password, :password_confirmation, :remember_me, :is_admin, :digest],[:post])
-  
   def create
     params.require(:username)
     params.require(:email)
     unless params[:tenant_id]
       params[:tenant_id] = @current_user.tenant_id
     end
+    params[:tenant_id] = params[:tenant_id].to_i
     unless params[:current_tenant_id]
       params[:current_tenant_id] = params[:tenant_id]
     end
+    params[:current_tenant_id] = params[:current_tenant_id].to_i
     validate_create(params[:tenant_id], "USER", User)
     @user = User.create! user_params
     if params[:digest]

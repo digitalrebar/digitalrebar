@@ -58,13 +58,22 @@ class User < ActiveRecord::Base
   # { tenant_1_id: { cap: [], (parent: #) }, ... }
   def cap_map
     results = UserTenantCapability.where(user_id: self.id).joins(:tenant).joins(:capability).select("capabilities.name", :tenant_id, :parent_id).group_by(&:tenant_id)
+    nr = {}
     results.each do |k,v|
       parent_id = nil
       parent_id = v[0]["parent_id"] if v.length > 0
       v.map! {|x| x["name"]}
-      results[k] = { "parent" => parent_id, "capabilities" => v }
+
+      # Make sure children are in map
+      c_ids = Tenant.where(["id IN (select child_id from all_tenant_parents where parent_id = :ten)", {ten: k}]).map { |x| x.id }
+      c_ids.each do |c_id|
+        c = Tenant.find_by(id: c_id)
+        nr[c_id] ||= { "parent" => c.parent_id, "capabilities" => [] }
+      end
+
+      nr[k] = { "parent" => parent_id, "capabilities" => v }
     end
-    results
+    nr
   end
 
   def self.name_column

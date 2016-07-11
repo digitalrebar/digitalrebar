@@ -39,7 +39,7 @@ class CapabilitiesController < ::ApplicationController
       format.json { render api_show @capability }
     end
   end
-  
+
   def index
     if validate_capability(@current_user.current_tenant_id, "CAPABILITY_READ")
       @capabilities = Capability.all

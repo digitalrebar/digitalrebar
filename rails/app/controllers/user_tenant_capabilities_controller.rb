@@ -37,13 +37,13 @@ class UserTenantCapabilitiesController < ::ApplicationController
     @caps = UserTenantCapability.where(tenant_id: t_ids & ut_ids & ct_ids)
     respond_to do |format|
       format.html {
-	@users = User.where(tenant_id: ut_ids)
-	@tenants = Tenant.where(id: t_ids)
-	unless ct_ids.empty?
-	  @capabilities = Capability.all
-	else
-	  @capabilities = {}
-	end
+        @users = User.where(tenant_id: ut_ids)
+        @tenants = Tenant.where(id: t_ids)
+        unless ct_ids.empty?
+          @capabilities = Capability.all
+        else
+          @capabilities = {}
+        end
       }
       format.json { render api_index UserTenantCapability, @caps }
     end
@@ -59,7 +59,7 @@ class UserTenantCapabilitiesController < ::ApplicationController
       format.json { render api_show @cap }
     end
   end
-  
+
   def create
     c = Capability.find_key params[:capability_id]
     params[:capability_id] = c.id
