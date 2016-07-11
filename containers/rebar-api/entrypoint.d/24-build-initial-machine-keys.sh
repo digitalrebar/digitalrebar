@@ -20,9 +20,12 @@ if ! rebar -U rebar -P rebar1 users show machine-install; then
         exit 1
     fi
 
-    # GREG: Make sure to add capabilities 
+    rebar -U rebar -P rebar1 -E https://127.0.0.1:3000 user_tenant_capabilitys create '{ "user_id": 2, "tenant_id": 1, "capability_id": "NODE_READ" }'
+    rebar -U rebar -P rebar1 -E https://127.0.0.1:3000 user_tenant_capabilitys create '{ "user_id": 2, "tenant_id": 1, "capability_id": "NODE_CREATE" }'
+    rebar -U rebar -P rebar1 -E https://127.0.0.1:3000 user_tenant_capabilitys create '{ "user_id": 2, "tenant_id": 1, "capability_id": "NODE_UPDATE" }'
+    rebar -U rebar -P rebar1 -E https://127.0.0.1:3000 user_tenant_capabilitys create '{ "user_id": 2, "tenant_id": 1, "capability_id": "NODE_COMMIT" }'
 
-    echo "$REBAR_KEY" >/etc/rebar.install.key
+    echo "machine-install:${MACHINE_PASSWORD}" >/etc/rebar.install.key
     kv_put digitalrebar/private/api/keys/machine_key </etc/rebar.install.key
 else
     kv_get digitalrebar/private/api/keys/machine_key >/etc/rebar.install.key
