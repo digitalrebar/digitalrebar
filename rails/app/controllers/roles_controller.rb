@@ -32,15 +32,21 @@ class RolesController < ApplicationController
   
   def index
     @list = if params.include? :deployment_id
-              r = Deployment.find_key(params[:deployment_id]).roles
-	      t_ids = build_tenant_list("DEPLOYMENT_READ")
-              r.delete_if { |x| !t_ids.include? x.tenant_id }
+              d = Deployment.find_key(params[:deployment_id])
+	      if validate_capability(d.tenant_id, "DEPLOYMENT_READ")
+                r = d.roles.to_a
+	      else
+		r = []
+	      end
             elsif params.include? :node_id
-              r = Node.find_key(params[:node_id]).roles
-	      t_ids = build_tenant_list("NODE_READ")
-              r.delete_if { |x| !t_ids.include? x.tenant_id }
+              n = Node.find_key(params[:node_id])
+	      if validate_capability(n.tenant_id, "NODE_READ")
+                r = n.roles.to_a
+	      else
+		r = []
+	      end
             else
-              Role.all
+              Role.all.to_a
             end
     respond_to do |format|
       format.html { }

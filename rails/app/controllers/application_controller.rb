@@ -514,7 +514,7 @@ class ApplicationController < ActionController::Base
   end
 
   def validate_destroy(t_id, cap_base, klass, key)
-    validate_action(t_id, cap, cap_base, klass, key, "DESTROY")
+    validate_action(t_id, cap_base, klass, key, "DESTROY")
   end
 
   def validate_match(ok_params, t_key, cap_base, klass)

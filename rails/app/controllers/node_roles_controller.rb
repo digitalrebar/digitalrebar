@@ -94,9 +94,9 @@ class NodeRolesController < ApplicationController
   def index
     NodeRole.transaction do
       @list = (if params.key? :node_id
-                Node.find_key(params[:node_id]).node_roles
+                Node.find_key(params[:node_id]).node_roles.to_a
               elsif params.key? :deployment_id
-                Deployment.find_key(params[:deployment_id]).node_roles
+                Deployment.find_key(params[:deployment_id]).node_roles.to_a
               else
                 NodeRole.all
               end).order("cohort asc, id asc").to_a

@@ -53,7 +53,7 @@ class NodesController < ApplicationController
     @list.delete_if { |x| !t_ids.include? x.tenant_id }
     respond_to do |format|
       format.html { @list.to_a.delete_if { |n| n.system } }
-      format.json { render api_index Node, @list.to_a }
+      format.json { render api_index Node, @list }
     end
   end
 
@@ -65,9 +65,9 @@ class NodesController < ApplicationController
 
       nodes = if params[:id]
         node = Node.find_key params[:id]
-        nodes = Node.where :id=>node.id
+        nodes = Node.where(:id=>node.id).to_a
       else
-        nodes = Node.non_system
+        nodes = Node.non_system.to_a
       end
       t_ids = build_tenant_list("NODE_READ")
       nodes.delete_if { |x| !t_ids.include? x.tenant_id }
@@ -153,7 +153,7 @@ class NodesController < ApplicationController
       g.nodes.delete(@node) if g.nodes.include? @node
       render :text=>I18n.t('api.removed', :item=>'node', :collection=>'group')
     else
-      validate_destroy(@node.tenant_id, "NODE", Node, node.id)
+      validate_destroy(@node.tenant_id, "NODE", Node, @node.id)
       @node.destroy
       respond_to do |format|
         format.html { redirect_to deployment_path(@node.deployment_id) }
