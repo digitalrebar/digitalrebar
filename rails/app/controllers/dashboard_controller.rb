@@ -178,7 +178,7 @@ class DashboardController < ApplicationController
     provider = params[:provider]
 
     provider_id = Provider.find_key(provider[:name]).id if provider
-    provider_os = provider[:os]
+    provider_os = provider[:os] if provider
     provider_id ||= Provider.find_by!(name: 'metal').id
 
     nodes = params[:nodes]
@@ -207,9 +207,9 @@ class DashboardController < ApplicationController
     params[:deployment_id] = d.id
 
     # set the roles in the deployment
-    roles = roles.sort_by { |r| r.cohort }
+    roles = roles.sort_by { |r| Role.find(r).cohort }
     roles.each do |r|
-      r.add_to_deployment d
+      Role.find(r).add_to_deployment d
     end
 
 
@@ -226,14 +226,14 @@ class DashboardController < ApplicationController
           node_roles[r] << node.id
         end
         # and set operating systems for selected nodes (unless docker)
-        Rails.logger.debug "Wizard: set #{n.name} into deployment #{d.name}"
-        if n.is_docker_node?
-          Rails.logger.info "Wizard: NOT assigning #{os} to node #{n.name} because it's DOCKER"
+        Rails.logger.debug "Wizard: set #{node.name} into deployment #{d.name}"
+        if node.is_docker_node?
+          Rails.logger.info "Wizard: NOT assigning #{os} to node #{node.name} because it's DOCKER"
         elsif os == "noos"
-          Rails.logger.info "Wizard: NO os assignment for node #{n.name} in deployment #{d.name}"
+          Rails.logger.info "Wizard: NO os assignment for node #{node.name} in deployment #{d.name}"
         else
-          Attrib.set "provisioner-target_os", n, os, :user if os
-          Rails.logger.info "Wizard: assigning #{os} to node #{n.name} in deployment #{d.name}"
+          Attrib.set "provisioner-target_os", node, os, :user if os
+          Rails.logger.info "Wizard: assigning #{os} to node #{node.name} in deployment #{d.name}"
         end
       end
 
@@ -245,8 +245,8 @@ class DashboardController < ApplicationController
           'use-ntp' => false,
           'use-dns' => false,
           'use-logging' => false,
-          'provider-create-hint': {
-            'hostname': name + "-" + nodeIndex.to_s
+          'provider-create-hint' => {
+            'hostname' => name + "-" + nodeIndex.to_s
           }
         }
 
