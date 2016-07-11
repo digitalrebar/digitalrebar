@@ -110,24 +110,29 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         admin_ip = ADMIN_IP
       end
       puts "Using Digital Rebar Admin on #{admin_ip}."
-      key = "-U rebar -P rebar1" unless ENV['REBAR_KEY']
-      %x[rebar ping -E #{endpoint} #{key}]
+      if endpoint == "https://127.0.0.1:3000"
+        puts "ERROR: you cannot use localhost (or 127.0.0.1) for the endpoint!"
+      else
+        key = "-U rebar -P rebar1" unless ENV['REBAR_KEY']
+        %x[rebar ping -E #{endpoint} #{key}]
 
-      slave.vm.hostname = "node#{i}.rebar.local"
-      slave.vm.box = BASE_OS_BOX
-      slave.vm.network "private_network", ip: "#{ADMIN_PREFIX}.#{200+i}", auto_config: true
-      slave.vm.provider "virtualbox" do |vb|
-        vb.memory = SLAVE_RAM
-      end
-      slave.vm.provision "shell", path: "scripts/join_rebar.sh", args: "#{admin_ip} #{ADMIN_PREFIX}.#{200+i}/#{ADMIN_CIDR}"
-      # we should able to see the new node
-      slave.trigger.after :up do
-        run "rebar -E #{endpoint} #{key} nodes show node#{i}.rebar.local"
-      end
-      # auto cleanup!
-      slave.trigger.after :destroy do
-        run "rebar -E #{endpoint} #{key} ping" rescue puts "No API: Server Down"
-        run "rebar -E #{endpoint} #{key} nodes destroy node#{i}.rebar.local" rescue puts "Delete failed!  Server may be down"
+        slave.vm.hostname = "node#{i}.rebar.local"
+        slave.vm.box = BASE_OS_BOX
+        slave.vm.network "private_network", ip: "#{ADMIN_PREFIX}.#{200+i}", auto_config: true
+        slave.vm.provider "virtualbox" do |vb|
+          vb.memory = SLAVE_RAM
+        end
+        slave.vm.provision "file", source: "scripts/join_rebar.sh", destination: "~/scripts/join_rebar.sh"
+        slave.vm.provision "shell", path: "scripts/join_rebar.sh", args: "#{admin_ip} #{ADMIN_PREFIX}.#{200+i}/#{ADMIN_CIDR}"
+        # we should able to see the new node
+        slave.trigger.after :up do
+          run "rebar -E #{endpoint} #{key} nodes show node#{i}.rebar.local"
+        end
+        # auto cleanup!
+        slave.trigger.after :destroy do
+          run "rebar -E #{endpoint} #{key} ping" rescue puts "No API: Server Down"
+          run "rebar -E #{endpoint} #{key} nodes destroy node#{i}.rebar.local" rescue puts "Delete failed!  Server may be down"
+        end
       end
     end
   end
