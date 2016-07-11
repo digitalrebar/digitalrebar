@@ -28,7 +28,7 @@ roles:
   - name: cluster
     description: "Cluster Configuration & Networking Info"
     jig: noop
-    icon: 'data_usage'
+    icon: 'donut_small'
     type: "BarclampCluster::ServiceRole"
     flags:
       - milestone
