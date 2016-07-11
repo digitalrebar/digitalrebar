@@ -425,66 +425,6 @@ func actionJumpOrCall(rs *RuleSet, ruleIdx int, call bool, v interface{}) (actio
 	}, nil
 }
 
-// ResolveAction compiles a map[string]interface{} with a single
-// key-value pair into a function matching the Action type.
-// Recognized keys are:
-//
-// "Log", which causes the engine to emit a hard-coded logging message
-// to stderr.  This is mainly for testing purposes so far, but we may
-// repurpose it to emit something useful later.
-//
-// "Script", which expects its value to be a string that will be
-// parsed using text.Template.  The result of that parsing should be a
-// valid bash script.  When the Action is ran, the parsed script will
-// be compiled using the passed RunContext.  If the compilation fails,
-// or the resultant script executes with a non-zero exit status, the
-// Action will fail, otherwise it will pass.
-//
-// "Delay", which causes the a delay of duration seconds for doing the
-// encapsulated actions described above.
-//
-// "Bind, which expects its value to be a struct matching the following format:
-//    struct {
-//        NodeID string
-//        DeploymentID string
-//        RoleID string
-//        SaveAs string
-//    }
-// Exactly 2 of the ID fields must be filled, and which two determine what action Bind will take.
-//
-// "NodeID" and "RoleID": a Role will be bound to a Node
-//
-// "NodeID" and "DeploymentID": a Node will be moved into a new Deployment
-//
-// "RoleID" and "DeploymentID": a Role will be bound to a Deployment
-//
-// If "SaveAs is set, the resultant new object's unique identifier (if
-// one was created) will be saved in the referenced variable
-//
-// "Retry", which causes a node role to be retried.
-//   struct {
-//     NodeRoleID string
-//   }
-// This causes the node role to be retried.
-//
-// "SetAttrib", which expects its value to be a struct wuth the following format:
-//
-//    struct {
-//        Attrib string
-//        Node string
-//        Deployment string
-//        NodeRole string
-//        DeploymentRole string
-//        Value interface{}
-//    }
-//
-//
-// Out if those fields, exactly one of Node, Role, Deployment,
-// NodeRole, and DeploymentRole should be filled, and their values
-// must resolve to an existing object of their type, otherwise the
-// action will fail.  Attrib must be the name of the attribute to set,
-// and Value must be tbe value you want to set the attrib to for the
-// object.
 func resolveAction(rs *RuleSet, ruleIdx int, a map[string]interface{}) (action, error) {
 	if len(a) != 1 {
 		return nil, fmt.Errorf("Actions have exactly one key")

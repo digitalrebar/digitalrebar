@@ -7,6 +7,8 @@ See LICENSE.md at the top of this repository for more information.
 */
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"flag"
 	"io/ioutil"
@@ -34,6 +36,7 @@ var (
 	backingStore                 string
 	dataDir                      string
 	ruleEngine                   *engine.Engine
+	caCert, cert, key            string
 )
 
 func handleEvent(c *gin.Context) {
@@ -160,7 +163,10 @@ func main() {
 	flag.StringVar(&username, "username", "", "Username for Digital Rebar endpoint")
 	flag.StringVar(&password, "password", "", "Password for Digital Rebar endpoint")
 	flag.StringVar(&endpoint, "endpoint", "", "API Endpoint for Digital Rebar")
-	flag.StringVar(&listen, "listen", "", "Address to listen on for postbacks from Digital Rebar")
+	flag.StringVar(&listen, "listen", "", "Address for the API and the event listener to listen on.")
+	flag.StringVar(&caCert, "cacert", "/etc/classifier/cacert.pem", "Certificate to use for API and Event validation")
+	flag.StringVar(&cert, "cert", "/etc/classifier/cert.pem", "Certificate to use for replies")
+	flag.StringVar(&key, "key", "/etc/classifier/key.pem", "Private key for the reply cert")
 	flag.StringVar(&backingStore, "backing", "file", "Backing store to use for RuleSets.  Permitted values are 'file' and 'consul'")
 	flag.StringVar(&dataDir, "dataloc", "/var/cache/classifier", "Path to store data at")
 	flag.BoolVar(&version, "version", false, "Print version and exit")
@@ -171,6 +177,8 @@ func main() {
 	}
 	if debug {
 		jsonselect.EnableLogger()
+	} else {
+		gin.SetMode(gin.ReleaseMode)
 	}
 
 	if endpoint == "" {
@@ -233,12 +241,27 @@ func main() {
 	router.POST("/api/v0/rulesets/", createRuleset)
 	router.PUT("/api/v0/rulesets/:name", updateRuleset)
 	router.DELETE("/api/v0/rulesets/:name", deleteRuleset)
+	validator, err := ioutil.ReadFile(caCert)
+	if err != nil {
+		log.Fatalf("Error reading validation cert: %v", err)
+	}
+	certPool := x509.NewCertPool()
+	certPool.AppendCertsFromPEM(validator)
+	tlsConfig := &tls.Config{
+		ClientCAs:  certPool,
+		ClientAuth: tls.RequireAndVerifyClientCert,
+	}
+	tlsConfig.BuildNameToCertificate()
+
+	s := &http.Server{
+		Addr:      listen,
+		Handler:   router,
+		TLSConfig: tlsConfig,
+	}
 
 	// Wait forever
 	log.Printf("Ready to handle events\n")
 	for {
-		if err := router.Run(listen); err != nil {
-			log.Printf("API failed: %v", err)
-		}
+		log.Printf("API failed: %v", s.ListenAndServeTLS(cert, key))
 	}
 }

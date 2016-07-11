@@ -15,6 +15,9 @@ import "github.com/digitalrebar/rebar-api/client"
 //    obj_class: The class of the Rebar object that fired the event.
 //    obj_id: The human-readable name of the Rebar object that fired
 //            the event, if any.
+//
+// There may be other fields added later -- the exact details of
+// what is in an EventSelector are up to the Digital Rebar core code.
 type EventSelector map[string]string
 
 // Match against another selector to see if the second one

@@ -60,9 +60,13 @@ func NewEngine(backingStore LoadSaver, listen, rebarEndpoint, username, password
 	if err != nil {
 		return nil, err
 	}
+
+	// The implementations of backingStore provide a default empty
+	// hash of rulesets.
 	if err := json.Unmarshal(buf, &res.ruleSets); err != nil {
 		return nil, fmt.Errorf("Unable to load initial database: %v", err)
 	}
+
 	for _, rs := range res.ruleSets {
 		rs.compile(res)
 	}
@@ -83,6 +87,8 @@ func NewEngine(backingStore LoadSaver, listen, rebarEndpoint, username, password
 	return res, nil
 }
 
+// This will eventually start to fail when using Consul as a backing
+// store once the rulesets get too big, but it should be OK for now.
 func (e *Engine) save() {
 	buf, err := json.Marshal(e.ruleSets)
 	if err == nil {

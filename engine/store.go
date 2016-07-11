@@ -8,11 +8,16 @@ import (
 	"github.com/hashicorp/consul/api"
 )
 
+// LoadSaver is what an Engine will use to save and restore its
+// map of global RuleSets.  This interface is liable to change
+// as the complexity asd size of the RuleSets grows.
 type LoadSaver interface {
 	Save([]byte) error
 	Load() ([]byte, error)
 }
 
+// MemoryStore is a simple LoadSaver that operates
+// entirely in memory.  It is used for test purposes.
 type MemoryStore []byte
 
 func NewMemoryStore() MemoryStore {
@@ -31,6 +36,7 @@ func (m MemoryStore) Load() []byte {
 	return res
 }
 
+// FileStore implements a simple file-based DataStore.
 type FileStore struct {
 	backingDatabase string
 }
@@ -58,6 +64,8 @@ func (fs *FileStore) Load() ([]byte, error) {
 	return ioutil.ReadFile(fs.backingDatabase)
 }
 
+// ConsulStore implements a BackingStore using a key in
+// the Consul k/v space.
 type ConsulStore struct {
 	store      *api.KV
 	backingKey string
