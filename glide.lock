@@ -1,5 +1,5 @@
-hash: b8cf60e64e2fb4abf13dd6a30d6c6e169b8f165491524c586507f59b61ff8662
-updated: 2016-07-07T16:07:37.546952332-05:00
+hash: 9d370a34aea0742f8d7fea4c26abbdbf6255296586712832c8503bcfcab063e2
+updated: 2016-07-11T11:47:52.113920433-05:00
 imports:
 - name: github.com/cloudfoundry-incubator/candiedyaml
   version: 99c3df83b51532e3615f851d8c2dbb638f5313bf
@@ -31,11 +31,12 @@ imports:
   subpackages:
   - api
 - name: github.com/hashicorp/go-cleanhttp
-  version: ad28ea4487f05916463e2423a55166280e8254b5
+  version: 875fb671b3ddc66f8e2f0acc33829c8cb989a38d
 - name: github.com/hashicorp/serf
   version: 6c4672d66fc6312ddde18399262943e21175d831
   subpackages:
   - coordinate
+  - serf
 - name: github.com/manucorporat/sse
   version: ee05b128a739a0fb76c7ebd3ae4810c1de808d6d
 - name: github.com/pborman/uuid
@@ -45,7 +46,7 @@ imports:
   subpackages:
   - utils
 - name: golang.org/x/crypto
-  version: d81fdb778bf2c40a91b24519d60cdc5767318829
+  version: c2f4947f41766b144bb09066e919466da5eddeae
   subpackages:
   - nacl/box
   - curve25519

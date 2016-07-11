@@ -24,7 +24,7 @@ import (
 	"github.com/pborman/uuid"
 
 	"github.com/coddingtonbear/go-jsonselect"
-	"github.com/rackn/rule-engine/engine"
+	"github.com/digitalrebar/rule-engine/engine"
 )
 
 var (
