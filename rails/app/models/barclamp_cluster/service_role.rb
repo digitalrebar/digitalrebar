@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-class BarclampRebar::ServiceRole < Role
+class BarclampCluster::ServiceRole < Role
 
   def sync_on_destroy(nr, *args)
     collect_addresses(nr, false, args)
