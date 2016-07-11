@@ -28,7 +28,6 @@ Rebar::Application.routes.draw do
   get "annealer", :to => "node_roles#anneal", :as => :annealer
   resources :attribs
   resources :barclamps do
-    post :wizard
     get :upload
   end
   resources :deployment_roles do
@@ -119,6 +118,9 @@ Rebar::Application.routes.draw do
           get "heartbeat" => "support#heartbeat", :as => :heartbeat_status
           get "inventory(/:id)" => "inventory#index"
           match "active" => "node_roles#status", via: [:get, :put]
+        end
+        scope "utils" do 
+          post "wizard" => "dashboard#wizard"
         end
         scope 'test' do
           put "nodes(/:id)" => "nodes#test_load_data"
