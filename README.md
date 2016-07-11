@@ -1,6 +1,6 @@
-# DigitalRebar Event Classifier
+# DigitalRebar Event Rule Engine
 
-This is the node classifier daemon for Digital Rebar.
+This is the node rule engine daemon for Digital Rebar.
 
 It listens for events, and for each event it recieves it
 tests the event to see if it matches a set of user-provided rules, and
@@ -13,20 +13,20 @@ for each rule it matches it takes appropriate action.
 * Build the tool: go build
 
 ## Command line options:
-* -debug: Whether to run in debug mode.  If passed, classifier will log extra debug logging.
+* -debug: Whether to run in debug mode.  If passed, rule engine will log extra debug logging.
 * -rules [path-to-rulefile]: The rules that events should be matched against.  The contents of
   this file are described later.
 * -endpoint [url]: The API endpoint for Digital Rebar.
 * -username: The username to log in to Digital Rebar with.
 * -password: The password for the Digital Rebar user.
-* -listen: The address:port that the classifier should listen for events on.
-* -testRules: If set, the classifier will just test the rulefile for validity and exit.
+* -listen: The address:port that the rule engine should listen for events on.
+* -testRules: If set, the rule engine will just test the rulefile for validity and exit.
 
 ## Events
 
 Events are emitted by the DigitalRebar core whenever something of interest happens.
-It is the job of the Classifier to listen to those Events and take action based on the
-Rulesets that the Classifier has loaded.  Think about how iptables works on Linux crossed
+It is the job of the Rule Engine to listen to those Events and take action based on the
+Rulesets that the Rule Engine has loaded.  Think about how iptables works on Linux crossed
 with a rule-based expert system, and you will not be too far off the mark.
 
 ### Event Definition
@@ -88,7 +88,7 @@ The rules file should contain a RuleSet in YML or JSON format.
 
     Name: 'test ruleset'
     Active: false
-    Description: "The test ruleset, used to exercise the classifier"
+    Description: "The test ruleset, used to exercise the rule engine"
     Rules:
       - EventSelectors:
           - event: on_active
@@ -172,7 +172,7 @@ to determine whether the Rule matches the Event, or that the Actions may need to
 * MatchActions: A list of Actions that will be run if all the Matchers match.
 
 #### Matchers:
-Currently, the classifier knows about the following matchers:
+Currently, the rule engine knows about the following matchers:
 
 * And: Takes a list of Matchers, and matches iff all of them match.
 
@@ -272,7 +272,7 @@ YAML object has the following format:
   could be retrieved, otherwise the matcher will fail.
 
 #### Actions:
-Currently, the classifier knows about the following actions:
+Currently, the rule engine knows about the following actions:
 
 * Log: Emit a hardcoded logging message.
 
@@ -364,7 +364,7 @@ no Call has been made, Return functions like Stop.
 
 Upon recieving an Event, the following steps happen:
 
-1. The Classifier matches the Selector against the EventSelectors of the individual Rules.
+1. The Rule Engine matches the Selector against the EventSelectors of the individual Rules.
 2. A RunContext is created for each RuleSet that contains a Rule that matches the EventSelector.
 3. Each RunContext is handed a RunList of Rules in its RuleSet to start execution at.
 4. Each RunContext starts executing Rules starting at the first Rule in its RunList.

@@ -24,7 +24,7 @@ import (
 	"github.com/pborman/uuid"
 
 	"github.com/coddingtonbear/go-jsonselect"
-	"github.com/rackn/classifier/engine"
+	"github.com/rackn/rule-engine/engine"
 )
 
 var (
@@ -164,11 +164,11 @@ func main() {
 	flag.StringVar(&password, "password", "", "Password for Digital Rebar endpoint")
 	flag.StringVar(&endpoint, "endpoint", "", "API Endpoint for Digital Rebar")
 	flag.StringVar(&listen, "listen", "", "Address for the API and the event listener to listen on.")
-	flag.StringVar(&caCert, "cacert", "/etc/classifier/cacert.pem", "Certificate to use for API and Event validation")
-	flag.StringVar(&cert, "cert", "/etc/classifier/cert.pem", "Certificate to use for replies")
-	flag.StringVar(&key, "key", "/etc/classifier/key.pem", "Private key for the reply cert")
+	flag.StringVar(&caCert, "cacert", "/etc/rule-engine/cacert.pem", "Certificate to use for API and Event validation")
+	flag.StringVar(&cert, "cert", "/etc/rule-engine/cert.pem", "Certificate to use for replies")
+	flag.StringVar(&key, "key", "/etc/rule-engine/key.pem", "Private key for the reply cert")
 	flag.StringVar(&backingStore, "backing", "file", "Backing store to use for RuleSets.  Permitted values are 'file' and 'consul'")
-	flag.StringVar(&dataDir, "dataloc", "/var/cache/classifier", "Path to store data at")
+	flag.StringVar(&dataDir, "dataloc", "/var/cache/rule-engine", "Path to store data at")
 	flag.BoolVar(&version, "version", false, "Print version and exit")
 	flag.BoolVar(&debug, "debug", false, "Whether to run in debug mode")
 	flag.Parse()

@@ -1,4 +1,4 @@
-package: github.com/rackn/classifier
+package: github.com/digitalrebar/rule-engine
 import:
 - package: github.com/digitalrebar/rebar-api
   subpackages:

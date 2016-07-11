@@ -5,7 +5,7 @@
 
 Name: 'test ruleset'
 Active: false
-Description: "The test ruleset, used to exercise the classifier"
+Description: "The test ruleset, used to exercise the rule engine"
 Rules:
   - EventSelectors:
       - event: on_active
