@@ -183,8 +183,7 @@ class DashboardController < ApplicationController
 
     nodes = params[:nodes]
     metalNodes = nodes.select{|i| i[:node_id] > 0}
-    cloudNodes = nodes - metalNodes
-
+    cloudNodes = nodes.select{|i| i[:node_id] < 0}
     roles = []
     nodes.each do |n|
       roles += n[:roles] || []
@@ -205,6 +204,7 @@ class DashboardController < ApplicationController
     throw "Deployment Name is required" unless name
 
     d = Deployment.find_or_create_by!(name: name, parent: Deployment.system)
+    params[:deployment_id] = d.id
 
     # set the roles in the deployment
     roles = roles.sort_by { |r| r.cohort }
@@ -220,6 +220,7 @@ class DashboardController < ApplicationController
         os = n[:os]
         node.deployment = d
         node.save!
+        n[:nodes] = [node.id]
 
         n[:roles].each do |r|
           node_roles[r] << node.id
@@ -273,7 +274,7 @@ class DashboardController < ApplicationController
             Attrib.set(k, node, v)
           end
 
-          n[:nodes] << node
+          n[:nodes] << node.id
 
           n[:roles].each do |r|
             node_roles[r] << node.id
@@ -296,9 +297,8 @@ class DashboardController < ApplicationController
     end
 
     Rails.logger.debug "Wizard: opening deployment #{deployment_path(:id=>d.id)}"
-    redirect_to deployment_path(:id=>d.id)
-  
 
+    render :json => params.to_json
   end
 
 end
