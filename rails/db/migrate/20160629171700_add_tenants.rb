@@ -39,7 +39,7 @@ class AddTenants < ActiveRecord::Migration
       t.belongs_to  :capability
       t.timestamps
     end
-    add_index(:user_tenant_capabilities, [:user_id, :tenant_id])
+    add_index(:user_tenant_capabilities, [:user_id, :tenant_id, :capability_id], unique: true, name: 'utc_unique')
 
     create_view :all_tenant_parents,
                 'with recursive d (parent_id, child_id) as (

@@ -122,6 +122,8 @@ en:
     manage_tenants_description: "Add, remove and edit tenants"
     manage_capabilities: "Manage Capabilities"
     manage_capabilities_description: "Add, remove and edit capabilities"
+    manage_utc: "Manage User Tenant Capabilities"
+    manage_utc_description: "Add and remove user tenant capabilities"
     user_settings: "Session Settings"
     user_settings_description: "Turn on Advanced UI Controls"
     utils_description: "Tools and System Functions "

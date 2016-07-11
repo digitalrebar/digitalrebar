@@ -1,0 +1,26 @@
+%h1= t '.title'
+
+%table.data.box
+  %thead
+    %tr
+      %th= t '.user'
+      %th= t '.tenant'
+      %th= t '.capability'
+      %th
+  %tbody
+    - @caps.each do |n|
+      %tr.node{ :class => cycle(:odd, :even) }
+        %td= link_to n.user.username, user_path(n.user.id)
+        %td= link_to n.tenant.name, tenant_path(n.tenant.id)
+        %td= link_to n.capability.name, capability_path(n.capability.id)
+        %td= link_to t('destroy'), user_tenant_capability_path(n.id), :class => 'button', :'onclick'=>'location.reload();', :'data-remote' => true, :method => :delete, data: { confirm: "Are you certain you want to destroy user tenant capability #{n.user.username} - #{n.tenant.name} - #{n.capability.name}?" }
+
+  %tfoot
+    = form_for :user_tenant_capability, :'data-remote' => true, :url => user_tenant_capabilities_path(), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
+      %tr
+        %td= select_tag :user_id, options_from_collection_for_select(@users, :id, :username)
+        %td= select_tag :tenant_id, options_from_collection_for_select(@tenants, :id, :name)
+        %td= select_tag :capability_id, options_from_collection_for_select(@capabilities, :id, :name)
+        %td
+          %input.button{:type => "submit", :value => t('.add')}
+

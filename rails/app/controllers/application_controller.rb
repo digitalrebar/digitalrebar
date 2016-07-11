@@ -132,6 +132,21 @@ class ApplicationController < ActionController::Base
     }
   end
 
+  def api_conflict_error(e)
+    json = {}
+    json[:status] = 409
+    if (e.rebar_key rescue false)
+      json[:message]=I18n.t('api.not_found', :id=>e.rebar_key, :type=>type2name(e.rebar_model))
+      json[:content_type]=cb_content_type(e.rebar_key, "error")
+    else
+      json[:message]=e.message
+      json[:backtrace]=e.backtrace
+    end
+    { :json => json,
+      :status => 409
+    }
+  end
+
   def api_forbidden(e)
     json = {}
     json[:status] = 403
@@ -288,10 +303,15 @@ class ApplicationController < ActionController::Base
   def render_error(exception)
     @error = exception
     case
-    when @error.is_a?(ActiveRecord::RecordNotFound),  @error.is_a?(RebarNotFoundError)
+    when @error.is_a?(ActiveRecord::RecordNotFound), @error.is_a?(RebarNotFoundError)
       respond_to do |format|
         format.html { render :status => 404 }
         format.json { render api_not_found(@error) }
+      end
+    when @error.is_a?(ActiveRecord::RecordNotUnique), @error.is_a?(PG::UniqueViolation)
+      respond_to do |format|
+        format.html { render :status => 409 }
+        format.json { render api_conflict_error(@error) }
       end
     when @error.is_a?(RebarForbiddenError)
       respond_to do |format|

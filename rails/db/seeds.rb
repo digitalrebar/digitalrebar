@@ -82,8 +82,8 @@ ActiveRecord::Base.transaction do
     [ "EVENT_SINK_UPDATE",  "Update Event Sinks" ],
     [ "EVENT_SINK_DESTROY", "Destroy Event Sinks" ],
 
-    [ "TENANT_USER_ADD_CAPABILITIY",   "Add Capability to User in Tenant" ],
-    [ "TENANT_USER_DESTROY_CAPABILITIY",   "Remove Capability from User in Tenant" ],
+    [ "USER_TENANT_CAPABILITY_ADD",       "Add Capability to User in Tenant" ],
+    [ "USER_TENANT_CAPABILITY_DESTROY",   "Remove Capability from User in Tenant" ],
 
     [ "ATTRIB_CREATE",        "Create a new attribute" ],
     [ "ATTRIB_DESTROY",       "Destroy an attribute" ],
@@ -158,6 +158,7 @@ ActiveRecord::Base.transaction do
   Nav.find_or_create_by(item: 'manage_users', parent_item: 'utils', name: 'nav.manage_users', description: 'nav.manage_users_description', path: "main_app.users_path", order: 100)
   Nav.find_or_create_by(item: 'manage_tenants', parent_item: 'utils', name: 'nav.manage_tenants', description: 'nav.manage_tenants_description', path: "main_app.tenants_path", order: 120)
   Nav.find_or_create_by(item: 'manage_capabilities', parent_item: 'utils', name: 'nav.manage_capabilities', description: 'nav.manage_capabilities_description', path: "main_app.capabilities_path", order: 140)
+  Nav.find_or_create_by(item: 'manage_utc', parent_item: 'utils', name: 'nav.manage_utc', description: 'nav.manage_utc_description', path: "main_app.user_tenant_capabilities_path", order: 150)
   Nav.find_or_create_by(item: 'user_settings', parent_item: 'utils', name: 'nav.user_settings', description: 'nav.user_settings_description', path: "main_app.utils_settings_path", order: 200)
   Nav.find_or_create_by(item: 'jigs', parent_item: 'utils', name: 'nav.jigs', description: 'nav.jigs_description', path: "main_app.jigs_path", order: 300)
   Nav.find_or_create_by(item: 'hammers', parent_item: 'utils', name: 'nav.hammers', description: 'nav.hammers_description', path: "main_app.available_hammers_path", order: 1000)
