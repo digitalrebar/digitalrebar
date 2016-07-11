@@ -127,7 +127,6 @@ class ApplicationController < ActionController::Base
       json[:backtrace]=e.backtrace
     end
     { :json => json,
-      :content_type=>cb_content_type(e.rebar_key, "error"),
       :status => :not_found
     }
   end
@@ -137,7 +136,6 @@ class ApplicationController < ActionController::Base
     json[:status] = 409
     if (e.rebar_key rescue false)
       json[:message]=I18n.t('api.not_found', :id=>e.rebar_key, :type=>type2name(e.rebar_model))
-      json[:content_type]=cb_content_type(e.rebar_key, "error")
     else
       json[:message]=e.message
       json[:backtrace]=e.backtrace
@@ -157,7 +155,6 @@ class ApplicationController < ActionController::Base
       json[:backtrace]=e.backtrace
     end
     { :json => json,
-      :content_type=>cb_content_type(e.rebar_key, "error"),
       :status => :forbidden
     }
   end
