@@ -224,9 +224,9 @@ func (m *JwtManager) AddTokenInfo(t *jwt.Token, w http.ResponseWriter, req *http
 	}
 	cookie := http.Cookie{Name: "DrAuthToken", Value: signedString, Path: "/"}
 	http.SetCookie(w, &cookie)
-	cookie = http.Cookie{Name: "DrUserToken", Value: username, Path: "/"}
+	cookie = http.Cookie{Name: "DrAuthUser", Value: username, Path: "/"}
 	http.SetCookie(w, &cookie)
 	w.Header().Set("DR-AUTH-TOKEN", signedString)
-	w.Header().Set("DR-USER-TOKEN", username)
+	w.Header().Set("DR-AUTH-USER", username)
 	return nil
 }
