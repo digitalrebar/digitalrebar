@@ -16,9 +16,23 @@ network --bootproto=dhcp --device=vmnic0
 
 reboot
 
-%post --ignorefailure=true --interpreter=busybox
+%pre --interpreter=python
+# urllib2 is a pile of suck.  Ask me how I know this.
+import sys,re,os,urllib,urllib2,base64,syslog,socket, string, ssl, time
+url = '{{.CommandURL}}/api/v2/nodes/{{.Machine.UUID}}'
 
-curl -X PUT -k -u '{{.Param "rebar-machine_key"}}' \
-    -H "Content-Type: application/json" \
-    '{{.CommandURL}}/api/v2/nodes/{{.Machine.UUID}}' \
-    --data-binary '{"bootenv": "local"}'
+class FakeMgr(urllib2.HTTPPasswordMgr):
+    def find_user_password(foo, bar, baz):
+        key = '{{.Param "rebar-machine_key"}}'
+        up = string.split(key,':',2)
+        return up[0], up[1]
+
+opener = urllib2.build_opener(
+    urllib2.HTTPDigestAuthHandler(FakeMgr()),
+    urllib2.HTTPSHandler(context=ssl.SSLContext(ssl.PROTOCOL_SSLv23)))
+
+req = urllib2.Request(url, data='{"bootenv": "local"}')
+req.add_header('Content-Type', 'application/json')
+req.get_method = lambda: 'PUT'
+
+r = opener.open(req)
