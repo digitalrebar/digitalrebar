@@ -207,6 +207,7 @@ func (m *JwtManager) Get(req *http.Request) (*jwt.Token, error) {
 // Updates the downstream request (if there is one) to have the user id
 // Updates the response to have the token info.
 func (m *JwtManager) AddTokenInfo(t *jwt.Token, w http.ResponseWriter, req *http.Request) error {
+	username := "unknown"
 	if req != nil {
 		// Claims have been validated or newly created.
 		claims, ok := t.Claims.(*jwt.StandardClaims)
@@ -214,6 +215,7 @@ func (m *JwtManager) AddTokenInfo(t *jwt.Token, w http.ResponseWriter, req *http
 			return jwt.NewValidationError("Missing id in claims", jwt.ValidationErrorId)
 		}
 		req.Header.Set("X-Authenticated-Username", claims.Id)
+		username = claims.Id
 	}
 
 	signedString, err := m.Sign(t)
@@ -222,6 +224,9 @@ func (m *JwtManager) AddTokenInfo(t *jwt.Token, w http.ResponseWriter, req *http
 	}
 	cookie := http.Cookie{Name: "DrAuthToken", Value: signedString, Path: "/"}
 	http.SetCookie(w, &cookie)
+	cookie = http.Cookie{Name: "DrUserToken", Value: username, Path: "/"}
+	http.SetCookie(w, &cookie)
 	w.Header().Set("DR-AUTH-TOKEN", signedString)
+	w.Header().Set("DR-USER-TOKEN", username)
 	return nil
 }
