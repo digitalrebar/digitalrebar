@@ -4,7 +4,7 @@ type Tenant struct {
 	SimpleID
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	ParentID    int64  `json:"deployment_id"`
+	ParentID    int64  `json:"parent_id"`
 }
 
 func (o *Tenant) ApiName() string {
