@@ -219,7 +219,7 @@ class Role < ActiveRecord::Base
   def add_to_deployment(dep)
     DeploymentRole.unsafe_locked_transaction do
       Rails.logger.info("Role: Creating deployment_role for #{self.name} in #{dep.name}")
-      DeploymentRole.find_or_create_by!(role_id: self.id, deployment_id: dep.id, tenant_id: dep.tenant_id)
+      DeploymentRole.find_or_create_by!(role_id: self.id, deployment_id: dep.id)
     end
   end
 
@@ -232,7 +232,7 @@ class Role < ActiveRecord::Base
     Rails.logger.info("Role: Trying to add #{name} to #{node.name}")
     NodeRole.safe_create!(node_id:       node.id,
                           role_id:       id,
-			  tenant_id:     dep.tenant_id,
+			  tenant_id:     node.tenant_id,
                           deployment_id: dep.id)
   end
 

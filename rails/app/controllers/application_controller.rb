@@ -299,6 +299,8 @@ class ApplicationController < ActionController::Base
 
   def render_error(exception)
     @error = exception
+    Rails.logger.debug("Failed: #{@error.message}")
+    Rails.logger.debug(@error.backtrace)
     case
     when @error.is_a?(ActiveRecord::RecordNotFound), @error.is_a?(RebarNotFoundError)
       respond_to do |format|
@@ -443,7 +445,7 @@ class ApplicationController < ActionController::Base
 
     while cap_map[t_id] do
       return true if cap_map[t_id]["capabilities"].include? cap
-      t_id = cap_map[t_id]["parent"]
+      t_id = cap_map[t_id]["parent"] rescue nil
     end
     false
   end

@@ -41,7 +41,7 @@ class TenantsController < ::ApplicationController
 
   def show
     @tenant = Tenant.find_key params[:id]
-    validate_read(@tenant.id, "TENANT", Tenant, params[:id])
+    validate_read(@tenant.id, "TENANT", Tenant, @tenant.id)
     respond_to do |format|
       format.html { }
       format.json { render api_show @tenant }
@@ -68,7 +68,7 @@ class TenantsController < ::ApplicationController
   def update
     Tenant.transaction do
       @tenant = Tenant.find_key(params[:id]).lock!
-      validate_update(@tenant.id, "TENANT", Tenant, params[:id])
+      validate_update(@tenant.id, "TENANT", Tenant, @tenant.id)
       if request.patch?
         patch(@tenant,%w{description name parent_id})
       else
@@ -83,14 +83,14 @@ class TenantsController < ::ApplicationController
 
   def destroy
     @tenant = Tenant.find_key(params[:id])
-    validate_destroy(@tenant.id, "TENANT", Tenant, params[:id])
+    validate_destroy(@tenant.id, "TENANT", Tenant, @tenant.id)
     @tenant.destroy
     render api_delete @tenant
   end
 
   def edit
     @tenant = Tenant.find_key params[:id]
-    validate_update(@tenant.id, "TENANT", Tenant, params[:id])
+    validate_update(@tenant.id, "TENANT", Tenant, @tenant.id)
     respond_to do |format|
       format.html {  }
     end

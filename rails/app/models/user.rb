@@ -60,8 +60,7 @@ class User < ActiveRecord::Base
     results = UserTenantCapability.where(user_id: self.id).joins(:tenant).joins(:capability).select("capabilities.name", :tenant_id, :parent_id).group_by(&:tenant_id)
     nr = {}
     results.each do |k,v|
-      parent_id = nil
-      parent_id = v[0]["parent_id"] if v.length > 0
+      parent_id = v.length > 0 ? v[0]["parent_id"] : nil
       v.map! {|x| x["name"]}
 
       # Make sure children are in map

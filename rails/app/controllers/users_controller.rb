@@ -65,7 +65,7 @@ class UsersController < ApplicationController
   end
 
   def sample
-    render api_show({},User)
+    render api_sample(User)
   end
 
   def match
@@ -102,12 +102,16 @@ class UsersController < ApplicationController
     params.require(:email)
     unless params[:tenant_id]
       params[:tenant_id] = @current_user.current_tenant_id
+    else
+      t = Tenant.find_key params[:tenant_id]
+      params[:tenant_id] = t.id
     end
-    params[:tenant_id] = params[:tenant_id].to_i
     unless params[:current_tenant_id]
       params[:current_tenant_id] = params[:tenant_id]
+    else
+      t = Tenant.find_key params[:current_tenant_id]
+      params[:current_tenant_id] = t.id
     end
-    params[:current_tenant_id] = params[:current_tenant_id].to_i
     validate_create(params[:tenant_id], "USER", User)
     @user = User.create! user_params
     if params[:digest]

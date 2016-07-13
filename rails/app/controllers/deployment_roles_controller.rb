@@ -23,7 +23,10 @@ class DeploymentRolesController < ApplicationController
     attrs = DeploymentRole.attribute_names.map{|a|a.to_sym}
     objs = []
     ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "DEPLOYMENT", DeploymentRole)
+    objs = DeploymentRole.where(ok_params) if !ok_params.empty?
+    objs = objs.to_a
+    tenant_ids = build_tenant_list("DEPLOYMENT_READ")
+    objs.delete_if { |x| !tenant_ids.include? x.deployment.tenant_id }
     respond_to do |format|
       format.html {}
       format.json { render api_index DeploymentRole, objs }
@@ -39,7 +42,7 @@ class DeploymentRolesController < ApplicationController
               DeploymentRole.all.to_a
             end
     tenant_ids = build_tenant_list("DEPLOYMENT_READ")
-    @list.delete_if { |x| !tenant_ids.include? x.tenant_id }
+    @list.delete_if { |x| !tenant_ids.include? x.deployment.tenant_id }
     respond_to do |format|
       format.html { }
       format.json { render api_index DeploymentRole, @list }
@@ -56,7 +59,7 @@ class DeploymentRolesController < ApplicationController
       @deployment_role = DeploymentRole.find_key params[:id]
     end
 
-    validate_read(@deployment_role.tenant_id, "DEPLOYMENT", Deployment, params[:id])
+    validate_read(@deployment_role.deployment.tenant_id, "DEPLOYMENT", Deployment, params[:id])
 
     respond_to do |format|
       format.html {  }
@@ -73,9 +76,8 @@ class DeploymentRolesController < ApplicationController
     params.require(:role_id)
     params.require(:deployment_id)
     d = Deployment.find_key(params[:deployment_id])
-    params[:tenant_id] = d.tenant_id
     validate_create(d.tenant_id, "DEPLOYMENT", Deployment)
-    @deployment_role = DeploymentRole.create! params.permit(:data, :role_id, :deployment_id, :tenant_id)
+    @deployment_role = DeploymentRole.create! params.permit(:data, :role_id, :deployment_id)
     respond_to do |format|
       format.html { redirect_to deployment_path(params[:deployment_id]) }
       format.json { render api_show @deployment_role }
@@ -88,9 +90,8 @@ class DeploymentRolesController < ApplicationController
       if request.patch?
         raise "Cannot PATCH deployment roles!"
       else
-	validate_update(@deployment_role.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id])
+	validate_update(@deployment_role.deployment.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id])
         params.require(:data)
-	@deployment_role.tenant_id = params[:tenant_id] if params[:tenant_id]
         @deployment_role.data = params[:data]
         @deployment_role.save!
       end
@@ -100,7 +101,7 @@ class DeploymentRolesController < ApplicationController
 
   def destroy
     @deployment_role = DeploymentRole.find_key(params[:id])
-    validate_destroy(@deployment_role.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id])
+    validate_destroy(@deployment_role.deployment.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id])
     @deployment_role.destroy
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment_role.deployment_id) }
@@ -112,7 +113,7 @@ class DeploymentRolesController < ApplicationController
 
   def propose
     @deployment_role = DeploymentRole.find_key params[:deployment_role_id]
-    validate_action(@deployment_role.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id], "PROPOSE")
+    validate_action(@deployment_role.deployment.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id], "PROPOSE")
     @deployment_role.propose
     respond_to do |format|
       format.html { redirect_to deployment_role_path(@deployment_role.id) }
@@ -122,7 +123,7 @@ class DeploymentRolesController < ApplicationController
 
   def commit
     @deployment_role = DeploymentRole.find_key params[:deployment_role_id]
-    validate_action(@deployment_role.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id], "COMMIT")
+    validate_action(@deployment_role.deployment.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id], "COMMIT")
     @deployment_role.commit
     respond_to do |format|
       format.html { redirect_to deployment_role_path(@deployment_role.id) }

@@ -17,7 +17,6 @@ class AddMultitenancy < ActiveRecord::Migration
 
   def change
     rtm={
-      deployment_roles: DeploymentRole,
       deployments: Deployment,
       dns_name_entries: DnsNameEntry,
       dns_name_filters: DnsNameFilter,

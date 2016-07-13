@@ -170,7 +170,7 @@ class AttribsController < ApplicationController
     when target.is_a?(Node) then [ "NODE", target.tenant_id ]
     when target.is_a?(NodeRole) then [ "NODE", target.node.tenant_id ]
     when target.is_a?(Deployment) then [ "DEPLOYMENT", target.tenant_id ]
-    when target.is_a?(DeploymentRole) then [ "DEPLOYMENT", target.tenant_id ]
+    when target.is_a?(DeploymentRole) then [ "DEPLOYMENT", target.deployment.tenant_id ]
     when target.is_a?(Role) then [ "ROLE", @current_user.current_tenant_id ]
     else [ nil, nil ]
     end                                                                
