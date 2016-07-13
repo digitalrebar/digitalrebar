@@ -222,7 +222,7 @@ class NodesController < ApplicationController
       params.require(:deployment_id)
       params.require(:provider_id)
       unless params[:tenant_id]
-        params[:tenant_id] = @current_user.tenant_id
+        params[:tenant_id] = @current_user.current_tenant_id
       end
       validate_create(params[:tenant_id], "NODE", Node)
       hints = params[:hints] || {}

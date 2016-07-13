@@ -82,7 +82,7 @@ class NetworkRoutersController < ::ApplicationController
     params.require(:network_id)
     params.require(:address)
     unless params[:tenant_id]
-      params[:tenant_id] = @current_user.tenant_id
+      params[:tenant_id] = @current_user.current_tenant_id
     end
     # cannot create if existing 
     if network.router 

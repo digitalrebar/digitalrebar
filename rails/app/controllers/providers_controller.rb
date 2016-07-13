@@ -94,7 +94,7 @@ class ProvidersController < ApplicationController
     params.require(:type)
     params.require(:auth_details)
     unless params[:tenant_id]
-      params[:tenant_id] = @current_user.tenant_id
+      params[:tenant_id] = @current_user.current_tenant_id
     end
     validate_create(params[:tenant_id], "PROVIDER", Provider)
     @item = Provider.create!(name: params[:name],

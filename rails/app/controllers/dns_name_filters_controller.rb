@@ -55,7 +55,7 @@ class DnsNameFiltersController < ::ApplicationController
     params.require(:template)
     params.require(:name)
     unless params[:tenant_id]
-      params[:tenant_id] = @current_user.tenant_id
+      params[:tenant_id] = @current_user.current_tenant_id
     end
     validate_create(params[:tenant_id], "NETWORK", DnsNameFilter)
     DnsNameFilter.transaction do

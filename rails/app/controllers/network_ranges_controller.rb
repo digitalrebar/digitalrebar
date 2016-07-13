@@ -70,7 +70,7 @@ class NetworkRangesController < ::ApplicationController
     params.require(:first)
     params.require(:last)
     unless params[:tenant_id]
-      params[:tenant_id] = @current_user.tenant_id
+      params[:tenant_id] = @current_user.current_tenant_id
     end
     validate_create(params[:tenant_id], "NETWORK", NetworkRange)
     @range =  NetworkRange.create! params.permit(:name,

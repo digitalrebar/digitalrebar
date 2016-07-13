@@ -47,7 +47,7 @@ class GroupsController < ApplicationController
     params.require(:name)
     params[:category] = params[:category].first if params[:category].kind_of?(Array)
     unless params[:tenant_id]
-      params[:tenant_id] = @current_user.tenant_id
+      params[:tenant_id] = @current_user.current_tenant_id
     end
     validate_create(params[:tenant_id], "GROUP", Group)
     @group = Group.create! params.permit(:name, :description, :category, :tenant_id)

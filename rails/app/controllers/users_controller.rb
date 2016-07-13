@@ -101,7 +101,7 @@ class UsersController < ApplicationController
     params.require(:username)
     params.require(:email)
     unless params[:tenant_id]
-      params[:tenant_id] = @current_user.tenant_id
+      params[:tenant_id] = @current_user.current_tenant_id
     end
     params[:tenant_id] = params[:tenant_id].to_i
     unless params[:current_tenant_id]

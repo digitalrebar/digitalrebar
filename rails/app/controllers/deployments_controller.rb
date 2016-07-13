@@ -73,7 +73,7 @@ class DeploymentsController < ApplicationController
       permits = [:name,:system,:description,:tenant_id]
     end
     unless params[:tenant_id]
-      params[:tenant_id] = @current_user.tenant_id
+      params[:tenant_id] = @current_user.current_tenant_id
     end
     params.require(:name)
     validate_create(params[:tenant_id], "DEPLOYMENT", Deployment)

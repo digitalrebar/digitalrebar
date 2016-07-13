@@ -71,7 +71,7 @@ class EventSelectorsController < ApplicationController
     params.require(:event_sink_id)
     params.require(:selector)
     unless params[:tenant_id]
-      params[:tenant_id] = @current_user.tenant_id
+      params[:tenant_id] = @current_user.current_tenant_id
     end
     validate_create(params[:tenant_id], "EVENT_SELECTOR", EventSelector)
     event_sink = EventSink.find_key(params[:event_sink_id])
