@@ -14,7 +14,6 @@ type DeploymentRole struct {
 	SimpleID
 	DeploymentID int64 `json:"deployment_id"`
 	RoleID       int64 `json:"role_id"`
-	TenantID     int64 `json:"tenant_id"`
 }
 
 func (o *DeploymentRole) ApiName() string {
