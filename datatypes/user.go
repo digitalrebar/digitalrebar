@@ -2,10 +2,12 @@ package datatypes
 
 type User struct {
 	SimpleID
-	Name   string `json:"username"`
-	Email  string `json:"email"`
-	Admin  bool   `json:"is_admin"`
-	Locked bool   `json:"locked"`
+	Name            string `json:"username"`
+	Email           string `json:"email"`
+	Admin           bool   `json:"is_admin"`
+	TenantID        int64  `json:"tenant_id"`
+	CurrentTenantID int64  `json:"current_tenant_id"`
+	Locked          bool   `json:"locked"`
 }
 
 // Id returns this attrib's ID or Name as a string.

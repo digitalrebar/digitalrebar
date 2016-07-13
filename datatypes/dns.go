@@ -7,6 +7,7 @@ type DnsNameEntry struct {
 	NetworkAllocationID int64       `json:"network_allocation_id"`
 	DnsNameFilterID     int64       `json:"dns_name_filter_id"`
 	RRType              null.String `json:"rr_type"`
+	TenantID            int64       `json:"tenant_id"`
 }
 
 func (o *DnsNameEntry) ApiName() string {
@@ -20,6 +21,7 @@ type DnsNameFilter struct {
 	Priority int64  `json:"priority"`
 	Service  string `json:"service"`
 	Template string `json:"template"`
+	TenantID int64  `json:"tenant_id"`
 }
 
 func (o *DnsNameFilter) ApiName() string {

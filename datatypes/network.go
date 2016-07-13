@@ -56,6 +56,7 @@ type Network struct {
 	Category         string      `json:"category"`
 	Group            string      `json:"group"`
 	PolicyBasedRoute null.String `json:"pbr"`
+	TenantID         int64       `json:"tenant_id"`
 }
 
 func (o *Network) ApiName() string {
@@ -82,8 +83,9 @@ type NetworkRange struct {
 	First string `json:"first"`
 	// The last address that can be callocated from this NetworkRange.
 	// It must be of the same type and in the same subnet as the First address.
-	Last string `json:"last"`
-	Name string `json:"name"`
+	Last     string `json:"last"`
+	Name     string `json:"name"`
+	TenantID int64  `json:"tenant_id"`
 }
 
 func (o *NetworkRange) ApiName() string {
@@ -126,6 +128,7 @@ type NetworkAllocation struct {
 	NodeID         null.Int `json:"node_id"`
 	NetworkID      null.Int `json:"network_id"`
 	NetworkRangeID null.Int `json:"network_range_id"`
+	TenantID       int64    `json:"tenant_id"`
 }
 
 func (o *NetworkAllocation) ApiName() string {
@@ -137,6 +140,7 @@ func (o *NetworkAllocation) ApiName() string {
 type NetworkRouter struct {
 	AddressID
 	NetworkID int64 `json:"network_id"`
+	TenantID  int64 `json:"tenant_id"`
 	Pref      int64 `json:"pref"`
 }
 

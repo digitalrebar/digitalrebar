@@ -30,6 +30,7 @@ type NodeRole struct {
 	NodeError bool  `json:"node_error"`
 	Cohort    int64 `json:"cohort"`
 	RunCount  int64 `json:"run_count"`
+	TenantID  int64 `json:"tenant_id"`
 }
 
 func (o *NodeRole) ApiName() string {
