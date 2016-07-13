@@ -184,7 +184,7 @@ class Deployment < ActiveRecord::Base
       # Delete all the deployment_roles in this deployment
       deployment_roles.destroy_all
       # Destroy the phantom node for this deployment
-      Node.destroy_all(name: "#{self.name}-phantom.internal.local")
+      Node.destroy_all(deployment_id: self.id, system: true, variant: "phantom")
       # Move the rest of the nodes to the parent deployment.
       nodes.each do |n|
         n.update!(deployment_id: parent_id)
