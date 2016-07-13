@@ -1,7 +1,7 @@
 #!/bin/bash
 (
     if ! kv_get digitalrebar/private/api/keys/rebar_key >/etc/rebar-data/rebar-key.sh; then
-        export REBAR_KEY="rebar:rebar1" # GREG: THIS IS TEMPORARY
+        export REBAR_KEY="rebar:rebar1"
         touch /tmp/.do_config
     else
         rm /tmp/.do_config || :
