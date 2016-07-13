@@ -5,8 +5,8 @@ type User struct {
 	Name            string `json:"username"`
 	Email           string `json:"email"`
 	Admin           bool   `json:"is_admin"`
-	TenantID        int64  `json:"tenant_id"`
-	CurrentTenantID int64  `json:"current_tenant_id"`
+	TenantID        int64  `json:"tenant_id,omitempty"`
+	CurrentTenantID int64  `json:"current_tenant_id,omitempty"`
 	Locked          bool   `json:"locked"`
 }
 

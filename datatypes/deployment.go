@@ -30,7 +30,7 @@ type Deployment struct {
 	// The ID of the deployment that is the parent of this one.
 	ParentID null.Int `json:"parent_id"`
 	// The ID of the owning tenant
-	TenantID null.Int `json:"tenant_id"`
+	TenantID int64 `json:"tenant_id,omitempty"`
 }
 
 func (o *Deployment) ApiName() string {

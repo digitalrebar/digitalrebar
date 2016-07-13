@@ -11,7 +11,7 @@ type Provider struct {
 	// Type descripes what type of provider this is.  Among other things, it is used
 	// by the API to figure out how calls to it should be handled.
 	Type     string `json:"type"`
-	TenantID int64  `json:"tenant_id"`
+	TenantID int64  `json:"tenant_id,omitempty"`
 }
 
 func (o *Provider) ApiName() string {

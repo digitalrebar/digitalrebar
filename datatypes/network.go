@@ -56,7 +56,7 @@ type Network struct {
 	Category         string      `json:"category"`
 	Group            string      `json:"group"`
 	PolicyBasedRoute null.String `json:"pbr"`
-	TenantID         int64       `json:"tenant_id"`
+	TenantID         int64       `json:"tenant_id,omitempty"`
 }
 
 func (o *Network) ApiName() string {
@@ -85,7 +85,7 @@ type NetworkRange struct {
 	// It must be of the same type and in the same subnet as the First address.
 	Last     string `json:"last"`
 	Name     string `json:"name"`
-	TenantID int64  `json:"tenant_id"`
+	TenantID int64  `json:"tenant_id,omitempty"`
 }
 
 func (o *NetworkRange) ApiName() string {
@@ -128,7 +128,7 @@ type NetworkAllocation struct {
 	NodeID         null.Int `json:"node_id"`
 	NetworkID      null.Int `json:"network_id"`
 	NetworkRangeID null.Int `json:"network_range_id"`
-	TenantID       int64    `json:"tenant_id"`
+	TenantID       int64    `json:"tenant_id,omitempty"`
 }
 
 func (o *NetworkAllocation) ApiName() string {
@@ -140,7 +140,7 @@ func (o *NetworkAllocation) ApiName() string {
 type NetworkRouter struct {
 	AddressID
 	NetworkID int64 `json:"network_id"`
-	TenantID  int64 `json:"tenant_id"`
+	TenantID  int64 `json:"tenant_id,omitempty"`
 	Pref      int64 `json:"pref"`
 }
 
