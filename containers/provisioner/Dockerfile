@@ -20,7 +20,8 @@ RUN curl -fgL -o /tmp/syslinux-6.03.tar.xz https://www.kernel.org/pub/linux/util
 RUN curl -fgL -o /tmp/syslinux-3.86.tar.xz https://www.kernel.org/pub/linux/utils/boot/syslinux/3.xx/syslinux-3.86.tar.xz
 RUN curl -fgL -o /tmp/ipxe.efi http://boot.ipxe.org/ipxe.efi
 RUN curl -fgL -o /tmp/ipxe.pxe http://boot.ipxe.org/ipxe.pxe
-RUN curl -fgL -o /tmp/busybox https://www.busybox.net/downloads/binaries/busybox-x86_64
+#RUN curl -fgL -o /tmp/busybox https://www.busybox.net/downloads/binaries/busybox-x86_64
+RUN curl -fgL -o /tmp/busybox https://s3-us-west-2.amazonaws.com/rackn-busybox/busybox
 
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 COPY start-up.sh udhcpc_config stage1_init /tmp/
