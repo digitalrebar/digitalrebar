@@ -164,6 +164,7 @@ Rebar::Application.routes.draw do
           end
           resources :user_tenant_capabilities do
             collection do
+              delete "", to: :destroy
               get 'sample'
               post 'match'
             end
