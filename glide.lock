@@ -1,19 +1,25 @@
-hash: 477868d1a27d587d6e438ead5f9d14c48b667fef0fd8651b9f2c78e165cb50e5
-updated: 2016-06-24T14:46:25.922949855-05:00
+hash: 72989ea52a261df0844299736cdcfa769676b02c2bba1982a9ac62b92a24cd6f
+updated: 2016-07-14T11:44:16.258110396-05:00
 imports:
 - name: github.com/ant0ine/go-json-rest
   version: 3a807d6d8d36e0f9175d6c292030fce09bcbb2db
   subpackages:
   - rest
   - rest/trie
+- name: github.com/boltdb/bolt
+  version: acc803f0ced151102ed51bf824f8709ebd6602bc
 - name: github.com/digitalrebar/gcfg
   version: dbdfaf2512657d28a5b98b64878b195a67698a71
   subpackages:
   - scanner
   - token
   - types
+- name: github.com/digitalrebar/go-common
+  version: ea2185ad77185d720c50205a701d6f95681cc046
+  subpackages:
+  - store
 - name: github.com/hashicorp/consul
-  version: 09cfda47ed103910a8e1af76fa378a7e6acd5310
+  version: 548fb6eb3f407147e20d923521296e0500f57ef0
   subpackages:
   - api
 - name: github.com/hashicorp/go-cleanhttp
@@ -28,9 +34,13 @@ imports:
 - name: github.com/willf/bitset
   version: 2e6e8094ef4745224150c88c16191c7dceaad16f
 - name: golang.org/x/net
-  version: bc3663df0ac92f928d419e31e0d2af22e683a5a2
+  version: a728288923b47049b2ce791836767ffbe964a5bd
   subpackages:
   - ipv4
   - bpf
   - internal/iana
+- name: golang.org/x/sys
+  version: 20457ee8ea8546920d3f4e19e405da45250dc5a5
+  subpackages:
+  - unix
 devImports: []

@@ -1,12 +1,14 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/digitalrebar/go-common/store"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,11 +21,13 @@ func get_frontend() (*Frontend, http.Handler) {
 	cfg.Network.Port = 6755
 	cfg.Network.Username = "fred"
 	cfg.Network.Password = "rules"
-	fs, err := NewFileStore("./database.test.json")
+	ms := store.NewSimpleMemoryStore()
+	buf, err := ioutil.ReadFile("./database.test.json")
 	if err != nil {
 		log.Panic(err)
 	}
-	the_fe := NewFrontend("", "", "", cfg, fs)
+	ms.Save("subnets", buf)
+	the_fe := NewFrontend("", "", "", cfg, ms)
 	handler := the_fe.RunServer(false, "BASIC")
 	return the_fe, handler
 }

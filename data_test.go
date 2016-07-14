@@ -1,11 +1,13 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"testing"
 
+	"github.com/digitalrebar/go-common/store"
 	dhcp "github.com/krolaw/dhcp4"
 	"github.com/stretchr/testify/assert"
 	"github.com/willf/bitset"
@@ -29,11 +31,16 @@ func addNewSubnet(dt *DataTracker, name, subnet string) (s *Subnet, err error, c
 }
 
 func simpleSetup() (dt *DataTracker, s *Subnet) {
-	store, err := NewFileStore("./database.test.json")
+	ms := store.NewSimpleMemoryStore()
+	buf, err := ioutil.ReadFile("./database.test.json")
 	if err != nil {
 		log.Panic(err)
 	}
-	dt = NewDataTracker(store)
+	ms.Save("subnets", buf)
+	if err != nil {
+		log.Panic(err)
+	}
+	dt = NewDataTracker(ms)
 	s, _, _ = addNewSubnet(dt, "fred", "192.168.128.0/24")
 	dt.AddSubnet(s)
 	return
@@ -162,11 +169,16 @@ func TestReplaceSubnetMustNotOverlap(t *testing.T) {
 }
 
 func TestFindSubnetEmpty(t *testing.T) {
-	store, err := NewFileStore("./database.test.json")
+	ms := store.NewSimpleMemoryStore()
+	buf, err := ioutil.ReadFile("./database.test.json")
 	if err != nil {
 		log.Panic(err)
 	}
-	dt := NewDataTracker(store)
+	ms.Save("subnets", buf)
+	if err != nil {
+		log.Panic(err)
+	}
+	dt := NewDataTracker(ms)
 
 	s := dt.FindSubnet(net.ParseIP("0.0.0.0"))
 	assert.Nil(t, s, "Expected nil subnets")

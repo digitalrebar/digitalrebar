@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/digitalrebar/go-common/store"
 )
 
 type NextServer struct {
@@ -26,7 +27,7 @@ type Frontend struct {
 	cfg      Config
 }
 
-func NewFrontend(cert_pem, key_pem, base_pem string, cfg Config, store LoadSaver) *Frontend {
+func NewFrontend(cert_pem, key_pem, base_pem string, cfg Config, store store.SimpleStore) *Frontend {
 	fe := &Frontend{
 		data_dir: data_dir,
 		cert_pem: cert_pem,
