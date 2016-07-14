@@ -5,6 +5,8 @@ import (
 	"log"
 
 	"github.com/digitalrebar/gcfg"
+	"github.com/digitalrebar/go-common/store"
+	consul "github.com/hashicorp/consul/api"
 )
 
 type Config struct {
@@ -40,12 +42,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var bs LoadSaver
+	var bs store.SimpleStore
 	switch backingStore {
 	case "file":
-		bs, err = NewFileStore(data_dir + "/database.json")
+		bs, err = store.NewSimpleLocalStore(data_dir)
 	case "consul":
-		bs, err = NewConsulStore(data_dir)
+		var c *consul.Client
+		c, err = consul.NewClient(consul.DefaultConfig())
+		if err == nil {
+			bs, err = store.NewSimpleConsulStore(c, data_dir)
+		}
 	default:
 		log.Fatalf("Unknown backing store type %s", backingStore)
 	}

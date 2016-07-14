@@ -1,22 +1,24 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 	"net"
 	"net/http"
 	"sync"
 
+	"github.com/digitalrebar/go-common/store"
 	dhcp "github.com/krolaw/dhcp4"
 )
 
 type DataTracker struct {
 	sync.Mutex `json:"-"`
-	store      LoadSaver          `json:"-"`
+	store      store.SimpleStore  `json:"-"`
 	Subnets    map[string]*Subnet // subnet -> SubnetData
 }
 
-func NewDataTracker(store LoadSaver) *DataTracker {
+func NewDataTracker(store store.SimpleStore) *DataTracker {
 	return &DataTracker{
 		Subnets: make(map[string]*Subnet),
 		store:   store,
@@ -126,13 +128,24 @@ func (ipnet *MyIPNet) UnmarshalText(text []byte) error {
  * Data storage/retrieval functions
  */
 func (dt *DataTracker) load_data() {
-	if err := dt.store.Load(dt); err != nil {
+	buf, err := dt.store.Load("subnets")
+	if _, ok := err.(store.NotFound); ok {
+		return
+	}
+	if err != nil {
 		log.Panicf("Unable to load data from backing store: %s", err)
+	}
+	if err := json.Unmarshal(buf, &dt); err != nil {
+		log.Panicf("Unable to unmarshal data from backing store: %s", err)
 	}
 }
 
 func (dt *DataTracker) save_data() {
-	if err := dt.store.Save(dt); err != nil {
+	buf, err := json.Marshal(dt)
+	if err != nil {
+		log.Panicf("Unable to marshal data to save to backing store: %s", err)
+	}
+	if err := dt.store.Save("subnets", buf); err != nil {
 		log.Panicf("Unable to save data to backing store: %s", err)
 	}
 }
