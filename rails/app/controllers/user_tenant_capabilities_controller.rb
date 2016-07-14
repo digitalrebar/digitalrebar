@@ -87,8 +87,24 @@ class UserTenantCapabilitiesController < ::ApplicationController
   end
 
   def destroy
-    @cap = UserTenantCapability.find_key(params[:id])
-    validate_action(@cap.tenant_id, "USER_TENANT_CAPABILITY", UserTenantCapability, params[:id], "DESTROY")
+    if params[:id]
+      @cap = UserTenantCapability.find_key(params[:id])
+    else
+      c = Capability.find_key params[:capability_id]
+      params[:capability_id] = c.id
+      t = Tenant.find_key params[:tenant_id]
+      params[:tenant_id] = t.id
+      u = User.find_key params[:user_id]
+      params[:user_id] = u.id
+
+      caps = UserTenantCapability.where(tenant_id: t.id, capability_id: c.id, user_id: u.id)
+      if caps.empty?
+	raise RebarNotFoundError.new(t.id, UserTenantCapability)
+      else
+        @cap = caps[0]
+      end
+    end
+    validate_action(@cap.tenant_id, "USER_TENANT_CAPABILITY", UserTenantCapability, @cap.id, "DESTROY")
     @cap.destroy
     respond_to do |format|
       format.html { redirect_to :action=>:index }
