@@ -42,6 +42,9 @@ EOF
     fi
 }
 
+# Get machine from consul
+MACHINE_KEY=$(kv_get digitalrebar/private/api/keys/machine_key)
+
 SLEDGE_ARGS=("rootflags=loop"
              "root=live:/sledgehammer.iso"
              "rootfstype=auto"
@@ -53,7 +56,7 @@ SLEDGE_ARGS=("rootflags=loop"
              "provisioner.web=$PROV_WEB"
              "stage2=$PROV_WEB/stage2.img"
              "rebar.web=${EXTERNAL_REBAR_ENDPOINT}"
-             "rebar.install.key=${REBAR_KEY}"
+             "rebar.install.key=${MACHINE_KEY}"
             )
 cat > "$TFTPROOT/default.ipxe" <<EOF
 #!ipxe

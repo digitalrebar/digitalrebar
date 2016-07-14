@@ -26,6 +26,7 @@ install-*.log
 /compose/config-dir/api/config/domain.json
 /compose/config-dir/consul/server-advertise.json
 /compose/config-dir/rev-proxy/saml-dir/idpcert.crt
+/compose/config-dir/webproxy/squid.user.conf
 /compose/tag
 /compose/data-dir
 
