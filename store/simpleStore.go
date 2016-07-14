@@ -155,6 +155,9 @@ func (b *SimpleConsulStore) Keys() ([]string, error) {
 
 func (b *SimpleConsulStore) Load(key string) ([]byte, error) {
 	val, _, err := b.kv.Get(b.finalKey(key), nil)
+	if val == nil {
+		return nil, NotFound(key)
+	}
 	return val.Value, err
 }
 
