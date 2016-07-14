@@ -91,3 +91,13 @@ func (u *User) CompletePasswordReset(tok *PasswordChangeToken, newPassword strin
 	}
 	return nil
 }
+
+// Capabilities fetches the capability map for this user.
+func (u *User) Capabilities() (*map[string]interface{}, error) {
+	buf, err := u.client().request("GET", urlFor(u, "capabilities"), nil)
+	if err != nil {
+		return nil, err
+	}
+	res := &map[string]interface{}{}
+	return res, json.Unmarshal(buf, res)
+}

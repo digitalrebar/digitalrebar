@@ -48,6 +48,7 @@ type EventSink struct {
 	Username      string `json:"username"`
 	Authenticator string `json:"authenticator"`
 	Notes         string `json:"notes"`
+	TenantID      int64  `json:"tenant_id,omitempty"`
 }
 
 func (o *EventSink) ApiName() string {
@@ -57,6 +58,7 @@ func (o *EventSink) ApiName() string {
 type EventSelector struct {
 	SimpleID
 	EventSinkID int64                  `json:"event_sink_id"`
+	TenantID    int64                  `json:"tenant_id,omitempty"`
 	Selector    map[string]interface{} `json:"selector"`
 }
 

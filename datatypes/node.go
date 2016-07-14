@@ -21,8 +21,8 @@ type Node struct {
 	//    * "<operating system>-install" for booting an OS install.
 	//    * "sledgehammer" for booting to our discovery/inventory environment
 	Bootenv string `json:"bootenv"`
-        // Access IP
-        CtrlAddr     string        `json:"node-control-address"`
+	// Access IP
+	CtrlAddr string `json:"node-control-address"`
 	// The deployment that this Node is currently a member of.
 	DeploymentID int64 `json:"deployment_id"`
 	Order        int64 `json:"order"`
@@ -42,6 +42,7 @@ type Node struct {
 	OsFamily string `json:"os_family"`
 	// The ID of the provider that is responsible for node provisioning.
 	ProviderID int64 `json:"provider_id"`
+	TenantID   int64 `json:"tenant_id,omitempty"`
 }
 
 func (o *Node) ApiName() string {

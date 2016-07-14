@@ -15,6 +15,24 @@ func init() {
 	tree := makeCommandTree(singularName, maker)
 	tree.AddCommand(
 		&cobra.Command{
+			Use:   "capabilities [id]",
+			Short: "Get the capabilities of this user",
+			Run: func(c *cobra.Command, args []string) {
+				if len(args) != 1 {
+					log.Fatalf("%v requires 1 arguments", c.UseLine())
+				}
+				obj := &api.User{}
+				if err := session.Fetch(obj, args[0]); err != nil {
+					log.Fatalln("Unable to fetch user from the server", err)
+				}
+				capmap, err := obj.Capabilities()
+				if err != nil {
+					log.Fatalln("Unable to get capabilities", err)
+				}
+				fmt.Println(prettyJSON(capmap))
+			},
+		},
+		&cobra.Command{
 			Use:   "password [id] to [password]",
 			Short: "Set a users password to [password]",
 			Run: func(c *cobra.Command, args []string) {
