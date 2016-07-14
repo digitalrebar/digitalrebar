@@ -24,7 +24,7 @@ class CapabilitiesController < ::ApplicationController
     objs = []
     ok_params = params.permit(attrs)
     objs = Capability.where(ok_params) if !ok_params.empty?
-    objs = [] unless validate_capability(@current_user.current_tenant_id, "CAPABILITY_READ")
+    objs = [] unless capable(@current_user.current_tenant_id, "CAPABILITY_READ")
     respond_to do |format|
       format.html {}
       format.json { render api_index Capability, objs }
@@ -41,7 +41,7 @@ class CapabilitiesController < ::ApplicationController
   end
 
   def index
-    if validate_capability(@current_user.current_tenant_id, "CAPABILITY_READ")
+    if capable(@current_user.current_tenant_id, "CAPABILITY_READ")
       @capabilities = Capability.all
     else
       @capabilities = []

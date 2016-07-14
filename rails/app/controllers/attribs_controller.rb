@@ -40,7 +40,7 @@ class AttribsController < ApplicationController
       cap, tid = build_capability_name(target)
       if cap
 	@list = []
-        @list = target.attribs if validate_capability(tid, "#{cap}_READ")
+        @list = target.attribs if capable(tid, "#{cap}_READ")
       else
         @list = Attrib.all
       end

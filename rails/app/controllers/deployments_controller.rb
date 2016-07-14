@@ -124,7 +124,7 @@ class DeploymentsController < ApplicationController
   def status 
     deployment = Deployment.find_key params[:id] rescue nil
     if deployment
-      unless validate_capability(deployment.tenant_id, "DEPLOYMENT_READ")
+      unless capable(deployment.tenant_id, "DEPLOYMENT_READ")
         deployment = nil
       end
     end

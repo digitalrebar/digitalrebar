@@ -219,13 +219,13 @@ class ApplicationController < ActionController::Base
     }
   end
 
-  # formats API json output 
+  # formats API json output
   # used for json output that is not mapped to a Rebar model
   def api_result(json)
     return {json: json, content_type: cb_content_type("json", "result") }
   end
 
-  # formats API json output 
+  # formats API json output
   # used for json results output that is not mapped to a Rebar model
   def api_array(json)
     return {:json=>json, :content_type=>cb_content_type("json", "array") }
@@ -409,7 +409,7 @@ class ApplicationController < ActionController::Base
 
       @current_user = User.create_with(email: email).find_or_create_by(username: username)
       # Update the capabiilties
-      if @current_user.is_admin != wants_admin 
+      if @current_user.is_admin != wants_admin
         @current_user.is_admin = wants_admin
         @current_user.save
         @current_user = User.find_by(username: username)
@@ -435,19 +435,19 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  #
-  # Since we have the user, just get the cap map (don't parse the sent caps)
-  #
-  # Is CAP in tenant tree.
-  #
-  def validate_capability(t_id, cap)
-    cap_map = @current_user.cap_map
+  # See if the current user has this capability in the given tenant id
+  def capable(t_id, cap)
+    @current_user.capable(cap, t_id)
+  end
 
-    while cap_map[t_id] do
-      return true if cap_map[t_id]["capabilities"].include? cap
-      t_id = cap_map[t_id]["parent"] rescue nil
-    end
-    false
+  # A little visibility helper for lists
+  def visible(klass, cap)
+    klass.visible(cap, @current_user.id)
+  end
+
+  # Try to find an object filtered by capability
+  def find_key_cap(klass, key, cap)
+    klass.find_key_cap(key, cap, @current_user.id)
   end
 
   #
@@ -487,13 +487,9 @@ class ApplicationController < ActionController::Base
 
   # Validation helpers
   def validate_action(t_id, cap_base, klass, key, action)
-    unless validate_capability(t_id, "#{cap_base}_#{action}")
-      if validate_capability(t_id, "#{cap_base}_READ")
-        raise RebarForbiddenError.new(key, klass)
-      else
-        raise RebarNotFoundError.new(key, klass)
-      end
-    end
+    return true if capable(t_id, "#{cap_base}_#{action}")
+    raise RebarForbiddenError.new(key, klass) if capable(t_id, "#{cap_base}_READ")
+    raise RebarNotFoundError.new(key, klass)
   end
 
   def validate_update(t_id, cap_base, klass, key)
@@ -501,15 +497,11 @@ class ApplicationController < ActionController::Base
   end
 
   def validate_read(t_id, cap_base, klass, key)
-    unless validate_capability(t_id, "#{cap_base}_READ")
-      raise RebarNotFoundError.new(key, klass)
-    end
+    raise RebarNotFoundError.new(key, klass) unless capable(t_id, "#{cap_base}_READ")
   end
 
   def validate_create(t_id, cap_base, klass)
-    unless validate_capability(t_id, "#{cap_base}_CREATE")
-      raise RebarForbiddenError.new("new", klass)
-    end
+    raise RebarForbiddenError.new("new", klass) unless capable(t_id, "#{cap_base}_CREATE")
   end
 
   def validate_destroy(t_id, cap_base, klass, key)
@@ -517,21 +509,8 @@ class ApplicationController < ActionController::Base
   end
 
   def validate_match(ok_params, t_key, cap_base, klass)
-    objs = []
-    if !ok_params.empty?
-      t_ids = build_tenant_list("#{cap_base}_READ")
-      if ok_params[t_key]
-        if t_ids.include? ok_params[t_key]
-          objs = klass.where(ok_params)
-        else
-          objs = []
-        end
-      else
-        ok_params[t_key] = t_ids
-        objs = klass.where(ok_params)
-      end
-    end
-    objs
+    return klass.where("false") if ok_params.empty?
+    visible(klass, cap_base+ "_READ").where(ok_params)
   end
 
 end

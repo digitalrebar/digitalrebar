@@ -16,7 +16,7 @@
 require 'yaml'
 require 'kwalify'
 class Attrib < ActiveRecord::Base
-  
+
 
   # determines default view for editing attributes in UI
   UI_RENDERER = "attribs/default"
@@ -83,6 +83,11 @@ class Attrib < ActiveRecord::Base
     res
   end
 
+  def where_jsonb
+    "{#{map.split('/').join(',')}}"
+  end
+
+
   def self.get(name, from, source=:all, committed=false)
     (name.is_a?(Attrib) ? name : Attrib.find_key(name)).get(from, source,committed)
   end
@@ -132,10 +137,10 @@ class Attrib < ActiveRecord::Base
     end
     map.split('/').each{|s|
       break if d.nil?
-      begin 
+      begin
         d = d[s]
-      rescue 
-        Rails.logger.warn("Attrib: Cannot drill into attrib data. unexpected default/value pattern.  Source: #{from_orig.inspect}, Value: #{d.inspect}")     
+      rescue
+        Rails.logger.warn("Attrib: Cannot drill into attrib data. unexpected default/value pattern.  Source: #{from_orig.inspect}, Value: #{d.inspect}")
         d = d
       end
     }

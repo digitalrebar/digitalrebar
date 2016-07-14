@@ -81,7 +81,7 @@ class NetworkAllocationsController < ::ApplicationController
   def show
     @allocation = NetworkAllocation.find_key(params[:id]) rescue nil
     if @allocation
-      @allocation = nil unless validate_capability(@allocation.tenant_id, "NETWORK_READ")
+      @allocation = nil unless capable(@allocation.tenant_id, "NETWORK_READ")
     end
     respond_to do |format|
       format.html {

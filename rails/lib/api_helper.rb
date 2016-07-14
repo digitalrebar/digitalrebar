@@ -1,16 +1,16 @@
-# Copyright 2013, Dell 
-# 
-# Licensed under the Apache License, Version 2.0 (the "License"); 
-# you may not use this file except in compliance with the License. 
-# You may obtain a copy of the License at 
-# 
-#  http://www.apache.org/licenses/LICENSE-2.0 
-# 
-# Unless required by applicable law or agreed to in writing, software 
-# distributed under the License is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-# See the License for the specific language governing permissions and 
-# limitations under the License. 
+# Copyright 2013, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 # Extend RecordNotFound to let us attach some useful error to the exception.
 module ActiveRecord
@@ -19,7 +19,7 @@ module ActiveRecord
   end
 end
 
-# This class AUTOMATICALLY extends the ActiveRecord base class 
+# This class AUTOMATICALLY extends the ActiveRecord base class
 # so that we can add AR helpers for Rebar
 module ApiHelper
 #/lib/api_helper.rb
@@ -45,6 +45,37 @@ module ApiHelper
         e.rebar_key = key
         raise e
       end
+    end
+
+    def find_key_cap(key, cap_name, user_id)
+      visible(cap_name, user_id).find_key(key)
+    end
+
+    def visible (cap_name, user_id)
+      if !Capability.exists?(name: cap_name)
+        # For now, if there is no capability, then there is no visible filter.
+        return all
+      end
+      case self.table_name
+      when "tenants"
+        # Tenants just look up by the tenant ID itself
+        return where(["id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?)",cap_name, user_id])
+      when "deployment_roles"
+        # deployment_roles use their deployment
+        return where(["deployment_id in (select id from deployments where tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?))",cap_name, user_id])
+      when "hammers"
+        # Hammers use their node
+        return where(["node_id in (select id from nodes where tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?))",cap_name, user_id])
+      when "runs"
+      # Runs use their node
+        return where(["node_id in (select id from nodes where tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?))",cap_name, user_id])
+      end
+      if columns_hash.has_key?("tenant_id")
+        # Anything with a tenant id should respond to this rule.
+        return where(["tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?)",cap_name, user_id])
+      end
+      Rails.logger.warn("No idea how to handle visibility checking for #{self.name}, not showing anything")
+      where('false')
     end
 
     TRANSACTION_MAX_RETRIES = 3

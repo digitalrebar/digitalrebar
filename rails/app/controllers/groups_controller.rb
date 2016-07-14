@@ -18,7 +18,7 @@ class GroupsController < ApplicationController
   def index
     @list = if params.has_key? :node_id
       n = Node.find_key params[:node_id]
-      if validate_capability(n.tenant_id, "NODE_READ")
+      if capable(n.tenant_id, "NODE_READ")
         n.groups.to_a
       else
         []

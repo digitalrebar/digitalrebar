@@ -33,14 +33,14 @@ class RolesController < ApplicationController
   def index
     @list = if params.include? :deployment_id
               d = Deployment.find_key(params[:deployment_id])
-	      if validate_capability(d.tenant_id, "DEPLOYMENT_READ")
+	      if capable(d.tenant_id, "DEPLOYMENT_READ")
                 r = d.roles.to_a
 	      else
 		r = []
 	      end
             elsif params.include? :node_id
               n = Node.find_key(params[:node_id])
-	      if validate_capability(n.tenant_id, "NODE_READ")
+	      if capable(n.tenant_id, "NODE_READ")
                 r = n.roles.to_a
 	      else
 		r = []

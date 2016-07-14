@@ -26,7 +26,17 @@ class NodesController < ApplicationController
     attrs = Node.attribute_names.map{|a|a.to_sym}
     objs = []
     ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "NODE", Node)
+    mv = Node.params_to_mv(params)
+    objs = case
+           when ok_params.empty? && mv.empty?
+             Node.where('false')
+           when ok_params.empty? && !mv.empty?
+             visible(Node, "NODE_READ").where_jsonb(mv)
+           when mv.empty? && !ok_params.empty?
+             visible(Node, "NODE_READ").where(ok_params)
+           else
+             visible(Node, "NODE_READ").where(ok_params).where_jsonb(mv)
+           end
     respond_to do |format|
       format.html {}
       format.json { render api_index Node, objs }
