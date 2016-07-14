@@ -81,7 +81,7 @@ class ApplicationController < ActionController::Base
     j = model.column_defaults.reject{|k,v| /(^id)|_(id|at)$/ =~ k}
     api_show(j,model)
   end
-    
+
   # Given an object and list of permitted object attributes to update, extract the
   # JSON patch that should be in the request body, apply it to the object cast as a
   # JSON blob, and update the permitted attribs of the actual object.
@@ -127,8 +127,35 @@ class ApplicationController < ActionController::Base
       json[:backtrace]=e.backtrace
     end
     { :json => json,
-      :content_type=>cb_content_type(e.rebar_key, "error"),
       :status => :not_found
+    }
+  end
+
+  def api_conflict_error(e)
+    json = {}
+    json[:status] = 409
+    if (e.rebar_key rescue false)
+      json[:message]=I18n.t('api.not_found', :id=>e.rebar_key, :type=>type2name(e.rebar_model))
+    else
+      json[:message]=e.message
+      json[:backtrace]=e.backtrace
+    end
+    { :json => json,
+      :status => 409
+    }
+  end
+
+  def api_forbidden(e)
+    json = {}
+    json[:status] = 403
+    if e.rebar_key
+      json[:message]=I18n.t('api.not_found', :id=>e.rebar_key, :type=>type2name(e.rebar_model))
+    else
+      json[:message]=e.message
+      json[:backtrace]=e.backtrace
+    end
+    { :json => json,
+      :status => :forbidden
     }
   end
 
@@ -272,11 +299,23 @@ class ApplicationController < ActionController::Base
 
   def render_error(exception)
     @error = exception
+    Rails.logger.debug("Failed: #{@error.message}")
+    Rails.logger.debug(@error.backtrace)
     case
-    when @error.is_a?(ActiveRecord::RecordNotFound)
+    when @error.is_a?(ActiveRecord::RecordNotFound), @error.is_a?(RebarNotFoundError)
       respond_to do |format|
         format.html { render :status => 404 }
         format.json { render api_not_found(@error) }
+      end
+    when @error.is_a?(ActiveRecord::RecordNotUnique), @error.is_a?(PG::UniqueViolation)
+      respond_to do |format|
+        format.html { render :status => 409 }
+        format.json { render api_conflict_error(@error) }
+      end
+    when @error.is_a?(RebarForbiddenError)
+      respond_to do |format|
+        format.html { render :status => 403 }
+        format.json { render api_forbidden(@error) }
       end
     when @error.is_a?(ActiveRecord::RecordInvalid)
       Rails.logger.error("Failed: #{@error.message}")
@@ -363,8 +402,8 @@ class ApplicationController < ActionController::Base
       Rails.logger.info("headers['HTTP_ORIGIN'] = #{request.headers["HTTP_ORIGIN"]}")
 
       email = "#{username}@internal.local"
-      if username =~ /@/ 
-	email = username
+      if username =~ /@/
+        email = username
         username = username.split("@")[0]
       end
 
@@ -372,14 +411,19 @@ class ApplicationController < ActionController::Base
       # Update the capabiilties
       if @current_user.is_admin != wants_admin 
         @current_user.is_admin = wants_admin
-	@current_user.save
+        @current_user.save
         @current_user = User.find_by(username: username)
       end
       session[:digest_user] = username
       true
-    when current_user then authenticate_user!
-    when digest_request? then digest_auth!
-    when request.path == '/api/license' then true  # specialized path for license & URL validation
+    when current_user
+      val = authenticate_user!
+      @current_user = current_user if val
+      val
+    when digest_request?
+      digest_auth!
+    when request.path == '/api/license'
+      true  # specialized path for license & URL validation
     when (request.local? ||
           (/^::ffff:127\.0\.0\.1$/ =~ request.remote_ip)) &&
         File.exists?("/tmp/.rebar_in_bootstrap") &&
@@ -389,6 +433,105 @@ class ApplicationController < ActionController::Base
     else
       do_auth!
     end
+  end
+
+  #
+  # Since we have the user, just get the cap map (don't parse the sent caps)
+  #
+  # Is CAP in tenant tree.
+  #
+  def validate_capability(t_id, cap)
+    cap_map = @current_user.cap_map
+
+    while cap_map[t_id] do
+      return true if cap_map[t_id]["capabilities"].include? cap
+      t_id = cap_map[t_id]["parent"] rescue nil
+    end
+    false
+  end
+
+  #
+  # Given a capabilitiy, create a list of tenant ids that can be operated on.
+  # This is mostly for read capabilities
+  #
+  def build_tenant_list(cap, cap_map = @current_user.cap_map, t_id = @current_user.current_tenant_id)
+    self.class.build_tenant_list(cap, cap_map, t_id)
+  end
+
+  def self.build_tenant_list(cap, cap_map, t_id)
+    found = false
+    while cap_map[t_id] do
+      if cap_map[t_id]["capabilities"].include? cap
+        found = true
+        break
+      end
+      t_id = cap_map[t_id]["parent"]
+    end
+
+    if found
+      t_ids = [ t_id ]
+      t_ids << Tenant.where(["id IN (select child_id from all_tenant_parents where parent_id = :ten)", {ten: t_id}]).map { |x| x.id }
+      return t_ids.flatten
+    end
+
+    t = Tenant.find_by(id: t_id)
+    return [] unless t
+
+    t_ids = []
+    t.children.map {|x| x.id }.each do |nt|
+      t_ids << self.build_tenant_list(cap, cap_map, nt)
+    end
+
+    return t_ids.flatten
+  end
+
+  # Validation helpers
+  def validate_action(t_id, cap_base, klass, key, action)
+    unless validate_capability(t_id, "#{cap_base}_#{action}")
+      if validate_capability(t_id, "#{cap_base}_READ")
+        raise RebarForbiddenError.new(key, klass)
+      else
+        raise RebarNotFoundError.new(key, klass)
+      end
+    end
+  end
+
+  def validate_update(t_id, cap_base, klass, key)
+    validate_action(t_id, cap_base, klass, key, "UPDATE")
+  end
+
+  def validate_read(t_id, cap_base, klass, key)
+    unless validate_capability(t_id, "#{cap_base}_READ")
+      raise RebarNotFoundError.new(key, klass)
+    end
+  end
+
+  def validate_create(t_id, cap_base, klass)
+    unless validate_capability(t_id, "#{cap_base}_CREATE")
+      raise RebarForbiddenError.new("new", klass)
+    end
+  end
+
+  def validate_destroy(t_id, cap_base, klass, key)
+    validate_action(t_id, cap_base, klass, key, "DESTROY")
+  end
+
+  def validate_match(ok_params, t_key, cap_base, klass)
+    objs = []
+    if !ok_params.empty?
+      t_ids = build_tenant_list("#{cap_base}_READ")
+      if ok_params[t_key]
+        if t_ids.include? ok_params[t_key]
+          objs = klass.where(ok_params)
+        else
+          objs = []
+        end
+      else
+        ok_params[t_key] = t_ids
+        objs = klass.where(ok_params)
+      end
+    end
+    objs
   end
 
 end

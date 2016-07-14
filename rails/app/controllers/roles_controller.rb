@@ -32,11 +32,21 @@ class RolesController < ApplicationController
   
   def index
     @list = if params.include? :deployment_id
-              Deployment.find_key(params[:deployment_id]).roles
+              d = Deployment.find_key(params[:deployment_id])
+	      if validate_capability(d.tenant_id, "DEPLOYMENT_READ")
+                r = d.roles.to_a
+	      else
+		r = []
+	      end
             elsif params.include? :node_id
-              Node.find_key(params[:node_id]).roles
+              n = Node.find_key(params[:node_id])
+	      if validate_capability(n.tenant_id, "NODE_READ")
+                r = n.roles.to_a
+	      else
+		r = []
+	      end
             else
-              Role.all
+              Role.all.to_a
             end
     respond_to do |format|
       format.html { }
@@ -55,6 +65,7 @@ class RolesController < ApplicationController
   def create
     if params.include? :deployment_id
       @deployment = Deployment.find_key params[:deployment_id]
+      validate_create(@deployment.tenant_id, "DEPLOYMENT", Deployment, params[:deployment_id])
       role = Role.find_key params[:deployment][:role_id].to_i 
       role.add_to_deployment @deployment
       respond_to do |format|
@@ -69,6 +80,7 @@ class RolesController < ApplicationController
   def update
     Role.transaction do
       @role = Role.find_key params[:id].lock!
+      validate_update(@current_user.current_tenant_id, "ROLE", Role, params[:id])
       if request.patch?
         patch(@role, %w{description,template})
       else
@@ -87,6 +99,7 @@ class RolesController < ApplicationController
 
   def destroy
     @role = Role.find_key params[:role_id]
+    validate_destroy(@current_user.current_tenant_id, "ROLE", Role, params[:role_id])
     @role.destroy
     render api_delete @role
   end

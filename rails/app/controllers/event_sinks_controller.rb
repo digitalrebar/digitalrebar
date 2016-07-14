@@ -24,7 +24,7 @@ class EventSinksController < ApplicationController
     attrs = EventSink.attribute_names.map{|a|a.to_sym}
     objs = []
     ok_params = params.permit(attrs)
-    objs = EventSink.where(ok_params) if !ok_params.empty?
+    objs = validate_match(ok_params, :tenant_id, "EVENT_SINK", EventSink)
     respond_to do |format|
       format.html {}
       format.json { render api_index EventSink, objs }
@@ -33,7 +33,8 @@ class EventSinksController < ApplicationController
 
     # API GET /api/v2/hammers
   def index
-    @event_sinks = EventSink.all
+    t_ids = build_tenant_list("EVENT_SINK_READ")
+    @event_sinks = EventSink.where(tenant_id: t_ids)
     respond_to do |format|
       format.html { } 
       format.json { render api_index EventSink, @event_sinks }
@@ -42,6 +43,7 @@ class EventSinksController < ApplicationController
 
   def show
     @event_sink = EventSink.find_key(params[:id])
+    validate_read(@event_sink.tenant_id, "EVENT_SINK", EventSink, params[:id])
     respond_to do |format|
       format.html {  }
       format.json { render api_show @event_sink }
@@ -50,12 +52,14 @@ class EventSinksController < ApplicationController
 
   def update
     EventSink.transaction do
-      @event_sink= event.find_key(params[:id]).lock!
+      @event_sink = event.find_key(params[:id]).lock!
+      validate_update(@event_sink.tenant_id, "EVENT_SINK", EventSink, params[:id])
       if request.patch?
-        patch(@event_sink,%w{endpoint username authenticator})
+        patch(@event_sink,%w{endpoint username authenticator notes tenant_id})
       else
         @event_sink.update_attributes!(params.permit(:endpoint,
                                                 :username,
+					        :tenant_id,
                                                 :authenticator,
                                                 :notes))
       end
@@ -65,9 +69,14 @@ class EventSinksController < ApplicationController
 
   def create
     params.require(:endpoint)
+    unless params[:tenant_id]
+      params[:tenant_id] = @current_user.current_tenant_id
+    end
+    validate_create(params[:tenant_id], "EVENT_SINK", EventSink)
     EventSink.transaction do
       @event_sink = EventSink.create!(params.permit(:endpoint,
                                                :username,
+					       :tenant_id,
                                                :authenticator,
                                                :notes))
     end
@@ -76,6 +85,7 @@ class EventSinksController < ApplicationController
 
   def destroy
     @es = EventSink.find_key(params[:id])
+    validate_destroy(@es.tenant_id, "EVENT_SINK", EventSink, params[:id])
     @es.destroy
     render api_delete @es
   end

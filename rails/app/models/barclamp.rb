@@ -53,7 +53,7 @@ class Barclamp < ActiveRecord::Base
     raise "Barclamp.import is deprecated!"
   end
 
-  def self.import_or_update(bc)
+  def self.import_or_update(bc, tenant_id)
     Barclamp.transaction do
       raise "Barclamp metadata malformed!" unless bc['barclamp'] &&
                                                   bc['barclamp']['name'] &&
@@ -125,6 +125,7 @@ class Barclamp < ActiveRecord::Base
       bc['providers'].each do |provider|
         Rails.logger.info("Importing provider #{provider['name']} for #{barclamp.name}")
         p_obj = provider['class'].constantize.find_or_create_by!(name: provider['name'],
+								 tenant_id: tenant_id,
                                                                  description: provider['description'])
         p_obj.update_attributes!(auth_details: provider['auth_details']) if provider['auth_details']
       end if bc['providers']
@@ -248,7 +249,8 @@ class Barclamp < ActiveRecord::Base
                                barclamp_id: barclamp.id)
         end if r && role['attribs']
         role['events'].each do |event|
-          evt = EventSink.find_or_create_by!(endpoint: event['endpoint'])
+          evt = EventSink.find_or_create_by!(endpoint: event['endpoint'],
+					     tenant_id: tenant_id)
           evt_args={}
           evt_args[:username] ||= event['username']
           evt_args[:authenticator] ||= event['authenticator']
@@ -258,7 +260,8 @@ class Barclamp < ActiveRecord::Base
           event['selectors'].each do |selector|
             next if evt_selectors.any?{|sel| sel.selector == selector}
             Rails.logger.info("Registering role #{role_name} to handle event #{event['endpoint']} #{selector['event']}")
-            EventSelector.create!(event_sink_id: evt.id, selector: selector)
+            EventSelector.create!(event_sink_id: evt.id, selector: selector,
+				  tenant_id: tenant_id)
           end
         end if r && role['events']
       end if bc['roles']

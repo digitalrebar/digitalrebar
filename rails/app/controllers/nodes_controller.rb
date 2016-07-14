@@ -26,7 +26,7 @@ class NodesController < ApplicationController
     attrs = Node.attribute_names.map{|a|a.to_sym}
     objs = []
     ok_params = params.permit(attrs)
-    objs = Node.where(ok_params) if !ok_params.empty?
+    objs = validate_match(ok_params, :tenant_id, "NODE", Node)
     respond_to do |format|
       format.html {}
       format.json { render api_index Node, objs }
@@ -48,9 +48,12 @@ class NodesController < ApplicationController
             else
               Node.all
             end
+    @list = @list.to_a
+    t_ids = build_tenant_list("NODE_READ")
+    @list.delete_if { |x| !t_ids.include? x.tenant_id }
     respond_to do |format|
       format.html { @list.to_a.delete_if { |n| n.system } }
-      format.json { render api_index Node, @list.to_a }
+      format.json { render api_index Node, @list }
     end
   end
 
@@ -62,10 +65,12 @@ class NodesController < ApplicationController
 
       nodes = if params[:id]
         node = Node.find_key params[:id]
-        nodes = Node.where :id=>node.id
+        nodes = Node.where(:id=>node.id).to_a
       else
-        nodes = Node.non_system
+        nodes = Node.non_system.to_a
       end
+      t_ids = build_tenant_list("NODE_READ")
+      nodes.delete_if { |x| !t_ids.include? x.tenant_id }
       nodes.each do |n|
         state = n.state
         str = [
@@ -89,6 +94,7 @@ class NodesController < ApplicationController
 
   def show
     @node = Node.find_key params[:id]
+    validate_read(@node.tenant_id, "NODE", Node, params[:id])
     respond_to do |format|
       format.html {  } # show.html.erb
       format.json { render api_show @node }
@@ -98,9 +104,11 @@ class NodesController < ApplicationController
   # Get the addresses allocated to a node on a network.
   def addresses
     nodename = params[:node_id]
-    @node = nodename == "admin" ?  Node.admin.where(:available => true).first : Node.find_key(nodename)
+    @node = Node.find_key(nodename)
+    validate_read(@node.tenant_id, "NODE", Node, params[:node_id])
     if params[:network]
       @net = Network.find_key(params[:network])
+      validate_read(@net.tenant_id, "NETWORK", Network, params[:network])
       res = {
         "node" => @node.name,
         "network" => @net.name,
@@ -112,10 +120,12 @@ class NodesController < ApplicationController
       res = []
 
       if params[:category]
-        nets = Network.in_category(params[:category])
+        nets = Network.in_category(params[:category]).to_a
       else
-        nets = Network.all
+        nets = Network.all.to_a
       end
+      t_ids = build_tenant_list("NETWORK_READ")
+      nets.delete_if { |x| !t_ids.include? x.tenant_id }
 
       nets.each do |n|
         ips = n.node_allocations(@node)
@@ -137,10 +147,13 @@ class NodesController < ApplicationController
   def destroy
     @node = Node.find_key(params[:id] || params[:name])
     if params[:group_id]
+      validate_read(@node.tenant_id, "NODE", Node, node.id)
       g = Group.find_key params[:group_id]
+      validate_destroy(g.tenant_id, "Group", Group, params[:group_id])
       g.nodes.delete(@node) if g.nodes.include? @node
       render :text=>I18n.t('api.removed', :item=>'node', :collection=>'group')
     else
+      validate_destroy(@node.tenant_id, "NODE", Node, @node.id)
       @node.destroy
       respond_to do |format|
         format.html { redirect_to deployment_path(@node.deployment_id) }
@@ -168,27 +181,27 @@ class NodesController < ApplicationController
   end
 
   def debug
-    node_action :debug
+    node_action :debug, "UPDATE"
   end
 
   def undebug
-    node_action :undebug
+    node_action :undebug, "UPDATE"
   end
 
   def redeploy
-    node_action :redeploy!
+    node_action :redeploy!, "REDEPLOY"
   end
 
   def scrub
-    node_action :scrub!
+    node_action :scrub!, "SCRUB"
   end
 
   def propose
-    node_action :propose!
+    node_action :propose!, "PROPOSE"
   end
 
   def commit
-    node_action :commit!
+    node_action :commit!, "COMMIT"
   end
 
   # RESTfule POST of the node resource
@@ -196,6 +209,8 @@ class NodesController < ApplicationController
     if params[:group_id] and params[:node_id]
       g = Group.find_key params[:group_id]
       n = Node.find_key params[:node_id]
+      validate_read(n.tenant_id, "NODE", Node, params[:node_id])
+      validate_update(g.tenant_id, "GROUP", Group, params[:group_id])
       n.groups << g if g and n
       render :text=>I18n.t('api.added', :item=>g.name, :collection=>'node.groups')
     else
@@ -206,6 +221,10 @@ class NodesController < ApplicationController
       params.require(:name)
       params.require(:deployment_id)
       params.require(:provider_id)
+      unless params[:tenant_id]
+        params[:tenant_id] = @current_user.current_tenant_id
+      end
+      validate_create(params[:tenant_id], "NODE", Node)
       hints = params[:hints] || {}
       Rails.logger.info("Node create params: #{params.inspect}")
       default_net = nil
@@ -213,6 +232,7 @@ class NodesController < ApplicationController
         @node = Node.create!(params.permit(:name,
                                            :description,
                                            :admin,
+					   :tenant_id,
                                            :deployment_id,
                                            :provider_id,
                                            :allocated,
@@ -243,6 +263,7 @@ class NodesController < ApplicationController
   def update
     Node.transaction do
       @node = Node.find_key(params[:id]).lock!
+      validate_update(@node.tenant_id, "NODE", Node, params[:id])
       if request.patch?
         patch(@node,%w{name description target_role_id deployment_id allocated available alive bootenv})
       else
@@ -255,6 +276,7 @@ class NodesController < ApplicationController
         @node.update_attributes!(params.permit(:name,
                                                :description,
                                                :target_role_id,
+					       :tenant_id,
                                                :deployment_id,
                                                :allocated,
                                                :available,
@@ -285,8 +307,9 @@ class NodesController < ApplicationController
 
   private
 
-  def node_action(meth)
+  def node_action(meth, action)
     @node = Node.find_key(params[:id] || params[:name] || params[:node_id])
+    validate_action(@node.tenant_id, "NODE", Node, @node.id, action)
     @node.send(meth)
     render api_show @node
   end

@@ -271,7 +271,7 @@ class Node < ActiveRecord::Base
 
   def group=(group)
     Group.transaction do
-      db_group = group.is_a?(Group) ? group : Group.find_or_create_by_name({'name' => group, 'description' => group, 'category' => 'ui'})
+      db_group = group.is_a?(Group) ? group : Group.find_or_create_by_name({'name' => group, 'description' => group, 'category' => 'ui', 'tenant_id' => tenant_id})
       if db_group
         category = db_group.category
         groups.each { |g| g.nodes.delete(self) if g.category.eql?(category) }
@@ -504,6 +504,7 @@ class Node < ActiveRecord::Base
     Group.transaction do
       if groups.count == 0
         groups << Group.find_or_create_by(name: 'not_set',
+					  tenant_id: tenant_id,
                                           description: I18n.t('not_set', :default=>'Not Set'))
       end
     end

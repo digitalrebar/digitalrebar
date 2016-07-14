@@ -232,6 +232,7 @@ class Role < ActiveRecord::Base
     Rails.logger.info("Role: Trying to add #{name} to #{node.name}")
     NodeRole.safe_create!(node_id:       node.id,
                           role_id:       id,
+			  tenant_id:     node.tenant_id,
                           deployment_id: dep.id)
   end
 

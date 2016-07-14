@@ -16,14 +16,118 @@
 # The data can then be loaded with the rake db:seed (or created alongside the db with db:setup).
 ActiveRecord::Base.transaction do
 
-  u = User.find_or_create_by!(username: 'rebar', is_admin: true)
+  t = Tenant.find_or_create_by!(name: 'system', description: "Global System Tenant")
+  t.save!
+
+  # Name, description
+  caps = [
+    # Node roles are assumed to have same caps of NODE
+    [ "NODE_CREATE",          "Create Nodes" ],
+    [ "NODE_READ",            "Read Nodes" ],
+    [ "NODE_UPDATE",          "Update Nodes" ],
+    [ "NODE_DESTROY",         "Destroy Nodes" ],
+    [ "NODE_REDEPLOY",        "Redeploy Nodes" ],
+    [ "NODE_SCRUB",           "Scrub Nodes" ],
+    [ "NODE_POWER",           "Power actions on nodes" ],
+    [ "NODE_COMMIT",          "Commit nodes" ],
+    [ "NODE_PROPOSE",         "Propose nodes" ],
+
+    # Deployment roles are assumed to have same caps as DEPLOYMENT
+    [ "DEPLOYMENT_CREATE",    "Create Deployments" ],
+    [ "DEPLOYMENT_READ",      "Read Deployments" ],
+    [ "DEPLOYMENT_UPDATE",    "Update Deployments" ],
+    [ "DEPLOYMENT_DESTROY",   "Destroy Deployments" ],
+    [ "DEPLOYMENT_REDEPLOY",  "Redeploy Deployments" ],
+    [ "DEPLOYMENT_COMMIT",    "Commit Deployments" ],
+    [ "DEPLOYMENT_PROPOSE",   "Propose Deployments" ],
+    [ "DEPLOYMENT_ANNEAL",    "Anneal Deployments" ],
+    [ "DEPLOYMENT_RETRY",     "Retry Deployments" ],
+
+    [ "NETWORK_CREATE",       "Create Networks" ],
+    [ "NETWORK_READ",         "Read Networks" ],
+    [ "NETWORK_UPDATE",       "Update Networks" ],
+    [ "NETWORK_DESTROY",      "Destroy Networks" ],
+    [ "NETWORK_ALLOCATE",     "Allocate a network address" ],
+    [ "NETWORK_DEALLOCATE",   "Deallocate a network address" ],
+
+    [ "CAPABILITY_CREATE",    "Create Capabilities" ],
+    [ "CAPABILITY_READ",      "Read Capabilities" ],
+    [ "CAPABILITY_UPDATE",    "Update Capabilities" ],
+    [ "CAPABILITY_DESTROY",   "Destroy Capabilities" ],
+
+    [ "PROVIDER_CREATE",      "Create Providers" ],
+    [ "PROVIDER_READ",        "Read Providers" ],
+    [ "PROVIDER_UPDATE",      "Update Providers" ],
+    [ "PROVIDER_DESTROY",     "Destroy Providers" ],
+
+    [ "TENANT_CREATE",        "Create Tenants" ],
+    [ "TENANT_READ",          "Read Tenants" ],
+    [ "TENANT_UPDATE",        "Update Tenants" ],
+    [ "TENANT_DESTROY",       "Destroy Tenants" ],
+
+    [ "USER_CREATE",          "Create User" ],
+    [ "USER_READ",            "Read User" ],
+    [ "USER_UPDATE",          "Update User" ],
+    [ "USER_DESTROY",         "Destroy User" ],
+    [ "USER_READ_DIGEST",     "Read user digest encrypted password" ],
+    [ "USER_READ_CAPABILITIES", "Read user capabilities" ],
+
+    [ "EVENT_SELECTOR_CREATE",  "Create Event Selectors" ],
+    [ "EVENT_SELECTOR_READ",    "Read Event Selectors" ],
+    [ "EVENT_SELECTOR_UPDATE",  "Update Event Selectors" ],
+    [ "EVENT_SELECTOR_DESTROY", "Destroy Event Selectors" ],
+
+    [ "EVENT_SINK_CREATE",  "Create Event Sinks" ],
+    [ "EVENT_SINK_READ",    "Read Event Sinks" ],
+    [ "EVENT_SINK_UPDATE",  "Update Event Sinks" ],
+    [ "EVENT_SINK_DESTROY", "Destroy Event Sinks" ],
+
+    [ "USER_TENANT_CAPABILITY_ADD",       "Add Capability to User in Tenant" ],
+    [ "USER_TENANT_CAPABILITY_DESTROY",   "Remove Capability from User in Tenant" ],
+
+    [ "ATTRIB_CREATE",        "Create a new attribute" ],
+    [ "ATTRIB_DESTROY",       "Destroy an attribute" ],
+
+    [ "GROUP_CREATE",         "Create Group" ],
+    [ "GROUP_READ",           "Read Group" ],
+    [ "GROUP_UPDATE",         "Update Group" ],
+    [ "GROUP_DESTROY",        "Destroy Group" ],
+
+    [ "ROLE_CREATE",          "Create Role" ],
+    [ "ROLE_READ",            "Read Role" ],
+    [ "ROLE_UPDATE",          "Update Role" ],
+    [ "ROLE_DESTROY",         "Destroy Role" ],
+
+    [ "BARCLAMP_CREATE",      "Create Barclamp" ],
+    [ "BARCLAMP_UPDATE",      "Update Barclamp" ],
+    [ "BARCLAMP_DESTROY",     "Destroy Barclamp" ],
+
+    [ "MACHINE_CREATE",       "Create Machines Only" ],
+    [ "MACHINE_ACCOUNT",      "Modify myself only" ]
+  ]
+  caps.each do |c|
+    cap = Capability.find_or_create_by!(name: c[0], description: c[1], source: "rebar-api")
+    cap.save!
+  end
+
+  u = User.find_or_create_by!(username: 'rebar', is_admin: true, tenant_id: t.id, current_tenant_id: t.id)
   u.digest_password('rebar1')
   u.save!
 
+  caps.each do |c|
+    cap = Capability.find_by(name: c[0])
+    UserTenantCapability.create!(user_id: u.id, tenant_id: t.id, capability_id: cap.id)
+  end
+
   if Rails.env.development? or Rails.env.test?
-    u = User.find_or_create_by!(username: 'developer', is_admin: true)
+    u = User.find_or_create_by!(username: 'developer', is_admin: true, tenant_id: t.id, current_tenant_id: t.id)
     u.digest_password('d1g1t@l')
     u.save!
+
+    caps.each do |c|
+      cap = Capability.find_by(name: c[0])
+      UserTenantCapability.create!(user_id: u.id, tenant_id: t.id, capability_id: cap.id)
+    end
   end
 
   Nav.find_or_create_by(item: 'root', name: 'nav.root', description: 'nav.root_description', path: "main_app.root_path", order: 0, development: true)
@@ -52,6 +156,9 @@ ActiveRecord::Base.transaction do
   # utils
   Nav.find_or_create_by(item: 'utils', parent_item: 'root', name: 'nav.utils', description: 'nav.utils_description', path: "main_app.utils_path", order: 6000)
   Nav.find_or_create_by(item: 'manage_users', parent_item: 'utils', name: 'nav.manage_users', description: 'nav.manage_users_description', path: "main_app.users_path", order: 100)
+  Nav.find_or_create_by(item: 'manage_tenants', parent_item: 'utils', name: 'nav.manage_tenants', description: 'nav.manage_tenants_description', path: "main_app.tenants_path", order: 120)
+  Nav.find_or_create_by(item: 'manage_capabilities', parent_item: 'utils', name: 'nav.manage_capabilities', description: 'nav.manage_capabilities_description', path: "main_app.capabilities_path", order: 140)
+  Nav.find_or_create_by(item: 'manage_utc', parent_item: 'utils', name: 'nav.manage_utc', description: 'nav.manage_utc_description', path: "main_app.user_tenant_capabilities_path", order: 150)
   Nav.find_or_create_by(item: 'user_settings', parent_item: 'utils', name: 'nav.user_settings', description: 'nav.user_settings_description', path: "main_app.utils_settings_path", order: 200)
   Nav.find_or_create_by(item: 'jigs', parent_item: 'utils', name: 'nav.jigs', description: 'nav.jigs_description', path: "main_app.jigs_path", order: 300)
   Nav.find_or_create_by(item: 'hammers', parent_item: 'utils', name: 'nav.hammers', description: 'nav.hammers_description', path: "main_app.available_hammers_path", order: 1000)

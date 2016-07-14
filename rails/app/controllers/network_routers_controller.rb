@@ -23,7 +23,7 @@ class NetworkRoutersController < ::ApplicationController
     attrs = NetworkRouter.attribute_names.map{|a|a.to_sym}
     objs = []
     ok_params = params.permit(attrs)
-    objs = NetworkRouter.where(ok_params) if !ok_params.empty?
+    objs = validate_match(ok_params, :tenant_id, "NETWORK", NetworkRouter)
     respond_to do |format|
       format.html {}
       format.json { render api_index NetworkRouter, objs }
@@ -35,8 +35,10 @@ class NetworkRoutersController < ::ApplicationController
               network =  Network.find_key params[:network_id] || params[:network]
               (network.router ? [network.router] : [])
             else
-              NetworkRouter.all
+              NetworkRouter.all.to_a
             end
+    t_ids = build_tenant_list("NETWORK_READ")
+    @list.delete_if { |x| !t_ids.include? x.tenant_id }
     respond_to do |format|
       format.json { render api_index NetworkRouter, @list }
       format.html { }
@@ -51,6 +53,7 @@ class NetworkRoutersController < ::ApplicationController
     else
       @item = NetworkRouter.find_key params[:id]
     end
+    validate_read(@item.tenant_id, "NETWORK", NetworkRouter, @item.id)
     respond_to do |format|
       format.json { render api_show @item }
       format.html { }
@@ -68,6 +71,7 @@ class NetworkRoutersController < ::ApplicationController
     else
       @network_router = NetworkRouter.find_key(params[:id])
     end
+    validate_destroy(@network_router.tenant_id, "NETWORK", NetworkRouter, @network_router.id)
     @network_router.destroy
     render api_delete @network_router
   end
@@ -77,11 +81,15 @@ class NetworkRoutersController < ::ApplicationController
     params[:network_id] = network.id
     params.require(:network_id)
     params.require(:address)
+    unless params[:tenant_id]
+      params[:tenant_id] = @current_user.current_tenant_id
+    end
     # cannot create if existing 
     if network.router 
       render api_conflict network.router
     else
-      @router =  NetworkRouter.create! params.permit(:network_id,:address,:pref)
+      validate_create(@network.tenant_id, "NETWORK", NetworkRouter)
+      @router =  NetworkRouter.create! params.permit(:network_id,:address,:pref,:tenant_id)
       render api_show @router
     end
   end
@@ -98,10 +106,11 @@ class NetworkRoutersController < ::ApplicationController
       else
         @network_router = NetworkRouter.find_key(params[:id]).lock!
       end
+      validate_update(@network_router.tenant_id, "NETWORK", NetworkRouter, @network_router.id)
       if request.patch?
-        patch(@network_router,%w{address pref})
+        patch(@network_router,%w{address pref tenant_id})
       else
-        @network_router.update_attributes!(params.permit(:address,:pref))
+        @network_router.update_attributes!(params.permit(:address,:pref,:tenant_id))
       end
     end
     render api_show @network_router

@@ -56,6 +56,9 @@ Rebar::Application.routes.draw do
   resources :node_roles
   resources :roles
   resources :providers
+  resources :capabilities
+  resources :tenants
+  resources :user_tenant_capabilities
 
   resources :interfaces
   resources :networks do
@@ -146,6 +149,25 @@ Rebar::Application.routes.draw do
               post 'match'
             end
           end
+          resources :tenants do
+            collection do
+              get 'sample'
+              post 'match'
+            end
+            resources :users
+          end
+          resources :capabilities do
+            collection do
+              get 'sample'
+              post 'match'
+            end
+          end
+          resources :user_tenant_capabilities do
+            collection do
+              get 'sample'
+              post 'match'
+            end
+          end
           resources :providers do
             collection do
               get 'sample'
@@ -179,12 +201,6 @@ Rebar::Application.routes.draw do
             put :commit
             put :recall
             put :redeploy
-          end
-          resources :events do
-            collection do
-              get 'sample'
-              post 'match'
-            end
           end
           resources :event_selectors do
             collection do
@@ -320,6 +336,8 @@ Rebar::Application.routes.draw do
               post "lock"
               delete "lock", to: :unlock
               put "reset_password"
+              get "digest", to: :digest_password
+              get "capabilities"
             end
           end
           match 'digest' => "users#digest", as: :digest_url, via: [:get, :post, :head, :delete]

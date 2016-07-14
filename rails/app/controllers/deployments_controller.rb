@@ -23,15 +23,16 @@ class DeploymentsController < ApplicationController
     attrs = Deployment.attribute_names.map{|a|a.to_sym}
     objs = []
     ok_params = params.permit(attrs)
-    objs = Deployment.where(ok_params) if !ok_params.empty?
+    objs = validate_match(ok_params, :tenant_id, "DEPLOYMENT", Deployment)
     respond_to do |format|
       format.html {}
       format.json { render api_index Deployment, objs }
     end
   end
-  
+
   def index
-    @list = Deployment.order("id DESC").all
+    tenant_ids = build_tenant_list("DEPLOYMENT_READ")
+    @list = Deployment.where(tenant_id: tenant_ids).order("id DESC").all
     respond_to do |format|
       format.html { }
       format.json { render api_index Deployment, @list }
@@ -40,6 +41,7 @@ class DeploymentsController < ApplicationController
 
   def show
     @deployment = Deployment.find_key params[:id]
+    validate_read(@deployment.tenant_id, "DEPLOYMENT", Deployment, params[:id])
     respond_to do |format|
       format.html {
         @roles = @deployment.deployment_roles.sort{|a,b|a.role.cohort <=> b.role.cohort}
@@ -64,13 +66,17 @@ class DeploymentsController < ApplicationController
         @parent = Deployment.system
       end
       params[:parent_id] = @parent.id
-      permits = [:name,:parent_id,:description]
+      permits = [:name,:parent_id,:description,:tenant_id]
     elsif Deployment.find_by(system: true)
       raise "Only one system deployment permitted"
     else
-      permits = [:name,:system,:description]
+      permits = [:name,:system,:description,:tenant_id]
+    end
+    unless params[:tenant_id]
+      params[:tenant_id] = @current_user.current_tenant_id
     end
     params.require(:name)
+    validate_create(params[:tenant_id], "DEPLOYMENT", Deployment)
     Deployment.transaction do
       @deployment = Deployment.create!(params.permit(*permits))
       if params[:system]
@@ -86,11 +92,12 @@ class DeploymentsController < ApplicationController
   def update
     Deployment.transaction do
       @deployment = Deployment.find_key(params[:id]).lock!
+      validate_update(@deployment.tenant_id, "DEPLOYMENT", Deployment, params[:id])
       if request.patch?
-        patch(@deployment,%w{name description})
+        patch(@deployment,%w{name description tenant_id})
         render api_show @deployment
       else
-        @deployment.update_attributes!(params.permit(:name,:description))
+        @deployment.update_attributes!(params.permit(:name,:description,:tenant_id))
         respond_to do |format|
           format.html do
             redirect_to deployment_path(@deployment.id)
@@ -105,6 +112,7 @@ class DeploymentsController < ApplicationController
   
   def destroy
     @deployment = Deployment.find_key params[:id]
+    validate_destroy(@deployment.tenant_id, "DEPLOYMENT", Deployment, params[:id])
     @deployment.destroy
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment.parent_id) }
@@ -115,6 +123,11 @@ class DeploymentsController < ApplicationController
   # GET /api/status/deployments
   def status 
     deployment = Deployment.find_key params[:id] rescue nil
+    if deployment
+      unless validate_capability(deployment.tenant_id, "DEPLOYMENT_READ")
+        deployment = nil
+      end
+    end
 
     out = {
       node_roles: {},
@@ -156,7 +169,8 @@ class DeploymentsController < ApplicationController
   def monitor
 
     @deployment = Deployment.find_key params[:id]
-    raise "deployment not found" unless @deployment
+    raise RebarNotFoundError.new(params[:id], Deployment) unless @deployment
+    validate_read(@deployment.tenant_id, "DEPLOYMENT", Deployment, params[:deployment_id])
 
     respond_to do |format|
       format.html { }
@@ -242,6 +256,7 @@ class DeploymentsController < ApplicationController
 
   def anneal
     @deployment = Deployment.find_key params[:deployment_id]
+    validate_action(@deployment.tenant_id, "DEPLOYMENT", Deployment, params[:deployment_id], "ANNEAL")
     @list = NodeRole.peers_by_state(@deployment, NodeRole::TRANSITION).order("cohort,id")
     respond_to do |format|
       format.html {  }
@@ -251,6 +266,7 @@ class DeploymentsController < ApplicationController
 
   def cohorts
     @deployment = Deployment.find_key params[:deployment_id]
+    validate_read(@deplyment.tenant_id, "DEPLOYMENT", Deployment, params[:deployment_id])
     respond_to do |format|
       format.html {
         @roles = @deployment.deployment_roles.sort{|a,b|a.role.cohort <=> b.role.cohort}
@@ -266,6 +282,7 @@ class DeploymentsController < ApplicationController
 
   def propose
     @deployment = Deployment.find_key params[:deployment_id]
+    validate_action(@deployment.tenant_id, "DEPLOYMENT", Deployment, params[:deployment_id], "PROPOSE")
     @deployment.propose
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment.id) }
@@ -275,6 +292,7 @@ class DeploymentsController < ApplicationController
 
   def commit
     @deployment = Deployment.find_key params[:deployment_id]
+    validate_action(@deployment.tenant_id, "DEPLOYMENT", Deployment, params[:deployment_id], "COMMIT")
     @deployment.commit
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment.id) }
@@ -290,6 +308,7 @@ class DeploymentsController < ApplicationController
   # calls redeploy on all nodes in deployment
   def redeploy
     @deployment = Deployment.find_key(params[:id] || params[:name] || params[:deployment_id])
+    validate_action(@deployment.tenant_id, "DEPLOYMENT", Deployment, @deployment.id, "REDEPLOY")
     if @deployment
       Rails.logger.debug("Starting Deployment Redeploy for #{@deployment.name} with #{@deployment.nodes.count}")
       @deployment.nodes.each { |n| n.redeploy! }

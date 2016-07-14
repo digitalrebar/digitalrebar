@@ -51,6 +51,30 @@ class User < ActiveRecord::Base
 
   scope  :admin,              -> { where(:is_admin => true) }
 
+  has_many    :user_tenant_capabilities
+  has_many    :tenants,       -> { distinct }, through: :user_tenant_capabilities
+
+  # Build a map object for capabilities.
+  # { tenant_1_id: { cap: [], (parent: #) }, ... }
+  def cap_map
+    results = UserTenantCapability.where(user_id: self.id).joins(:tenant).joins(:capability).select("capabilities.name", :tenant_id, :parent_id).group_by(&:tenant_id)
+    nr = {}
+    results.each do |k,v|
+      parent_id = v.length > 0 ? v[0]["parent_id"] : nil
+      v.map! {|x| x["name"]}
+
+      # Make sure children are in map
+      c_ids = Tenant.where(["id IN (select child_id from all_tenant_parents where parent_id = :ten)", {ten: k}]).map { |x| x.id }
+      c_ids.each do |c_id|
+        c = Tenant.find_by(id: c_id)
+        nr[c_id] ||= { "parent" => c.parent_id, "capabilities" => [] }
+      end
+
+      nr[k] = { "parent" => parent_id, "capabilities" => v }
+    end
+    nr
+  end
+
   def self.name_column
     :username
   end

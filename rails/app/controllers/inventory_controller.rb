@@ -15,6 +15,8 @@
 #
 class InventoryController < ApplicationController
 
+  # GREG: ARGHHHH!!!! What the heck to do with this?
+
   # API GET /api/v2/inventory
   # uses the Ansible dynamic inventory format
   def index

@@ -201,6 +201,7 @@ class NodeRole < ActiveRecord::Base
       else
         res << safe_create!(node_id: target_node.id,
                             role_id: parent.id,
+                            tenant_id: target_dep.tenant_id,
                             deployment_id: target_dep.id)
         Rails.logger.info("NodeRole safe_create: Created parent noderole #{res[-1].name}")
       end

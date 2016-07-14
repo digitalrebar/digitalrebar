@@ -1,0 +1,18 @@
+= form_for :cap, :'data-remote' => true, :url => user_tenant_capability_path(cap.id), :html => { :method=>:put, :'data-type' => 'html',  :class => "formtastic" } do |f|
+  %table.data.box
+    %thead
+      %th{:width=>'10%'}= t '.name'
+      %th= t '.user_tenant_capability'
+    %tbody
+      %tr{:class => cycle(:odd,:even)}
+        %td= t '.user'
+        %td= text_field_tag :user, cap.user.username, :size=>30
+      %tr{:class => cycle(:odd,:even)}
+        %td= t '.tenant'
+        %td= text_field_tag :tenant, cap.tenant.name, :size=>30
+      %tr{:class => cycle(:odd,:even)}
+        %td= t '.capability'
+        %td= text_field_tag :capability, cap.capability.name, :size=>30
+
+  %input.button{:type => "submit", :value => t('update')}
+

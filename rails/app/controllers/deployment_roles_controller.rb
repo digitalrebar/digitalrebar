@@ -24,6 +24,9 @@ class DeploymentRolesController < ApplicationController
     objs = []
     ok_params = params.permit(attrs)
     objs = DeploymentRole.where(ok_params) if !ok_params.empty?
+    objs = objs.to_a
+    tenant_ids = build_tenant_list("DEPLOYMENT_READ")
+    objs.delete_if { |x| !tenant_ids.include? x.deployment.tenant_id }
     respond_to do |format|
       format.html {}
       format.json { render api_index DeploymentRole, objs }
@@ -32,12 +35,14 @@ class DeploymentRolesController < ApplicationController
   
   def index
     @list = if params.has_key? :deployment_id
-              Deployment.find_key(params[:deployment_id]).deployment_roles
+              Deployment.find_key(params[:deployment_id]).deployment_roles.to_a
             elsif params.has_key? :role_id
-              Role.find_key(params[:role_id]).deployment_roles
+              Role.find_key(params[:role_id]).deployment_roles.to_a
             else
-              DeploymentRole.all
+              DeploymentRole.all.to_a
             end
+    tenant_ids = build_tenant_list("DEPLOYMENT_READ")
+    @list.delete_if { |x| !tenant_ids.include? x.deployment.tenant_id }
     respond_to do |format|
       format.html { }
       format.json { render api_index DeploymentRole, @list }
@@ -53,6 +58,9 @@ class DeploymentRolesController < ApplicationController
     else
       @deployment_role = DeploymentRole.find_key params[:id]
     end
+
+    validate_read(@deployment_role.deployment.tenant_id, "DEPLOYMENT", Deployment, params[:id])
+
     respond_to do |format|
       format.html {  }
       format.json { render api_show @deployment_role }
@@ -67,6 +75,8 @@ class DeploymentRolesController < ApplicationController
     params[:deployment_id] ||= Deployment.find_key(params[:deployment]).id
     params.require(:role_id)
     params.require(:deployment_id)
+    d = Deployment.find_key(params[:deployment_id])
+    validate_create(d.tenant_id, "DEPLOYMENT", Deployment)
     @deployment_role = DeploymentRole.create! params.permit(:data, :role_id, :deployment_id)
     respond_to do |format|
       format.html { redirect_to deployment_path(params[:deployment_id]) }
@@ -80,6 +90,7 @@ class DeploymentRolesController < ApplicationController
       if request.patch?
         raise "Cannot PATCH deployment roles!"
       else
+	validate_update(@deployment_role.deployment.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id])
         params.require(:data)
         @deployment_role.data = params[:data]
         @deployment_role.save!
@@ -90,6 +101,7 @@ class DeploymentRolesController < ApplicationController
 
   def destroy
     @deployment_role = DeploymentRole.find_key(params[:id])
+    validate_destroy(@deployment_role.deployment.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id])
     @deployment_role.destroy
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment_role.deployment_id) }
@@ -101,6 +113,7 @@ class DeploymentRolesController < ApplicationController
 
   def propose
     @deployment_role = DeploymentRole.find_key params[:deployment_role_id]
+    validate_action(@deployment_role.deployment.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id], "PROPOSE")
     @deployment_role.propose
     respond_to do |format|
       format.html { redirect_to deployment_role_path(@deployment_role.id) }
@@ -110,6 +123,7 @@ class DeploymentRolesController < ApplicationController
 
   def commit
     @deployment_role = DeploymentRole.find_key params[:deployment_role_id]
+    validate_action(@deployment_role.deployment.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id], "COMMIT")
     @deployment_role.commit
     respond_to do |format|
       format.html { redirect_to deployment_role_path(@deployment_role.id) }

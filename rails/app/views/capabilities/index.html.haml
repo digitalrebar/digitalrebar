@@ -1,0 +1,26 @@
+%h1= t '.title'
+
+%table.data.box
+  %thead
+    %tr
+      %th= t '.name'
+      %th= t '.description'
+      %th= t '.source'
+      %th
+  %tbody
+    - @capabilities.each do |n|
+      %tr.node{ :class => cycle(:odd, :even) }
+        %td= link_to n.name, capability_path(n.id)
+        %td= n.description
+        %td= n.source
+        %td= link_to t('destroy'), capability_path(n.id), :class => 'button', :'onclick'=>'location.reload();', :'data-remote' => true, :method => :delete, data: { confirm: "Are you certain you want to destroy capability #{n.name}?" }
+
+  %tfoot
+    = form_for :capability, :'data-remote' => true, :url => capabilities_path(), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
+      %tr
+        %td= text_field_tag :name, "", :size=>20
+        %td= text_field_tag :description, "", :size=>20
+        %td= text_field_tag :source, "", :size=>20
+        %td
+          %input.button{:type => "submit", :value => t('.add')}
+
