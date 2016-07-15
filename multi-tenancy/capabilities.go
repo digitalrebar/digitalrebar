@@ -7,11 +7,13 @@ import (
 	"net/http"
 )
 
+// Tenant tracks the capabilities the user making this request has
 type Tenant struct {
 	Parent       int      `json:"parent"`
 	Capabilities []string `json:"capabilities"`
 }
 
+// CapabilityMap indexes Tenants by integer IDs
 type CapabilityMap map[int]Tenant
 
 // creates a new object capable of checking tenants for capabilities
@@ -23,37 +25,37 @@ func NewCapabilityMap(r *http.Request) (CapabilityMap, error) {
 	}
 
 	// unmarshal raw api json
-	var cap_map_json map[string]Tenant
-	cap_map := CapabilityMap{}
-	err := json.Unmarshal([]byte(header), &cap_map_json)
+	var capMapJson map[string]Tenant
+	capMap := CapabilityMap{}
+	err := json.Unmarshal([]byte(header), &capMapJson)
 
 	if err != nil {
 		return nil, errors.New("Invalid Header JSON")
 	}
 
 	// convert string id keys to int keys
-	for id, val := range cap_map_json {
+	for id, val := range capMapJson {
 		i, _ := strconv.Atoi(id)
-		cap_map[i] = val
+		capMap[i] = val
 	}
-	return cap_map, nil
+	return capMap, nil
 }
 
 // Checks if a tenant has a specified capability
-func (cap_map CapabilityMap) HasCapability(t_id int, cap string) bool {
-	for t_id > 0 { // if the tenant exists
+func (capMap CapabilityMap) HasCapability(tenantId int, cap string) bool {
+	for tenantId > 0 { // if the tenant exists
 		// check if the cap is in that tenant
-		for _, c := range cap_map[t_id].Capabilities {
+		for _, c := range capMap[tenantId].Capabilities {
 			if c == cap {
 				return true
 			}
 		}
 
 		// check the tenant's parent
-		t_id = cap_map[t_id].Parent
+		tenantId = capMap[tenantId].Parent
 
 		// return if the tenant doesn't exist
-		_, ok := cap_map[t_id]
+		_, ok := capMap[tenantId]
 		if !ok {
 			return false
 		}
