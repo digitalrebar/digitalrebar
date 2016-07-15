@@ -83,7 +83,7 @@ class BarclampDns::MgmtService < Service
 
     address = dne.network_allocation.address
     name, domain = dne.name.split('.', 2)
-    self.update_dns_record(service, domain, dne.rr_type, name, address.addr, action)
+    self.update_dns_record(service, domain, dne.tenant_id, dne.rr_type, name, address.addr, action)
   end
 
   def self.send_request(url, data)
@@ -103,10 +103,11 @@ class BarclampDns::MgmtService < Service
     ).patch data.to_json, :content_type => :json, :accept => :json
   end
 
-  def self.update_dns_record(service, zone, rr_type, name, value, action)
+  def self.update_dns_record(service, zone, t_id, rr_type, name, value, action)
     url = "#{service['url']}/zones/#{zone}"
 
     data = {
+        'tenant_id' => t_id,
         'changetype' => action,
         'name' => name,
         'content' => value,

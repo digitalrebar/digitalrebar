@@ -100,13 +100,53 @@ ActiveRecord::Base.transaction do
 
     [ "BARCLAMP_CREATE",      "Create Barclamp" ],
     [ "BARCLAMP_UPDATE",      "Update Barclamp" ],
-    [ "BARCLAMP_DESTROY",     "Destroy Barclamp" ],
-
-    [ "MACHINE_CREATE",       "Create Machines Only" ],
-    [ "MACHINE_ACCOUNT",      "Modify myself only" ]
+    [ "BARCLAMP_DESTROY",     "Destroy Barclamp" ]
   ]
   caps.each do |c|
     cap = Capability.find_or_create_by!(name: c[0], description: c[1], source: "rebar-api")
+    cap.save!
+  end
+
+  dhcp_caps = [
+    [ "SUBNET_CREATE",         "Create DHCP Subnet" ],
+    [ "SUBNET_READ",           "Read DHCP Subnet" ],
+    [ "SUBNET_UPDATE",         "Update DHCP Subnet" ],
+    [ "SUBNET_DESTROY",        "Destroy DHCP Subnet" ]
+  ]
+  dhcp_caps.each do |c|
+    cap = Capability.find_or_create_by!(name: c[0], description: c[1], source: "rebar-dhcp")
+    cap.save!
+  end
+
+  dns_caps = [
+    [ "ZONE_CREATE",         "Create DNS Zone" ],
+    [ "ZONE_READ",           "Read DNS Zone" ],
+    [ "ZONE_UPDATE",         "Update DNS Zone" ],
+    [ "ZONE_DESTROY",        "Destroy DNS Zone" ]
+  ]
+  dns_caps.each do |c|
+    cap = Capability.find_or_create_by!(name: c[0], description: c[1], source: "rebar-dns")
+    cap.save!
+  end
+
+  p_caps = [
+    [ "MACHINE_CREATE",         "Create Provisioner Machine" ],
+    [ "MACHINE_READ",           "Read Provisioner Machine" ],
+    [ "MACHINE_UPDATE",         "Update Provisioner Machine" ],
+    [ "MACHINE_DESTROY",        "Destroy Provisioner Machine" ],
+
+    [ "BOOTENV_CREATE",         "Create Provisioner Boot Environment" ],
+    [ "BOOTENV_READ",           "Read Provisioner Boot Environment" ],
+    [ "BOOTENV_UPDATE",         "Update Provisioner Boot Environment" ],
+    [ "BOOTENV_DESTROY",        "Destroy Provisioner Boot Environment" ],
+
+    [ "TEMPLATE_CREATE",         "Create Provisioner Boot Template" ],
+    [ "TEMPLATE_READ",           "Read Provisioner Boot Template" ],
+    [ "TEMPLATE_UPDATE",         "Update Provisioner Boot Template" ],
+    [ "TEMPLATE_DESTROY",        "Destroy Provisioner Boot Template" ]
+  ]
+  p_caps.each do |c|
+    cap = Capability.find_or_create_by!(name: c[0], description: c[1], source: "provisioner")
     cap.save!
   end
 
@@ -114,9 +154,11 @@ ActiveRecord::Base.transaction do
   u.digest_password('rebar1')
   u.save!
 
-  caps.each do |c|
-    cap = Capability.find_by(name: c[0])
-    UserTenantCapability.create!(user_id: u.id, tenant_id: t.id, capability_id: cap.id)
+  [ caps, dhcp_caps, dns_caps, p_caps].each do |list|
+    list.each do |c|
+      cap = Capability.find_by(name: c[0])
+      UserTenantCapability.create!(user_id: u.id, tenant_id: t.id, capability_id: cap.id)
+    end
   end
 
   if Rails.env.development? or Rails.env.test?
