@@ -3,7 +3,6 @@ package multitenancy
 import (
 	"encoding/json"
 	"errors"
-	"github.com/ant0ine/go-json-rest/rest"
 	"strconv"
 )
 
@@ -15,7 +14,7 @@ type Tenant struct {
 type CapabilityMap map[int]Tenant
 
 // creates a new object capable of checking tenants for capabilities
-func NewCapabilityMap(r *rest.Request) (CapabilityMap, error) {
+func NewCapabilityMap(r *http.Request) (CapabilityMap, error) {
 	// read the header that contains the cap map
 	header := r.Header.Get("X-Authenticated-Capability")
 	if header == "" {
