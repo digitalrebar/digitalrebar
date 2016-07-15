@@ -12,6 +12,7 @@ import (
 
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/digitalrebar/go-common/store"
+	"github.com/digitalrebar/go-common/multi-tenancy"
 )
 
 type NextServer struct {
@@ -43,24 +44,15 @@ func NewFrontend(cert_pem, key_pem, base_pem string, cfg Config, store store.Sim
 	return fe
 }
 
-// Debug function to show active bits - mostly for debug at the moment
-func (fe *Frontend) DumpData(w rest.ResponseWriter, r *rest.Request) {
-	fe.DhcpInfo.Lock()
-	nets := make([]*Subnet, 0, len(fe.DhcpInfo.Subnets))
-	for _, net := range fe.DhcpInfo.Subnets {
-		nets = append(nets, net)
-		log.Println("Subnet: " + net.Name + " Active Bits = " + net.ActiveBits.DumpAsBits())
-	}
-	fe.DhcpInfo.Unlock()
-	w.WriteJson(nets)
-}
-
 // List function
 func (fe *Frontend) GetAllSubnets(w rest.ResponseWriter, r *rest.Request) {
 	fe.DhcpInfo.Lock()
+	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
 	nets := make([]*Subnet, 0, len(fe.DhcpInfo.Subnets))
 	for _, net := range fe.DhcpInfo.Subnets {
-		nets = append(nets, net)
+		if capMap.HasCapability(net.TenantId, "SUBNET_READ") {
+			nets = append(nets, net)
+		}
 	}
 	fe.DhcpInfo.Unlock()
 	w.WriteJson(nets)
@@ -70,7 +62,9 @@ func (fe *Frontend) GetAllSubnets(w rest.ResponseWriter, r *rest.Request) {
 func (fe *Frontend) GetSubnet(w rest.ResponseWriter, r *rest.Request) {
 	subnetName := r.PathParam("id")
 	fe.DhcpInfo.Lock()
-	if subnet, found := fe.DhcpInfo.Subnets[subnetName]; found {
+	subnet, found := fe.DhcpInfo.Subnets[subnetName]
+	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	if found && capMap.HasCapability(subnet.TenantId, "SUBNET_READ") {
 		fe.DhcpInfo.Unlock()
 		w.WriteJson(subnet)
 	} else {
@@ -87,7 +81,12 @@ func (fe *Frontend) CreateSubnet(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 	if err := r.DecodeJsonPayload(s); err != nil {
-		rest.Error(w, err.Error(), http.StatusBadRequest)
+		rest.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	if !capMap.HasCapability(s.TenantId, "SUBNET_CREATE") {
+		rest.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}
 	fe.DhcpInfo.Lock()
@@ -108,6 +107,20 @@ func (fe *Frontend) UpdateSubnet(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, "Must have body", http.StatusBadRequest)
 		return
 	}
+	net, found := fe.DhcpInfo.Subnets[subnetName]
+	if !found {
+		rest.Error(w, "Not Found", http.StatusNotFound)
+		return	
+	}
+	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	if !capMap.HasCapability(net.TenantId, "SUBNET_UPDATE") {
+		if !capMap.HasCapability(net.TenantId, "SUBNET_READ") {
+			rest.Error(w, "Not Found", http.StatusNotFound)
+		} else {
+			rest.Error(w, "Forbidden", http.StatusForbidden)
+		}
+		return
+	}
 	if err := r.DecodeJsonPayload(s); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -126,6 +139,22 @@ func (fe *Frontend) UpdateSubnet(w rest.ResponseWriter, r *rest.Request) {
 func (fe *Frontend) DeleteSubnet(w rest.ResponseWriter, r *rest.Request) {
 	subnetName := r.PathParam("id")
 	fe.DhcpInfo.Lock()
+	subnet, found := fe.DhcpInfo.Subnets[subnetName]
+	if !found {
+		fe.DhcpInfo.Unlock()
+		rest.Error(w, "Not Found", http.StatusNotFound)
+		return
+	}
+	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	if !capMap.HasCapability(subnet.TenantId, "SUBNET_DESTROY") {
+		if !capMap.HasCapability(subnet.TenantId, "SUBNET_READ") {
+			rest.Error(w, "Not Found", http.StatusNotFound)
+		} else {
+			rest.Error(w, "Forbidden", http.StatusForbidden)		
+		}
+		fe.DhcpInfo.Unlock()
+		return	
+	}
 	err, code := fe.DhcpInfo.RemoveSubnet(subnetName)
 	if err != nil {
 		fe.DhcpInfo.Unlock()
@@ -148,8 +177,27 @@ func (fe *Frontend) BindSubnet(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	
 	binding.Mac = strings.ToLower(binding.Mac)
 	fe.DhcpInfo.Lock()
+
+	subnet, found := fe.DhcpInfo.Subnets[subnetName]
+	if !found {
+		fe.DhcpInfo.Unlock()
+		rest.Error(w, "Not Found", http.StatusNotFound)
+		return
+	}
+	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	if !capMap.HasCapability(subnet.TenantId, "SUBNET_UPDATE") {
+		if !capMap.HasCapability(subnet.TenantId, "SUBNET_READ") {
+			rest.Error(w, "Not Found", http.StatusNotFound)
+		} else {
+			rest.Error(w, "Forbidden", http.StatusForbidden)		
+		}
+		fe.DhcpInfo.Unlock()
+		return	
+	}
+
 	err, code := fe.DhcpInfo.AddBinding(subnetName, binding)
 	if err != nil {
 		fe.DhcpInfo.Unlock()
@@ -165,6 +213,24 @@ func (fe *Frontend) UnbindSubnet(w rest.ResponseWriter, r *rest.Request) {
 	mac := r.PathParam("mac")
 	mac = strings.ToLower(mac)
 	fe.DhcpInfo.Lock()
+
+	subnet, found := fe.DhcpInfo.Subnets[subnetName]
+	if !found {
+		fe.DhcpInfo.Unlock()
+		rest.Error(w, "Not Found", http.StatusNotFound)
+		return
+	}
+	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	if !capMap.HasCapability(subnet.TenantId, "SUBNET_UPDATE") {
+		if !capMap.HasCapability(subnet.TenantId, "SUBNET_READ") {
+			rest.Error(w, "Not Found", http.StatusNotFound)
+		} else {
+			rest.Error(w, "Forbidden", http.StatusForbidden)		
+		}
+		fe.DhcpInfo.Unlock()
+		return	
+	}
+
 	err, code := fe.DhcpInfo.DeleteBinding(subnetName, mac)
 	if err != nil {
 		fe.DhcpInfo.Unlock()
@@ -189,6 +255,24 @@ func (fe *Frontend) NextServer(w rest.ResponseWriter, r *rest.Request) {
 
 	ip := net.ParseIP(r.PathParam("ip"))
 	fe.DhcpInfo.Lock()
+
+	subnet, found := fe.DhcpInfo.Subnets[subnetName]
+	if !found {
+		fe.DhcpInfo.Unlock()
+		rest.Error(w, "Not Found", http.StatusNotFound)
+		return
+	}
+	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	if !capMap.HasCapability(subnet.TenantId, "SUBNET_UPDATE") {
+		if !capMap.HasCapability(subnet.TenantId, "SUBNET_READ") {
+			rest.Error(w, "Not Found", http.StatusNotFound)
+		} else {
+			rest.Error(w, "Forbidden", http.StatusForbidden)		
+		}
+		fe.DhcpInfo.Unlock()
+		return	
+	}
+
 	if err, code := fe.DhcpInfo.SetNextServer(subnetName, ip, nextServer); err != nil {
 		fe.DhcpInfo.Unlock()
 		rest.Error(w, err.Error(), code)
@@ -214,7 +298,6 @@ func (fe *Frontend) RunServer(blocking bool, auth_mode string) http.Handler {
 	}
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
-		rest.Get("/dump", fe.DumpData),
 		rest.Get("/subnets", fe.GetAllSubnets),
 		rest.Get("/subnets/#id", fe.GetSubnet),
 		rest.Post("/subnets", fe.CreateSubnet),
