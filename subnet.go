@@ -62,7 +62,7 @@ type Subnet struct {
 	Leases            map[string]*Lease
 	Bindings          map[string]*Binding
 	Options           []*Option // Options to send to DHCP Clients
-	TenantId					int
+	TenantId          int
 }
 
 func NewSubnet() *Subnet {
@@ -85,7 +85,7 @@ type apiSubnet struct {
 	Leases            []*Lease   `json:"leases,omitempty"`
 	Bindings          []*Binding `json:"bindings,omitempty"`
 	Options           []*Option  `json:"options,omitempty"`
-	TenantId					int 			 `json:"tenant_id"`
+	TenantId          int        `json:"tenant_id"`
 }
 
 func (s *Subnet) MarshalJSON() ([]byte, error) {
@@ -99,7 +99,7 @@ func (s *Subnet) MarshalJSON() ([]byte, error) {
 		Options:           s.Options,
 		Leases:            make([]*Lease, len(s.Leases)),
 		Bindings:          make([]*Binding, len(s.Bindings)),
-		TenantId: 				 s.TenantId,
+		TenantId:          s.TenantId,
 	}
 	if s.NextServer != nil {
 		ns := s.NextServer.String()
@@ -157,8 +157,6 @@ func (s *Subnet) UnmarshalJSON(data []byte) error {
 		s.Leases = map[string]*Lease{}
 	}
 
-	s.TenantId = as.TenantId
-
 	for _, v := range as.Leases {
 		s.Leases[v.Mac] = v
 		if dhcp.IPInRange(s.ActiveStart, s.ActiveEnd, v.Ip) {
@@ -178,6 +176,7 @@ func (s *Subnet) UnmarshalJSON(data []byte) error {
 	}
 
 	s.Options = as.Options
+	s.TenantId = as.TenantId
 	mask := net.IP([]byte(net.IP(netdata.Mask).To4()))
 	bcastBits := binary.BigEndian.Uint32(netdata.IP) | ^binary.BigEndian.Uint32(mask)
 	buf := make([]byte, 4)
