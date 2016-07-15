@@ -155,10 +155,10 @@ class BarclampDhcp::MgmtService < Service
     options[3] = network.network_router.address.addr if network and network.network_router
     options[67] = self.class.bootloader(boot_program)
     begin
-      self.class.create_network(network.name, subnet, next_server, start_ip, end_ip, options)
+      self.class.create_network(network.tenant_id, network.name, subnet, next_server, start_ip, end_ip, options)
     rescue
       begin
-        self.class.update_network(network.name, subnet, next_server, start_ip, end_ip, options)
+        self.class.update_network(network.tenant_id, network.name, subnet, next_server, start_ip, end_ip, options)
       rescue Exception => e
         Rails.logger.fatal("Failed to update: #{network.name}: #{e.message}")
         raise e
@@ -301,12 +301,13 @@ class BarclampDhcp::MgmtService < Service
   # next_server, start_ip, end_ip is an IP string
   # options is a hash of number => value string
   #
-  def self.create_network(name, subnet, next_server, start_ip, end_ip, options)
+  def self.create_network(t_id, name, subnet, next_server, start_ip, end_ip, options)
     service = get_service
     return unless service
 
     hash = {
       "name" => name,
+      "tenant_id" => t_id,
       "subnet" => subnet,
       "next_server" => next_server,
       "active_start" => start_ip,
@@ -322,13 +323,14 @@ class BarclampDhcp::MgmtService < Service
     send_request_post(url, hash)
   end
 
-  def self.update_network(name, subnet, next_server, start_ip, end_ip, options)
+  def self.update_network(t_id, name, subnet, next_server, start_ip, end_ip, options)
     service = get_service
     return unless service
 
     hash = {
       "name" => name,
       "subnet" => subnet,
+      "tenant_id" => t_id,
       "next_server" => next_server,
       "active_start" => start_ip,
       "active_end" => end_ip
