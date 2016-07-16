@@ -1,134 +1,138 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"log"
 	"net"
 	"net/http"
+	"strings"
 
-	"github.com/digitalrebar/go-common/cert"
+	"github.com/digitalrebar/go-common/store"
 
 	"github.com/cloudflare/cfssl/api/info"
-	"github.com/cloudflare/cfssl/config"
-	"github.com/cloudflare/cfssl/helpers"
 	"github.com/cloudflare/cfssl/signer"
-	"github.com/cloudflare/cfssl/signer/local"
 	"github.com/cloudflare/cfssl/whitelist"
+
+	consul "github.com/hashicorp/consul/api"
 )
 
 var (
-	defaultLabel        string
-	signers                    = map[string]signer.Signer{}
-	whitelists                 = map[string]whitelist.NetACL{}
-	basicConfigTemplate string = `
-{
-  "signing": {
-    "profiles": {
-      "CA": {
-        "auth_key": "key1",
-        "expiry": "8760h",
-        "usages": [
-          "signing",
-          "key encipherment",
-          "server auth",
-          "client auth"
-        ]
-      }
-    },
-    "default": {
-      "auth_key": "key1",
-      "expiry": "8760h",
-      "usages": [
-        "signing",
-        "key encipherment",
-        "server auth",
-        "client auth"
-      ]
-    }
-  },
-  "auth_keys": {
-    "key1": {
-      "key": "12345678",
-      "type": "standard"
-    }
-  }
-}
-	`
+	defaultLabel    string
+	signers                = map[string]signer.Signer{}
+	whitelists             = map[string]whitelist.NetACL{}
+	consulKeyPrefix string = "/trust-me/cert-store"
+	simpleStore     store.SimpleStore
 )
 
-func buildSigner(label string) (signer.Signer, error) {
-	certB, keyB, err := cert.CreateCertificateRoot(label)
+func loadSigners() error {
+	keys, err := simpleStore.Keys()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	key, err := helpers.ParsePrivateKeyPEM(keyB)
-	if err != nil {
-		return nil, err
+	data := make(map[string]map[string][]byte, 0)
+	for _, k := range keys {
+		parts := strings.Split(k, "/")
+		var piece map[string][]byte
+		var ok bool
+		if piece, ok = data[parts[0]]; !ok {
+			data[parts[0]] = make(map[string][]byte, 0)
+			piece = data[parts[0]]
+		}
+
+		piece[parts[1]], _ = simpleStore.Load(k)
 	}
 
-	cert, err := helpers.ParseCertificatePEM(certB)
-	if err != nil {
-		return nil, err
+	for k, v := range data {
+		certB, ok := v["cert"]
+		if !ok {
+			continue
+		}
+		keyB, ok := v["key"]
+		if !ok {
+			continue
+		}
+		templateB, ok := v["template"]
+		if !ok {
+			continue
+		}
+		s, err := buildSigner(k, certB, keyB, templateB)
+		if err != nil {
+			log.Printf("Failed to load: %s: %v\n", k, err)
+
+		} else {
+			signers[k] = s
+		}
 	}
 
-	s, err := local.NewSigner(key, cert, signer.DefaultSigAlgo(key), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	c, err := config.LoadConfig([]byte(basicConfigTemplate))
-	if err != nil {
-		return nil, err
-	}
-	s.SetPolicy(c.Signing)
-
-	return s, nil
+	return nil
 }
 
-type newRootData struct {
-	Label string `json:"label"`
-}
+func storeSigner(label string, cert, key, template []byte) error {
 
-func newRoot(w http.ResponseWriter, req *http.Request) {
-	incRequests()
-	if req.Method != "POST" {
-		fail(w, req, http.StatusMethodNotAllowed, 1, "only POST is permitted", "")
-		return
-	}
-
-	decoder := json.NewDecoder(req.Body)
-	var t newRootData
-	err := decoder.Decode(&t)
+	err := simpleStore.Save(label+"/key", key)
 	if err != nil {
-		fail(w, req, http.StatusBadRequest, 1, "Failed to parse body", "")
-		return
+		return err
 	}
-
-	if _, ok := signers[t.Label]; ok {
-		fail(w, req, http.StatusConflict, 1, "Already exists:"+t.Label, "")
-		return
-	}
-
-	s, err := buildSigner(t.Label)
+	err = simpleStore.Save(label+"/cert", cert)
 	if err != nil {
-		log.Printf("Failed to create signer: %s: %v\n", t.Label, err)
-		fail(w, req, http.StatusBadRequest, 1, "Failed to create signer", "")
-		return
+		simpleStore.Remove(label + "/key")
+		simpleStore.Remove(label + "/cert")
+		return err
 	}
-	signers[t.Label] = s
+	err = simpleStore.Save(label+"/template", template)
+	if err != nil {
+		simpleStore.Remove(label + "/template")
+		simpleStore.Remove(label + "/key")
+		simpleStore.Remove(label + "/cert")
+		return err
+	}
 
-	w.WriteHeader(http.StatusOK)
+	return nil
 }
 
 func main() {
 	flagAddr := flag.String("a", ":8888", "listening address")
+	flagConsul := flag.Bool("c", false, "Use consul storage")
+	flagLocal := flag.Bool("l", false, "Use local storage")
 	flagEndpointCert := flag.String("tls-cert", "", "server certificate")
 	flagEndpointKey := flag.String("tls-key", "", "server private key")
 	flag.Parse()
 
+	var err error
+	if *flagConsul {
+		client, err := consul.NewClient(consul.DefaultConfig())
+		if err != nil {
+			log.Fatal("%v", err)
+		}
+		if _, err := client.Agent().Self(); err != nil {
+			log.Fatal("%v", err)
+		}
+		simpleStore, err = store.NewSimpleConsulStore(client, consulKeyPrefix)
+		if err != nil {
+			log.Fatal("%v", err)
+		}
+	} else if *flagLocal {
+		simpleStore, err = store.NewSimpleLocalStore(".")
+		if err != nil {
+			log.Fatal("%v", err)
+		}
+	} else {
+		simpleStore = store.NewSimpleMemoryStore()
+	}
+
+	err = loadSigners()
+	if err != nil {
+		log.Fatal("%v", err)
+	}
+
 	defaultLabel = "internal"
+	if _, ok := signers[defaultLabel]; !ok {
+		err = newRootCertificate(defaultLabel)
+		if err != nil {
+			log.Fatal("%v", err)
+		}
+	}
 
 	initStats()
 
@@ -158,5 +162,4 @@ func main() {
 		log.Println("Now listening on https:// ", *flagAddr)
 		log.Fatal(http.ListenAndServeTLS(*flagAddr, *flagEndpointCert, *flagEndpointKey, nil))
 	}
-
 }
