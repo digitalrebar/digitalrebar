@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
 	"flag"
 	"log"
 	"net/http"
@@ -12,7 +13,7 @@ import (
 
 func main() {
 	flagLabel := flag.String("l", "internal", "Label to retrieve")
-	flagAddr := flag.String("a", "127.0.0.1:8888", "Remote to talk to")
+	flagAddr := flag.String("a", "https://127.0.0.1:8888", "Remote to talk to")
 	flagSign := flag.Bool("s", true, "Should we generate a signed cert")
 	flagCN := flag.String("c", "cow", "Common Name for new signed cert")
 	flagHosts := flag.String("h", "127.0.0.1", "Comma list of hosts to add to cert")
@@ -20,12 +21,15 @@ func main() {
 	flag.Parse()
 
 	if *flagMakeRoot {
-		url := "http://" + *flagAddr + "/api/v1/cfssl/root"
+		url := *flagAddr + "/api/v1/cfssl/root"
 		jsonStr := "{\"label\": \"" + *flagLabel + "\"}"
 		jsonB := []byte(jsonStr)
 
 		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonB))
-		client := &http.Client{}
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		client := &http.Client{Transport: tr}
 		resp, err := client.Do(req)
 		if err != nil {
 			log.Fatal("Failed: ", err)
@@ -37,7 +41,7 @@ func main() {
 
 	cacert, err := cert.GetCertificateForRoot(*flagAddr, *flagLabel)
 	if err != nil {
-		log.Printf("Failed to get Certificate for label: %s\n", *flagLabel)
+		log.Printf("Failed to get Certificate for label: %s: %v\n", *flagLabel, err)
 		return
 	}
 

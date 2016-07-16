@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"net/http/httputil"
 
-	"github.com/digitalrebar/go-common/cert"
-
 	"github.com/cloudflare/cfssl/api"
 	"github.com/cloudflare/cfssl/auth"
 	"github.com/cloudflare/cfssl/config"
+	"github.com/cloudflare/cfssl/csr"
 	"github.com/cloudflare/cfssl/helpers"
+	"github.com/cloudflare/cfssl/initca"
 	"github.com/cloudflare/cfssl/log"
 	"github.com/cloudflare/cfssl/signer"
 	"github.com/cloudflare/cfssl/signer/local"
@@ -313,7 +313,22 @@ func buildSigner(label string, certB, keyB, templateB []byte) (signer.Signer, er
 }
 
 func newRootCertificate(label string) error {
-	certB, keyB, err := cert.CreateCertificateRoot(label)
+	// Make CSR for this label - use label as CN
+	names := make([]csr.Name, 0, 0)
+	name := csr.Name{
+		C:  "US",
+		ST: "Texas",
+		L:  "Austin",
+		O:  "RackN",
+		OU: "CA Services",
+	}
+	names = append(names, name)
+	req := csr.CertificateRequest{
+		KeyRequest: csr.NewBasicKeyRequest(),
+		CN:         label,
+		Names:      names,
+	}
+	certB, _, keyB, err := initca.New(&req)
 	if err != nil {
 		return err
 	}
