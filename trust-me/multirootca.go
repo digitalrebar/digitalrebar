@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/digitalrebar/go-common/cert"
 	"github.com/digitalrebar/go-common/store"
 
 	"github.com/cloudflare/cfssl/api/info"
@@ -95,8 +96,6 @@ func main() {
 	flagAddr := flag.String("a", ":8888", "listening address")
 	flagConsul := flag.Bool("c", false, "Use consul storage")
 	flagLocal := flag.Bool("l", false, "Use local storage")
-	flagEndpointCert := flag.String("tls-cert", "", "server certificate")
-	flagEndpointKey := flag.String("tls-key", "", "server private key")
 	flag.Parse()
 
 	var err error
@@ -134,6 +133,23 @@ func main() {
 		}
 	}
 
+	// Make my certs - this is customer and not library because I'm using myself to sign.
+	hosts := make([]string, 0, 0)
+	hosts = append(hosts, "127.0.0.1")
+	// GREG: Add more of these
+	s, _ := signers[defaultLabel]
+	csrPem, keyB, err := cert.CreateCSR(defaultLabel, "trust-me", hosts)
+	if err != nil {
+		log.Fatal("%v", err)
+	}
+	csrRequest := signer.SignRequest{
+		Request: string(csrPem),
+	}
+	certB, err := s.Sign(csrRequest)
+	if err != nil {
+		log.Fatal("%v", err)
+	}
+
 	initStats()
 
 	infoHandler, err := info.NewMultiHandler(signers, defaultLabel)
@@ -154,12 +170,6 @@ func main() {
 	http.Handle("/api/v1/cfssl/metrics", metrics)
 	http.HandleFunc("/api/v1/cfssl/root", newRoot)
 
-	if *flagEndpointCert == "" && *flagEndpointKey == "" {
-		log.Println("Now listening on ", *flagAddr)
-		log.Fatal(http.ListenAndServe(*flagAddr, nil))
-	} else {
-
-		log.Println("Now listening on https:// ", *flagAddr)
-		log.Fatal(http.ListenAndServeTLS(*flagAddr, *flagEndpointCert, *flagEndpointKey, nil))
-	}
+	log.Println("Now listening on https:// ", *flagAddr)
+	log.Fatal(cert.ListenAndServeTLS(*flagAddr, certB, keyB, nil))
 }
