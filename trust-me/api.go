@@ -7,11 +7,15 @@ import (
 	"net/http"
 	"net/http/httputil"
 
+	"github.com/digitalrebar/go-common/cert"
+
 	"github.com/cloudflare/cfssl/api"
 	"github.com/cloudflare/cfssl/auth"
+	"github.com/cloudflare/cfssl/config"
 	"github.com/cloudflare/cfssl/helpers"
 	"github.com/cloudflare/cfssl/log"
 	"github.com/cloudflare/cfssl/signer"
+	"github.com/cloudflare/cfssl/signer/local"
 	"github.com/cloudflare/cfssl/whitelist"
 	metrics "github.com/cloudflare/go-metrics"
 )
@@ -239,4 +243,118 @@ func dumpMetrics(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.Write(out)
+}
+
+var (
+	basicConfigTemplate string = `
+{
+  "signing": {
+    "profiles": {
+      "CA": {
+        "auth_key": "key1",
+        "expiry": "8760h",
+        "usages": [
+          "signing",
+          "key encipherment",
+          "server auth",
+          "client auth"
+        ]
+      }
+    },
+    "default": {
+      "auth_key": "key1",
+      "expiry": "8760h",
+      "usages": [
+        "signing",
+        "key encipherment",
+        "server auth",
+        "client auth"
+      ]
+    }
+  },
+  "auth_keys": {
+    "key1": {
+      "key": "12345678",
+      "type": "standard"
+    }
+  }
+}
+	`
+)
+
+func buildSigner(label string, certB, keyB, templateB []byte) (signer.Signer, error) {
+	key, err := helpers.ParsePrivateKeyPEM(keyB)
+	if err != nil {
+		return nil, err
+	}
+
+	cert, err := helpers.ParseCertificatePEM(certB)
+	if err != nil {
+		return nil, err
+	}
+
+	s, err := local.NewSigner(key, cert, signer.DefaultSigAlgo(key), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	c, err := config.LoadConfig(templateB)
+	if err != nil {
+		return nil, err
+	}
+	s.SetPolicy(c.Signing)
+
+	err = storeSigner(label, certB, keyB, templateB)
+	if err != nil {
+		return nil, err
+	}
+
+	return s, nil
+}
+
+func newRootCertificate(label string) error {
+	certB, keyB, err := cert.CreateCertificateRoot(label)
+	if err != nil {
+		return err
+	}
+	templateB := []byte(basicConfigTemplate)
+
+	s, err := buildSigner(label, certB, keyB, templateB)
+	if err != nil {
+		return err
+	}
+	signers[label] = s
+	return nil
+}
+
+type newRootData struct {
+	Label string `json:"label"`
+}
+
+func newRoot(w http.ResponseWriter, req *http.Request) {
+	incRequests()
+	if req.Method != "POST" {
+		fail(w, req, http.StatusMethodNotAllowed, 1, "only POST is permitted", "")
+		return
+	}
+
+	decoder := json.NewDecoder(req.Body)
+	var t newRootData
+	err := decoder.Decode(&t)
+	if err != nil {
+		fail(w, req, http.StatusBadRequest, 1, "Failed to parse body", "")
+		return
+	}
+
+	if _, ok := signers[t.Label]; ok {
+		fail(w, req, http.StatusConflict, 1, "Already exists:"+t.Label, "")
+		return
+	}
+
+	err = newRootCertificate(t.Label)
+	if err != nil {
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
