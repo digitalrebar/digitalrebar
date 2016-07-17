@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/http/httputil"
+	"text/template"
+	"time"
 
 	"github.com/cloudflare/cfssl/api"
 	"github.com/cloudflare/cfssl/auth"
@@ -274,7 +278,7 @@ var (
   },
   "auth_keys": {
     "key1": {
-      "key": "12345678",
+      "key": "{{.AuthKey}}",
       "type": "standard"
     }
   }
@@ -282,7 +286,7 @@ var (
 	`
 )
 
-func buildSigner(label string, certB, keyB, templateB []byte) (signer.Signer, error) {
+func buildSigner(label, authKey string, certB, keyB, templateB []byte) (signer.Signer, error) {
 	key, err := helpers.ParsePrivateKeyPEM(keyB)
 	if err != nil {
 		return nil, err
@@ -304,7 +308,7 @@ func buildSigner(label string, certB, keyB, templateB []byte) (signer.Signer, er
 	}
 	s.SetPolicy(c.Signing)
 
-	err = storeSigner(label, certB, keyB, templateB)
+	err = storeSigner(label, authKey, certB, keyB, templateB)
 	if err != nil {
 		return nil, err
 	}
@@ -312,7 +316,7 @@ func buildSigner(label string, certB, keyB, templateB []byte) (signer.Signer, er
 	return s, nil
 }
 
-func newRootCertificate(label string) error {
+func newRootCertificate(label, authKey string) error {
 	// Make CSR for this label - use label as CN
 	names := make([]csr.Name, 0, 0)
 	name := csr.Name{
@@ -332,9 +336,22 @@ func newRootCertificate(label string) error {
 	if err != nil {
 		return err
 	}
-	templateB := []byte(basicConfigTemplate)
 
-	s, err := buildSigner(label, certB, keyB, templateB)
+	type TempData struct {
+		AuthKey string
+	}
+	var tempData = TempData{
+		AuthKey: authKey,
+	}
+	t := template.Must(template.New("template").Parse(basicConfigTemplate))
+	var doc bytes.Buffer
+	err = t.Execute(&doc, tempData)
+	if err != nil {
+		return err
+	}
+	templateB := []byte(doc.String())
+
+	s, err := buildSigner(label, authKey, certB, keyB, templateB)
 	if err != nil {
 		return err
 	}
@@ -343,7 +360,35 @@ func newRootCertificate(label string) error {
 }
 
 type newRootData struct {
-	Label string `json:"label"`
+	Label   string `json:"label"`
+	AuthKey string `json:"auth_key,omitempty"`
+}
+
+const letterBytes = "0123456789"
+const (
+	letterIdxBits = 4                    // 4 bits to represent a letter index
+	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+)
+
+var src = rand.NewSource(time.Now().UnixNano())
+
+func RandString(n int) string {
+	b := make([]byte, n)
+	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
+	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i >= 0; {
+		if remain == 0 {
+			cache, remain = src.Int63(), letterIdxMax
+		}
+		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
+			b[i] = letterBytes[idx]
+			i--
+		}
+		cache >>= letterIdxBits
+		remain--
+	}
+
+	return string(b)
 }
 
 func newRoot(w http.ResponseWriter, req *http.Request) {
@@ -366,7 +411,12 @@ func newRoot(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = newRootCertificate(t.Label)
+	// If AuthKey is null, create one
+	if t.AuthKey == "" {
+		t.AuthKey = RandString(32)
+	}
+
+	err = newRootCertificate(t.Label, t.AuthKey)
 	if err != nil {
 		return
 	}
