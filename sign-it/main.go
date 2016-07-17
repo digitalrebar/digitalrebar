@@ -18,11 +18,17 @@ func main() {
 	flagCN := flag.String("c", "cow", "Common Name for new signed cert")
 	flagHosts := flag.String("h", "127.0.0.1", "Comma list of hosts to add to cert")
 	flagMakeRoot := flag.Bool("m", false, "Should we make a root for this label")
+	flagKey := flag.String("k", "", "Key to use for required signing")
 	flag.Parse()
 
 	if *flagMakeRoot {
 		url := *flagAddr + "/api/v1/cfssl/root"
-		jsonStr := "{\"label\": \"" + *flagLabel + "\"}"
+		kstring := ""
+		if *flagKey != "" {
+			kstring = ", \"auth_key\": \"" + *flagKey + "\""
+
+		}
+		jsonStr := "{\"label\": \"" + *flagLabel + "\"" + kstring + "}"
 		jsonB := []byte(jsonStr)
 
 		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonB))
@@ -50,7 +56,7 @@ func main() {
 	if *flagSign {
 		hosts := strings.Split(*flagHosts, ",")
 
-		mycert, mykey, err := cert.CreateCertificate(*flagAddr, "12345678", *flagLabel, *flagCN, hosts)
+		mycert, mykey, err := cert.CreateCertificate(*flagAddr, *flagKey, *flagLabel, *flagCN, hosts)
 		if err != nil {
 			log.Printf("Failed to get Create Certificate for label: %s\n", *flagLabel)
 			log.Printf("Error: %v\n", err)

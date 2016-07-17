@@ -57,7 +57,11 @@ func loadSigners() error {
 		if !ok {
 			continue
 		}
-		s, err := buildSigner(k, certB, keyB, templateB)
+		authKey, ok := v["authkey"]
+		if !ok {
+			continue
+		}
+		s, err := buildSigner(k, string(authKey), certB, keyB, templateB)
 		if err != nil {
 			log.Printf("Failed to load: %s: %v\n", k, err)
 
@@ -69,7 +73,7 @@ func loadSigners() error {
 	return nil
 }
 
-func storeSigner(label string, cert, key, template []byte) error {
+func storeSigner(label, authKey string, cert, key, template []byte) error {
 
 	err := simpleStore.Save(label+"/key", key)
 	if err != nil {
@@ -86,6 +90,14 @@ func storeSigner(label string, cert, key, template []byte) error {
 		simpleStore.Remove(label + "/template")
 		simpleStore.Remove(label + "/key")
 		simpleStore.Remove(label + "/cert")
+		return err
+	}
+	err = simpleStore.Save(label+"/authkey", []byte(authKey))
+	if err != nil {
+		simpleStore.Remove(label + "/template")
+		simpleStore.Remove(label + "/key")
+		simpleStore.Remove(label + "/cert")
+		simpleStore.Remove(label + "/authkey")
 		return err
 	}
 
@@ -127,7 +139,7 @@ func main() {
 
 	defaultLabel = "internal"
 	if _, ok := signers[defaultLabel]; !ok {
-		err = newRootCertificate(defaultLabel)
+		err = newRootCertificate(defaultLabel, "")
 		if err != nil {
 			log.Fatal("%v", err)
 		}
