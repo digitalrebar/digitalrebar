@@ -337,6 +337,11 @@ func newRootCertificate(label, authKey string) error {
 		return err
 	}
 
+	// If AuthKey is null, create one
+	if authKey == "" {
+		authKey = RandString(32)
+	}
+
 	type TempData struct {
 		AuthKey string
 	}
@@ -409,11 +414,6 @@ func newRoot(w http.ResponseWriter, req *http.Request) {
 	if _, ok := signers[t.Label]; ok {
 		fail(w, req, http.StatusConflict, 1, "Already exists:"+t.Label, "")
 		return
-	}
-
-	// If AuthKey is null, create one
-	if t.AuthKey == "" {
-		t.AuthKey = RandString(32)
 	}
 
 	err = newRootCertificate(t.Label, t.AuthKey)
