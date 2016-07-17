@@ -93,6 +93,8 @@ en:
       asset_tag: "Asset Tag"
   # Layout
   nav:
+    ux: "New UX"
+    ux_description: "Open New User Interface (UX)"
     monitor: "Monitor"
     monitor_description: "Track System Activity"
     nodes: "Nodes"
