@@ -25,6 +25,23 @@ class ApplicationController < ActionController::Base
   before_filter :rebar_auth
   after_filter  :filter_json
 
+  # Helpers for the capability system.
+  # Allows each controller to express which model and capability
+  # set it should interact with by default
+  class_attribute :model, :cap_base
+
+  def model
+    self.class.model
+  end
+
+  def cap_base
+    self.class.cap_base
+  end
+  # Construct a capability by adding cap_base to cap_action
+  def cap(cap_action, base = cap_base)
+    "#{base}_#{cap_action}"
+  end
+
   # Basis for the reflection/help system.
 
   # First, a place to stash the help contents.
