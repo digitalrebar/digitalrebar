@@ -17,17 +17,6 @@ class ProvidersController < ApplicationController
   self.model = Provider
   self.cap_base = "PROVIDER"
 
-  def match
-    attrs = Provider.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "PROVIDER", Provider)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Provider, objs }
-    end
-  end
-
   # API GET /api/v2/providers
   def index
     @list = if params.has_key?(:node_id)

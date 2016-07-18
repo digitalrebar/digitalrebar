@@ -16,18 +16,6 @@ class CapabilitiesController < ::ApplicationController
   self.model = Capability
   self.cap_base = "CAPABILITY"
 
-  def match
-    attrs = Capability.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = Capability.where(ok_params) if !ok_params.empty?
-    objs = [] unless capable(@current_user.current_tenant_id, "CAPABILITY_READ")
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Capability, objs }
-    end
-  end
-
   def show
     @capability = Capability.find_key params[:id]
     validate_read(@current_user.current_tenant_id, "CAPABILITY", Capability, params[:id])

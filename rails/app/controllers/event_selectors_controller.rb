@@ -17,17 +17,6 @@ class EventSelectorsController < ApplicationController
   self.model = EventSelector
   self.cap_base = "EVENT_SELECTOR"
 
-  def match
-    attrs = EventSelector.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "EVENT_SELECTOR", EventSelector)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index EventSelector, objs }
-    end
-  end
-
   def index
     @event_selectors = if params.key(:event_sink_id)
                          EventSink.find_key(params[:event_sink_id]).event_selectors.to_a

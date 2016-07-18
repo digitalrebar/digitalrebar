@@ -16,18 +16,7 @@
 class HammersController < ApplicationController
   self.model = Hammer
   self.cap_base = "NODE"
-
-  def match
-    attrs = Hammer.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = Hammer.where(ok_params) if !ok_params.empty?
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Hammer, objs }
-    end
-  end
-  
+ 
   # API GET /api/v2/hammers
   def index
     @hammers = if params.has_key?(:node_id)

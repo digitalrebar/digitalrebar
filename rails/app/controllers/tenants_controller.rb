@@ -16,17 +16,6 @@ class TenantsController < ::ApplicationController
   self.model = Tenant
   self.cap_base = "TENANT"
 
-  def match
-    attrs = Tenant.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :id, "TENANT", Tenant)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Tenant, objs }
-    end
-  end
-
   def index
     tenant_ids = build_tenant_list("TENANT_READ")
     @tenants = Tenant.where(id: tenant_ids)

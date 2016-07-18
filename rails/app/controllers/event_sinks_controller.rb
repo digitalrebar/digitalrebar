@@ -17,18 +17,6 @@ class EventSinksController < ApplicationController
   self.model = EventSink
   self.cap_base = "EVENT_SINK"
 
-  def match
-    attrs = EventSink.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "EVENT_SINK", EventSink)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index EventSink, objs }
-    end
-  end
-
-    # API GET /api/v2/hammers
   def index
     t_ids = build_tenant_list("EVENT_SINK_READ")
     @event_sinks = EventSink.where(tenant_id: t_ids)

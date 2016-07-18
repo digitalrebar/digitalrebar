@@ -16,17 +16,6 @@ class NetworkAllocationsController < ::ApplicationController
   self.model = NetworkAllocation
   self.cap_base = "NETWORK"
 
-  def match
-    attrs = NetworkAllocation.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "NETWORK", NetworkAllocation)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index NetworkAllocation, objs }
-    end
-  end
-  
   def create
     params.require(:node_id)
     node = Node.find(params[:node_id])

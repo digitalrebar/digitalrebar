@@ -63,17 +63,6 @@ class UsersController < ApplicationController
     render :nothing => true, :status => :no_content
   end
 
-  def match
-    attrs = User.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "USER", User)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index User, objs }
-    end
-  end
-  
   def index
     t_ids = build_tenant_list("USER_READ")
     @users = User.where(tenant_id: t_ids)

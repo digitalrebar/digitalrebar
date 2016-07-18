@@ -18,23 +18,22 @@ class NodesController < ApplicationController
   self.cap_base = "NODE"
 
   def match
-    attrs = Node.attribute_names.map{|a|a.to_sym}
-    objs = []
+    attrs = model.attribute_names.map{|a|a.to_sym}
     ok_params = params.permit(attrs)
-    mv = Node.params_to_mv(params)
+    mv = model.params_to_mv(params)
     objs = case
            when ok_params.empty? && mv.empty?
-             Node.where('false')
+             model.where('false')
            when ok_params.empty? && !mv.empty?
-             visible(Node, "NODE_READ").where_jsonb(mv)
+             visible(model, cap("READ")).where_jsonb(mv)
            when mv.empty? && !ok_params.empty?
-             visible(Node, "NODE_READ").where(ok_params)
+             visible(model, cap("READ")).where(ok_params)
            else
-             visible(Node, "NODE_READ").where(ok_params).where_jsonb(mv)
+             visible(model, cap("READ")).where(ok_params).where_jsonb(mv)
            end
     respond_to do |format|
       format.html {}
-      format.json { render api_index Node, objs }
+      format.json { render api_index model, objs }
     end
   end
 

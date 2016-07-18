@@ -17,17 +17,6 @@ class RolesController < ApplicationController
   self.model = Role
   self.cap_base = "ROLE"
 
-  def match
-    attrs = Role.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = Role.where(ok_params) if !ok_params.empty?
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Role, objs }
-    end
-  end
-  
   def index
     @list = if params.include? :deployment_id
               d = Deployment.find_key(params[:deployment_id])

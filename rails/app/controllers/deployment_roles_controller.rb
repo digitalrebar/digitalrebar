@@ -16,21 +16,7 @@
 class DeploymentRolesController < ApplicationController
   self.model = DeploymentRole
   self.cap_base = "DEPLOYMENT"
-
-  def match
-    attrs = DeploymentRole.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = DeploymentRole.where(ok_params) if !ok_params.empty?
-    objs = objs.to_a
-    tenant_ids = build_tenant_list("DEPLOYMENT_READ")
-    objs.delete_if { |x| !tenant_ids.include? x.deployment.tenant_id }
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index DeploymentRole, objs }
-    end
-  end
-  
+ 
   def index
     @list = if params.has_key? :deployment_id
               Deployment.find_key(params[:deployment_id]).deployment_roles.to_a

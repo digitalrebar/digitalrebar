@@ -39,7 +39,7 @@ class ApplicationController < ActionController::Base
   end
   
   # Construct a capability by adding cap_base to cap_action
-  def cap(cap_action, base = cap_base)
+  def cap(cap_action, base = self.cap_base)
     "#{base}_#{cap_action}"
   end
 
@@ -64,14 +64,25 @@ class ApplicationController < ActionController::Base
 
   # Common sample method.  It is basically identical for every controller.
   def sample
-    if self.class.model
-      j = self.class.model.column_defaults.reject{|k,v| /(^id)|_(id|at)$/ =~ k}
+    if self.model
+      j = self.model.column_defaults.reject{|k,v| /(^id)|_(id|at)$/ =~ k}
       render api_show(j,self.class.model)
     else
-      render api_not_implemented(self.class.model, "sample", "")
+      render api_not_implemented(self.model, "sample", "")
     end
   end
 
+  # Common match method.  It is basically identical for every controller
+  def match
+    attrs = self.model.attribute_names.map{|a|a.to_sym}
+    ok_params = params.permit(attrs)
+    objs = ok_params.empty? ? model.where('false') : visible(self.model,cap("READ")).where(ok_params)
+    respond_to do |format|
+      format.html { }
+      format.json { render api_index(self.model, objs) }
+    end
+  end
+  
   # Given an object and list of permitted object attributes to update, extract the
   # JSON patch that should be in the request body, apply it to the object cast as a
   # JSON blob, and update the permitted attribs of the actual object.

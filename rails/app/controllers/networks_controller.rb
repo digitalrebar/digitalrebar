@@ -16,17 +16,6 @@ class NetworksController < ::ApplicationController
   self.model = Network
   self.cap_base = "NETWORK"
 
-  def match
-    attrs = Network.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "NETWORK", Network)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Network, objs }
-    end
-  end
-
   def auto_ranges
     @network = Network.find_key params[:id]
     @node = Node.find_key params[:node_id]

@@ -17,17 +17,6 @@ class DeploymentsController < ApplicationController
   self.model = Deployment
   self.cap_base = "DEPLOYMENT"
 
-  def match
-    attrs = Deployment.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "DEPLOYMENT", Deployment)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Deployment, objs }
-    end
-  end
-
   def index
     tenant_ids = build_tenant_list("DEPLOYMENT_READ")
     @list = Deployment.where(tenant_id: tenant_ids).order("id DESC").all
