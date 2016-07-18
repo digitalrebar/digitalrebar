@@ -73,43 +73,44 @@ class EthtoolCmd < CStruct
   uint32 :reserved_a0
   uint32 :reserved_a1
 end
-
 SPEEDS = Array.new
-# Bitfield for ETHTOOL_GSET results, by powers of 2 (just the speeds)
-SPEEDS[0] = [10,   "10m"]   # 0:  10   baseT, half duplex
-SPEEDS[1] = [10,   "10m"]   # 1:  10   baseT, full duplex
-SPEEDS[2] = [100,  "100m"]  # 2:  100  baseT, half duplex
-SPEEDS[3] = [100,  "100m"]  # 3:  100  baseT, full duplex
-SPEEDS[4] = [1000, "1g"]    # 4:  1000 baseT, half duplex
-SPEEDS[5] = [1000, "1g"]    # 5:  1000 baseT, full duplex
-                            # 6:  Autonegotiate enabled
-                            # 7:  TP connection
-                            # 8:  AUI connection
-                            # 9:  MII connection
-                            # 10: Fibre connection
-                            # 11: BNC connection
-SPEEDS[12] = [10000,"10g"]  # 12: 10000 baseT, full duplex
-                            # 13: Pause support
-                            # 14: Asym Pause support
-SPEEDS[15] = [2500,  "2g"]  # 15: 2500 baseX, full duplex
-                            # 16: Backplane
-SPEEDS[17] = [1000,  "1g"]  # 17: 1000 baseKX, full duplex
-SPEEDS[18] = [10000,"10g"]  # 18: 10000 baseKX4, full duplex
-SPEEDS[19] = [10000,"10g"]  # 19: 10000 baseKR, full duplex
-SPEEDS[20] = [10000,"10g"]  # 20: 10000 baseR, FEC
-SPEEDS[21] = [20000,"20g"]  # 21: 20000 baseMLD2, full duplex
-SPEEDS[22] = [20000,"20g"]  # 22: 20000 baseKR2, full duplex
-SPEEDS[23] = [40000,"40g"]  # 23: 40000 baseKR4, full duplex
-SPEEDS[24] = [40000,"40g"]  # 24: 40000 baseCR4, full duplex
-SPEEDS[25] = [40000,"40g"]  # 25: 40000 baseSR4, full duplex
-SPEEDS[26] = [40000,"40g"]  # 26: 40000 baseLR4, full duplex
+# Bitfield for ETHTOOL_GSET results, by powers of 2
+SPEEDS[0] =  [true, 10,   "10m"]      # 0:  10   baseT, half duplex
+SPEEDS[1] =  [true, 10,   "10m"]      # 1:  10   baseT, full duplex
+SPEEDS[2] =  [true, 100,  "100m"]     # 2:  100  baseT, half duplex
+SPEEDS[3] =  [true, 100,  "100m"]     # 3:  100  baseT, full duplex
+SPEEDS[4] =  [true, 1000, "1g"]       # 4:  1000 baseT, half duplex
+SPEEDS[5] =  [true, 1000, "1g"]       # 5:  1000 baseT, full duplex
+SPEEDS[6] =  [false, 0, "Autoneg"]    # 6:  Autonegotiate enabled
+SPEEDS[7] =  [false, 0, "TP Link"]    # 7:  TP connection
+SPEEDS[8] =  [false, 0, "AUI Link"]   # 8:  AUI connection
+SPEEDS[9] =  [false, 0, "MII Link"]   # 9:  MII connection
+SPEEDS[10] = [false, 0, "Fibre"]      # 10: Fibre connection
+SPEEDS[11] = [false, 0, "BNC Link"]   # 11: BNC connection
+SPEEDS[12] = [true, 10000, "10g"]     # 12: 10000 baseT, full duplex
+SPEEDS[13] = [false, 0, "Pause" ]     # 13: Pause support
+SPEEDS[14] = [false, 0, "Asum Pause"] # 14: Asym Pause support
+SPEEDS[15] = [true, 2500,  "2g"]      # 15: 2500 baseX, full duplex
+SPEEDS[16] = [false, 0, "Backplane"]  # 16: Backplane
+SPEEDS[17] = [true, 1000,  "1g"]      # 17: 1000 baseKX, full duplex
+SPEEDS[18] = [true, 10000,"10g"]      # 18: 10000 baseKX4, full duplex
+SPEEDS[19] = [true, 10000,"10g"]      # 19: 10000 baseKR, full duplex
+SPEEDS[20] = [true, 10000,"10g"]      # 20: 10000 baseR, FEC
+SPEEDS[21] = [true, 20000,"20g"]      # 21: 20000 baseMLD2, full duplex
+SPEEDS[22] = [true, 20000,"20g"]      # 22: 20000 baseKR2, full duplex
+SPEEDS[23] = [true, 40000,"40g"]      # 23: 40000 baseKR4, full duplex
 
+SPEEDS[24] = [true, 40000,"40g"]      # 24: 40000 baseCR4, full duplex
+SPEEDS[25] = [true, 40000,"40g"]      # 25: 40000 baseSR4, full duplex
+
+SPEEDS[26] = [true, 40000,"40g"]      # 26: 40000 baseLR4, full duplex
 class EthtoolValue < CStruct
   uint32 :cmd
   uint32 :value
 end
 
 def nic_speeds(nic)
+  res = [ "1g", "0g" ]
   begin
     ecmd = EthtoolCmd.new
     ecmd.cmd = ETHTOOL_GSET
@@ -119,17 +120,21 @@ def nic_speeds(nic)
 
     rv = ecmd.class.new
     rv.data = ifreq.unpack("a16p")[1]
+    Chef::Log.info("Raw supported info for #{nic}: #{rv.supported.to_s(2)}")
 
-    res = []
+    speeds = []
     SPEEDS.each_index do |i|
-      next unless SPEEDS[i] && ((rv.supported & (1 << i)) != 0)
-      res << SPEEDS[i]
+      if SPEEDS[i] && ((rv.supported & (1 << i)) != 0)
+        Chef::Log.info("Nic #{nic}: bit #{i} set, supports #{SPEEDS[i][2]}")
+        speeds << SPEEDS[i] if SPEEDS[i][0]
+      end
     end
-    res.sort.uniq.reverse.map{|i|i[1]}
+    res = speeds.sort.uniq.reverse.map{|i|i[2]}
   rescue Exception => e
     Chef::Log.error("Failed to get ioctl for speed: #{e.message}")
-    [ "1g", "0g" ]
   end
+  Chef::Log.info("Speeds for nic #{nic}: #{res}")
+  res
 end
 
 # Get all of the network devices that are real physical devices.
@@ -138,6 +143,11 @@ nics = Hash[]
 Dir.foreach(net_sysfs) do |ent|
   ent = File.join(net_sysfs,ent)
   next unless File.symlink?(ent)
+  # Only look at actual Ethernet devices for now"
+  next unless File.exists?("#{ent}/type")
+  if File.read("#{ent}/type").strip != "1"
+    Chef::Log.warn("Skipping non-Ethernet device #{ent}")
+  end
   # We know this is a symlink to a real device.  Extract what we need.
   symlink = File.readlink(ent)
   matches = net_re.match(symlink)
@@ -409,7 +419,7 @@ node["rebar"]["network"]["addresses"].keys.sort{|a,b|
   ifs[our_iface.name]['router'] = IP.coerce(network["router"]["address"]).addr if network['router']
 
   # Ditto for our default route
-  if network["router"] && network["router"]["pref"] && 
+  if network["router"] && network["router"]["pref"] &&
      (network["router"]["pref"].to_i < route_pref)
     Chef::Log.info("#{network["network"]}: Will use #{network["router"]} as our default route")
     route_pref = network["router"]["pref"].to_i
@@ -500,7 +510,7 @@ Nic.nics.each do |nic|
     Chef::Log.info("#{nic.name}: Taking over from dhcp")
     nic.flush
   end
-    
+
   Chef::Log.info("#{nic.name}: current addresses: #{nic.addresses.map{|a|a.to_s}.sort.inspect}") unless nic.addresses.empty?
   Chef::Log.info("#{nic.name}: required addresses: #{iface["addresses"].map{|a|a.to_s}.sort.inspect}") unless iface["addresses"].empty?
   # Ditch old addresses, add new ones.
