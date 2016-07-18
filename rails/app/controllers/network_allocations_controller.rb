@@ -16,10 +16,6 @@ class NetworkAllocationsController < ::ApplicationController
   self.model = NetworkAllocation
   self.cap_base = "NETWORK"
 
-  def sample
-    render api_sample(NetworkAllocation)
-  end
-
   def match
     attrs = NetworkAllocation.attribute_names.map{|a|a.to_sym}
     objs = []

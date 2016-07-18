@@ -16,10 +16,6 @@ class TenantsController < ::ApplicationController
   self.model = Tenant
   self.cap_base = "TENANT"
 
-  def sample
-    render api_sample(Tenant)
-  end
-
   def match
     attrs = Tenant.attribute_names.map{|a|a.to_sym}
     objs = []

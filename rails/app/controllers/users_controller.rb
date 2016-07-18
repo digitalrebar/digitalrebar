@@ -63,10 +63,6 @@ class UsersController < ApplicationController
     render :nothing => true, :status => :no_content
   end
 
-  def sample
-    render api_sample(User)
-  end
-
   def match
     attrs = User.attribute_names.map{|a|a.to_sym}
     objs = []

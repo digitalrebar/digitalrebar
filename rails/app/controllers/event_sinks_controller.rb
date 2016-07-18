@@ -17,10 +17,6 @@ class EventSinksController < ApplicationController
   self.model = EventSink
   self.cap_base = "EVENT_SINK"
 
-  def sample
-    render api_sample(EventSink)
-  end
-
   def match
     attrs = EventSink.attribute_names.map{|a|a.to_sym}
     objs = []

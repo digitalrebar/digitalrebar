@@ -17,10 +17,6 @@ class JigsController < ApplicationController
   self.model = Jig
   self.cap_base = "JIG"
 
-  def sample
-    render api_sample(Jig)
-  end
-
   def match
     attrs = Jig.attribute_names.map{|a|a.to_sym}
     objs = []

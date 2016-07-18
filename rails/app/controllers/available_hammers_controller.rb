@@ -16,10 +16,6 @@
 class AvailableHammersController < ApplicationController
   self.model = AvailableHammer
   self.cap_base = "AVAILABLE_HAMMER"
-
-  def sample
-    render api_sample(AvailableHammer)
-  end
   
   def match
     attrs = AvailableHammer.attribute_names.map{|a|a.to_sym}

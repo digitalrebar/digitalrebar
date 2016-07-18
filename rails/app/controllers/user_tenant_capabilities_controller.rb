@@ -16,10 +16,6 @@ class UserTenantCapabilitiesController < ::ApplicationController
   self.model = UserTenantCapability
   self.cap_base = "USER_TENANT_CAPABILITY"
 
-  def sample
-    render api_sample(UserTenantCapability)
-  end
-
   def match
     attrs = UserTenantCapability.attribute_names.map{|a|a.to_sym}
     objs = []

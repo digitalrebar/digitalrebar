@@ -17,10 +17,6 @@ class NodesController < ApplicationController
   self.model = Node
   self.cap_base = "NODE"
 
-  def sample
-    render api_sample(Node)
-  end
-
   def match
     attrs = Node.attribute_names.map{|a|a.to_sym}
     objs = []

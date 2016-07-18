@@ -17,10 +17,6 @@ class RolesController < ApplicationController
   self.model = Role
   self.cap_base = "ROLE"
 
-  def sample
-    render api_sample(Role)
-  end
-  
   def match
     attrs = Role.attribute_names.map{|a|a.to_sym}
     objs = []

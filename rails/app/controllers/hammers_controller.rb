@@ -17,10 +17,6 @@ class HammersController < ApplicationController
   self.model = Hammer
   self.cap_base = "NODE"
 
-  def sample
-    render api_sample(Hammer)
-  end
-
   def match
     attrs = Hammer.attribute_names.map{|a|a.to_sym}
     objs = []

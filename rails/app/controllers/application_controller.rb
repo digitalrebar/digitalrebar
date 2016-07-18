@@ -62,9 +62,14 @@ class ApplicationController < ActionController::Base
     request.xhr?
   end
 
-  def api_sample(model)
-    j = model.column_defaults.reject{|k,v| /(^id)|_(id|at)$/ =~ k}
-    api_show(j,model)
+  # Common sample method.  It is basically identical for every controller.
+  def sample
+    if self.class.model
+      j = self.class.model.column_defaults.reject{|k,v| /(^id)|_(id|at)$/ =~ k}
+      render api_show(j,self.class.model)
+    else
+      render api_not_implemented(self.class.model, "sample", "")
+    end
   end
 
   # Given an object and list of permitted object attributes to update, extract the

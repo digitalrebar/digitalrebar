@@ -16,10 +16,6 @@ class NetworkRangesController < ::ApplicationController
   self.model = NetworkRange
   self.cap_base = "NETWORK"
 
-  def sample
-    render api_sample(NetworkRange)
-  end
-
   def match
     attrs = NetworkRange.attribute_names.map{|a|a.to_sym}
     objs = []

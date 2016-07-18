@@ -17,10 +17,6 @@ class DeploymentsController < ApplicationController
   self.model = Deployment
   self.cap_base = "DEPLOYMENT"
 
-  def sample
-    render api_sample(Deployment)
-  end
-
   def match
     attrs = Deployment.attribute_names.map{|a|a.to_sym}
     objs = []

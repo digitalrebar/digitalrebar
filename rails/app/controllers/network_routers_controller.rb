@@ -16,10 +16,6 @@ class NetworkRoutersController < ::ApplicationController
   self.model = NetworkRouter
   self.cap_base = "NETWORK"
 
-  def sample
-    render api_sample(NetworkRouter)
-  end
-
   def match
     attrs = NetworkRouter.attribute_names.map{|a|a.to_sym}
     objs = []

@@ -17,10 +17,6 @@ class BarclampsController < ApplicationController
   self.model = Barclamp
   self.cap_base = "BARCLAMP"
 
-  def sample
-    render api_sample(Barclamp)
-  end
-
   def match
     attrs = Barclamp.attribute_names.map{|a|a.to_sym}
     objs = Barclamp.where(params.permit(attrs))

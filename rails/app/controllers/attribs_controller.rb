@@ -17,10 +17,6 @@ class AttribsController < ApplicationController
   self.model = Attrib
   self.cap_base = "ATTRIB"
 
-  def sample
-    render api_sample(Attrib)
-  end
-
   def match
     # Global attribs are read-able by all
     attrs = Attrib.attribute_names.map{|a|a.to_sym}

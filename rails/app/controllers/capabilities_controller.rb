@@ -16,10 +16,6 @@ class CapabilitiesController < ::ApplicationController
   self.model = Capability
   self.cap_base = "CAPABILITY"
 
-  def sample
-    render api_sample(Capability)
-  end
-
   def match
     attrs = Capability.attribute_names.map{|a|a.to_sym}
     objs = []

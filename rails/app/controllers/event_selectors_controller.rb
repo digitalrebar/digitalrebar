@@ -17,10 +17,6 @@ class EventSelectorsController < ApplicationController
   self.model = EventSelector
   self.cap_base = "EVENT_SELECTOR"
 
-  def sample
-    render api_sample(EventSelector)
-  end
-
   def match
     attrs = EventSelector.attribute_names.map{|a|a.to_sym}
     objs = []

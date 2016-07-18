@@ -16,10 +16,6 @@ class DnsNameFiltersController < ::ApplicationController
   self.model = DnsNameFilter
   self.cap_base = "NETWORK"
 
-  def sample
-    render api_sample(DnsNameFilter)
-  end
-
   def match
     attrs = DnsNameFilter.attribute_names.map{|a|a.to_sym}
     objs = []

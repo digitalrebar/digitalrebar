@@ -17,10 +17,6 @@ class NodeRolesController < ApplicationController
   self.model = NodeRole
   self.cap_base = "NODE"
 
-  def sample
-    render api_sample(NodeRole)
-  end
-
   # GET /api/status/node_roles?age=[newer than # seconds]
   # PUT same URL with added payload {"nodes":[1,2,3]} to find deleted nodes
   def status
