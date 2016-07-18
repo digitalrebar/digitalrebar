@@ -15,8 +15,6 @@
 
 class BarclampsController < ApplicationController
 
-  self.help_contents = Array.new(superclass.help_contents)
-
   def sample
     render api_sample(Barclamp)
   end

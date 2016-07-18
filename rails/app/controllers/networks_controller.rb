@@ -15,8 +15,6 @@
 class NetworksController < ::ApplicationController
   respond_to :html, :json
 
-  add_help(:show,[:network_id],[:get])
-
   def sample
     render api_sample(Network)
   end
@@ -183,7 +181,6 @@ class NetworksController < ::ApplicationController
     render :json => network.node_allocations(node).map{|a|a.to_s}, :content_type=>cb_content_type(:allocations, "array")
   end
 
-  add_help(:update,[:id, :conduit, :team_mode, :use_team, :vlan, :use_vlan, :configure],[:put])
   def update
     Network.transaction do
       @network = Network.find_key(params[:id]).lock!

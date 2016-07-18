@@ -37,42 +37,10 @@ class ApplicationController < ActionController::Base
   def cap_base
     self.class.cap_base
   end
+  
   # Construct a capability by adding cap_base to cap_action
   def cap(cap_action, base = cap_base)
     "#{base}_#{cap_action}"
-  end
-
-  # Basis for the reflection/help system.
-
-  # First, a place to stash the help contents.
-  # Using a class_inheritable_accessor ensures that
-  # these contents are inherited by children, but can be
-  # overridden or appended to by child classes without messing up
-  # the contents we are building here.
-  class_attribute :help_contents
-  self.help_contents = []
-
-  # Class method for adding method-specific help/API information
-  # for each method we are going to expose to the CLI.
-  # Since it is a class method, it will not be bothered by the Rails
-  # trying to expose it to everything else, and we can call it to build
-  # up our help contents at class creation time instead of instance  creation
-  # time, so there is minimal overhead.
-  # Since we are just storing an arrray of singleton hashes, adding more
-  # user-oriented stuff (descriptions, exmaples, etc.) should not be a problem.
-  def self.add_help(method,args=[],http_method=[:get])
-    # if we were passed multiple http_methods, build an entry for each.
-    # This assumes that they all take the same parameters, if they do not
-    # you should call add_help for each different set of parameters that the
-    # method/http_method combo can take.
-    http_method.each { |m|
-      self.help_contents = self.help_contents.push({
-        method => {
-                                             "args" => args,
-                                             "http_method" => m
-        }
-      })
-    }
   end
 
   #helper :all # include all helpers, all the time
@@ -248,27 +216,6 @@ class ApplicationController < ActionController::Base
     return {:json=>json, :content_type=>cb_content_type("json", "array") }
   end
 
-  add_help(:help)
-  def help
-    render :json => { self.controller_name => self.help_contents.collect { |m|
-        res = {}
-        m.each { |k,v|
-          # sigh, we cannot resolve url_for at clqass definition time.
-          # I suppose we have to do it at runtime.
-          url=URI::unescape(url_for({ :action => k,
-                        :controller => self.controller_name,
-
-          }.merge(v["args"].inject({}) {|acc,x|
-            acc.merge({x.to_s => "(#{x.to_s})"})
-          }
-          )
-          ))
-          res.merge!({ k.to_s => v.merge({"url" => url})})
-        }
-        res
-      }
-    }
-  end
   set_layout
 
   unless Rails.application.config.consider_all_requests_local
