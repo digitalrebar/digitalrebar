@@ -54,6 +54,7 @@ module ApiHelper
     def visible (cap_name, user_id)
       if !Capability.exists?(name: cap_name)
         # For now, if there is no capability, then there is no visible filter.
+        Rails.logger.warn("No capability #{cap_name}, falling back to dangerous allow everything")
         return all
       end
       case self.table_name
