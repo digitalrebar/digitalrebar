@@ -15,6 +15,9 @@
 SimpleNavigation::Configuration.run do |navigation|       
   menu = Nav.item('root').first
   navigation.items do |primary|
+    # add link to new ux
+    primary.item :ux, t('nav.ux'), 'ux/', :html => {:title=>t('nav.ux_description')}, :link_html => {:target=>"_drux"}
+    # database driven menu
     menu.children.sort_by{|n| n.order}.each do |item| # Top Nav
       if item.item != 'root' and item.path =~ /(.*)_path/
         begin   
