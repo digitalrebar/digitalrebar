@@ -45,10 +45,6 @@ SimpleNavigation::Configuration.run do |navigation|
                         Deployment.all.each do |d|
                           tertiary.item nav.item.to_sym, d.name, deployment_path(d.id), :html => {:title=>d.description }
                         end
-                      elsif nav.name.eql? 'nav.monitor'
-                        Deployment.all.each do |d|
-                          tertiary.item nav.item.to_sym, d.name, monitor_path(d.id), :html => {:title=>d.description }
-                        end
                       end            
                     rescue
                       # each the exception in the chidlren for now

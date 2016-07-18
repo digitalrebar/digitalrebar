@@ -46,7 +46,6 @@ Rebar::Application.routes.draw do
 
   end
 
-  get "monitor(/:id)" => "deployments#monitor", :as => :monitor, :defaults => {:format => 'html'}
   get 'docs/eula' => 'docs#eula', as: :eula
 
   resources :groups
