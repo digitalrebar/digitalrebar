@@ -14,7 +14,8 @@ import (
 func main() {
 	flagLabel := flag.String("l", "internal", "Label to retrieve")
 	flagAddr := flag.String("a", "https://127.0.0.1:8888", "Remote to talk to")
-	flagSign := flag.Bool("s", true, "Should we generate a signed cert")
+	flagSign := flag.Bool("s", false, "Should we generate a signed cert")
+	flagInfo := flag.Bool("i", false, "Should we get the validation cert")
 	flagCN := flag.String("c", "cow", "Common Name for new signed cert")
 	flagHosts := flag.String("h", "127.0.0.1", "Comma list of hosts to add to cert")
 	flagMakeRoot := flag.Bool("m", false, "Should we make a root for this label")
@@ -45,13 +46,14 @@ func main() {
 		log.Println("Status: ", resp.Status)
 	}
 
-	cacert, err := cert.GetCertificateForRoot(*flagAddr, *flagLabel)
-	if err != nil {
-		log.Printf("Failed to get Certificate for label: %s: %v\n", *flagLabel, err)
-		return
+	if *flagInfo {
+		cacert, err := cert.GetCertificateForRoot(*flagAddr, *flagLabel)
+		if err != nil {
+			log.Printf("Failed to get Certificate for label: %s: %v\n", *flagLabel, err)
+			return
+		}
+		log.Printf("Validation Certificate = %s\n", string(cacert))
 	}
-
-	log.Printf("Validation Certificate = %s\n", string(cacert))
 
 	if *flagSign {
 		hosts := strings.Split(*flagHosts, ",")
