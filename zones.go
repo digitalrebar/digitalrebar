@@ -4,8 +4,10 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"strconv"
 
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/digitalrebar/go-common/multi-tenancy"
 )
 
 /*
@@ -25,6 +27,7 @@ import (
 type Zone struct {
 	Name    string   `json:"name"`
 	Records []Record `json:"records,omitempty"`
+	TenantId int     `json:"tenant_id"`
 }
 
 type Record struct {
@@ -55,6 +58,7 @@ func NewZoneEntry() *ZoneEntry {
 
 type ZoneData struct {
 	Entries map[string]*ZoneEntry // name -> entry
+	TenantId int
 }
 
 func NewZoneData() *ZoneData {
@@ -115,7 +119,14 @@ func (fe *Frontend) GetAllZones(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), err.StatusCode())
 		return
 	}
-	w.WriteJson(data)
+	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	zones := make([]Zone, 0, len(data))
+	for _, zone := range(data) {
+		if capMap.HasCapability(zone.TenantId, "ZONE_READ") {
+			zones = append(zones, zone)
+		}
+	}
+	w.WriteJson(zones)
 }
 
 // Get function
@@ -127,7 +138,12 @@ func (fe *Frontend) GetZone(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), err.StatusCode())
 		return
 	}
-	w.WriteJson(data)
+	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	if capMap.HasCapability(data.TenantId, "ZONE_READ") {
+		w.WriteJson(data)
+	} else {
+		rest.Error(w, "Not Found", http.StatusNotFound)
+	}
 }
 
 // Patch function
@@ -140,14 +156,21 @@ func (fe *Frontend) PatchZone(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	zoneName := r.PathParam("id")
+	tenantId, _ := strconv.Atoi(r.PathParam("tenant_id"))
 
+	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
 	fe.ZoneInfo.Lock()
 	zone := fe.ZoneInfo.Zones[zoneName]
 	switch record.ChangeType {
 	case "ADD":
 		// If no zone, create zone
+		if capMap.HasCapability(tenantId, "ZONE_CREATE") {
+			rest.Error(w, "Forbidden", http.StatusForbidden)
+			return
+		}
 		if zone == nil {
 			zone = NewZoneData()
+			zone.TenantId = tenantId
 			fe.ZoneInfo.Zones[zoneName] = zone
 		}
 
@@ -182,7 +205,20 @@ func (fe *Frontend) PatchZone(w rest.ResponseWriter, r *rest.Request) {
 		fe.save_data()
 	case "REMOVE":
 		if zone == nil {
-			goto output
+			if !capMap.HasCapability(zone.TenantId, "ZONE_READ") {
+				rest.Error(w, "Not Found", http.StatusNotFound)
+				return
+			} else {
+				goto output
+			}
+		}
+		if !capMap.HasCapability(zone.TenantId, "ZONE_READ") {
+			if capMap.HasCapability(zone.TenantId, "ZONE_DESTROY"){
+				rest.Error(w, "Forbidden", http.StatusForbidden)
+			} else {
+				rest.Error(w, "Not Found", http.StatusNotFound)
+			}
+			return
 		}
 		zes := zone.Entries[record.Name]
 		if zes == nil {
