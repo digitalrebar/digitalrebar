@@ -13,7 +13,8 @@
 # limitations under the License.
 #
 class NetworkRangesController < ::ApplicationController
-  respond_to :json
+  self.model = NetworkRange
+  self.cap_base = "NETWORK"
 
   def sample
     render api_sample(NetworkRange)

@@ -13,7 +13,8 @@
 # limitations under the License.
 
 class DnsNameEntriesController < ::ApplicationController
-  respond_to :html, :json
+  self.model = DnsNameEntry
+  self.cap_base = "NETWORK"
 
   def sample
     render api_sample(DnsNameEntry)

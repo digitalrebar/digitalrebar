@@ -16,7 +16,8 @@
 require 'base64'
 
 class UsersController < ApplicationController
-  respond_to :html, :json
+  self.model = User
+  self.cap_base = "USER"
   
   helper_method :is_edit_mode?
 

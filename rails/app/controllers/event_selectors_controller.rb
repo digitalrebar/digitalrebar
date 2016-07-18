@@ -14,7 +14,8 @@
 #
 #
 class EventSelectorsController < ApplicationController
-
+  self.model = EventSelector
+  self.cap_base = "EVENT_SELECTOR"
 
   def sample
     render api_sample(EventSelector)

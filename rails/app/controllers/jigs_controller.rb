@@ -14,6 +14,8 @@
 #
 #
 class JigsController < ApplicationController
+  self.model = Jig
+  self.cap_base = "JIG"
 
   def sample
     render api_sample(Jig)

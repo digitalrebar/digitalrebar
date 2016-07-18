@@ -13,7 +13,8 @@
 # limitations under the License.
 #
 class CapabilitiesController < ::ApplicationController
-  respond_to :html, :json
+  self.model = Capability
+  self.cap_base = "CAPABILITY"
 
   def sample
     render api_sample(Capability)

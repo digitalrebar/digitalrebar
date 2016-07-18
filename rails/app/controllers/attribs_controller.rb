@@ -14,6 +14,8 @@
 #
 #
 class AttribsController < ApplicationController
+  self.model = Attrib
+  self.cap_base = "ATTRIB"
 
   def sample
     render api_sample(Attrib)

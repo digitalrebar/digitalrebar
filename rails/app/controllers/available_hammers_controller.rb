@@ -14,6 +14,8 @@
 #
 #
 class AvailableHammersController < ApplicationController
+  self.model = AvailableHammer
+  self.cap_base = "AVAILABLE_HAMMER"
 
   def sample
     render api_sample(AvailableHammer)

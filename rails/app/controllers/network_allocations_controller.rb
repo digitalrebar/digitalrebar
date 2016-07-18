@@ -13,7 +13,8 @@
 # limitations under the License.
 #
 class NetworkAllocationsController < ::ApplicationController
-  respond_to :json
+  self.model = NetworkAllocation
+  self.cap_base = "NETWORK"
 
   def sample
     render api_sample(NetworkAllocation)

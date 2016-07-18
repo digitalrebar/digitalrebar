@@ -14,8 +14,8 @@
 #
 #
 class HammersController < ApplicationController
-
-  # GREG: REturn when we have a node running
+  self.model = Hammer
+  self.cap_base = "NODE"
 
   def sample
     render api_sample(Hammer)

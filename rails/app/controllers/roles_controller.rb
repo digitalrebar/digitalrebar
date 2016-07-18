@@ -14,6 +14,8 @@
 #
 #
 class RolesController < ApplicationController
+  self.model = Role
+  self.cap_base = "ROLE"
 
   def sample
     render api_sample(Role)

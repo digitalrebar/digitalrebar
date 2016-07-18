@@ -13,7 +13,8 @@
 # limitations under the License.
 #
 class TenantsController < ::ApplicationController
-  respond_to :html, :json
+  self.model = Tenant
+  self.cap_base = "TENANT"
 
   def sample
     render api_sample(Tenant)

@@ -14,6 +14,8 @@
 #
 #
 class ProvidersController < ApplicationController
+  self.model = Provider
+  self.cap_base = "PROVIDER"
 
   def sample
     render api_sample(Provider)

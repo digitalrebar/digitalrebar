@@ -14,9 +14,8 @@
 #
 #
 class NodesController < ApplicationController
-
-  # API GET /rebar/v2/nodes
-  # UI GET /dashboard
+  self.model = Node
+  self.cap_base = "NODE"
 
   def sample
     render api_sample(Node)

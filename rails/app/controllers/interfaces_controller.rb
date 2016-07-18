@@ -13,20 +13,7 @@
 # limitations under the License.
 #
 class InterfacesController < ::ApplicationController
-  respond_to :html, :json
-
-  # GREG: What the heck to do with this??
-
-  def match
-    attrs = Interface.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = Interface.where(ok_params) if !ok_params.empty?
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Interface, objs }
-    end
-  end
+  self.cap_base = "NETWORK"
 
   def create
     pattern = params[:pattern]

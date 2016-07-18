@@ -14,6 +14,8 @@
 #
 #
 class RunsController < ApplicationController
+  self.model = Run
+  self.cap_base = "NODE"
 
   # returns all the items in the annealer queue
   def match

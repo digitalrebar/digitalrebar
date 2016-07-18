@@ -14,7 +14,8 @@
 #
 #
 class EventSinksController < ApplicationController
-
+  self.model = EventSink
+  self.cap_base = "EVENT_SINK"
 
   def sample
     render api_sample(EventSink)

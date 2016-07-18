@@ -14,11 +14,13 @@
 #
 #
 class DeploymentsController < ApplicationController
+  self.model = Deployment
+  self.cap_base = "DEPLOYMENT"
 
   def sample
     render api_sample(Deployment)
   end
-  
+
   def match
     attrs = Deployment.attribute_names.map{|a|a.to_sym}
     objs = []
@@ -109,7 +111,7 @@ class DeploymentsController < ApplicationController
       end
     end
   end
-  
+
   def destroy
     @deployment = Deployment.find_key params[:id]
     validate_destroy(@deployment.tenant_id, "DEPLOYMENT", Deployment, params[:id])
@@ -121,7 +123,7 @@ class DeploymentsController < ApplicationController
   end
 
   # GET /api/status/deployments
-  def status 
+  def status
     deployment = Deployment.find_key params[:id] rescue nil
     if deployment
       unless capable(deployment.tenant_id, "DEPLOYMENT_READ")
@@ -151,7 +153,7 @@ class DeploymentsController < ApplicationController
         out[:nodes] = Node.count
         NodeRole.all
       end
-        
+
       nr.each do |role|
         state = role.state
         #state = rand(4) #testing random states (for updating)
@@ -177,7 +179,7 @@ class DeploymentsController < ApplicationController
       format.json {
 
         deployment_roles = DeploymentRole.where(deployment_id: @deployment.id).joins(:role).select("deployment_roles.*, roles.name as role_name, roles.cohort as role_cohort, roles.service as role_service").sort{|a,b|a.role_cohort <=> b.role_cohort}
-        
+
         roles = deployment_roles.select { |r| !r.role_service }
 
         state = @deployment.state rescue Deployment::ERROR
@@ -200,7 +202,7 @@ class DeploymentsController < ApplicationController
             name: service.role_name,
           }
         end
-        
+
         roleHash = {}
 
         out[:roles] = roles.map do |role|
@@ -210,7 +212,7 @@ class DeploymentsController < ApplicationController
             id: role.id,
           }
         end
-        
+
         node_roles = NodeRole.joins(:node,:role).where("nodes.system = 'f' and (nodes.deployment_id = #{@deployment.id} OR node_roles.deployment_id = #{@deployment.id})").select("node_roles.*, roles.name as role_name, nodes.name as node_name, nodes.admin as node_admin, nodes.available as node_avail, nodes.description as node_desc, nodes.alive as node_alive")
 
         nodes = {}
@@ -242,7 +244,7 @@ class DeploymentsController < ApplicationController
             path: node_role_path(nr.role_id),
           }
         end
-        
+
         nodes = nodes.values.sort{|a,b| a[:name] <=> b[:name]}
         admins = nodes.select{|n| n[:admin]}
         out[:nodes] = admins + (nodes - admins)
@@ -250,7 +252,7 @@ class DeploymentsController < ApplicationController
         render api_array out.to_json
       }
     end
-    
+
 
   end
 

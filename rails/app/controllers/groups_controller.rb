@@ -14,6 +14,8 @@
 #
 #
 class GroupsController < ApplicationController
+  self.model = Group
+  self.cap_base = "GROUP"
   
   def index
     @list = if params.has_key? :node_id

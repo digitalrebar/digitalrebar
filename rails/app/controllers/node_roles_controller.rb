@@ -14,8 +14,8 @@
 # 
 
 class NodeRolesController < ApplicationController
-
-# GREG: THink about NODE or Deployment for cap testing.
+  self.model = NodeRole
+  self.cap_base = "NODE"
 
   def sample
     render api_sample(NodeRole)

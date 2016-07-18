@@ -13,7 +13,8 @@
 # limitations under the License.
 #
 class NetworkRoutersController < ::ApplicationController
-  respond_to :json
+  self.model = NetworkRouter
+  self.cap_base = "NETWORK"
 
   def sample
     render api_sample(NetworkRouter)

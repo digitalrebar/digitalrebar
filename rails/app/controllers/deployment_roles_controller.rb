@@ -14,6 +14,8 @@
 # 
 
 class DeploymentRolesController < ApplicationController
+  self.model = DeploymentRole
+  self.cap_base = "DEPLOYMENT"
 
   def sample
     render api_sample(DeploymentRole)

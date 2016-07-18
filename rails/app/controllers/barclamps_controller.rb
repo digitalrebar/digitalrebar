@@ -14,6 +14,8 @@
 # 
 
 class BarclampsController < ApplicationController
+  self.model = Barclamp
+  self.cap_base = "BARCLAMP"
 
   def sample
     render api_sample(Barclamp)
