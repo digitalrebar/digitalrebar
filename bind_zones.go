@@ -39,6 +39,7 @@ func buildZone(name string, zoneData *ZoneData) Zone {
 	zone := Zone{
 		Name:    name,
 		Records: records,
+		TenantId: zoneData.TenantId,
 	}
 
 	return zone
