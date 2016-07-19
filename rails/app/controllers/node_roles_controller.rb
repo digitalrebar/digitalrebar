@@ -14,12 +14,8 @@
 # 
 
 class NodeRolesController < ApplicationController
-
-# GREG: THink about NODE or Deployment for cap testing.
-
-  def sample
-    render api_sample(NodeRole)
-  end
+  self.model = NodeRole
+  self.cap_base = "NODE"
 
   # GET /api/status/node_roles?age=[newer than # seconds]
   # PUT same URL with added payload {"nodes":[1,2,3]} to find deleted nodes
@@ -79,18 +75,7 @@ class NodeRolesController < ApplicationController
     # done
     render api_array out.to_json
   end
-
-  def match
-    attrs = NodeRole.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "NODE", NodeRole)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index NodeRole, objs }
-    end
-  end
-  
+ 
   def index
     NodeRole.transaction do
       @list = (if params.key? :node_id

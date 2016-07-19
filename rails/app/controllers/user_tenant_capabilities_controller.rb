@@ -13,22 +13,8 @@
 # limitations under the License.
 #
 class UserTenantCapabilitiesController < ::ApplicationController
-  respond_to :html, :json
-
-  def sample
-    render api_sample(UserTenantCapability)
-  end
-
-  def match
-    attrs = UserTenantCapability.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "TENANT", UserTenantCapability)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index UserTenantCapability, objs }
-    end
-  end
+  self.model = UserTenantCapability
+  self.cap_base = "USER_TENANT_CAPABILITY"
 
   def index
     t_ids = build_tenant_list("TENANT_READ")

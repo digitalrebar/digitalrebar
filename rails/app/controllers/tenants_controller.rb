@@ -13,22 +13,8 @@
 # limitations under the License.
 #
 class TenantsController < ::ApplicationController
-  respond_to :html, :json
-
-  def sample
-    render api_sample(Tenant)
-  end
-
-  def match
-    attrs = Tenant.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :id, "TENANT", Tenant)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Tenant, objs }
-    end
-  end
+  self.model = Tenant
+  self.cap_base = "TENANT"
 
   def index
     tenant_ids = build_tenant_list("TENANT_READ")

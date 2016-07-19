@@ -62,6 +62,18 @@ class Node < ActiveRecord::Base
   scope    :non_system,         -> { where(:system=>false) }
   scope    :system,             -> { where(:system => true) }
   scope    :category,           -> (cat) { joins(:groups).where(["groups.category = ?", cat]) }
+  scope    :where_jsonb,        -> (mv) do
+    where(mv.map{|k,v| "((nodes.discovery #> '#{k}' = #{Node.sanitize(v.to_json)}) OR (nodes.hint #> '#{k}' = #{Node.sanitize(v.to_json)}))"}.join(" AND "))
+  end
+
+  def self.params_to_mv(params)
+    mv = {}
+    attrs = Attrib.where(role_id: nil, name: params.keys.map{|k|k.to_s})
+    attrs.each do |a|
+      mv[a.where_jsonb] = params[a.name.to_sym]
+    end
+    return mv
+  end
 
   def as_json(args = nil)
     args ||= {}
@@ -504,7 +516,7 @@ class Node < ActiveRecord::Base
     Group.transaction do
       if groups.count == 0
         groups << Group.find_or_create_by(name: 'not_set',
-					  tenant_id: tenant_id,
+                                          tenant_id: tenant_id,
                                           description: I18n.t('not_set', :default=>'Not Set'))
       end
     end

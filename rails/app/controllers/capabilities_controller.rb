@@ -13,23 +13,8 @@
 # limitations under the License.
 #
 class CapabilitiesController < ::ApplicationController
-  respond_to :html, :json
-
-  def sample
-    render api_sample(Capability)
-  end
-
-  def match
-    attrs = Capability.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = Capability.where(ok_params) if !ok_params.empty?
-    objs = [] unless validate_capability(@current_user.current_tenant_id, "CAPABILITY_READ")
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Capability, objs }
-    end
-  end
+  self.model = Capability
+  self.cap_base = "CAPABILITY"
 
   def show
     @capability = Capability.find_key params[:id]
@@ -41,7 +26,7 @@ class CapabilitiesController < ::ApplicationController
   end
 
   def index
-    if validate_capability(@current_user.current_tenant_id, "CAPABILITY_READ")
+    if capable(@current_user.current_tenant_id, "CAPABILITY_READ")
       @capabilities = Capability.all
     else
       @capabilities = []

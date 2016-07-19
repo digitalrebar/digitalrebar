@@ -14,27 +14,14 @@
 #
 #
 class ProvidersController < ApplicationController
-
-  def sample
-    render api_sample(Provider)
-  end
-
-  def match
-    attrs = Provider.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "PROVIDER", Provider)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Provider, objs }
-    end
-  end
+  self.model = Provider
+  self.cap_base = "PROVIDER"
 
   # API GET /api/v2/providers
   def index
     @list = if params.has_key?(:node_id)
       n=Node.find_key(params[:node_id])
-      if validate_capability(n.tenant_id, "NODE_READ")
+      if capable(n.tenant_id, "NODE_READ")
         n.providers.to_a
       else
         []

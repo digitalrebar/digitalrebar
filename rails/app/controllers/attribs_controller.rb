@@ -14,22 +14,8 @@
 #
 #
 class AttribsController < ApplicationController
-
-  def sample
-    render api_sample(Attrib)
-  end
-
-  def match
-    # Global attribs are read-able by all
-    attrs = Attrib.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = Attrib.where(ok_params) if !ok_params.empty?
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index :attrib, objs.as_json }
-    end
-  end
+  self.model = Attrib
+  self.cap_base = "ATTRIB"
 
   def index
     target = find_target
@@ -40,7 +26,7 @@ class AttribsController < ApplicationController
       cap, tid = build_capability_name(target)
       if cap
 	@list = []
-        @list = target.attribs if validate_capability(tid, "#{cap}_READ")
+        @list = target.attribs if capable(tid, "#{cap}_READ")
       else
         @list = Attrib.all
       end

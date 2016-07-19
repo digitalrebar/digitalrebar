@@ -14,18 +14,8 @@
 #
 #
 class RunsController < ApplicationController
-
-  # returns all the items in the annealer queue
-  def match
-    attrs = Run.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = Run.where(ok_params) if !ok_params.empty?
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Run, objs }
-    end
-  end
+  self.model = Run
+  self.cap_base = "NODE"
 
   def index
     respond_to do |format|

@@ -14,24 +14,9 @@
 #
 #
 class HammersController < ApplicationController
-
-  # GREG: REturn when we have a node running
-
-  def sample
-    render api_sample(Hammer)
-  end
-
-  def match
-    attrs = Hammer.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = Hammer.where(ok_params) if !ok_params.empty?
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Hammer, objs }
-    end
-  end
-  
+  self.model = Hammer
+  self.cap_base = "NODE"
+ 
   # API GET /api/v2/hammers
   def index
     @hammers = if params.has_key?(:node_id)

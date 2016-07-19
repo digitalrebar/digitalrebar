@@ -13,23 +13,9 @@
 # limitations under the License.
 #
 class NetworkAllocationsController < ::ApplicationController
-  respond_to :json
+  self.model = NetworkAllocation
+  self.cap_base = "NETWORK"
 
-  def sample
-    render api_sample(NetworkAllocation)
-  end
-
-  def match
-    attrs = NetworkAllocation.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "NETWORK", NetworkAllocation)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index NetworkAllocation, objs }
-    end
-  end
-  
   def create
     params.require(:node_id)
     node = Node.find(params[:node_id])
@@ -81,7 +67,7 @@ class NetworkAllocationsController < ::ApplicationController
   def show
     @allocation = NetworkAllocation.find_key(params[:id]) rescue nil
     if @allocation
-      @allocation = nil unless validate_capability(@allocation.tenant_id, "NETWORK_READ")
+      @allocation = nil unless capable(@allocation.tenant_id, "NETWORK_READ")
     end
     respond_to do |format|
       format.html {

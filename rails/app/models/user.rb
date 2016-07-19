@@ -54,6 +54,11 @@ class User < ActiveRecord::Base
   has_many    :user_tenant_capabilities
   has_many    :tenants,       -> { distinct }, through: :user_tenant_capabilities
 
+  def capable(cap_name, tid)
+    return true unless Capability.exists?(name: cap_name)
+    User.exists?(["id in (select user_id from utc_mapping where capability = ? AND user_id = ? AND tenant_id = ?)",cap_name, id, tid])
+  end
+
   # Build a map object for capabilities.
   # { tenant_1_id: { cap: [], (parent: #) }, ... }
   def cap_map

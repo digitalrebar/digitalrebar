@@ -16,11 +16,10 @@
 require 'base64'
 
 class UsersController < ApplicationController
-  respond_to :html, :json
+  self.model = User
+  self.cap_base = "USER"
   
   helper_method :is_edit_mode?
-
-  add_help(:index,[],[:get])
 
   skip_before_filter :rebar_auth, :only => [:options]
   skip_before_filter :authenticate_user!, :only => [:options]
@@ -64,21 +63,6 @@ class UsersController < ApplicationController
     render :nothing => true, :status => :no_content
   end
 
-  def sample
-    render api_sample(User)
-  end
-
-  def match
-    attrs = User.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "USER", User)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index User, objs }
-    end
-  end
-  
   def index
     t_ids = build_tenant_list("USER_READ")
     @users = User.where(tenant_id: t_ids)
@@ -96,7 +80,6 @@ class UsersController < ApplicationController
     render api_delete @user
   end
 
-  add_help(:create,[:username, :email, :password, :password_confirmation, :remember_me, :is_admin, :digest],[:post])
   def create
     params.require(:username)
     params.require(:email)
@@ -160,7 +143,6 @@ class UsersController < ApplicationController
       render json: data
   end
 
-  add_help(:show,[:id],[:get])
   def show
     @user = User.find_key params[:id]
     validate_read(@user.tenant_id, "USER", User, params[:id])
@@ -170,7 +152,6 @@ class UsersController < ApplicationController
     end
   end
 
-  add_help(:unlock,[:id],[:delete]) 
   def unlock
     # TODO REFACTOR!
     respond_with(@user)  do |format|
@@ -184,7 +165,6 @@ class UsersController < ApplicationController
     end
   end
 
-  add_help(:lock,[:id],[:post])
   def lock
     # TODO REFACTOR!
     respond_with(@user)  do |format|
@@ -225,7 +205,6 @@ class UsersController < ApplicationController
     render api_show @user
   end
 
- add_help(:reset_password,[:id, :password, :password_confirmation],[:put])
  def reset_password
     #  TODO REFACTOR!
    ret = fetch_user
@@ -267,7 +246,6 @@ class UsersController < ApplicationController
     current_user.is_admin? && Rails.env.development?
   end
   
-  add_help(:make_admin,[:id],[:post])
   def make_admin
     ret = fetch_user
     respond_with(@user)  do |format|
@@ -285,7 +263,6 @@ class UsersController < ApplicationController
     end
   end
 
-  add_help(:remove_admin,[:id],[:delete])
   def remove_admin
     ret = fetch_user
     respond_with(@user) do |format|

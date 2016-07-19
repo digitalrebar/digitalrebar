@@ -13,24 +13,8 @@
 # limitations under the License.
 #
 class NetworksController < ::ApplicationController
-  respond_to :html, :json
-
-  add_help(:show,[:network_id],[:get])
-
-  def sample
-    render api_sample(Network)
-  end
-
-  def match
-    attrs = Network.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "NETWORK", Network)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Network, objs }
-    end
-  end
+  self.model = Network
+  self.cap_base = "NETWORK"
 
   def auto_ranges
     @network = Network.find_key params[:id]
@@ -45,7 +29,7 @@ class NetworksController < ::ApplicationController
     begin
       addr = IP.coerce(params[:id])
       @network = Network.lookup_network(addr, (params[:category] || "admin"))
-    rescue 
+    rescue
       @network = Network.find_key params[:id]
     end
     validate_read(@network.tenant_id, "NETWORK", Network, @network.id)
@@ -54,7 +38,7 @@ class NetworksController < ::ApplicationController
       format.json { render api_show @network }
     end
   end
-  
+
   def index
     if (params[:address])
       @network = Network.lookup_network(params[:address], (params[:category] || "admin"))
@@ -99,7 +83,7 @@ class NetworksController < ::ApplicationController
       @network = Network.create! params.permit(:name,
                                                :conduit,
                                                :description,
-					       :tenant_id,
+                                               :tenant_id,
                                                :deployment_id,
                                                :vlan,
                                                :use_vlan,
@@ -122,12 +106,12 @@ class NetworksController < ::ApplicationController
           range_params.require(:network_id)
           range_params.require(:first)
           range_params.require(:last)
-	  unless range_params[:tenant_id]
+          unless range_params[:tenant_id]
              range_params[:tenant_id] = @current_user.tenant_id
-	  end
+          end
           NetworkRange.create! range_params.permit(:name,
                                                    :network_id,
-						   :tenant_id,
+                                                   :tenant_id,
                                                    :first,
                                                    :last,
                                                    :conduit,
@@ -183,7 +167,6 @@ class NetworksController < ::ApplicationController
     render :json => network.node_allocations(node).map{|a|a.to_s}, :content_type=>cb_content_type(:allocations, "array")
   end
 
-  add_help(:update,[:id, :conduit, :team_mode, :use_team, :vlan, :use_vlan, :configure],[:put])
   def update
     Network.transaction do
       @network = Network.find_key(params[:id]).lock!

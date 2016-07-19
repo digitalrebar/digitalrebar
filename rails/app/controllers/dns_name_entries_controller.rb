@@ -13,23 +13,9 @@
 # limitations under the License.
 
 class DnsNameEntriesController < ::ApplicationController
-  respond_to :html, :json
+  self.model = DnsNameEntry
+  self.cap_base = "NETWORK"
 
-  def sample
-    render api_sample(DnsNameEntry)
-  end
-
-  def match
-    attrs = DnsNameEntry.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "NETWORK", DnsNameEntry)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index DnsNameEntry, objs }
-    end
-  end
-  
   def show
     @entry = DnsNameEntry.find_key params[:id]
     validate_read(@entry.tenant_id, "NETWORK", DnsNameEntry, params[:id])

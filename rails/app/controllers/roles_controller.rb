@@ -14,33 +14,20 @@
 #
 #
 class RolesController < ApplicationController
+  self.model = Role
+  self.cap_base = "ROLE"
 
-  def sample
-    render api_sample(Role)
-  end
-  
-  def match
-    attrs = Role.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = Role.where(ok_params) if !ok_params.empty?
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Role, objs }
-    end
-  end
-  
   def index
     @list = if params.include? :deployment_id
               d = Deployment.find_key(params[:deployment_id])
-	      if validate_capability(d.tenant_id, "DEPLOYMENT_READ")
+	      if capable(d.tenant_id, "DEPLOYMENT_READ")
                 r = d.roles.to_a
 	      else
 		r = []
 	      end
             elsif params.include? :node_id
               n = Node.find_key(params[:node_id])
-	      if validate_capability(n.tenant_id, "NODE_READ")
+	      if capable(n.tenant_id, "NODE_READ")
                 r = n.roles.to_a
 	      else
 		r = []

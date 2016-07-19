@@ -14,22 +14,9 @@
 #
 #
 class JigsController < ApplicationController
-
-  def sample
-    render api_sample(Jig)
-  end
-
-  def match
-    attrs = Jig.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = Jig.where(ok_params) if !ok_params.empty?
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index Jig, objs }
-    end
-  end
-  
+  self.model = Jig
+  self.cap_base = "JIG"
+ 
   def index
     respond_to do |format|
       format.html { @jigs = Jig.order('"order"') } # show.html.erb

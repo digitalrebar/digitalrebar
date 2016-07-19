@@ -25,37 +25,22 @@ class ApplicationController < ActionController::Base
   before_filter :rebar_auth
   after_filter  :filter_json
 
-  # Basis for the reflection/help system.
+  # Helpers for the capability system.
+  # Allows each controller to express which model and capability
+  # set it should interact with by default
+  class_attribute :model, :cap_base
 
-  # First, a place to stash the help contents.
-  # Using a class_inheritable_accessor ensures that
-  # these contents are inherited by children, but can be
-  # overridden or appended to by child classes without messing up
-  # the contents we are building here.
-  class_attribute :help_contents
-  self.help_contents = []
+  def model
+    self.class.model
+  end
 
-  # Class method for adding method-specific help/API information
-  # for each method we are going to expose to the CLI.
-  # Since it is a class method, it will not be bothered by the Rails
-  # trying to expose it to everything else, and we can call it to build
-  # up our help contents at class creation time instead of instance  creation
-  # time, so there is minimal overhead.
-  # Since we are just storing an arrray of singleton hashes, adding more
-  # user-oriented stuff (descriptions, exmaples, etc.) should not be a problem.
-  def self.add_help(method,args=[],http_method=[:get])
-    # if we were passed multiple http_methods, build an entry for each.
-    # This assumes that they all take the same parameters, if they do not
-    # you should call add_help for each different set of parameters that the
-    # method/http_method combo can take.
-    http_method.each { |m|
-      self.help_contents = self.help_contents.push({
-        method => {
-                                             "args" => args,
-                                             "http_method" => m
-        }
-      })
-    }
+  def cap_base
+    self.class.cap_base
+  end
+  
+  # Construct a capability by adding cap_base to cap_action
+  def cap(cap_action, base = self.cap_base)
+    "#{base}_#{cap_action}"
   end
 
   #helper :all # include all helpers, all the time
@@ -77,11 +62,27 @@ class ApplicationController < ActionController::Base
     request.xhr?
   end
 
-  def api_sample(model)
-    j = model.column_defaults.reject{|k,v| /(^id)|_(id|at)$/ =~ k}
-    api_show(j,model)
+  # Common sample method.  It is basically identical for every controller.
+  def sample
+    if self.model
+      j = self.model.column_defaults.reject{|k,v| /(^id)|_(id|at)$/ =~ k}
+      render api_show(j,self.class.model)
+    else
+      render api_not_implemented(self.model, "sample", "")
+    end
   end
 
+  # Common match method.  It is basically identical for every controller
+  def match
+    attrs = self.model.attribute_names.map{|a|a.to_sym}
+    ok_params = params.permit(attrs)
+    objs = ok_params.empty? ? model.where('false') : visible(self.model,cap("READ")).where(ok_params)
+    respond_to do |format|
+      format.html { }
+      format.json { render api_index(self.model, objs) }
+    end
+  end
+  
   # Given an object and list of permitted object attributes to update, extract the
   # JSON patch that should be in the request body, apply it to the object cast as a
   # JSON blob, and update the permitted attribs of the actual object.
@@ -219,39 +220,18 @@ class ApplicationController < ActionController::Base
     }
   end
 
-  # formats API json output 
+  # formats API json output
   # used for json output that is not mapped to a Rebar model
   def api_result(json)
     return {json: json, content_type: cb_content_type("json", "result") }
   end
 
-  # formats API json output 
+  # formats API json output
   # used for json results output that is not mapped to a Rebar model
   def api_array(json)
     return {:json=>json, :content_type=>cb_content_type("json", "array") }
   end
 
-  add_help(:help)
-  def help
-    render :json => { self.controller_name => self.help_contents.collect { |m|
-        res = {}
-        m.each { |k,v|
-          # sigh, we cannot resolve url_for at clqass definition time.
-          # I suppose we have to do it at runtime.
-          url=URI::unescape(url_for({ :action => k,
-                        :controller => self.controller_name,
-
-          }.merge(v["args"].inject({}) {|acc,x|
-            acc.merge({x.to_s => "(#{x.to_s})"})
-          }
-          )
-          ))
-          res.merge!({ k.to_s => v.merge({"url" => url})})
-        }
-        res
-      }
-    }
-  end
   set_layout
 
   unless Rails.application.config.consider_all_requests_local
@@ -409,7 +389,7 @@ class ApplicationController < ActionController::Base
 
       @current_user = User.create_with(email: email).find_or_create_by(username: username)
       # Update the capabiilties
-      if @current_user.is_admin != wants_admin 
+      if @current_user.is_admin != wants_admin
         @current_user.is_admin = wants_admin
         @current_user.save
         @current_user = User.find_by(username: username)
@@ -435,19 +415,19 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  #
-  # Since we have the user, just get the cap map (don't parse the sent caps)
-  #
-  # Is CAP in tenant tree.
-  #
-  def validate_capability(t_id, cap)
-    cap_map = @current_user.cap_map
+  # See if the current user has this capability in the given tenant id
+  def capable(t_id, cap)
+    @current_user.capable(cap, t_id)
+  end
 
-    while cap_map[t_id] do
-      return true if cap_map[t_id]["capabilities"].include? cap
-      t_id = cap_map[t_id]["parent"] rescue nil
-    end
-    false
+  # A little visibility helper for lists
+  def visible(klass, cap)
+    klass.visible(cap, @current_user.id)
+  end
+
+  # Try to find an object filtered by capability
+  def find_key_cap(klass, key, cap)
+    klass.find_key_cap(key, cap, @current_user.id)
   end
 
   #
@@ -487,13 +467,9 @@ class ApplicationController < ActionController::Base
 
   # Validation helpers
   def validate_action(t_id, cap_base, klass, key, action)
-    unless validate_capability(t_id, "#{cap_base}_#{action}")
-      if validate_capability(t_id, "#{cap_base}_READ")
-        raise RebarForbiddenError.new(key, klass)
-      else
-        raise RebarNotFoundError.new(key, klass)
-      end
-    end
+    return true if capable(t_id, "#{cap_base}_#{action}")
+    raise RebarForbiddenError.new(key, klass) if capable(t_id, "#{cap_base}_READ")
+    raise RebarNotFoundError.new(key, klass)
   end
 
   def validate_update(t_id, cap_base, klass, key)
@@ -501,15 +477,11 @@ class ApplicationController < ActionController::Base
   end
 
   def validate_read(t_id, cap_base, klass, key)
-    unless validate_capability(t_id, "#{cap_base}_READ")
-      raise RebarNotFoundError.new(key, klass)
-    end
+    raise RebarNotFoundError.new(key, klass) unless capable(t_id, "#{cap_base}_READ")
   end
 
   def validate_create(t_id, cap_base, klass)
-    unless validate_capability(t_id, "#{cap_base}_CREATE")
-      raise RebarForbiddenError.new("new", klass)
-    end
+    raise RebarForbiddenError.new("new", klass) unless capable(t_id, "#{cap_base}_CREATE")
   end
 
   def validate_destroy(t_id, cap_base, klass, key)
@@ -517,21 +489,8 @@ class ApplicationController < ActionController::Base
   end
 
   def validate_match(ok_params, t_key, cap_base, klass)
-    objs = []
-    if !ok_params.empty?
-      t_ids = build_tenant_list("#{cap_base}_READ")
-      if ok_params[t_key]
-        if t_ids.include? ok_params[t_key]
-          objs = klass.where(ok_params)
-        else
-          objs = []
-        end
-      else
-        ok_params[t_key] = t_ids
-        objs = klass.where(ok_params)
-      end
-    end
-    objs
+    return klass.where("false") if ok_params.empty?
+    visible(klass, cap_base+ "_READ").where(ok_params)
   end
 
 end

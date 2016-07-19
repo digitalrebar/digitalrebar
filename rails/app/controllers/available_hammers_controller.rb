@@ -14,21 +14,8 @@
 #
 #
 class AvailableHammersController < ApplicationController
-
-  def sample
-    render api_sample(AvailableHammer)
-  end
-  
-  def match
-    attrs = AvailableHammer.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = AvailableHammer.where(ok_params) if !ok_params.empty?
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index AvailableHammer, objs }
-    end
-  end
+  self.model = AvailableHammer
+  self.cap_base = "AVAILABLE_HAMMER"
 
   # API GET /api/v2/available_hammers
   def index

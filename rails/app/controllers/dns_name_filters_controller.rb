@@ -13,23 +13,9 @@
 # limitations under the License.
 
 class DnsNameFiltersController < ::ApplicationController
-  respond_to :html, :json
+  self.model = DnsNameFilter
+  self.cap_base = "NETWORK"
 
-  def sample
-    render api_sample(DnsNameFilter)
-  end
-
-  def match
-    attrs = DnsNameFilter.attribute_names.map{|a|a.to_sym}
-    objs = []
-    ok_params = params.permit(attrs)
-    objs = validate_match(ok_params, :tenant_id, "NETWORK", DnsNameFilter)
-    respond_to do |format|
-      format.html {}
-      format.json { render api_index DnsNameFilter, objs }
-    end
-  end
-  
   def index
     t_ids = build_tenant_list("NETWORK_READ")
     @filters = DnsNameFilter.where(tenant_id: t_ids).order('priority ASC')
