@@ -175,8 +175,7 @@ ActiveRecord::Base.transaction do
   Nav.find_or_create_by(item: 'root', name: 'nav.root', description: 'nav.root_description', path: "main_app.root_path", order: 0, development: true)
 
   # monitor
-  Nav.find_or_create_by(item: 'monitor', parent_item: 'root', name: 'nav.monitor', description: 'nav.monitor_description', path: "main_app.monitor_path('system')", order: 500)
-  Nav.find_or_create_by(item: 'monitor_child', parent_item: 'monitor', name: 'nav.monitor', description: 'nav.monitor_description', path: "main_app.monitor_path('system')", order: 1000)
+  Nav.find_or_create_by(item: 'monitor', parent_item: 'root', name: 'nav.monitor', description: 'nav.monitor_description', path: "main_app.annealer_path", order: 500)
   Nav.find_or_create_by(item: 'annealer', parent_item: 'monitor', name: 'nav.annealer', description: 'nav.annealer_description', path: "main_app.annealer_path", order: 3000)
   Nav.find_or_create_by(item: 'overview', parent_item: 'monitor', name: 'nav.layercake', description: 'nav.layercake_description', path: "main_app.layercake_path", order: 4000)
 

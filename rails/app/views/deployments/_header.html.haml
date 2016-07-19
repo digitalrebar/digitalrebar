@@ -5,10 +5,6 @@
   %h2
     - if @deployment.parent
       = link_to @deployment.parent.name, deployment_path(@deployment.parent.id), :title => @deployment.parent.description
-      %a{:href=>monitor_path(@deployment.parent.id), :title=>"#{@deployment.parent.name} monitor",:style=>"display: inline-block;position: relative;"}
-        %span.led.monitor
 
       = "/"
     = link_to @deployment.name, deployment_path(@deployment.id), :title => @deployment.description
-    %a{:href=>monitor_path(@deployment.id), :title=>"#{@deployment.name} monitor",:style=>"display: inline-block;position: relative;"}
-      %span.led.monitor
