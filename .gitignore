@@ -29,6 +29,7 @@ install-*.log
 /compose/config-dir/webproxy/squid.user.conf
 /compose/tag
 /compose/data-dir
+/compose/docker-compose-common.dev
 
 /containers/tree_bag
 
