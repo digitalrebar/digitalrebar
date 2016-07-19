@@ -161,14 +161,29 @@ func (fe *Frontend) PatchZone(w rest.ResponseWriter, r *rest.Request) {
 	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
 	fe.ZoneInfo.Lock()
 	zone := fe.ZoneInfo.Zones[zoneName]
+	if zone != nil {
+		tenantId = zone.TenantId
+	}
+	if zone != nil || !capMap.HasCapability(tenantId, "ZONE_READ") || !capMap.HasCapability(tenantId, "ZONE_UPDATE"){
+		if !capMap.HasCapability(tenantId, "ZONE_READ") {
+			rest.Error(w, "Not Found", http.StatusNotFound)
+		} else {
+			rest.Error(w, "Forbidden", http.StatusForbidden)
+		}
+		return
+	}
 	switch record.ChangeType {
 	case "ADD":
 		// If no zone, create zone
-		if capMap.HasCapability(tenantId, "ZONE_CREATE") {
-			rest.Error(w, "Forbidden", http.StatusForbidden)
-			return
-		}
 		if zone == nil {
+			if !capMap.HasCapability(tenantId, "ZONE_CREATE") {
+				if !capMap.HasCapability(tenantId, "ZONE_READ") {
+					rest.Error(w, "Not Found", http.StatusNotFound)
+				} else {
+					rest.Error(w, "Forbidden", http.StatusForbidden)
+				}
+				return
+			}
 			zone = NewZoneData()
 			zone.TenantId = tenantId
 			fe.ZoneInfo.Zones[zoneName] = zone
