@@ -31,6 +31,7 @@ ActiveRecord::Base.transaction do
     [ "NODE_POWER",           "Power actions on nodes" ],
     [ "NODE_COMMIT",          "Commit nodes" ],
     [ "NODE_PROPOSE",         "Propose nodes" ],
+    [ "NODE_RETRY",           "Retry nodes" ],
 
     # Deployment roles are assumed to have same caps as DEPLOYMENT
     [ "DEPLOYMENT_CREATE",    "Create Deployments" ],
@@ -41,7 +42,6 @@ ActiveRecord::Base.transaction do
     [ "DEPLOYMENT_COMMIT",    "Commit Deployments" ],
     [ "DEPLOYMENT_PROPOSE",   "Propose Deployments" ],
     [ "DEPLOYMENT_ANNEAL",    "Anneal Deployments" ],
-    [ "DEPLOYMENT_RETRY",     "Retry Deployments" ],
 
     [ "NETWORK_CREATE",       "Create Networks" ],
     [ "NETWORK_READ",         "Read Networks" ],
