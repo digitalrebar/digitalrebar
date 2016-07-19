@@ -77,6 +77,7 @@ private
     url = provisioner_mgmt[0]['url']
     payload = {'Name' => node.name,
                'Uuid' => node.uuid,
+	       'TenantId' => node.tenant_id,
                'Address' => node.addresses(:v4_only)[0].addr,
                'BootEnv' => node.bootenv,
                'Params' => {}
