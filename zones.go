@@ -176,14 +176,6 @@ func (fe *Frontend) PatchZone(w rest.ResponseWriter, r *rest.Request) {
 	case "ADD":
 		// If no zone, create zone
 		if zone == nil {
-			if !capMap.HasCapability(tenantId, "ZONE_CREATE") {
-				if !capMap.HasCapability(tenantId, "ZONE_READ") {
-					rest.Error(w, "Not Found", http.StatusNotFound)
-				} else {
-					rest.Error(w, "Forbidden", http.StatusForbidden)
-				}
-				return
-			}
 			zone = NewZoneData()
 			zone.TenantId = tenantId
 			fe.ZoneInfo.Zones[zoneName] = zone
@@ -220,20 +212,7 @@ func (fe *Frontend) PatchZone(w rest.ResponseWriter, r *rest.Request) {
 		fe.save_data()
 	case "REMOVE":
 		if zone == nil {
-			if !capMap.HasCapability(zone.TenantId, "ZONE_READ") {
-				rest.Error(w, "Not Found", http.StatusNotFound)
-				return
-			} else {
-				goto output
-			}
-		}
-		if !capMap.HasCapability(zone.TenantId, "ZONE_READ") {
-			if capMap.HasCapability(zone.TenantId, "ZONE_DESTROY"){
-				rest.Error(w, "Forbidden", http.StatusForbidden)
-			} else {
-				rest.Error(w, "Not Found", http.StatusNotFound)
-			}
-			return
+			goto output
 		}
 		zes := zone.Entries[record.Name]
 		if zes == nil {
