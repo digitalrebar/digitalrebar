@@ -18,57 +18,46 @@ class AttribsController < ApplicationController
   self.cap_base = "ATTRIB"
 
   def index
-    target = find_target
-    if target.nil?
-      # Global attribs are read-able by all
-      @list = Attrib.all
-    else
-      cap, tid = build_capability_name(target)
-      if cap
-	@list = []
-        @list = target.attribs if capable(tid, "#{cap}_READ")
-      else
-        @list = Attrib.all
-      end
-    end
-    @list = @list.map do |i|
-      e = i.as_json
-      e["value"] = i.get(target)
-      e
-    end if target
+    target = find_target("READ")
+    @list = if target.nil?
+              # Global attribs are read-able by
+              model.all
+            else
+              target.attribs.map do |i|
+                e = i.as_json
+                e["value"] = i.get(target)
+                e
+              end
+            end
     respond_to do |format|
       format.html { }
-      format.json { render api_index :attrib, @list }
+      format.json { render api_index model, @list }
     end
   end
 
   def show
-    target = find_target
-    bucket = params[:bucket] ? params[:bucket].to_sym : :all
-    @attrib = Attrib.find_key params[:id]
+    target = find_target("READ")
+    @attrib = model.find_key params[:id]
     if target.nil?
       respond_to do |format|
         format.html {  }
         format.json { render api_show @attrib }
       end
-    else
-      cap, tid = build_capability_name(target)
-      validate_read(tid, cap, Attrib, params[:id])
-
-      ret = @attrib.as_json
-      ret["value"] = @attrib.get(target,bucket)
-      # added node_id so what we can get backwards references if type is node
-      ret["node_id"] = target.is_a?(Node) ? target.id : nil
-      respond_to do |format|
-        format.html { }
-        format.json { render json: ret, content_type: cb_content_type(@attrib, "obj") }
-      end
+      return
+    end
+    bucket = params[:bucket] ? params[:bucket].to_sym : :all
+    ret = @attrib.as_json
+    ret["value"] = @attrib.get(target,bucket)
+    # added node_id so what we can get backwards references if type is node
+    ret["node_id"] = target.is_a?(Node) ? target.id : nil
+    respond_to do |format|
+      format.html { }
+      format.json { render json: ret, content_type: cb_content_type(@attrib, "obj") }
     end
   end
 
   def create
-    validate_create(@current_user.current_tenant_id, "ATTRIB", Attrib)
-
+    validate_create
     params[:barclamp_id] = Barclamp.find_key(params[:barclamp]).id if params.has_key? :barclamp
     params[:role_id] =  Role.find_key(params[:role]).id if params.has_key? :role
     params.require(:name)
@@ -95,18 +84,14 @@ class AttribsController < ApplicationController
     ret = Hash.new
     attrib = nil
     Attrib.transaction do
-      attrib = Attrib.find_key(params[:id])
-      target = find_target
+      attrib = model.find_key(params[:id])
+      target = find_target("UPDATE")
       if target.nil?
         # We do not allow updating attribs outside the context of
         # some other object.
         render api_not_supported 'put', 'attribs/:id'
         return
       end
-
-      cap, tid = build_capability_name(target)
-      validate_update(tid, cap, Attrib, params[:id]) if cap
-
       target.lock!
       val = nil
       if request.patch?
@@ -132,34 +117,28 @@ class AttribsController < ApplicationController
   end
 
   def destroy
-    validate_destroy(@current_user.current_tenant_id, "ATTRIB", Attrib, params[:id])
-    @attrib = Attrib.find_key(params[:id] || params[:name])
+    @attrib = find_key_cap(model,params[:id] || params[:name], cap("DESTROY"))
     @attrib.destroy
     render api_delete @attrib
   end
 
   private
 
-  def find_target
-    case
-    when params.has_key?(:node_id) then Node.find_key(params[:node_id])
-    when params.has_key?(:role_id) then Role.find_key(params[:role_id])
-    when params.has_key?(:node_role_id) then NodeRole.find_key(params[:node_role_id])
-    when params.has_key?(:deployment_id) then Deployment.find_key(params[:deployment_id])
-    when params.has_key?(:deployment_role_id) then DeploymentRole.find_key(params[:deployment_role_id])
-    else nil
-    end
+  def find_target(action)
+    m,k,c = case
+            when params.has_key?(:node_id)
+              [Node, params[:node_id], "NODE"]
+            when params.has_key?(:role_id)
+              [Role, params[:role_id], "ROLE"]
+            when params.has_key?(:node_role_id)
+              [NodeRole, params[:node_role_id], "NODE"]
+            when params.has_key?(:deployment_id)
+              [Deployment, params[:deployment_id], "DEPLOYMENT"]
+            when params.has_key?(:deployment_role_id)
+              [DeploymentRole, params[:deployment_role_id], "DEPLOYMENT"]
+            else
+              return nil
+            end
+    find_key_cap(m,k,cap(action,c))
   end
-
-  def build_capability_name(target)
-    case
-    when target.is_a?(Node) then [ "NODE", target.tenant_id ]
-    when target.is_a?(NodeRole) then [ "NODE", target.node.tenant_id ]
-    when target.is_a?(Deployment) then [ "DEPLOYMENT", target.tenant_id ]
-    when target.is_a?(DeploymentRole) then [ "DEPLOYMENT", target.deployment.tenant_id ]
-    when target.is_a?(Role) then [ "ROLE", @current_user.current_tenant_id ]
-    else [ nil, nil ]
-    end                                                                
-  end  
-
 end

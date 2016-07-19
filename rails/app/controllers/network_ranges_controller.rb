@@ -18,13 +18,11 @@ class NetworkRangesController < ::ApplicationController
  
   def index
     @list = if params.has_key? :network_id or params.has_key? :network
-              network =  Network.find_key params[:network_id] || params[:network]
-              network.network_ranges.to_a
+              find_key_cap(Network,params[:network_id] || params[:network],cap("READ")).
+                network_ranges
             else
-              NetworkRange.all.to_a
+              visible(model,cap("READ"))
             end
-    t_ids = build_tenant_list("NETWORK_READ")
-    @list.delete_if { |x| !t_ids.include? x.tenant_id }
     respond_to do |format|
       format.html { }
       format.json { render api_index NetworkRange, @list }
@@ -32,33 +30,32 @@ class NetworkRangesController < ::ApplicationController
   end
 
   def show
-    if params[:network_id]
-      network = Network.find_key params[:network_id]
-      @range = network.network_ranges.find_key(params[:id])
-    else
-      @range = NetworkRange.find_key(params[:id])
-    end
-    validate_read(@range.tenant_id, "NETWORK", NetworkRange, params[:id])
+    @range = if params[:network_id]
+               find_key_cap(Network, params[:network_id], cap("READ")).
+                 network_ranges.find_key(params[:id])
+             else
+               find_key_cap(model, params[:id], cap("READ"))
+             end
     respond_to do |format|
       format.html {
-                    @list = [@range]
-                    render :action=>:index
-                  }
+        # Why?
+        @list = [@range]
+        render :action=>:index
+      }
       format.json { render api_show @range }
     end
   end
 
   def create
-    params[:network_id] = Network.find_key(params[:network]).id if params.has_key? :network
     params[:overlap] = false unless params.key?(:overlap)
-    params.require(:network_id)
     params.require(:name)
     params.require(:first)
     params.require(:last)
-    unless params[:tenant_id]
-      params[:tenant_id] = @current_user.current_tenant_id
-    end
-    validate_create(params[:tenant_id], "NETWORK", NetworkRange)
+    net = find_key_cap(Network, params[:network] || params[:network_id], cap("UPDATE"))
+    params[:network_id] = net.id
+    # There is a case to be made for making this default to the network tenant ID instead.
+    params[:tenant_id] ||= @current_user.current_tenant_id
+    validate_create(params[:tenant_id])
     @range =  NetworkRange.create! params.permit(:name,
                                                  :network_id,
 						 :tenant_id,
@@ -77,12 +74,15 @@ class NetworkRangesController < ::ApplicationController
   def update
     params[:network_id] = Network.find_key(params[:network]).id if params.has_key? :network
     NetworkRange.transaction do
-      if params.has_key? :id
-        @network_range = NetworkRange.find_key(params[:id]).lock!
-      else
-        @network_range = NetworkRange.find_by!(name: params[:name], network_id: params[:network_id]).lock!
-      end
-      validate_update(@network_range.tenant_id, "NETWORK", NetworkRange, @network_range.id)
+      @network_range = if params.has_key? :id
+                         find_key_cap(model, params[:id], cap("UPDATE")).lock!
+                       else
+                         net = find_key_cap(Network,
+                                            params[:network] || params[:network_id],
+                                            cap("READ"))
+                         visible(model, cap("UPDATE")).
+                           find_by!(name: params[:name], network_id: net.id).lock!
+                       end
       if request.patch?
         patch(@network_range,%w{name first last conduit vlan team_mode overlap use_vlan use_bridge use_team tenant_id})
       else
@@ -104,11 +104,10 @@ class NetworkRangesController < ::ApplicationController
 
   # only works with ID, not name!
   def destroy
-    @range = NetworkRange.find params[:id]
+    @range = find_key_cap(model, params[:id], cap("DESTROY"))
     if params[:network_id]
       raise "Range is not from the correct Network" unless @range.network_id = params[:network_id]
     end
-    validate_destroy(@range.tenant_id, "NETWORK", NetworkRange, params[:id])
     @range.destroy
     render api_delete @range
   end

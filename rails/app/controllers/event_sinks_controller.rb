@@ -18,17 +18,15 @@ class EventSinksController < ApplicationController
   self.cap_base = "EVENT_SINK"
 
   def index
-    t_ids = build_tenant_list("EVENT_SINK_READ")
-    @event_sinks = EventSink.where(tenant_id: t_ids)
+    @event_sinks = visible(model, cap("READ"))
     respond_to do |format|
       format.html { } 
-      format.json { render api_index EventSink, @event_sinks }
+      format.json { render api_index model, @event_sinks }
     end
   end
 
   def show
-    @event_sink = EventSink.find_key(params[:id])
-    validate_read(@event_sink.tenant_id, "EVENT_SINK", EventSink, params[:id])
+    @event_sink = find_key_cap(model, params[:id], cap("READ"))
     respond_to do |format|
       format.html {  }
       format.json { render api_show @event_sink }
@@ -37,8 +35,7 @@ class EventSinksController < ApplicationController
 
   def update
     EventSink.transaction do
-      @event_sink = event.find_key(params[:id]).lock!
-      validate_update(@event_sink.tenant_id, "EVENT_SINK", EventSink, params[:id])
+      @event_sink = find_key_cap(model, params[:id], cap("UPDATE")).lock!
       if request.patch?
         patch(@event_sink,%w{endpoint username authenticator notes tenant_id})
       else
@@ -54,24 +51,23 @@ class EventSinksController < ApplicationController
 
   def create
     params.require(:endpoint)
-    unless params[:tenant_id]
-      params[:tenant_id] = @current_user.current_tenant_id
-    end
-    validate_create(params[:tenant_id], "EVENT_SINK", EventSink)
+    params[:tenant_id] ||= @current_user.current_tenant_id
     EventSink.transaction do
+      validate_create(params[:tenant_id])
       @event_sink = EventSink.create!(params.permit(:endpoint,
-                                               :username,
-					       :tenant_id,
-                                               :authenticator,
-                                               :notes))
+                                                    :username,
+					            :tenant_id,
+                                                    :authenticator,
+                                                    :notes))
     end
     render api_show @event_sink
   end
 
   def destroy
-    @es = EventSink.find_key(params[:id])
-    validate_destroy(@es.tenant_id, "EVENT_SINK", EventSink, params[:id])
-    @es.destroy
+    model.transaction do
+      @es = find_key_cap(model,params[:id],cap("DESTROY"))
+      @es.destroy
+    end
     render api_delete @es
   end
 

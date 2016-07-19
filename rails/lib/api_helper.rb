@@ -48,10 +48,15 @@ module ApiHelper
     end
 
     def find_key_cap(key, cap_name, user_id)
-      visible(cap_name, user_id).find_key(key)
+      begin
+        visible(cap_name, user_id).find_key(key)
+      rescue ActiveRecord::RecordNotFound
+        raise RebarNotFoundError.new(key, self) if cap_name.end_with?("_READ")
+        raise RebarForbiddenError.new(key, self)
+      end
     end
 
-    def visible (cap_name, user_id)
+    def visible(cap_name, user_id)
       if !Capability.exists?(name: cap_name)
         # For now, if there is no capability, then there is no visible filter.
         Rails.logger.warn("No capability #{cap_name}, falling back to dangerous allow everything")
@@ -68,15 +73,35 @@ module ApiHelper
         # Hammers use their node
         return where(["node_id in (select id from nodes where tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?))",cap_name, user_id])
       when "runs"
-      # Runs use their node
+        # Runs use their node
         return where(["node_id in (select id from nodes where tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?))",cap_name, user_id])
+      when "user_tenant_capabilities"
+        # UserTenantCapabilities are... fun, and should probably be normalized by adding more
+        # caps.
+        #
+        # For now, the rule I am using is that users can see their own
+        # UTCs, and users with USER_TENANT_CAPABILITY_ADD and
+        # USER_TENANT_CAPABILITY_DESTROY caps can see all UTCs in
+        # tenants where they have those caps,
+        return where(["id in (
+                       select id from user_tenant_capabilities where user_id = ?
+                       UNION
+                       select id from user_tenant_capabilities
+                       where tenant_id in (select tenant_id from utc_mapping where user_id = ? AND
+                                           capability in (?, ?)))",
+                      user_id,
+                      user_id,
+                      "USER_TENANT_CAPABILITY_ADD",
+                      "USER_TENANT_CAPABILITY_DESTROY"])
       end
       if columns_hash.has_key?("tenant_id")
         # Anything with a tenant id should respond to this rule.
         return where(["tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?)",cap_name, user_id])
       end
-      Rails.logger.warn("No idea how to handle visibility checking for #{self.name}, not showing anything")
-      where('false')
+      # If we got here, we are dealing with an untenated object.
+      # Perform global capability check instead
+      u = User.find_by!(id: user_id)
+      u.capable(cap_name,u.tenant_id) ? all : where('false')
     end
 
     TRANSACTION_MAX_RETRIES = 3

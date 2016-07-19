@@ -16,30 +16,26 @@ class UserTenantCapabilitiesController < ::ApplicationController
   self.model = UserTenantCapability
   self.cap_base = "USER_TENANT_CAPABILITY"
 
+  # Note that the visible helper ignores the cap here for now.
+  # See it for the exact rules.
   def index
-    t_ids = build_tenant_list("TENANT_READ")
-    ut_ids = build_tenant_list("USER_READ")
-    ct_ids = build_tenant_list("CAPABILITY_READ")
-    @caps = UserTenantCapability.where(tenant_id: t_ids & ut_ids & ct_ids)
+    model.transaction do
+      @caps = visible(model,cap("READ"))
+      @users = visible(User,cap("READ","USER")).
+               where(id: @caps.to_a.map{|c|c.user_id}).distinct
+      @tenants = visible(Tenant,cap("READ","TENANT")).
+                 where(id: @caps.to_a.map{|c|c.tenant_id}).distinct
+      @capabilities = visible(Capability,cap("READ","CAPABILITY")).
+                      where(id: @caps.to_a.map{|c|c.capability_id}).distinct
+    end
     respond_to do |format|
-      format.html {
-        @users = User.where(tenant_id: ut_ids)
-        @tenants = Tenant.where(id: t_ids)
-        unless ct_ids.empty?
-          @capabilities = Capability.all
-        else
-          @capabilities = {}
-        end
-      }
-      format.json { render api_index UserTenantCapability, @caps }
+      format.html { }
+      format.json { render api_index model, @caps }
     end
   end
 
   def show
-    @cap = UserTenantCapability.find_key params[:id]
-    validate_read(@cap.tenant_id, "TENANT", UserTenantCapability, "#{params[:user_id]}:#{params[:tenant_id]}:#{params[:capabilitiy_id]}")
-    validate_read(@cap.tenant_id, "USER", UserTenantCapability, "#{params[:user_id]}:#{params[:tenant_id]}:#{params[:capabilitiy_id]}")
-    validate_read(@cap.tenant_id, "CAPABILITY", UserTenantCapability, "#{params[:user_id]}:#{params[:tenant_id]}:#{params[:capabilitiy_id]}")
+    @cap = find_key_cap(model,params[:id],cap("READ"))
     respond_to do |format|
       format.html { }
       format.json { render api_show @cap }
@@ -47,19 +43,15 @@ class UserTenantCapabilitiesController < ::ApplicationController
   end
 
   def create
-    c = Capability.find_key params[:capability_id]
-    params[:capability_id] = c.id
-    t = Tenant.find_key params[:tenant_id]
-    params[:tenant_id] = t.id
-    u = User.find_key params[:user_id]
-    params[:user_id] = u.id
-
-    validate_action(params[:tenant_id], "USER_TENANT_CAPABILITY", UserTenantCapability, params.to_s, "ADD")
-
-    UserTenantCapability.transaction do
-      @cap = UserTenantCapability.create! params.permit(:tenant_id,
-                                             :user_id,
-                                             :capability_id)
+    c = find_key_cap(Capability, params[:capability_id], cap("READ","CAPABILITY"))
+    t = find_key_cap(Tenant, params[:tenant_id], cap("UPDATE","TENANT"))
+    u = find_key_cap(User, params[:user_id], cap("UPDATE","USER"))
+    # Why is this not named CREATE
+    raise RebarForbiddenError.new("new", model) unless capable(t.id, cap("ADD"))
+    model.transaction do
+      @cap = model.create!(tenant_id: t.id,
+                           user_id: u.id,
+                           capability_id: c.id)
     end
 
     respond_to do |format|
@@ -73,24 +65,19 @@ class UserTenantCapabilitiesController < ::ApplicationController
   end
 
   def destroy
-    if params[:id]
-      @cap = UserTenantCapability.find_key(params[:id])
-    else
-      c = Capability.find_key params[:capability_id]
-      params[:capability_id] = c.id
-      t = Tenant.find_key params[:tenant_id]
-      params[:tenant_id] = t.id
-      u = User.find_key params[:user_id]
-      params[:user_id] = u.id
-
-      caps = UserTenantCapability.where(tenant_id: t.id, capability_id: c.id, user_id: u.id)
-      if caps.empty?
-	raise RebarNotFoundError.new(t.id, UserTenantCapability)
-      else
-        @cap = caps[0]
-      end
-    end
-    validate_action(@cap.tenant_id, "USER_TENANT_CAPABILITY", UserTenantCapability, @cap.id, "DESTROY")
+    @cap = if params[:id]
+             # This lies for now.  Once we have proper seperation between
+             # READ, ADD (or hopefully CREATE), and DESTROY, it will
+             # tell the truth
+             find_key_cap(model, params[:id], cap("DESTROY"))
+           else
+             c = find_key_cap(Capability, params[:capability_id], cap("READ","CAPABILITY"))
+             t = find_key_cap(Tenant, params[:tenant_id], cap("UPDATE","TENANT"))
+             u = find_key_cap(User, params[:user_id], cap("UPDATE","USER"))
+             model.find_by!(tenant_id: t.id, capability_id: c.id, user_id: u.id)
+           end
+    # Compensate for visible and find_key_cap not working
+    raise RebarForbiddenError.new(@cap.id, model) unless capable(t_id, cap("DESTROY"))
     @cap.destroy
     respond_to do |format|
       format.html { redirect_to :action=>:index }

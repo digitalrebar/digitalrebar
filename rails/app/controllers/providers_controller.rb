@@ -20,33 +20,27 @@ class ProvidersController < ApplicationController
   # API GET /api/v2/providers
   def index
     @list = if params.has_key?(:node_id)
-      n=Node.find_key(params[:node_id])
-      if capable(n.tenant_id, "NODE_READ")
-        n.providers.to_a
-      else
-        []
-      end
-    else
-      Provider.all.to_a
-    end
-    t_ids = build_tenant_list("PROVIDER_READ")
-    @list.delete_if { |x| !t_ids.include? x.tenant_id }
+              find_key_cap(Node,params[:node_id],cap("READ","NODE")).
+                providers.visible(cap("READ"),@current_user.id)
+            else
+              visible(model, cap("READ"))
+            end
     respond_to do |format|
       format.html {  }
-      format.json { render api_index Provider, @list }
+      format.json { render api_index model, @list }
     end
   end
 
   def show
     @item = if params[:id] == 'create'
-      # GREG: WTF??? Why does show create?!?!?
-      t = params[:new][:type]
-      validate_create(@current_user.current_tenant_id, "PROVIDER", Provider)
-      Provider.new(name: t.downcase, id: -1, type: t, description: I18n.t('not_set'))
-    else
-      Provider.find_key(params[:id])
-    end
-    validate_read(@item.tenant_id, "PROVIDER", Provider, params[:id])
+              # GREG: WTF??? Why does show create?!?!?
+              # Victor: Yes, this needs to die in a fire.
+              t = params[:new][:type]
+              validate_create
+              Provider.new(name: t.downcase, id: -1, type: t, description: I18n.t('not_set'))
+            else
+              find_key_cap(model, params[:id], cap("READ"))
+            end
     respond_to do |format|
       format.html { render :show  }
       format.json { render api_show @item }
@@ -56,8 +50,7 @@ class ProvidersController < ApplicationController
   def update
     hashfix if params[:auth_details].is_a? Hash # address UI formatting
     Provider.transaction do
-      @item = Provider.find_key(params[:id]).lock!
-      validate_update(@item.tenant_id, "PROVIDER", Provider, params[:id])
+      @item = find_key_cap(model,params[:id],cap("UPDATE")).lock!
       if request.patch?
         patch(@item,%w{name item type description auth_details tenant_id})
       else
@@ -80,15 +73,13 @@ class ProvidersController < ApplicationController
     params.require(:name)
     params.require(:type)
     params.require(:auth_details)
-    unless params[:tenant_id]
-      params[:tenant_id] = @current_user.current_tenant_id
-    end
-    validate_create(params[:tenant_id], "PROVIDER", Provider)
+    params[:tenant_id] ||= @current_user.current_tenant_id
+    validate_create(params[:tenant_id])
     @item = Provider.create!(name: params[:name],
-                                 type: params[:type],
-				 tenant_id: params[:tenant_id],
-                                 description: params[:description],
-                                 auth_details: params[:auth_details])
+                             type: params[:type],
+			     tenant_id: params[:tenant_id],
+                             description: params[:description],
+                             auth_details: params[:auth_details])
     respond_to do |format|
       format.html { 
         flash[:notice] = @item.name + " " + I18n.t('save')
@@ -99,8 +90,7 @@ class ProvidersController < ApplicationController
   end
 
   def destroy
-    @item = Provider.find_key(params[:id])
-    validate_destroy(@item.tenant_id, "PROVIDER", Provider, params[:id])
+    @item = find_key_cap(model,params[:id],cap("DESTROY"))
     @item.destroy
     render api_delete @item
   end

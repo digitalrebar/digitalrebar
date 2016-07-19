@@ -17,22 +17,17 @@ class NetworksController < ::ApplicationController
   self.cap_base = "NETWORK"
 
   def auto_ranges
-    @network = Network.find_key params[:id]
-    @node = Node.find_key params[:node_id]
-    validate_read(@network.tenant_id, "NETWORK", Network, params[:id])
-    validate_read(@node.tenant_id, "NODE", Node, params[:node_id])
-    ranges = @network.auto_ranges(@node)
-    render api_index NetworkRange, ranges
+    @network = find_key_cap(model, params[:id], cap("READ"))
+    @node = find_key_cap(Node, params[:node_id], cap("READ","NODE"))
+    render api_index NetworkRange, @network.auto_ranges(@node)
   end
 
   def show
-    begin
-      addr = IP.coerce(params[:id])
-      @network = Network.lookup_network(addr, (params[:category] || "admin"))
-    rescue
-      @network = Network.find_key params[:id]
-    end
-    validate_read(@network.tenant_id, "NETWORK", Network, @network.id)
+    @network = begin
+                 lookup_by_address
+               rescue
+                 find_key_cap(model, params[:id],cap("READ"))
+               end
     respond_to do |format|
       format.html { }
       format.json { render api_show @network }
@@ -40,18 +35,17 @@ class NetworksController < ::ApplicationController
   end
 
   def index
-    if (params[:address])
-      @network = Network.lookup_network(params[:address], (params[:category] || "admin"))
-      validate_read(@network.tenant_id, "NETWORK", Network, @network.id)
-      render api_show @network
+    if params[:address]
+      # Why do we have this weird non-list special case?
+      net = lookup_by_address
+      render api_show net
       return
-    elsif (params[:category])
-      @networks = Network.in_category(params[:category]).to_a
-    else
-      @networks = Network.all.to_a
     end
-    t_ids = build_tenant_list("NETWORK_READ")
-    @networks.delete_if { |x| !t_ids.include? x.tenant_id }
+    @networks = if (params[:category])
+                  visible(model,cap("READ")).in_category(params[:category])
+                else
+                  @networks = visible(model, cap("READ"))
+                end
     respond_to do |format|
       format.html {}
       format.json { render api_index Network, @networks }
@@ -59,15 +53,18 @@ class NetworksController < ::ApplicationController
   end
 
   def create
-
     # cleanup inputs
+    depl = find_key_cap(Deployment,
+                        params[:deployment] ||
+                        params[:deployment_id] ||
+                        "system",
+                        cap("UPDATE","DEPLOYMENT"))
     params[:use_vlan] = true if !params.key?(:use_vlan) && params[:vlan].to_i > 0 rescue false
     params[:vlan] ||= 0
     params[:use_team] = true if !params.key?(:use_team) && params[:team_mode].to_i > 0 rescue false
     params[:team_mode] ||= 5
     params[:configure] = true unless params.key?(:configure)
-    params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
-    params[:deployment_id] ||= 1
+    params[:deployment_id] = depl.id 
     params[:group] ||= "default"
     params.require(:category)
     params.require(:group)
@@ -75,10 +72,8 @@ class NetworksController < ::ApplicationController
     params.require(:deployment_id)
     params.delete(:v6prefix) if params[:v6prefix] == "" or params[:v6prefix] == "none"
     params[:name] = "#{params[:category]}-#{params[:group]}"
-    unless params[:tenant_id]
-      params[:tenant_id] = @current_user.current_tenant_id
-    end
-    validate_create(params[:tenant_id], "NETWORK", Network)
+    params[:tenant_id] ||= @current_user.current_tenant_id
+    validate_create(params[:tenant_id])
     Network.transaction do
       @network = Network.create! params.permit(:name,
                                                :conduit,
@@ -148,28 +143,23 @@ class NetworksController < ::ApplicationController
 
   end
 
+  # Why?
   def map
-    t_ids = build_tenant_list("NETWORK_READ")
-    @networks = Network.where(tenant_id: t_ids)
-    t_ids = build_tenant_list("NODE_READ")
-    @nodes = Node.where(tenant_id: t_ids).non_system.sort
+    @networks = visible(model, cap("READ"))
+    @nodes = visible(Node, cap("READ","NODE"))
   end
 
   # Allocations for a node in a network.
   # Includes the automatic IPv6 address.
   def allocations
-    network = Network.find_key params[:id]
-    raise "Must include a node parameter" unless params.key?(:node)
-    nodename = params[:node]
-    node = Node.find_key nodename
-    validate_read(network.tenant_id, "NETWORK", Network, params[:id])
-    validate_read(node.tenant_id, "NODE", Node, nodename)
+    network = find_key_cap(model, params[:id],cap("READ"))
+    node = find_key_cap(Node, params[:node],cap("READ","NODE"))
     render :json => network.node_allocations(node).map{|a|a.to_s}, :content_type=>cb_content_type(:allocations, "array")
   end
 
   def update
     Network.transaction do
-      @network = Network.find_key(params[:id]).lock!
+      @network = find_key_cap(model, params[:id],cap("UPDATE")).lock!
       # Sorry, but no changing of the admin conduit for now.
       params.delete(:conduit) if @network.name == "admin"
       params.delete(:v6prefix) if params[:v6prefix] == ""
@@ -177,7 +167,6 @@ class NetworksController < ::ApplicationController
       if params[:team_mode]
         params[:use_team] = (params[:team_mode].to_i > 0) unless params[:use_team]
       end
-      validate_update(@network.tenant_id, "NETWORK", Network, params[:id])
       if request.patch?
         patch(@network,%w{description vlan use_vlan v6prefix use_bridge team_mode use_team conduit configure pbr category group deployment_id tenant_id})
       else
@@ -191,8 +180,7 @@ class NetworksController < ::ApplicationController
   end
 
   def destroy
-    @network = Network.find_key(params[:id])
-    validate_destroy(@network.tenant_id, "NETWORK", Network, params[:id])
+    @network = find_key_cap(model,params[:id],cap("DESTROY"))
     @network.destroy
     render api_delete @network
   end
@@ -208,17 +196,14 @@ class NetworksController < ::ApplicationController
   end
 
   def allocate_ip
-    network = Network.find_key(params[:id])
-    node = Node.find_key(params[:node_id])
-    validate_action(network.tenant_id, "NETWORK", Network, params[:network_id], "ALLOCATE")
-    validate_update(node.tenant_id, "NODE", Node, params[:node_id])
-    if ! params[:range]
-      ret = network.auto_allocate(node)
-    else
-      range = network.ranges.where(:name => params[:range]).first
-      suggestion = params[:suggestion]
-      ret = range.allocate(node,suggestion)
-    end
+    network = find_key_cap(model, params[:id], cap("ALLOCATE"))
+    node = find_key_cap(Node,params[:node_id],cap("UPDATE","NODE"))
+    ret = if !params[:range]
+            network.auto_allocate(node)
+          else
+            rnetwork.ranges.visible(cap("UPDATE"),@current_user.id).
+              find_by!(name: params[:range]).allocate(node,params[:suggestion])
+          end
     render :json => ret
   end
 
@@ -245,12 +230,28 @@ class NetworksController < ::ApplicationController
     render :json => ret[1]
   end
 
+  # Why?
   def edit
-    @network = Network.find_key params[:id]
-    validate_update(@network.tenant_id, "NETWORK", Network, params[:id])
+    @network = find_key_cap(model, params[:id],cap("UPDATE"))
     respond_to do |format|
       format.html {  }
     end
+  end
+
+  private
+
+  def lookup_by_address
+    net = nil
+    addr = IP.coerce(params[:id])
+    visible(model,cap("READ")).
+      where(category: params[:category] || "admin").select do |n|
+      n.ranges.visible(cap("READ"),@current_user.id).each do |r|
+        net = n if r === addr
+        break if net
+      end
+      break if net
+    end
+    net
   end
 
 end

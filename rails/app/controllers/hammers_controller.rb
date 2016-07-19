@@ -20,10 +20,10 @@ class HammersController < ApplicationController
   # API GET /api/v2/hammers
   def index
     @hammers = if params.has_key?(:node_id)
-      Node.find_key(params[:node_id]).hammers
-    else
-      Hammer.all
-    end
+                 find_key_cap(Node, params[:node_id],cap("READ")).hammers
+               else
+                 visible(model,cap("READ"))
+               end
     respond_to do |format|
       format.html { } 
       format.json { render api_index Hammer, @hammers }
@@ -31,7 +31,7 @@ class HammersController < ApplicationController
   end
 
   def show
-    @hammer = Hammer.find_key(params[:id])
+    @hammer = find_key_cap(model, params[:id],cap("READ"))
     respond_to do |format|
       format.html {  }
       format.json { render api_show @hammer }
@@ -40,8 +40,7 @@ class HammersController < ApplicationController
 
   def update
     Hammer.transaction do
-      @nm = Hammer.find_key(params[:id]).lock!
-      validate_update(@current_user.tenant_id, "BARCLAMP", Hammer, params[:id])
+      @nm = find_key_cap(model, params[:id], cap("UPDATE")).lock!
       if request.patch?
         patch(@nm,%w{priority endpoint username authenticator})
       else
@@ -58,16 +57,20 @@ class HammersController < ApplicationController
     params.require(:node_id)
     params.require(:available_hammer_id)
     params.require(:username)
-    @node = Node.find_key(params[:node_id])
-    @available_hammer = AvailableHammer.find_key(params[:available_hammer_id])
     Hammer.transaction do
+      @node = find_key_cap(Node,
+                           params[:node_id],
+                           cap("UPDATE"))
+      @available_hammer = find_key_cap(AvailableHammer,
+                                       params[:available_hammer_id],
+                                       cap("READ","AVAILABLE_HAMMER"))
       @hammer = Hammer.create!(node: @node,
-                                          available_hammer: @available_hammer,
-                                          username: params[:username])
+                               available_hammer: @available_hammer,
+                               username: params[:username])
       @hammer.update_attributes!(params.permit(:username,
-                                                     :endpoint,
-                                                     :priority,
-                                                     :authenticator))
+                                               :endpoint,
+                                               :priority,
+                                               :authenticator))
     end
     render api_show @hammer
   end
@@ -100,6 +103,10 @@ class HammersController < ApplicationController
   end
 
   def destroy
-    render api_delete Hammer
+    model.transaction do
+      @hammer = find_key_cap(model, params[:hammer_id] || params[:id], cap("UPDATE"))
+      @hammer.delete
+    end
+    render api_delete @hammer
   end
 end

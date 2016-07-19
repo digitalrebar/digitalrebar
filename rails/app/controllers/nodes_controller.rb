@@ -17,6 +17,9 @@ class NodesController < ApplicationController
   self.model = Node
   self.cap_base = "NODE"
 
+  # We allow nodes to match on arbitrary node-bound attribs
+  # as well as native model attributes.
+  # This makes simple API queries easier to express
   def match
     attrs = model.attribute_names.map{|a|a.to_sym}
     ok_params = params.permit(attrs)
@@ -40,65 +43,54 @@ class NodesController < ApplicationController
   def index
     @list = case
             when params.has_key?(:group_id)
-              Group.find_key(params[:group_id]).nodes
+              find_key_cap(Group,params[:group_id],cap("READ","GROUP")).nodes
             when params.has_key?(:deployment_id)
-              Deployment.find_key(params[:deployment_id]).nodes
+              find_key_cap(Deployment,params[:deployment_id],cap("READ","DEPLOYMENT")).nodes
             when params.has_key?(:role_id)
-              Role.find_key(params[:role_id]).nodes
+              find_key_cap(Role,params[:role_id],cap("READ","ROLE")).nodes
             when params.has_key?(:deployment_role_id)
-              DeploymentRole.find_key(params[:deployment_role_id]).nodes
+              find_key_cap(DeploymentRole,params[:deployment_role_id], cap("READ","DEPLOYMENT")).nodes
             when params.has_key?(:provider_id)
-              Provider.find_key(params[:provider_id]).nodes
+              find_key_cap(Provider,params[:provider_id], cap("READ","PROVIDER")).nodes
             else
-              Node.all
-            end
-    @list = @list.to_a
-    t_ids = build_tenant_list("NODE_READ")
-    @list.delete_if { |x| !t_ids.include? x.tenant_id }
+              model.all
+            end.visible(cap("READ"),@current_user.id)
     respond_to do |format|
       format.html { @list.to_a.delete_if { |n| n.system } }
-      format.json { render api_index Node, @list }
+      format.json { render api_index model, @list }
     end
   end
 
   # API /api/status/nodes(/:id)
   def status
-
     status = {}
+    nodes = nil
     Node.transaction do   # performance optimization
-
       nodes = if params[:id]
-        node = Node.find_key params[:id]
-        nodes = Node.where(:id=>node.id).to_a
-      else
-        nodes = Node.non_system.to_a
-      end
-      t_ids = build_tenant_list("NODE_READ")
-      nodes.delete_if { |x| !t_ids.include? x.tenant_id }
-      nodes.each do |n|
-        state = n.state
-        str = [
-          t(n.alive ? "common.state.alive" : "common.state.dead"),
-          t(n.available ? "common.state.available" : "common.state.reserved"),
-          NodeRole.state_name(state)
-        ].join("\n")
-        status[n.id] = {
-          :name => n.name,
-          :state => state,
-          :status => NodeRole::STATES[state],
-          :strStatus => str
-        }
-      end
-
+                visible(model,cap("READ")).where(id: params[:id])
+              else
+                visible(model, cap("READ")).non_system
+              end
     end
-
+    nodes.each do |n|
+      state = n.state
+      str = [
+        t(n.alive ? "common.state.alive" : "common.state.dead"),
+        t(n.available ? "common.state.available" : "common.state.reserved"),
+        NodeRole.state_name(state)
+      ].join("\n")
+      status[n.id] = {
+        :name => n.name,
+        :state => state,
+        :status => NodeRole::STATES[state],
+        :strStatus => str
+      }
+    end
     render api_array status.to_json
-
   end
 
   def show
-    @node = Node.find_key params[:id]
-    validate_read(@node.tenant_id, "NODE", Node, params[:id])
+    @node = find_key_cap(model, params[:id], cap("READ"))
     respond_to do |format|
       format.html {  } # show.html.erb
       format.json { render api_show @node }
@@ -107,12 +99,9 @@ class NodesController < ApplicationController
 
   # Get the addresses allocated to a node on a network.
   def addresses
-    nodename = params[:node_id]
-    @node = Node.find_key(nodename)
-    validate_read(@node.tenant_id, "NODE", Node, params[:node_id])
+    @node = find_key_cap(model, params[:node_id], cap("READ"))
     if params[:network]
-      @net = Network.find_key(params[:network])
-      validate_read(@net.tenant_id, "NETWORK", Network, params[:network])
+      @net = find_key_cap(Network, params[:network], cap("READ","NETWORK"))
       res = {
         "node" => @node.name,
         "network" => @net.name,
@@ -120,55 +109,51 @@ class NodesController < ApplicationController
         "addresses" => @net.node_allocations(@node).map{|a|a.to_s}
       }
       render :json => res, :content_type=>cb_content_type(:addresses, "object")
-    else
-      res = []
-
-      if params[:category]
-        nets = Network.in_category(params[:category]).to_a
-      else
-        nets = Network.all.to_a
-      end
-      t_ids = build_tenant_list("NETWORK_READ")
-      nets.delete_if { |x| !t_ids.include? x.tenant_id }
-
-      nets.each do |n|
-        ips = n.node_allocations(@node)
-        next if ips.empty?
-
-        res << {
-            "node" => @node.name,
-            "network" => n.name,
-            "category" => n.category,
-            "addresses" => ips.map{|a|a.to_s}
-        }
-      end
-
-      render :json => res, :content_type=>cb_content_type(:addresses, "array")
+      return
     end
+    res = []
+    nets = if params[:category]
+             visible(Network,cap("READ","NETWORK")).in_category(params[:category])
+           else
+             visible(Network,cap("READ","NETWORK"))
+           end
+    nets.each do |n|
+      ips = n.node_allocations(@node)
+      next if ips.empty?
+      res << {
+        "node" => @node.name,
+        "network" => n.name,
+        "category" => n.category,
+        "addresses" => ips.map{|a|a.to_s}
+      }
+    end
+    render :json => res, :content_type=>cb_content_type(:addresses, "array")
   end
 
   # RESTful DELETE of the node resource
   def destroy
-    @node = Node.find_key(params[:id] || params[:name])
     if params[:group_id]
-      validate_read(@node.tenant_id, "NODE", Node, node.id)
-      g = Group.find_key params[:group_id]
-      validate_destroy(g.tenant_id, "Group", Group, params[:group_id])
-      g.nodes.delete(@node) if g.nodes.include? @node
+      # Arguably, these should both be UPDATE
+      @node = find_key_cap(model, params[:id] || params[:name], cap("READ"))
+      @group = find_key_cap(Group, params[:group_id], cap("DESTROY", "GROUP"))
+      @group.nodes.delete(@node) if @group.nodes.include?(@node)
       render :text=>I18n.t('api.removed', :item=>'node', :collection=>'group')
-    else
-      validate_destroy(@node.tenant_id, "NODE", Node, @node.id)
-      @node.destroy
-      respond_to do |format|
-        format.html { redirect_to deployment_path(@node.deployment_id) }
-        format.json { render api_delete @node }
-      end
+      return
+    end
+    @node = find_key_cap(model,params[:id] || params[:name], cap("DESTROY"))
+    @node.destroy
+    respond_to do |format|
+      format.html { redirect_to deployment_path(@node.deployment_id) }
+      format.json { render api_delete @node }
     end
   end
 
   def power
-    @node = Node.find_key(params[:id] || params[:name] || params[:node_id])
-    if request.put?
+    if request.get?
+      @node = find_key_cap(model,params[:id] || params[:name] || params[:node_id],cap("READ"))
+      render api_array @node.power.keys
+    elsif request.put?
+      @node = find_key_cap(model,params[:id] || params[:name] || params[:node_id],cap("POWER"))
       params.require(:poweraction)
       @poweraction = params[:poweraction].to_sym
       if @node.power.include? @poweraction
@@ -178,10 +163,7 @@ class NodesController < ApplicationController
       else
         render api_not_implemented @node, @poweraction, @node.power.keys
       end
-    elsif request.get?
-      render api_array @node.power.keys
     end
-
   end
 
   def debug
@@ -208,66 +190,76 @@ class NodesController < ApplicationController
     node_action :commit!, "COMMIT"
   end
 
-  # RESTfule POST of the node resource
   def create
     if params[:group_id] and params[:node_id]
-      g = Group.find_key params[:group_id]
-      n = Node.find_key params[:node_id]
-      validate_read(n.tenant_id, "NODE", Node, params[:node_id])
-      validate_update(g.tenant_id, "GROUP", Group, params[:group_id])
-      n.groups << g if g and n
+      g = nil
+      Group.transaction do
+        # Both of these should arguably be UPDATE
+        g = find_key_cap(Group, params[:group_id], cap("UPDATE","GROUP"))
+        n = find_key_cap(model, params[:node_id], cap("READ"))
+        n.groups << g
+      end
       render :text=>I18n.t('api.added', :item=>g.name, :collection=>'node.groups')
-    else
-      params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
-      params[:deployment_id] ||= Deployment.system
-      params[:provider_id] = Provider.find_key(params[:provider]).id if params.has_key? :provider
-      params[:provider_id] ||= Provider.find_by!(name: 'metal').id
+      return
+    end
+    default_net = nil
+    Node.transaction do
+      # Make sure the deployment and provder are in a tenant
+      # we have NODE_CREATE capabilities for.
+      depl = find_key_cap(Deployment,
+                          params[:deployment] ||
+                          params[:deployment_id] ||
+                          "system",
+                          cap("UPDATE","DEPLOYMENT"))
+      provider = find_key_cap(Provider,
+                              params[:provider] ||
+                              params[:provider_id] ||
+                              "metal",
+                              cap("READ","PROVIDER"))
+      params[:deployment_id] = depl.id
+      params[:provider_id] = provider.id
       params.require(:name)
       params.require(:deployment_id)
       params.require(:provider_id)
-      unless params[:tenant_id]
-        params[:tenant_id] = @current_user.current_tenant_id
-      end
-      validate_create(params[:tenant_id], "NODE", Node)
+      params[:tenant_id] ||= @current_user.current_tenant_id
+      validate_create(params[:tenant_id])
       hints = params[:hints] || {}
       Rails.logger.info("Node create params: #{params.inspect}")
-      default_net = nil
-      Node.transaction do
-        @node = Node.create!(params.permit(:name,
-                                           :description,
-                                           :admin,
-					   :tenant_id,
-                                           :deployment_id,
-                                           :provider_id,
-                                           :allocated,
-                                           :alive,
-                                           :system,
-                                           :available,
-                                           :bootenv,
-                                           :variant,
-                                           :arch,
-                                           :os_family))
-        # Keep suport for mac and ip hints in short form around for legacy Sledgehammer purposes
-        default_net = Network.lookup_network(params[:ip]) if params[:ip]
-        hints["hint-#{default_net.name}-v4addr"] = params[:ip] if default_net
-        hints["node-control-address"] = params[:ip] if params[:ip]
-        # Kubernetes hack for networking until we get better at it.
-        hints["node-private-control-address"] = params[:ip] if params[:ip]
-        hints["hint-admin-macs"] = [params[:mac]] if params[:mac]
-        # Set any hints we got with node creation.
-        hints.each do |k,v|
-          Attrib.set(k,@node,v)
-        end
+      @node = Node.create!(params.permit(:name,
+                                         :description,
+                                         :admin,
+					 :tenant_id,
+                                         :deployment_id,
+                                         :provider_id,
+                                         :allocated,
+                                         :alive,
+                                         :system,
+                                         :available,
+                                         :bootenv,
+                                         :variant,
+                                         :arch,
+                                         :os_family))
+      # Keep suport for mac and ip hints in short form around for legacy Sledgehammer purposes
+      # This kinda-sorta bypasses network cap checking, but it is just too useful.
+      default_net = Network.lookup_network(params[:ip]) if params[:ip]
+      hints["hint-#{default_net.name}-v4addr"] = params[:ip] if default_net
+      hints["node-control-address"] = params[:ip] if params[:ip]
+      # Kubernetes hack for networking until we get better at it.
+      hints["node-private-control-address"] = params[:ip] if params[:ip]
+      hints["hint-admin-macs"] = [params[:mac]] if params[:mac]
+      # Set any hints we got with node creation.
+      hints.each do |k,v|
+        Attrib.set(k,@node,v)
       end
-      default_net.make_node_role(@node) if default_net
-      render api_show @node
     end
+    default_net.make_node_role(@node) if default_net
+    render api_show @node
   end
 
   def update
     Node.transaction do
-      @node = Node.find_key(params[:id]).lock!
-      validate_update(@node.tenant_id, "NODE", Node, params[:id])
+      @node = find_key_cap(model,params[:id],cap("UPDATE")).lock!
+      ## Add better handling of deployment and tenant changing
       if request.patch?
         patch(@node,%w{name description target_role_id deployment_id allocated available alive bootenv})
       else
@@ -292,6 +284,7 @@ class NodesController < ApplicationController
   end
 
   #test_ methods support test functions that are not considered stable APIs
+  # Do we still need this?
   def test_load_data
 
     @node = Node.find_key params[:id]
@@ -312,8 +305,7 @@ class NodesController < ApplicationController
   private
 
   def node_action(meth, action)
-    @node = Node.find_key(params[:id] || params[:name] || params[:node_id])
-    validate_action(@node.tenant_id, "NODE", Node, @node.id, action)
+    @node = find_key_cap(model,params[:id] || params[:name] || params[:node_id],cap(action))
     @node.send(meth)
     render api_show @node
   end

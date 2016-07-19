@@ -1,17 +1,17 @@
-# Copyright 2013, Dell 
-# 
-# Licensed under the Apache License, Version 2.0 (the "License"); 
-# you may not use this file except in compliance with the License. 
-# You may obtain a copy of the License at 
-# 
-#  http://www.apache.org/licenses/LICENSE-2.0 
-# 
-# Unless required by applicable law or agreed to in writing, software 
-# distributed under the License is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-# See the License for the specific language governing permissions and 
-# limitations under the License. 
-# 
+# Copyright 2013, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 class NodeRolesController < ApplicationController
   self.model = NodeRole
@@ -29,66 +29,56 @@ class NodeRolesController < ApplicationController
 
     changed_nodes = []
     changed_deployments = []
-    NodeRole.transaction do  # performance optimization
-      t_ids = build_tenant_list("NODE_READ")
-      nrs = NodeRole.where(tenant_id: t_ids)
-      nrs.each do |nr|
+    NodeRole.transaction do
+      visible(model, cap("READ")).each do |nr|
         age = Time.now - nr.updated_at
         next if nr.state >= 0 && age >= recent
         changed_nodes << nr.node_id
         changed_deployments << nr.deployment_id
         out[:changed][:node_roles] << nr.id
       end
-    end
-    # optimization avoid logic during the loop
-    out[:changed][:nodes] = changed_nodes.uniq
-    out[:changed][:deployments] = changed_deployments.uniq
+      # optimization avoid logic during the loop
+      out[:changed][:nodes] = changed_nodes.uniq
+      out[:changed][:deployments] = changed_deployments.uniq
 
-    Provider.transaction do
-      t_ids = build_tenant_list("PROVIDER_READ")
-      Provider.where(tenant_id: t_ids).each do |p|
+      visible(Provider, cap("READ","PROVIDER")).each do |p|
         age = Time.now - p.updated_at
         next if age >= recent
         out[:changed][:providers] << p.id
       end
-    end
 
-    # on PUT, to handle UX not knowing about deleted nodes
-    # compare nodes to passed nodes json list.
-    # return the deleted ones that are not currently nodes from the UX list
-    if request.put? and params[:nodes] 
-      t_ids = build_tenant_list("NODE_READ")
-      nodes = Node.where(tenant_id: t_ids).map{ |n| n.id }
-      out[:deleted][:nodes] = (params[:nodes] - nodes) rescue []
+      # on PUT, to handle UX not knowing about deleted nodes
+      # compare nodes to passed nodes json list.
+      # return the deleted ones that are not currently nodes from the UX list
+      if request.put? and params[:nodes]
+        nodes = visible(Node,cap("READ","NODE")).map{ |n| n.id }
+        out[:deleted][:nodes] = (params[:nodes] - nodes) rescue []
+      end
+      if request.put? and params[:deployments]
+        deployments = visible(Deployment, cap("READ","DEPLOYMENT")).map{ |d| d.id }
+        out[:deleted][:deployments] = (params[:deployments] - deployments) rescue []
+      end
+      if request.put? and params[:providers]
+        providers = visible(Provider, cap("READ","PROVIDER")).map{ |p| p.id }
+        out[:deleted][:providers] = (params[:providers] - providers) rescue []
+      end
     end
-    if request.put? and params[:deployments]
-      t_ids = build_tenant_list("DEPLOYMENT_READ")
-      deployments = Deployment.where(tenant_id: t_ids).map{ |d| d.id }
-      out[:deleted][:deployments] = (params[:deployments] - deployments) rescue []
-    end
-    if request.put? and params[:providers]
-      t_ids = build_tenant_list("PROVIDER_READ")
-      providers = Provider.where(tenant_id: t_ids).map{ |p| p.id }
-      out[:deleted][:providers] = (params[:providers] - providers) rescue []
-    end
-
     # done
     render api_array out.to_json
   end
- 
+
   def index
     NodeRole.transaction do
-      @list = (if params.key? :node_id
-                Node.find_key(params[:node_id]).node_roles.to_a
+      @list = if params.key? :node_id
+                find_key_cap(Node, params[:node_id],cap("READ")).node_roles
               elsif params.key? :deployment_id
-                Deployment.find_key(params[:deployment_id]).node_roles.to_a
+                find_key_cap(Deployment,params[:deployment_id], cap("READ","DEPLOYMENT")).
+                  node_roles.visible(cap("READ"),@current_user.id)
               else
-                NodeRole.all
-              end).order("cohort asc, id asc").to_a
-      t_ids = build_tenant_list("NODE_READ")
-      @list.delete_if { |x| !t_ids.include? x.tenant_id }
+                visible(model,cap("READ"))
+              end.order("cohort asc, id asc")
       if params.has_key? :runlog
-        @list = @list.clone
+        @list = @list.to_a
         limit = params[:runlog] || "80"
         @list.each do |i|
           i.runlog = i.runlog.truncate(limit.to_i) unless i.state == NodeRole::ERROR
@@ -102,16 +92,16 @@ class NodeRolesController < ApplicationController
   end
 
   def show
-    if params.key? :node_id
-      node = Node.find_key params[:node_id]
-      raise "could not find node #{params[:node_id]}" unless node
-      role = Role.find_key params[:id]
-      raise "could not find role #{params[:id]}" unless role
-      @node_role = NodeRole.find_by!(node_id: node.id, role_id: role.id)
-    else
-      @node_role = NodeRole.find_key params[:id]
-    end
-    validate_read(@node_role.tenant_id, "NODE", NodeRole, @node_role.id)
+    @node_role = if params.key? :node_id
+                   NodeRole.transaction do
+                     node = find_key_cap(Node, params[:node_id],cap("READ"))
+                     # This will need updating once we care about ROLE_READ
+                     role = Role.find_key(params[:id])
+                     node.node_roles.find_by!(role_id: role.id)
+                   end
+                 else
+                   find_key_cap(model, params[:id], cap("READ"))
+                 end
     respond_to do |format|
       format.html {  }
       format.json { render api_show @node_role }
@@ -119,26 +109,30 @@ class NodeRolesController < ApplicationController
   end
 
   def create
-    # helpers to allow create by names instead of IDs
+    node = nil
+    role = nil
     depl = nil
-    if params.key? :deployment_id
-      depl = Deployment.find_key(params[:deployment_id])
-    elsif params.key? :deployment
-      depl = Deployment.find_key(params[:deployment])
+    model.transaction do
+      node = find_key_cap(Node, params[:node] || params[:node_id], cap("UPDATE"))
+      # alternate formatting of input from bootstrap. Do we still need this?
+      nr_roles = params.key?(:node_roles) ? params[:node_roles][:role_id] : nil
+      # Make sure the role we want to add is in a tenant we have NODE_UPDATE caps in.
+      # Arguably, this should be ROLE_READ, but whatever.
+      role = Role.find_key(params[:role] || params[:role_id] || nr_roles)
+      # Ditto for the deployment, except that it should be DEPLOYMENT_UPDATE
+      depl = find_key_cap(Deployment,
+                          params[:deployment_id] ||
+                          params[:deployment] ||
+                          node.deployment_id,
+                          cap("UPDATE","DEPLOYMENT"))
     end
-    # alternate formatting of input from bootstrap
-    if params.key? :node_roles
-      nr_roles = params[:node_roles][:role_id]
-    end
-    node = Node.find_key(params[:node] || params[:node_id])
-    role = Role.find_key(params[:role] || params[:role_id] || nr_roles)
-    depl ||= node.deployment
     begin
-        validate_create(node.tenant_id, "NODE", NodeRole)
-        @node_role = NodeRole.safe_create!(role_id: role.id,
-					   tenant_id: depl.tenant_id,
-                                           node_id: node.id,
-                                           deployment_id: depl.id)
+      # For proper sequencing, safe_create must be called outside a transaction.
+      @node_role = NodeRole.safe_create!(role_id: role.id,
+                                         # node.tenant_id, maybe?
+                                         tenant_id: depl.tenant_id,
+                                         node_id: node.id,
+                                         deployment_id: depl.id)
     rescue StandardError => e
       Rails.logger.fatal("Exception on safe_create!: #{e.message}")
       Rails.logger.fatal(e.backtrace)
@@ -159,18 +153,16 @@ class NodeRolesController < ApplicationController
     # we're being called from /nodes path we may get the name instead of ID
     key = params[:id]
     NodeRole.transaction do
-      @node_role = if params.key? :node_id
-                     node = Node.find_key params[:node_id]
-                     if key.is_a?(Fixnum) or key.is_a?(Integer) or key =~ /^[0-9]+$/
-                       NodeRole.find_by!(id: key).lock!
-                     else
-                       role = Role.find_by!(name: key)
-                       NodeRole.find_by!(node_id: node.id, role_id: role.id).lock!
-                     end
+      @node_role = if !params.key?(:node_id)
+                     find_key_cap(model, params[:id], cap("UPDATE"))
+                   elsif key.is_a?(Fixnum) or key.is_a?(Integer) or key =~ /^[0-9]+$/
+                     # I am not terribly sure about this logic.  Seems messed up.
+                     find_key_cap(model,key,cap("UPDATE"))
                    else
-                     NodeRole.find_key(key).lock!
-                   end
-      validate_update(@node_role.tenant_id, "NODE", NodeRole, key)
+                     node = find_key_cap(Node, params[:node_id],cap("UPDATE"))
+                     role = Role.find_by!(name: key)
+                     visible(model,cap("UPDATE")).find_by!(node_id: node.id, role_id: role.id)
+                   end.lock!
       # if you've been passed data then save it
       if request.patch?
         patch(@node_role, %w{data run_count tenant_id})
@@ -188,9 +180,10 @@ class NodeRolesController < ApplicationController
   end
 
   def destroy
-    @node_role = NodeRole.find_key (params[:id] || params[:node_role_id])
-    validate_destroy(@node_role.tenant_id, "NODE", NodeRole, @node_role.id)
-    @node_role.destroy
+    model.transaction do
+      @node_role = find_key_cap(model, params[:id] || params[:node_role_id], cap("DESTROY"))
+      @node_role.destroy
+    end
     respond_to do |format|
       format.html { redirect_to deployment_path(@node_role.deployment_id) }
       format.json { render api_delete @node_role }
@@ -198,9 +191,10 @@ class NodeRolesController < ApplicationController
   end
 
   def propose
-    @node_role = NodeRole.find_key params[:node_role_id]
-    validate_action(@node_role.tenant_id, "NODE", NodeRole, @node_role.id, "PROPOSE")
-    @node_role.propose!
+    model.transaction do
+      @node_role = find_key_cap(model, params[:node_role_id], cap("PROPOSE"))
+      @node_role.propose!
+    end
     respond_to do |format|
       format.html { redirect_to node_role_path(@node_role.id) }
       format.json { render api_show @node_role }
@@ -208,9 +202,10 @@ class NodeRolesController < ApplicationController
   end
 
   def commit
-    @node_role = NodeRole.find_key params[:node_role_id]
-    validate_action(@node_role.tenant_id, "NODE", NodeRole, @node_role.id, "COMMIT")
-    @node_role.commit!
+    model.transaction do
+      @node_role = find_key_cap(model, params[:node_role_id], cap("COMMIT"))
+      @node_role.commit!
+    end
     respond_to do |format|
       format.html { redirect_to node_role_path(@node_role.id) }
       format.json { render api_show @node_role }
@@ -218,10 +213,10 @@ class NodeRolesController < ApplicationController
   end
 
   def retry
-    params[:id] ||= params[:node_role_id]
-    @node_role = NodeRole.find_key params[:id]
-    validate_action(@node_role.tenant_id, "NODE", NodeRole, @node_role.id, "RETRY")
-    @node_role.todo!
+    model.transaction do
+      @node_role = find_key_cap(model, params[:id] || params[:node_role_id], cap("RETRY"))
+      @node_role.todo!
+    end
     respond_to do |format|
       format.html { redirect_to node_role_path(@node_role.id) }
       format.json { render api_show @node_role }
@@ -229,38 +224,34 @@ class NodeRolesController < ApplicationController
   end
 
   def parents
-    @node_role = NodeRole.find_key params[:node_role_id]
-    @list = @node_role.parents.to_a
-    t_ids = build_tenant_list("NODE_READ")
-    @list.delete_if { |x| !t_ids.include? x.tenant_id }
+    @list = find_key_cap(model, params[:node_role_id], cap("READ")).
+            parents.visible(cap("READ"), @current_user.id)
     render api_index NodeRole, @list
   end
 
   def children
-    @node_role = NodeRole.find_key params[:node_role_id]
-    @list = @node_role.children.to_a
-    t_ids = build_tenant_list("NODE_READ")
-    @list.delete_if { |x| !t_ids.include? x.tenant_id }
+    @list = find_key_cap(model, params[:node_role_id], cap("READ")).
+            children.visible(cap("READ"), @current_user.id)
     render api_index NodeRole, @list
   end
 
   def anneal
-    t_ids = build_tenant_list("NODE_READ")
+    status = { :json => { "message" => "finished" }, :state => 200 }
+    NodeRole.transaction do
+      nrs = visible(model, cap("READ")).committed
+      status = case
+               when nrs.in_state(NodeRole::ERROR).count > 0
+                 { :json => { "message" => "failed" }, :status => 409 }
+               when nrs.in_state(NodeRole::TRANSITION).count > 0
+                 { :json => { "message" => "working" }, :status => 202 }
+               when nrs.in_state(NodeRole::TODO).count > 0
+                 { :json => { "message" => "scheduled" }, :status => 202 }
+               end
+    end
     respond_to do |format|
       format.html { }
-      format.json {
-        if NodeRole.where(tenant_id: t_ids).committed.in_state(NodeRole::ERROR).count > 0
-          render :json => { "message" => "failed" }, :status => 409
-        elsif NodeRole.where(tenant_id: t_ids).committed.in_state(NodeRole::TRANSITION).count > 0
-          render :json => { "message" => "working" }, :status => 202
-        elsif NodeRole.where(tenant_id: t_ids).committed.in_state(NodeRole::TODO).count > 0
-          render :json => { "message" => "scheduled" }, :status => 202
-        else
-          render :json => { "message" => "finished" }, :state => 200
-        end
-      }
+      format.json { render status }
     end
   end
 
 end
-

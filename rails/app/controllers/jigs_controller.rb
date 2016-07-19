@@ -18,17 +18,18 @@ class JigsController < ApplicationController
   self.cap_base = "JIG"
  
   def index
+    @jigs = visible(model,cap("READ"))
     respond_to do |format|
-      format.html { @jigs = Jig.order('"order"') } # show.html.erb
-      format.json { render api_index Jig, Jig.all }
+      format.html {  } # show.html.erb
+      format.json { render api_index model, @jigs }
     end
   end
 
   def show
     respond_to do |format|
-      @jig = Jig.find_key params[:id]
+      @jig = find_key_cap(model, params[:id], cap("READ"))
       format.html {  }
-      format.json { render api_show @jig, "jig" }
+      format.json { render api_show @jig }
     end
   end
 
@@ -38,8 +39,7 @@ class JigsController < ApplicationController
 
   def update
     Jig.transaction do
-      @jig = Jig.find_key(params[:id]).lock!
-      validate_update(@current_user.tenant_id, "BARCLAMP", Jig, params[:id])
+      @jig = find_key_cap(model, params[:id], cap("UPDATE")).lock!
       if request.patch?
         patch(@jig,%w{description active server client_name key})
       else
@@ -56,27 +56,27 @@ class JigsController < ApplicationController
   # PUT
   # calls jig.flush to clear temporary data (if jig supports it)
   def flush
-    @jig = Jig.find_key params[:jig_id]
-    validate_update(@current_user.tenant_id, "BARCLAMP", Jig, params[:jig_id])
+    @jig = find_key_cap(model, params[:jig_id], cap("FLUSH"))
     @jig.flush
     render api_show @jig    
   end
 
   def activate
-    jig = Jig.find_key params[:jig_id]
-    validate_update(@current_user.tenant_id, "BARCLAMP", Jig, params[:jig_id])
+    Jig.transaction do
+      jig = find_key_cap(model, params[:jig_id], cap("UPDATE"))
 
-    # if this is test, we remap all external roles to test
-    if jig.name == 'test'
-      Role.all.each do |r|
-        unless Jig::INTERNAL.include? r.jig.name 
-          r.jig = jig
-          r.save!
+      # if this is test, we remap all external roles to test
+      if jig.name == 'test'
+        Role.all.each do |r|
+          unless Jig::INTERNAL.include? r.jig.name 
+            r.jig = jig
+            r.save!
+          end
         end
       end
+      jig.active = true
+      jig.save!
     end
-    jig.active = true
-    jig.save!
     render api_show jig
   end
 

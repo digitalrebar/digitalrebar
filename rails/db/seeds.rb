@@ -154,11 +154,8 @@ ActiveRecord::Base.transaction do
   u.digest_password('rebar1')
   u.save!
 
-  [ caps, dhcp_caps, dns_caps, p_caps].each do |list|
-    list.each do |c|
-      cap = Capability.find_by(name: c[0])
-      UserTenantCapability.create!(user_id: u.id, tenant_id: t.id, capability_id: cap.id)
-    end
+  Capability.all.each do |c|
+    UserTenantCapability.create!(user_id: u.id, tenant_id: t.id, capability_id: c.id)
   end
 
   if Rails.env.development? or Rails.env.test?
@@ -166,9 +163,8 @@ ActiveRecord::Base.transaction do
     u.digest_password('d1g1t@l')
     u.save!
 
-    caps.each do |c|
-      cap = Capability.find_by(name: c[0])
-      UserTenantCapability.create!(user_id: u.id, tenant_id: t.id, capability_id: cap.id)
+    Capability.all.each do |c|
+      UserTenantCapability.create!(user_id: u.id, tenant_id: t.id, capability_id: c.id)
     end
   end
 

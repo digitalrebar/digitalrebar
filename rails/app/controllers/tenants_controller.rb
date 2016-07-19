@@ -17,8 +17,7 @@ class TenantsController < ::ApplicationController
   self.cap_base = "TENANT"
 
   def index
-    tenant_ids = build_tenant_list("TENANT_READ")
-    @tenants = Tenant.where(id: tenant_ids)
+    @tenants = visible(model, cap("READ"))
     respond_to do |format|
       format.html {}
       format.json { render api_index Tenant, @tenants }
@@ -26,8 +25,7 @@ class TenantsController < ::ApplicationController
   end
 
   def show
-    @tenant = Tenant.find_key params[:id]
-    validate_read(@tenant.id, "TENANT", Tenant, @tenant.id)
+    @tenant = find_key_cap(model, params[:id], cap("READ"))
     respond_to do |format|
       format.html { }
       format.json { render api_show @tenant }
@@ -35,10 +33,8 @@ class TenantsController < ::ApplicationController
   end
   
   def create
-    validate_create(@current_user.current_tenant_id, "TENANT", Tenant)
-    unless params[:parent_id]
-      params[:parent_id] = @current_user.current_tenant_id
-    end
+    params[:parent_id] ||= !current_user.current_tenant_id
+    validate_create(params[:parent_id])
     Tenant.transaction do
       @tenant = Tenant.create! params.permit(:name,
                                              :description,
@@ -53,8 +49,8 @@ class TenantsController < ::ApplicationController
 
   def update
     Tenant.transaction do
-      @tenant = Tenant.find_key(params[:id]).lock!
-      validate_update(@tenant.id, "TENANT", Tenant, @tenant.id)
+      @tenant = find_key_cap(model,params[:id],cap("UPDATE")).lock!
+      # All sorts of room for mischief here.
       if request.patch?
         patch(@tenant,%w{description name parent_id})
       else
@@ -68,15 +64,14 @@ class TenantsController < ::ApplicationController
   end
 
   def destroy
-    @tenant = Tenant.find_key(params[:id])
-    validate_destroy(@tenant.id, "TENANT", Tenant, @tenant.id)
+    @tenant = find_key_cap(model, params[:id], cap("DESTROY"))
     @tenant.destroy
     render api_delete @tenant
   end
 
+  ## Why is this here?
   def edit
-    @tenant = Tenant.find_key params[:id]
-    validate_update(@tenant.id, "TENANT", Tenant, @tenant.id)
+    @tenant = find_key_cap(model, params[:id], cap("UPDATE"))
     respond_to do |format|
       format.html {  }
     end

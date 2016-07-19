@@ -37,7 +37,7 @@ class ApplicationController < ActionController::Base
   def cap_base
     self.class.cap_base
   end
-  
+
   # Construct a capability by adding cap_base to cap_action
   def cap(cap_action, base = self.cap_base)
     "#{base}_#{cap_action}"
@@ -82,7 +82,7 @@ class ApplicationController < ActionController::Base
       format.json { render api_index(self.model, objs) }
     end
   end
-  
+
   # Given an object and list of permitted object attributes to update, extract the
   # JSON patch that should be in the request body, apply it to the object cast as a
   # JSON blob, and update the permitted attribs of the actual object.
@@ -267,9 +267,10 @@ class ApplicationController < ActionController::Base
 
   def type2name(type)
     case
-    when type.kind_of?(ActiveRecord::Base) then type.class.name.underscore
+    when type.kind_of?(ActiveRecord::Base),type.kind_of?(StandardError)
+      type.class.name.underscore
     when type.respond_to?(:descends_from_active_record?) &&
-        type.descends_from_active_record? then type.name.underscore
+         type.descends_from_active_record? then type.name.underscore
     when type.kind_of?(String) then type.underscore
     when type.kind_of?(Symbol) then type.to_s.underscore
     when type.nil? then "unknown"
@@ -416,18 +417,18 @@ class ApplicationController < ActionController::Base
   end
 
   # See if the current user has this capability in the given tenant id
-  def capable(t_id, cap)
-    @current_user.capable(cap, t_id)
+  def capable(t_id, c)
+    @current_user.capable(c, t_id)
   end
 
   # A little visibility helper for lists
-  def visible(klass, cap)
-    klass.visible(cap, @current_user.id)
+  def visible(klass, c)
+    klass.visible(c, @current_user.id)
   end
 
   # Try to find an object filtered by capability
-  def find_key_cap(klass, key, cap)
-    klass.find_key_cap(key, cap, @current_user.id)
+  def find_key_cap(klass, key, c)
+    klass.find_key_cap(key, c, @current_user.id)
   end
 
   #
@@ -465,32 +466,10 @@ class ApplicationController < ActionController::Base
     return t_ids.flatten
   end
 
-  # Validation helpers
-  def validate_action(t_id, cap_base, klass, key, action)
-    return true if capable(t_id, "#{cap_base}_#{action}")
-    raise RebarForbiddenError.new(key, klass) if capable(t_id, "#{cap_base}_READ")
-    raise RebarNotFoundError.new(key, klass)
-  end
-
-  def validate_update(t_id, cap_base, klass, key)
-    validate_action(t_id, cap_base, klass, key, "UPDATE")
-  end
-
-  def validate_read(t_id, cap_base, klass, key)
-    raise RebarNotFoundError.new(key, klass) unless capable(t_id, "#{cap_base}_READ")
-  end
-
-  def validate_create(t_id, cap_base, klass)
-    raise RebarForbiddenError.new("new", klass) unless capable(t_id, "#{cap_base}_CREATE")
-  end
-
-  def validate_destroy(t_id, cap_base, klass, key)
-    validate_action(t_id, cap_base, klass, key, "DESTROY")
-  end
-
-  def validate_match(ok_params, t_key, cap_base, klass)
-    return klass.where("false") if ok_params.empty?
-    visible(klass, cap_base+ "_READ").where(ok_params)
+  def validate_create(t_id = @current_user.current_tenant_id,
+                      base_cap = self.cap_base,
+                      klass = self.model)
+    raise RebarForbiddenError.new("new", klass) unless capable(t_id, cap("CREATE",base_cap))
   end
 
 end

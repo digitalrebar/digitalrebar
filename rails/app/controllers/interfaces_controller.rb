@@ -15,6 +15,8 @@
 class InterfacesController < ::ApplicationController
   self.cap_base = "NETWORK"
 
+  # I got nothing.  We should probably turn network-server into a
+  # full-fledged database model or something.
   def create
     pattern = params[:pattern]
     bus_order = params[:bus_order].split(" | ")
