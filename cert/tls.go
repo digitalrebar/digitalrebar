@@ -104,17 +104,23 @@ func StartTLSServer(addr, CN, acceptingRoot, sendingRoot string, handler http.Ha
 		return err
 	}
 
-	valCertB, err := GetCertificateForRoot(trustMeAddr, acceptingRoot)
-	if err != nil {
-		log.Printf("Could not get root certificate for %s from %v: %v\n", acceptingRoot, trustMeAddr, err)
-		return err
-	}
-
 	certB, keyB, err := CreateCertificate(trustMeAddr, string(authKeyB), sendingRoot, CN, []string{})
 	if err != nil {
 		log.Printf("Could not create certificate for %s from %v: %v\n", sendingRoot, trustMeAddr, err)
 		return err
 	}
 
-	return ListenAndServeTLSValidated(addr, valCertB, certB, keyB, handler)
+	// If we have a root to validate incoming connections, use it, otherwise
+	// just say who we are.
+	if acceptingRoot != "" {
+		valCertB, err := GetCertificateForRoot(trustMeAddr, acceptingRoot)
+		if err != nil {
+			log.Printf("Could not get root certificate for %s from %v: %v\n", acceptingRoot, trustMeAddr, err)
+			return err
+		}
+
+		return ListenAndServeTLSValidated(addr, valCertB, certB, keyB, handler)
+	} else {
+		return ListenAndServeTLS(addr, certB, keyB, handler)
+	}
 }
