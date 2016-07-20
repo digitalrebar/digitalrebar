@@ -26,42 +26,44 @@ class DeploymentsController < ApplicationController
   end
 
   def show
-    @deployment = find_key_cap(model, params[:id], cap("READ"))
     respond_to do |format|
       format.html {
-        @roles = @deployment.deployment_roles.sort{|a,b|a.role.cohort <=> b.role.cohort}
-        # remove the service roles
-        @roles.delete_if { |r| r.role.service }
-        # alpha lists by ID
-        @nodes = visible(Node,cap("READ","NODE")).
-                 where(system: false).
-                 order("name ASC").select do |n|
-          (n.deployment_id == @deployment.id) ||
-          (n.node_roles.where(:deployment_id => @deployment.id).count > 0)
+        model.transaction do
+          @deployment = find_key_cap(model, params[:id], cap("READ"))
+          @roles = @deployment.deployment_roles.sort{|a,b|a.role.cohort <=> b.role.cohort}
+          # remove the service roles
+          @roles.delete_if { |r| r.role.service }
+          # alpha lists by ID
+          @nodes = visible(Node,cap("READ","NODE")).
+                   where(system: false).
+                   order("name ASC").select do |n|
+            (n.deployment_id == @deployment.id) ||
+              (n.node_roles.where(:deployment_id => @deployment.id).count > 0)
+          end
         end
       }
-      format.json { render api_show @deployment }
+      format.json { render api_show find_key_cap(model, params[:id], cap("READ")) }
     end
   end
 
   def create
-    permits = [:name,:parent_id,:description,:tenant_id]
-    if params[:system]
-      raise "Only one system deployment permitted" if Deployment.exists?(system: true)
-      permits = [:name,:system,:description,:tenant_id]
-    else
-      if params[:parent] || params[:parent_id]
-        # This should arguably be UPDATE
-        @parent = find_key_cap(model,params[:parent] || params[:parent_id],cap("READ"))
-      elsif !params[:system]
-        @parent = visible(model,cap("READ")).find_by!(system: true)
-      end
-      params[:parent_id] = @parent.id
-    end
-    params[:tenant_id] ||= @current_user.current_tenant_id
-    params.require(:name)
-    validate_create(params[:tenant_id])
     Deployment.transaction do
+      permits = [:name,:parent_id,:description,:tenant_id]
+      if params[:system]
+        raise "Only one system deployment permitted" if Deployment.exists?(system: true)
+        permits = [:name,:system,:description,:tenant_id]
+      else
+        if params[:parent] || params[:parent_id]
+          # This should arguably be UPDATE
+          @parent = find_key_cap(model,params[:parent] || params[:parent_id],cap("READ"))
+        elsif !params[:system]
+          @parent = visible(model,cap("READ")).find_by!(system: true)
+        end
+        params[:parent_id] = @parent.id
+      end
+      params[:tenant_id] ||= @current_user.current_tenant_id
+      params.require(:name)
+      validate_create(params[:tenant_id])
       @deployment = Deployment.create!(params.permit(*permits))
       if params[:system]
         @deployment.update_attributes!(state: Deployment::COMMITTED)
@@ -85,8 +87,10 @@ class DeploymentsController < ApplicationController
   end
 
   def destroy
-    @deployment = find_key_cap(model, params[:id], cap("DESTROY"))
-    @deployment.destroy
+    model.transaction do
+      @deployment = find_key_cap(model, params[:id], cap("DESTROY"))
+      @deployment.destroy
+    end
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment.parent_id) }
       format.json { render api_delete @deployment }
@@ -134,10 +138,12 @@ class DeploymentsController < ApplicationController
   end
 
   def anneal
-    @deployment = find_key_cap(model, params[:deployment_id], cap("ANNEAL"))
-    @list = @deployment.node_roles.
-            visible(cap("READ","NODE"),@current_user.id).
-            where(state: NodeRole::TRANSITION).order("cohort,id")
+    model.transaction do
+      @deployment = find_key_cap(model, params[:deployment_id], cap("ANNEAL"))
+      @list = @deployment.node_roles.
+              visible(cap("READ","NODE"),@current_user.id).
+              where(state: NodeRole::TRANSITION).order("cohort,id")
+    end
     respond_to do |format|
       format.html {  }
       format.json { render api_index NodeRole, @list }
@@ -145,15 +151,17 @@ class DeploymentsController < ApplicationController
   end
 
   def cohorts
-    @deployment = find_key_cap(model params[:deployment_id], cap("READ"))
     respond_to do |format|
       format.html {
-        @roles = @deployment.deployment_roles.sort{|a,b|a.role.cohort <=> b.role.cohort}
-        # alpha lists by ID
-        @nodes = Node.visible(cap("READ","NODE"),@current_user.id).
-                 order("name ASC").select do |n|
-          (n.deployment_id == @deployment.deployment_id) ||
-          (n.node_roles.where(:deployment_id => @deployment.id).count > 0)
+        model.transaction do
+          @deployment = find_key_cap(model params[:deployment_id], cap("READ"))
+          @roles = @deployment.deployment_roles.sort{|a,b|a.role.cohort <=> b.role.cohort}
+          # alpha lists by ID
+          @nodes = Node.visible(cap("READ","NODE"),@current_user.id).
+                   order("name ASC").select do |n|
+            (n.deployment_id == @deployment.deployment_id) ||
+              (n.node_roles.where(:deployment_id => @deployment.id).count > 0)
+          end
         end
       }
     end
@@ -161,8 +169,10 @@ class DeploymentsController < ApplicationController
   end
 
   def propose
-    @deployment = find_key_cap(model, params[:deployment_id], cap("PROPOSE"))
-    @deployment.propose
+    model.transaction do
+      @deployment = find_key_cap(model, params[:deployment_id], cap("PROPOSE"))
+      @deployment.propose
+    end
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment.id) }
       format.json { render api_show @deployment }
@@ -170,8 +180,10 @@ class DeploymentsController < ApplicationController
   end
 
   def commit
-    @deployment = find_key_cap(model, params[:deployment_id], cap("COMMIT"))
-    @deployment.commit
+    model.transaction do
+      @deployment = find_key_cap(model, params[:deployment_id], cap("COMMIT"))
+      @deployment.commit
+    end
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment.id) }
       format.json { render api_show @deployment }
@@ -188,6 +200,7 @@ class DeploymentsController < ApplicationController
     @deployment = find_key_cap(model,
                                params[:id] || params[:name] || params[:deployment_id],
                                cap("REDEPLOY"))
+    # Not in a transaction due to redeploy call.
     @deployment.nodes.visible(cap("REDEPLOY","NODE"),@current_user.id).each { |n| n.redeploy! }
     render api_show @deployment
   end

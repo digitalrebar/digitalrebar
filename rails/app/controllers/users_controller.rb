@@ -73,8 +73,10 @@ class UsersController < ApplicationController
 
  # RESTful DELETE of the node resource
   def destroy
-    @user = find_key_cap(model, params[:id], cap("DESTROY"))
-    @user.destroy
+    model.transaction do
+      @user = find_key_cap(model, params[:id], cap("DESTROY"))
+      @user.destroy
+    end
     render api_delete @user
   end
 
@@ -84,14 +86,16 @@ class UsersController < ApplicationController
     params.require(:email)
     params[:tenant_id] ||= @current_user.current_tenant_id
     params[:current_tenant_id] ||= params[:tenant_id]
-    t = find_key_cap(Tenant, params[:tenant_id],cap("READ","TENANT"))
-    # Sanity-check that current_tenant_id is not being naughty.
-    find_key_cap(Tenant, params[:current_tenant_id],cap("READ","TENANT"))
-    validate_create(t.id)
-    @user = User.create!(params.permit(user_params.map{|i|i.to_sym}))
-    if params[:digest]
-      @user.digest_password(params[:password])
-      @user.save!
+    model.transaction do
+      t = find_key_cap(Tenant, params[:tenant_id],cap("READ","TENANT"))
+      # Sanity-check that current_tenant_id is not being naughty.
+      find_key_cap(Tenant, params[:current_tenant_id],cap("READ","TENANT"))
+      validate_create(t.id)
+      @user = User.create!(params.permit(user_params.map{|i|i.to_sym}))
+      if params[:digest]
+        @user.digest_password(params[:password])
+        @user.save!
+      end
     end
     respond_to do |format|
       format.html { } # show.html.erb
@@ -120,9 +124,11 @@ class UsersController < ApplicationController
   end
 
   def capabilities
+    model.transaction do
       @user = find_key_cap(model, params[:id], cap("READ_CAPABILITIES"))
       data = @user.cap_map
-      render json: data
+    end
+    render json: data
   end
 
   def show

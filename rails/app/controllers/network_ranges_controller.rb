@@ -17,12 +17,14 @@ class NetworkRangesController < ::ApplicationController
   self.cap_base = "NETWORK"
  
   def index
-    @list = if params.has_key? :network_id or params.has_key? :network
-              find_key_cap(Network,params[:network_id] || params[:network],cap("READ")).
-                network_ranges
-            else
-              visible(model,cap("READ"))
-            end
+    model.transaction do
+      @list = if params.has_key? :network_id or params.has_key? :network
+                find_key_cap(Network,params[:network_id] || params[:network],cap("READ")).
+                  network_ranges
+              else
+                visible(model,cap("READ"))
+              end
+    end
     respond_to do |format|
       format.html { }
       format.json { render api_index NetworkRange, @list }
@@ -51,29 +53,31 @@ class NetworkRangesController < ::ApplicationController
     params.require(:name)
     params.require(:first)
     params.require(:last)
-    net = find_key_cap(Network, params[:network] || params[:network_id], cap("UPDATE"))
-    params[:network_id] = net.id
-    # There is a case to be made for making this default to the network tenant ID instead.
-    params[:tenant_id] ||= @current_user.current_tenant_id
-    validate_create(params[:tenant_id])
-    @range =  NetworkRange.create! params.permit(:name,
-                                                 :network_id,
-						 :tenant_id,
-                                                 :first,
-                                                 :last,
-                                                 :conduit,
-                                                 :vlan,
-                                                 :team_mode,
-                                                 :overlap,
-                                                 :use_vlan,
-                                                 :use_bridge,
-                                                 :use_team)
+    model.transaction do
+      net = find_key_cap(Network, params[:network] || params[:network_id], cap("UPDATE"))
+      params[:network_id] = net.id
+      # There is a case to be made for making this default to the network tenant ID instead.
+      params[:tenant_id] ||= @current_user.current_tenant_id
+      validate_create(params[:tenant_id])
+      @range =  NetworkRange.create! params.permit(:name,
+                                                   :network_id,
+						   :tenant_id,
+                                                   :first,
+                                                   :last,
+                                                   :conduit,
+                                                   :vlan,
+                                                   :team_mode,
+                                                   :overlap,
+                                                   :use_vlan,
+                                                   :use_bridge,
+                                                   :use_team)
+    end
     render api_show @range
   end
 
   def update
-    params[:network_id] = Network.find_key(params[:network]).id if params.has_key? :network
     NetworkRange.transaction do
+      params[:network_id] = Network.find_key(params[:network]).id if params.has_key? :network
       @network_range = if params.has_key? :id
                          find_key_cap(model, params[:id], cap("UPDATE")).lock!
                        else
@@ -90,11 +94,13 @@ class NetworkRangesController < ::ApplicationController
 
   # only works with ID, not name!
   def destroy
-    @range = find_key_cap(model, params[:id], cap("DESTROY"))
-    if params[:network_id]
-      raise "Range is not from the correct Network" unless @range.network_id = params[:network_id]
+    model.transaction do
+      @range = find_key_cap(model, params[:id], cap("DESTROY"))
+      if params[:network_id]
+        raise "Range is not from the correct Network" unless @range.network_id = params[:network_id]
+      end
+      @range.destroy
     end
-    @range.destroy
     render api_delete @range
   end
 

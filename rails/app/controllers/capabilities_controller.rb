@@ -57,8 +57,10 @@ class CapabilitiesController < ::ApplicationController
   end
 
   def destroy
-    @capability = find_key_cap(model,params[:id], cap("DESTROY"))
-    @capability.destroy
+    model.transaction do
+      @capability = find_key_cap(model,params[:id], cap("DESTROY"))
+      @capability.destroy
+    end
     render api_delete @capability
   end
 

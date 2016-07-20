@@ -43,12 +43,12 @@ class UserTenantCapabilitiesController < ::ApplicationController
   end
 
   def create
-    c = find_key_cap(Capability, params[:capability_id], cap("READ","CAPABILITY"))
-    t = find_key_cap(Tenant, params[:tenant_id], cap("UPDATE","TENANT"))
-    u = find_key_cap(User, params[:user_id], cap("UPDATE","USER"))
-    # Why is this not named CREATE
-    raise RebarForbiddenError.new("new", model) unless capable(t.id, cap("ADD"))
     model.transaction do
+      c = find_key_cap(Capability, params[:capability_id], cap("READ","CAPABILITY"))
+      t = find_key_cap(Tenant, params[:tenant_id], cap("UPDATE","TENANT"))
+      u = find_key_cap(User, params[:user_id], cap("UPDATE","USER"))
+      # Why is this not named CREATE
+      raise RebarForbiddenError.new("new", model) unless capable(t.id, cap("ADD"))
       @cap = model.create!(tenant_id: t.id,
                            user_id: u.id,
                            capability_id: c.id)
@@ -65,20 +65,22 @@ class UserTenantCapabilitiesController < ::ApplicationController
   end
 
   def destroy
-    @cap = if params[:id]
-             # This lies for now.  Once we have proper seperation between
-             # READ, ADD (or hopefully CREATE), and DESTROY, it will
-             # tell the truth
-             find_key_cap(model, params[:id], cap("DESTROY"))
-           else
-             c = find_key_cap(Capability, params[:capability_id], cap("READ","CAPABILITY"))
-             t = find_key_cap(Tenant, params[:tenant_id], cap("UPDATE","TENANT"))
-             u = find_key_cap(User, params[:user_id], cap("UPDATE","USER"))
-             model.find_by!(tenant_id: t.id, capability_id: c.id, user_id: u.id)
-           end
-    # Compensate for visible and find_key_cap not working
-    raise RebarForbiddenError.new(@cap.id, model) unless capable(t_id, cap("DESTROY"))
-    @cap.destroy
+    model.transaction do
+      @cap = if params[:id]
+               # This lies for now.  Once we have proper seperation between
+               # READ, ADD (or hopefully CREATE), and DESTROY, it will
+               # tell the truth
+               find_key_cap(model, params[:id], cap("DESTROY"))
+             else
+               c = find_key_cap(Capability, params[:capability_id], cap("READ","CAPABILITY"))
+               t = find_key_cap(Tenant, params[:tenant_id], cap("UPDATE","TENANT"))
+               u = find_key_cap(User, params[:user_id], cap("UPDATE","USER"))
+               model.find_by!(tenant_id: t.id, capability_id: c.id, user_id: u.id)
+             end
+      # Compensate for visible and find_key_cap not working
+      raise RebarForbiddenError.new(@cap.id, model) unless capable(t_id, cap("DESTROY"))
+      @cap.destroy
+    end
     respond_to do |format|
       format.html { redirect_to :action=>:index }
       format.json { render api_delete @cap }

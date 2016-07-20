@@ -18,17 +18,19 @@ class AttribsController < ApplicationController
   self.cap_base = "ATTRIB"
 
   def index
-    target = find_target("READ")
-    @list = if target.nil?
-              # Global attribs are read-able by
-              model.all
-            else
-              target.attribs.map do |i|
-                e = i.as_json
-                e["value"] = i.get(target)
-                e
+    model.transaction do
+      target = find_target("READ")
+      @list = if target.nil?
+                # Global attribs are read-able by
+                model.all
+              else
+                target.attribs.map do |i|
+                  e = i.as_json
+                  e["value"] = i.get(target)
+                  e
+                end
               end
-            end
+    end
     respond_to do |format|
       format.html { }
       format.json { render api_index model, @list }
@@ -36,20 +38,17 @@ class AttribsController < ApplicationController
   end
 
   def show
-    target = find_target("READ")
-    @attrib = model.find_key params[:id]
-    if target.nil?
-      respond_to do |format|
-        format.html {  }
-        format.json { render api_show @attrib }
-      end
-      return
-    end
+    ret = nil
     bucket = params[:bucket] ? params[:bucket].to_sym : :all
-    ret = @attrib.as_json
-    ret["value"] = @attrib.get(target,bucket)
-    # added node_id so what we can get backwards references if type is node
-    ret["node_id"] = target.is_a?(Node) ? target.id : nil
+    model.transaction do
+      target = find_target("READ")
+      @attrib = model.find_key params[:id]
+      ret = @attrib.as_json
+      if target
+        ret["value"] = @attrib.get(target,bucket)
+        ret["node_id"] = target.is_a?(Node) ? target.id : nil
+      end
+    end
     respond_to do |format|
       format.html { }
       format.json { render json: ret, content_type: cb_content_type(@attrib, "obj") }
@@ -57,20 +56,22 @@ class AttribsController < ApplicationController
   end
 
   def create
-    validate_create
-    params[:barclamp_id] = Barclamp.find_key(params[:barclamp]).id if params.has_key? :barclamp
-    params[:role_id] =  Role.find_key(params[:role]).id if params.has_key? :role
-    params.require(:name)
-    params.require(:barclamp_id)
-    @attrib = Attrib.create!(params.permit(:name,
-                                       :barclamp_id,
-                                       :role_id,
-                                       :type,
-                                       :description,
-                                       :writable,
-                                       :schema,
-                                       :order,
-                                       :map))
+    model.transaction do
+      validate_create
+      params[:barclamp_id] = Barclamp.find_key(params[:barclamp]).id if params.has_key? :barclamp
+      params[:role_id] =  Role.find_key(params[:role]).id if params.has_key? :role
+      params.require(:name)
+      params.require(:barclamp_id)
+      @attrib = Attrib.create!(params.permit(:name,
+                                             :barclamp_id,
+                                             :role_id,
+                                             :type,
+                                             :description,
+                                             :writable,
+                                             :schema,
+                                             :order,
+                                             :map))
+    end
     render api_show @attrib
   end
 
@@ -117,8 +118,10 @@ class AttribsController < ApplicationController
   end
 
   def destroy
-    @attrib = find_key_cap(model,params[:id] || params[:name], cap("DESTROY"))
-    @attrib.destroy
+    model.transaction do
+      @attrib = find_key_cap(model,params[:id] || params[:name], cap("DESTROY"))
+      @attrib.destroy
+    end
     render api_delete @attrib
   end
 
