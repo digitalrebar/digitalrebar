@@ -20,10 +20,11 @@ if ! rebar -U rebar -P rebar1 users show machine-install; then
         exit 1
     fi
 
-    rebar -U rebar -P rebar1 -E https://127.0.0.1:3000 user_tenant_capabilitys create '{ "user_id": "machine-install", "tenant_id": "system", "capability_id": "NODE_READ" }'
-    rebar -U rebar -P rebar1 -E https://127.0.0.1:3000 user_tenant_capabilitys create '{ "user_id": "machine-install", "tenant_id": "system", "capability_id": "NODE_CREATE" }'
-    rebar -U rebar -P rebar1 -E https://127.0.0.1:3000 user_tenant_capabilitys create '{ "user_id": "machine-install", "tenant_id": "system", "capability_id": "NODE_UPDATE" }'
-    rebar -U rebar -P rebar1 -E https://127.0.0.1:3000 user_tenant_capabilitys create '{ "user_id": "machine-install", "tenant_id": "system", "capability_id": "NODE_COMMIT" }'
+    for cap in NODE_READ ROLE_READ NODE_CREATE NODE_UPDATE NODE_COMMIT \
+                         DEPLOYMENT_READ DEPLOYMENT_UPDATE PROVIDER_READ; do
+        blob="{\"user_id\":\"machine-install\",\"tenant_id\":\"system\",\"capability_id\":\"$cap\"}"
+        rebar -U rebar -P rebar1 -E https://127.0.0.1:3000 user_tenant_capabilitys create "$blob"
+    done
 
     echo "machine-install:${MACHINE_PASSWORD}" >/etc/rebar.install.key
     kv_put digitalrebar/private/api/keys/machine_key </etc/rebar.install.key
