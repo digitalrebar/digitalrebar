@@ -17,44 +17,50 @@ class NetworkAllocationsController < ::ApplicationController
   self.cap_base = "NETWORK"
 
   def create
-    params.require(:node_id)
-    node = find_key_cap(Node, params[:node_id], cap("UPDATE","NODE"))
-    suggestion = params[:address]
-    suggestion = nil if suggestion && suggestion == ""
-    ret = if params[:network_range_id]
-            find_key_cap(NetworkRange, params[:network_range_id], cap("ALLOCATE")).
-              allocate(node,suggestion)
-          elsif params[:network_id]
-            find_key_cap(Network,params[:network_id], cap("ALLOCATE")).
-              auto_allocate(node)
-          else
-            raise "Need a network or range"
-          end
+    model.transaction do
+      params.require(:node_id)
+      node = find_key_cap(Node, params[:node_id], cap("UPDATE","NODE"))
+      suggestion = params[:address]
+      suggestion = nil if suggestion && suggestion == ""
+      ret = if params[:network_range_id]
+              find_key_cap(NetworkRange, params[:network_range_id], cap("ALLOCATE")).
+                allocate(node,suggestion)
+            elsif params[:network_id]
+              find_key_cap(Network,params[:network_id], cap("ALLOCATE")).
+                auto_allocate(node)
+            else
+              raise "Need a network or range"
+            end
+    end
     render :json => ret
   end
 
   def destroy
     params.require(:id)
-    @allocation = find_key_cap(model,params[:id],cap("DESTROY"))
-    # Called for side effect.
-    find_key_cap(Node,@allocation.node.id,cap("UPDATE","NODE"))
-    @allocation.destroy
+    model.transaction do
+      @allocation = find_key_cap(model,params[:id],cap("DESTROY"))
+      # Called for side effect.
+      find_key_cap(Node,@allocation.node.id,cap("UPDATE","NODE"))
+      @allocation.destroy
+    end
     render api_delete @allocation
   end
 
   def index
-    @list = if params.has_key? :network_id or params.has_key? :network
-              find_key_cap(Network,params[:network_id] || params[:network],cap("READ")).
-                network_allocations
-            elsif params.has_key?(:network_range_id)
-              find_key_cap(NetworkRange, params[:network_range_id],cap("READ")).
-                network_allocations
-            elsif params.has_key?(:node_id) || params.has_key?(:node)
-              find_key_cap(Node, params[:node_id] || params[:node], cap("READ","NODE")).
-                network_allocations.visible(cap("READ"),@current_user.id)
-            else
-              visble(model,cap("READ"))
-            end
+    model.transaction do
+      @list = if params.has_key? :network_id or params.has_key? :network
+                find_key_cap(Network,params[:network_id] || params[:network],cap("READ")).
+                  network_allocations
+              elsif params.has_key?(:network_range_id)
+                find_key_cap(NetworkRange, params[:network_range_id],cap("READ")).
+                  network_allocations
+              elsif params.has_key?(:node_id) || params.has_key?(:node)
+                find_key_cap(Node, params[:node_id] || params[:node], cap("READ","NODE")).
+                  network_allocations.visible(cap("READ"),@current_user.id)
+              else
+                visble(model,cap("READ"))
+              end
+    end
     respond_to do |format|
       format.html { }
       format.json { render api_index model, @list }

@@ -33,9 +33,9 @@ class TenantsController < ::ApplicationController
   end
   
   def create
-    params[:parent_id] ||= !current_user.current_tenant_id
-    validate_create(params[:parent_id])
+    params[:parent_id] ||= @current_user.current_tenant_id
     Tenant.transaction do
+      validate_create(params[:parent_id])
       @tenant = Tenant.create! params.permit(:name,
                                              :description,
                                              :parent_id)
@@ -63,8 +63,10 @@ class TenantsController < ::ApplicationController
   end
 
   def destroy
-    @tenant = find_key_cap(model, params[:id], cap("DESTROY"))
-    @tenant.destroy
+    model.transaction do
+      @tenant = find_key_cap(model, params[:id], cap("DESTROY"))
+      @tenant.destroy
+    end
     render api_delete @tenant
   end
 

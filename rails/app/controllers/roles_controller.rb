@@ -43,11 +43,13 @@ class RolesController < ApplicationController
 
   def create
     if params.include? :deployment_id
-      # Arguably, this should be UPDATE since deployment_roles are
-      # tightly integrated with deployments.
-      @deployment = find_key_cap(Deployment, params[:deployment_id], cap("CREATE","DEPLOYMENT"))
-      role = find_key_cap(model, params[:deployment][:role_id],cap("READ"))
-      role.add_to_deployment @deployment
+      model.transaction do
+        # Arguably, this should be UPDATE since deployment_roles are
+        # tightly integrated with deployments.
+        @deployment = find_key_cap(Deployment, params[:deployment_id], cap("CREATE","DEPLOYMENT"))
+        role = find_key_cap(model, params[:deployment][:role_id],cap("READ"))
+        role.add_to_deployment @deployment
+      end
       respond_to do |format|
         format.html { redirect_to deployment_path(@deployment.id) }
         format.json { render api_show @deployment }
@@ -69,8 +71,10 @@ class RolesController < ApplicationController
   end
 
   def destroy
-    @role = find_key_cap(model,params[:role_id],cap("DESTROY"))
-    @role.destroy
+    model.transaction do
+      @role = find_key_cap(model,params[:role_id],cap("DESTROY"))
+      @role.destroy
+    end
     render api_delete @role
   end
 

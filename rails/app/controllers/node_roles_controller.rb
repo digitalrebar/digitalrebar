@@ -92,16 +92,16 @@ class NodeRolesController < ApplicationController
   end
 
   def show
-    @node_role = if params.key? :node_id
-                   NodeRole.transaction do
+    NodeRole.transaction do
+      @node_role = if params.key? :node_id
                      node = find_key_cap(Node, params[:node_id],cap("READ"))
                      # This will need updating once we care about ROLE_READ
                      role = Role.find_key(params[:id])
                      node.node_roles.find_by!(role_id: role.id)
+                   else
+                     find_key_cap(model, params[:id], cap("READ"))
                    end
-                 else
-                   find_key_cap(model, params[:id], cap("READ"))
-                 end
+    end
     respond_to do |format|
       format.html {  }
       format.json { render api_show @node_role }

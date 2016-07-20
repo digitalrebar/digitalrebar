@@ -70,12 +70,14 @@ class ProvidersController < ApplicationController
     params.require(:type)
     params.require(:auth_details)
     params[:tenant_id] ||= @current_user.current_tenant_id
-    validate_create(params[:tenant_id])
-    @item = Provider.create!(name: params[:name],
-                             type: params[:type],
-			     tenant_id: params[:tenant_id],
-                             description: params[:description],
-                             auth_details: params[:auth_details])
+    model.transaction do
+      validate_create(params[:tenant_id])
+      @item = Provider.create!(name: params[:name],
+                               type: params[:type],
+			       tenant_id: params[:tenant_id],
+                               description: params[:description],
+                               auth_details: params[:auth_details])
+    end
     respond_to do |format|
       format.html { 
         flash[:notice] = @item.name + " " + I18n.t('save')
@@ -86,8 +88,10 @@ class ProvidersController < ApplicationController
   end
 
   def destroy
-    @item = find_key_cap(model,params[:id],cap("DESTROY"))
-    @item.destroy
+    model.transaction do
+      @item = find_key_cap(model,params[:id],cap("DESTROY"))
+      @item.destroy
+    end
     render api_delete @item
   end
 

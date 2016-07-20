@@ -40,8 +40,10 @@ class BarclampsController < ApplicationController
     end
     # Update and create are basically the same action for barclamps.
     # Not the proper way to deal, I know, but...
-    validate_create
-    @barclamp = Barclamp.import_or_update(params[:value], @current_user.current_tenant_id)
+    model.transaction do
+      validate_create
+      @barclamp = Barclamp.import_or_update(params[:value], @current_user.current_tenant_id)
+    end
     respond_to do |format|
       format.html {  }
       format.json { render api_show @barclamp }
@@ -54,8 +56,10 @@ class BarclampsController < ApplicationController
 
   def create
     params.require(:value)
-    validate_create
-    @barclamp = Barclamp.import_or_update(params[:value], @current_user.current_tenant_id)
+    model.transaction do
+      validate_create
+      @barclamp = Barclamp.import_or_update(params[:value], @current_user.current_tenant_id)
+    end
     respond_to do |format|
       format.html {  }
       format.json { render api_show @barclamp }

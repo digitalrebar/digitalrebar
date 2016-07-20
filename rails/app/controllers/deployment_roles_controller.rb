@@ -33,12 +33,14 @@ class DeploymentRolesController < ApplicationController
 
   def show
     # allow lookup by name
-    if params.has_key? :deployment
-      deployment = find_key_cap(Deployment, params[:deployment], cap("READ"))
-      role = Role.find_key params[:id]
-      @deployment_role = model.find_by!(deployment_id: deployment.id, role_id: role.id)
-    else
-      @deployment_role = find_key_cap(model, params[:id], cap("READ"))
+    model.transaction do
+      if params.has_key? :deployment
+        deployment = find_key_cap(Deployment, params[:deployment], cap("READ"))
+        role = Role.find_key params[:id]
+        @deployment_role = model.find_by!(deployment_id: deployment.id, role_id: role.id)
+      else
+        @deployment_role = find_key_cap(model, params[:id], cap("READ"))
+      end
     end
     respond_to do |format|
       format.html {  }
@@ -84,8 +86,10 @@ class DeploymentRolesController < ApplicationController
   end
 
   def destroy
-    @deployment_role = find_key_cap(model,params[:id],cap("DESTROY"))
-    @deployment_role.destroy
+    model.transaction do
+      @deployment_role = find_key_cap(model,params[:id],cap("DESTROY"))
+      @deployment_role.destroy
+    end
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment_role.deployment_id) }
       format.json { render api_delete @deployment_role }
@@ -95,8 +99,10 @@ class DeploymentRolesController < ApplicationController
   end
 
   def propose
-    @deployment_role = find_key_cap(model, params[:deployment_role_id],cap("PROPOSE"))
-    @deployment_role.propose
+    model.transaction do
+      @deployment_role = find_key_cap(model, params[:deployment_role_id],cap("PROPOSE"))
+      @deployment_role.propose
+    end
     respond_to do |format|
       format.html { redirect_to deployment_role_path(@deployment_role.id) }
       format.json { render api_show @deployment_role }
@@ -104,8 +110,10 @@ class DeploymentRolesController < ApplicationController
   end
 
   def commit
-    @deployment_role = find_key_cap(model, params[:deployment_role_id],cap("COMMIT"))
-    @deployment_role.commit
+    model.transaction do
+      @deployment_role = find_key_cap(model, params[:deployment_role_id],cap("COMMIT"))
+      @deployment_role.commit
+    end
     respond_to do |format|
       format.html { redirect_to deployment_role_path(@deployment_role.id) }
       format.json { render api_show @deployment_role }

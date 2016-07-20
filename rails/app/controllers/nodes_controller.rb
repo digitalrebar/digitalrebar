@@ -99,33 +99,38 @@ class NodesController < ApplicationController
 
   # Get the addresses allocated to a node on a network.
   def addresses
-    @node = find_key_cap(model, params[:node_id], cap("READ"))
     if params[:network]
-      @net = find_key_cap(Network, params[:network], cap("READ","NETWORK"))
-      res = {
-        "node" => @node.name,
-        "network" => @net.name,
-        "category" => @net.category,
-        "addresses" => @net.node_allocations(@node).map{|a|a.to_s}
-      }
+      res = {}
+      model.transaction do
+        @node = find_key_cap(model, params[:node_id], cap("READ"))
+        @net = find_key_cap(Network, params[:network], cap("READ","NETWORK"))
+        res = {
+          "node" => @node.name,
+          "network" => @net.name,
+          "category" => @net.category,
+          "addresses" => @net.node_allocations(@node).map{|a|a.to_s}
+        }
+      end
       render :json => res, :content_type=>cb_content_type(:addresses, "object")
       return
     end
     res = []
-    nets = if params[:category]
-             visible(Network,cap("READ","NETWORK")).in_category(params[:category])
-           else
-             visible(Network,cap("READ","NETWORK"))
-           end
-    nets.each do |n|
-      ips = n.node_allocations(@node)
-      next if ips.empty?
-      res << {
-        "node" => @node.name,
-        "network" => n.name,
-        "category" => n.category,
+    model.transaction do
+      nets = if params[:category]
+               visible(Network,cap("READ","NETWORK")).in_category(params[:category])
+             else
+               visible(Network,cap("READ","NETWORK"))
+             end
+      nets.each do |n|
+        ips = n.node_allocations(@node)
+        next if ips.empty?
+        res << {
+          "node" => @node.name,
+          "network" => n.name,
+          "category" => n.category,
         "addresses" => ips.map{|a|a.to_s}
-      }
+        }
+      end
     end
     render :json => res, :content_type=>cb_content_type(:addresses, "array")
   end
@@ -133,15 +138,19 @@ class NodesController < ApplicationController
   # RESTful DELETE of the node resource
   def destroy
     if params[:group_id]
-      # Arguably, these should both be UPDATE
-      @node = find_key_cap(model, params[:id] || params[:name], cap("READ"))
-      @group = find_key_cap(Group, params[:group_id], cap("DESTROY", "GROUP"))
-      @group.nodes.delete(@node) if @group.nodes.include?(@node)
+      model.transaction do
+        # Arguably, these should both be UPDATE
+        @node = find_key_cap(model, params[:id] || params[:name], cap("READ"))
+        @group = find_key_cap(Group, params[:group_id], cap("DESTROY", "GROUP"))
+        @group.nodes.delete(@node) if @group.nodes.include?(@node)
+      end
       render :text=>I18n.t('api.removed', :item=>'node', :collection=>'group')
       return
     end
-    @node = find_key_cap(model,params[:id] || params[:name], cap("DESTROY"))
-    @node.destroy
+    model.transaction do
+      @node = find_key_cap(model,params[:id] || params[:name], cap("DESTROY"))
+      @node.destroy
+    end
     respond_to do |format|
       format.html { redirect_to deployment_path(@node.deployment_id) }
       format.json { render api_delete @node }
@@ -252,6 +261,8 @@ class NodesController < ApplicationController
         Attrib.set(k,@node,v)
       end
     end
+    # This winds up calling NodeRole.safe_create, which has to run
+    # outside a transaction
     default_net.make_node_role(@node) if default_net
     render api_show @node
   end

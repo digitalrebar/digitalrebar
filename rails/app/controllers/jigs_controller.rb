@@ -52,8 +52,10 @@ class JigsController < ApplicationController
   # PUT
   # calls jig.flush to clear temporary data (if jig supports it)
   def flush
-    @jig = find_key_cap(model, params[:jig_id], cap("FLUSH"))
-    @jig.flush
+    model.transaction do
+      @jig = find_key_cap(model, params[:jig_id], cap("FLUSH"))
+      @jig.flush
+    end
     render api_show @jig    
   end
 

@@ -17,17 +17,21 @@ class NetworksController < ::ApplicationController
   self.cap_base = "NETWORK"
 
   def auto_ranges
-    @network = find_key_cap(model, params[:id], cap("READ"))
-    @node = find_key_cap(Node, params[:node_id], cap("READ","NODE"))
+    model.transaction do
+      @network = find_key_cap(model, params[:id], cap("READ"))
+      @node = find_key_cap(Node, params[:node_id], cap("READ","NODE"))
+    end
     render api_index NetworkRange, @network.auto_ranges(@node)
   end
 
   def show
-    @network = begin
-                 lookup_by_address
-               rescue
-                 find_key_cap(model, params[:id],cap("READ"))
-               end
+    model.transaction do
+      @network = begin
+                   lookup_by_address
+                 rescue
+                   find_key_cap(model, params[:id],cap("READ"))
+                 end
+    end
     respond_to do |format|
       format.html { }
       format.json { render api_show @network }
@@ -44,7 +48,7 @@ class NetworksController < ::ApplicationController
     @networks = if (params[:category])
                   visible(model,cap("READ")).in_category(params[:category])
                 else
-                  @networks = visible(model, cap("READ"))
+                  visible(model, cap("READ"))
                 end
     respond_to do |format|
       format.html {}
@@ -54,27 +58,27 @@ class NetworksController < ::ApplicationController
 
   def create
     # cleanup inputs
-    depl = find_key_cap(Deployment,
-                        params[:deployment] ||
-                        params[:deployment_id] ||
-                        "system",
-                        cap("UPDATE","DEPLOYMENT"))
-    params[:use_vlan] = true if !params.key?(:use_vlan) && params[:vlan].to_i > 0 rescue false
-    params[:vlan] ||= 0
-    params[:use_team] = true if !params.key?(:use_team) && params[:team_mode].to_i > 0 rescue false
-    params[:team_mode] ||= 5
-    params[:configure] = true unless params.key?(:configure)
-    params[:deployment_id] = depl.id 
-    params[:group] ||= "default"
-    params.require(:category)
-    params.require(:group)
-    params.require(:conduit)
-    params.require(:deployment_id)
-    params.delete(:v6prefix) if params[:v6prefix] == "" or params[:v6prefix] == "none"
-    params[:name] = "#{params[:category]}-#{params[:group]}"
-    params[:tenant_id] ||= @current_user.current_tenant_id
-    validate_create(params[:tenant_id])
     Network.transaction do
+      depl = find_key_cap(Deployment,
+                          params[:deployment] ||
+                          params[:deployment_id] ||
+                          "system",
+                          cap("UPDATE","DEPLOYMENT"))
+      params[:use_vlan] = true if !params.key?(:use_vlan) && params[:vlan].to_i > 0 rescue false
+      params[:vlan] ||= 0
+      params[:use_team] = true if !params.key?(:use_team) && params[:team_mode].to_i > 0 rescue false
+      params[:team_mode] ||= 5
+      params[:configure] = true unless params.key?(:configure)
+      params[:deployment_id] = depl.id
+      params[:group] ||= "default"
+      params.require(:category)
+      params.require(:group)
+      params.require(:conduit)
+      params.require(:deployment_id)
+      params.delete(:v6prefix) if params[:v6prefix] == "" or params[:v6prefix] == "none"
+      params[:name] = "#{params[:category]}-#{params[:group]}"
+      params[:tenant_id] ||= @current_user.current_tenant_id
+      validate_create(params[:tenant_id])
       @network = Network.create! params.permit(:name,
                                                :conduit,
                                                :description,
@@ -145,8 +149,10 @@ class NetworksController < ::ApplicationController
 
   # Why?
   def map
-    @networks = visible(model, cap("READ"))
-    @nodes = visible(Node, cap("READ","NODE"))
+    model.transaction do
+      @networks = visible(model, cap("READ"))
+      @nodes = visible(Node, cap("READ","NODE"))
+    end
   end
 
   # Allocations for a node in a network.
@@ -176,8 +182,10 @@ class NetworksController < ::ApplicationController
   end
 
   def destroy
-    @network = find_key_cap(model,params[:id],cap("DESTROY"))
-    @network.destroy
+    model.transaction do
+      @network = find_key_cap(model,params[:id],cap("DESTROY"))
+      @network.destroy
+    end
     render api_delete @network
   end
 
@@ -192,38 +200,41 @@ class NetworksController < ::ApplicationController
   end
 
   def allocate_ip
-    network = find_key_cap(model, params[:id], cap("ALLOCATE"))
-    node = find_key_cap(Node,params[:node_id],cap("UPDATE","NODE"))
-    ret = if !params[:range]
-            network.auto_allocate(node)
-          else
-            rnetwork.ranges.visible(cap("UPDATE"),@current_user.id).
-              find_by!(name: params[:range]).allocate(node,params[:suggestion])
-          end
+    ret = nil
+    model.transaction do
+      network = find_key_cap(model, params[:id], cap("ALLOCATE"))
+      node = find_key_cap(Node,params[:node_id],cap("UPDATE","NODE"))
+      ret = if !params[:range]
+              network.auto_allocate(node)
+            else
+              rnetwork.ranges.visible(cap("UPDATE"),@current_user.id).
+                find_by!(name: params[:range]).allocate(node,params[:suggestion])
+            end
+    end
     render :json => ret
   end
 
   def deallocate_ip
     raise ArgumentError.new("Cannot deallocate addresses for now")
-    node = Node.find_key(params[:node_id])
-    allocation = NetworkAllocation.where(:address => params[:cidr], :node_id => node.id)
+    # node = Node.find_key(params[:node_id])
+    #allocation = NetworkAllocation.where(:address => params[:cidr], :node_id => node.id)
 
-    validate_action(allocation.tenant_id, "NETWORK", NetworkAllocation, params[:cidr], "DEALLOCATE")
-    validate_update(node.tenant_id, "NODE", Node, params[:node_id])
-    allocation.destroy
+    #validate_action(allocation.tenant_id, "NETWORK", NetworkAllocation, params[:cidr], "DEALLOCATE")
+    #validate_update(node.tenant_id, "NODE", Node, params[:node_id])
+    #allocation.destroy
   end
 
   def enable_interface
     raise ArgumentError.new("Cannot enable interfaces without IP address allocation for now.")
 
-    deployment_id = params[:deployment_id]
-    deployment_id = nil if deployment_id == "-1"
-    network_id = params[:id]
-    node_id = params[:node_id]
+    #deployment_id = params[:deployment_id]
+    #deployment_id = nil if deployment_id == "-1"
+    #network_id = params[:id]
+    #node_id = params[:node_id]
 
-    ret = @barclamp.network_enable_interface(deployment_id, network_id, node_id)
-    return render :text => ret[1], :status => ret[0] if ret[0] != 200
-    render :json => ret[1]
+    #ret = @barclamp.network_enable_interface(deployment_id, network_id, node_id)
+    #return render :text => ret[1], :status => ret[0] if ret[0] != 200
+    #render :json => ret[1]
   end
 
   # Why?
