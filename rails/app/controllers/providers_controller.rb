@@ -51,11 +51,7 @@ class ProvidersController < ApplicationController
     hashfix if params[:auth_details].is_a? Hash # address UI formatting
     Provider.transaction do
       @item = find_key_cap(model,params[:id],cap("UPDATE")).lock!
-      if request.patch?
-        patch(@item,%w{name item type description auth_details tenant_id})
-      else
-        @item.update_attributes!(params.permit(:name, :description, :type, :auth_details, :tenant_id))
-      end
+      simple_update(@item,%w{name item type description auth_details tenant_id})
     end
     respond_to do |format|
       format.html { 

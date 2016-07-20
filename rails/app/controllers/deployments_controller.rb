@@ -76,11 +76,7 @@ class DeploymentsController < ApplicationController
   def update
     Deployment.transaction do
       @deployment = find_key_cap(model,params[:id],cap("UPDATE")).lock!
-      if request.patch?
-        patch(@deployment,%w{name description tenant_id})
-      else
-        @deployment.update_attributes!(params.permit(:name,:description,:tenant_id))
-      end
+      simple_update(@deployment,%w{name description tenant_id})
     end
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment.id) }

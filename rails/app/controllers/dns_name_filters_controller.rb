@@ -54,7 +54,7 @@ class DnsNameFiltersController < ::ApplicationController
   def update
     model.transaction do
       @filter = find_key_cap(model, params[:id], cap("UPDATE"))
-      @filter.update_attributes!(params.permit(:name, :matcher, :priority, :service, :template, :tenant_id))
+      simple_update(@filter,%w(name matcher priority service template tenant_id))
     end
     respond_to do |format|
       format.html { render :action=>:show }

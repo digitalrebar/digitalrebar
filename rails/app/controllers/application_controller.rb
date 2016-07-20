@@ -83,6 +83,13 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def validate_update_for(obj)
+    if (obj.previous_changes["tenant_id"] && !capable(obj.tenant_id,cap("UPDATE","TENANT"))) ||
+       (obj.previous_changes["deployment_id"] && !capable(obj.deployment_id,cap("UPDATE","DEPLOYMENT")))
+      raise RebarForbiddenError.new(obj.id,obj.class)
+    end
+  end
+
   # Given an object and list of permitted object attributes to update, extract the
   # JSON patch that should be in the request body, apply it to the object cast as a
   # JSON blob, and update the permitted attribs of the actual object.
@@ -110,6 +117,15 @@ class ApplicationController < ActionController::Base
       end
     end
     obj.save!
+  end
+
+  def simple_update(obj, attrs)
+    if request.patch?
+      patch(obj, attrs)
+    else
+      obj.update_attributes!(params.permit(attrs.map{|i|i.to_sym}))
+    end
+    validate_update_for(obj)
   end
 
   # creates the content type for a consistent API

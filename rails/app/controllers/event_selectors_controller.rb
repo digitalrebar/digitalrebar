@@ -41,11 +41,7 @@ class EventSelectorsController < ApplicationController
   def update
     EventSelector.transaction do
       @event_selector= find_key_cap(model,params[:id],cap("UPDATE")).lock!
-      if request.patch?
-        patch(@event_selector,%w{selector tenant_id})
-      else
-        @event_selector.update_attributes!(params.permit(:selector, :tenant_id))
-      end
+      simple_update(@event_selector,%w{selector tenant_id})
     end
     render api_show @event_selector
   end

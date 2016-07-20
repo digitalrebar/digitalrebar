@@ -51,10 +51,9 @@ class TenantsController < ::ApplicationController
     Tenant.transaction do
       @tenant = find_key_cap(model,params[:id],cap("UPDATE")).lock!
       # All sorts of room for mischief here.
-      if request.patch?
-        patch(@tenant,%w{description name parent_id})
-      else
-        @tenant.update_attributes!(params.permit(:description, :name, :parent_id))
+      simple_update(@tenant,%w{description name parent_id})
+      if @tenant.previous_changes["parent_id"] && ! capable(@tenant.parent_id,cap("UPDATE"))
+        raise RebarForbiddenError.new(@tenant, model)
       end
     end
     respond_to do |format|

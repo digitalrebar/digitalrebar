@@ -164,14 +164,7 @@ class NodeRolesController < ApplicationController
                      visible(model,cap("UPDATE")).find_by!(node_id: node.id, role_id: role.id)
                    end.lock!
       # if you've been passed data then save it
-      if request.patch?
-        patch(@node_role, %w{data run_count tenant_id})
-      else
-        if params[:data]
-          @node_role.data = params[:data]
-          @node_role.save!
-        end
-      end
+      simple_update(@node_role, %w{data run_count tenant_id})
     end
     respond_to do |format|
       format.html { flash[:notice] = I18n.t 'saved', :scope=>'layouts.node_roles.show'; render 'show' }

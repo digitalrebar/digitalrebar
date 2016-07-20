@@ -83,21 +83,7 @@ class NetworkRangesController < ::ApplicationController
                          visible(model, cap("UPDATE")).
                            find_by!(name: params[:name], network_id: net.id).lock!
                        end
-      if request.patch?
-        patch(@network_range,%w{name first last conduit vlan team_mode overlap use_vlan use_bridge use_team tenant_id})
-      else
-        @network_range.update_attributes!(params.permit(:name,
-							:tenant_id,
-                                                        :first,
-                                                        :last,
-                                                        :conduit,
-                                                        :vlan,
-                                                        :team_mode,
-                                                        :overlap,
-                                                        :use_vlan,
-                                                        :use_bridge,
-                                                        :use_team))
-      end
+      simple_update(@network_range,%w{name first last conduit vlan team_mode overlap use_vlan use_bridge use_team tenant_id})
     end
     render api_show @network_range
   end
