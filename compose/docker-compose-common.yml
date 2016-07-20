@@ -15,8 +15,6 @@ trust_me:
   restart: always
   privileged: true
   volumes:
-    - ./data-dir/trust_me/:/var/cache/trust_me/
-    - ./config-dir/trust_me/:/etc/trust_me/
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
   env_file:
     - ./common.env
