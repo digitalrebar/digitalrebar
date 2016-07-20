@@ -21,6 +21,7 @@ var ignore_anonymus bool
 var auth_mode, config_path, data_dir string
 var backingStore string
 var server_ip string
+var hostString string
 
 func init() {
 	flag.StringVar(&config_path, "config_path", "/etc/rebar-dhcp.conf", "Path to config file")
@@ -29,6 +30,7 @@ func init() {
 	flag.StringVar(&backingStore, "backing_store", "file", "Backing store to use. Either 'consul' or 'file'")
 	flag.StringVar(&auth_mode, "auth_mode", "BASIC", "Choose auth method: BASIC, KEY")
 	flag.BoolVar(&ignore_anonymus, "ignore_anonymus", false, "Ignore unknown MAC addresses")
+	flag.StringVar(&hostString, "host", "dhcp,dhcp-mgmt,localhost,127.0.0.1", "Comma separated list of hosts to put in certificate")
 }
 
 func main() {

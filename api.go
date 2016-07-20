@@ -314,7 +314,8 @@ func (fe *Frontend) RunServer(blocking bool, auth_mode string) http.Handler {
 	if auth_mode == "BASIC" {
 		acceptingRoot = ""
 	}
-	log.Fatal(cert.StartTLSServer(connStr, "dhcp-mgmt", acceptingRoot, "internal", api.MakeHandler()))
+	hosts := strings.Split(hostString, ",")
+	log.Fatal(cert.StartTLSServer(connStr, "dhcp-mgmt", hosts, acceptingRoot, "internal", api.MakeHandler()))
 
 	// Should never hit here.
 	return api.MakeHandler()
