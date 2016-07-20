@@ -33,7 +33,7 @@ class TenantsController < ::ApplicationController
   end
   
   def create
-    params[:parent_id] ||= !current_user.current_tenant_id
+    params[:parent_id] ||= @current_user.current_tenant_id
     validate_create(params[:parent_id])
     Tenant.transaction do
       @tenant = Tenant.create! params.permit(:name,
