@@ -16,21 +16,23 @@
 class BarclampCluster::ServiceRole < Role
 
   def sync_on_destroy(nr, *args)
-    collect_addresses(nr, false, args)
+    collect_addresses(nr, args)
   end
 
   def on_todo(nr, *args)
-    collect_addresses(nr, false, args)
+    collect_addresses(nr, args)
   end
 
   def on_active(nr, *args)
-    collect_addresses(nr, true, args)
+    collect_addresses(nr, args)
   end
 
   private
 
-  def collect_addresses(nr, active_only, *args)
+  def collect_addresses(nr, *args)
 
+    # allow users to set if we only collect addresses from active node-roles (default false)
+    active_only = Attrib.get("#{nr.role.name}-active-only",nr.deployment_role) rescue false
     Rails.logger.debug("Service Role for #{nr.role.name}, active only is #{active_only}")
 
     aname = "#{nr.role.name}-addresses"
