@@ -48,6 +48,11 @@ roles:
         default: 'default'
         type: str
         pattern: /^\[?[a-z]\]*/
+      - name: cluster-active-only
+        map: 'cluster/active-only'
+        description: 'Use addresses from Active NodeRoles only?'
+        default: false
+        type: bool
       - name: cluster-network
         map: 'cluster/network'
         description: 'Network used for Cluster'
