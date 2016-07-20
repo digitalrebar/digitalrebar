@@ -77,7 +77,7 @@ func ListenAndServeTLSValidated(addr string, valCertB, certB, keyB []byte, handl
 	return s.ListenAndServeTLS(".tlsCache/certfile", ".tlsCache/keyfile")
 }
 
-func StartTLSServer(addr, CN, acceptingRoot, sendingRoot string, handler http.Handler) error {
+func StartTLSServer(addr, CN string, hosts []string, acceptingRoot, sendingRoot string, handler http.Handler) error {
 	cc, err := consul.NewClient(consul.DefaultConfig())
 	if err != nil {
 		return err
@@ -104,7 +104,7 @@ func StartTLSServer(addr, CN, acceptingRoot, sendingRoot string, handler http.Ha
 		return err
 	}
 
-	certB, keyB, err := CreateCertificate(trustMeAddr, string(authKeyB), sendingRoot, CN, []string{})
+	certB, keyB, err := CreateCertificate(trustMeAddr, string(authKeyB), sendingRoot, CN, hosts)
 	if err != nil {
 		log.Printf("Could not create certificate for %s from %v: %v\n", sendingRoot, trustMeAddr, err)
 		return err
