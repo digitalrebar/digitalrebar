@@ -21,7 +21,7 @@ var (
 	defaultLabel    string
 	signers                = map[string]signer.Signer{}
 	whitelists             = map[string]whitelist.NetACL{}
-	consulKeyPrefix string = "/trust-me/cert-store"
+	consulKeyPrefix string = "trust-me/cert-store"
 	simpleStore     store.SimpleStore
 )
 
