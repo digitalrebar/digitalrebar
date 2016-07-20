@@ -31,6 +31,8 @@ class BarclampCluster::ServiceRole < Role
 
   def collect_addresses(nr, active_only, *args)
 
+    Rails.logger.debug("Service Role for #{nr.role.name}, active only is #{active_only}")
+
     aname = "#{nr.role.name}-addresses"
     hname = "#{nr.role.name}-hostnames"
     ipname = "#{nr.role.name}-address"
@@ -46,6 +48,7 @@ class BarclampCluster::ServiceRole < Role
       # use node-control-address or private-node-control-address
       # for internal networking, you can use v4/network_name or v6/network_name
       map = Attrib.get(netname,nr) || "node-control-address"
+      Rails.logger.debug("For #{nr.role.name}, using network #{map}")
 
       d = nr.deployment
       # find all the similar node_roles in the deployment
@@ -67,6 +70,8 @@ class BarclampCluster::ServiceRole < Role
           address = str_addr
         end
 
+        Rails.logger.debug("For #{nr.role.name}, adding node #{n.name} with address #{address}")
+
         # with active_only, we only include active roles
         unless active_only and !nrs.active?
           # collect cluster addresses
@@ -86,7 +91,7 @@ class BarclampCluster::ServiceRole < Role
 
       # set the address for the node
       Rails.logger.info("Updating #{nr.role.name} #{ipname}: #{address.inspect}")
-      Attrib.set(aname,nr.node_role,address)  rescue Rails.logger.warn("#{nr.role.name} #{ipname} attrib not defined")
+      Attrib.set(ipname,nr,address) rescue Rails.logger.warn("#{nr.role.name} #{ipname} attrib not defined")
 
     end
 
