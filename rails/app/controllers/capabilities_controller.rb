@@ -48,11 +48,7 @@ class CapabilitiesController < ::ApplicationController
   def update
     Capability.transaction do
       @capability = find_key_cap(model, params[:id], cap("UPDATE")).lock!
-      if request.patch?
-        patch(@capability,%w{description source})
-      else
-        @capability.update_attributes!(params.permit(:description, :source))
-      end
+      simple_update(@capability,%w{description source})
     end
     respond_to do |format|
       format.html { render :action=>:show }

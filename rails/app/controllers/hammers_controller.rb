@@ -41,14 +41,7 @@ class HammersController < ApplicationController
   def update
     Hammer.transaction do
       @nm = find_key_cap(model, params[:id], cap("UPDATE")).lock!
-      if request.patch?
-        patch(@nm,%w{priority endpoint username authenticator})
-      else
-        @nm.update_attributes!(params.permit(:priority,
-                                             :endpoint,
-                                             :username,
-                                             :authenticator))
-      end
+      simple_update(@nm,%w{priority endpoint username authenticator})
     end
     render api_show @nm
   end

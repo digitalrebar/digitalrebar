@@ -88,7 +88,7 @@ class UsersController < ApplicationController
     # Sanity-check that current_tenant_id is not being naughty.
     find_key_cap(Tenant, params[:current_tenant_id],cap("READ","TENANT"))
     validate_create(t.id)
-    @user = User.create! user_params
+    @user = User.create!(params.permit(user_params.map{|i|i.to_sym}))
     if params[:digest]
       @user.digest_password(params[:password])
       @user.save!
@@ -102,14 +102,7 @@ class UsersController < ApplicationController
   def update
     User.transaction do
       @user = find_key_cap(model,params[:id],cap("UPDATE")).lock!
-      if request.patch?
-        fields = %w{username email}
-        fields << "is_admin" if current_user.is_admin && current_user.id != @user.id
-        patch(@user,fields)
-      else
-        @user.update_attributes!(user_params)
-        @user.save!
-      end
+      simple_update(@user,user_params())
       if params[:digest]
         @user.digest_password(params[:password])
         @user.save!
@@ -290,15 +283,9 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    fields = [:username, :email, :password, :password_confirmation, :remember_me, :tenant_id, :current_tenant_id ]
-    fields << :is_admin if current_user.is_admin
-    params.permit(*fields)
-  end
-
-  def required_user_params
-    [:username, :email].each do |k|
-      params.require(k)
-    end
+    fields = %w(username email password password_confirmation remember_me tenant_id current_tenant_id)
+    fields << "is_admin" if current_user.is_admin
+    fields
   end
 
   def edit_common

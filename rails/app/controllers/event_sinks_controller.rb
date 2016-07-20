@@ -36,15 +36,7 @@ class EventSinksController < ApplicationController
   def update
     EventSink.transaction do
       @event_sink = find_key_cap(model, params[:id], cap("UPDATE")).lock!
-      if request.patch?
-        patch(@event_sink,%w{endpoint username authenticator notes tenant_id})
-      else
-        @event_sink.update_attributes!(params.permit(:endpoint,
-                                                :username,
-					        :tenant_id,
-                                                :authenticator,
-                                                :notes))
-      end
+      simple_update(@event_sink,%w{endpoint username authenticator notes tenant_id})
     end
     render api_show @event_sink
   end

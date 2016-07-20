@@ -40,11 +40,7 @@ class JigsController < ApplicationController
   def update
     Jig.transaction do
       @jig = find_key_cap(model, params[:id], cap("UPDATE")).lock!
-      if request.patch?
-        patch(@jig,%w{description active server client_name key})
-      else
-        @jig.update_attributes!(params.permit(:description,:active,:server,:client_name,:key))
-      end
+      simple_update(@jig,%w{description active server client_name key})
     end
     render api_show @jig
   end

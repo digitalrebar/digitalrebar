@@ -79,11 +79,7 @@ class NetworkRoutersController < ::ApplicationController
                 else
                   find_key_cap(model,params[:id],cap("UPDATE")).lock!
                 end
-      if request.patch?
-        patch(@network_router,%w{address pref tenant_id})
-      else
-        @network_router.update_attributes!(params.permit(:address,:pref,:tenant_id))
-      end
+      simple_update(@network_router,%w{address pref tenant_id})
     end
     render api_show @network_router
   end

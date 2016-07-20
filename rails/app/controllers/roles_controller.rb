@@ -60,15 +60,7 @@ class RolesController < ApplicationController
   def update
     Role.transaction do
       @role = find_key_cap(model,params[:id],cap("UPDATE")).lock!
-      if request.patch?
-        patch(@role, %w{description,template})
-      else
-        @role.update_attributes!(params.permit(:description))
-        if params.key? :template
-          @role.template = params[:template]
-          @role.save!
-        end
-      end
+      simple_update(@role, %w{description,template})
     end
     respond_to do |format|
       format.html { render :action=>:show }

@@ -56,7 +56,7 @@ class GroupsController < ApplicationController
     params[:category] = params[:category].first if params[:category].kind_of?(Array)
     Group.transaction do
       @group = find_key_cap(model,params[:id], cap("UPDATE"))
-      @group.update_attributes!(params.permit(:name, :description, :category, :tenant_id))
+      simple_update(@group,%w(name description category tenant_id))
     end
     render api_show @group
   end

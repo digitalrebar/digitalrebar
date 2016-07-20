@@ -261,7 +261,7 @@ class NodesController < ApplicationController
       @node = find_key_cap(model,params[:id],cap("UPDATE")).lock!
       ## Add better handling of deployment and tenant changing
       if request.patch?
-        patch(@node,%w{name description target_role_id deployment_id allocated available alive bootenv})
+        patch(@node,%w{name description target_role_id deployment_id allocated available alive bootenv tenant_id})
       else
         params[:node_deployment].each { |k,v| params[k] = v } if params.has_key? :node_deployment
         params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
@@ -279,6 +279,7 @@ class NodesController < ApplicationController
                                                :alive,
                                                :bootenv))
       end
+      validate_update_for(@node)
     end
     render api_show @node
   end
