@@ -1,5 +1,6 @@
 {
     "Name": "debian-7-install",
+    "TenantId": 1,
     "OS": {
         "Name": "debian-7",
         "Family": "debian",

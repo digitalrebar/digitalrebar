@@ -5,7 +5,7 @@ ACCESS_ARGS="--cacert /etc/prov-base-cert.pem --cert /etc/prov-cert.pem --key /e
 # Load templates
 for f in "/opt/provisioner-mgmt/templates"/*.tmpl; do
     curl $ACCESS_ARGS -X POST --data-binary "@$f" \
-         "https://localhost:$APIPORT/templates/${f##*/}" || :
+         "https://localhost:$APIPORT/templates/${f##*/}?tenant_id=1" || :
 done
 
 # Load bootenvs

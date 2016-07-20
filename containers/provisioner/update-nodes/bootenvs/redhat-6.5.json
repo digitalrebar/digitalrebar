@@ -1,5 +1,6 @@
 {
     "Name": "redhat-6.5-install",
+    "TenantId": 1,
     "OS": {
         "Name": "redhat-6.5",
         "IsoFile": "RHEL6.5-20131111.0-Server-x86_64-DVD1.iso",

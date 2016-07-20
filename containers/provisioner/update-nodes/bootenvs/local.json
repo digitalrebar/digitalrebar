@@ -1,5 +1,6 @@
 {
     "Name": "local",
+    "TenantId": 1,
     "OS": {
         "Name": "local"
     },
