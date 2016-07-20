@@ -17,17 +17,15 @@ class DnsNameFiltersController < ::ApplicationController
   self.cap_base = "NETWORK"
 
   def index
-    t_ids = build_tenant_list("NETWORK_READ")
-    @filters = DnsNameFilter.where(tenant_id: t_ids).order('priority ASC')
+    @filters = visible(model,cap("READ")).order('priority ASC')
     respond_to do |format|
       format.html {}
-      format.json { render api_index DnsNameFilter, @filters }
+      format.json { render api_index model, @filters }
     end
   end
 
   def show
-    @filter = DnsNameFilter.find_key params[:id]
-    validate_read(@filter.tenant_id, "NETWORK", DnsNameFilter, params[:id])
+    @filter = find_key_cap(model, params[:id], cap("READ"))
     respond_to do |format|
       format.html { }
       format.json { render api_show @filter }
@@ -40,11 +38,9 @@ class DnsNameFiltersController < ::ApplicationController
     params.require(:service)
     params.require(:template)
     params.require(:name)
-    unless params[:tenant_id]
-      params[:tenant_id] = @current_user.current_tenant_id
-    end
-    validate_create(params[:tenant_id], "NETWORK", DnsNameFilter)
+    params[:tenant_id] ||= @current_user.current_tenant_id
     DnsNameFilter.transaction do
+      validate_create(params[:tenant_id])
       @filter = DnsNameFilter.create! params.permit(:name, :matcher, :priority, :service, :template, :tenant_id)
     end
 
@@ -56,9 +52,10 @@ class DnsNameFiltersController < ::ApplicationController
   end
 
   def update
-    @filter = DnsNameFilter.find_key(params[:id])
-    validate_update(@filter.tenant_id, "NETWORK", DnsNameFilter, params[:id])
-    @filter.update_attributes!(params.permit(:name, :matcher, :priority, :service, :template, :tenant_id))
+    model.transaction do
+      @filter = find_key_cap(model, params[:id], cap("UPDATE"))
+      @filter.update_attributes!(params.permit(:name, :matcher, :priority, :service, :template, :tenant_id))
+    end
     respond_to do |format|
       format.html { render :action=>:show }
       format.json { render api_show @filter }
@@ -66,18 +63,19 @@ class DnsNameFiltersController < ::ApplicationController
   end
 
   def destroy
-    @filter = DnsNameFilter.find_key(params[:id])
-    validate_destroy(@filter.tenant_id, "NETWORK", DnsNameFilter, params[:id])
-    @filter.destroy
+    model.transaction do
+      @filter = find_key_cap(model, params[:id], cap("DESTROY"))
+      @filter.destroy
+    end
     respond_to do |format|
       format.html { redirect_to dns_name_filters_path() }
       format.json { render api_delete @filter }
     end
   end
 
+  ## Again, why this method?
   def edit
-    @dnf = DnsNameFilter.find_key params[:id]
-    validate_update(@dnf.tenant_id, "NETWORK", DnsNameFilter, params[:id])
+    @dnf = find_key_cap(model, params[:id], cap("UPDATE"))
     respond_to do |format|
       format.html {  }
     end

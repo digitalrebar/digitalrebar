@@ -64,8 +64,7 @@ class UsersController < ApplicationController
   end
 
   def index
-    t_ids = build_tenant_list("USER_READ")
-    @users = User.where(tenant_id: t_ids)
+    @users = visible(model,cap("READ"))
     respond_to do |format|
       format.html { }
       format.json { render api_index User, @users }
@@ -74,28 +73,21 @@ class UsersController < ApplicationController
 
  # RESTful DELETE of the node resource
   def destroy
-    @user = User.find_key params[:id]
-    validate_destroy(@user.tenant_id, "USER", User, params[:id])
+    @user = find_key_cap(model, params[:id], cap("DESTROY"))
     @user.destroy
     render api_delete @user
   end
 
   def create
+    # Maybe UPDATE here instead?
     params.require(:username)
     params.require(:email)
-    unless params[:tenant_id]
-      params[:tenant_id] = @current_user.current_tenant_id
-    else
-      t = Tenant.find_key params[:tenant_id]
-      params[:tenant_id] = t.id
-    end
-    unless params[:current_tenant_id]
-      params[:current_tenant_id] = params[:tenant_id]
-    else
-      t = Tenant.find_key params[:current_tenant_id]
-      params[:current_tenant_id] = t.id
-    end
-    validate_create(params[:tenant_id], "USER", User)
+    params[:tenant_id] ||= @current_user.current_tenant_id
+    params[:current_tenant_id] ||= params[:tenant_id]
+    t = find_key_cap(Tenant, params[:tenant_id],cap("READ","TENANT"))
+    # Sanity-check that current_tenant_id is not being naughty.
+    find_key_cap(Tenant, params[:current_tenant_id],cap("READ","TENANT"))
+    validate_create(t.id)
     @user = User.create! user_params
     if params[:digest]
       @user.digest_password(params[:password])
@@ -109,8 +101,7 @@ class UsersController < ApplicationController
 
   def update
     User.transaction do
-      @user = User.find_key(params[:id]).lock!
-      validate_update(@user.tenant_id, "USER", User, params[:id])
+      @user = find_key_cap(model,params[:id],cap("UPDATE")).lock!
       if request.patch?
         fields = %w{username email}
         fields << "is_admin" if current_user.is_admin && current_user.id != @user.id
@@ -131,27 +122,25 @@ class UsersController < ApplicationController
   end
 
   def digest_password
-      @user = User.find_key(params[:id])
-      validate_action(@user.tenant_id, "USER", User, params[:id], "READ_DIGEST")
+      @user = find_key_cap(model, params[:id], cap("READ_DIGEST"))
       render api_show @user.encrypted_password
   end
 
   def capabilities
-      @user = User.find_key(params[:id])
-      validate_action(@user.tenant_id, "USER", User, params[:id], "READ_CAPABILITIES")
+      @user = find_key_cap(model, params[:id], cap("READ_CAPABILITIES"))
       data = @user.cap_map
       render json: data
   end
 
   def show
-    @user = User.find_key params[:id]
-    validate_read(@user.tenant_id, "USER", User, params[:id])
+    @user = find_key_cap(model, params[:id], cap("READ"))
     respond_to do |format|
       format.html { } # show.html.erb
       format.json { render api_show @user }
     end
   end
 
+  # Uhhh... how can these possibly work?
   def unlock
     # TODO REFACTOR!
     respond_with(@user)  do |format|
@@ -180,7 +169,8 @@ class UsersController < ApplicationController
 
   def start_password_reset
     User.transaction do
-      @user = User.find_key(params[:id])
+      # Probably need a PASSWORD_CHANGE cap or something.
+      @user = find_key_cap(model, params[:id],cap("UPDATE"))
       unless current_user.is_admin || current_user == @user
         sleep 2
         raise "Cannot start password change"
@@ -191,7 +181,8 @@ class UsersController < ApplicationController
   end
 
   def complete_password_reset
-    @user = User.find_key(params[:id])
+    # Same as the last one.
+    @user = find_key_cap(model,params[:id],cap("UPDATE"))
     User.transaction do 
       token = PasswordChangeToken.find_by!(token: params[:token])
       unless @user.id == token.user_id && (current_user == @user || current_user.is_admin)
@@ -205,7 +196,8 @@ class UsersController < ApplicationController
     render api_show @user
   end
 
- def reset_password
+  # This needs to die in a fire.
+  def reset_password
     #  TODO REFACTOR!
    ret = fetch_user
    respond_with(@user)  do |format|
@@ -242,10 +234,12 @@ class UsersController < ApplicationController
    end
  end
 
+  # Ditto
   def is_edit_mode?
     current_user.is_admin? && Rails.env.development?
   end
-  
+
+  # Ditto again.  Admin doesn't mean that much with the cap system.
   def make_admin
     ret = fetch_user
     respond_with(@user)  do |format|
@@ -263,6 +257,7 @@ class UsersController < ApplicationController
     end
   end
 
+  # Ditto
   def remove_admin
     ret = fetch_user
     respond_with(@user) do |format|
@@ -278,12 +273,14 @@ class UsersController < ApplicationController
       end
     end
   end
-  
+
+  # Ditto
   def edit
     fetch_user
     edit_common
   end
 
+  # Ditto
   def edit_password
     code, exception = fetch_user
     @user.admin_reset_password = true if code == 200

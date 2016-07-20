@@ -19,32 +19,27 @@ class DeploymentRolesController < ApplicationController
  
   def index
     @list = if params.has_key? :deployment_id
-              Deployment.find_key(params[:deployment_id]).deployment_roles.to_a
+              find_key_cap(Deployment,params[:deployment_id], cap("READ")).deployment_roles
             elsif params.has_key? :role_id
-              Role.find_key(params[:role_id]).deployment_roles.to_a
+              Role.find_key(params[:role_id]).deployment_roles.visible(cap("READ"),@current_user.id)
             else
-              DeploymentRole.all.to_a
+              visible(model,cap("READ"))
             end
-    tenant_ids = build_tenant_list("DEPLOYMENT_READ")
-    @list.delete_if { |x| !tenant_ids.include? x.deployment.tenant_id }
     respond_to do |format|
       format.html { }
-      format.json { render api_index DeploymentRole, @list }
+      format.json { render api_index model, @list }
     end
   end
 
   def show
     # allow lookup by name
     if params.has_key? :deployment
-      deployment = Deployment.find_key params[:deployment] || 'system'
+      deployment = find_key_cap(Deployment, params[:deployment], cap("READ"))
       role = Role.find_key params[:id]
-      @deployment_role = DeploymentRole.where(deployment_id: deployment.id, role_id: role.id).first
+      @deployment_role = model.find_by!(deployment_id: deployment.id, role_id: role.id)
     else
-      @deployment_role = DeploymentRole.find_key params[:id]
+      @deployment_role = find_key_cap(model, params[:id], cap("READ"))
     end
-
-    validate_read(@deployment_role.deployment.tenant_id, "DEPLOYMENT", Deployment, params[:id])
-
     respond_to do |format|
       format.html {  }
       format.json { render api_show @deployment_role }
@@ -52,16 +47,23 @@ class DeploymentRolesController < ApplicationController
   end
 
   def create
-    # handles UI submit form
-    params[:role_id] = params[:add_role][:role_id] if params.has_key? :add_role
-    # allows request by name
-    params[:role_id] ||= Role.find_key(params[:role]).id if params.has_key? :role
-    params[:deployment_id] ||= Deployment.find_key(params[:deployment]).id
-    params.require(:role_id)
-    params.require(:deployment_id)
-    d = Deployment.find_key(params[:deployment_id])
-    validate_create(d.tenant_id, "DEPLOYMENT", Deployment)
-    @deployment_role = DeploymentRole.create! params.permit(:data, :role_id, :deployment_id)
+    DeploymentRole.transaction do
+      # When we start caring about ROLE_READ this will need updating.
+      r = Role.find_key(params[:role] || params[:role_id] || params[:add_role][:role_id])
+      # Creating a deployment_role is effectively updating the
+      # deployment it is a part of, hence the UPDATE instead of CREATE
+      # here.  If deployment_roles get their own capability namespace,
+      # this should change.
+      d = find_key_cap(Deployment,
+                       params[:deployment] ||
+                       params[:deployment_id],
+                       cap("UPDATE"))
+      params[:role_id] = r.id
+      params[:deployment_id] = d.id
+      params.require(:role_id)
+      params.require(:deployment_id)
+      @deployment_role = DeploymentRole.create!(params.permit(:data, :role_id, :deployment_id))
+    end
     respond_to do |format|
       format.html { redirect_to deployment_path(params[:deployment_id]) }
       format.json { render api_show @deployment_role }
@@ -70,22 +72,19 @@ class DeploymentRolesController < ApplicationController
 
   def update
     DeploymentRole.transaction do
-      @deployment_role = DeploymentRole.find_key(params[:id]).lock!
+      @deployment_role = find_key_cap(model, params[:id],cap("UPDATE")).lock!
       if request.patch?
         raise "Cannot PATCH deployment roles!"
-      else
-	validate_update(@deployment_role.deployment.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id])
-        params.require(:data)
-        @deployment_role.data = params[:data]
-        @deployment_role.save!
       end
+      params.require(:data)
+      @deployment_role.data = params[:data]
+      @deployment_role.save!
     end
     render api_show @deployment_role
   end
 
   def destroy
-    @deployment_role = DeploymentRole.find_key(params[:id])
-    validate_destroy(@deployment_role.deployment.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id])
+    @deployment_role = find_key_cap(model,params[:id],cap("DESTROY"))
     @deployment_role.destroy
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment_role.deployment_id) }
@@ -96,8 +95,7 @@ class DeploymentRolesController < ApplicationController
   end
 
   def propose
-    @deployment_role = DeploymentRole.find_key params[:deployment_role_id]
-    validate_action(@deployment_role.deployment.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id], "PROPOSE")
+    @deployment_role = find_key_cap(model, params[:deployment_role_id],cap("PROPOSE"))
     @deployment_role.propose
     respond_to do |format|
       format.html { redirect_to deployment_role_path(@deployment_role.id) }
@@ -106,8 +104,7 @@ class DeploymentRolesController < ApplicationController
   end
 
   def commit
-    @deployment_role = DeploymentRole.find_key params[:deployment_role_id]
-    validate_action(@deployment_role.deployment.tenant_id, "DEPLOYMENT", DeploymentRole, params[:id], "COMMIT")
+    @deployment_role = find_key_cap(model, params[:deployment_role_id],cap("COMMIT"))
     @deployment_role.commit
     respond_to do |format|
       format.html { redirect_to deployment_role_path(@deployment_role.id) }

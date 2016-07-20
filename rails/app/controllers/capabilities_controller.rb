@@ -17,8 +17,7 @@ class CapabilitiesController < ::ApplicationController
   self.cap_base = "CAPABILITY"
 
   def show
-    @capability = Capability.find_key params[:id]
-    validate_read(@current_user.current_tenant_id, "CAPABILITY", Capability, params[:id])
+    @capability = find_key_cap(model, params[:id], cap("READ"))
     respond_to do |format|
       format.html { }
       format.json { render api_show @capability }
@@ -26,23 +25,19 @@ class CapabilitiesController < ::ApplicationController
   end
 
   def index
-    if capable(@current_user.current_tenant_id, "CAPABILITY_READ")
-      @capabilities = Capability.all
-    else
-      @capabilities = []
-    end
+    @capabilities = visible(model, cap("READ"))
     respond_to do |format|
       format.html {}
-      format.json { render api_index Capability, @capabilities.to_a }
+      format.json { render api_index model, @capabilities }
     end
   end
 
   def create
-    validate_create(@current_user.current_tenant_id, "CAPABILITY", Capability)
     Capability.transaction do
+      validate_create
       @capability = Capability.create! params.permit(:name,
-                                             :description,
-                                             :source)
+                                                     :description,
+                                                     :source)
     end
     respond_to do |format|
       format.html { redirect_to :action=>:index }
@@ -51,13 +46,12 @@ class CapabilitiesController < ::ApplicationController
   end
 
   def update
-    validate_update(@current_user.current_tenant_id, "CAPABILITY", Capability, params[:id])
     Capability.transaction do
-      @capability = Capability.find_key(params[:id]).lock!
+      @capability = find_key_cap(model, params[:id], cap("UPDATE")).lock!
       if request.patch?
-        patch(@capability,%w{description name source})
+        patch(@capability,%w{description source})
       else
-        @capability.update_attributes!(params.permit(:description, :name, :source))
+        @capability.update_attributes!(params.permit(:description, :source))
       end
     end
     respond_to do |format|
@@ -67,15 +61,14 @@ class CapabilitiesController < ::ApplicationController
   end
 
   def destroy
-    validate_destroy(@current_user.tenant_id, "CAPABILITY", Capability, params[:id])
-    @capability = Capability.find_key(params[:id])
+    @capability = find_key_cap(model,params[:id], cap("DESTROY"))
     @capability.destroy
     render api_delete @capability
   end
 
+  ### Why do we have an edit method?
   def edit
-    validate_update(@current_user.current_tenant_id, "CAPABILITY", Capability, params[:id])
-    @capability = Capability.find_key params[:id]
+    @capability = find_key_cap(model, params[:id], cap("UPDATE"))
     respond_to do |format|
       format.html {  }
     end

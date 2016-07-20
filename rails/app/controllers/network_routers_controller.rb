@@ -18,28 +18,25 @@ class NetworkRoutersController < ::ApplicationController
  
   def index
     @list = if params.has_key? :network_id or params.has_key? :network
-              network =  Network.find_key params[:network_id] || params[:network]
-              (network.router ? [network.router] : [])
+              router = find_key_cap(Network,
+                                    params[:network_id] || params[:network],
+                                    cap("READ")).router
+              router.nil? ? [] : [router]
             else
-              NetworkRouter.all.to_a
+              visible(model,cap("READ"))
             end
-    t_ids = build_tenant_list("NETWORK_READ")
-    @list.delete_if { |x| !t_ids.include? x.tenant_id }
     respond_to do |format|
-      format.json { render api_index NetworkRouter, @list }
+      format.json { render api_index model , @list }
       format.html { }
     end
   end
 
   def show
-    if params[:network_id] || params[:network] 
-      network = Network.find_key (params[:network_id] || params[:network])
-      # since there is only 1 router per network, it does not matter what was actually asked for
-      @item = network.router 
-    else
-      @item = NetworkRouter.find_key params[:id]
-    end
-    validate_read(@item.tenant_id, "NETWORK", NetworkRouter, @item.id)
+    @item = if params[:network_id] || params[:network] 
+              find_key_cap(Network, params[:network_id] || params[:network], cap("READ")).router
+            else
+              find_key_cap(model, params[:id], cap("READ"))
+            end
     respond_to do |format|
       format.json { render api_show @item }
       format.html { }
@@ -47,52 +44,41 @@ class NetworkRoutersController < ::ApplicationController
   end
 
   def destroy
-    if params[:network_id] || params[:network] 
-      network = Network.find_key (params[:network_id] || params[:network])
-      if network.router
-        @network_router = network.router
-      else
-        raise "CANNOT DELETE: no router on network #{params[:network_id]}"
-      end
-    else
-      @network_router = NetworkRouter.find_key(params[:id])
-    end
-    validate_destroy(@network_router.tenant_id, "NETWORK", NetworkRouter, @network_router.id)
-    @network_router.destroy
-    render api_delete @network_router
+    @router = if params[:network_id] || params[:network]
+                net = find_key_cap(Network, params[:network_id] || params[:network], cap("UPDATE"))
+                raise RebarForbiddenError("none",model) if net.router.nil?
+                find_key_cap(model,net.router.id,cap("DESTROY"))
+              else
+                find_key_cap(model,params[:id],cap("DESTROY"))
+              end
+    @router.destroy
+    render api_delete @router
   end
 
   def create
-    network = Network.find_key(params[:network] || params[:network_id])
-    params[:network_id] = network.id
-    params.require(:network_id)
-    params.require(:address)
-    unless params[:tenant_id]
-      params[:tenant_id] = @current_user.current_tenant_id
-    end
-    # cannot create if existing 
+    network = find_key_cap(Network,params[:network] || params[:network_id], cap("UPDATE"))
     if network.router 
       render api_conflict network.router
-    else
-      validate_create(@network.tenant_id, "NETWORK", NetworkRouter)
-      @router =  NetworkRouter.create! params.permit(:network_id,:address,:pref,:tenant_id)
-      render api_show @router
+      return
     end
+    params.require(:network_id)
+    params.require(:address)
+    # There is a case to be made for letting the tenant default to the network tenant.
+    params[:tenant_id] ||= @current_user.current_tenant_id
+    validate_create(params[:tenant_id])
+    @router =  NetworkRouter.create! params.permit(:network_id,:address,:pref,:tenant_id)
+    render api_show @router
   end
 
   def update
     NetworkRouter.transaction do
-      if params[:network_id] || params[:network] 
-        network = Network.find_key(params[:network_id] || params[:network])
-        if network.router
-          @network_router = network.router.lock!
-        else
-          raise "CANNOT UPDATE: no router on network #{params[:network_id]}"
-        end
-      else
-        @network_router = NetworkRouter.find_key(params[:id]).lock!
-      end
-      validate_update(@network_router.tenant_id, "NETWORK", NetworkRouter, @network_router.id)
+      @router = if params[:network_id] || params[:network]
+                  net = find_key_cap(Network, params[:network_id] || params[:network], cap("UPDATE"))
+                  raise RebarForbiddenError("none",model) if net.router.nil?
+                  find_key_cap(model,net.router.id,cap("UPDATE")).lock!
+                else
+                  find_key_cap(model,params[:id],cap("UPDATE")).lock!
+                end
       if request.patch?
         patch(@network_router,%w{address pref tenant_id})
       else
@@ -102,6 +88,4 @@ class NetworkRoutersController < ::ApplicationController
     render api_show @network_router
   end
 
-
 end
-

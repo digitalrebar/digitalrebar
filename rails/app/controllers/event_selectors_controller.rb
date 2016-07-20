@@ -19,12 +19,11 @@ class EventSelectorsController < ApplicationController
 
   def index
     @event_selectors = if params.key(:event_sink_id)
-                         EventSink.find_key(params[:event_sink_id]).event_selectors.to_a
+                         find_key_cap(EventSink, params[:event_sink_id],cap("READ","EVENT_SINK")).
+                           event_selectors.visible(cap("READ"),@current_user.id)
                        else
-                         EventSelector.all.to_a
+                         visible(model,cap("READ"))
                        end
-    t_ids = build_tenant_list("EVENT_SELECTOR_READ")
-    @event_selectors.delete_if { |x| !t_ids.include? x.tenant_id }
     respond_to do |format|
       format.html { } 
       format.json { render api_index EventSelector, @event_selectors }
@@ -32,8 +31,7 @@ class EventSelectorsController < ApplicationController
   end
 
   def show
-    @event_selector = EventSelector.find_key(params[:id])
-    validate_read(@event_selector.tenant_id, "EVENT_SELECTOR", EventSelector, params[:id])
+    @event_selector = find_key_cap(model, params[:id],cap("READ"))
     respond_to do |format|
       format.html {  }
       format.json { render api_show @event_selector }
@@ -42,8 +40,7 @@ class EventSelectorsController < ApplicationController
 
   def update
     EventSelector.transaction do
-      @event_selector= event.find_key(params[:id]).lock!
-      validate_update(@event_selector.tenant_id, "EVENT_SELECTOR", EventSelector, params[:id])
+      @event_selector= find_key_cap(model,params[:id],cap("UPDATE")).lock!
       if request.patch?
         patch(@event_selector,%w{selector tenant_id})
       else
@@ -56,12 +53,10 @@ class EventSelectorsController < ApplicationController
   def create
     params.require(:event_sink_id)
     params.require(:selector)
-    unless params[:tenant_id]
-      params[:tenant_id] = @current_user.current_tenant_id
-    end
-    validate_create(params[:tenant_id], "EVENT_SELECTOR", EventSelector)
-    event_sink = EventSink.find_key(params[:event_sink_id])
+    params[:tenant_id] ||= @current_user.current_tenant_id
     EventSelector.transaction do
+      validate_create(params[:tenant_id])
+      event_sink = find_key_cap(EventSink,params[:event_sink_id],cap("UPDATE","EVENT_SINK"))
       @event_selector = EventSelector.create!(event_sink_id: event_sink.id,
 					      tenant_id: params[:tenant_id],
                                               selector: params[:selector])
@@ -70,9 +65,10 @@ class EventSelectorsController < ApplicationController
   end
 
   def destroy
-    @es = EventSelector.find_key(params[:id])
-    validate_destroy(@event_selector.tenant_id, "EVENT_SELECTOR", EventSelector, params[:id])
-    @es.destroy
+    model.transaction do
+      @es = find_key_cap(model, params[:id],cap("DESTROY"))
+      @es.destroy
+    end
     render api_delete @es
   end
 

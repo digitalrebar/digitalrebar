@@ -18,17 +18,17 @@ class RunsController < ApplicationController
   self.cap_base = "NODE"
 
   def index
+    @runs = visible(model,cap("READ"))
     respond_to do |format|
-      format.json { render api_index :run, Run.all }
+      format.json { render api_index model, @runs }
     end
   end
 
   # returns all the items for a node in the annealer queue
   def show
-    node = Node.find_key params[:id]
-    runs = (node.nil? ? [] : node.runs)
+    runs = find_key_cap(Node, params[:id], cap("READ")).runs
     respond_to do |format|
-      format.json { render api_index :run, runs }
+      format.json { render api_index model, runs }
     end
   end
 

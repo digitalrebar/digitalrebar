@@ -17,32 +17,24 @@ class RolesController < ApplicationController
   self.model = Role
   self.cap_base = "ROLE"
 
+  # For now, everyone can see all the roles.
+  # This may change iff we tenant them.
   def index
     @list = if params.include? :deployment_id
-              d = Deployment.find_key(params[:deployment_id])
-	      if capable(d.tenant_id, "DEPLOYMENT_READ")
-                r = d.roles.to_a
-	      else
-		r = []
-	      end
+              find_key_cap(Deployment, params[:deployment_id], cap("READ","DEPLOYMENT")).roles
             elsif params.include? :node_id
-              n = Node.find_key(params[:node_id])
-	      if capable(n.tenant_id, "NODE_READ")
-                r = n.roles.to_a
-	      else
-		r = []
-	      end
+              find_key_cap(Node,params[:node_id],cap("READ","NODE")).roles
             else
-              Role.all.to_a
-            end
+              Role.all
+            end.visible(cap("READ"),@current_user.id)
     respond_to do |format|
       format.html { }
-      format.json { render api_index Role, @list }
+      format.json { render api_index model, @list }
     end
   end
 
   def show
-    @role = Role.find_key params[:id]
+    @role = find_key_cap(model, params[:id],cap("READ"))
     respond_to do |format|
       format.html {  }
       format.json { render api_show @role, "role" }
@@ -51,9 +43,10 @@ class RolesController < ApplicationController
 
   def create
     if params.include? :deployment_id
-      @deployment = Deployment.find_key params[:deployment_id]
-      validate_create(@deployment.tenant_id, "DEPLOYMENT", Deployment, params[:deployment_id])
-      role = Role.find_key params[:deployment][:role_id].to_i 
+      # Arguably, this should be UPDATE since deployment_roles are
+      # tightly integrated with deployments.
+      @deployment = find_key_cap(Deployment, params[:deployment_id], cap("CREATE","DEPLOYMENT"))
+      role = find_key_cap(model, params[:deployment][:role_id],cap("READ"))
       role.add_to_deployment @deployment
       respond_to do |format|
         format.html { redirect_to deployment_path(@deployment.id) }
@@ -66,8 +59,7 @@ class RolesController < ApplicationController
 
   def update
     Role.transaction do
-      @role = Role.find_key params[:id].lock!
-      validate_update(@current_user.current_tenant_id, "ROLE", Role, params[:id])
+      @role = find_key_cap(model,params[:id],cap("UPDATE")).lock!
       if request.patch?
         patch(@role, %w{description,template})
       else
@@ -85,8 +77,7 @@ class RolesController < ApplicationController
   end
 
   def destroy
-    @role = Role.find_key params[:role_id]
-    validate_destroy(@current_user.current_tenant_id, "ROLE", Role, params[:role_id])
+    @role = find_key_cap(model,params[:role_id],cap("DESTROY"))
     @role.destroy
     render api_delete @role
   end

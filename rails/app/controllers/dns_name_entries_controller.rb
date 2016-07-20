@@ -17,8 +17,7 @@ class DnsNameEntriesController < ::ApplicationController
   self.cap_base = "NETWORK"
 
   def show
-    @entry = DnsNameEntry.find_key params[:id]
-    validate_read(@entry.tenant_id, "NETWORK", DnsNameEntry, params[:id])
+    @entry = find_key_cap(model, params[:id], cap("READ"))
     respond_to do |format|
       format.html { }
       format.json { render api_show @entry }
@@ -26,13 +25,12 @@ class DnsNameEntriesController < ::ApplicationController
   end
 
   def index
-    tenant_ids = build_tenant_list("NETWORK_READ")
-    @entries = DnsNameEntry.where(tenant_id: tenant_ids)
-                           .includes(network_allocation: [:node])
-			   .includes(:dns_name_filter)
+    @entries = visible(model, cap("READ")).
+               includes(network_allocation: [:node]).
+	       includes(:dns_name_filter)
     respond_to do |format|
       format.html {}
-      format.json { render api_index DnsNameEntry, @entries }
+      format.json { render api_index model, @entries }
     end
   end
 

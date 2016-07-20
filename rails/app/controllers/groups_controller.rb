@@ -19,17 +19,11 @@ class GroupsController < ApplicationController
   
   def index
     @list = if params.has_key? :node_id
-      n = Node.find_key params[:node_id]
-      if capable(n.tenant_id, "NODE_READ")
-        n.groups.to_a
-      else
-        []
-      end
-    else
-      Group.all.to_a
-    end
-    t_ids = build_tenant_list("GROUP_READ")
-    @list.delete_if { |x| !t_ids.include? x.tenant_id }
+              find_key_cap(Node, params[:node_id],cap("READ","NODE")).
+                groups.visible(cap("READ"),@current_user.id)
+            else
+              visible(model, cap("READ"))
+            end
     respond_to do |format|
       format.html { }
       format.json { render api_index Group, @list }
@@ -37,8 +31,7 @@ class GroupsController < ApplicationController
   end
 
   def show
-    @group = Group.find_key params[:id]
-    validate_read(@group.tenant_id, "GROUP", Group, params[:id])
+    @group = find_key_cap(model, params[:id], cap("READ"))
     respond_to do |format|
       format.html { }
       format.json { render api_show @group }
@@ -48,11 +41,11 @@ class GroupsController < ApplicationController
   def create
     params.require(:name)
     params[:category] = params[:category].first if params[:category].kind_of?(Array)
-    unless params[:tenant_id]
-      params[:tenant_id] = @current_user.current_tenant_id
+    params[:tenant_id] ||= @current_user.current_tenant_id
+    Group.transaction do
+      validate_create(params[:tenant_id])
+      @group = Group.create! params.permit(:name, :description, :category, :tenant_id)
     end
-    validate_create(params[:tenant_id], "GROUP", Group)
-    @group = Group.create! params.permit(:name, :description, :category, :tenant_id)
     respond_to do |format|
       format.html { redirect_to group_path(@group.id)}
       format.json { render api_show @group }
@@ -61,16 +54,18 @@ class GroupsController < ApplicationController
   
   def update
     params[:category] = params[:category].first if params[:category].kind_of?(Array)
-    @group = Group.find_key(params[:id])
-    validate_update(@group.tenant_id, "GROUP", Group, params[:id])
-    @group.update_attributes!(params.permit(:name, :description, :category, :tenant_id))
+    Group.transaction do
+      @group = find_key_cap(model,params[:id], cap("UPDATE"))
+      @group.update_attributes!(params.permit(:name, :description, :category, :tenant_id))
+    end
     render api_show @group
   end
 
   def destroy
-    @group = Group.find_key(params[:id])
-    validate_destroy(@group.tenant_id, "GROUP", Group, params[:id])
-    @group.destroy
+    model.transaction do
+      @group = find_key_cap(model, params[:id], cap("DESTROY"))
+      @group.destroy
+    end
     render api_delete @group
   end
   

@@ -18,62 +18,57 @@ class NetworkAllocationsController < ::ApplicationController
 
   def create
     params.require(:node_id)
-    node = Node.find(params[:node_id])
-    network = Network.find_by(id: params[:network_id])
-    range = NetworkRange.find_by(id: params[:network_range_id])
+    node = find_key_cap(Node, params[:node_id], cap("UPDATE","NODE"))
     suggestion = params[:address]
     suggestion = nil if suggestion && suggestion == ""
-    if range
-      validate_action(range.tenant_id, "NETWORK", NetworkRange, params[:network_range_id], "ALLOCATE")
-      validate_update(node.tenant_id, "NODE", Node, params[:node_id])
-      ret = range.allocate(node,suggestion)
-    elsif network
-      validate_action(network.tenant_id, "NETWORK", Network, params[:network_id], "ALLOCATE")
-      validate_update(node.tenant_id, "NODE", Node, params[:node_id])
-      ret = network.auto_allocate(node)
-    else
-      raise "Need a network or range"
-    end
+    ret = if params[:network_range_id]
+            find_key_cap(NetworkRange, params[:network_range_id], cap("ALLOCATE")).
+              allocate(node,suggestion)
+          elsif params[:network_id]
+            find_key_cap(Network,params[:network_id], cap("ALLOCATE")).
+              auto_allocate(node)
+          else
+            raise "Need a network or range"
+          end
     render :json => ret
   end
 
   def destroy
     params.require(:id)
-    @allocation = NetworkAllocation.find(params[:id])
-    validate_destroy(@allocation.tenant_id, "NETWORK", NetworkAllocation, params[:id], "DEALLOCATE")
-    validate_update(@allocate.node.tenant_id, "NODE", Node, @allocation.node.id)
+    @allocation = find_key_cap(model,params[:id],cap("DESTROY"))
+    # Called for side effect.
+    find_key_cap(Node,@allocation.node.id,cap("UPDATE","NODE"))
     @allocation.destroy
     render api_delete @allocation
   end
 
   def index
     @list = if params.has_key? :network_id or params.has_key? :network
-              Network.find_key(params[:network_id] || params[:network]).network_allocations.to_a
+              find_key_cap(Network,params[:network_id] || params[:network],cap("READ")).
+                network_allocations
             elsif params.has_key?(:network_range_id)
-              NetworkRange.find(params[:network_range_id]).network_allocations.to_a
+              find_key_cap(NetworkRange, params[:network_range_id],cap("READ")).
+                network_allocations
             elsif params.has_key?(:node_id) || params.has_key?(:node)
-              Node.find_key(params[:node_id] || params[:node]).network_allocations.to_a
+              find_key_cap(Node, params[:node_id] || params[:node], cap("READ","NODE")).
+                network_allocations.visible(cap("READ"),@current_user.id)
             else
-              NetworkAllocation.all.to_a
+              visble(model,cap("READ"))
             end
-    t_ids = build_tenant_list("NETWORK_READ")
-    @list.delete_if { |x| !t_ids.include? x.tenant_id }
     respond_to do |format|
       format.html { }
-      format.json { render api_index NetworkAllocation, @list }
+      format.json { render api_index model, @list }
     end
   end
 
   def show
-    @allocation = NetworkAllocation.find_key(params[:id]) rescue nil
-    if @allocation
-      @allocation = nil unless capable(@allocation.tenant_id, "NETWORK_READ")
-    end
+    @allocation = find_key_cap(model, params[:id], cap("READ"))
     respond_to do |format|
       format.html {
-                    @list = [@allocation]
-                    render :action=>:index
-                  }
+        # Why?
+        @list = [@allocation]
+        render :action=>:index
+      }
       format.json { render api_show @allocation }
     end
   end

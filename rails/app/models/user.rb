@@ -52,6 +52,7 @@ class User < ActiveRecord::Base
   scope  :admin,              -> { where(:is_admin => true) }
 
   has_many    :user_tenant_capabilities
+  has_many    :capabilities,  -> { distinct }, through: :user_tenant_capabilities
   has_many    :tenants,       -> { distinct }, through: :user_tenant_capabilities
 
   def capable(cap_name, tid)

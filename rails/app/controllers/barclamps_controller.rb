@@ -18,19 +18,15 @@ class BarclampsController < ApplicationController
   self.cap_base = "BARCLAMP"
 
   def index
-    @list = Barclamp.all
+    @list = visible(model, cap("READ"))
     respond_to do |format|
       format.html { }
-      format.json { render api_index Barclamp, @list }
+      format.json { render api_index model, @list }
     end
   end
 
-  def upload
-    @barclamp = Barclamp.find_key params[:barclamp_id] rescue nil
-  end
-
   def show
-    @barclamp = Barclamp.find_key params[:id]
+    @barclamp = find_key_cap(model, params[:id], cap("READ"))
     respond_to do |format|
       format.html {  }
       format.json { render api_show @barclamp }
@@ -42,7 +38,9 @@ class BarclampsController < ApplicationController
     if request.patch?
       raise "PATCH update for barclamps not implemented!"
     end
-    validate_update(@current_user.current_tenant_id, "BARCLAMP", Barclamp, params[:value])
+    # Update and create are basically the same action for barclamps.
+    # Not the proper way to deal, I know, but...
+    validate_create
     @barclamp = Barclamp.import_or_update(params[:value], @current_user.current_tenant_id)
     respond_to do |format|
       format.html {  }
@@ -56,7 +54,7 @@ class BarclampsController < ApplicationController
 
   def create
     params.require(:value)
-    validate_create(@current_user.current_tenant_id, "BARCLAMP", Barclamp)
+    validate_create
     @barclamp = Barclamp.import_or_update(params[:value], @current_user.current_tenant_id)
     respond_to do |format|
       format.html {  }
