@@ -15,7 +15,7 @@ import (
 	consul "github.com/hashicorp/consul/api"
 )
 
-func writeFiles(certB, keyB []byte) error {
+func WriteFiles(certB, keyB []byte) error {
 	err := os.MkdirAll(".tlsCache", 0700)
 	if err != nil {
 		return err
@@ -37,7 +37,7 @@ func writeFiles(certB, keyB []byte) error {
   This is STUPID, but the only way to do this for now.
 */
 func ListenAndServeTLS(addr string, certB, keyB []byte, handler http.Handler) error {
-	err := writeFiles(certB, keyB)
+	err := WriteFiles(certB, keyB)
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func ListenAndServeTLS(addr string, certB, keyB []byte, handler http.Handler) er
   This is still STUPID, but the only way to do this for now.
 */
 func ListenAndServeTLSValidated(addr string, valCertB, certB, keyB []byte, handler http.Handler) error {
-	err := writeFiles(certB, keyB)
+	err := WriteFiles(certB, keyB)
 	if err != nil {
 		return err
 	}
