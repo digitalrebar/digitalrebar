@@ -65,6 +65,7 @@ ActiveRecord::Base.transaction do
     [ "TENANT_UPDATE",        "Update Tenants" ],
     [ "TENANT_DESTROY",       "Destroy Tenants" ],
 
+    [ "USER_LOGIN",           "User can login"],
     [ "USER_CREATE",          "Create User" ],
     [ "USER_READ",            "Read User" ],
     [ "USER_UPDATE",          "Update User" ],
