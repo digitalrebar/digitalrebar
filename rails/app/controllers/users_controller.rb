@@ -119,11 +119,12 @@ class UsersController < ApplicationController
   end
 
   def digest_password
-      @user = find_key_cap(model, params[:id], cap("READ_DIGEST"))
-      render api_show @user.encrypted_password
+    @user = find_key_cap(model, params[:id], cap("READ_DIGEST"))
+    render api_show @user.encrypted_password
   end
 
   def capabilities
+    data = {}
     model.transaction do
       @user = find_key_cap(model, params[:id], cap("READ_CAPABILITIES"))
       data = @user.cap_map

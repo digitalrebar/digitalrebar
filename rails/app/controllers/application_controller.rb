@@ -365,7 +365,7 @@ class ApplicationController < ActionController::Base
     u = nil
     cors_headers
     authed = authenticate_or_request_with_http_digest(User::DIGEST_REALM) do |username|
-      u = User.find_by!(username: username)
+      u = User.find_by!(username: username, system: false)
       session[:digest_user] = u.username
       u.encrypted_password
     end
@@ -390,32 +390,20 @@ class ApplicationController < ActionController::Base
     Rails.logger.info("username header: #{request.headers["HTTP_X_AUTHENTICATED_USERNAME"]}")
     Rails.logger.info("capability header: #{request.headers["HTTP_X_AUTHENTICATED_CAPABILITY"]}")
     case
-    when request.headers["puma.socket"].peercert && !request.headers["HTTP_X_AUTHENTICATED_USERNAME"].nil?
-      # This assumes that the rev-proxy is handling cors
-      username = request.headers["HTTP_X_AUTHENTICATED_USERNAME"]
-      capability = request.headers["HTTP_X_AUTHENTICATED_CAPABILITY"]
-      wants_admin = capability == "ADMIN"
-      Rails.logger.info("Auth by key: #{username}")
-      Rails.logger.info("headers['HTTP_ORIGIN'] = #{request.headers["HTTP_ORIGIN"]}")
-
-      email = "#{username}@internal.local"
-      if username =~ /@/
-        email = username
-        username = username.split("@")[0]
+    when !request.headers["HTTP_X_AUTHENTICATED_USERNAME"].nil?
+      unless request.headers["puma.socket"].peercert ||
+             request.local? ||
+             (/^::ffff:127\.0\.0\.1$/ =~ request.remote_ip)
+        raise RebarForbiddenError.new("forbidden",User)
       end
-
-      @current_user = User.create_with(email: email).find_or_create_by(username: username)
-      # Update the capabiilties
-      if @current_user.is_admin != wants_admin
-        @current_user.is_admin = wants_admin
-        @current_user.save
-        @current_user = User.find_by(username: username)
-      end
+      username = request.headers["HTTP_X_AUTHENTICATED_USERNAME"].strip
+      @current_user = User.find_by(username: username)
       session[:digest_user] = username
       true
     when current_user
       val = authenticate_user!
       @current_user = current_user if val
+      raise RebarForbiddenError.new("forbidden",User) if @current_user.system
       val
     when digest_request?
       digest_auth!
@@ -425,11 +413,12 @@ class ApplicationController < ActionController::Base
           (/^::ffff:127\.0\.0\.1$/ =~ request.remote_ip)) &&
         File.exists?("/tmp/.rebar_in_bootstrap") &&
         (File.stat("/tmp/.rebar_in_bootstrap").uid == 0)
-      @current_user = User.find_by(username: "rebar")
+      @current_user = User.find_by(username: "SYSTEM")
       true
     else
       do_auth!
     end
+    Rails.logger.info("Authenticated user: #{@current_user.username}") if @current_user
   end
 
   # See if the current user has this capability in the given tenant id

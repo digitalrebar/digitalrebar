@@ -60,23 +60,21 @@ class User < ActiveRecord::Base
     User.exists?(["id in (select user_id from utc_mapping where capability = ? AND user_id = ? AND tenant_id = ?)",cap_name, id, tid])
   end
 
-  # Build a map object for capabilities.
+  def grant_capability(cap, tid = self.current_tenant_id)
+    cap = Capability.find_by!(name: cap) if cap.is_a?(String)
+    UserTenantCapability.find_or_create_by!(user_id: self.id, tenant_id: tid, capability_id: cap.id)
+  end
+
+ # Build a map object for capabilities.
   # { tenant_1_id: { cap: [], (parent: #) }, ... }
   def cap_map
-    results = UserTenantCapability.where(user_id: self.id).joins(:tenant).joins(:capability).select("capabilities.name", :tenant_id, :parent_id).group_by(&:tenant_id)
     nr = {}
-    results.each do |k,v|
-      parent_id = v.length > 0 ? v[0]["parent_id"] : nil
-      v.map! {|x| x["name"]}
-
-      # Make sure children are in map
-      c_ids = Tenant.where(["id IN (select child_id from all_tenant_parents where parent_id = :ten)", {ten: k}]).map { |x| x.id }
-      c_ids.each do |c_id|
-        c = Tenant.find_by(id: c_id)
-        nr[c_id] ||= { "parent" => c.parent_id, "capabilities" => [] }
-      end
-
-      nr[k] = { "parent" => parent_id, "capabilities" => v }
+    rows = User.
+           connection.
+           select_all("select tenant_id,capability from utc_mapping where user_id = #{self.id}").rows
+    rows.each do |row|
+      nr[row[0]] ||= {"capabilities" => [], "parent" => nil}
+      nr[row[0]]["capabilities"] << row[1]
     end
     nr
   end
