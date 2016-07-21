@@ -1,5 +1,5 @@
 hash: b860eb8a8ca2b95eb7b8c23b20c5f3ab530a672955982db06c7b273cd2c28a88
-updated: 2016-07-21T14:42:32.741989056-05:00
+updated: 2016-07-21T18:44:59.648155767-05:00
 imports:
 - name: github.com/ant0ine/go-json-rest
   version: 3a807d6d8d36e0f9175d6c292030fce09bcbb2db
@@ -32,7 +32,7 @@ imports:
   - token
   - types
 - name: github.com/digitalrebar/go-common
-  version: 8fa730630fa1f62d1d08e7caa8eda00f62deb407
+  version: 1951f44bc1a3a11cdc0e402ac542d46bd3d4cea4
   subpackages:
   - store
   - multi-tenancy
