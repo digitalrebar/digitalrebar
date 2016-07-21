@@ -27,11 +27,7 @@ class BarclampRebar::Attrib::ProviderType < Attrib
           else
             nil
       end
-      # no data, return
-      return {} unless p
-      # make hash with info
-      o = { type: p.class.to_s.downcase.sub("provider",""), name: p.name }
-      return o
+      return p.class.to_s.downcase.sub("provider","")
 
   end
 
