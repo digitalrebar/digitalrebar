@@ -77,30 +77,40 @@ func ListenAndServeTLSValidated(addr string, valCertB, certB, keyB []byte, handl
 	return s.ListenAndServeTLS(".tlsCache/certfile", ".tlsCache/keyfile")
 }
 
-func StartTLSServer(addr, CN string, hosts []string, acceptingRoot, sendingRoot string, handler http.Handler) error {
+func GetTrustMeServiceInfo(sendingRoot string) (string, []byte, error) {
 	cc, err := consul.NewClient(consul.DefaultConfig())
 	if err != nil {
-		return err
+		return "", nil, err
 	}
 	if _, err := cc.Agent().Self(); err != nil {
-		return err
+		return "", nil, err
 	}
 
-	svc, err := service.WaitService(cc, "trust-me", "")
+	svc, err := service.WaitService(cc, "trust-me-service", "")
 	if err != nil {
 		log.Printf("Could not get trust-me service: %v\n", err)
-		return err
+		return "", nil, err
 	}
-	trustMeAddr := fmt.Sprintf("%s:%d", svc[0].ServiceAddress, svc[0].ServicePort)
+	trustMeAddr := fmt.Sprintf("https://%s:%d", svc[0].ServiceAddress, svc[0].ServicePort)
 
 	simpleStore, err := store.NewSimpleConsulStore(cc, "trust-me/cert-store")
 	if err != nil {
 		log.Printf("Failed to connect to consul: %v\n", err)
-		return err
+		return "", nil, err
 	}
 	authKeyB, err := simpleStore.Load(fmt.Sprintf("%s/authkey", sendingRoot))
 	if err != nil {
 		log.Printf("Could not get authkey for %s: %v\n", sendingRoot, err)
+		return "", nil, err
+	}
+
+	return trustMeAddr, authKeyB, err
+}
+
+func StartTLSServer(addr, CN string, hosts []string, acceptingRoot, sendingRoot string, handler http.Handler) error {
+	trustMeAddr, authKeyB, err := GetTrustMeServiceInfo(sendingRoot)
+	if err != nil {
+		log.Printf("Failed to contact trustme service for info: %s  %v\n", sendingRoot, err)
 		return err
 	}
 
