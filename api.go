@@ -1,18 +1,16 @@
 package main
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"strings"
 
 	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/digitalrebar/go-common/store"
+	"github.com/digitalrebar/go-common/cert"
 	"github.com/digitalrebar/go-common/multi-tenancy"
+	"github.com/digitalrebar/go-common/store"
 )
 
 type NextServer struct {
@@ -22,18 +20,12 @@ type NextServer struct {
 type Frontend struct {
 	DhcpInfo *DataTracker
 	data_dir string
-	cert_pem string
-	key_pem  string
-	base_pem string
 	cfg      Config
 }
 
-func NewFrontend(cert_pem, key_pem, base_pem string, cfg Config, store store.SimpleStore) *Frontend {
+func NewFrontend(cfg Config, store store.SimpleStore) *Frontend {
 	fe := &Frontend{
 		data_dir: data_dir,
-		cert_pem: cert_pem,
-		key_pem:  key_pem,
-		base_pem: base_pem,
 		cfg:      cfg,
 		DhcpInfo: NewDataTracker(store),
 	}
@@ -110,7 +102,7 @@ func (fe *Frontend) UpdateSubnet(w rest.ResponseWriter, r *rest.Request) {
 	net, found := fe.DhcpInfo.Subnets[subnetName]
 	if !found {
 		rest.Error(w, "Not Found", http.StatusNotFound)
-		return	
+		return
 	}
 	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
 	if !capMap.HasCapability(net.TenantId, "SUBNET_UPDATE") {
@@ -150,10 +142,10 @@ func (fe *Frontend) DeleteSubnet(w rest.ResponseWriter, r *rest.Request) {
 		if !capMap.HasCapability(subnet.TenantId, "SUBNET_READ") {
 			rest.Error(w, "Not Found", http.StatusNotFound)
 		} else {
-			rest.Error(w, "Forbidden", http.StatusForbidden)		
+			rest.Error(w, "Forbidden", http.StatusForbidden)
 		}
 		fe.DhcpInfo.Unlock()
-		return	
+		return
 	}
 	err, code := fe.DhcpInfo.RemoveSubnet(subnetName)
 	if err != nil {
@@ -177,7 +169,7 @@ func (fe *Frontend) BindSubnet(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	
+
 	binding.Mac = strings.ToLower(binding.Mac)
 	fe.DhcpInfo.Lock()
 
@@ -192,10 +184,10 @@ func (fe *Frontend) BindSubnet(w rest.ResponseWriter, r *rest.Request) {
 		if !capMap.HasCapability(subnet.TenantId, "SUBNET_READ") {
 			rest.Error(w, "Not Found", http.StatusNotFound)
 		} else {
-			rest.Error(w, "Forbidden", http.StatusForbidden)		
+			rest.Error(w, "Forbidden", http.StatusForbidden)
 		}
 		fe.DhcpInfo.Unlock()
-		return	
+		return
 	}
 
 	err, code := fe.DhcpInfo.AddBinding(subnetName, binding)
@@ -225,10 +217,10 @@ func (fe *Frontend) UnbindSubnet(w rest.ResponseWriter, r *rest.Request) {
 		if !capMap.HasCapability(subnet.TenantId, "SUBNET_READ") {
 			rest.Error(w, "Not Found", http.StatusNotFound)
 		} else {
-			rest.Error(w, "Forbidden", http.StatusForbidden)		
+			rest.Error(w, "Forbidden", http.StatusForbidden)
 		}
 		fe.DhcpInfo.Unlock()
-		return	
+		return
 	}
 
 	err, code := fe.DhcpInfo.DeleteBinding(subnetName, mac)
@@ -267,10 +259,10 @@ func (fe *Frontend) NextServer(w rest.ResponseWriter, r *rest.Request) {
 		if !capMap.HasCapability(subnet.TenantId, "SUBNET_READ") {
 			rest.Error(w, "Not Found", http.StatusNotFound)
 		} else {
-			rest.Error(w, "Forbidden", http.StatusForbidden)		
+			rest.Error(w, "Forbidden", http.StatusForbidden)
 		}
 		fe.DhcpInfo.Unlock()
-		return	
+		return
 	}
 
 	if err, code := fe.DhcpInfo.SetNextServer(subnetName, ip, nextServer); err != nil {
@@ -312,44 +304,19 @@ func (fe *Frontend) RunServer(blocking bool, auth_mode string) http.Handler {
 	}
 	api.SetApp(router)
 
-	connStr := fmt.Sprintf(":%d", fe.cfg.Network.Port)
-	log.Println("Web Interface Using", connStr)
-	if blocking {
-		server := &http.Server{
-			Addr:    connStr,
-			Handler: api.MakeHandler(),
-		}
-
-		if auth_mode == "KEY" {
-			caCert, err := ioutil.ReadFile(fe.base_pem)
-			if err != nil {
-				log.Fatal(err)
-			}
-			caCertPool := x509.NewCertPool()
-			caCertPool.AppendCertsFromPEM(caCert)
-
-			// Setup HTTPS client
-			tlsConfig := &tls.Config{
-				ClientCAs: caCertPool,
-				// NoClientCert
-				// RequestClientCert
-				// RequireAnyClientCert
-				// VerifyClientCertIfGiven
-				// RequireAndVerifyClientCert
-				ClientAuth: tls.RequireAndVerifyClientCert,
-			}
-			tlsConfig.BuildNameToCertificate()
-			server.TLSConfig = tlsConfig
-
-			log.Fatal(server.ListenAndServeTLS(fe.cert_pem, fe.key_pem))
-		} else {
-			if fe.cert_pem == "" || fe.key_pem == "" {
-				log.Fatal(http.ListenAndServe(connStr, api.MakeHandler()))
-			} else {
-				log.Fatal(http.ListenAndServeTLS(connStr, fe.cert_pem, fe.key_pem, api.MakeHandler()))
-			}
-		}
+	if !blocking {
+		return api.MakeHandler()
 	}
 
+	connStr := fmt.Sprintf(":%d", fe.cfg.Network.Port)
+	log.Println("Web Interface Using", connStr)
+	acceptingRoot := "internal"
+	if auth_mode == "BASIC" {
+		acceptingRoot = ""
+	}
+	hosts := strings.Split(hostString, ",")
+	log.Fatal(cert.StartTLSServer(connStr, "dhcp-mgmt", hosts, acceptingRoot, "internal", api.MakeHandler()))
+
+	// Should never hit here.
 	return api.MakeHandler()
 }
