@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-class BarclampRebar::Attrib::ProviderType < Attrib
+class BarclampRebar::Attrib::ProviderDetails < Attrib
 
   # Lookup the node's provider type
   def get(data,source=:all, committed=false)
@@ -27,7 +27,12 @@ class BarclampRebar::Attrib::ProviderType < Attrib
           else
             nil
       end
-      return p.class.to_s.downcase.sub("provider","")
+      # no data, return
+      return {} unless p
+      # include type and name in details
+      o = { type: p.class.to_s.downcase.sub("provider",""), name: p.name }
+      o.merge! p.auth_details
+      return o
 
   end
 

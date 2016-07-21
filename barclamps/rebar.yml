@@ -405,9 +405,13 @@ attribs:
     schema:
       type: float
   - name: provider-type
-    description: 'Provider type and access credentials'
+    description: 'Provider type'
     map: 'provider/type'
     type: 'BarclampRebar::Attrib::ProviderType'
+  - name: provider-details
+    description: 'Provider access credentials, type and name'
+    map: 'provider/details'
+    type: 'BarclampRebar::Attrib::ProviderDetails'
 
 providers:
   - name: phantom
