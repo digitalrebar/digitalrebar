@@ -304,7 +304,7 @@ func (fe *Frontend) RunServer(blocking bool, auth_mode string) http.Handler {
 	}
 	api.SetApp(router)
 
-	if blocking {
+	if !blocking {
 		return api.MakeHandler()
 	}
 
