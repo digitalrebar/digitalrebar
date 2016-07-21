@@ -26,6 +26,7 @@ barclamp:
 roles:
   - name: proxy-server
     jig: chef
+    icon: assignment
     requires:
       - consul
     events:
@@ -50,6 +51,7 @@ roles:
           type: int
   - name: proxy-service
     jig: role-provided
+    icon: assignment_returned
     flags:
       - service
     attribs:
@@ -73,6 +75,7 @@ roles:
                   pattern: '/\Ahttp:\/\/.+\z/'
   - name: proxy-client
     jig: script
+    icon: assignment_turned_in
     events:
       - endpoint: inproc://role:proxy-client/on_network_allocation_create
         selectors:

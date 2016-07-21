@@ -27,6 +27,7 @@ barclamp:
 roles:
   - name: chef-service
     jig: role-provided
+    icon: local_pizza
     description: 'Provides a chef service.'
     flags:
       - service

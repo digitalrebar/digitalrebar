@@ -91,7 +91,7 @@ roles:
     flags:
       - implicit
     jig: script
-    icon: 'local_grocery_store'
+    icon: 'add_shopping_cart'
     requires:
       - rebar-package-sources
   - name: rebar-access
@@ -143,6 +143,7 @@ roles:
       - consul
   - name: rebar-job_runner_service
     jig: role-provided
+    icon: motorcycle
     flags:
       - service
     attribs:
@@ -157,6 +158,7 @@ roles:
   - name: rebar-joined-node
     description: "Joined Node Ready Checkpoint"
     jig: noop
+    icon: loyalty
     flags:
       - milestone
       - implicit
@@ -173,6 +175,7 @@ roles:
   - name: rebar-package-sources
     description: "Sources that Rebar should install packages from"
     jig: script
+    icon: shop_two
     flags:
       - implicit
     requires:
