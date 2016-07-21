@@ -25,6 +25,7 @@ barclamp:
 roles:
   - name: provisioner-service
     jig: role-provided
+    icon: flight_takeoff
     flags:
       - service
     events:
