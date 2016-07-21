@@ -4,6 +4,9 @@ import:
 - package: github.com/digitalrebar/rebar-api
   subpackages:
   - client
+- package: github.com/digitalrebar/go-common
+  subpackages:
+  - cert
 - package: github.com/gin-gonic/gin
 - package: github.com/hashicorp/consul
   subpackages:
