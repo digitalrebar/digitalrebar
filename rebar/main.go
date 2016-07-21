@@ -15,7 +15,8 @@ import (
 )
 
 var (
-	version            = "1.3.0"
+	version            = "1.4.0"
+	trusted            = false
 	debug              = false
 	endpoint           = "https://127.0.0.1:3000"
 	username, password string
@@ -55,6 +56,9 @@ func init() {
 		username = key[0]
 		password = key[1]
 	}
+	app.PersistentFlags().BoolVarP(&trusted,
+		"trusted", "T", trusted,
+		"Whether the CLI should operate as a trusted client.  Only works inside the service trust zone")
 	app.PersistentFlags().StringVarP(&endpoint,
 		"endpoint", "E", endpoint,
 		"The Rebar API endpoint to talk to")
@@ -231,9 +235,13 @@ func makeCommandTree(singularName string,
 
 func main() {
 	app.PersistentPreRun = func(c *cobra.Command, a []string) {
-		d("Talking to Rebar with %v (%v:%v)", endpoint, username, password)
 		var err error
-		session, err = api.Session(endpoint, username, password)
+		if trusted {
+			session, err = api.TrustedSession(endpoint, username)
+		} else {
+			d("Talking to Rebar with %v (%v:%v)", endpoint, username, password)
+			session, err = api.Session(endpoint, username, password)
+		}
 		if err != nil {
 			if c.Use != "version" {
 				log.Fatalf("Could not connect to Rebar: %v\n", err.Error())
