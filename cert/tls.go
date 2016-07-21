@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/digitalrebar/go-common/service"
 	"github.com/digitalrebar/go-common/store"
@@ -98,10 +99,18 @@ func GetTrustMeServiceInfo(sendingRoot string) (string, []byte, error) {
 		log.Printf("Failed to connect to consul: %v\n", err)
 		return "", nil, err
 	}
+
+	count := 0
+retry:
 	authKeyB, err := simpleStore.Load(fmt.Sprintf("%s/authkey", sendingRoot))
 	if err != nil {
-		log.Printf("Could not get authkey for %s: %v\n", sendingRoot, err)
-		return "", nil, err
+		if count > 30 {
+			return "", nil, err
+		}
+		log.Printf("Could not get authkey for %s: %v, retrying ... %d\n", sendingRoot, err, count)
+		count += 1
+		time.Sleep(5 * time.Second)
+		goto retry
 	}
 
 	return trustMeAddr, authKeyB, err
