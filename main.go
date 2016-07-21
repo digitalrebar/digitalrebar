@@ -1,16 +1,13 @@
 package main
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 
+	"github.com/digitalrebar/go-common/cert"
 	"github.com/digitalrebar/rebar-api/client"
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
@@ -22,8 +19,8 @@ var apiPort int64
 var backend storageBackend
 var api *gin.Engine
 var logger *log.Logger
-var cacert, cert, key string
 var username, password, endpoint string
+var hostString string
 
 func init() {
 	flag.StringVar(&backEndType,
@@ -50,18 +47,10 @@ func init() {
 		"command",
 		"https://localhost:3000",
 		"Public URL for the Command and Control server machines should communicate with")
-	flag.StringVar(&cacert,
-		"cacert",
-		"/etc/prov-base-cert.pem",
-		"Certificate to use for validation")
-	flag.StringVar(&cert,
-		"cert",
-		"/etc/prov-cert.pem",
-		"Certificate to use for replies")
-	flag.StringVar(&key,
-		"key",
-		"/etc/prov-key.pem",
-		"Private Key to use for replies")
+	flag.StringVar(&hostString,
+		"host",
+		"localhost,provisioner,127.0.0.1",
+		"The host IPs and names to place in the certificate.  Comma separated")
 
 	if ep := os.Getenv("REBAR_ENDPOINT"); ep != "" {
 		endpoint = ep
@@ -177,30 +166,6 @@ func main() {
 			deleteThing(c, &Template{UUID: c.Param(`uuid`)})
 		})
 
-	caCert, err := ioutil.ReadFile(cacert)
-	if err != nil {
-		log.Fatal(err)
-	}
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
-
-	// Setup HTTPS client
-	tlsConfig := &tls.Config{
-		ClientCAs: caCertPool,
-		// NoClientCert
-		// RequestClientCert
-		// RequireAnyClientCert
-		// VerifyClientCertIfGiven
-		// RequireAndVerifyClientCert
-		ClientAuth: tls.RequireAndVerifyClientCert,
-	}
-	tlsConfig.BuildNameToCertificate()
-
-	s := &http.Server{
-		Addr:    fmt.Sprintf(":%d", apiPort),
-		Handler: api,
-	}
-	s.TLSConfig = tlsConfig
-
-	log.Fatal(s.ListenAndServeTLS(cert, key))
+	hosts := strings.Split(hostString, ",")
+	log.Fatal(cert.StartTLSServer(fmt.Sprintf(":%d", apiPort), "provisioner-mgmt", hosts, "internal", "internal", api))
 }
