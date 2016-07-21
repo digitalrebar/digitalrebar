@@ -12,3 +12,4 @@ import:
 - package: github.com/digitalrebar/go-common
   subpackages:
   - store
+  - cert

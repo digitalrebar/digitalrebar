@@ -1,5 +1,5 @@
-hash: 72989ea52a261df0844299736cdcfa769676b02c2bba1982a9ac62b92a24cd6f
-updated: 2016-07-14T11:44:16.258110396-05:00
+hash: d1968e9a3ee6e702a99c76b6680f977f9fb4959ac56d51a40182c08e31d4deb6
+updated: 2016-07-21T14:34:34.121760996-05:00
 imports:
 - name: github.com/ant0ine/go-json-rest
   version: 3a807d6d8d36e0f9175d6c292030fce09bcbb2db
@@ -7,7 +7,24 @@ imports:
   - rest
   - rest/trie
 - name: github.com/boltdb/bolt
-  version: acc803f0ced151102ed51bf824f8709ebd6602bc
+  version: 5cc10bbbc5c141029940133bb33c9e969512a698
+- name: github.com/cloudflare/cfssl
+  version: 6944eb74906961a9295693f2185a6c0291917124
+  subpackages:
+  - api/client
+  - auth
+  - csr
+  - info
+  - signer
+  - api
+  - errors
+  - log
+  - helpers
+  - certdb
+  - config
+  - crypto/pkcs7
+  - helpers/derhelpers
+  - ocsp/config
 - name: github.com/digitalrebar/gcfg
   version: dbdfaf2512657d28a5b98b64878b195a67698a71
   subpackages:
@@ -15,11 +32,14 @@ imports:
   - token
   - types
 - name: github.com/digitalrebar/go-common
-  version: ea2185ad77185d720c50205a701d6f95681cc046
+  version: 8fa730630fa1f62d1d08e7caa8eda00f62deb407
   subpackages:
   - store
+  - cert
+  - multi-tenancy
+  - service
 - name: github.com/hashicorp/consul
-  version: 548fb6eb3f407147e20d923521296e0500f57ef0
+  version: fce7d75609a04eeb9d4bf41c8dc592aac18fc97d
   subpackages:
   - api
 - name: github.com/hashicorp/go-cleanhttp
@@ -33,8 +53,17 @@ imports:
   version: ffbbb16f447b3e05b80e8ddecbb8ada36e2ae006
 - name: github.com/willf/bitset
   version: 2e6e8094ef4745224150c88c16191c7dceaad16f
+- name: golang.org/x/crypto
+  version: 1f22c0103821b9390939b6776727195525381532
+  repo: https://go.googlesource.com/crypto
+  subpackages:
+  - ocsp
+  - pbkdf2
+  - pkcs12
+  - scrypt
+  - pkcs12/internal/rc2
 - name: golang.org/x/net
-  version: a728288923b47049b2ce791836767ffbe964a5bd
+  version: 3f122ce3dbbe488b7e6a8bdb26f41edec852a40b
   subpackages:
   - ipv4
   - bpf
