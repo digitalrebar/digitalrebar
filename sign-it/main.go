@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"crypto/tls"
 	"flag"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -12,15 +14,48 @@ import (
 )
 
 func main() {
-	flagLabel := flag.String("l", "internal", "Label to retrieve")
+	flagAuto := flag.Bool("A", false, "Use Consul to set address and key of trustme")
 	flagAddr := flag.String("a", "https://127.0.0.1:8888", "Remote to talk to")
-	flagSign := flag.Bool("s", false, "Should we generate a signed cert")
+	flagLabel := flag.String("l", "internal", "Label to retrieve")
+
+	flagOutput := flag.String("o", "cert", "Output base for action")
+
+	flagMakeRoot := flag.Bool("m", false, "Should we make a root for this label")
+
 	flagInfo := flag.Bool("i", false, "Should we get the validation cert")
+
+	flagSign := flag.Bool("s", false, "Should we generate a signed cert")
+	flagKey := flag.String("k", "", "Key to use for required signing")
 	flagCN := flag.String("c", "cow", "Common Name for new signed cert")
 	flagHosts := flag.String("h", "127.0.0.1", "Comma list of hosts to add to cert")
-	flagMakeRoot := flag.Bool("m", false, "Should we make a root for this label")
-	flagKey := flag.String("k", "", "Key to use for required signing")
+
 	flag.Parse()
+
+	count := 0
+	if *flagMakeRoot {
+		count += 1
+	}
+	if *flagInfo {
+		count += 1
+	}
+	if *flagSign {
+		count += 1
+	}
+	if count > 1 {
+		log.Fatalf("Must only specify one of Make, Sign, or Info")
+	}
+	if count < 1 {
+		log.Fatalf("Must specify at least one of Make, Sign, or Info")
+	}
+
+	if *flagAuto {
+		address, buffer, err := cert.GetTrustMeServiceInfo(*flagLabel)
+		if err != nil {
+			log.Fatal("Failed to get consul data: ", err)
+		}
+		*flagKey = string(buffer)
+		*flagAddr = address
+	}
 
 	if *flagMakeRoot {
 		url := *flagAddr + "/api/v1/cfssl/root"
@@ -52,7 +87,14 @@ func main() {
 			log.Printf("Failed to get Certificate for label: %s: %v\n", *flagLabel, err)
 			return
 		}
-		log.Printf("Validation Certificate = %s\n", string(cacert))
+		if *flagOutput == "-" {
+			fmt.Println(string(cacert))
+		} else {
+			err = ioutil.WriteFile(*flagOutput+".pem", cacert, 0600)
+			if err != nil {
+				log.Printf("Failed to output cert: %s: %v\n", *flagOutput+".pem", err)
+			}
+		}
 	}
 
 	if *flagSign {
@@ -65,7 +107,18 @@ func main() {
 			return
 		}
 
-		log.Printf("My Certificate = %s\n", string(mycert))
-		log.Printf("My Key = %s\n", string(mykey))
+		if *flagOutput == "-" {
+			fmt.Println(string(mycert))
+			fmt.Println(string(mykey))
+		} else {
+			err = ioutil.WriteFile(*flagOutput+".pem", mycert, 0600)
+			if err != nil {
+				log.Printf("Failed to output cert: %s: %v\n", *flagOutput+".pem", err)
+			}
+			err = ioutil.WriteFile(*flagOutput+".key", mykey, 0600)
+			if err != nil {
+				log.Printf("Failed to output key: %s: %v\n", *flagOutput+".key", err)
+			}
+		}
 	}
 }
