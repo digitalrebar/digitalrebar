@@ -1,5 +1,5 @@
-hash: d1968e9a3ee6e702a99c76b6680f977f9fb4959ac56d51a40182c08e31d4deb6
-updated: 2016-07-21T14:34:34.121760996-05:00
+hash: b860eb8a8ca2b95eb7b8c23b20c5f3ab530a672955982db06c7b273cd2c28a88
+updated: 2016-07-21T14:42:32.741989056-05:00
 imports:
 - name: github.com/ant0ine/go-json-rest
   version: 3a807d6d8d36e0f9175d6c292030fce09bcbb2db
@@ -35,8 +35,8 @@ imports:
   version: 8fa730630fa1f62d1d08e7caa8eda00f62deb407
   subpackages:
   - store
-  - cert
   - multi-tenancy
+  - cert
   - service
 - name: github.com/hashicorp/consul
   version: fce7d75609a04eeb9d4bf41c8dc592aac18fc97d
