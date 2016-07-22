@@ -30,9 +30,9 @@ class BarclampRebar::Attrib::ProviderDetails < Attrib
       # no data, return
       return {} unless p
       # include type and name in details
-      o = { type: p.class.to_s.downcase.sub("provider",""), name: p.name }
+      o = { "type" => p.class.to_s.downcase.sub("provider",""), "name" => p.name }
       o.merge! p.auth_details
-      return o
+      return o.to_json
 
   end
 
