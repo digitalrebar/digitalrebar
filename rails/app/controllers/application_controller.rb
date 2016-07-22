@@ -84,9 +84,14 @@ class ApplicationController < ActionController::Base
   end
 
   def validate_update_for(obj)
-    if (obj.previous_changes["tenant_id"] && !capable(obj.tenant_id,cap("UPDATE","TENANT"))) ||
-       (obj.previous_changes["deployment_id"] && !capable(obj.deployment_id,cap("UPDATE","DEPLOYMENT")))
+    if obj.previous_changes["tenant_id"] && !capable(obj.tenant_id,cap("UPDATE","TENANT"))
       raise RebarForbiddenError.new(obj.id,obj.class)
+    end
+    if obj.previous_changes["deployment_id"]
+      d = Deployment.find_by(id: obj.previous_changes["deployment_id"])
+      if !d.nil? && !capable(d.tenant_id,cap("UPDATE","DEPLOYMENT"))
+        raise RebarForbiddenError.new(obj.id,obj.class)
+      end
     end
   end
 
