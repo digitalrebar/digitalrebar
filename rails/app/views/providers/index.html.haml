@@ -5,9 +5,12 @@
     %td
       %h1= t '.title'
     %td{:align=>'right'}
-      = form_for :provider, :'data-remote' => true, :url => provider_path(:id=>"create"), :html => { :method=>:get, :'data-type' => 'html',  :class => "formtastic" } do |f|
-        = select :new, :type, options_for_select(available, available.keys.first)
-        = button_tag t(".new"), :method=>:get, :html => {:class=>"button"}
+      = form_for :provider, :'data-remote' => true, :url => providers_path(), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
+        = select_tag :type, options_for_select(available, available.keys.first)
+        = hidden_field_tag :name, I18n.t('default')+rand(1000).to_s
+        = hidden_field_tag :description, I18n.t('not_set')
+        = hidden_field_tag :auth_details, "{}"
+        %input.button{:type => "submit", :name => "create", :method=>:post, :value => t("add")}
 
 %table.data.box
   %thead
