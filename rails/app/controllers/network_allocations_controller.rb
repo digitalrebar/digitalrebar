@@ -38,7 +38,7 @@ class NetworkAllocationsController < ::ApplicationController
   def destroy
     params.require(:id)
     model.transaction do
-      @allocation = find_key_cap(model,params[:id],cap("DESTROY"))
+      @allocation = find_key_cap(model,params[:id],cap("UPDATE"))
       # Called for side effect.
       find_key_cap(Node,@allocation.node.id,cap("UPDATE","NODE"))
       @allocation.destroy
