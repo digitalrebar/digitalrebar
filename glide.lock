@@ -1,5 +1,5 @@
 hash: 6450d72cd92b251f73ce746308f0140312f4b072caa6c1905ff72cc43c2fc4a1
-updated: 2016-07-22T00:22:29.348647893-05:00
+updated: 2016-07-22T13:54:32.393858708-05:00
 imports:
 - name: github.com/boltdb/bolt
   version: c6ba97b89e0454fec9aa92e1d33a4e2c5fc1f631
@@ -24,6 +24,7 @@ imports:
   version: 1951f44bc1a3a11cdc0e402ac542d46bd3d4cea4
   subpackages:
   - cert
+  - multi-tenancy
   - service
   - store
 - name: github.com/digitalrebar/rebar-api

@@ -201,6 +201,18 @@ func (b *BootEnv) key() string {
 	return path.Join(b.prefix(), b.Name)
 }
 
+func (b *BootEnv) tenantId() int {
+	return b.TenantId
+}
+
+func (b *BootEnv) setTenantId(tid int) {
+	b.TenantId = tid
+}
+
+func (b *BootEnv) typeName() string {
+	return "BOOTENV"
+}
+
 func (b *BootEnv) newIsh() keySaver {
 	res := &BootEnv{Name: b.Name}
 	return keySaver(res)
@@ -213,6 +225,7 @@ func (b *BootEnv) RenderPaths(machine *Machine) error {
 		Env:            b,
 		ProvisionerURL: provisionerURL,
 		CommandURL:     commandURL,
+		TenantId:       b.TenantId,
 	}
 	for _, templateParams := range b.Templates {
 		pathBuf := &bytes.Buffer{}
@@ -234,6 +247,7 @@ func (b *BootEnv) RenderTemplates(machine *Machine) error {
 		Env:            b,
 		ProvisionerURL: provisionerURL,
 		CommandURL:     commandURL,
+		TenantId:       b.TenantId,
 	}
 	if err := b.parseTemplates(); err != nil {
 		return err

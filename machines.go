@@ -58,6 +58,18 @@ func (n *Machine) key() string {
 	return n.Path()
 }
 
+func (n *Machine) tenantId() int {
+	return n.TenantId
+}
+
+func (n *Machine) setTenantId(tid int) {
+	n.TenantId = tid
+}
+
+func (n *Machine) typeName() string {
+	return "MACHINE"
+}
+
 func (n *Machine) newIsh() keySaver {
 	res := &Machine{Name: n.Name, Uuid: n.Uuid}
 	return keySaver(res)
