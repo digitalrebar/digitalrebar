@@ -62,65 +62,6 @@ set_service_attrib() {
     rebar deploymentroles set "$dr_id" attrib "$2" to "$3" && rebar deploymentroles commit "$dr_id"
 }
 
-generate_crt() {
-    # $1 = cert name
-    # $2 = CN
-    # $3 = hosts (comma separated)
-
-    local HOSTS=""
-    if [[ $3 != "" ]] ; then
-      IFS=', ' read -r -a array <<< "$3"
-      unset IFS
-
-      HOSTS="\"hosts\": ["
-      local COMMA=""
-      for element in "${array[@]}"
-      do
-          HOSTS="$HOSTS$COMMA \"$element\""
-	  COMMA=","
-      done
-      HOSTS="$HOSTS ],"
-    fi
-
-cat > /tmp/csr.$$ <<EOF
-{
-  "CN": "$2",
-  $HOSTS
-  "key": {
-    "algo": "rsa",
-    "size": 2048
-  },
-  "names": [
-    {
-      "C": "US",
-      "L": "Austin",
-      "O": "RackN",
-      "OU": "$2",
-      "ST": "Texas"
-    }
-  ]
-}
-EOF
-    cfssl genkey /tmp/csr.$$ | cfssljson -bare $1
-    local inner_request="{ \"certificate_request\": \"$(cat $1.csr | tr '\n' '`' | sed 's/`/\\n/g')\" }"
-    local token=$(echo -n "$inner_request" | openssl sha256 -mac hmac -macopt "hexkey:$CERT_AUTH_KEY" -binary | base64 -w0)
-    local request="{ \"token\": \"$token\", \"request\": \"$(echo -n "$inner_request" | base64 -w0)\" }"
-
-    # Get service info
-    local tm_addr=$(get_service "trust-me-service" | jq -r .[0].ServiceAddress)
-    local tm_port=$(get_service "trust-me-service" | jq -r .[0].ServicePort)
-
-    if [[ $tm_addr == "" || $tm_addr == "null" ]] ; then
-        tm_addr=$(get_service "trust-me-service" | jq -r .[0].Address)
-    fi
-    if [[ $tm_addr == "" || $tm_addr == "null" ]] ; then
-        echo "Failed to find address of trust_me!"
-        exit 1
-    fi
-
-    curl -s -d"$request" -X POST http://$tm_addr:$tm_port/api/v1/cfssl/authsign | cfssljson $1
-}
-
 unset answer count
 # Just about everything wants an IP address.  Get the first global one
 IP=$(ip -o -4 addr | grep 'scope global' | awk '{ print $4 }' | awk -F/ '{ print $1 }' | head -1)

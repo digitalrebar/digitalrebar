@@ -1,5 +1,6 @@
 {
     "Name": "esxi-6u2-install",
+    "TenantId": 1,
     "OS": {
         "Name": "esxi-6u2",
         "IsoFile": "VMware-VMvisor-Installer-6.0.0.update02-3620759.x86_64.iso",

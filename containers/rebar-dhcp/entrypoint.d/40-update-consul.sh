@@ -4,9 +4,7 @@ attr="{\"value\": [{
        \"address\": \"${EXTERNAL_IP%%/*}\",
        \"port\": \"6755\",
        \"name\": \"$SERVICE_DEPLOYMENT\",
-       \"access_name\": \"admin\",
-       \"access_password\": \"admin\",
-       \"url\": \"https://admin:admin@${EXTERNAL_IP%%/*}:6755\"
+       \"url\": \"https://${EXTERNAL_IP%%/*}:6755\"
       }]
 }"
 # Make sure we set the token type

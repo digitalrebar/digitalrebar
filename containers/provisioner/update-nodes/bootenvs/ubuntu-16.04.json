@@ -1,5 +1,6 @@
 {
     "Name": "ubuntu-16.04-install",
+    "TenantId": 1,
     "OS": {
         "Name": "ubuntu-16.04",
         "Family": "ubuntu",

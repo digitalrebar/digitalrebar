@@ -6,16 +6,16 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/digitalrebar/go-common/cert"
 	"github.com/hashicorp/consul/api"
 )
 
-var cacertPem, keyPem, certPem string
 var authFilter string
 var listenPort int
 var dbStoreType string
@@ -28,12 +28,11 @@ var samlIdpssodescurl string
 var samlIdpcert string
 var externalIp string
 var forwarderMode bool
+var hostString string
 
 func init() {
-	flag.StringVar(&keyPem, "keyPem", "/etc/rev-proxy/server.key", "Path to key file")
-	flag.StringVar(&certPem, "certPem", "/etc/rev-proxy/server.crt", "Path to cert file")
-	flag.StringVar(&cacertPem, "cacertPem", "/etc/rev-proxy/ca.pem", "Path to cert file")
 	flag.IntVar(&listenPort, "listenPort", 443, "Port to listen on")
+	flag.StringVar(&hostString, "host", "127.0.0.1,localhost", "Comma separated list of hostnames and IPs for certificate")
 	flag.StringVar(&authFilter, "authFilter", "digest", "Auth Filter to use. Either 'saml', 'digest', or 'none'")
 	flag.StringVar(&digestRealm, "digestRealm", "Rebar", "Default realm for authentication")
 
@@ -59,15 +58,28 @@ func addCorsHeader(w http.ResponseWriter, req *http.Request) {
 func main() {
 	flag.Parse()
 
+	trustMeAddr, authKeyB, err := cert.GetTrustMeServiceInfo("internal")
+	if err != nil {
+		log.Printf("Failed to get trustme info\n")
+		log.Fatal(err)
+	}
+
+	hosts := strings.Split(hostString, ",")
+	certB, keyB, err := cert.CreateCertificate(trustMeAddr, string(authKeyB), "internal", "revproxy", hosts)
+	if err != nil {
+		log.Printf("Failed to create certificate\n")
+		log.Fatal(err)
+	}
+
 	// Load client cert
-	cert, err := tls.LoadX509KeyPair(certPem, keyPem)
+	certPair, err := tls.X509KeyPair(certB, keyB)
 	if err != nil {
 		log.Printf("Failed to read client certs\n")
 		log.Fatal(err)
 	}
 
 	// Load CA cert
-	caCert, err := ioutil.ReadFile(cacertPem)
+	caCert, err := cert.GetCertificateForRoot(trustMeAddr, "internal")
 	if err != nil {
 		log.Printf("Failed to read cacert\n")
 		log.Fatal(err)
@@ -77,7 +89,7 @@ func main() {
 	caCertPool.AppendCertsFromPEM(caCert)
 	// Setup HTTPS client
 	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
+		Certificates: []tls.Certificate{certPair},
 		RootCAs:      caCertPool,
 		ClientAuth:   tls.RequireAndVerifyClientCert,
 	}
@@ -118,7 +130,7 @@ func main() {
 		authHandler = NewDigestAuthFilter(capMux, tokenManager, digestRealm, tlsConfig)
 	} else if authFilter == "saml" {
 		authHandler = NewSamlAuthFilter(capMux, tokenManager,
-			certPem, keyPem,
+			certB, keyB,
 			externalIp+":"+strconv.Itoa(listenPort),
 			samlIdpssourl, samlIdpssodescurl, samlIdpcert)
 	} else if authFilter == "none" {
@@ -130,6 +142,7 @@ func main() {
 	// Make token test filter
 	tokenMux := http.NewServeMux()
 	tokenMux.HandleFunc("/api/license", NewMultipleHostReverseProxy(ServiceRegistry, tlsConfig))
+	tokenMux.Handle("/ux/", http.StripPrefix("/ux/", http.FileServer(http.Dir("/opt/digitalrebar-ux"))))
 	tokenMux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		// Handle CORS BS
 		addCorsHeader(w, req)
@@ -155,7 +168,7 @@ func main() {
 	go ServiceRegistry.WatchConsul()
 
 	println("ready")
-	log.Fatal(http.ListenAndServeTLS(":"+strconv.Itoa(listenPort), certPem, keyPem, tokenMux))
+	log.Fatal(cert.ListenAndServeTLS(":"+strconv.Itoa(listenPort), certB, keyB, tokenMux))
 }
 
 var tokenSecretKey string = "digitalrebar/private/revproxy/token/secret"

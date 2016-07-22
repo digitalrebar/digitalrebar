@@ -43,6 +43,7 @@ run_forever /usr/local/bin/rebar-rev-proxy --externalIp ${EXTERNAL_IP%%/*} \
 	$LISTENPORT \
 	$AUTHFILTER \
 	$REALM \
+	--host "$IP,${EXTERNAL_IP%%/*},${HOSTNAME},127.0.0.1,localhost" \
 	$SAMLCERT \
 	$SAMLIDPSSOURL \
 	$SAMLIDPSSODESCURL &

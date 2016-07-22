@@ -1,5 +1,6 @@
 {
     "Name": "redhat-7.0-install",
+    "TenantId": 1,
     "OS": {
         "Name": "redhat-7.0"
     },

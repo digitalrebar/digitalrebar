@@ -1,5 +1,6 @@
 {
     "Name": "centos-6.6-install",
+    "TenantId": 1,
     "OS": {
         "Name": "centos-6.6",
         "IsoFile": "CentOS-6.6-x86_64-bin-DVD1.iso",

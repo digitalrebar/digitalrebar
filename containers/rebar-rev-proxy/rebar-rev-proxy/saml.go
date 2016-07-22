@@ -2,11 +2,13 @@ package main
 
 import (
 	"errors"
-	"github.com/RobotsAndPencils/go-saml"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/RobotsAndPencils/go-saml"
+	"github.com/digitalrebar/go-common/cert"
 )
 
 type SamlAuthFilter struct {
@@ -18,12 +20,18 @@ type SamlAuthFilter struct {
 }
 
 func NewSamlAuthFilter(mux *http.ServeMux, tm *JwtManager,
-	certPath string,
-	keyPath string,
+	certB []byte,
+	keyB []byte,
 	myIpport string,
 	idpssourl string,
 	idpssodescurl string,
 	idpcert string) *SamlAuthFilter {
+
+	err := cert.WriteFiles(certB, keyB)
+	if err != nil {
+		log.Printf("Failed to write cert files")
+		return nil
+	}
 
 	saf := &SamlAuthFilter{
 		nextMux: mux,
@@ -31,8 +39,8 @@ func NewSamlAuthFilter(mux *http.ServeMux, tm *JwtManager,
 		cache:   make(map[string]*http.Request),
 
 		ServiceProviderSettings: saml.ServiceProviderSettings{
-			PublicCertPath:              certPath,
-			PrivateKeyPath:              keyPath,
+			PublicCertPath:              ".tlsCache/certfile",
+			PrivateKeyPath:              ".tlsCache/keyfile",
 			IDPSSOURL:                   idpssourl,
 			IDPSSODescriptorURL:         idpssodescurl,
 			IDPPublicCertPath:           idpcert,
@@ -48,8 +56,8 @@ func NewSamlAuthFilter(mux *http.ServeMux, tm *JwtManager,
 	saf.ServiceProviderSettings.Init()
 
 	log.Println("SAML Filter built")
-	log.Printf(" - %15v = %v\n", "keyPath", keyPath)
-	log.Printf(" - %15v = %v\n", "certPath", certPath)
+	log.Printf(" - %15v = %v\n", "keyPath", ".tlsCache/keyfile")
+	log.Printf(" - %15v = %v\n", "certPath", ".tlsCache/certfile")
 	log.Printf(" - %15v = %v\n", "idpssourl", idpssourl)
 	log.Printf(" - %15v = %v\n", "idpssodescurl", idpssodescurl)
 	log.Printf(" - %15v = %v\n", "idpcert", idpcert)
