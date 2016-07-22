@@ -39,7 +39,12 @@ func NewFrontend(cfg Config, store store.SimpleStore) *Frontend {
 // List function
 func (fe *Frontend) GetAllSubnets(w rest.ResponseWriter, r *rest.Request) {
 	fe.DhcpInfo.Lock()
-	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	capMap, err := multitenancy.NewCapabilityMap(r.Request)
+	if err != nil {
+		log.Printf("Failed to get capmap from request: %v\n", err)
+		rest.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
 	nets := make([]*Subnet, 0, len(fe.DhcpInfo.Subnets))
 	for _, net := range fe.DhcpInfo.Subnets {
 		if capMap.HasCapability(net.TenantId, "SUBNET_READ") {
@@ -55,7 +60,12 @@ func (fe *Frontend) GetSubnet(w rest.ResponseWriter, r *rest.Request) {
 	subnetName := r.PathParam("id")
 	fe.DhcpInfo.Lock()
 	subnet, found := fe.DhcpInfo.Subnets[subnetName]
-	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	capMap, err := multitenancy.NewCapabilityMap(r.Request)
+	if err != nil {
+		log.Printf("Failed to get capmap from request: %v\n", err)
+		rest.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
 	if found && capMap.HasCapability(subnet.TenantId, "SUBNET_READ") {
 		fe.DhcpInfo.Unlock()
 		w.WriteJson(subnet)
@@ -76,7 +86,12 @@ func (fe *Frontend) CreateSubnet(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	capMap, err := multitenancy.NewCapabilityMap(r.Request)
+	if err != nil {
+		log.Printf("Failed to get capmap from request: %v\n", err)
+		rest.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
 	if !capMap.HasCapability(s.TenantId, "SUBNET_CREATE") {
 		rest.Error(w, "Forbidden", http.StatusForbidden)
 		return
@@ -104,7 +119,12 @@ func (fe *Frontend) UpdateSubnet(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, "Not Found", http.StatusNotFound)
 		return
 	}
-	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	capMap, err := multitenancy.NewCapabilityMap(r.Request)
+	if err != nil {
+		log.Printf("Failed to get capmap from request: %v\n", err)
+		rest.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
 	if !capMap.HasCapability(net.TenantId, "SUBNET_UPDATE") {
 		if !capMap.HasCapability(net.TenantId, "SUBNET_READ") {
 			rest.Error(w, "Not Found", http.StatusNotFound)
@@ -137,7 +157,12 @@ func (fe *Frontend) DeleteSubnet(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, "Not Found", http.StatusNotFound)
 		return
 	}
-	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	capMap, err := multitenancy.NewCapabilityMap(r.Request)
+	if err != nil {
+		log.Printf("Failed to get capmap from request: %v\n", err)
+		rest.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
 	if !capMap.HasCapability(subnet.TenantId, "SUBNET_DESTROY") {
 		if !capMap.HasCapability(subnet.TenantId, "SUBNET_READ") {
 			rest.Error(w, "Not Found", http.StatusNotFound)
@@ -179,7 +204,12 @@ func (fe *Frontend) BindSubnet(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, "Not Found", http.StatusNotFound)
 		return
 	}
-	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	capMap, err := multitenancy.NewCapabilityMap(r.Request)
+	if err != nil {
+		log.Printf("Failed to get capmap from request: %v\n", err)
+		rest.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
 	if !capMap.HasCapability(subnet.TenantId, "SUBNET_UPDATE") {
 		if !capMap.HasCapability(subnet.TenantId, "SUBNET_READ") {
 			rest.Error(w, "Not Found", http.StatusNotFound)
@@ -212,7 +242,12 @@ func (fe *Frontend) UnbindSubnet(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, "Not Found", http.StatusNotFound)
 		return
 	}
-	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	capMap, err := multitenancy.NewCapabilityMap(r.Request)
+	if err != nil {
+		log.Printf("Failed to get capmap from request: %v\n", err)
+		rest.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
 	if !capMap.HasCapability(subnet.TenantId, "SUBNET_UPDATE") {
 		if !capMap.HasCapability(subnet.TenantId, "SUBNET_READ") {
 			rest.Error(w, "Not Found", http.StatusNotFound)
@@ -254,7 +289,12 @@ func (fe *Frontend) NextServer(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, "Not Found", http.StatusNotFound)
 		return
 	}
-	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	capMap, err := multitenancy.NewCapabilityMap(r.Request)
+	if err != nil {
+		log.Printf("Failed to get capmap from request: %v\n", err)
+		rest.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
 	if !capMap.HasCapability(subnet.TenantId, "SUBNET_UPDATE") {
 		if !capMap.HasCapability(subnet.TenantId, "SUBNET_READ") {
 			rest.Error(w, "Not Found", http.StatusNotFound)
