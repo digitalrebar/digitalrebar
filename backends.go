@@ -15,6 +15,9 @@ import (
 type keySaver interface {
 	prefix() string
 	key() string
+	tenantId() int
+	setTenantId(int)
+	typeName() string
 	onChange(interface{}) error
 	onDelete() error
 	newIsh() keySaver

@@ -6,8 +6,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path"
+	"strconv"
 	"text/template"
 
+	"github.com/digitalrebar/go-common/multi-tenancy"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,6 +18,7 @@ type Template struct {
 	UUID       string // UUID is a unique identifier for this template.
 	Contents   string // Contents is the raw template.
 	parsedTmpl *template.Template
+	TenantId   int
 }
 
 func (t *Template) prefix() string {
@@ -24,6 +27,18 @@ func (t *Template) prefix() string {
 
 func (t *Template) key() string {
 	return path.Join(t.prefix(), t.UUID)
+}
+
+func (t *Template) tenantId() int {
+	return t.TenantId
+}
+
+func (t *Template) setTenantId(tid int) {
+	t.TenantId = tid
+}
+
+func (t *Template) typeName() string {
+	return "TEMPLATE"
 }
 
 func (t *Template) newIsh() keySaver {
@@ -43,12 +58,25 @@ func (t *Template) Parse() (err error) {
 
 func createTemplate(c *gin.Context) {
 	finalStatus := http.StatusCreated
-	oldThing := &Template{UUID: c.Param(`uuid`)}
-	newThing := &Template{UUID: c.Param(`uuid`)}
+	tenant_id, err := strconv.Atoi(c.Query(`tenant_id`))
+	if err != nil {
+		tenant_id = 1
+	}
+	capMap, err := multitenancy.NewCapabilityMap(c.Request)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError,
+			NewError(fmt.Sprintf("list: failed to get the capmap: %v", err)))
+		return
+	}
+	oldThing := &Template{UUID: c.Param(`uuid`), TenantId: tenant_id}
+	newThing := &Template{UUID: c.Param(`uuid`), TenantId: tenant_id}
+	var action string
 	if err := backend.load(oldThing); err == nil {
 		finalStatus = http.StatusAccepted
+		action = "UPDATE"
 	} else {
 		oldThing = nil
+		action = "CREATE"
 	}
 	buf, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
@@ -56,6 +84,14 @@ func createTemplate(c *gin.Context) {
 		c.Data(http.StatusExpectationFailed, gin.MIMEJSON, nil)
 	}
 	newThing.Contents = string(buf)
+	if oldThing != nil && !capMap.HasCapability(oldThing.tenantId(), "TEMPLATE_"+action) {
+		c.Data(http.StatusForbidden, gin.MIMEJSON, nil)
+		return
+	}
+	if !capMap.HasCapability(newThing.tenantId(), "TEMPLATE_"+action) {
+		c.Data(http.StatusForbidden, gin.MIMEJSON, nil)
+		return
+	}
 	if err := backend.save(newThing, oldThing); err != nil {
 		c.JSON(http.StatusInternalServerError, NewError(err.Error()))
 	}
