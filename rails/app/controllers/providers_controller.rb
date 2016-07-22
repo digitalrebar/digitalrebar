@@ -32,15 +32,7 @@ class ProvidersController < ApplicationController
   end
 
   def show
-    @item = if params[:id] == 'create'
-              # GREG: WTF??? Why does show create?!?!?
-              # Victor: Yes, this needs to die in a fire.
-              t = params[:new][:type]
-              validate_create
-              Provider.new(name: t.downcase, id: -1, type: t, description: I18n.t('not_set'))
-            else
-              find_key_cap(model, params[:id], cap("READ"))
-            end
+    @item = find_key_cap(model, params[:id], cap("READ"))
     respond_to do |format|
       format.html { render :show  }
       format.json { render api_show @item }
