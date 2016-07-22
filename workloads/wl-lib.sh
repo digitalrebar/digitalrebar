@@ -449,7 +449,7 @@ start_machine() {
     esac
 }
 
-known_containers=(provisioner dhcp dns dns-mgmt ntp chef revproxy webproxy logging debug node access ux)
+known_containers=(provisioner dhcp dns dns-mgmt ntp chef revproxy webproxy logging debug node access)
 known_workloads=(all docker kubernetes hardware ceph packstack docker-swarm enterprise mesosphere burnin k8s-contrail stackengine rackn ux)
 
 declare -A containers
@@ -464,7 +464,6 @@ classifiers=()
 [[ ${containers["chef"]} ]] || containers["chef"]=true
 [[ ${containers["webproxy"]} ]] || containers["webproxy"]=true
 [[ ${containers["revproxy"]} ]] || containers["revproxy"]=true
-[[ ${containers["ux"]} ]] || containers["ux"]=true
 
 # Default include the ux workload as well.
 [[ ${workloads["ux"]} ]] || workloads["ux"]=true

@@ -23,10 +23,6 @@
 #
 #  - debug
 #
-# UX - experimental RackN UI
-#
-#  - ux
-#
 # Node - add the private test node workload.
 #   Allows a container (or set with scale) to
 #   be added to DR after installation.

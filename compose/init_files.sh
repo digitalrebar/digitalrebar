@@ -154,9 +154,6 @@ while [[ $1 == -* ]] ; do
     --node)
       FILES="$FILES node.yml"
       ;;
-    --ux)
-      FILES="$FILES ux.yml"
-      ;;
     --classifier)
       clinfo=$1
       shift
