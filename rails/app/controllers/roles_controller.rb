@@ -46,7 +46,7 @@ class RolesController < ApplicationController
       model.transaction do
         # Arguably, this should be UPDATE since deployment_roles are
         # tightly integrated with deployments.
-        @deployment = find_key_cap(Deployment, params[:deployment_id], cap("CREATE","DEPLOYMENT"))
+        @deployment = find_key_cap(Deployment, params[:deployment_id], cap("UPDATE","DEPLOYMENT"))
         role = find_key_cap(model, params[:deployment][:role_id],cap("READ"))
         role.add_to_deployment @deployment
       end
