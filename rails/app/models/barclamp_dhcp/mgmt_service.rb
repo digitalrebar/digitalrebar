@@ -268,7 +268,7 @@ class BarclampDhcp::MgmtService < Service
 
     # get client key and cert
     client_cert = OpenSSL::X509::Certificate.new(File.read('/var/run/rebar/server.crt'))
-    client_key  = OpenSSL::PKey::RSA.new(File.read('/var/run/rebar/server.key'), '')
+    client_key  = OpenSSL::PKey.read(File.read('/var/run/rebar/server.key'))
 
     RestClient::Resource.new(
         url,
@@ -280,19 +280,23 @@ class BarclampDhcp::MgmtService < Service
   end
 
   def self.send_request_get(url)
-    get_base_resource(url).get
+    user = User.find_by(username: 'system')
+    get_base_resource(url).get :'X-Authenticated-Username' => 'system', :'X-Authenticated-Capability' => user.cap_map.to_json
   end
 
   def self.send_request_put(url, data)
-    get_base_resource(url).put data.to_json, :content_type => :json, :accept => :json
+    user = User.find_by(username: 'system')
+    get_base_resource(url).put data.to_json, :content_type => :json, :accept => :json, :'X-Authenticated-Username' => 'system', :'X-Authenticated-Capability' => user.cap_map.to_json
   end
 
   def self.send_request_post(url, data)
-    get_base_resource(url).post data.to_json, :content_type => :json, :accept => :json
+    user = User.find_by(username: 'system')
+    get_base_resource(url).post data.to_json, :content_type => :json, :accept => :json, :'X-Authenticated-Username' => 'system', :'X-Authenticated-Capability' => user.cap_map.to_json
   end
 
   def self.send_request_delete(url)
-    get_base_resource(url).delete
+    user = User.find_by(username: 'system')
+    get_base_resource(url).delete :'X-Authenticated-Username' => 'system', :'X-Authenticated-Capability' => user.cap_map.to_json
   end
 
   #

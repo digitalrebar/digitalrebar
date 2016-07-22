@@ -82,12 +82,6 @@ roles:
                 name:
                   type: str
                   required: true
-                access_name:
-                  type: str
-                  required: true
-                access_password:
-                  type: str
-                  required: true
                 url:
                   type: str
                   required: true

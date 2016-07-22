@@ -115,8 +115,8 @@ ActiveRecord::Base.transaction do
    [ "ROLE_UPDATE",          "Update Role" ],
    [ "ROLE_DESTROY",         "Destroy Role" ],
 
-   [ "BARCLAMP_READ",        "Read Barclamp" ],
    [ "BARCLAMP_CREATE",      "Create Barclamp" ],
+   [ "BARCLAMP_READ",        "Read Barclamp" ],
    [ "BARCLAMP_UPDATE",      "Update Barclamp" ],
    [ "BARCLAMP_DESTROY",     "Destroy Barclamp" ]
   ].each do |row|

@@ -50,7 +50,7 @@ converge() {
     return 1
 }
 
-known_containers=(provisioner dhcp ntp dns dns-mgmt revproxy chef webproxy logging debug node access ux)
+known_containers=(provisioner dhcp ntp dns dns-mgmt revproxy chef webproxy logging debug node access)
 
 declare -A containers
 
@@ -69,7 +69,6 @@ docker_admin_default_containers() {
     [[ ${containers["chef"]} ]] || containers["chef"]=true
     [[ ${containers["webproxy"]} ]] || containers["webproxy"]=true
     [[ ${containers["revproxy"]} ]] || containers["revproxy"]=true
-    [[ ${containers["ux"]} ]] || containers["ux"]=true
     [[ ${containers["access"]} ]] || containers["access"]=FORWARDER
 }
 

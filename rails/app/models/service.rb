@@ -38,7 +38,7 @@ class Service < Role
           Rails.logger.info("#{service_name} not found ... wait 10s")
           runlog << "#{service_name} not found ... wait 10s"
           sleep 10
-          continue
+          next
         end
         pieces.select! do |piece|
           # New-school method of seeing if this service is in the proper deployment
@@ -56,7 +56,7 @@ class Service < Role
           else
             sleep 10
           end
-          continue
+          next
         end
       rescue StandardError => e
         runlog << "Failed to talk to consul: #{e.message}"
