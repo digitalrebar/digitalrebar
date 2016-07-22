@@ -20,6 +20,7 @@ type BindDnsInstance struct {
 func buildZone(name string, zoneData *ZoneData) Zone {
 
 	records := make([]Record, 0, 100)
+	tenantId := 0
 
 	if zoneData != nil {
 		for name, entry := range zoneData.Entries {
@@ -34,12 +35,13 @@ func buildZone(name string, zoneData *ZoneData) Zone {
 				}
 			}
 		}
+		tenantId = zoneData.TenantId
 	}
 
 	zone := Zone{
-		Name:    name,
-		Records: records,
-		TenantId: zoneData.TenantId,
+		Name:     name,
+		Records:  records,
+		TenantId: tenantId,
 	}
 
 	return zone

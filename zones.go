@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 	"sync"
-	"strconv"
 
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/digitalrebar/go-common/multi-tenancy"
@@ -25,9 +24,9 @@ import (
  * update/create and get zone information and records
  */
 type Zone struct {
-	Name    string   `json:"name"`
-	Records []Record `json:"records,omitempty"`
-	TenantId int     `json:"tenant_id"`
+	Name     string   `json:"name"`
+	Records  []Record `json:"records,omitempty"`
+	TenantId int      `json:"tenant_id"`
 }
 
 type Record struct {
@@ -35,6 +34,7 @@ type Record struct {
 	Content    string `json:"content"`
 	Name       string `json:"name"`
 	Type       string `json:"type"`
+	TenantId   int    `json:"tenant_id"`
 }
 
 /*
@@ -57,7 +57,7 @@ func NewZoneEntry() *ZoneEntry {
 }
 
 type ZoneData struct {
-	Entries map[string]*ZoneEntry // name -> entry
+	Entries  map[string]*ZoneEntry // name -> entry
 	TenantId int
 }
 
@@ -119,9 +119,13 @@ func (fe *Frontend) GetAllZones(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), err.StatusCode())
 		return
 	}
-	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	capMap, err2 := multitenancy.NewCapabilityMap(r.Request)
+	if err2 != nil {
+		rest.Error(w, err2.Error(), http.StatusInternalServerError)
+		return
+	}
 	zones := make([]Zone, 0, len(data))
-	for _, zone := range(data) {
+	for _, zone := range data {
 		if capMap.HasCapability(zone.TenantId, "ZONE_READ") {
 			zones = append(zones, zone)
 		}
@@ -138,7 +142,11 @@ func (fe *Frontend) GetZone(w rest.ResponseWriter, r *rest.Request) {
 		rest.Error(w, err.Error(), err.StatusCode())
 		return
 	}
-	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	capMap, err2 := multitenancy.NewCapabilityMap(r.Request)
+	if err2 != nil {
+		rest.Error(w, err2.Error(), http.StatusInternalServerError)
+		return
+	}
 	if capMap.HasCapability(data.TenantId, "ZONE_READ") {
 		w.WriteJson(data)
 	} else {
@@ -156,20 +164,20 @@ func (fe *Frontend) PatchZone(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	zoneName := r.PathParam("id")
-	tenantId, _ := strconv.Atoi(r.PathParam("tenant_id"))
+	tenantId := record.TenantId
 
-	capMap, _ := multitenancy.NewCapabilityMap(r.Request)
+	capMap, err := multitenancy.NewCapabilityMap(r.Request)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	fe.ZoneInfo.Lock()
 	zone := fe.ZoneInfo.Zones[zoneName]
 	if zone != nil {
 		tenantId = zone.TenantId
 	}
-	if zone != nil || !capMap.HasCapability(tenantId, "ZONE_READ") || !capMap.HasCapability(tenantId, "ZONE_UPDATE"){
-		if !capMap.HasCapability(tenantId, "ZONE_READ") {
-			rest.Error(w, "Not Found", http.StatusNotFound)
-		} else {
-			rest.Error(w, "Forbidden", http.StatusForbidden)
-		}
+	if !capMap.HasCapability(tenantId, "ZONE_UPDATE") {
+		rest.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}
 	switch record.ChangeType {
