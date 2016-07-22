@@ -177,10 +177,7 @@ class NodeRolesController < ApplicationController
       @node_role = find_key_cap(model, params[:id] || params[:node_role_id], cap("DESTROY"))
       @node_role.destroy
     end
-    respond_to do |format|
-      format.html { redirect_to deployment_path(@node_role.deployment_id) }
-      format.json { render api_delete @node_role }
-    end
+    render api_delete @node_role
   end
 
   def propose
@@ -188,10 +185,7 @@ class NodeRolesController < ApplicationController
       @node_role = find_key_cap(model, params[:node_role_id], cap("PROPOSE"))
       @node_role.propose!
     end
-    respond_to do |format|
-      format.html { redirect_to node_role_path(@node_role.id) }
-      format.json { render api_show @node_role }
-    end
+    render api_show @node_role
   end
 
   def commit
@@ -199,10 +193,7 @@ class NodeRolesController < ApplicationController
       @node_role = find_key_cap(model, params[:node_role_id], cap("COMMIT"))
       @node_role.commit!
     end
-    respond_to do |format|
-      format.html { redirect_to node_role_path(@node_role.id) }
-      format.json { render api_show @node_role }
-    end
+    render api_show @node_role
   end
 
   def retry
@@ -210,10 +201,7 @@ class NodeRolesController < ApplicationController
       @node_role = find_key_cap(model, params[:id] || params[:node_role_id], cap("RETRY"))
       @node_role.todo!
     end
-    respond_to do |format|
-      format.html { redirect_to node_role_path(@node_role.id) }
-      format.json { render api_show @node_role }
-    end
+    render api_show @node_role
   end
 
   def parents
