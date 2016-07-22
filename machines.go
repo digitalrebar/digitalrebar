@@ -11,11 +11,12 @@ import (
 // Machine represents a single bare-metal system that the provisioner
 // should manage the boot environment for.
 type Machine struct {
-	Name    string                 // The FQDN of the machine.
-	Uuid    string                 // the UUID of the machine
-	Address string                 // The IPv4 address that the machine PXE boots with.
-	BootEnv string                 // The boot environment that the machine should boot into.
-	Params  map[string]interface{} // Any additional parameters that may be needed for template expansion.
+	Name     string                 // The FQDN of the machine.
+	Uuid     string                 // the UUID of the machine
+	Address  string                 // The IPv4 address that the machine PXE boots with.
+	BootEnv  string                 // The boot environment that the machine should boot into.
+	Params   map[string]interface{} // Any additional parameters that may be needed for template expansion.
+	TenantId int
 }
 
 // HexAddress returns Address in raw hexadecimal format, suitable for

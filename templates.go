@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path"
+	"strconv"
 	"text/template"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,7 @@ type Template struct {
 	UUID       string // UUID is a unique identifier for this template.
 	Contents   string // Contents is the raw template.
 	parsedTmpl *template.Template
+	TenantId   int
 }
 
 func (t *Template) prefix() string {
@@ -43,8 +45,12 @@ func (t *Template) Parse() (err error) {
 
 func createTemplate(c *gin.Context) {
 	finalStatus := http.StatusCreated
-	oldThing := &Template{UUID: c.Param(`uuid`)}
-	newThing := &Template{UUID: c.Param(`uuid`)}
+	tenant_id, err := strconv.Atoi(c.Query(`tenant_id`))
+	if err != nil {
+		tenant_id = 1
+	}
+	oldThing := &Template{UUID: c.Param(`uuid`), TenantId: tenant_id}
+	newThing := &Template{UUID: c.Param(`uuid`), TenantId: tenant_id}
 	if err := backend.load(oldThing); err == nil {
 		finalStatus = http.StatusAccepted
 	} else {

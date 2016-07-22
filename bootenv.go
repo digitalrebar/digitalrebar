@@ -27,6 +27,7 @@ type RenderData struct {
 	Env            *BootEnv // The boot environment that provided the template.
 	ProvisionerURL string   // The URL to the provisioner that all files should be fetched from
 	CommandURL     string   // The URL of the API endpoint that this machine should talk to for command and control
+	TenantId       int      // The Tenant that this BootEnv belongs in
 }
 
 // BootParams is a helper function that expands the BootParams
@@ -115,6 +116,7 @@ type BootEnv struct {
 	BootParams     string          // A template that will be expanded to create the full list of boot parameters for the environment.
 	RequiredParams []string        // The list of extra required parameters for this bootstate. They should be present as Machine.Params when the bootenv is applied to the machine.
 	bootParamsTmpl *template.Template
+	TenantId       int
 }
 
 // PathFor expands the partial paths for kernels and initrds into full
