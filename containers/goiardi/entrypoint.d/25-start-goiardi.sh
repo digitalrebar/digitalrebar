@@ -1,11 +1,8 @@
 #!/bin/bash
 
-hnl="hostname=\"${EXTERNAL_IP%%/*}\""
-if ! fgrep -q "$hnl" /etc/goiardi/goiardi.conf; then
-    echo "hostname=\"${EXTERNAL_IP%%/*}\"" > /tmp/goiardi.conf
-    cat /etc/goiardi/goiardi.conf >> /tmp/goiardi.conf
-    cp /tmp/goiardi.conf /etc/goiardi/goiardi.conf
-fi
+echo "hostname=\"${EXTERNAL_IP%%/*}\"" >> /tmp/goiardi.conf.2
+cat /etc/goiardi/goiardi.conf >> /tmp/goiardi.conf.2
+mv /tmp/goiardi.conf.2 /etc/goiardi/goiardi.conf
 
 for k in server.key server.crt admin.pem chef-validator.pem chef-webui.pem; do
     kv_get digitalrebar/private/goiardi/keys/$k >/etc/goiardi/$k && continue

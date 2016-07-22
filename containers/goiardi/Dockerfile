@@ -16,6 +16,6 @@ RUN apt-get update && \
        'https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/10.04/x86_64/chef_11.18.12-1_amd64.deb' && \
      dpkg -i /tmp/chef.deb && rm -f /tmp/chef.deb
 
-COPY goiardi.conf /etc/goiardi/
+COPY goiardi.conf /tmp
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 
