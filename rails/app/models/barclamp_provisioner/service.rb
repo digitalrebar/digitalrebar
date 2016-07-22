@@ -60,7 +60,7 @@ private
 
     # get client key and cert
     client_cert = OpenSSL::X509::Certificate.new(File.read('/var/run/rebar/server.crt'))
-    client_key  = OpenSSL::PKey::RSA.new(File.read('/var/run/rebar/server.key'), '')
+    client_key  = OpenSSL::PKey.read(File.read('/var/run/rebar/server.key'))
 
     RestClient::Resource.new(
       url,
@@ -83,7 +83,8 @@ private
                'Params' => {}
               }
     begin
-      response = get_rest_resource("#{url}/bootenvs/#{node.bootenv}").get
+      user = User.find_by(username: 'system')
+      response = get_rest_resource("#{url}/bootenvs/#{node.bootenv}").get :'X-Authenticated-Username' => 'system', :'X-Authenticated-Capability' => user.cap_map.to_json
     rescue => e
       Rails.logger.error("Node: provisioner manager #{url} does not know about bootenv #{node.bootenv}")
       raise "Provisioner management does not know about bootenv #{node.bootenv}"
@@ -109,7 +110,8 @@ private
       payload['Params'][param] = val
     end if bootenv_options['RequiredParams'] && !bootenv_options['RequiredParams'].empty?
     begin
-      response = get_rest_resource("#{url}/machines").post payload.to_json, content_type: :json
+      user = User.find_by(username: 'system')
+      response = get_rest_resource("#{url}/machines").post payload.to_json, content_type: :json, :'X-Authenticated-Username' => 'system', :'X-Authenticated-Capability' => user.cap_map.to_json
     rescue => e
       Rails.logger.error("Node: failed to switch #{node.name} to #{node.bootenv}\n#{e.response}")
       raise "Unable to change bootenv to #{node.bootenv}"
@@ -122,7 +124,8 @@ private
     sysdepl = Deployment.system
     provisioner_mgmt = Attrib.get('provisioner-management-servers',sysdepl)
     url = provisioner_mgmt[0]['url']
-    get_rest_resource("#{url}/machines/#{uuid}").delete
+    user = User.find_by(username: 'system')
+    get_rest_resource("#{url}/machines/#{uuid}").delete :'X-Authenticated-Username' => 'system', :'X-Authenticated-Capability' => user.cap_map.to_json
   end
 
 end
