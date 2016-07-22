@@ -1,5 +1,5 @@
 hash: 1592ea3bc208b089d871f0118e165056dde228a8c17059930731f56db29a7b2f
-updated: 2016-07-21T14:32:01.380998565-05:00
+updated: 2016-07-21T23:27:33.570363857-05:00
 imports:
 - name: github.com/boltdb/bolt
   version: c6ba97b89e0454fec9aa92e1d33a4e2c5fc1f631
@@ -27,7 +27,7 @@ imports:
 - name: github.com/coddingtonbear/go-simplejson
   version: a582018feafb39c4884d1b03cad98b91e2804276
 - name: github.com/digitalrebar/go-common
-  version: 8fa730630fa1f62d1d08e7caa8eda00f62deb407
+  version: 1951f44bc1a3a11cdc0e402ac542d46bd3d4cea4
   subpackages:
   - cert
   - service
