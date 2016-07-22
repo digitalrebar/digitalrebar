@@ -3,10 +3,9 @@
 /usr/local/bin/rule-engine --listen=:${APIPORT} \
                            --endpoint ${EXTERNAL_REBAR_ENDPOINT} \
                            --backing=consul \
+			   --host="rule-engine,rule-engine-servce,$IP,${EXTERNAL_IP%%/*},${HOSTNAME},127.0.0.1,localhost" \
                            --dataloc=digitalrebar/rule-engine/database
 
 echo '^rule-engine/(api/.*)' |kv_put digitalrebar/public/revproxy/rule-engine/matcher
 
-check_line="{\"script\": \"curl --cacert /etc/rule-engine/cacert.prm --cert /etc/rule-engine/cert.pem https://${IP%/*}:${APIPORT}/api/v0/rulesets >/dev/null 2>&1\", \"interval\": \"10s\", \"timeout\": \"2s\"}"
-
-make_service rule-engine ${APIPORT} "${check_line}"
+make_service rule-engine ${APIPORT} '{"script": "pidof rule-engine", "interval": "10s"}'

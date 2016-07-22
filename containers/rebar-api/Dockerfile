@@ -46,6 +46,8 @@ RUN curl -fgL -o '/tmp/chef.deb' \
 RUN /usr/local/go/bin/go get -u github.com/VictorLowther/intelamt/amttool \
   && mv /go/bin/amttool /usr/local/bin/amttool \
   && /usr/local/go/bin/go get -u github.com/VictorLowther/wsman/wscli
+RUN /usr/local/go/bin/go get -u github.com/digitalrebar/certificates/sign-it \
+  && mv /go/bin/sign-it /usr/local/bin/sign-it
 
 RUN curl -fgL -o /usr/local/bin/rebar \
          https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64 \

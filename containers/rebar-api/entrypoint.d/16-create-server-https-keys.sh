@@ -2,17 +2,11 @@
 
 
 # Wait for key with certificate
-ca_string=$(kv_get "trust_me/certificate")
-while [[ $ca_string == "" ]] ; do
-    sleep 1
-    ca_string=$(kv_get "trust_me/certificate")
-done
-echo "$ca_string" > /var/run/rebar/ca.pem
+sign-it -A -i -l internal -o /var/run/rebar/ca
 
-generate_crt "rebarapi" "rebar-api" "rebarapi,rebar-api,rebar-api-service,$IP,${EXTERNAL_IP%%/*},${HOSTNAME},localhost,127.0.0.1"
+sign-it -A -s -l internal -c rebar-api -h "rebarapi,rebar-api,rebar-api-service,$IP,${EXTERNAL_IP%%/*},${HOSTNAME},localhost,127.0.0.1" -o rebar-api
 
-mv rebarapi-key.pem /var/run/rebar/server.key
-mv rebarapi.pem /var/run/rebar/server.crt
-mv rebarapi.csr /var/run/rebar/server.csr
-chmod 400 /var/run/rebar/server.key /var/run/rebar/server.crt
-chown rebar:rebar /var/run/rebar/server.key /var/run/rebar/server.crt /var/run/rebar/server.csr
+mv rebar-api.key /var/run/rebar/server.key
+mv rebar-api.pem /var/run/rebar/server.crt
+chmod 400 /var/run/rebar/server.key /var/run/rebar/server.crt /var/run/rebar/ca.pem
+chown rebar:rebar /var/run/rebar/server.key /var/run/rebar/server.crt /var/run/rebar/ca.pem

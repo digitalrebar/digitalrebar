@@ -5,8 +5,6 @@
 /usr/local/bin/provisioner-mgmt \
     --api-port "$APIPORT" \
     --file-root "$TFTPROOT" \
-    --cacert /etc/prov-base-cert.pem \
-    --cert /etc/prov-cert.pem \
-    --key /etc/prov-key.pem \
+    --host "provisioner,provisioner-mgmt,provisioner-mgmt-service,$IP,${EXTERNAL_IP%%/*},${HOSTNAME},127.0.0.1,localhost" \
     --provisioner "http://${EXTERNAL_IP%%/*}:$WEBPORT" \
     --command "$EXTERNAL_REBAR_ENDPOINT" &

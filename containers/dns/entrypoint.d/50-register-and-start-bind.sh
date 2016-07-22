@@ -71,7 +71,7 @@ type = $DNS_TYPE
 server = $DNS_SERVER_PARM
 $OTHER_PARMS
 EOF
-    /usr/local/bin/rebar-dns-mgmt --backing_store=consul --data_dir=digitalrebar/dns/database --auth_mode=KEY &
+    /usr/local/bin/rebar-dns-mgmt --backing_store=consul --data_dir=digitalrebar/dns/database --auth_mode=KEY --host="dns,dns-mgmt,dns-mgmt-service,$IP,${EXTERNAL_IP%%/*},${HOSTNAME},127.0.0.1,localhost" &
 
     # Add rev-proxy matcher
     echo '^dns/(.*)' | kv_put digitalrebar/public/revproxy/dns-mgmt-service/matcher
@@ -88,9 +88,7 @@ EOF
        \"address\": \"$the_ip\",
        \"port\": \"6754\",
        \"name\": \"$SERVICE_DEPLOYMENT\",
-       \"access_name\": \"admin\",
-       \"access_password\": \"admin\",
-       \"url\": \"https://admin:admin@${the_ip}:6754\"
+       \"url\": \"https://${the_ip}:6754\"
       }]
 }"
     set_service_attrib dns-mgmt_service dns-management-servers "$attr"
