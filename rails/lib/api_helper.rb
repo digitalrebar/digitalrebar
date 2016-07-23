@@ -80,7 +80,7 @@ module ApiHelper
         # caps.
         #
         # For now, the rule I am using is that users can see their own
-        # UTCs, and users with USER_TENANT_CAPABILITY_ADD and
+        # UTCs, and users with USER_TENANT_CAPABILITY_CREATE and
         # USER_TENANT_CAPABILITY_DESTROY caps can see all UTCs in
         # tenants where they have those caps,
         return where(["id in (
@@ -91,7 +91,7 @@ module ApiHelper
                                            capability in (?, ?)))",
                       user_id,
                       user_id,
-                      "USER_TENANT_CAPABILITY_ADD",
+                      "USER_TENANT_CAPABILITY_CREATE",
                       "USER_TENANT_CAPABILITY_DESTROY"])
       end
       if columns_hash.has_key?("tenant_id")

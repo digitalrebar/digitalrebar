@@ -99,7 +99,9 @@ ActiveRecord::Base.transaction do
    [ "EVENT_SINK_UPDATE",  "Update Event Sinks" ],
    [ "EVENT_SINK_DESTROY", "Destroy Event Sinks" ],
 
-   [ "USER_TENANT_CAPABILITY_ADD",       "Add Capability to User in Tenant" ],
+   [ "USER_TENANT_CAPABILITY_CREATE",    "Create Capability to User in Tenant" ],
+   [ "USER_TENANT_CAPABILITY_READ",      "Read Capability to User in Tenant" ],
+   [ "USER_TENANT_CAPABILITY_UPDATE",    "Update Capability to User in Tenant" ],
    [ "USER_TENANT_CAPABILITY_DESTROY",   "Remove Capability from User in Tenant" ],
 
    [ "ATTRIB_CREATE",        "Create a new attribute" ],
