@@ -41,12 +41,12 @@ class SecureShellHammer < Hammer
     run_on(". /etc/profile; exec ssh -l #{username} #{node_address.addr} -- #{cmd}", nr)
   end
 
-  def copy_from(remote_src, local_dest, opts="")
-    run_on("exec scp #{opts} root@[#{node.address.addr}]:#{remote_src} #{local_dest}")
+  def copy_from(remote_src, local_dest, opts="", nr=nil)
+    run_on("exec scp #{opts} root@[#{node.address.addr}]:#{remote_src} #{local_dest}", nr)
   end
 
-  def copy_to(local_src, remote_dest, opts="")
-    run_on("exec scp #{opts} #{local_src} root@[#{node.address.addr}]:#{remote_dest}")
+  def copy_to(local_src, remote_dest, opts="", nr=nil)
+    run_on("exec scp #{opts} #{local_src} root@[#{node.address.addr}]:#{remote_dest}", nr)
   end
 
   # and it only allows you to reboot a node via its "reboot" command
