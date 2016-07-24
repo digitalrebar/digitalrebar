@@ -96,7 +96,7 @@ module ApiHelper
       end
       if columns_hash.has_key?("tenant_id")
         # Anything with a tenant id should respond to this rule.
-        return where(["tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?)",cap_name, user_id])
+        return where(["#{self.table_name}.tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?)",cap_name, user_id])
       end
       # If we got here, we are dealing with an untenated object.
       # Perform global capability check instead
