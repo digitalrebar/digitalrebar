@@ -17,6 +17,7 @@ class NetworkAllocationsController < ::ApplicationController
   self.cap_base = "NETWORK"
 
   def create
+    ret = nil
     model.transaction do
       params.require(:node_id)
       node = find_key_cap(Node, params[:node_id], cap("UPDATE","NODE"))
@@ -38,7 +39,7 @@ class NetworkAllocationsController < ::ApplicationController
   def destroy
     params.require(:id)
     model.transaction do
-      @allocation = find_key_cap(model,params[:id],cap("DESTROY"))
+      @allocation = find_key_cap(model,params[:id],cap("UPDATE"))
       # Called for side effect.
       find_key_cap(Node,@allocation.node.id,cap("UPDATE","NODE"))
       @allocation.destroy

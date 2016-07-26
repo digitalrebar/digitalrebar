@@ -52,6 +52,10 @@ class UserTenantCapabilitiesController < ::ApplicationController
       @cap = model.create!(tenant_id: t.id,
                            user_id: u.id,
                            capability_id: c.id)
+      if params.has_key?(:inheritable) && params[:inheritable] == false
+        @cap.inheritable = false
+        @cap.save!
+      end
     end
 
     respond_to do |format|

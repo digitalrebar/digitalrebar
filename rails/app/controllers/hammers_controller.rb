@@ -69,7 +69,7 @@ class HammersController < ApplicationController
   end
 
   def perform
-    @nm = Hammer.find_key(params[:hammer_id])
+    @nm = find_key_cap(model,params[:hammer_id],caps("POWER"))
     res = {}
     params.require(:method)
     action = params[:method].to_sym

@@ -74,6 +74,8 @@ class NodeRolesController < ApplicationController
               elsif params.key? :deployment_id
                 find_key_cap(Deployment,params[:deployment_id], cap("READ","DEPLOYMENT")).
                   node_roles.visible(cap("READ"),@current_user.id)
+              elsif params.key? :role_id
+                Role.find_key(params[:role_id]).node_roles.visible(model,cap("READ"))
               else
                 visible(model,cap("READ"))
               end.order("cohort asc, id asc")
