@@ -38,6 +38,11 @@ class BarclampCluster::InstallRootCa < LocalRole
     if !status.success?
       raise "Failed to get cert for #{label}\n#{out}\n#{err}\n"
     end 
+    runlog << "Success\n#{out}Remove Cert on Node:"
+    out,err,status = nr.node.run("rm -f #{root_info["destination"]}")
+    if !status.success?
+      raise "Failed to remove #{root_info['destination']}\n#{out}\n#{err}\n"
+    end 
     runlog << "Success\n#{out}Copy Cert to Node:"
     out,err,status = nr.node.transfer().copy_to("#{tmpfile}.pem", root_info['destination'])
     if !status.success?
