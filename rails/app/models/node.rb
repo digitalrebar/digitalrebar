@@ -161,6 +161,8 @@ class Node < ActiveRecord::Base
     end
     control_address = Attrib.get('node-control-address',self)
     res << IP.coerce(control_address) if control_address
+    private_control_address = Attrib.get('node-private-control-address',self)
+    res << IP.coerce(private_control_address) if private_control_address
     res.flatten
   end
 
