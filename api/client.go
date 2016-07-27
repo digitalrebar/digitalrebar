@@ -14,6 +14,7 @@ import (
 	"path"
 
 	"github.com/VictorLowther/jsonpatch"
+	"github.com/digitalrebar/go-common/cert"
 )
 
 type challenge interface {
@@ -38,6 +39,17 @@ const (
 	// url passed to one of the request functions.
 	API_PATH = "/api/v2"
 )
+
+// TrustedSession builds a Client that can only operate inside the local trust zone.
+// It assumes that there is a local Consul server that it can use to look up the
+// trust-me service and the internal endpoint for the Rebar API.
+func TrustedSession(URL, User string) (*Client, error) {
+	c, err := cert.Client("internal", "rebar-client")
+	if err != nil {
+		return nil, err
+	}
+	return &Client{URL: URL, Client: c, Challenge: challengeTrusted(User)}, nil
+}
 
 // Session establishes a new connection to Rebar.  You must call
 // this function before using any other functions in the rebar
