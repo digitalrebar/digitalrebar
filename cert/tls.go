@@ -5,16 +5,85 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
-	"log"
+	"net"
 	"net/http"
 	"os"
-	"time"
-
-	"github.com/digitalrebar/go-common/service"
-	"github.com/digitalrebar/go-common/store"
-
-	consul "github.com/hashicorp/consul/api"
 )
+
+// Client creates an HTTP client that is pre-configured to use TLS mutual auth
+// with Servers that derive their certificates from the same root in trust-me.
+//
+// trustRoot is the name of the root in the trust-me service that you should create
+// the client name for, and clientName is the name the client should use for the certificate.
+func Client(trustRoot, clientName string) (*http.Client, error) {
+	ips, err := net.InterfaceAddrs()
+	if err != nil {
+		return nil, err
+	}
+	addrs := []string{}
+	for _, ip := range ips {
+		addr := ip.String()
+		if addr == "127.0.0.1" || addr == "::1" {
+			continue
+		}
+		addrs = append(addrs, addr)
+	}
+	v, c, p, err := GetKeysFor(trustRoot, clientName, addrs)
+	if err != nil {
+		return nil, err
+	}
+	pool := x509.NewCertPool()
+	if !pool.AppendCertsFromPEM(v) {
+		return nil, fmt.Errorf("Failed to add validator to cert pool: \n%v", string(v))
+	}
+	cert, err := tls.X509KeyPair(c, p)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create TLS keypair from returned certs: %v", err)
+	}
+	tlsCfg := &tls.Config{
+		ClientAuth: tls.RequireAndVerifyClientCert,
+		RootCAs:    pool,
+		GetCertificate: func(c *tls.ClientHelloInfo) (*tls.Certificate, error) {
+			return &cert, nil
+		},
+	}
+	tr := &http.Transport{TLSClientConfig: tlsCfg}
+	return &http.Client{Transport: tr}, nil
+}
+
+// ServeTLS creates an HTTPS server that authenticates with the specified
+// address, handler, and TLS certificate.
+func ServeTLS(addr string, handler http.Handler, keypair *tls.Certificate) error {
+	s := &http.Server{
+		Addr:    addr,
+		Handler: handler,
+		TLSConfig: &tls.Config{
+			GetCertificate: func(c *tls.ClientHelloInfo) (*tls.Certificate, error) {
+				return keypair, nil
+			},
+		},
+	}
+	return s.ListenAndServeTLS("", "")
+}
+
+// ServeTrustedTLS creates an HTTPS server that expects to be able to
+// perform TLS mutual authentication with any clients that talk to it
+// -- both its certificate and any certificate a client presents to it
+// must be signed by a public key in validatorPool.
+func ServeTrustedTLS(addr string, handler http.Handler, keypair *tls.Certificate, validatorPool *x509.CertPool) error {
+	s := &http.Server{
+		Addr:    addr,
+		Handler: handler,
+		TLSConfig: &tls.Config{
+			ClientCAs:  validatorPool,
+			ClientAuth: tls.RequireAndVerifyClientCert,
+			GetCertificate: func(c *tls.ClientHelloInfo) (*tls.Certificate, error) {
+				return keypair, nil
+			},
+		},
+	}
+	return s.ListenAndServeTLS("", "")
+}
 
 func WriteFiles(certB, keyB []byte) error {
 	err := os.MkdirAll(".tlsCache", 0700)
@@ -78,55 +147,15 @@ func ListenAndServeTLSValidated(addr string, valCertB, certB, keyB []byte, handl
 	return s.ListenAndServeTLS(".tlsCache/certfile", ".tlsCache/keyfile")
 }
 
-func GetTrustMeServiceInfo(sendingRoot string) (string, []byte, error) {
-	cc, err := consul.NewClient(consul.DefaultConfig())
-	if err != nil {
-		return "", nil, err
-	}
-	if _, err := cc.Agent().Self(); err != nil {
-		return "", nil, err
-	}
-
-	svc, err := service.WaitService(cc, "trust-me-service", "")
-	if err != nil {
-		log.Printf("Could not get trust-me service: %v\n", err)
-		return "", nil, err
-	}
-	trustMeAddr := fmt.Sprintf("https://%s:%d", svc[0].ServiceAddress, svc[0].ServicePort)
-
-	simpleStore, err := store.NewSimpleConsulStore(cc, "trust-me/cert-store")
-	if err != nil {
-		log.Printf("Failed to connect to consul: %v\n", err)
-		return "", nil, err
-	}
-
-	count := 0
-retry:
-	authKeyB, err := simpleStore.Load(fmt.Sprintf("%s/authkey", sendingRoot))
-	if err != nil {
-		if count > 30 {
-			return "", nil, err
-		}
-		log.Printf("Could not get authkey for %s: %v, retrying ... %d\n", sendingRoot, err, count)
-		count += 1
-		time.Sleep(5 * time.Second)
-		goto retry
-	}
-
-	return trustMeAddr, authKeyB, err
-}
-
 func StartTLSServer(addr, CN string, hosts []string, acceptingRoot, sendingRoot string, handler http.Handler) error {
 	trustMeAddr, authKeyB, err := GetTrustMeServiceInfo(sendingRoot)
 	if err != nil {
-		log.Printf("Failed to contact trustme service for info: %s  %v\n", sendingRoot, err)
-		return err
+		return fmt.Errorf("Failed to contact trustme service for info: %s  %v\n", sendingRoot, err)
 	}
 
 	certB, keyB, err := CreateCertificate(trustMeAddr, string(authKeyB), sendingRoot, CN, hosts)
 	if err != nil {
-		log.Printf("Could not create certificate for %s from %v: %v\n", sendingRoot, trustMeAddr, err)
-		return err
+		return fmt.Errorf("Could not create certificate for %s from %v: %v\n", sendingRoot, trustMeAddr, err)
 	}
 
 	// If we have a root to validate incoming connections, use it, otherwise
@@ -134,12 +163,10 @@ func StartTLSServer(addr, CN string, hosts []string, acceptingRoot, sendingRoot 
 	if acceptingRoot != "" {
 		valCertB, err := GetCertificateForRoot(trustMeAddr, acceptingRoot)
 		if err != nil {
-			log.Printf("Could not get root certificate for %s from %v: %v\n", acceptingRoot, trustMeAddr, err)
-			return err
+			return fmt.Errorf("Could not get root certificate for %s from %v: %v\n", acceptingRoot, trustMeAddr, err)
 		}
 
 		return ListenAndServeTLSValidated(addr, valCertB, certB, keyB, handler)
-	} else {
-		return ListenAndServeTLS(addr, certB, keyB, handler)
 	}
+	return ListenAndServeTLS(addr, certB, keyB, handler)
 }
