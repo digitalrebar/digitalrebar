@@ -329,13 +329,8 @@ Rebar::Application.routes.draw do
               post 'match'
             end
             member do
-              post "admin", to: :make_admin
               get "start_password_reset"
               post "complete_password_reset"
-              delete "admin", to: :remove_admin
-              post "lock"
-              delete "lock", to: :unlock
-              put "reset_password"
               get "digest", to: :digest_password
               get "capabilities"
             end

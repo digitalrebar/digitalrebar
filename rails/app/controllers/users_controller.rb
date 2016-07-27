@@ -140,33 +140,6 @@ class UsersController < ApplicationController
     end
   end
 
-  # Uhhh... how can these possibly work?
-  def unlock
-    # TODO REFACTOR!
-    respond_with(@user)  do |format|
-      @user.unlock_access! if (!@user.nil? and @user.access_locked?)
-      format.html do
-        redirect_to users_path, :notice => t("users.index.unlocked")
-      end
-      format.json do
-        render api_show @user
-      end
-    end
-  end
-
-  def lock
-    # TODO REFACTOR!
-    respond_with(@user)  do |format|
-      @user.lock_access! if (!@user.nil? and !@user.access_locked?)
-      format.html do
-        redirect_to users_path, :notice => t("users.index.locked")
-      end
-      format.json do
-        render api_show @user
-      end
-    end
-  end
-
   def start_password_reset
     User.transaction do
       # Probably need a PASSWORD_CHANGE cap or something.
@@ -196,82 +169,9 @@ class UsersController < ApplicationController
     render api_show @user
   end
 
-  # This needs to die in a fire.
-  def reset_password
-    #  TODO REFACTOR!
-   ret = fetch_user
-   respond_with(@user)  do |format|
-    Rails.logger.debug("Reset password for user #{@user}")
-    format.html do
-      if !params[:cancel].nil?
-        @user = nil
-        setup_users
-        return render :action => :index
-      end
-      check_password
-      @user.admin_reset_password = true
-      if @user.reset_password!(params[:user][:password],params[:user][:password_confirmation])
-        redirect_to users_path, :notice => t("users.index.reset_password_success")
-      else
-        setup_users
-        render :action => :index
-      end
-    end
-    format.json do
-      password = params[:password]
-      password_confirmation = params[:password_confirmation]
-      begin
-         @user.admin_reset_password = true
-         reset_success = @user.reset_password!(password, password_confirmation)
-         raise ActiveRecord::RecordInvalid.new(@user) unless reset_success
-      rescue ActiveRecord::RecordInvalid, ArgumentError => ex
-          Rails.logger.error(ex.message)
-          ret = [500, ex.message]
-      end  if ret[0]==200
-      return render :text => ret[1], :status => ret[0] unless ret[0] == 200
-      render api_show @user
-    end
-   end
- end
-
   # Ditto
   def is_edit_mode?
     current_user.is_admin? && Rails.env.development?
-  end
-
-  # Ditto again.  Admin doesn't mean that much with the cap system.
-  def make_admin
-    ret = fetch_user
-    respond_with(@user)  do |format|
-      Rails.logger.debug("Making user #{@user.id} admin") unless @user.nil?
-      format.html do
-        @user.is_admin = true;
-        @user.save
-        render
-      end
-      format.json do
-        ret = update_admin(true) if ret[0] == 200
-        return render :text => ret[1], :status => ret[0] unless ret[0] == 200
-        render api_show @user
-      end
-    end
-  end
-
-  # Ditto
-  def remove_admin
-    ret = fetch_user
-    respond_with(@user) do |format|
-      format.html do
-        @user.is_admin = false;
-        @user.save
-        render
-      end
-      format.json do
-        ret = update_admin(false) if ret[0] == 200
-        return render :text => ret[1], :status => ret[0] unless ret[0] == 200
-        render :json => @user.to_json
-      end
-    end
   end
 
   # Ditto
