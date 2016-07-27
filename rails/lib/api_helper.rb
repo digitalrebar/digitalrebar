@@ -68,13 +68,13 @@ module ApiHelper
         return where(["id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?)",cap_name, user_id])
       when "deployment_roles"
         # deployment_roles use their deployment
-        return where(["deployment_id in (select id from deployments where tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?))",cap_name, user_id])
+        return where(["deployment_id in (select id from deployments where deployments.tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?))",cap_name, user_id])
       when "hammers"
         # Hammers use their node
-        return where(["node_id in (select id from nodes where tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?))",cap_name, user_id])
+        return where(["node_id in (select id from nodes where nodes.tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?))",cap_name, user_id])
       when "runs"
         # Runs use their node
-        return where(["node_id in (select id from nodes where tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?))",cap_name, user_id])
+        return where(["node_id in (select id from nodes where nodes.tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?))",cap_name, user_id])
       when "user_tenant_capabilities"
         # UserTenantCapabilities are... fun, and should probably be normalized by adding more
         # caps.
@@ -87,7 +87,7 @@ module ApiHelper
                        select id from user_tenant_capabilities where user_id = ?
                        UNION
                        select id from user_tenant_capabilities
-                       where tenant_id in (select tenant_id from utc_mapping where user_id = ? AND
+                       where user_tenant_capbilities.tenant_id in (select tenant_id from utc_mapping where user_id = ? AND
                                            capability in (?, ?)))",
                       user_id,
                       user_id,
@@ -96,7 +96,7 @@ module ApiHelper
       end
       if columns_hash.has_key?("tenant_id")
         # Anything with a tenant id should respond to this rule.
-        return where(["tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?)",cap_name, user_id])
+        return where(["#{self.table_name}.tenant_id in (select tenant_id from utc_mapping where capability = ? AND user_id = ?)",cap_name, user_id])
       end
       # If we got here, we are dealing with an untenated object.
       # Perform global capability check instead
