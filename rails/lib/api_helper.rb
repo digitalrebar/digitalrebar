@@ -87,7 +87,7 @@ module ApiHelper
                        select id from user_tenant_capabilities where user_id = ?
                        UNION
                        select id from user_tenant_capabilities
-                       where user_tenant_capbilities.tenant_id in (select tenant_id from utc_mapping where user_id = ? AND
+                       where user_tenant_capabilities.tenant_id in (select tenant_id from utc_mapping where user_id = ? AND
                                            capability in (?, ?)))",
                       user_id,
                       user_id,
