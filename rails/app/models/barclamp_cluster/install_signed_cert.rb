@@ -35,9 +35,18 @@ class BarclampCluster::InstallSignedCert < LocalRole
     runlog = []
     tmpfile=Dir::Tmpname.make_tmpname("/tmp/data", "signed")
     runlog << "Get key/cert pair: "
-    out,err,status = run_local("sign-it -A -l #{label} -s -o #{tmpfile}")
+
+    hosts = [ nr.node.name ]
+    hosts << NetworkAllocation.where(node_id: nr.node.id).map{|a|a.address.addr}
+    hosts.flatten!
+    out,err,status = run_local("sign-it -A -l #{label} -s -o #{tmpfile} -h #{hosts.join(",")}")
     if !status.success?
       raise "Failed to sign cert for #{label}\n#{out}\n#{err}\n"
+    end
+    runlog << "Success\n#{out}Remove cert on node: "
+    out,err,status = nr.node.run("rm -f #{cert_info["destination"]}")
+    if !status.success?
+      raise "Failed to remove cert\n#{out}\n#{err}\n"
     end
     runlog << "Success\n#{out}Copy cert to node: "
     out,err,status = nr.node.transfer().copy_to("#{tmpfile}.pem", cert_info['destination'])
@@ -51,6 +60,11 @@ class BarclampCluster::InstallSignedCert < LocalRole
     end
     runlog << "Success\n#{out}Chown cert on node: "
     out,err,status = nr.node.run("chown #{cert_info["user"]}:#{cert_info["group"]} #{cert_info["destination"]}")
+    if !status.success?
+      raise "Failed to chown cert\n#{out}\n#{err}\n"
+    end
+    runlog << "Success\n#{out}rm key on node: "
+    out,err,status = nr.node.run("rm -f #{key_info["destination"]}")
     if !status.success?
       raise "Failed to chown cert\n#{out}\n#{err}\n"
     end
