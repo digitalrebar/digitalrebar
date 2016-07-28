@@ -10,15 +10,10 @@ import (
 	"os"
 )
 
-// Client creates an HTTP client that is pre-configured to use TLS mutual auth
-// with Servers that derive their certificates from the same root in trust-me.
-//
-// trustRoot is the name of the root in the trust-me service that you should create
-// the client name for, and clientName is the name the client should use for the certificate.
-func Client(trustRoot, clientName string) (*http.Client, error) {
+func simpleKeys(trustRoot, name string) (*x509.CertPool, *tls.Certificate, error) {
 	ips, err := net.InterfaceAddrs()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	addrs := []string{}
 	for _, ip := range ips {
@@ -28,27 +23,52 @@ func Client(trustRoot, clientName string) (*http.Client, error) {
 		}
 		addrs = append(addrs, addr)
 	}
-	v, c, p, err := GetKeysFor(trustRoot, clientName, addrs)
+	v, c, p, err := GetKeysFor(trustRoot, name, addrs)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	pool := x509.NewCertPool()
 	if !pool.AppendCertsFromPEM(v) {
-		return nil, fmt.Errorf("Failed to add validator to cert pool: \n%v", string(v))
+		return nil, nil, fmt.Errorf("Failed to add validator to cert pool: \n%v", string(v))
 	}
 	cert, err := tls.X509KeyPair(c, p)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create TLS keypair from returned certs: %v", err)
+		return nil, nil, fmt.Errorf("Failed to create TLS keypair from returned certs: %v", err)
 	}
+	return pool, &cert, nil
+}
+
+// Client creates an HTTP client that is pre-configured to use TLS mutual auth
+// with Servers that derive their certificates from the same root in trust-me.
+//
+// trustRoot is the name of the root in the trust-me service that you should create
+// the client name for, and clientName is the name the client should use for the certificate.
+func Client(trustRoot, clientName string) (*http.Client, error) {
+	pool, cert, err := simpleKeys(trustRoot, clientName)
 	tlsCfg := &tls.Config{
 		ClientAuth: tls.RequireAndVerifyClientCert,
 		RootCAs:    pool,
 		GetCertificate: func(c *tls.ClientHelloInfo) (*tls.Certificate, error) {
-			return &cert, nil
+			return cert, nil
 		},
 	}
 	tr := &http.Transport{TLSClientConfig: tlsCfg}
-	return &http.Client{Transport: tr}, nil
+	return &http.Client{Transport: tr}, err
+}
+
+// Server returns a preconfigured HTTPS server with keys fetched from trust-me.
+// It will be configured to perform full peer cert validation with any clients.
+func Server(trustRoot, serverName string) (*http.Server, error) {
+	pool, cert, err := simpleKeys(trustRoot, serverName)
+	return &http.Server{
+		TLSConfig: &tls.Config{
+			ClientCAs:  pool,
+			ClientAuth: tls.RequireAndVerifyClientCert,
+			GetCertificate: func(c *tls.ClientHelloInfo) (*tls.Certificate, error) {
+				return cert, nil
+			},
+		},
+	}, err
 }
 
 // ServeTLS creates an HTTPS server that authenticates with the specified
