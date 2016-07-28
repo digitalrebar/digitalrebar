@@ -25,6 +25,7 @@ if ! which ohai; then
         if [[ $(ruby --version) =~ $matcher ]] ; then
             gem install ohai -v 7.4.1
         else
+            gem install ffi-yajl -v 2.2.3
             gem install ohai
         fi
         hash -r
@@ -34,6 +35,7 @@ if ! which ohai; then
         if [[ $(ruby --version) =~ $matcher ]] ; then
             gem install ohai -v 7.4.1
         else
+            gem install ffi-yajl -v 2.2.3
             gem install ohai
         fi
         hash -r
