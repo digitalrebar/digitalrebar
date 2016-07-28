@@ -59,6 +59,7 @@ rebar_api:
     - ./digitalrebar:/opt/digitalrebar
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/api/config:/opt/digitalrebar/core/config
+    - ~/.cache/digitalrebar/tftpboot:/tftpboot
     # development mapping for playbook authors
     # example: - ./digitalrebar/kompos8:/var/cache/rebar/ansible_playbook/k8
   env_file:
