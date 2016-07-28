@@ -9,3 +9,8 @@ import:
 - package: github.com/ghodss/yaml
 - package: github.com/coddingtonbear/go-jsonselect
 - package: github.com/gin-gonic/gin
+- package: github.com/digitalrebar/go-common
+  subpackages:
+    - cert
+    - multi-tenancy
+    - store

@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"sync"
 
+	"github.com/digitalrebar/go-common/store"
 	"github.com/digitalrebar/rebar-api/api"
 	"github.com/pborman/uuid"
 )
@@ -26,14 +27,14 @@ type etInvoker struct {
 // Engine holds all the necessary information to run RuleSets.
 type Engine struct {
 	sync.RWMutex
-	backingStore       LoadSaver
-	ruleSets           map[string]*RuleSet
-	eventEndpoint      string
-	rebarEndpoint      string
-	username, password string
-	Debug              bool
-	rClient            *api.Client
-	eventSelectors     []etInvoker
+	backingStore   store.SimpleStore
+	trusted        bool
+	ruleSets       map[string]*RuleSet
+	scriptEnv      map[string]string
+	eventEndpoint  string
+	Debug          bool
+	rClient        *api.Client
+	eventSelectors []etInvoker
 }
 
 // NewEngine creates a new Engine for running Rulesets.
@@ -45,63 +46,54 @@ type Engine struct {
 // rebarEndpoint: the URL to contact the Rebar API at.
 //
 // username, password: The username and password to use to communicate with Rebar.
-func NewEngine(backingStore LoadSaver, listen, rebarEndpoint, username, password string) (*Engine, error) {
+func NewEngine(backingStore store.SimpleStore,
+	client *api.Client,
+	trusted bool,
+	scriptEnv map[string]string) (*Engine, error) {
 	res := &Engine{
 		backingStore:   backingStore,
-		rebarEndpoint:  rebarEndpoint,
-		username:       username,
-		password:       password,
-		eventEndpoint:  fmt.Sprintf("http://%s/events", listen),
+		trusted:        trusted,
+		scriptEnv:      scriptEnv,
 		ruleSets:       map[string]*RuleSet{},
 		eventSelectors: []etInvoker{},
 	}
 
-	buf, err := res.backingStore.Load()
+	// Load rules
+	keys, err := backingStore.Keys()
 	if err != nil {
 		return nil, err
 	}
-
-	// The implementations of backingStore provide a default empty
-	// hash of rulesets.
-	if err := json.Unmarshal(buf, &res.ruleSets); err != nil {
-		return nil, fmt.Errorf("Unable to load initial database: %v", err)
+	for _, key := range keys {
+		buf, err := backingStore.Load(key)
+		if err != nil {
+			return nil, err
+		}
+		rs := &RuleSet{}
+		if err := json.Unmarshal(buf, rs); err != nil {
+			return nil, err
+		}
+		res.ruleSets[key] = rs
 	}
 
+	// Compile them
 	for _, rs := range res.ruleSets {
 		rs.compile(res)
 	}
-	if res.rebarEndpoint != "" {
-		sess, err := api.Session(res.rebarEndpoint, res.username, res.password)
-		if err != nil {
-			log.Fatalf("Could not connect to Rebar: %v", err)
-		}
-		res.rClient = sess
-		log.Printf("Attached to Rebar at %v", res.rClient.URL)
-	}
-
-	if err := res.registerSink(); err != nil {
-		return nil, err
-	}
-	res.updateSelectors()
-
 	return res, nil
 }
 
-// This will eventually start to fail when using Consul as a backing
-// store once the rulesets get too big, but it should be OK for now.
-func (e *Engine) save() {
-	buf, err := json.Marshal(e.ruleSets)
-	if err == nil {
-		err = e.backingStore.Save(buf)
+func (e *Engine) RegisterSinks(URL string) error {
+	e.eventEndpoint = URL
+	if err := e.registerSink(); err != nil {
+		return err
 	}
-	if err != nil {
-		log.Fatalf("Failed to save rulesets: %v", err)
-	}
+	e.updateSelectors()
+	return nil
 }
 
 func (e *Engine) eventSink() (*api.EventSink, error) {
 	// If there is no rebarEndpoint, we are in testing mode.
-	if e.rebarEndpoint == "" {
+	if e.eventEndpoint == "" {
 		return nil, nil
 	}
 	// Register us as an event sink, if not already registered.
@@ -122,10 +114,6 @@ func (e *Engine) eventSink() (*api.EventSink, error) {
 }
 
 func (e *Engine) registerSink() error {
-	// If there is no rebarEndpoint, we are in testing mode.
-	if e.rebarEndpoint == "" {
-		return nil
-	}
 	sink, err := e.eventSink()
 	if err != nil {
 		return err
@@ -144,7 +132,7 @@ func (e *Engine) registerSink() error {
 // that the proper EventSelectors are registered with DigitalRebar.
 func (e *Engine) updateSelectors() {
 	// If there is no rebarEndpoint, we are in testing mode.
-	if e.rebarEndpoint == "" {
+	if e.eventEndpoint == "" {
 		return
 	}
 	for _, rs := range e.ruleSets {
@@ -262,8 +250,14 @@ func (e *Engine) updateRules(rs RuleSet) (RuleSet, error) {
 		return rs, err
 	}
 	rs.Version = uuid.NewRandom()
+	buf, err := json.Marshal(rs)
+	if err != nil {
+		return rs, err
+	}
+	if err := e.backingStore.Save(rs.Name, buf); err != nil {
+		return rs, err
+	}
 	e.ruleSets[rs.Name] = &rs
-	e.save()
 	e.updateSelectors()
 	return rs, nil
 }
@@ -355,7 +349,7 @@ func (e *Engine) DeleteRuleSet(name string, version uuid.UUID) error {
 			version)
 	}
 	e.deleteRuleSet(name)
-	e.save()
+	e.backingStore.Remove(name)
 	return nil
 }
 
@@ -366,6 +360,18 @@ func (e *Engine) runRules(toRun []ctx, evt *Event) {
 			Evt:     evt,
 			Vars:    make(map[string]interface{}),
 			ruleset: &v.ruleSet,
+		}
+		if e.trusted {
+			if v.ruleSet.Username != "" {
+				log.Panicf("Cannot happen: trusted client with no username")
+			}
+			if c, err := api.TrustedSession(e.rClient.URL, v.ruleSet.Username); err != nil {
+				log.Panicf("Failed to establis trusted session impersonating %s", v.ruleSet.Username)
+			} else {
+				ctx.Client = c
+			}
+		} else {
+			ctx.Client = e.rClient
 		}
 		ctx.Vars["eventType"] = evt.Selector["event"]
 		for _, ri := range v.ruleIndexes {

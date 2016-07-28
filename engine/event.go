@@ -6,7 +6,7 @@ Licensed under the terms of the Digital Rebar License.
 See LICENSE.md at the top of this repository for more information.
 */
 
-import "github.com/digitalrebar/rebar-api/client"
+import "github.com/digitalrebar/rebar-api/api"
 
 // EventSelector is used by the Engine to register
 // for the types of events we would like to recieve.
@@ -65,15 +65,15 @@ func (es EventSelector) forRebar() map[string]interface{} {
 //
 // NetworkRouter: Network and NetworkRouter will be filled.
 type Event struct {
-	Selector          EventSelector             `json:"selector"`
-	Event             *client.Event             `json:"event"`
-	Node              *client.Node              `json:"node"`
-	Role              *client.Role              `json:"role"`
-	NodeRole          *client.NodeRole          `json:"node_role"`
-	Deployment        *client.Deployment        `json:"deployment"`
-	DeploymentRole    *client.DeploymentRole    `json:"deployment_role"`
-	Network           *client.Network           `json:"network"`
-	NetworkAllocation *client.NetworkAllocation `json:"network_allocation"`
-	NetworkRange      *client.NetworkRange      `json:"network_range"`
-	NetworkRouter     *client.NetworkRouter     `json:"network_router"`
+	Selector          EventSelector          `json:"selector"`
+	Event             *api.Event             `json:"event"`
+	Node              *api.Node              `json:"node"`
+	Role              *api.Role              `json:"role"`
+	NodeRole          *api.NodeRole          `json:"node_role"`
+	Deployment        *api.Deployment        `json:"deployment"`
+	DeploymentRole    *api.DeploymentRole    `json:"deployment_role"`
+	Network           *api.Network           `json:"network"`
+	NetworkAllocation *api.NetworkAllocation `json:"network_allocation"`
+	NetworkRange      *api.NetworkRange      `json:"network_range"`
+	NetworkRouter     *api.NetworkRouter     `json:"network_router"`
 }

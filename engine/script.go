@@ -21,10 +21,6 @@ func compileScript(script string) (*template.Template, error) {
 }
 
 func runScript(c *RunContext, scriptTmpl *template.Template) (bool, error) {
-	envVars := map[string]string{
-		"REBAR_ENDPOINT": c.Engine.rebarEndpoint,
-		"REBAR_KEY":      fmt.Sprintf("%s:%s", c.Engine.username, c.Engine.password),
-	}
 	buf := &bytes.Buffer{}
 	if err := scriptTmpl.Execute(buf, c); err != nil {
 		return false, err
@@ -33,7 +29,7 @@ func runScript(c *RunContext, scriptTmpl *template.Template) (bool, error) {
 	cmd := exec.Command("/usr/bin/env", "bash", "-x")
 
 	cmd.Env = os.Environ()
-	for k, v := range envVars {
+	for k, v := range c.Engine.scriptEnv {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", k, v))
 	}
 	cmd.Stdin = buf

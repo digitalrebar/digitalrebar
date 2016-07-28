@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/VictorLowther/jsonpatch/utils"
-	"github.com/digitalrebar/rebar-api/client"
+	rebar "github.com/digitalrebar/rebar-api/api"
 )
 
 type ctx struct {
@@ -25,6 +25,7 @@ type ctx struct {
 type RunContext struct {
 	Engine    *Engine                // The Engine that the Event is being processed with.
 	Evt       *Event                 // The Event being matched against.
+	Client    *rebar.Client          // The Client that should be used for Rebar API interactions.
 	ruleStack []int                  // The stack of rule indexes that we should Return to
 	ruleIdx   int                    // The index of the rule we are currently running.
 	stop      bool                   // Whether we should stop processing rules
@@ -90,7 +91,7 @@ func (c *RunContext) fetchAttribs(attribs []string) error {
 		return nil
 	}
 	eventID, _ := c.Evt.Event.Id()
-	var attribSrc client.Attriber
+	var attribSrc rebar.Attriber
 	var attribSrcName string
 	if c.Evt.Node != nil {
 		attribSrcName = "node"
@@ -109,7 +110,7 @@ func (c *RunContext) fetchAttribs(attribs []string) error {
 	c.Attribs = map[string]interface{}{}
 	for _, attribName := range attribs {
 		// We want an actual attrib, fetch and use it.
-		attr, err := client.FetchAttrib(attribSrc, attribName, "")
+		attr, err := c.Client.FetchAttrib(attribSrc, attribName, "")
 		if err != nil {
 			return fmt.Errorf("Error fetching attrib %s for event %s", attribName, eventID)
 		}

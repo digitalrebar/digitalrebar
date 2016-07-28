@@ -313,6 +313,8 @@ type RuleSet struct {
 	// terminate, and one of the better ways to do that is to ensure that we cannot
 	// have loops in rule processing.  This restriction may be relaxed in the future.
 	Rules      []Rule
+	TenantID   int
+	Username   string
 	engine     *Engine
 	namedRules map[string]int
 }
@@ -337,7 +339,7 @@ func (rs *RuleSet) compile(e *Engine) error {
 		rule.actions = make([]action, len(rule.Actions))
 		for l, m := range rule.Matchers {
 			log.Printf("Compiling ruleset %s rule %d matcher %d", rs.Name, i, l)
-			match, err := resolveMatcher(rule, m)
+			match, err := resolveMatcher(e, rule, m)
 			if err != nil {
 				return err
 			}
@@ -345,7 +347,7 @@ func (rs *RuleSet) compile(e *Engine) error {
 		}
 		for l, a := range rule.Actions {
 			log.Printf("Compiling ruleset %s rule %d action %d", rs.Name, i, l)
-			action, err := resolveAction(rs, i, a)
+			action, err := resolveAction(e, rs, i, a)
 			if err != nil {
 				return err
 			}

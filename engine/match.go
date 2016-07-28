@@ -16,7 +16,7 @@ import (
 
 	"github.com/VictorLowther/jsonpatch/utils"
 	js "github.com/coddingtonbear/go-jsonselect"
-	"github.com/digitalrebar/rebar-api/client"
+	"github.com/digitalrebar/rebar-api/api"
 )
 
 // Matcher is what is used by Rules to determine whether they shouuld
@@ -53,12 +53,12 @@ func matchOr(funcs ...matcher) matcher {
 	}
 }
 
-func matchNot(r *Rule, val interface{}) (matcher, error) {
+func matchNot(e *Engine, r *Rule, val interface{}) (matcher, error) {
 	res, ok := val.(map[string]interface{})
 	if !ok {
 		return nil, errors.New("Not needs a map")
 	}
-	fn, err := resolveMatcher(r, res)
+	fn, err := resolveMatcher(e, r, res)
 	if err != nil {
 		return nil, err
 	}
@@ -275,7 +275,7 @@ func getAttrib(val interface{}) (matcher, error) {
 	}
 
 	return func(c *RunContext) (bool, error) {
-		var attrSrc client.Attriber
+		var attrSrc api.Attriber
 		fixedId, err := c.getVar(id)
 		if err != nil {
 			return false, err
@@ -295,22 +295,22 @@ func getAttrib(val interface{}) (matcher, error) {
 
 		switch tgt {
 		case "Node":
-			attrSrc = &client.Node{}
+			attrSrc = &api.Node{}
 		case "Role":
-			attrSrc = &client.Role{}
+			attrSrc = &api.Role{}
 		case "Deployment":
-			attrSrc = &client.Deployment{}
+			attrSrc = &api.Deployment{}
 		case "NodeRole":
-			attrSrc = &client.NodeRole{}
+			attrSrc = &api.NodeRole{}
 		case "DeploymentRole":
-			attrSrc = &client.DeploymentRole{}
+			attrSrc = &api.DeploymentRole{}
 		default:
 			log.Panicf("GetAttrib: lookup of %s cannot happen!", tgt)
 		}
-		if err := client.Fetch(attrSrc, id); err != nil {
+		if err := c.Client.Fetch(attrSrc, id); err != nil {
 			return false, err
 		}
-		attrVal, err := client.FetchAttrib(attrSrc, attrID, "")
+		attrVal, err := c.Client.FetchAttrib(attrSrc, attrID, "")
 		if err != nil {
 			return false, err
 		}
@@ -361,32 +361,32 @@ func getThingUUID(val interface{}) (matcher, error) {
 		var uuid string
 		switch tgt {
 		case "Node":
-			obj := &client.Node{}
-			if err := client.Fetch(obj, id); err != nil {
+			obj := &api.Node{}
+			if err := c.Client.Fetch(obj, id); err != nil {
 				return false, err
 			}
 			uuid = obj.UUID
 		case "Role":
-			obj := &client.Role{}
-			if err := client.Fetch(obj, id); err != nil {
+			obj := &api.Role{}
+			if err := c.Client.Fetch(obj, id); err != nil {
 				return false, err
 			}
 			uuid = obj.UUID
 		case "Deployment":
-			obj := &client.Deployment{}
-			if err := client.Fetch(obj, id); err != nil {
+			obj := &api.Deployment{}
+			if err := c.Client.Fetch(obj, id); err != nil {
 				return false, err
 			}
 			uuid = obj.UUID
 		case "NodeRole":
-			obj := &client.NodeRole{}
-			if err := client.Fetch(obj, id); err != nil {
+			obj := &api.NodeRole{}
+			if err := c.Client.Fetch(obj, id); err != nil {
 				return false, err
 			}
 			uuid = obj.UUID
 		case "DeploymentRole":
-			obj := &client.DeploymentRole{}
-			if err := client.Fetch(obj, id); err != nil {
+			obj := &api.DeploymentRole{}
+			if err := c.Client.Fetch(obj, id); err != nil {
 				return false, err
 			}
 			uuid = obj.UUID
@@ -471,7 +471,7 @@ func matchScript(val interface{}) (matcher, error) {
 	}, nil
 }
 
-func resolveAndOr(r *Rule, op string, val interface{}) (matcher, error) {
+func resolveAndOr(e *Engine, r *Rule, op string, val interface{}) (matcher, error) {
 	vals, ok := val.([]interface{})
 	if !ok {
 		return nil, fmt.Errorf("%s needs an Array", op)
@@ -482,7 +482,7 @@ func resolveAndOr(r *Rule, op string, val interface{}) (matcher, error) {
 		if !ok {
 			return nil, fmt.Errorf("%s member %v must be a map", op, i)
 		}
-		j, err := resolveMatcher(r, realV)
+		j, err := resolveMatcher(e, r, realV)
 		if err != nil {
 			return nil, err
 		}
@@ -501,17 +501,20 @@ func resolveAndOr(r *Rule, op string, val interface{}) (matcher, error) {
 
 // ResolveMatcher compiles a map[string]interface{} with a single
 // key-value pair into a function with a Matcher signature.
-func resolveMatcher(r *Rule, m map[string]interface{}) (matcher, error) {
+func resolveMatcher(e *Engine, r *Rule, m map[string]interface{}) (matcher, error) {
 	if len(m) != 1 {
 		return nil, fmt.Errorf("Matchers have exactly one key")
 	}
 	for t, v := range m {
 		switch t {
 		case "And", "Or":
-			return resolveAndOr(r, t, v)
+			return resolveAndOr(e, r, t, v)
 		case "Not":
-			return matchNot(r, v)
+			return matchNot(e, r, v)
 		case "Script":
+			if e.trusted {
+				return nil, fmt.Errorf("Engine is trusted, Script actions not permitted")
+			}
 			return matchScript(v)
 		case "Enabled":
 			return matchEnabled(v)

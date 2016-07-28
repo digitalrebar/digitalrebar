@@ -12,7 +12,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/digitalrebar/rebar-api/client"
+	"github.com/digitalrebar/rebar-api/api"
 )
 
 type action func(*RunContext) error
@@ -48,11 +48,11 @@ func actionScript(val interface{}) (action, error) {
 	}, nil
 }
 
-func commitThis(thing client.Attriber, id string) error {
-	if err := client.Fetch(thing, id); err != nil {
+func commitThis(c *RunContext, thing api.Attriber, id string) error {
+	if err := c.Client.Fetch(thing, id); err != nil {
 		return err
 	}
-	return client.Commit(thing)
+	return c.Client.Commit(thing)
 }
 
 func commitThing(thing, val string) (action, error) {
@@ -67,17 +67,17 @@ func commitThing(thing, val string) (action, error) {
 		}
 		switch thing {
 		case "NodeID":
-			node := &client.Node{}
-			return commitThis(node, id)
+			node := &api.Node{}
+			return commitThis(c, node, id)
 		case "DeploymentID":
-			deployment := &client.Deployment{}
-			return commitThis(deployment, id)
+			deployment := &api.Deployment{}
+			return commitThis(c, deployment, id)
 		case "DeploymentRoleID":
-			deploymentRole := &client.DeploymentRole{}
-			return commitThis(deploymentRole, id)
+			deploymentRole := &api.DeploymentRole{}
+			return commitThis(c, deploymentRole, id)
 		case "NodeRoleID":
-			nodeRole := &client.NodeRole{}
-			return commitThis(nodeRole, id)
+			nodeRole := &api.NodeRole{}
+			return commitThis(c, nodeRole, id)
 		default:
 			log.Panicf("Case %s cannot happen!", thing)
 		}
@@ -108,22 +108,22 @@ func actionCommit(val interface{}) (action, error) {
 }
 
 func bindNodeRole(c *RunContext, nodeID, roleID, saveAs string) error {
-	node := &client.Node{}
-	role := &client.Role{}
-	if err := client.Fetch(node, nodeID); err != nil {
+	node := &api.Node{}
+	role := &api.Role{}
+	if err := c.Client.Fetch(node, nodeID); err != nil {
 		return fmt.Errorf("Failed to load Node with id %s: %v", nodeID, err)
 	}
-	if err := client.Fetch(role, roleID); err != nil {
+	if err := c.Client.Fetch(role, roleID); err != nil {
 		return fmt.Errorf("Failed to load Role with id %s: %v", roleID, err)
 	}
-	nr := &client.NodeRole{}
-	if err := client.Init(nr); err != nil {
+	nr := &api.NodeRole{}
+	if err := c.Client.Init(nr); err != nil {
 		return fmt.Errorf("Failed to initialize NodeRole: %v", err)
 	}
 	nr.RoleID = role.ID
 	nr.NodeID = node.ID
 	nr.DeploymentID = node.DeploymentID
-	if err := client.BaseCreate(nr); err != nil {
+	if err := c.Client.BaseCreate(nr); err != nil {
 		return fmt.Errorf("Failed to create noderole for node: %s role %s: %v",
 			nodeID,
 			roleID,
@@ -135,13 +135,13 @@ func bindNodeRole(c *RunContext, nodeID, roleID, saveAs string) error {
 	return nil
 }
 
-func moveNode(nodeID, deplID string) error {
-	node := &client.Node{}
-	deployment := &client.Deployment{}
-	if err := client.Fetch(node, nodeID); err != nil {
+func moveNode(c *RunContext, nodeID, deplID string) error {
+	node := &api.Node{}
+	deployment := &api.Deployment{}
+	if err := c.Client.Fetch(node, nodeID); err != nil {
 		return fmt.Errorf("Failed to fetch Node %s: %v", nodeID, err)
 	}
-	if err := client.Fetch(deployment, deplID); err != nil {
+	if err := c.Client.Fetch(deployment, deplID); err != nil {
 		return fmt.Errorf("Failed to fetch deployment %s: %v", deplID, err)
 	}
 	if err := node.Move(deployment); err != nil {
@@ -154,18 +154,18 @@ func moveNode(nodeID, deplID string) error {
 }
 
 func bindDeploymentRole(c *RunContext, deplID, roleID, saveAs string) error {
-	deployment := &client.Deployment{}
-	role := &client.Role{}
-	if err := client.Fetch(deployment, deplID); err != nil {
+	deployment := &api.Deployment{}
+	role := &api.Role{}
+	if err := c.Client.Fetch(deployment, deplID); err != nil {
 		return fmt.Errorf("Failed to fetch deployement %s: %v", deplID, err)
 	}
-	if err := client.Fetch(role, roleID); err != nil {
+	if err := c.Client.Fetch(role, roleID); err != nil {
 		return fmt.Errorf("Failed to fetch role %s: %v", roleID, err)
 	}
-	dr := &client.DeploymentRole{}
+	dr := &api.DeploymentRole{}
 	dr.DeploymentID = deployment.ID
 	dr.RoleID = role.ID
-	if err := client.BaseCreate(dr); err != nil {
+	if err := c.Client.BaseCreate(dr); err != nil {
 		return fmt.Errorf("Failed to create deploymentrole for deployment %s: role %s: %v",
 			deplID,
 			roleID,
@@ -225,7 +225,7 @@ func actionBind(val interface{}) (action, error) {
 		if nodeOK && roleOK {
 			return bindNodeRole(c, nodeID, roleID, saveAs)
 		} else if nodeOK && deplOK {
-			return moveNode(nodeID, deplID)
+			return moveNode(c, nodeID, deplID)
 		} else if roleOK && deplOK {
 			return bindDeploymentRole(c, deplID, roleID, saveAs)
 		}
@@ -235,8 +235,8 @@ func actionBind(val interface{}) (action, error) {
 }
 
 func retryNodeRole(c *RunContext, nodeRoleID string) error {
-	nr := &client.NodeRole{}
-	if err := client.Fetch(nr, nodeRoleID); err != nil {
+	nr := &api.NodeRole{}
+	if err := c.Client.Fetch(nr, nodeRoleID); err != nil {
 		return fmt.Errorf("Failed to load NodeRole with id %s: %v", nodeRoleID, err)
 	}
 	if err := nr.Retry(); err != nil {
@@ -324,8 +324,8 @@ func setAttrib(val interface{}) (action, error) {
 		}
 		var attrVal interface{}
 		var id string
-		var tgt client.Attriber
-		attrib := &client.Attrib{}
+		var tgt api.Attriber
+		attrib := &api.Attrib{}
 
 		for k, fv := range fixedVals {
 
@@ -335,22 +335,22 @@ func setAttrib(val interface{}) (action, error) {
 				if !attrOk {
 					return fmt.Errorf("Attrib id %#v is not a string.", fv)
 				}
-				if err := client.Fetch(attrib, attrID); err != nil {
+				if err := c.Client.Fetch(attrib, attrID); err != nil {
 					return err
 				}
 			case "Value":
 				attrVal = fv
 			case "NodeID":
-				tgt = &client.Node{}
+				tgt = &api.Node{}
 				id, ok = fv.(string)
 			case "DeploymentID":
-				tgt = &client.Deployment{}
+				tgt = &api.Deployment{}
 				id, ok = fv.(string)
 			case "DeploymentRoleID":
-				tgt = &client.DeploymentRole{}
+				tgt = &api.DeploymentRole{}
 				id, ok = fv.(string)
 			case "NodeRoleID":
-				tgt = &client.NodeRole{}
+				tgt = &api.NodeRole{}
 				id, ok = fv.(string)
 			default:
 				log.Panicf("SetAttrib: cannot happen processing %s", k)
@@ -360,10 +360,10 @@ func setAttrib(val interface{}) (action, error) {
 			return fmt.Errorf("SetAttrib: Failed to get ID of thing to set attrib on")
 		}
 		attrib.Value = attrVal
-		if err := client.Fetch(tgt, id); err != nil {
+		if err := c.Client.Fetch(tgt, id); err != nil {
 			return err
 		}
-		return client.SetAttrib(tgt, attrib, "")
+		return c.Client.SetAttrib(tgt, attrib, "")
 	}, nil
 }
 
@@ -425,7 +425,7 @@ func actionJumpOrCall(rs *RuleSet, ruleIdx int, call bool, v interface{}) (actio
 	}, nil
 }
 
-func resolveAction(rs *RuleSet, ruleIdx int, a map[string]interface{}) (action, error) {
+func resolveAction(e *Engine, rs *RuleSet, ruleIdx int, a map[string]interface{}) (action, error) {
 	if len(a) != 1 {
 		return nil, fmt.Errorf("Actions have exactly one key")
 	}
@@ -434,6 +434,9 @@ func resolveAction(rs *RuleSet, ruleIdx int, a map[string]interface{}) (action, 
 		case "Log":
 			return actionLog()
 		case "Script":
+			if e.trusted {
+				return nil, fmt.Errorf("Engine is trusted, Script actions not permitted")
+			}
 			return actionScript(v)
 		case "Delay":
 			return actionDelay(v)

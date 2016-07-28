@@ -8,13 +8,14 @@ See LICENSE.md at the top of this repository for more information.
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	"github.com/ghodss/yaml"
@@ -23,19 +24,22 @@ import (
 
 	"github.com/coddingtonbear/go-jsonselect"
 	"github.com/digitalrebar/go-common/cert"
+	multitenancy "github.com/digitalrebar/go-common/multi-tenancy"
+	"github.com/digitalrebar/go-common/store"
+	"github.com/digitalrebar/rebar-api/api"
 	"github.com/digitalrebar/rule-engine/engine"
+	consul "github.com/hashicorp/consul/api"
 )
 
 var (
-	version                      = false
-	debug                        = false
-	router                       = gin.Default()
-	username, password, endpoint string
-	listen                       string
-	backingStore                 string
-	dataDir                      string
-	ruleEngine                   *engine.Engine
-	hostString                   string
+	version      = false
+	debug        = false
+	router       = gin.Default()
+	endpoint     string
+	listen       string
+	backingStore string
+	dataDir      string
+	ruleEngine   *engine.Engine
 )
 
 func handleEvent(c *gin.Context) {
@@ -61,6 +65,18 @@ func handleEvent(c *gin.Context) {
 		c.Status(http.StatusAccepted)
 		go ruleEngine.HandleEvent(evt)
 	}
+}
+
+func testCap(c *gin.Context, rs *engine.RuleSet, op string) bool {
+	cap, capOK := c.Get("Capabilities")
+	if !capOK {
+		return false
+	}
+	capSet, ok := cap.(multitenancy.CapabilityMap)
+	if !ok {
+		return false
+	}
+	return capSet.HasCapability(rs.TenantID, op)
 }
 
 func createRuleset(c *gin.Context) {
@@ -89,13 +105,19 @@ func createRuleset(c *gin.Context) {
 
 func listRulesets(c *gin.Context) {
 	ruleSets := ruleEngine.RuleSets()
-	c.JSON(http.StatusOK, ruleSets)
+	toShow := []engine.RuleSet{}
+	for i := range ruleSets {
+		if testCap(c, &ruleSets[i], "RULESET_READ") {
+			toShow = append(toShow, ruleSets[i])
+		}
+	}
+	c.JSON(http.StatusOK, toShow)
 }
 
 func showRuleset(c *gin.Context) {
 	name := c.Param("name")
 	rs, ok := ruleEngine.RuleSet(name)
-	if !ok {
+	if !(ok && testCap(c, &rs, "RULESET_READ")) {
 		c.AbortWithStatus(http.StatusNotFound)
 		return
 	}
@@ -118,6 +140,13 @@ func updateRuleset(c *gin.Context) {
 		c.AbortWithError(http.StatusExpectationFailed, err)
 		return
 	}
+	oldRuleSet, ok := ruleEngine.RuleSet(name)
+	if !(ok &&
+		testCap(c, &oldRuleSet, "RULESET_READ") &&
+		testCap(c, &oldRuleSet, "RULESET_UPDATE")) {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
 	if name != newRuleSet.Name {
 		log.Printf("Cannot change name from %s to %s", name, newRuleSet.Name)
 		c.AbortWithStatus(http.StatusConflict)
@@ -135,6 +164,13 @@ func updateRuleset(c *gin.Context) {
 
 func deleteRuleset(c *gin.Context) {
 	name := c.Param("name")
+	oldRuleSet, ok := ruleEngine.RuleSet(name)
+	if !(ok &&
+		testCap(c, &oldRuleSet, "RULESET_READ") &&
+		testCap(c, &oldRuleSet, "RULESET_UPDATE")) {
+		c.AbortWithStatus(http.StatusForbidden)
+		return
+	}
 	version := c.Query("version")
 	if err := ruleEngine.DeleteRuleSet(name, uuid.Parse(version)); err != nil {
 		c.AbortWithError(http.StatusNotFound, err)
@@ -143,27 +179,24 @@ func deleteRuleset(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+func capMiddleware(c *gin.Context) {
+	cmap, err := multitenancy.NewCapabilityMap(c.Request)
+	if err != nil {
+		c.AbortWithError(http.StatusPreconditionFailed, err)
+	}
+	c.Set("Capabilities", cmap)
+	user := c.Request.Header.Get("X-Authenticated-Username")
+	if user == "" {
+		c.AbortWithError(http.StatusPreconditionFailed, errors.New("No username fetched"))
+	}
+	c.Set("User", user)
+	c.Next()
+}
+
 func main() {
 	var err error
-	if ep := os.Getenv("REBAR_ENDPOINT"); ep != "" {
-		endpoint = ep
-	}
-	if kv := os.Getenv("REBAR_KEY"); kv != "" {
-		key := strings.SplitN(kv, ":", 2)
-		if len(key) < 2 {
-			log.Fatal("REBAR_KEY does not contain a username:password pair!")
-		}
-		if key[0] == "" || key[1] == "" {
-			log.Fatal("REBAR_KEY contains an invalid username:password pair!")
-		}
-		username = key[0]
-		password = key[1]
-	}
-	flag.StringVar(&username, "username", "", "Username for Digital Rebar endpoint")
-	flag.StringVar(&password, "password", "", "Password for Digital Rebar endpoint")
 	flag.StringVar(&endpoint, "endpoint", "", "API Endpoint for Digital Rebar")
 	flag.StringVar(&listen, "listen", "", "Address for the API and the event listener to listen on.")
-	flag.StringVar(&hostString, "host", "127.0.0.1,localhost,rule-engine", "Comma separated list of names and IPs for certificates")
 	flag.StringVar(&backingStore, "backing", "file", "Backing store to use for RuleSets.  Permitted values are 'file' and 'consul'")
 	flag.StringVar(&dataDir, "dataloc", "/var/cache/rule-engine", "Path to store data at")
 	flag.BoolVar(&version, "version", false, "Print version and exit")
@@ -185,38 +218,33 @@ func main() {
 			log.Fatalf("No --endpoint passed and REBAR_ENDPOINT not set, aborting")
 		}
 	}
-	if username == "" && password == "" {
-		if kv := os.Getenv("REBAR_KEY"); kv != "" {
-			key := strings.SplitN(kv, ":", 2)
-			if len(key) < 2 {
-				log.Fatal("REBAR_KEY does not contain a username:password pair!")
-			}
-			if key[0] == "" || key[1] == "" {
-				log.Fatal("REBAR_KEY contains an invalid username:password pair!")
-			}
-			username = key[0]
-			password = key[1]
-		} else {
-			log.Fatalf("No --username or --password passed, and REBAR_KEY not set")
-		}
-	}
 	if listen == "" {
 		log.Fatalf("No address to listen on passed with --listen")
 	}
 
-	var bs engine.LoadSaver
+	var bs store.SimpleStore
 	switch backingStore {
 	case "consul":
-		bs, err = engine.NewConsulStore(dataDir)
+		cClient, err := consul.NewClient(consul.DefaultConfig())
+		if err != nil {
+			log.Fatalf("Unable to load Consul client: %v", err)
+		}
+		bs, err = store.NewSimpleConsulStore(cClient, dataDir)
 	case "file":
-		bs, err = engine.NewFileStore(dataDir + "/database")
+		bs, err = store.NewSimpleLocalStore(dataDir)
 	default:
 		log.Fatalf("Unknown backing store %s", backingStore)
 	}
 	if err != nil {
 		log.Fatalf("Failed to create backing store %s at %s: %v", backingStore, dataDir, err)
 	}
-	ruleEngine, err = engine.NewEngine(bs, listen, endpoint, username, password)
+	var client *api.Client
+	scriptEnv := map[string]string{"REBAR_ENDPOINT": endpoint}
+	client, err = api.TrustedSession(endpoint, "system")
+	if err != nil {
+		log.Fatalf("Error creating Rebar API client: %v", err)
+	}
+	ruleEngine, err = engine.NewEngine(bs, client, true, scriptEnv)
 	if err != nil {
 		log.Fatalf("Error creating rule engine: %v", err)
 	}
@@ -231,18 +259,23 @@ func main() {
 	}()
 	signal.Notify(killChan, syscall.SIGTERM)
 	signal.Notify(killChan, syscall.SIGINT)
-
 	router.POST("/events", handleEvent)
-	router.GET("/api/v0/rulesets/", listRulesets)
-	router.GET("/api/v0/rulesets/:name", showRuleset)
-	router.POST("/api/v0/rulesets/", createRuleset)
-	router.PUT("/api/v0/rulesets/:name", updateRuleset)
-	router.DELETE("/api/v0/rulesets/:name", deleteRuleset)
-
-	// Wait forever
-	hosts := strings.Split(hostString, ",")
+	apiv0 := router.Group("/api/v0")
+	apiv0.Use(capMiddleware)
+	apiv0.GET("/rulesets/", listRulesets)
+	apiv0.GET("/rulesets/:name", showRuleset)
+	apiv0.POST("/rulesets/", createRuleset)
+	apiv0.PUT("/rulesets/:name", updateRuleset)
+	apiv0.DELETE("/rulesets/:name", deleteRuleset)
+	s, err := cert.Server("internal", "rule-engine")
+	if err != nil {
+		log.Fatalf("Failed to create trusted server: %v", err)
+	}
+	s.Addr = listen
+	s.Handler = router
+	ruleEngine.RegisterSinks(fmt.Sprintf("https://%s/events", listen))
 	log.Printf("Ready to handle events\n")
 	for {
-		log.Printf("API failed: %v", cert.StartTLSServer(listen, "rule-engine", hosts, "internal", "internal", router))
+		log.Printf("API failed: %v", s.ListenAndServeTLS("", ""))
 	}
 }
