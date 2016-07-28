@@ -307,6 +307,16 @@ private
     answer
   end
 
+  def count_nodes(node, nr, command)
+    parts = command.split(/\./,2)
+    new_command = parts[1]
+
+    args = parts[0].split(/[\)\(\.,]/)
+    role_name = args[1].strip
+
+    NodeRole.peers_by_role(node.deployment, Role.find_by_name(role_name)).count()
+  end
+
   def get_nodes(node, nr, command)
     parts = command.split(/\./,2)
     new_command = parts[1]
@@ -360,6 +370,7 @@ private
     answer = get_attrib(node, nr, command) if command.starts_with?('attrib(')
     answer = get_address(node, nr, command) if command.starts_with?('ipaddress(')
     answer = get_nodes(node, nr, command) if command.starts_with?('nodes_with_role(')
+    answer = count_nodes(node, nr, command) if command.starts_with?('count_nodes_with_role(')
     answer = get_first_node(node, nr, command) if command.starts_with?('first_node_with_role(')
 
     answer
@@ -434,7 +445,7 @@ private
   def set_value(data, path, value)
     pieces = path.split('/')
     if pieces.size >= 2
-      pieces[0..-1].each do |p|
+      pieces[0..-2].each do |p|
         return unless data
         if p.include? '['
           p = p.split(/[\]\[]/)
