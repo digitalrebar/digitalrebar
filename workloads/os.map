@@ -13,16 +13,18 @@ google all debian8    projects/debian-cloud/global/images/debian-8-jessie-v20151
 #
 # These are hvm-only try switching to default type of t2
 #
-aws us-east-1      centos7 ami-61bbf104
-aws us-west-2      centos7 ami-d440a6e7
-aws us-west-1      centos7 ami-f77fbeb3
-aws eu-central-1   centos7 ami-e68f82fb
-aws eu-west-1      centos7 ami-33734044
-aws ap-southeast-1 centos7 ami-2a7b6b78
-aws ap-southeast-2 centos7 ami-d38dc6e9
-aws ap-northeast-1 centos7 ami-b80b6db8
-aws ap-northeast-2 centos7 ami-dd9d53b3
-aws sa-east-1      centos7 ami-fd0197e0
+aws us-east-1      centos7 ami-6d1c2007
+aws us-west-2      centos7 ami-d2c924b2
+aws us-west-1      centos7 ami-af4333cf
+aws eu-central-1   centos7 ami-9bf712f4
+aws eu-west-1      centos7 ami-7abd0209
+aws sa-east-1      centos7 ami-26b93b4a
+aws ap-south-1     centos7 ami-95cda6fa
+aws ap-southeast-1 centos7 ami-f068a193
+aws ap-southeast-2 centos7 ami-fedafc9d
+aws ap-northeast-1 centos7 ami-eec1c380
+aws ap-northeast-2 centos7 ami-c74789a9
+
 
 aws ap-northeast-1 ubuntu1404 ami-ebbe8b85
 aws ap-southeast-1 ubuntu1404 ami-c28240a1
