@@ -196,11 +196,13 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     end
 
     # We don't have a playbook file, then we need to build one.
+    clean_role_file = false
     if role_yaml['playbook_file'] == '.'
       die "#{nr.role.name} must provide role map" unless role_role_map[nr.role.name]
 
-      role_file = 'cluster.yml'
-      File.open("#{role_cache_dir}/#{role_yaml['playbook_path']}/cluster.yml", 'w') do |f|
+      clean_role_file = true
+      role_file = "cluster-apj-#{nr.id}.yml"
+      File.open("#{role_cache_dir}/#{role_yaml['playbook_path']}/#{role_file}", 'w') do |f|
         f.write("- hosts:\n")
         if role_group_map[nr.role.name]
           role_group_map[nr.role.name].each do |gname|
@@ -237,6 +239,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
 
     # Clean up after ourselves.
     system("rm -rf '#{rundir}'")
+    system("rm -f '#{role_cache_dir}/#{role_yaml['playbook_path']}/#{role_file}'") if clean_role_file
   end
 
   def create_node(node)
