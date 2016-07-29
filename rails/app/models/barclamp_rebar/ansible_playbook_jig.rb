@@ -453,9 +453,19 @@ private
         if p.include? '['
           p = p.split(/[\]\[]/)
 
-          data = data[p[0]][p[1].to_i]
+          tdata = data[p[0]][p[1].to_i]
+	  if tdata.nil?
+            data[p[0]][p[1].to_i] = {}
+            tdata = data[p[0]][p[1].to_i]
+	  end
+	  data = tdata
         else
-          data = data[p]
+          tdata = data[p]
+	  if tdata.nil?
+	    data[p] = {}
+	    tdata = data[p]
+	  end
+	  data = tdata
         end
       end
     end
