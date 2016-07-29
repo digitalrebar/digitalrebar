@@ -93,7 +93,7 @@ func CreateCSR(label, CN string, hosts []string) (csrPem, key []byte, err error)
 	}
 	names = append(names, name)
 	req := csr.CertificateRequest{
-		KeyRequest: csr.NewBasicKeyRequest(),
+		KeyRequest: &csr.BasicKeyRequest{"rsa", 2048},
 		CN:         CN,
 		Names:      names,
 		Hosts:      hosts,
