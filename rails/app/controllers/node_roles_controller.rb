@@ -201,7 +201,7 @@ class NodeRolesController < ApplicationController
   def retry
     model.transaction do
       @node_role = find_key_cap(model, params[:id] || params[:node_role_id], cap("RETRY"))
-      @node_role.todo!
+      @node_role.todo! true
     end
     render api_show @node_role
   end

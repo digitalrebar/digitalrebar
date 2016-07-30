@@ -582,12 +582,16 @@ class NodeRole < ActiveRecord::Base
     # Moving any BLOCKED noderoles to TODO will be handled in the after_commit hook.
   end
 
-  def todo!
+  def todo!(clear_log=false)
     # You can pretty much always go back to TODO as long as all your parents are ACTIVE
     self.with_lock do
       reload
       raise InvalidTransition.new(self,state,TODO,"Not all parents are ACTIVE") unless activatable?
-      update!(state: TODO)
+      if clear_log
+        update!(state: TODO, runlog: "")
+      else
+        update!(state: TODO)
+      end
       # Going into TODO transitions any children in ERROR or TODO into BLOCKED
       children.where(["state IN(?,?)",ERROR,TODO]).each do |c|
         c.block!
