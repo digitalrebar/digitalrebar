@@ -75,8 +75,6 @@ Rebar::Application.routes.draw do
   scope 'dashboard' do
     get 'list(/:deployment)'  => 'dashboard#list', :as => :bulk_edit
     put 'list'                => 'dashboard#list', :as => :bulk_update
-    get 'getready'            => 'dashboard#getready', :as => :getready
-    post 'getready'           => 'dashboard#getready', :as => :post_getready
     get 'layercake'           => 'dashboard#layercake', :as => :layercake
     get 'families(/:id)'      => 'dashboard#families', :as => :families
   end
@@ -122,6 +120,7 @@ Rebar::Application.routes.draw do
           match "active" => "node_roles#status", via: [:get, :put]
         end
         scope "utils" do 
+          # this needs to move to a better place - dashboard is not a logical home
           post "wizard" => "dashboard#wizard"
         end
         scope 'test' do
