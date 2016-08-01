@@ -33,13 +33,13 @@ class PacketProvider < CloudProvider
         href: "https://packet.net",
         title: "Packet Host"
       },
-      token: {
+      project_token: {
         type: "password",
         default: "",
         length: 30,
         name: I18n.t('token', scope: "providers.show.packet" )
       },
-      id: {
+      project_id: {
         type: "text",
         default: "",
         length: 30,
