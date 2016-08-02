@@ -4,8 +4,13 @@
 # Include Project API Key in Packet
 . ~/.dr_info
 
-if [ "$API_KEY" == "" ] ; then
-    echo "You must define API_KEY (can be added to ~/.dr_info)"
+if [ "$PROVIDER_PACKET_KEY" == "" ] ; then
+    echo "You must define PROVIDER_PACKET_KEY (can be added to ~/.dr_info)"
+    exit 1
+fi
+
+if [ "$PROVIDER_PACKET_PROJECT_ID" == "" ] ; then
+    echo "You must define PROVIDER_PACKET_PROJECT_ID (can be added to ~/.dr_info)"
     exit 1
 fi
 
@@ -38,12 +43,14 @@ fi
 
 TSTAMP=`date +%H%M`
 
-PROJ_ID=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects | jq -r ".projects[].id"`
+#Only works if there's only one project in your packet.net account
+#or to which your user is associated, better to add it to dr_info
+#PROVIDER_PACKET_PROJECT_ID=`curl -s -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/projects | jq -r ".projects[].id"`
 
-echo "My projects: ${PROJ_ID} will be called ${NODENAME}_at_${TSTAMP}"
+echo "My projects: ${PROVIDER_PACKET_PROJECT_ID} will be called ${NODENAME}_at_${TSTAMP}"
 
-#curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/plans | jq .
-#curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/operating-systems | jq .
+#curl -s -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/plans | jq .
+#curl -s -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/operating-systems | jq .
 
 # Example OS lines for packet
 #  \"operating_system\": \"ubuntu_14_04\",
@@ -59,21 +66,21 @@ node="{
 date
 
 if [ "$DEVICE_ID" == "" ] ; then
-  DEVICE_ID=`curl -H "Content-Type: application/json" -X POST --data "$node" -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices | jq -r .id`
+  DEVICE_ID=`curl -H "Content-Type: application/json" -X POST --data "$node" -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/projects/$PROVIDER_PACKET_PROJECT_ID/devices | jq -r .id`
 fi
 
-STATE=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .state`
+STATE=`curl -s -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/projects/$PROVIDER_PACKET_PROJECT_ID/devices/$DEVICE_ID | jq -r .state`
 while [ "$STATE" != "active" ] ; do
   echo "STATE = $STATE"
   sleep 5
-  STATE=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .state`
+  STATE=`curl -s -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/projects/$PROVIDER_PACKET_PROJECT_ID/devices/$DEVICE_ID | jq -r .state`
 done
 
 date
 
 # Get Public IP - HACK - should look it up
-IP=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .ip_addresses[0].address`
-CIDR=`curl -s -H "X-Auth-Token: $API_KEY" https://api.packet.net/projects/$PROJ_ID/devices/$DEVICE_ID | jq -r .ip_addresses[0].cidr`
+IP=`curl -s -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/projects/$PROVIDER_PACKET_PROJECT_ID/devices/$DEVICE_ID | jq -r .ip_addresses[0].address`
+CIDR=`curl -s -H "X-Auth-Token: $PROVIDER_PACKET_KEY" https://api.packet.net/projects/$PROVIDER_PACKET_PROJECT_ID/devices/$DEVICE_ID | jq -r .ip_addresses[0].cidr`
 
 echo "Device ip = $IP/$CIDR"
 
