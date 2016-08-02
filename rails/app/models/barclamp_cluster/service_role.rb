@@ -60,12 +60,14 @@ class BarclampCluster::ServiceRole < Role
         str_addr = nil
         case map.split("/")[0]
         when "v4"
-          str_addr ||= n.address(:v4_only, [map.split("/")[1]]).addr
+          str_addr ||= n.address(:v4_only, [map.split("/")[1]])
         when "v6"
-          str_addr ||= n.address(:v6_only, [map.split("/")[1]]).addr
+          str_addr ||= n.address(:v6_only, [map.split("/")[1]])
         else
-          str_addr = n.address(:v4_only, [map]).addr rescue n.address.addr
+          str_addr = n.address(:v4_only, [map]) rescue n.address
         end
+	next unless str_addr
+	str_addr = str_addr.addr
 
         # set address for this node 
         if n.id == nr.node.id

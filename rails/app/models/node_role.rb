@@ -229,6 +229,10 @@ class NodeRole < ActiveRecord::Base
     Rails.logger.info("NodeRole safe_create: Binding role #{r.name} to node #{n.name} in deployment #{d.name}")
     # Add all our parent/child links in one go.
     NodeRole.locked_transaction do
+      # If role is service role, make sure it is placed on the phantom node.
+      if r.service?
+        args[:node_id] = Node.where(deployment_id: d.id, system: true, variant: "phantom")[0].id
+      end
       res = create!(args)
       query_parts = []
       tenative_cohort = 0
