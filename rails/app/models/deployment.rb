@@ -157,6 +157,7 @@ class Deployment < ActiveRecord::Base
     Node.create!(name: "#{name}-phantom.internal.local",
                  admin: false,
                  system: true,
+                 available: true,
                  alive: true,
                  variant: 'phantom',
                  provider_id: Provider.find_by!(name: 'phantom').id,
