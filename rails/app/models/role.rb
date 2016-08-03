@@ -88,6 +88,20 @@ class Role < ActiveRecord::Base
     RoleRequire.where("role_id in (select role_id from all_role_requires where required_role_id IS NULL AND role_id = ?)",id)
   end
 
+  def self.graph
+    puts "digraph {"
+    Role.all.each do |r|
+      puts "	#{r.id}[label=\"#{r.name}\"];"
+    end
+    Role.all.each do |r|
+      puts "	#{r.id} -> { #{r.role_requires_children.map{|x| x.role_id}.join(" ")} };" unless r.role_requires_children.empty?
+      r.role_preceeds_children.map{|x| x.role_id}.each do |x|
+        puts "	#{x} -> { #{r.id} }[color=\"red\"];"
+      end
+    end
+    puts "}"
+  end
+
   def all_parents
     Role.where("id in (select required_role_id from all_role_requires where required_role_id IS NOT NULL AND role_id = ?)",id).order("cohort ASC")
   end
