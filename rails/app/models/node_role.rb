@@ -143,15 +143,18 @@ class NodeRole < ActiveRecord::Base
   end
 
   def self.graph
-    puts "digraph {"
-    puts "	rankdir=LR;"
+    s = "digraph {"
+#    s += "	rankdir=LR;"
     NodeRole.all.each do |nr|
-      puts "	#{nr.id}[label=\"#{nr.node.id} #{nr.role.name}\"];"
+      s += "	#{nr.id}[label=\"#{nr.node.id} #{nr.role.name}\"];"
     end
     NodeRole.all.each do |nr|
-      puts "	#{nr.id} -> { #{nr.children.map{|x| x.id}.join(" ") } };"
+      unless nr.children.empty?
+        s += "	#{nr.id} -> { #{nr.children.map{|x| x.id}.join(" ") } };"
+      end
     end
-    puts "}"
+    s += "}"
+    s
   end
 
   # node_role_all_pcms is a view that expands node_role_pcms

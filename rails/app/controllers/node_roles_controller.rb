@@ -93,6 +93,10 @@ class NodeRolesController < ApplicationController
     end
   end
 
+  def graph
+    render :json => { "string" => NodeRole.graph }, :status => 200
+  end
+
   def show
     NodeRole.transaction do
       @node_role = if params.key? :node_id

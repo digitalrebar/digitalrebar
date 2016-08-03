@@ -305,6 +305,7 @@ Rebar::Application.routes.draw do
             collection do
               get 'sample'
               post 'match'
+              get 'graph'
             end
             put :retry
             put :propose
@@ -317,6 +318,7 @@ Rebar::Application.routes.draw do
             collection do
               get 'sample'
               post 'match'
+              get 'graph'
             end
             resources :attribs
             resources :deployment_roles

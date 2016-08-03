@@ -33,6 +33,10 @@ class RolesController < ApplicationController
     end
   end
 
+  def graph
+    render :json => { "string" => Role.graph }, :status => 200
+  end
+
   def show
     @role = find_key_cap(model, params[:id],cap("READ"))
     respond_to do |format|
