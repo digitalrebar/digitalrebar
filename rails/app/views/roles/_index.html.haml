@@ -8,6 +8,7 @@
         %th= t '.role'
         %th= t '.barclamp'
         %th= t '.description'
+        %th= t '.cohort'
         %th= t '.flags'
         %th= t '.upstream'
         %th= t '.preceeds'
@@ -19,9 +20,10 @@
           %td= link_to role.name_i18n, role_path(:id=>role.id), :title=>role.name
           %td= link_to role.barclamp.name, barclamp_path(role.barclamp.id), :title=>role.barclamp.description
           %td= role.description
+          %td= role.cohort
           %td
             = t '.milestone' if role.milestone
-            = t '.library' if role.library 
+            = t '.library' if role.library
             = t '.discovery' if role.discovery
             = t '.implicit' if role.implicit
             = t '.bootstrap' if role.bootstrap

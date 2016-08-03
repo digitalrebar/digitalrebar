@@ -577,6 +577,7 @@ en:
       conflicts: "Conflicts"
       server: "Server"
       description: "Description"
+      cohort: "Cohort"
       upstream: "Upstream (prerequisites)"
       wanted: "Wanted Attributes"
       metadata: "Role Specific Metadata (JSON)"
