@@ -142,6 +142,18 @@ class NodeRole < ActiveRecord::Base
     end
   end
 
+  def self.graph
+    puts "digraph {"
+    puts "	rankdir=LR;"
+    NodeRole.all.each do |nr|
+      puts "	#{nr.id}[label=\"#{nr.node.id} #{nr.role.name}\"];"
+    end
+    NodeRole.all.each do |nr|
+      puts "	#{nr.id} -> { #{nr.children.map{|x| x.id}.join(" ") } };"
+    end
+    puts "}"
+  end
+
   # node_role_all_pcms is a view that expands node_role_pcms
   # to include all of the parents and children of a noderole,
   # recursively.
@@ -847,4 +859,5 @@ class NodeRole < ActiveRecord::Base
   def maybe_rebind_attrib_links
     rebind_attrib_parents if deployment_id_changed?
   end
+
 end
