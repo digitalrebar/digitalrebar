@@ -88,18 +88,65 @@ class Role < ActiveRecord::Base
     RoleRequire.where("role_id in (select role_id from all_role_requires where required_role_id IS NULL AND role_id = ?)",id)
   end
 
-  def self.graph
-    puts "digraph {"
-    Role.all.each do |r|
-      puts "	#{r.id}[label=\"#{r.name}\"];"
+  def self.graph(opts = {})
+    s =  "digraph {"
+
+    roles={}
+    if opts[:filters]
+      roles = Role.where(opts[:filters])
+    else
+      roles = Role.all
     end
-    Role.all.each do |r|
-      puts "	#{r.id} -> { #{r.role_requires_children.map{|x| x.role_id}.join(" ")} };" unless r.role_requires_children.empty?
-      r.role_preceeds_children.map{|x| x.role_id}.each do |x|
-        puts "	#{x} -> { #{r.id} }[color=\"red\"];"
+
+    roles.each do |r|
+      s += "	#{r.id}[label=\"#{r.name}\"];"
+    end
+
+    if opts[:barclamp_grouping]
+      bcs = {}
+      if opts[:filters] && opts[:filters][:barclamp_id]
+        bcs = Barclamp.where(:id => opts[:filters][:barclamp_id])
+      else
+        bcs = Barclamp.all
+      end
+      bcs.each do |bc|
+        s += "	subgraph \"cluster_#{bc.name}\" {"
+        s += "		label=\"#{bc.name}\""
+        bc.roles.each do |r|
+          s += "		#{r.id};"
+        end
+        s += "	}"
       end
     end
-    puts "}"
+
+    if opts[:provides_grouping]
+      provides = {}
+      roles.each do |r|
+	provides[r.name] ||= []
+	provides[r.name] << r.id
+        r.provides.each do |pr|
+	  provides[pr] ||= []
+	  provides[pr] << r.id
+	end
+      end
+      provides.each do |k,v|
+        if v.length > 1
+          s += "	subgraph \"cluster_#{k}\" {"
+	  s += "		label=\"#{k}\";"
+	  s += "		#{v.join(";")}"
+          s += "	}"
+	end
+      end
+    end
+
+    roles.each do |r|
+      s += "	#{r.id} -> { #{r.role_requires_children.map{|x| x.role_id}.join(" ")} };" unless r.role_requires_children.empty?
+      r.role_preceeds_children.map{|x| x.role_id}.each do |x|
+        s += "	#{x} -> { #{r.id} }[color=\"red\"];"
+      end
+    end
+    s += "}"
+    s
   end
 
   def all_parents
