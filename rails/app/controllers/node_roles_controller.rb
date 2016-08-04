@@ -94,7 +94,56 @@ class NodeRolesController < ApplicationController
   end
 
   def graph
-    render :json => { "string" => NodeRole.graph }, :status => 200
+    opts = {}
+    if params.key? :node_id
+      node = find_key_cap(Node, params[:node_id],cap("READ"))
+      opts[:node_id] = node.id
+    end
+    if params.key? :deployment_id
+      deployment = find_key_cap(Deployment, params[:deployment_id],cap("READ"))
+      opts[:deployment_id] = deployment.id
+    end
+    if params.key? :role_id
+      role = find_key_cap(Role, params[:role_id],cap("READ"))
+      opts[:role_id] = role.id
+    end
+
+    nrs = NodeRole.where(opts)
+    all_nrs = {}
+    nrs.each do |nr|
+      all_nrs[nr.id] = nr
+      nr.children.each do |c|
+        all_nrs[c.id] = c
+      end
+      nr.parents.each do |p|
+        all_nrs[p.id] = p
+      end
+    end
+
+    edges = {}
+    nrs.each do |nr|
+      unless nr.parents.empty?
+        edges[nr.id] ||= []
+        edges[nr.id] << nr.parents.map{|x| x.id}
+      end
+      unless nr.children.empty?
+        nr.children.each do |c|
+          edges[c.id] ||= []
+          edges[c.id] << nr.id
+        end
+      end
+    end
+
+    s = "digraph {"
+    all_nrs.values.each do |nr|
+      s += "	#{nr.id}[label=\"#{nr.node.id} #{nr.role.name}\"];"
+    end
+    edges.each do |k,v|
+      s += "	#{k} -> { #{v.flatten.uniq.join(" ")} };"
+    end
+    s += "}"
+
+    render :json => { "string" => s }, :status => 200
   end
 
   def show

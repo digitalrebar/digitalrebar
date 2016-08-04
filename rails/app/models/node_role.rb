@@ -142,21 +142,6 @@ class NodeRole < ActiveRecord::Base
     end
   end
 
-  def self.graph
-    s = "digraph {"
-#    s += "	rankdir=LR;"
-    NodeRole.all.each do |nr|
-      s += "	#{nr.id}[label=\"#{nr.node.id} #{nr.role.name}\"];"
-    end
-    NodeRole.all.each do |nr|
-      unless nr.children.empty?
-        s += "	#{nr.id} -> { #{nr.children.map{|x| x.id}.join(" ") } };"
-      end
-    end
-    s += "}"
-    s
-  end
-
   # node_role_all_pcms is a view that expands node_role_pcms
   # to include all of the parents and children of a noderole,
   # recursively.
