@@ -246,9 +246,10 @@ class DeploymentsController < ApplicationController
               'provider-create-hint' => {
                 'hostname' => name
               }
+            }
             node_hints = params["provider"]["hints"] || node["provider"]["hints"] || {}
             node_hints.each do |hint, value|
-              hints["provider-create-hint"][hint] => value
+              hints["provider-create-hint"][hint] = value
             end
             validate_create(@current_user.current_tenant_id, cap("CREATE"), Node)
             newnode = Node.create!( name: name, 
@@ -263,7 +264,7 @@ class DeploymentsController < ApplicationController
                                   available: true,
                                   hints: hints)
             node["roles"].each { |r| roles[r][:nodes] << newnode.id } 
-          endnodes
+          end
         end
 
       end # nodes loop
