@@ -151,6 +151,7 @@ class DeploymentsController < ApplicationController
     end
   end
 
+  # UX ONLY -> REMOVE???
   def cohorts
     respond_to do |format|
       format.html {
@@ -166,6 +167,12 @@ class DeploymentsController < ApplicationController
         end
       }
     end
+  end
+
+  # view only
+  def template
+
+    @deployment = find_key_cap(model, params[:deployment_id], cap("PROPOSE"))
 
   end
 
@@ -234,9 +241,11 @@ class DeploymentsController < ApplicationController
         # create nodes, if no count then assume 1
         else
           for i in 0..(node["count"] || 1)
+            # provider is global BUT can be overridden per node
             throw "Provider required" unless node["provider"] || params["provider"]
-            throw "Provider name required" unless node["provider"]["name"] || params["provider"]["name"]
-            provider = find_key_cap(Provider,(node["provider"]["name"] || params["provider"]["name"]), cap("READ","PROVIDER"))
+            pro_raw = node["provider"] || params["provider"]
+            throw "Provider name required" unless pro_raw["name"]
+            provider = find_key_cap(Provider,(pro_raw["name"]), cap("READ","PROVIDER"))
             name = "#{node["prefix"] || 'node'}-#{block.to_s.rjust(2, "0")}-#{(i+1).to_s.rjust(3, "0")}.#{provider.name}.#{params[:tld] || deployment.name + '.cloud'}"
             hints = {
               'use-proxy' => false,

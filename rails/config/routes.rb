@@ -32,14 +32,17 @@ Rebar::Application.routes.draw do
   end
   resources :deployment_roles do
     resources :node_roles
+    # SHOULD BE VIA API ONLY -> REMOVE??
     put :propose
     put :commit
   end
   resources :deployments do
     resources :roles
     resources :node_roles
-    get :graph
+    get :template
+    # UX ONLY -> REMOVE???
     get :cohorts
+    # SHOULD BE VIA API ONLY -> REMOVE??
     put :propose
     put :commit
     put :recall
