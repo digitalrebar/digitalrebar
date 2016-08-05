@@ -26,10 +26,10 @@
       return;
     }
     console.debug("#{@deployment.name}");
-    var payload = { 'value':raw }
     $.ajax({
       type: "put",
-      data: JSON.stringify(payload),
+      data: JSON.stringify(raw),
+      timeout: 60000,
       contentType: "application/json",
       url: "/api/v2/deployments/#{@deployment.id}/batch"
       })

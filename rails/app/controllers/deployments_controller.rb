@@ -218,15 +218,24 @@ class DeploymentsController < ApplicationController
   def batch
 
     roles = {}
+    deployment_roles = []
 
     deployment = find_key_cap(model, params[:deployment_id], cap("UPDATE"))
     throw "Deployment must be proposed" unless deployment.proposed?
-    throw "Nodes List is required" unless params[:nodes]
+    throw "Nodes List is required" unless params["nodes"]
 
     Deployment.transaction do
 
+      # collect the attributes for the batch to make sure we have the associated roles
+      if params["attribs"]
+        params["attribs"].each do |a, v| 
+          attrib = Attrib.find_key a
+          roles[attrib.role.name] = { id: attrib.role.id, nodes: [], cohort: attrib.role.cohort }
+        end
+      end
+
       # review nodes
-      params[:nodes].each_with_index do |node, block|
+      params["nodes"].each_with_index do |node, block|
 
         # collect the roles, take no action
         node["roles"].each do |r|
@@ -240,13 +249,28 @@ class DeploymentsController < ApplicationController
           node["roles"].each { |r| roles[r][:nodes] << node["id"] }
         # create nodes, if no count then assume 1
         else
-          for i in 0..(node["count"] || 1)
+          for i in 1..(node["count"] || 1)
             # provider is global BUT can be overridden per node
             throw "Provider required" unless node["provider"] || params["provider"]
             pro_raw = node["provider"] || params["provider"]
             throw "Provider name required" unless pro_raw["name"]
+            Rails.logger.debug("Deployment Batch: checking to see if user has access to provider #{pro_raw['name']}")
             provider = find_key_cap(Provider,(pro_raw["name"]), cap("READ","PROVIDER"))
-            name = "#{node["prefix"] || 'node'}-#{block.to_s.rjust(2, "0")}-#{(i+1).to_s.rjust(3, "0")}.#{provider.name}.#{params[:tld] || deployment.name + '.cloud'}"
+
+            name = "#{node["prefix"] || 'node'}-#{block.to_s.rjust(2, "0")}-#{(i+1).to_s.rjust(3, "0")}.#{provider.name}.#{params["tld"] || deployment.name + '.cloud'}"
+            Rails.logger.debug("Deployment Batch: adding node #{name}")
+            validate_create(@current_user.current_tenant_id, cap("CREATE"), Node)
+            newnode = Node.create!( name: name, 
+                                  description: node["description"] || t("useradded", :user => @current_user.username), 
+                                  admin: false,
+                                  tenant_id: @current_user.current_tenant_id, 
+                                  deployment_id: deployment.id,
+                                  provider_id: provider.id,
+                                  allocated: false,
+                                  alive: false,
+                                  system: false,
+                                  available: true)
+            # add hints
             hints = {
               'use-proxy' => false,
               'use-ntp' => false,
@@ -260,18 +284,11 @@ class DeploymentsController < ApplicationController
             node_hints.each do |hint, value|
               hints["provider-create-hint"][hint] = value
             end
-            validate_create(@current_user.current_tenant_id, cap("CREATE"), Node)
-            newnode = Node.create!( name: name, 
-                                  description: node["description"] || t("useradded", :user => @current_user.username), 
-                                  admin: false,
-                                  tenant_id: @current_user.current_tenant_id, 
-                                  deployment_id: deployment.id,
-                                  provider_id: provider.id,
-                                  allocated: false,
-                                  alive: false,
-                                  system: false,
-                                  available: true,
-                                  hints: hints)
+            Rails.logger.debug("Deployment Batch: adding hints to node #{name}: #{node_hints}")
+            hints.each do |k,v|
+              Attrib.set(k,newnode,v)
+            end
+            # add the node to the roles that should be applied
             node["roles"].each { |r| roles[r][:nodes] << newnode.id } 
           end
         end
@@ -283,15 +300,18 @@ class DeploymentsController < ApplicationController
 
       # add roles to deployment
       roles.each do |name, r|
+        Rails.logger.debug("Deployment Batch: adding role #{name} deployment #{deployment.name}")
         role = find_key_cap(Role, name, cap("READ","ROLE"))
-        role.add_to_deployment deployment
+        deployment_roles << role.add_to_deployment(deployment)
       end # roles loop
 
-      # set attributes in deployment
-      if params[:attribs]
-        params[:attribs].each do |a, v|
+      Rails.logger.debug("Deployment Batch: deployment_roles #{deployment_roles.inspect}")
+
+      # set the attributes
+      if params["attribs"]
+        params["attribs"].each do |a, v| 
           Attrib.set(a, deployment, v)
-        end # attribs loop
+        end
       end
 
     end
@@ -299,6 +319,7 @@ class DeploymentsController < ApplicationController
     # assign nodes roles to deployment (cannot be in the top transaction)
     roles.each do |name, r|
       role = find_key_cap(Role, name, cap("READ","ROLE"))
+      Rails.logger.debug("Deployment Batch: adding role #{name} nodes #{r[:nodes]}")
       r[:nodes].each do |n|
         node = find_key_cap(Node, n, cap("READ", "NODE"))
         role.add_to_node node
