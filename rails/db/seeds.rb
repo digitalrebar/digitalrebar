@@ -172,7 +172,6 @@ ActiveRecord::Base.transaction do
   Nav.find_or_create_by(item: 'providers', parent_item: 'nodes', name: 'nav.providers', description: 'nav.providers_description', path: "main_app.providers_path", order: 1400)
   Nav.find_or_create_by(item: 'families', parent_item: 'nodes', name: 'nav.families', description: 'nav.families_description', path: "main_app.families_path", order: 1500)
   Nav.find_or_create_by(item: 'groups', parent_item: 'nodes', name: 'nav.groups', description: 'nav.groups_description', path: "main_app.groups_path", order: 2000)
-  Nav.find_or_create_by(item: 'getready', parent_item: 'nodes', name: 'nav.getready', description: 'nav.getready_description', path: "main_app.getready_path", order: 3000)
   Nav.find_or_create_by(item: 'bulk_edit', parent_item: 'nodes', name: 'nav.bulk_edit', description: 'nav.bulk_edit_description', path: "main_app.bulk_edit_path", order: 4000)
 
 

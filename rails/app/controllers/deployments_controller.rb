@@ -89,6 +89,7 @@ class DeploymentsController < ApplicationController
   def destroy
     model.transaction do
       @deployment = find_key_cap(model, params[:id], cap("DESTROY"))
+      throw "cannot destroy system deployments" if @deployment.system?
       @deployment.destroy
     end
     respond_to do |format|
@@ -203,6 +204,99 @@ class DeploymentsController < ApplicationController
     # Not in a transaction due to redeploy call.
     @deployment.nodes.visible(cap("REDEPLOY","NODE"),@current_user.id).each { |n| n.redeploy! }
     render api_show @deployment
+  end
+
+  # PUT
+  # bulk load deployment information
+  def batch
+
+    roles = {}
+
+    deployment = find_key_cap(model, params[:deployment_id], cap("UPDATE"))
+    throw "Deployment must be proposed" unless deployment.proposed?
+    throw "Nodes List is required" unless params[:nodes]
+
+    Deployment.transaction do
+
+      # review nodes
+      params[:nodes].each_with_index do |node, block|
+
+        # collect the roles, take no action
+        node["roles"].each do |r|
+          role = find_key_cap(Role,r, cap("READ","ROLE"))
+          roles[r] = { id: role.id, cohort: role.cohort, nodes: [] }
+        end
+
+        # collect/create nodes - if you have an ID or it's >0, then use it
+        if node["id"] and node["id"].to_i < 0
+          throw "you don't have permission to use node #{node["id"]}" unless visible(Node,cap("READ")).where(id: node["id"])
+          node["roles"].each { |r| roles[r][:nodes] << node["id"] }
+        # create nodes, if no count then assume 1
+        else
+          for i in 0..(node["count"] || 1)
+            throw "Provider required" unless node["provider"] || params["provider"]
+            throw "Provider name required" unless node["provider"]["name"] || params["provider"]["name"]
+            provider = find_key_cap(Provider,(node["provider"]["name"] || params["provider"]["name"]), cap("READ","PROVIDER"))
+            name = "#{node["prefix"] || 'node'}-#{block.to_s.rjust(2, "0")}-#{(i+1).to_s.rjust(3, "0")}.#{provider.name}.#{params[:tld] || deployment.name + '.cloud'}"
+            hints = {
+              'use-proxy' => false,
+              'use-ntp' => false,
+              'use-dns' => false,
+              'use-logging' => false,
+              'provider-create-hint' => {
+                'hostname' => name
+              }
+            node_hints = params["provider"]["hints"] || node["provider"]["hints"] || {}
+            node_hints.each do |hint, value|
+              hints["provider-create-hint"][hint] => value
+            end
+            validate_create(@current_user.current_tenant_id, cap("CREATE"), Node)
+            newnode = Node.create!( name: name, 
+                                  description: node["description"] || t("useradded", :user => @current_user.username), 
+                                  admin: false,
+                                  tenant_id: @current_user.current_tenant_id, 
+                                  deployment_id: deployment.id,
+                                  provider_id: provider.id,
+                                  allocated: false,
+                                  alive: false,
+                                  system: false,
+                                  available: true,
+                                  hints: hints)
+            node["roles"].each { |r| roles[r][:nodes] << newnode.id } 
+          endnodes
+        end
+
+      end # nodes loop
+
+      # we need to do this in cohort order!
+      roles = roles.sort_by { |k, r| r[:cohort] }
+
+      # add roles to deployment
+      roles.each do |name, r|
+        role = find_key_cap(Role, name, cap("READ","ROLE"))
+        role.add_to_deployment deployment
+      end # roles loop
+
+      # set attributes in deployment
+      if params[:attribs]
+        params[:attribs].each do |a, v|
+          Attrib.set(a, deployment, v)
+        end # attribs loop
+      end
+
+    end
+
+    # assign nodes roles to deployment (cannot be in the top transaction)
+    roles.each do |name, r|
+      role = find_key_cap(Role, name, cap("READ","ROLE"))
+      r[:nodes].each do |n|
+        node = find_key_cap(Node, n, cap("READ", "NODE"))
+        role.add_to_node node
+      end
+    end # roles loop
+
+    render api_show deployment
+
   end
 
 end

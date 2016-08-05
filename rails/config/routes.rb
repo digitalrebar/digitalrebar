@@ -75,8 +75,6 @@ Rebar::Application.routes.draw do
   scope 'dashboard' do
     get 'list(/:deployment)'  => 'dashboard#list', :as => :bulk_edit
     put 'list'                => 'dashboard#list', :as => :bulk_update
-    get 'getready'            => 'dashboard#getready', :as => :getready
-    post 'getready'           => 'dashboard#getready', :as => :post_getready
     get 'layercake'           => 'dashboard#layercake', :as => :layercake
     get 'families(/:id)'      => 'dashboard#families', :as => :families
   end
@@ -120,9 +118,6 @@ Rebar::Application.routes.draw do
           get "heartbeat" => "support#heartbeat", :as => :heartbeat_status
           get "inventory(/:id)" => "inventory#index"
           match "active" => "node_roles#status", via: [:get, :put]
-        end
-        scope "utils" do 
-          post "wizard" => "dashboard#wizard"
         end
         scope 'test' do
           put "nodes(/:id)" => "nodes#test_load_data"
@@ -201,6 +196,7 @@ Rebar::Application.routes.draw do
             put :commit
             put :recall
             put :redeploy
+            put :batch
           end
           resources :event_selectors do
             collection do
