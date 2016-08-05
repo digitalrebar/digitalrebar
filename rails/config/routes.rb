@@ -119,10 +119,6 @@ Rebar::Application.routes.draw do
           get "inventory(/:id)" => "inventory#index"
           match "active" => "node_roles#status", via: [:get, :put]
         end
-        scope "utils" do 
-          # this needs to move to a better place - dashboard is not a logical home
-          post "wizard" => "dashboard#wizard"
-        end
         scope 'test' do
           put "nodes(/:id)" => "nodes#test_load_data"
         end
@@ -200,6 +196,7 @@ Rebar::Application.routes.draw do
             put :commit
             put :recall
             put :redeploy
+            put :batch
           end
           resources :event_selectors do
             collection do

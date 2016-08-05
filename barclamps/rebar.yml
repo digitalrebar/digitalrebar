@@ -31,8 +31,23 @@ wizard:
   system_nodes: true
   create_nodes: false
   os: true
+  base_attribs:
+    - provisioner-target_os
   services:
-    docker-ready: optional
+    - name: provision
+      description: "Provision O/S"
+      icon: "publish"
+      type: required
+      count: -1
+      roles:
+        - rebar-installed-node
+    - name: docker
+      description: "Install Docker Base"
+      icon: "directions_ferry"
+      type: optional
+      count: -1
+      roles:
+        - docker-ready
 
 roles:
   # Rebar  Core
