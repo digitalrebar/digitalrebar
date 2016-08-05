@@ -25,6 +25,7 @@ barclamp:
 roles:
   - name: dhcp-service
     jig: role-provided
+    icon: "perm_identity"
     flags:
       - service
     attribs:
@@ -38,6 +39,7 @@ roles:
               pattern: /[0-9a-f:.]*/
   - name: dhcp-mgmt_service
     jig: role-provided
+    icon: "supervisor_account"
     flags:
       - service
     events:
