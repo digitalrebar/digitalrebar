@@ -31,8 +31,6 @@ wizard:
   system_nodes: true
   create_nodes: false
   os: true
-  base_attribs:
-    - provisioner-target_os
   services:
     - name: provision
       description: "Provision O/S"
