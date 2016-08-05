@@ -264,7 +264,7 @@ class DeploymentsController < ApplicationController
                                   available: true,
                                   hints: hints)
             node["roles"].each { |r| roles[r][:nodes] << newnode.id } 
-          endnodes
+          end
         end
 
       end # nodes loop
