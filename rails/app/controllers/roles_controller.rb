@@ -34,62 +34,29 @@ class RolesController < ApplicationController
   end
 
   def graph
-    s =  "digraph {"
-    roles={}
-    if opts[:filters]
-      roles = Role.where(opts[:filters])
-    else
-      roles = Role.all
+    opts = {}
+    if params.key? :barclamp_id
+      barclamp = find_key_cap(Barclamp, params[:barclamp_id],cap("READ"))
+      opts[:barcamp_id] = barclamp.id
+    end
+    if params.key? :role_id
+      role = find_key_cap(Role, params[:role_id],cap("READ"))
+      opts[:role_id] = role.id
     end
 
+    roles = visible(model, "READ").where(opts)
+
+    s =  "digraph {"
     roles.each do |r|
       s += "    #{r.id}[label=\"#{r.name}\"];"
     end
-
-    if opts[:barclamp_grouping]
-      bcs = {}
-      if opts[:filters] && opts[:filters][:barclamp_id]
-        bcs = Barclamp.where(:id => opts[:filters][:barclamp_id])
-      else
-        bcs = Barclamp.all
-      end
-      bcs.each do |bc|
-        s += "  subgraph \"cluster_#{bc.name}\" {"
-        s += "          label=\"#{bc.name}\""
-        bc.roles.each do |r|
-          s += "                #{r.id};"
-        end
-        s += "  }"
+    roles.each do |r|
+      s += "    #{r.id} -> { #{r.role_requires_children.map{|x| x.role_id}.join(" ")} };" unless r.role_requires_children.empty?
+      r.role_preceeds_children.map{|x| x.role_id}.each do |x|
+        s += "  #{x} -> { #{r.id} }[color=\"red\"];"
       end
     end
-
-    if opts[:provides_grouping]
-      provides = {}
-      roles.each do |r|
-        provides[r.name] ||= []
-        provides[r.name] << r.id
-        r.provides.each do |pr|
-          provides[pr] ||= []
-          provides[pr] << r.id
-        end
-      end
-      provides.each do |k,v|
-      if v.length > 1
-        s += "        subgraph \"cluster_#{k}\" {"
-        s += "                label=\"#{k}\";"
-        s += "                #{v.join(";")}"
-        s += "        }"
-      end
-    end
-  end
-
-  roles.each do |r|
-    s += "    #{r.id} -> { #{r.role_requires_children.map{|x| x.role_id}.join(" ")} };" unless r.role_requires_children.empty?
-    r.role_preceeds_children.map{|x| x.role_id}.each do |x|
-      s += "  #{x} -> { #{r.id} }[color=\"red\"];"
-    end
-  end
-  s += "}"
+    s += "}"
 
     render :json => { "string" => s }, :status => 200
   end
