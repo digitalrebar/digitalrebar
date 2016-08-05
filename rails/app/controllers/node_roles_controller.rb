@@ -108,7 +108,7 @@ class NodeRolesController < ApplicationController
       opts[:role_id] = role.id
     end
 
-    nrs = NodeRole.where(opts)
+    nrs = visible(model, cap("READ")).where(opts)
     all_nrs = {}
     nrs.each do |nr|
       all_nrs[nr.id] = nr
