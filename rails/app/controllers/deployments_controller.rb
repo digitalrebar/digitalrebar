@@ -220,11 +220,11 @@ class DeploymentsController < ApplicationController
     roles = {}
     deployment_roles = []
 
-    deployment = find_key_cap(model, params[:deployment_id], cap("UPDATE"))
-    throw "Deployment must be proposed" unless deployment.proposed?
-    throw "Nodes List is required" unless params["nodes"]
-
     Deployment.transaction do
+
+      deployment = find_key_cap(model, params[:deployment_id], cap("UPDATE"))
+      throw "Deployment must be proposed" unless deployment.proposed?
+      throw "Nodes List is required" unless params["nodes"]
 
       # collect the attributes for the batch to make sure we have the associated roles
       if params["attribs"]
@@ -233,6 +233,8 @@ class DeploymentsController < ApplicationController
           roles[attrib.role.name] = { id: attrib.role.id, nodes: [], cohort: attrib.role.cohort }
         end
       end
+
+      Rails.logger.debug("Deployment Batch: starting...#{deployment.name}")
 
       # review nodes
       params["nodes"].each_with_index do |node, block|
@@ -243,10 +245,20 @@ class DeploymentsController < ApplicationController
           roles[r] = { id: role.id, cohort: role.cohort, nodes: [] }
         end
 
+        Rails.logger.debug("Deployment Batch: working on #{node}")
+
         # collect/create nodes - if you have an ID or it's >0, then use it
-        if node["id"] and node["id"].to_i < 0
-          throw "you don't have permission to use node #{node["id"]}" unless visible(Node,cap("READ")).where(id: node["id"])
-          node["roles"].each { |r| roles[r][:nodes] << node["id"] }
+        if node["id"] and (node["id"].to_i > -1)
+          # collect nodes per deployment
+          n = find_key_cap(Node,node["id"], cap("UPDATE","NODE"))
+          node["roles"].each { |r| roles[r][:nodes] << n.id }
+          # and put node in deployment if it's not
+          if n.deployment_id != deployment.id
+            n.deployment_id = deployment.id
+            n.save!
+          end
+          Rails.logger.debug("Deployment Batch: added node #{n.name} to deployment #{deployment.name}")
+
         # create nodes, if no count then assume 1
         else
           for i in 1..(node["count"] || 1)
