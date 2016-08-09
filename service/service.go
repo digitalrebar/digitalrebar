@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/consul/api"
 )
 
+// GetService is a thin wrapper around the consul API Service function
 func GetService(client *api.Client, name, tag string) ([]*api.CatalogService, error) {
 	catalog := client.Catalog()
 	q := api.QueryOptions{
@@ -16,6 +17,8 @@ func GetService(client *api.Client, name, tag string) ([]*api.CatalogService, er
 	return cs, err
 }
 
+// WaitService works like GetService, except it will wait until the
+// service shows up.
 func WaitService(client *api.Client, name, tag string) ([]*api.CatalogService, error) {
 	catalog := client.Catalog()
 	q := api.QueryOptions{
@@ -61,4 +64,14 @@ func Find(client *api.Client, name, tag string) ([]*api.CatalogService, error) {
 		}
 	}
 	return []*api.CatalogService{}, nil
+}
+
+// Address extracts the address/port from a returned CatalogService
+func Address(s *api.CatalogService) (addr string, port int) {
+	port = s.ServicePort
+	addr = s.Address
+	if s.ServiceAddress != "" {
+		addr = s.ServiceAddress
+	}
+	return
 }
