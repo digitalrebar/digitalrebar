@@ -3,9 +3,6 @@ import:
 - package: github.com/digitalrebar/rebar-api
   subpackages:
   - api
-- package: github.com/digitalrebar/go-common
-  subpackages:
-  - cert
 - package: github.com/ghodss/yaml
 - package: github.com/coddingtonbear/go-jsonselect
 - package: github.com/gin-gonic/gin
@@ -14,3 +11,4 @@ import:
     - cert
     - multi-tenancy
     - store
+    - service

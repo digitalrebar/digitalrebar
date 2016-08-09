@@ -17,6 +17,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/ghodss/yaml"
 	"github.com/gin-gonic/gin"
@@ -25,6 +26,7 @@ import (
 	"github.com/coddingtonbear/go-jsonselect"
 	"github.com/digitalrebar/go-common/cert"
 	multitenancy "github.com/digitalrebar/go-common/multi-tenancy"
+	"github.com/digitalrebar/go-common/service"
 	"github.com/digitalrebar/go-common/store"
 	"github.com/digitalrebar/rebar-api/api"
 	"github.com/digitalrebar/rule-engine/engine"
@@ -195,7 +197,6 @@ func capMiddleware(c *gin.Context) {
 
 func main() {
 	var err error
-	flag.StringVar(&endpoint, "endpoint", "", "API Endpoint for Digital Rebar")
 	flag.StringVar(&listen, "listen", "", "Address for the API and the event listener to listen on.")
 	flag.StringVar(&backingStore, "backing", "file", "Backing store to use for RuleSets.  Permitted values are 'file' and 'consul'")
 	flag.StringVar(&dataDir, "dataloc", "/var/cache/rule-engine", "Path to store data at")
@@ -210,22 +211,31 @@ func main() {
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
-
-	if endpoint == "" {
-		if ep := os.Getenv("REBAR_ENDPOINT"); ep != "" {
-			endpoint = ep
-		} else {
-			log.Fatalf("No --endpoint passed and REBAR_ENDPOINT not set, aborting")
-		}
-	}
 	if listen == "" {
 		log.Fatalf("No address to listen on passed with --listen")
+	}
+	var cClient *consul.Client
+	for {
+		cClient, err = consul.NewClient(consul.DefaultConfig())
+		if err == nil {
+			break
+		}
+		log.Println("Waiting for Consul...")
+		time.Sleep(10 * time.Second)
+	}
+	apiService, err := service.Find(cClient, "rebar-api", "")
+	if err != nil {
+		log.Fatalf("Failed to find rebar API: %v", err)
+	} else if len(apiService) == 0 {
+		log.Fatalf("No Rebar API services registered with Consul")
+	} else {
+		apiAddr, apiPort := service.Address(apiService[0])
+		endpoint = fmt.Sprintf("https://%s:%d", apiAddr, apiPort)
 	}
 
 	var bs store.SimpleStore
 	switch backingStore {
 	case "consul":
-		cClient, err := consul.NewClient(consul.DefaultConfig())
 		if err != nil {
 			log.Fatalf("Unable to load Consul client: %v", err)
 		}
