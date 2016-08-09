@@ -52,6 +52,7 @@ func NewEngine(backingStore store.SimpleStore,
 	scriptEnv map[string]string) (*Engine, error) {
 	res := &Engine{
 		backingStore:   backingStore,
+		rClient:        client,
 		trusted:        trusted,
 		scriptEnv:      scriptEnv,
 		ruleSets:       map[string]*RuleSet{},

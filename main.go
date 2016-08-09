@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -197,7 +198,6 @@ func capMiddleware(c *gin.Context) {
 
 func main() {
 	var err error
-	flag.StringVar(&listen, "listen", "", "Address for the API and the event listener to listen on.")
 	flag.StringVar(&backingStore, "backing", "file", "Backing store to use for RuleSets.  Permitted values are 'file' and 'consul'")
 	flag.StringVar(&dataDir, "dataloc", "/var/cache/rule-engine", "Path to store data at")
 	flag.BoolVar(&version, "version", false, "Print version and exit")
@@ -211,8 +211,11 @@ func main() {
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	if listen == "" {
-		log.Fatalf("No address to listen on passed with --listen")
+	var port int
+	if pStr := os.Getenv("APIPORT"); pStr == "" {
+		log.Fatalln("APIPORT not set, no idea where we will listen")
+	} else if port, err = strconv.Atoi(pStr); err != nil {
+		log.Fatalf("APIPORT not an integer: %v", err)
 	}
 	var cClient *consul.Client
 	for {
@@ -223,22 +226,23 @@ func main() {
 		log.Println("Waiting for Consul...")
 		time.Sleep(10 * time.Second)
 	}
-	apiService, err := service.Find(cClient, "rebar-api", "")
-	if err != nil {
-		log.Fatalf("Failed to find rebar API: %v", err)
-	} else if len(apiService) == 0 {
-		log.Fatalf("No Rebar API services registered with Consul")
-	} else {
+	for {
+		apiService, err := service.Find(cClient, "rebar-api", "")
+		if err != nil {
+			log.Fatalf("Problem looking for rebar API service: %v", err)
+		}
+		if len(apiService) == 0 {
+			log.Println("Rebar API service not registered yet")
+			time.Sleep(10 * time.Second)
+			continue
+		}
 		apiAddr, apiPort := service.Address(apiService[0])
 		endpoint = fmt.Sprintf("https://%s:%d", apiAddr, apiPort)
+		break
 	}
-
 	var bs store.SimpleStore
 	switch backingStore {
 	case "consul":
-		if err != nil {
-			log.Fatalf("Unable to load Consul client: %v", err)
-		}
 		bs, err = store.NewSimpleConsulStore(cClient, dataDir)
 	case "file":
 		bs, err = store.NewSimpleLocalStore(dataDir)
@@ -258,7 +262,51 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error creating rule engine: %v", err)
 	}
+
+	// Register service with Consul before continuing
+	reg := &consul.AgentServiceRegistration{
+		Name: "rule-engine-service",
+		Tags: []string{"revproxy"}, // We want to be exposed through the revproxy
+		Port: port,
+		Check: &consul.AgentServiceCheck{
+			Script:   "pidof rule-engine",
+			Interval: "10s",
+		},
+	}
+	if os.Getenv("FORWARDER_IP") != "" {
+		// Hack for now.  Forwarder and revproxy will migrate
+		// to full-on tag based scheme in the future.
+		reg.Name = "internal-rule-engine-service"
+	}
+	if err = cClient.Agent().ServiceRegister(reg); err != nil {
+		log.Fatalf("Failed to register with Consul: %v", err)
+	}
+
+	// Make sure the reverse proxy knows how to route to us
+	_, err = cClient.KV().Put(&consul.KVPair{
+		Key:   "digitalrebar/public/revproxy/rule-engine/matcher",
+		Value: []byte(`^rule-engine/(api/.*)`),
+	}, nil)
+	if err != nil {
+		log.Fatalf("Failed to register route pattern with revproxy: %v", err)
+	}
+
+	// Now that we are all registered, register our actual listen address
+	for {
+		svc, err := service.Find(cClient, "rule-engine", "revproxy")
+		if err != nil {
+			log.Fatalf("Error talking to Consul: %v", err)
+		}
+		if len(svc) == 0 {
+			continue
+		}
+		lAddr, lPort := service.Address(svc[0])
+		listen = fmt.Sprintf("%s:%d", lAddr, lPort)
+		break
+	}
+
 	ruleEngine.Debug = debug
+	log.Printf("Talking to Rebar API at %s, our API at %s", endpoint, listen)
 
 	// Clean up on SIGTERM
 	killChan := make(chan os.Signal, 1)
@@ -283,6 +331,7 @@ func main() {
 	}
 	s.Addr = listen
 	s.Handler = router
+
 	ruleEngine.RegisterSinks(fmt.Sprintf("https://%s/events", listen))
 	log.Printf("Ready to handle events\n")
 	for {
