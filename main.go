@@ -325,7 +325,7 @@ func main() {
 	apiv0.POST("/rulesets/", createRuleset)
 	apiv0.PUT("/rulesets/:name", updateRuleset)
 	apiv0.DELETE("/rulesets/:name", deleteRuleset)
-	s, err := cert.Server("internal", "rule-engine")
+	s, err := cert.Server("internal", "rule-engine-service")
 	if err != nil {
 		log.Fatalf("Failed to create trusted server: %v", err)
 	}
