@@ -284,7 +284,7 @@ func main() {
 
 	// Make sure the reverse proxy knows how to route to us
 	_, err = cClient.KV().Put(&consul.KVPair{
-		Key:   "digitalrebar/public/revproxy/rule-engine/matcher",
+		Key:   "digitalrebar/public/revproxy/rule-engine-service/matcher",
 		Value: []byte(`^rule-engine/(api/.*)`),
 	}, nil)
 	if err != nil {
