@@ -172,6 +172,8 @@ class DeploymentsController < ApplicationController
   # view only
   def template
 
+    @source = find_key_cap(model, (params[:source] || 'system'), cap("READ"))
+    @provider = visible(Provider, cap("READ")).order("id DESC")
     @deployment = find_key_cap(model, params[:deployment_id], cap("PROPOSE"))
 
   end
@@ -219,6 +221,7 @@ class DeploymentsController < ApplicationController
 
     roles = {}
     deployment_roles = []
+    deployment = nil
 
     Deployment.transaction do
 
