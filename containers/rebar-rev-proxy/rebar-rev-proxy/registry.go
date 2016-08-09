@@ -217,7 +217,7 @@ func (c *ConsulRegistry) WatchConsul() {
 			if err != nil {
 				log.Printf("kv lookup err: %v", err)
 			} else {
-				if kp.Value != nil {
+				if kp != nil && kp.Value != nil {
 					svcMatcher = string(kp.Value[:])
 				} else {
 					svcMatcher = "^" + svcTag + "/(.*)"
