@@ -202,9 +202,8 @@ node:
   env_file:
     - ./access.env
 
-classifier:
-  image: digitalrebar/dr_classifier:${DR_TAG}
-  privileged: true
+rule-engine:
+  image: digitalrebar/rule-engine:${DR_TAG}
   restart: always
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json

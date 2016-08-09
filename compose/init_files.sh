@@ -22,7 +22,6 @@ function usage {
     echo "  --debug # Adds the cadviser components"
     echo "  --node # Adds the node component"
     echo "  --tag <TAG> # Uses that tag for builds and trees. default: latest"
-    echo "  --classifier name:rulepath # adds a classifier to the docker-compose file with that name and rule file"
     echo
     echo "  --external_ip <CIDR Address, default: 192.168.124.11/24> "
     echo "  --forwarder_ip <CIDR Address, default: 192.168.124.11/24> "
@@ -41,23 +40,6 @@ function set_var_in_common_env {
   local value=$2
 
   sed -i -e "s/^${var}=.*/${var}=${value}/" common.env
-}
-
-function add_classifier {
-    local clname=$1
-    local clpath=$2
-
-    echo "Adding classifier: $clname $clpath"
-    cat > /tmp/${clname}.yml <<EOF
-cl_${clname}:
-  extends:
-    file: docker-compose-common.yml
-    service: classifier
-  volumes:
-    - ${clpath}:/etc/classifier/rules.yml
-EOF
-    FILES="$FILES /tmp/${clname}.yml"
-    REMOVE_FILES="$REMOVE_FILES /tmp/${clname}.yml"
 }
 
 FILES="base.yml trust-me.yml"
@@ -154,14 +136,6 @@ while [[ $1 == -* ]] ; do
     --node)
       FILES="$FILES node.yml"
       ;;
-    --classifier)
-      clinfo=$1
-      shift
-
-      clname=${clinfo%:*}
-      clpath=${clinfo##*:}
-      add_classifier "$clname" "$clpath"
-      ;;
   esac
 
 done
@@ -195,14 +169,6 @@ else
     echo "ACCESS MODE: $ACCESS_MODE is not HOST or FORWARDER"
     exit 1
 fi
-
-# Find classifier files in repos
-# This is assumed to be run from in the compose directory.
-echo "Trying to find classifiers"
-while read clpath ; do
-    clname=$(basename $(dirname $clpath))
-    add_classifier "$clname" "$clpath"
-done < <(find ../.. -type f -name classifier.yml 2>/dev/null)
 
 # Process templates and build one big yml file for now.
 rm -f docker-compose.yml
