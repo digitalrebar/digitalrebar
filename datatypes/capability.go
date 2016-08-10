@@ -1,8 +1,7 @@
 package datatypes
 
 type Capability struct {
-	SimpleID
-	Name        string `json:"name"`
+	NameID
 	Description string `json:"description"`
 	Source      string `json:"source"`
 }
