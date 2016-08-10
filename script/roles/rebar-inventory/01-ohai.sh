@@ -26,7 +26,7 @@ if ! which ohai; then
             gem install ohai -v 7.4.1
         else
             gem install ffi-yajl -v 2.2.3
-            gem install ohai
+            gem install ohai -v 8.17.1
         fi
         hash -r
     elif [[ -d /etc/apt ]]; then
@@ -36,7 +36,7 @@ if ! which ohai; then
             gem install ohai -v 7.4.1
         else
             gem install ffi-yajl -v 2.2.3
-            gem install ohai
+            gem install ohai -v 8.17.1
         fi
         hash -r
     elif [[ -f /etc/SuSE-release ]]; then
