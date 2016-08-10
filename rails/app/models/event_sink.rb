@@ -50,7 +50,7 @@ class EventSink < ActiveRecord::Base
       else
         raise "EventSink.run for inproc:// only handles Role hooks for now"
       end
-    when 'http'
+    when 'http','https'
       data = {}
       data['event'] = event
       data['selector'] = selector
@@ -111,7 +111,7 @@ class EventSink < ActiveRecord::Base
     method, sep, rest  = endpoint.partition('://')
     errors.add("Malformed endpoint #{endpoint}") if sep != '://'
     case method
-    when 'http' then true
+    when 'http','https' then true
     when 'inproc' then
       objklass, _, methpart = rest.partition(':')
       case objklass
