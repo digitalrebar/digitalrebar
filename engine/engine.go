@@ -27,13 +27,13 @@ type etInvoker struct {
 // Engine holds all the necessary information to run RuleSets.
 type Engine struct {
 	sync.RWMutex
+	Client         *api.Client
 	backingStore   store.SimpleStore
 	trusted        bool
 	ruleSets       map[string]*RuleSet
 	scriptEnv      map[string]string
 	eventEndpoint  string
 	Debug          bool
-	rClient        *api.Client
 	eventSelectors []etInvoker
 }
 
@@ -52,7 +52,7 @@ func NewEngine(backingStore store.SimpleStore,
 	scriptEnv map[string]string) (*Engine, error) {
 	res := &Engine{
 		backingStore:   backingStore,
-		rClient:        client,
+		Client:         client,
 		trusted:        trusted,
 		scriptEnv:      scriptEnv,
 		ruleSets:       map[string]*RuleSet{},
@@ -101,7 +101,7 @@ func (e *Engine) eventSink() (*api.EventSink, error) {
 	res := &api.EventSink{}
 	matcher := map[string]interface{}{"endpoint": e.eventEndpoint}
 	matches := []*api.EventSink{}
-	if err := e.rClient.Match(res.ApiName(), matcher, &matches); err != nil {
+	if err := e.Client.Match(res.ApiName(), matcher, &matches); err != nil {
 		return nil, err
 	}
 	if len(matches) == 0 {
@@ -126,7 +126,7 @@ func (e *Engine) registerSink() error {
 	sink = &api.EventSink{}
 	sink.Endpoint = e.eventEndpoint
 	log.Printf("Creating new event sink at %s", e.eventEndpoint)
-	return e.rClient.BaseCreate(sink)
+	return e.Client.BaseCreate(sink)
 }
 
 // Called whenever we add/update/remove RuleSets. It makes sure
@@ -172,7 +172,7 @@ func (e *Engine) updateSelectors() {
 	matcher := map[string]interface{}{"event_sink_id": sink.ID}
 	matches := []*api.EventSelector{}
 	selector := &api.EventSelector{}
-	if err := e.rClient.Match(selector.ApiName(), matcher, &matches); err != nil {
+	if err := e.Client.Match(selector.ApiName(), matcher, &matches); err != nil {
 		log.Fatalf("Error getting event selectors: %v", err)
 	}
 
@@ -219,7 +219,7 @@ func (e *Engine) updateSelectors() {
 		selector.EventSinkID = sink.ID
 		selector.Selector = v.forRebar()
 		log.Printf("Creating new event selector, %#v", v)
-		if err := e.rClient.BaseCreate(selector); err != nil {
+		if err := e.Client.BaseCreate(selector); err != nil {
 			log.Fatalf("Error creating event selector: %v", err)
 		}
 	}
@@ -227,7 +227,7 @@ func (e *Engine) updateSelectors() {
 	// Delete old selectors
 	for _, v := range delete {
 		log.Printf("Deleting old event selector, %#v", v.Selector)
-		if err := e.rClient.Destroy(v); err != nil {
+		if err := e.Client.Destroy(v); err != nil {
 			log.Fatalf("Error destroying event selector: %v", err)
 		}
 	}
@@ -241,7 +241,7 @@ func (e *Engine) Stop() {
 		e.deleteRuleSet(rs)
 	}
 	es, _ := e.eventSink()
-	e.rClient.Destroy(es)
+	e.Client.Destroy(es)
 }
 
 // Update e.eventselectors whenever a Ruleset is added or changed.
@@ -366,13 +366,13 @@ func (e *Engine) runRules(toRun []ctx, evt *Event) {
 			if v.ruleSet.Username != "" {
 				log.Panicf("Cannot happen: trusted client with no username")
 			}
-			if c, err := api.TrustedSession(e.rClient.URL, v.ruleSet.Username); err != nil {
+			if c, err := api.TrustedSession(e.Client.URL, v.ruleSet.Username); err != nil {
 				log.Panicf("Failed to establis trusted session impersonating %s", v.ruleSet.Username)
 			} else {
 				ctx.Client = c
 			}
 		} else {
-			ctx.Client = e.rClient
+			ctx.Client = e.Client
 		}
 		ctx.Vars["eventType"] = evt.Selector["event"]
 		for _, ri := range v.ruleIndexes {

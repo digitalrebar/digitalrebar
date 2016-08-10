@@ -1,5 +1,5 @@
 hash: 3f1a682dc4ff3aea413649b39764cc9288b29cab8c86b26464fe04bc1b6bbe6d
-updated: 2016-08-09T15:24:46.50989776-05:00
+updated: 2016-08-10T11:19:26.000974327-05:00
 imports:
 - name: github.com/boltdb/bolt
   version: 94c8db596809690a3f7046fa83c7b0dda13a3222
@@ -27,14 +27,14 @@ imports:
 - name: github.com/coddingtonbear/go-simplejson
   version: a582018feafb39c4884d1b03cad98b91e2804276
 - name: github.com/digitalrebar/go-common
-  version: 1106120a85a04dbc42fb1af69bb6c62dad6b9a3d
+  version: 11f384ab46b397167a7b4a9af52e4def2fbb797f
   subpackages:
   - cert
   - multi-tenancy
   - store
   - service
 - name: github.com/digitalrebar/rebar-api
-  version: 1ec106ac4a0f7ac02f829960f8b333e4f2319951
+  version: c57c0b682dadf9de4cf86e02140d0bd6e8e22618
   subpackages:
   - api
   - datatypes
@@ -52,7 +52,7 @@ imports:
 - name: github.com/guregu/null
   version: 41961cea0328defc5f95c1c473f89ebf0d1813f6
 - name: github.com/hashicorp/consul
-  version: 322704607a6095f187832f471a744570a7aaa702
+  version: d6aa033793a68b509d336b3bac6ebe36ac0ef818
   subpackages:
   - api
 - name: github.com/hashicorp/go-cleanhttp

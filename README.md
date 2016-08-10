@@ -14,16 +14,39 @@ for each rule it matches it takes appropriate action.
 
 ## Command line options:
 * backing: Backing store to use for RuleSets.  Permitted values are 'file' and 'consul' (default "file")
-* cacert: Path to certificate to use for API and Event validation (default "/etc/rule-engine/cacert.pem")
-* cert: Path to certificate to use for replies (default "/etc/rule-engine/cert.pem")
 * dataloc: Path to store data at (default "/var/cache/rule-engine")
 * debug: Whether to run in debug mode
-* endpoint: API Endpoint for Digital Rebar
-* key: Path to private key for the reply cert (default "/etc/rule-engine/key.pem")
 * listen: Address for the API and the event listener to listen on.
-* password: Password for Digital Rebar endpoint
-* username: Username for Digital Rebar endpoint
 * version: Print version and exit
+
+## Interacting with the Rule Engine
+
+### REST API
+
+* GET rulesets/
+  
+  List all the rulesets the user making the request can see.
+  
+* GET rulesets/:name
+
+  Fetch a ruleset by name.
+  
+* POST rulesets/
+
+  Create a new ruleset.
+  
+* PUT rulesets/:name
+
+  Update a ruleset by name
+  
+* DELETE rulesets/:name
+
+  Delete a ruleset
+  
+### Capabilities
+
+* RULESET_READ: Allows the ability to read rulesets in the tenant the user is a member of.
+* RULESET_UPDATE: Allows the ability to update rulesets in the tenant that the user is a member of.  Includes the ability to delete a ruleset.
 
 ## Events
 
@@ -37,17 +60,17 @@ with a rule-based expert system, and you will not be too far off the mark.
 An incoming Event is a blob of JSON that unmaps to the following structure:
 
     type Event struct {
-        Selector          EventSelector             `json:"selector"`
-	      Event             *client.Event             `json:"event"`
-	      Node              *client.Node              `json:"node"`
-	      Role              *client.Role              `json:"role"`
-	      NodeRole          *client.NodeRole          `json:"node_role"`
-	      Deployment        *client.Deployment        `json:"deployment"`
-	      DeploymentRole    *client.DeploymentRole    `json:"deployment_role"`
-	      Network           *client.Network           `json:"network"`
-	      NetworkAllocation *client.NetworkAllocation `json:"network_allocation"`
-	      NetworkRange      *client.NetworkRange      `json:"network_range"`
-	      NetworkRouter     *client.NetworkRouter     `json:"network_router"`
+        Selector            EventSelector          `json:"selector"`
+	      Event             *api.Event             `json:"event"`
+	      Node              *api.Node              `json:"node"`
+	      Role              *api.Role              `json:"role"`
+	      NodeRole          *api.NodeRole          `json:"node_role"`
+	      Deployment        *api.Deployment        `json:"deployment"`
+	      DeploymentRole    *api.DeploymentRole    `json:"deployment_role"`
+	      Network           *api.Network           `json:"network"`
+	      NetworkAllocation *api.NetworkAllocation `json:"network_allocation"`
+	      NetworkRange      *api.NetworkRange      `json:"network_range"`
+	      NetworkRouter     *api.NetworkRouter     `json:"network_router"`
     }
 
 Of those fields, only Selector and Event will be present in all Events.  The rest
@@ -64,25 +87,13 @@ created by:
 * NetworkRange: Network and NetworkRange will be filled.
 * NetworkRouter: Network and NetworkRouter will be filled.
 
-#### EventSelector
-
-EventSelector is the parameters that Digital Rebar initially created the Event with.
-Serialized as YAML, it looks ike this:
-
-    ---
-    - event: 'on_active'
-      # The name of the event to match. The only mandatory field. 
-      obj_class: 'role'
-      # The class of the object that issued the event.
-      obj_id: 'rebar-inventory'
-      # The name of the object that issued the event.  In this case,
-      # it is the role named 'rebar-inventory'
-
 ## Rulesets
 
-The rules file should contain a RuleSet in YML or JSON format.  
+Rulesets can be added to the rule engine by posting a YAML or JSON
+blob to the appropriate API endpoint. Otherwise, rules will always be
+returned from the rule engine in JSON format.
 
-### An example rules file:
+### An example ruleset:
 
     ---
     # Copyright (c) 2016, Rackn Inc.
@@ -156,6 +167,8 @@ A RuleSet is composed of the following fields:
 * Description: A description of a RuleSet.  Be as detailed as you want. 
 * Active: Whether the RuleSet is active.  If the RuleSet is not active, then none of 
 its rules will be used to process incoming Events.
+* TenantID:  The tenant the ruleset is a member of.  It is populated by the rule engine on initial create., and cannot be changed by an update
+* Username: The username that initially created the ruleset.
 * Rules: The list of Rules for the RuleSet.
 
 ### Rule definition:

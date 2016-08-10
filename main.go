@@ -79,7 +79,7 @@ func testCap(c *gin.Context, rs *engine.RuleSet, op string) bool {
 	if !ok {
 		return false
 	}
-	return capSet.HasCapability(rs.TenantID, op)
+	return capSet.HasCapability(int(rs.TenantID), op)
 }
 
 func createRuleset(c *gin.Context) {
@@ -97,6 +97,22 @@ func createRuleset(c *gin.Context) {
 		c.AbortWithError(http.StatusExpectationFailed, err)
 		return
 	}
+	name, ok := c.Get("User")
+	if !ok {
+		c.AbortWithError(http.StatusExpectationFailed, errors.New("Failed to fetch user"))
+		n, ok := name.(string)
+		if !ok {
+			c.AbortWithError(http.StatusExpectationFailed,
+				errors.New("Failed to fetch user"))
+		}
+		ruleSet.Username = n
+	}
+	user := &api.User{}
+	if err := ruleEngine.Client.Fetch(user, ruleSet.Username); err != nil {
+		c.AbortWithError(http.StatusExpectationFailed,
+			fmt.Errorf("Failed to fetch user: %v", err))
+	}
+	ruleSet.TenantID = user.CurrentTenantID
 	ruleSet, err = ruleEngine.AddRuleSet(ruleSet)
 	if err != nil {
 		log.Printf("Failed to add ruleset %s: %v", ruleSet.Name, err)
@@ -152,6 +168,22 @@ func updateRuleset(c *gin.Context) {
 	}
 	if name != newRuleSet.Name {
 		log.Printf("Cannot change name from %s to %s", name, newRuleSet.Name)
+		c.AbortWithStatus(http.StatusConflict)
+		return
+	}
+	if oldRuleSet.TenantID != newRuleSet.TenantID {
+		log.Printf("Cannot change tenant ID from %d to %s for ruleset %s",
+			oldRuleSet.TenantID,
+			newRuleSet.TenantID,
+			name)
+		c.AbortWithStatus(http.StatusConflict)
+		return
+	}
+	if oldRuleSet.Username != newRuleSet.Username {
+		log.Printf("Cannot change username from %s to %s for ruleset %s",
+			oldRuleSet.Username,
+			newRuleSet.Username,
+			name)
 		c.AbortWithStatus(http.StatusConflict)
 		return
 	}
@@ -258,6 +290,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error creating Rebar API client: %v", err)
 	}
+
 	ruleEngine, err = engine.NewEngine(bs, client, true, scriptEnv)
 	if err != nil {
 		log.Fatalf("Error creating rule engine: %v", err)
@@ -307,6 +340,21 @@ func main() {
 
 	ruleEngine.Debug = debug
 	log.Printf("Talking to Rebar API at %s, our API at %s", endpoint, listen)
+
+	// Create the capabilities we need.
+	for _, capName := range []string{"RULESET_READ", "RULESET_UPDATE"} {
+		cap := &api.Capability{}
+		cap.Name = capName
+		if err := client.Read(cap); err != nil {
+			log.Printf("Creating capability %s", capName)
+			cap.Description = "Allow access to actions on rule engine rulesets"
+			cap.Source = "Rule Engine"
+			cap.Name = capName
+			if err := client.BaseCreate(cap); err != nil {
+				log.Fatalf("Failed to create capability %s: %v", capName, err)
+			}
+		}
+	}
 
 	// Clean up on SIGTERM
 	killChan := make(chan os.Signal, 1)

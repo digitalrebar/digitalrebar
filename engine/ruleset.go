@@ -313,7 +313,7 @@ type RuleSet struct {
 	// terminate, and one of the better ways to do that is to ensure that we cannot
 	// have loops in rule processing.  This restriction may be relaxed in the future.
 	Rules      []Rule
-	TenantID   int
+	TenantID   int64
 	Username   string
 	engine     *Engine
 	namedRules map[string]int
