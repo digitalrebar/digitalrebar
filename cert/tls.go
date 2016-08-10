@@ -47,12 +47,10 @@ func simpleKeys(trustRoot, name string) (*x509.CertPool, *tls.Certificate, error
 func Client(trustRoot, clientName string) (*http.Client, error) {
 	pool, cert, err := simpleKeys(trustRoot, clientName)
 	tlsCfg := &tls.Config{
-		ClientAuth: tls.RequireAndVerifyClientCert,
-		RootCAs:    pool,
-		GetCertificate: func(c *tls.ClientHelloInfo) (*tls.Certificate, error) {
-			return cert, nil
-		},
+		RootCAs:      pool,
+		Certificates: []tls.Certificate{*cert},
 	}
+	tlsCfg.BuildNameToCertificate()
 	tr := &http.Transport{TLSClientConfig: tlsCfg}
 	return &http.Client{Transport: tr}, err
 }
