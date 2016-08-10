@@ -44,7 +44,22 @@ class GoogleProvider < CloudProvider
     		default: "",
     		length: 30,
     		name: I18n.t('json_key', scope: "providers.show.google" )
-  		}
+      },
+      'provider-create-hint' => {
+        type: "json_key",
+        default: {
+          disks: [
+            {
+              'autoDelete' => true,
+              'boot' => true,
+              'type' => 'PERSISTENT',
+              'initializeParams' => {
+                'sourceImage' => "projects/ubuntu-os-cloud/global/images/ubuntu-1504-vivid-v20151120"
+              }
+            }
+          ]
+        }
+      }
     }
   end
 

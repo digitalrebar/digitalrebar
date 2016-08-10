@@ -56,6 +56,10 @@ class Provider < ActiveRecord::Base
         default: "",
         length: 30,
         name: I18n.t('access_key_id', scope: "providers.show.aws" )
+      },
+      'provider-create-hint' => {
+        type: "json_key",
+        default: {}
       }
     }
   end

@@ -86,6 +86,12 @@ class OpenStackProvider < CloudProvider
         default: "auto",
         length: 30,
         name: I18n.t('os-network-internal', scope: "providers.show.openstack" )
+      },
+      'provider-create-hint' => {
+        type: "json_key",
+        default: {
+          "os" => "ubuntu"
+        }
       }
     }
   end

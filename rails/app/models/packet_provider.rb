@@ -56,6 +56,12 @@ class PacketProvider < CloudProvider
         default: "baremetal_1",
         length: 30,
         name: I18n.t('plan', scope: "providers.show.packet" )
+      },
+      'provider-create-hint' => {
+        type: "json_key",
+        default: {
+          os: "ubuntu_14_04"
+        }
       }
     }
   end
