@@ -100,13 +100,13 @@ func createRuleset(c *gin.Context) {
 	name, ok := c.Get("User")
 	if !ok {
 		c.AbortWithError(http.StatusExpectationFailed, errors.New("Failed to fetch user"))
-		n, ok := name.(string)
-		if !ok {
-			c.AbortWithError(http.StatusExpectationFailed,
-				errors.New("Failed to fetch user"))
-		}
-		ruleSet.Username = n
 	}
+	n, ok := name.(string)
+	if !ok {
+		c.AbortWithError(http.StatusExpectationFailed,
+			errors.New("Failed to fetch user"))
+	}
+	ruleSet.Username = n
 	user := &api.User{}
 	if err := ruleEngine.Client.Fetch(user, ruleSet.Username); err != nil {
 		c.AbortWithError(http.StatusExpectationFailed,
