@@ -37,6 +37,10 @@ class TrustedClient
     exec(:post, data)
   end
 
+  def patch(data)
+    exec(:patch, data)
+  end
+
   def delete
     exec(:delete)
   end
