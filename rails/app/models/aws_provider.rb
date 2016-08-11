@@ -56,6 +56,14 @@ class AwsProvider < CloudProvider
         default: "!default",
         length: 30,
         name: I18n.t('vpc_id', scope: "providers.show.aws" )
+      },
+      'provider-create-hint' => {
+        type: "json_key",
+        name: I18n.t('provider-create-hint', scope: "providers.show"),
+        length: 3,
+        default: {
+          image_id: "!default-ami"
+        }
       }
     }
   end

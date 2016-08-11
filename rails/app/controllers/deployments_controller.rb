@@ -242,13 +242,13 @@ class DeploymentsController < ApplicationController
       # review nodes
       params["nodes"].each_with_index do |node, block|
 
+        Rails.logger.debug("Deployment Batch: working on #{node}")
+
         # collect the roles, take no action
         node["roles"].each do |r|
           role = find_key_cap(Role,r, cap("READ","ROLE"))
           roles[r] = { id: role.id, cohort: role.cohort, nodes: [] }
         end
-
-        Rails.logger.debug("Deployment Batch: working on #{node}")
 
         # collect/create nodes - if you have an ID or it's >0, then use it
         if node["id"] and (node["id"].to_i > -1)

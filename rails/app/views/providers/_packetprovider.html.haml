@@ -12,4 +12,9 @@
           = text_field_tag("auth_details[#{key}]", @item.auth_details[key.to_s] || values[:default], :size => values[:length])
         - elsif values[:type] == "password"
           = password_field_tag("auth_details[#{key}]", @item.auth_details[key.to_s], :size => values[:length])
+        - elsif values[:type] == "json_key"
+          - j = (@item.auth_details[key.to_s] || values[:default])
+          %textarea{:name => "auth_details[#{key}]", :rows=>values[:length], :cols=>160}
+            = JSON.pretty_generate j rescue j
         - else
+          = "form for #{values[:type]} not implemented"
