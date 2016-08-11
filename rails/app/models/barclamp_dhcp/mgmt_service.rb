@@ -14,7 +14,6 @@
 #
 
 require 'resolv'
-require 'rest-client'
 require 'uri'
 
 class BarclampDhcp::MgmtService < Service
@@ -262,43 +261,6 @@ class BarclampDhcp::MgmtService < Service
     end
   end
 
-  def self.get_base_resource(url)
-    store = OpenSSL::X509::Store.new
-    store.add_cert(OpenSSL::X509::Certificate.new(File.read('/var/run/rebar/ca.pem')))
-
-    # get client key and cert
-    client_cert = OpenSSL::X509::Certificate.new(File.read('/var/run/rebar/server.crt'))
-    client_key  = OpenSSL::PKey.read(File.read('/var/run/rebar/server.key'))
-
-    RestClient::Resource.new(
-        url,
-        :ssl_cert_store  =>  store,
-	:ssl_client_cert =>  client_cert,
-	:ssl_client_key  =>  client_key,
-        :verify_ssl      =>  OpenSSL::SSL::VERIFY_PEER
-    )
-  end
-
-  def self.send_request_get(url)
-    user = User.find_by(username: 'system')
-    get_base_resource(url).get :'X-Authenticated-Username' => 'system', :'X-Authenticated-Capability' => user.cap_map.to_json
-  end
-
-  def self.send_request_put(url, data)
-    user = User.find_by(username: 'system')
-    get_base_resource(url).put data.to_json, :content_type => :json, :accept => :json, :'X-Authenticated-Username' => 'system', :'X-Authenticated-Capability' => user.cap_map.to_json
-  end
-
-  def self.send_request_post(url, data)
-    user = User.find_by(username: 'system')
-    get_base_resource(url).post data.to_json, :content_type => :json, :accept => :json, :'X-Authenticated-Username' => 'system', :'X-Authenticated-Capability' => user.cap_map.to_json
-  end
-
-  def self.send_request_delete(url)
-    user = User.find_by(username: 'system')
-    get_base_resource(url).delete :'X-Authenticated-Username' => 'system', :'X-Authenticated-Capability' => user.cap_map.to_json
-  end
-
   #
   # name is name of network
   # subnet is a CIDR string
@@ -324,7 +286,7 @@ class BarclampDhcp::MgmtService < Service
 
     url = "#{service['url']}/subnets"
 
-    send_request_post(url, hash)
+    TrustedClient.new(url).post(hash.to_json)
   end
 
   def self.update_network(t_id, name, subnet, next_server, start_ip, end_ip, options)
@@ -346,14 +308,14 @@ class BarclampDhcp::MgmtService < Service
 
     url = "#{service['url']}/subnets/#{name}"
 
-    send_request_put(url, hash)
+    TrustedClient.new(url).put(hash.to_json)
   end
 
   def self.delete_network(name)
     service = get_service
     return unless service
     url = "#{service['url']}/subnets/#{name}"
-    send_request_delete(url)
+    TrustedClient.new(url).delete
   end
 
   def self.bind_node_ip_mac(name, mac, ip, bootenv, loader)
@@ -386,7 +348,7 @@ class BarclampDhcp::MgmtService < Service
     service = get_service
     return unless service
     url = "#{service['url']}/subnets/#{name}/bind"
-    send_request_post(url, hash)
+    TrustedClient.new(url).post(hash.to_json)
   end
 
   def self.unbind_node_ip_mac(name, mac)
@@ -396,7 +358,7 @@ class BarclampDhcp::MgmtService < Service
     service = get_service
     return unless service
     url = "#{service['url']}/subnets/#{name}/bind/#{mac}"
-    send_request_delete(url)
+    TrustedClient.new(url).delete
   end
 
 end

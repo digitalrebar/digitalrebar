@@ -88,15 +88,22 @@ class EventSink < ActiveRecord::Base
         raise "http handler does not know how to handle #{obj.class.name}"
       end
       begin
-        RestClient::Request.execute(
-          method: :post,
-          url: endpoint,
-          timeout: 1,
-          payload: data.to_json,
-          headers: {
-            content_type: 'application/json',
-            accept: 'application/json'
-          })
+        # At some point add a field to the Model to tell whether
+        # the endpoint is trusted, otherwise just assume that everything talking
+        # via https needs to use a trusted client with peer cert verification.
+        if meth == "https"
+          TrustedClient.new(endpoint).post(data.to_json)
+        else
+          RestClient::Request.execute(
+            method: :post,
+            url: endpoint,
+            timeout: 1,
+            payload: data.to_json,
+            headers: {
+              content_type: 'application/json',
+              accept: 'application/json'
+            })
+        end
       rescue => e
         Rails.logger.error("EventSink: error POSTing back to #{endpoint}: #{e.inspect}")
       end
