@@ -425,6 +425,56 @@ func actionJumpOrCall(rs *RuleSet, ruleIdx int, call bool, v interface{}) (actio
 	}, nil
 }
 
+func actionNode(v interface{}) (action, error) {
+	tgt, ok := v.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Node requires a map")
+	}
+	uuidThing, ok := tgt["UUID"]
+	if !ok {
+		return nil, fmt.Errorf("Node needs a UUID element")
+	}
+	uuid, ok := uuidThing.(string)
+	if !ok {
+		return nil, fmt.Errorf("Node UUID must be a string")
+	}
+	actionThing, ok := tgt["Action"]
+	if !ok {
+		return nil, fmt.Errorf("Node needs an Action element")
+	}
+	action, ok := actionThing.(string)
+	if !ok {
+		return nil, fmt.Errorf("Node action must be a string")
+	}
+	switch action {
+	case "Scrub", "Redeploy", "Propose", "Destroy", "Commit":
+	default:
+		return nil, fmt.Errorf("Unknown node action %s", action)
+	}
+	return func(c *RunContext) error {
+		node := &api.Node{}
+		if err := c.Client.Fetch(node, uuid); err != nil {
+			return err
+		}
+		var err error
+		switch action {
+		case "Scrub":
+			err = node.Scrub()
+		case "Redeploy":
+			err = node.Redeploy()
+		case "Propose":
+			err = c.Client.Propose(node)
+		case "Destroy":
+			err = c.Client.Destroy(node)
+		case "Commit":
+			err = c.Client.Commit(node)
+		default:
+			err = fmt.Errorf("Cannot happen: node action %s", action)
+		}
+		return err
+	}, nil
+}
+
 func resolveAction(e *Engine, rs *RuleSet, ruleIdx int, a map[string]interface{}) (action, error) {
 	if len(a) != 1 {
 		return nil, fmt.Errorf("Actions have exactly one key")
@@ -456,6 +506,8 @@ func resolveAction(e *Engine, rs *RuleSet, ruleIdx int, a map[string]interface{}
 			return actionJumpOrCall(rs, ruleIdx, false, v)
 		case "Call":
 			return actionJumpOrCall(rs, ruleIdx, true, v)
+		case "Node":
+			return actionNode(v)
 		default:
 			return nil, fmt.Errorf("Unknown action %s", t)
 		}
