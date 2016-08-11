@@ -114,6 +114,8 @@ en:
     annealer_description: "Rebar Orchestration Engine"
     layercake: "System Overview"
     layercake_description: "Visualize Infrastructure in Function Layers"
+    deployment_template: "Provisioning Wizard"
+    deployment_template_description: "Take bulk actions on nodes in deployments"
 
     utils: "Utilities"
     manage_users: "Manage Users"

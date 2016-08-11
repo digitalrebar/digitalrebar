@@ -5,7 +5,7 @@
   - data["attribs"]["provisioner-target_os"] = available_os.first
   - @source.nodes.each do |n|
     - unless n.system?
-      - data["nodes"] << [ { "id" => n.name, "roles" => [ "rebar-installed-node" ] } ]
+      - data["nodes"] << { "id" => n.name, "roles" => [ "rebar-installed-node" ] }
 - else
   - data = { "provider" => { }, "attribs" => {}, "nodes" => [ { "roles" => [] } ] } 
   - @provider.each { |p| data["provider"]["name"] = p.name }
