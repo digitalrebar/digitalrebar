@@ -87,21 +87,7 @@ class BarclampDns::MgmtService < Service
   end
 
   def self.send_request(url, data)
-    store = OpenSSL::X509::Store.new
-    store.add_cert(OpenSSL::X509::Certificate.new(File.read('/var/run/rebar/ca.pem')))
-
-    # get client key and cert
-    client_cert = OpenSSL::X509::Certificate.new(File.read('/var/run/rebar/server.crt'))
-    client_key  = OpenSSL::PKey.read(File.read('/var/run/rebar/server.key'))
-
-    user = User.find_by(username: 'system')
-    RestClient::Resource.new(
-        url,
-        :ssl_cert_store =>  store,
-	:ssl_client_cert=>  client_cert,
-	:ssl_client_key =>  client_key,
-        :verify_ssl     =>  OpenSSL::SSL::VERIFY_PEER
-    ).patch data.to_json, :content_type => :json, :accept => :json, :'X-Authenticated-Username' => 'system', :'X-Authenticated-Capability' => user.cap_map.to_json
+    TrustedClient.new(url).patch(data.to_json)
   end
 
   def self.update_dns_record(service, zone, t_id, rr_type, name, value, action)
