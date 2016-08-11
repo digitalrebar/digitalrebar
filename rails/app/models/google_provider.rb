@@ -41,20 +41,22 @@ class GoogleProvider < CloudProvider
   		},
     	google_json_key: {
     		type: "json_key",
-    		default: "",
-    		length: 30,
+        default: '{ "replace_me": "with exact json from provider" }',
+        length: 5,
     		name: I18n.t('json_key', scope: "providers.show.google" )
       },
       'provider-create-hint' => {
         type: "json_key",
+        name: I18n.t('provider-create-hint', scope: "providers.show"),
+        length: 15,
         default: {
-          disks: [
+          "disks" => [
             {
-              'autoDelete' => true,
-              'boot' => true,
-              'type' => 'PERSISTENT',
-              'initializeParams' => {
-                'sourceImage' => "projects/ubuntu-os-cloud/global/images/ubuntu-1504-vivid-v20151120"
+              "autoDelete" => true,
+              "boot" => true,
+              "type" => "PERSISTENT",
+              "initializeParams" => {
+                "sourceImage" => "projects/ubuntu-os-cloud/global/images/ubuntu-1504-vivid-v20151120"
               }
             }
           ]

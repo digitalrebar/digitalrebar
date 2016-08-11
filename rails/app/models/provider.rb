@@ -59,6 +59,8 @@ class Provider < ActiveRecord::Base
       },
       'provider-create-hint' => {
         type: "json_key",
+        length: 5,
+        name: I18n.t('provider-create-hint', scope: "providers.show"),
         default: {}
       }
     }

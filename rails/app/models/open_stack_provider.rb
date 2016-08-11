@@ -89,6 +89,8 @@ class OpenStackProvider < CloudProvider
       },
       'provider-create-hint' => {
         type: "json_key",
+        name: I18n.t('provider-create-hint', scope: "providers.show"),
+        length: 5,
         default: {
           "os" => "ubuntu"
         }

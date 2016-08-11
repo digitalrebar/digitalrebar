@@ -479,6 +479,7 @@ en:
       update: "Save"
       provider: "Provider"
       config_options: "Config Options"
+      provider-create-hint: "Node Create Hint"
       cloud:
         details: "Details"
       aws:

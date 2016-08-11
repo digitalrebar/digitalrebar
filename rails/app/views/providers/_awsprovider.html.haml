@@ -14,7 +14,8 @@
         - elsif values[:type] == "password"
           = password_field_tag("auth_details[#{key}]", @item.auth_details[key.to_s], :size => values[:length])
         - elsif values[:type] == "json_key"
-          %textarea{:name => "auth_details[#{key}]", :rows=>5, :cols=>160}
-            = JSON.pretty_generate (@item.auth_details[key.to_s] || { 'replace_me' => 'with exact json from provider' } )
+          - j = (@item.auth_details[key.to_s] || values[:default])
+          %textarea{:name => "auth_details[#{key}]", :rows=>values[:length], :cols=>160}
+            = JSON.pretty_generate j rescue j
         - else
           = "form for #{values[:type]} not implemented"
