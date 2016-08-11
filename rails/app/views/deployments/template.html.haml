@@ -1,6 +1,8 @@
 - if @source
-  - data = { "attribs" => {}, "nodes" => [] }
-  - data["attribs"]["provisioner-target_os"] = "select o/s" #Attrib.get('provisioner-available-oses').first
+  - available_os = Attrib.get("provisioner-available-oses", @source).map{ |k,v| k } rescue ["enter o/s"]
+  - data = { "hint" => {}, "attribs" => {}, "nodes" => [] }
+  - data["hint"]["available_oses"] = available_os
+  - data["attribs"]["provisioner-target_os"] = available_os.first
   - @source.nodes.each do |n|
     - unless n.system?
       - data["nodes"] << [ { "id" => n.name, "roles" => [ "rebar-installed-node" ] } ]
