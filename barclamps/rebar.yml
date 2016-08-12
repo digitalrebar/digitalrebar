@@ -37,7 +37,7 @@ wizard:
       type: required
       count: -1
       roles:
-        all:
+        provision:
           - rebar-installed-node
     - name: docker
       description: "Install Docker Base"
@@ -45,7 +45,8 @@ wizard:
       type: optional
       count: -1
       roles:
-        - docker-ready
+        docker:
+          - docker-ready
 
 roles:
   # Rebar  Core
