@@ -179,7 +179,6 @@ ActiveRecord::Base.transaction do
   Nav.find_or_create_by(item: 'deploy', parent_item: 'root', name: 'nav.deployments', description: 'nav.deployments_description', path: "main_app.deployments_path", order: 2000)
   Nav.find_or_create_by(item: 'deploy_child', parent_item: 'deploy', name: 'nav.deployments', description: 'nav.deployments_description', path: "main_app.deployments_path", order: 1000)
   Nav.find_or_create_by(item: 'roles', parent_item: 'deploy', name: 'nav.roles', description: 'nav.roles_description', path: "main_app.roles_path", order: 2000)
-  Nav.find_or_create_by(item: 'template', parent_item: 'deploy', name: 'nav.deployment_template', description: 'nav.deployment_template_description', path: "main_app.roles_path", order: 3000)
 
   # utils
   Nav.find_or_create_by(item: 'utils', parent_item: 'root', name: 'nav.utils', description: 'nav.utils_description', path: "main_app.utils_path", order: 6000)
