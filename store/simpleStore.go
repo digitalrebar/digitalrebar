@@ -5,6 +5,7 @@ import (
 	"path"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync"
 
 	"github.com/boltdb/bolt"
@@ -149,7 +150,12 @@ func (b *SimpleConsulStore) finalKey(k string) string {
 }
 
 func (b *SimpleConsulStore) Keys() ([]string, error) {
-	res, _, err := b.kv.Keys(b.baseKey, "", nil)
+	keys, _, err := b.kv.Keys(b.baseKey, "", nil)
+	res := make([]string, len(keys))
+	for i := range keys {
+		sepPos := strings.LastIndex(keys[i], "/")
+		res[i] = keys[i][(sepPos + 1):]
+	}
 	return res, err
 }
 

@@ -131,6 +131,7 @@ func (s *Sink) SetSelectors(c *api.Client, wanted []Selector) error {
 			if err := c.BaseCreate(newSelector); err != nil {
 				return err
 			}
+			unchanged = append(unchanged, newSelector)
 		}
 	}
 
@@ -138,7 +139,7 @@ func (s *Sink) SetSelectors(c *api.Client, wanted []Selector) error {
 	for _, es := range currentSelectors {
 		doDelete := true
 		for _, sel := range unchanged {
-			if es == sel {
+			if reflect.DeepEqual(es.Selector, sel.Selector) {
 				doDelete = false
 				break
 			}
