@@ -241,6 +241,6 @@ wait_for_admin_containers() {
 
 tear_down_admin_containers() {
     cd "$mountdir/deploy/compose"
-    docker-compose kill
+    docker-compose stop
     docker-compose rm -f
 }
