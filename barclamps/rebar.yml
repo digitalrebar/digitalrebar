@@ -30,7 +30,6 @@ wizard:
   icon: "publish"
   system_nodes: true
   create_nodes: false
-  os: true
   services:
     - name: provision
       description: "Provision O/S"
@@ -38,7 +37,8 @@ wizard:
       type: required
       count: -1
       roles:
-        - rebar-installed-node
+        all:
+          - rebar-installed-node
     - name: docker
       description: "Install Docker Base"
       icon: "directions_ferry"
