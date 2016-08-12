@@ -66,4 +66,8 @@ class Provider < ActiveRecord::Base
     }
   end
 
+  def variant_default
+    'unknonwn'
+  end
+
 end

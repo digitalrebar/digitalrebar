@@ -71,4 +71,8 @@ class GoogleProvider < CloudProvider
     auth_details['provider'] = 'Google'
   end
 
+  def variant_default
+    'google'
+  end
+
 end

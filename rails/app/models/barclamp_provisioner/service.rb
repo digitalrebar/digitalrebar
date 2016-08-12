@@ -18,7 +18,7 @@ require 'uri'
 class BarclampProvisioner::Service < Service
 
   def on_node_delete(node)
-    provisioner_delete(node.uuid)
+    provisioner_delete(node.uuid) unless node.variant == 'phantom'
   end
 
   def on_node_change(node)

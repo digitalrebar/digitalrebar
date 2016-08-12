@@ -34,6 +34,7 @@ class BarclampChef::Client < Role
   end
 
   def on_node_delete(node)
+    return if node.variant == 'phantom'
     chefjig = Jig.where(:name => "chef").first
     raise "Cannot load Chef Jig" unless chefjig
     # we have a problem is if the chef jig is not active

@@ -534,6 +534,8 @@ class NodeRole < ActiveRecord::Base
         res["rebar_wall"] ||= Hash.new
         res["rebar_wall"]["reservations"] = node.discovery["reservations"]
       end
+      # Add variant
+      res["variant"] = node.variant
       # Add any hints.
       res["hints"] = node.hint
       # Add quirks
