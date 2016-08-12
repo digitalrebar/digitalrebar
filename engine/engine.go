@@ -28,13 +28,12 @@ type etInvoker struct {
 // Engine holds all the necessary information to run RuleSets.
 type Engine struct {
 	sync.RWMutex
-	Client         *api.Client
-	Sink           *event.Sink
+	Client         *api.Client `json:"-"`
+	Sink           *event.Sink `json:"-"`
 	backingStore   store.SimpleStore
 	trusted        bool
 	ruleSets       map[string]*RuleSet
 	scriptEnv      map[string]string
-	eventEndpoint  string
 	Debug          bool
 	eventSelectors []etInvoker
 }
@@ -98,10 +97,6 @@ func (e *Engine) RegisterSink(URL string) error {
 // Called whenever we add/update/remove RuleSets. It makes sure
 // that the proper EventSelectors are registered with DigitalRebar.
 func (e *Engine) updateSelectors() {
-	// If there is no rebarEndpoint, we are in testing mode.
-	if e.eventEndpoint == "" {
-		return
-	}
 	selectors := []event.Selector{}
 	for _, rs := range e.ruleSets {
 		for i := range rs.Rules {
@@ -264,7 +259,7 @@ func (e *Engine) runRules(toRun []ctx, evt *event.Event) {
 			ruleset: &v.ruleSet,
 		}
 		if e.trusted {
-			if v.ruleSet.Username != "" {
+			if v.ruleSet.Username == "" {
 				log.Panicf("Cannot happen: trusted client with no username")
 			}
 			if c, err := api.TrustedSession(e.Client.URL, v.ruleSet.Username); err != nil {

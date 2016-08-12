@@ -26,7 +26,7 @@ type ctx struct {
 type RunContext struct {
 	Engine    *Engine                // The Engine that the Event is being processed with.
 	Evt       *event.Event           // The Event being matched against.
-	Client    *rebar.Client          // The Client that should be used for Rebar API interactions.
+	Client    *rebar.Client          `json:"-"` // The Client that should be used for Rebar API interactions.
 	ruleStack []int                  // The stack of rule indexes that we should Return to
 	ruleIdx   int                    // The index of the rule we are currently running.
 	stop      bool                   // Whether we should stop processing rules
