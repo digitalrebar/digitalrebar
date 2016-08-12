@@ -104,4 +104,8 @@ class OpenStackProvider < CloudProvider
     auth_details['provider'] = 'OpenStack'
   end
 
+  def variant_default
+    'openstack'
+  end
+
 end

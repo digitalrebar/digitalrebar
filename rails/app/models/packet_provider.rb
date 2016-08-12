@@ -74,4 +74,8 @@ class PacketProvider < CloudProvider
     auth_details['provider'] = 'Packet'
   end
 
+  def variant_default
+    'packet'
+  end
+
 end

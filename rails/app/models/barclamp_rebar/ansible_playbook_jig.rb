@@ -285,12 +285,19 @@ private
     args = command.split(/[\)\(\.,]/)
     addr_class = args[1].strip.to_sym
     attr_cat = args[2].strip
-    ip_part = args[4].strip
+
+    fallback_choice = :all
+    if args.length == 5
+      ip_part = args[4].strip
+    else
+      ip_part = args[5].strip
+      fallback_choice = args[3].strip.to_sym
+    end
 
     list = ['admin']
     value = Attrib.get(attr_cat, nr)
     list = [value] if value
-    addresses = node.addresses(addr_class, list)
+    addresses = node.addresses(addr_class, list, fallback_choice)
 
     answer = nil
     answer = addresses[0].to_s if ip_part == 'cidr'
@@ -364,7 +371,7 @@ private
   end
 
   # possible custom commands are:
-  #   ipaddress([all|v4_only|v6_only], attribute).[ifname|cidr|address]
+  #   ipaddress([all|v4_only|v6_only], attribute, [default,public,private]).[ifname|cidr|address]
   #   nodes_with_role(k8scontrail-master).<command applied to all nodes joined by " ">
   #   first_node_with_role(k8scontrail-master).<command applied to node>
   def process_command(node, nr, command)

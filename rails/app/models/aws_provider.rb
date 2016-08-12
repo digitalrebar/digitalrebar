@@ -73,5 +73,9 @@ class AwsProvider < CloudProvider
   def inject_aws
     auth_details['provider'] = 'AWS'
   end
+
+  def variant_default
+    'aws'
+  end
   
 end

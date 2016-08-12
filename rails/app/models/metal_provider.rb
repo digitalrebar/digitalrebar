@@ -31,4 +31,8 @@ class MetalProvider < Provider
     obj.power.reboot
   end
 
+  def variant_default
+    'metal'
+  end
+
 end

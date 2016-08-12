@@ -231,6 +231,7 @@ class NodesController < ApplicationController
       params.require(:deployment_id)
       params.require(:provider_id)
       params[:tenant_id] ||= @current_user.current_tenant_id
+      params[:variant] ||= provider.variant_default
       validate_create(params[:tenant_id])
       hints = params[:hints] || {}
       Rails.logger.info("Node create params: #{params.inspect}")

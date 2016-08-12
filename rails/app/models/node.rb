@@ -139,15 +139,15 @@ class Node < ActiveRecord::Base
     IP.coerce("#{net.v6prefix}:#{v6_hostpart}/64")
   end
 
-  def addresses(filter = :all, networks = ["admin"])
+  def addresses(ip_type_filter = :all, networks = ["admin"], return_filter = :all)
     res = []
     networks.each do |net_cat|
       nets = Network.in_category(net_cat)
       nets.each do |net|
         res2 = network_allocations.where(network_id: net.id).select do |a|
           answer = true
-          answer = false if filter == :v4_only and !a.address.v4?
-          answer = false if filter == :v6_only and !a.address.v6?
+          answer = false if ip_type_filter == :v4_only and !a.address.v4?
+          answer = false if ip_type_filter == :v6_only and !a.address.v6?
           answer
         end.map do |a|
           a.address
@@ -159,15 +159,19 @@ class Node < ActiveRecord::Base
         end
       end
     end
-    control_address = Attrib.get('node-control-address',self)
-    res << IP.coerce(control_address) if control_address
-    private_control_address = Attrib.get('node-private-control-address',self)
-    res << IP.coerce(private_control_address) if private_control_address
+    if return_filter == :all or return_filter == :public
+      control_address = Attrib.get('node-control-address',self)
+      res << IP.coerce(control_address) if control_address
+    end
+    if return_filter == :all or return_filter == :private
+      private_control_address = Attrib.get('node-private-control-address',self)
+      res << IP.coerce(private_control_address) if private_control_address
+    end
     res.flatten
   end
 
-  def address(filter = :all, networks = ["admin"])
-    res = addresses(filter,networks).detect{|a|a.reachable?}
+  def address(ip_type_filter = :all, networks = ["admin"])
+    res = addresses(ip_type_filter,networks).detect{|a|a.reachable?}
     Rails.logger.warn("Node #{name} did not have any reachable addresses in networks #{networks.inspect}") unless res
     res
   end
@@ -557,6 +561,7 @@ class Node < ActiveRecord::Base
       Event.fire(self, event: 'on_node_delete')
     rescue StandardError => e
       Rails.logger.error "Node #{name}: on_node_delete failed with #{e.message}"
+      Rails.logger.error "StackTrace: #{e.backtrace.join("\n")}"
     end
   end
 
