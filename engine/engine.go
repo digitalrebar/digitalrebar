@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"sync"
 
+	"github.com/digitalrebar/go-common/event"
 	"github.com/digitalrebar/go-common/store"
 	"github.com/digitalrebar/rebar-api/api"
 	"github.com/pborman/uuid"
@@ -20,7 +21,7 @@ import (
 // any given Event, we search through this instead, which by desigh has
 // exactly one entry per unique Selector we care about.
 type etInvoker struct {
-	selector    EventSelector
+	selector    event.Selector
 	ruleIndexes map[string][]int
 }
 
@@ -28,6 +29,7 @@ type etInvoker struct {
 type Engine struct {
 	sync.RWMutex
 	Client         *api.Client
+	Sink           *event.Sink
 	backingStore   store.SimpleStore
 	trusted        bool
 	ruleSets       map[string]*RuleSet
@@ -83,50 +85,14 @@ func NewEngine(backingStore store.SimpleStore,
 	return res, nil
 }
 
-func (e *Engine) RegisterSinks(URL string) error {
-	e.eventEndpoint = URL
-	if err := e.registerSink(); err != nil {
-		return err
-	}
-	e.updateSelectors()
-	return nil
-}
-
-func (e *Engine) eventSink() (*api.EventSink, error) {
-	// If there is no rebarEndpoint, we are in testing mode.
-	if e.eventEndpoint == "" {
-		return nil, nil
-	}
-	// Register us as an event sink, if not already registered.
-	res := &api.EventSink{}
-	matcher := map[string]interface{}{"endpoint": e.eventEndpoint}
-	matches := []*api.EventSink{}
-	if err := e.Client.Match(res.ApiName(), matcher, &matches); err != nil {
-		return nil, err
-	}
-	if len(matches) == 0 {
-		return nil, nil
-	}
-	if len(matches) > 1 {
-		return nil, fmt.Errorf("Multiple event sinks present for %s, cannot happen!",
-			e.eventEndpoint)
-	}
-	return matches[0], nil
-}
-
-func (e *Engine) registerSink() error {
-	sink, err := e.eventSink()
+func (e *Engine) RegisterSink(URL string) error {
+	sink, err := event.NewSink(e.Client, URL, e)
 	if err != nil {
 		return err
 	}
-	if sink != nil {
-		log.Printf("Already listening at %s", e.eventEndpoint)
-		return nil
-	}
-	sink = &api.EventSink{}
-	sink.Endpoint = e.eventEndpoint
-	log.Printf("Creating new event sink at %s", e.eventEndpoint)
-	return e.Client.BaseCreate(sink)
+	e.Sink = sink
+	e.updateSelectors()
+	return nil
 }
 
 // Called whenever we add/update/remove RuleSets. It makes sure
@@ -136,6 +102,7 @@ func (e *Engine) updateSelectors() {
 	if e.eventEndpoint == "" {
 		return
 	}
+	selectors := []event.Selector{}
 	for _, rs := range e.ruleSets {
 		for i := range rs.Rules {
 			rule := &rs.Rules[i]
@@ -161,75 +128,13 @@ func (e *Engine) updateSelectors() {
 					log.Printf("Creating selector %v for ruleset %s rule %d", e, rs.Name, i)
 
 					e.eventSelectors = append(e.eventSelectors, etInvoker{es, map[string][]int{rs.Name: []int{i}}})
+					selectors = append(selectors, event.Selector(es))
 				}
 			}
 		}
 	}
-	sink, err := e.eventSink()
-	if err != nil {
-		log.Fatalf("No event sink available for %s", e.eventEndpoint)
-	}
-	matcher := map[string]interface{}{"event_sink_id": sink.ID}
-	matches := []*api.EventSelector{}
-	selector := &api.EventSelector{}
-	if err := e.Client.Match(selector.ApiName(), matcher, &matches); err != nil {
-		log.Fatalf("Error getting event selectors: %v", err)
-	}
-
-	// Build lists of add, delete, already_present
-	add := []EventSelector{}
-	delete := []*api.EventSelector{}
-	alreadyPresent := []*api.EventSelector{}
-
-	// Negative Intersection new with old to get adds
-	for _, v := range e.eventSelectors {
-		log.Printf("Event selector %#v:", v.selector)
-		// Test to see if this selector is in our list.
-		doit := true
-		for _, e := range matches {
-			if reflect.DeepEqual(e.Selector, v.selector.forRebar()) {
-				doit = false
-				alreadyPresent = append(alreadyPresent, e)
-				break
-			}
-		}
-		if doit {
-			add = append(add, v.selector)
-		}
-	}
-
-	// Negative Intersection old with new to get deletes
-	for _, v := range matches {
-		found := false
-		for _, e := range alreadyPresent {
-			if v == e {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			delete = append(delete, v)
-		}
-	}
-
-	// Add new selectors
-	for _, v := range add {
-		selector = &api.EventSelector{}
-		selector.EventSinkID = sink.ID
-		selector.Selector = v.forRebar()
-		log.Printf("Creating new event selector, %#v", v)
-		if err := e.Client.BaseCreate(selector); err != nil {
-			log.Fatalf("Error creating event selector: %v", err)
-		}
-	}
-
-	// Delete old selectors
-	for _, v := range delete {
-		log.Printf("Deleting old event selector, %#v", v.Selector)
-		if err := e.Client.Destroy(v); err != nil {
-			log.Fatalf("Error destroying event selector: %v", err)
-		}
+	if err := e.Sink.SetSelectors(e.Client, selectors); err != nil {
+		log.Fatalf("Failed to set event selectors: %v", err)
 	}
 }
 
@@ -237,11 +142,7 @@ func (e *Engine) updateSelectors() {
 func (e *Engine) Stop() {
 	// Note that the lock is not released.
 	e.Lock()
-	for rs := range e.ruleSets {
-		e.deleteRuleSet(rs)
-	}
-	es, _ := e.eventSink()
-	e.Client.Destroy(es)
+	e.Sink.Stop(e.Client)
 }
 
 // Update e.eventselectors whenever a Ruleset is added or changed.
@@ -354,7 +255,7 @@ func (e *Engine) DeleteRuleSet(name string, version uuid.UUID) error {
 	return nil
 }
 
-func (e *Engine) runRules(toRun []ctx, evt *Event) {
+func (e *Engine) runRules(toRun []ctx, evt *event.Event) {
 	for _, v := range toRun {
 		ctx := &RunContext{
 			Engine:  e,
@@ -382,7 +283,7 @@ func (e *Engine) runRules(toRun []ctx, evt *Event) {
 }
 
 // HandleEvent should be called with an Event for the Engine to process.
-func (e *Engine) HandleEvent(evt *Event) {
+func (e *Engine) HandleEvent(evt *event.Event) error {
 	e.RLock()
 	toRun := []ctx{}
 	for _, invoker := range e.eventSelectors {
@@ -402,4 +303,5 @@ func (e *Engine) HandleEvent(evt *Event) {
 	}
 	e.RUnlock()
 	e.runRules(toRun, evt)
+	return nil
 }

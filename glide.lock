@@ -1,5 +1,5 @@
 hash: 3f1a682dc4ff3aea413649b39764cc9288b29cab8c86b26464fe04bc1b6bbe6d
-updated: 2016-08-10T11:19:26.000974327-05:00
+updated: 2016-08-12T14:55:32.300765485-05:00
 imports:
 - name: github.com/boltdb/bolt
   version: 94c8db596809690a3f7046fa83c7b0dda13a3222
@@ -27,12 +27,13 @@ imports:
 - name: github.com/coddingtonbear/go-simplejson
   version: a582018feafb39c4884d1b03cad98b91e2804276
 - name: github.com/digitalrebar/go-common
-  version: 11f384ab46b397167a7b4a9af52e4def2fbb797f
+  version: fe690370995a54032399b309268116b4bc74632a
   subpackages:
   - cert
   - multi-tenancy
   - store
   - service
+  - event
 - name: github.com/digitalrebar/rebar-api
   version: c57c0b682dadf9de4cf86e02140d0bd6e8e22618
   subpackages:
@@ -52,13 +53,13 @@ imports:
 - name: github.com/guregu/null
   version: 41961cea0328defc5f95c1c473f89ebf0d1813f6
 - name: github.com/hashicorp/consul
-  version: d6aa033793a68b509d336b3bac6ebe36ac0ef818
+  version: eb2d86d454ff697aaf8e4a2a95cbbedc07201fa9
   subpackages:
   - api
 - name: github.com/hashicorp/go-cleanhttp
   version: ad28ea4487f05916463e2423a55166280e8254b5
 - name: github.com/hashicorp/serf
-  version: a01569795d12afbdb3698739b614e057ee289fa0
+  version: 71f855f5012e5c57b185fd8acf8509f7ab5a30ea
   subpackages:
   - coordinate
 - name: github.com/manucorporat/sse

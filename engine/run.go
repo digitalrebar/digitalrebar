@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/VictorLowther/jsonpatch/utils"
+	"github.com/digitalrebar/go-common/event"
 	rebar "github.com/digitalrebar/rebar-api/api"
 )
 
@@ -24,7 +25,7 @@ type ctx struct {
 // RunContext holds the running information for a given Event as it matches against the Rules.
 type RunContext struct {
 	Engine    *Engine                // The Engine that the Event is being processed with.
-	Evt       *Event                 // The Event being matched against.
+	Evt       *event.Event           // The Event being matched against.
 	Client    *rebar.Client          // The Client that should be used for Rebar API interactions.
 	ruleStack []int                  // The stack of rule indexes that we should Return to
 	ruleIdx   int                    // The index of the rule we are currently running.

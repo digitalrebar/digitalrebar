@@ -7,7 +7,6 @@ See LICENSE.md at the top of this repository for more information.
 */
 
 import (
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -44,31 +43,6 @@ var (
 	dataDir      string
 	ruleEngine   *engine.Engine
 )
-
-func handleEvent(c *gin.Context) {
-	log.Printf("Got request from %v", c.Request.RemoteAddr)
-	evt := &engine.Event{}
-	body, err := ioutil.ReadAll(c.Request.Body)
-	if err != nil {
-		log.Printf("Error reading body: %v", err)
-		c.AbortWithError(http.StatusExpectationFailed, err)
-		return
-	}
-	c.Request.Body.Close()
-	if err := json.Unmarshal(body, evt); err != nil {
-		log.Printf("Error decoding body: %v", err)
-		log.Printf("Invalid body: %s", string(body))
-		c.AbortWithError(http.StatusExpectationFailed, err)
-		return
-	}
-	if runSync, ok := evt.Selector["sync"]; runSync == "true" && ok {
-		ruleEngine.HandleEvent(evt)
-		c.Status(http.StatusAccepted)
-	} else {
-		c.Status(http.StatusAccepted)
-		go ruleEngine.HandleEvent(evt)
-	}
-}
 
 func testCap(c *gin.Context, rs *engine.RuleSet, op string) bool {
 	cap, capOK := c.Get("Capabilities")
@@ -365,7 +339,8 @@ func main() {
 	}()
 	signal.Notify(killChan, syscall.SIGTERM)
 	signal.Notify(killChan, syscall.SIGINT)
-	router.POST("/events", handleEvent)
+	ruleEngine.RegisterSink(fmt.Sprintf("https://%s/events", listen))
+	router.POST("/events", gin.WrapH(ruleEngine.Sink))
 	apiv0 := router.Group("/api/v0")
 	apiv0.Use(capMiddleware)
 	apiv0.GET("/rulesets/", listRulesets)
@@ -380,7 +355,6 @@ func main() {
 	s.Addr = listen
 	s.Handler = router
 
-	ruleEngine.RegisterSinks(fmt.Sprintf("https://%s/events", listen))
 	log.Printf("Ready to handle events\n")
 	for {
 		log.Printf("API failed: %v", s.ListenAndServeTLS("", ""))

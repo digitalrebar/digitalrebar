@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/digitalrebar/go-common/event"
 	"github.com/pborman/uuid"
 )
 
@@ -252,7 +253,7 @@ type Rule struct {
 	// EventSelectors is a slice of EventSelector
 	// that determines which incoming Events will trigger
 	// this Rule. See the overall Rule documentation for more details.
-	EventSelectors []EventSelector
+	EventSelectors []event.Selector
 	// The Attributes that the rule needs to perform its job.  The Engine
 	// will fetch these Attributes from the Digital Rebar core prior
 	// to running the Rule.
