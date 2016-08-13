@@ -65,10 +65,15 @@ class DeploymentsController < ApplicationController
       params.require(:name)
       validate_create(params[:tenant_id])
       @deployment = Deployment.create!(params.permit(*permits))
-      if params[:system]
-        @deployment.update_attributes!(state: Deployment::COMMITTED)
-      end
     end
+
+    internal_batch(@deployment.id) if params[:nodes]
+
+    if params[:system] || params[:commit]
+      @deployment = find_key_cap(model, @deployment.id, cap("COMMIT"))
+      @deployment.commit
+    end
+
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment.id)}
       format.json { render api_show @deployment }
@@ -215,23 +220,19 @@ class DeploymentsController < ApplicationController
     render api_show @deployment
   end
 
-  # PUT
-  # bulk load deployment information
-  def batch
-
+  def internal_batch(did)
     roles = {}
     deployment_roles = []
     deployment = nil
 
     Deployment.transaction do
-
-      deployment = find_key_cap(model, params[:deployment_id], cap("UPDATE"))
+      deployment = find_key_cap(model, did, cap("UPDATE"))
       throw "Deployment must be proposed" unless deployment.proposed?
       throw "Nodes List is required" unless params["nodes"]
 
       # collect the attributes for the batch to make sure we have the associated roles
       if params["attribs"]
-        params["attribs"].each do |a, v| 
+        params["attribs"].each do |a, v|
           attrib = Attrib.find_key a
           roles[attrib.role.name] = { id: attrib.role.id, nodes: [], cohort: attrib.role.cohort }
         end
@@ -275,10 +276,10 @@ class DeploymentsController < ApplicationController
             name = "#{node["prefix"] || deployment.name}-#{(block+1).to_s.rjust(2, "0")}-#{i.to_s.rjust(3, "0")}.#{provider.name}.#{params["tld"] || deployment.name + '.cloud'}"
             Rails.logger.debug("Deployment Batch: adding node #{name}")
             validate_create(@current_user.current_tenant_id, cap("CREATE"), Node)
-            newnode = Node.create!( name: name, 
-                                  description: node["description"] || t("useradded", :user => @current_user.username), 
+            newnode = Node.create!( name: name,
+                                  description: node["description"] || t("useradded", :user => @current_user.username),
                                   admin: false,
-                                  tenant_id: @current_user.current_tenant_id, 
+                                  tenant_id: @current_user.current_tenant_id,
                                   deployment_id: deployment.id,
                                   provider_id: provider.id,
                                   allocated: false,
@@ -304,10 +305,9 @@ class DeploymentsController < ApplicationController
               Attrib.set(k,newnode,v)
             end
             # add the node to the roles that should be applied
-            node["roles"].each { |r| roles[r][:nodes] << newnode.id } 
+            node["roles"].each { |r| roles[r][:nodes] << newnode.id }
           end
         end
-
       end # nodes loop
 
       # we need to do this in cohort order!
@@ -324,12 +324,12 @@ class DeploymentsController < ApplicationController
 
       # set the attributes
       if params["attribs"]
-        params["attribs"].each do |a, v| 
+        params["attribs"].each do |a, v|
           Attrib.set(a, deployment, v)
         end
       end
 
-    end
+    end # end Transaction
 
     # assign nodes roles to deployment (cannot be in the top transaction)
     roles.each do |name, r|
@@ -340,6 +340,20 @@ class DeploymentsController < ApplicationController
         role.add_to_node node
       end
     end # roles loop
+
+  end
+
+
+  # PUT deployments/<id>/batch - id must exist and be in commit state
+  #
+  # bulk load deployment information
+  def batch
+    internal_batch(params[:deployment_id])
+
+    if params[:commit]
+      deployment = find_key_cap(model, params[:deployment_id], cap("COMMIT"))
+      deployment.commit
+    end
 
     render api_show deployment
 
