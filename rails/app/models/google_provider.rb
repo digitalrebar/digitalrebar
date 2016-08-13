@@ -56,7 +56,7 @@ class GoogleProvider < CloudProvider
               "boot" => true,
               "type" => "PERSISTENT",
               "initializeParams" => {
-                "sourceImage" => "projects/ubuntu-os-cloud/global/images/ubuntu-1504-vivid-v20151120"
+                "sourceImage" => "centos-7-v20160803"
               }
             }
           ]

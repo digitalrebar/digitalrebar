@@ -94,8 +94,11 @@ class DeploymentsController < ApplicationController
   def destroy
     model.transaction do
       @deployment = find_key_cap(model, params[:id], cap("DESTROY"))
-      throw "cannot destroy system deployments" if @deployment.system?
-      @deployment.destroy
+      if @deployment.system? # "cannot destroy system deployments" 
+        api_not_supported("delete", @deployments)
+      else
+        @deployment.destroy
+      end
     end
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment.parent_id) }
@@ -227,8 +230,8 @@ class DeploymentsController < ApplicationController
 
     Deployment.transaction do
       deployment = find_key_cap(model, did, cap("UPDATE"))
-      throw "Deployment must be proposed" unless deployment.proposed?
-      throw "Nodes List is required" unless params["nodes"]
+      api_error(deployment,"put", "Deployment must be proposed") unless deployment.proposed?
+      api_error(deployment,"put", "Nodes List is required") unless params["nodes"]
 
       # collect the attributes for the batch to make sure we have the associated roles
       if params["attribs"]
@@ -267,9 +270,10 @@ class DeploymentsController < ApplicationController
         else
           for i in 1..(node["count"] || 1)
             # provider is global BUT can be overridden per node
-            throw "Provider required" unless node["provider"] || params["provider"]
+            api_error(deployment,"put", "Provider required") unless node["provider"] || params["provider"]
             pro_raw = node["provider"] || params["provider"]
-            throw "Provider name required" unless pro_raw["name"]
+            api_error(deployment,"put", "Provider name required") unless pro_raw["name"]
+
             Rails.logger.debug("Deployment Batch: checking to see if user has access to provider #{pro_raw['name']}")
             provider = find_key_cap(Provider,(pro_raw["name"]), cap("READ","PROVIDER"))
 
