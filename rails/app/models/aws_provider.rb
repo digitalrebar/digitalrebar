@@ -62,7 +62,7 @@ class AwsProvider < CloudProvider
         name: I18n.t('provider-create-hint', scope: "providers.show"),
         length: 3,
         default: {
-          image_id: "!default-ami"
+          image_id: "ami-113cf471"
         }
       }
     }
