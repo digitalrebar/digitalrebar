@@ -234,7 +234,7 @@ class NetworkRange < ActiveRecord::Base
     @after_create = true
     Rails.logger.info("NetworkRange: calling all role on_network_change hooks for #{network.name}")
     begin
-      Event.fire(self.network, event: 'on_network_change')
+      Event.fire(self, event: 'on_network_change')
     rescue Exception => e
       Rails.logger.error "NetworkRange: on_network_change #{self.name} failed with #{e.message}"
     end
