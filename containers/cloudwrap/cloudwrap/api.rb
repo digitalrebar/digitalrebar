@@ -112,21 +112,21 @@ class Servers
                              "Name" => my_name }
         fixed_args[:flavor_id] ||= 't2.micro'
 	fixed_args[:block_device_mappings] = [{ "DeviceName" => "/dev/sda1", "Ebs" => { "DeleteOnTermination" => true } }]
-        unless fixed_args[:image_id]
-          log("Setting default image to an Ubuntu 14.04 based image")
+        unless fixed_args[:image_id] and fixed_args[:image_id].start_with("ami")
+          log("Setting default image to an Centos 7.2 Marketplace based image")
           # These are hvm:ebs images
           fixed_args[:image_id] = case ep.region
-                                  when "us-west-1" then "ami-a88de2c8"
-                                  when "us-west-2" then "ami-b4a2b5d5"
-                                  when "us-east-1" then "ami-bb156ad1"
-                                  when "us-gov-west-1" then "ami-d6bbd9f5"
-                                  when "eu-west-1" then "ami-cd0fd6be"
-                                  when "eu-central-1" then "ami-bdc9dad1"
-                                  when "ap-southeast-1" then "ami-9e7dbafd"
-                                  when "ap-southeast-2" then "ami-187a247b"
-                                  when "ap-northeast-1" then "ami-7386a11d"
-                                  when "sa-east-1" then "ami-5040fb3c"
-                                  when "cn-north-1" then "ami-4264f87b"
+                                  when "us-west-1" then "ami-b83b78d8" # n cali
+                                  when "us-west-2" then "ami-113cf471" # oregon
+                                  when "us-east-1" then "ami-0ca23e1b" # n va
+                                  #when "us-gov-west-1" then "ami-d6bbd9f5"
+                                  when "eu-west-1" then "ami-0f80e87c" # ireland
+                                  when "eu-central-1" then "ami-f9857396" # frank
+                                  #when "ap-southeast-1" then "ami-9e7dbafd"
+                                  #when "ap-southeast-2" then "ami-187a247b"
+                                  #when "ap-northeast-1" then "ami-7386a11d"
+                                  #when "sa-east-1" then "ami-5040fb3c"
+                                  #when "cn-north-1" then "ami-4264f87b"
                                   else
                                     raise "No idea what region #{ep.region} is"
                                   end
@@ -144,7 +144,7 @@ class Servers
                                  'boot' => 'true',
                                  'type' => 'PERSISTENT',
                                  'initializeParams' =>  {
-                                   'sourceImage' => 'projects/ubuntu-os-cloud/global/images/ubuntu-1504-vivid-v20151120'}}]
+                                   'sourceImage' => 'centos-7-v20160803'}}]
         end
         fixed_args[:username] = 'rebar'
         fixed_args[:name] = name
