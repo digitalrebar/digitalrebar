@@ -25,6 +25,7 @@ import (
 
 	"github.com/coddingtonbear/go-jsonselect"
 	"github.com/digitalrebar/go-common/cert"
+	"github.com/digitalrebar/go-common/client"
 	multitenancy "github.com/digitalrebar/go-common/multi-tenancy"
 	"github.com/digitalrebar/go-common/service"
 	"github.com/digitalrebar/go-common/store"
@@ -232,20 +233,6 @@ func main() {
 		log.Println("Waiting for Consul...")
 		time.Sleep(10 * time.Second)
 	}
-	for {
-		apiService, err := service.Find(cClient, "rebar-api", "")
-		if err != nil {
-			log.Fatalf("Problem looking for rebar API service: %v", err)
-		}
-		if len(apiService) == 0 {
-			log.Println("Rebar API service not registered yet")
-			time.Sleep(10 * time.Second)
-			continue
-		}
-		apiAddr, apiPort := service.Address(apiService[0])
-		endpoint = fmt.Sprintf("https://%s:%d", apiAddr, apiPort)
-		break
-	}
 	var bs store.SimpleStore
 	switch backingStore {
 	case "consul":
@@ -258,14 +245,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create backing store %s at %s: %v", backingStore, dataDir, err)
 	}
-	var client *api.Client
-	scriptEnv := map[string]string{"REBAR_ENDPOINT": endpoint}
-	client, err = api.TrustedSession(endpoint, "system")
+	rebarClient, err := client.Trusted("system", true)
 	if err != nil {
 		log.Fatalf("Error creating Rebar API client: %v", err)
 	}
 
-	ruleEngine, err = engine.NewEngine(bs, client, true, scriptEnv)
+	ruleEngine, err = engine.NewEngine(bs, rebarClient, true, nil)
 	if err != nil {
 		log.Fatalf("Error creating rule engine: %v", err)
 	}
@@ -319,12 +304,12 @@ func main() {
 	for _, capName := range []string{"RULESET_READ", "RULESET_UPDATE"} {
 		cap := &api.Capability{}
 		cap.Name = capName
-		if err := client.Read(cap); err != nil {
+		if err := rebarClient.Read(cap); err != nil {
 			log.Printf("Creating capability %s", capName)
 			cap.Description = "Allow access to actions on rule engine rulesets"
 			cap.Source = "Rule Engine"
 			cap.Name = capName
-			if err := client.BaseCreate(cap); err != nil {
+			if err := rebarClient.BaseCreate(cap); err != nil {
 				log.Fatalf("Failed to create capability %s: %v", capName, err)
 			}
 		}
