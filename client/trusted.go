@@ -12,20 +12,27 @@ import (
 	consul "github.com/hashicorp/consul/api"
 )
 
-// Trusted creates a fully preconfigured trusted Rebar API client based on information in Consul.
-// If wait is true, this function will wait until the Rebar API is registered in Consul
-func Trusted(user string, wait bool) (*api.Client, error) {
-	var cClient *consul.Client
-	var err error
+// Consul gets a local Consul client using the default config.
+// If wait is true, it will wait until it can fetch the client.
+func Consul(wait bool) (*consul.Client, error) {
 	for {
-		cClient, err = consul.NewClient(consul.DefaultConfig())
+		cClient, err := consul.NewClient(consul.DefaultConfig())
 		if err == nil {
-			break
+			return cClient, err
 		}
 		if !wait {
 			return nil, fmt.Errorf("RebarClient: Error getting local Consul client: %v", err)
 		}
 		time.Sleep(10 * time.Second)
+	}
+}
+
+// Trusted creates a fully preconfigured trusted Rebar API client based on information in Consul.
+// If wait is true, this function will wait until the Rebar API is registered in Consul
+func Trusted(user string, wait bool) (*api.Client, error) {
+	cClient, err := Consul(wait)
+	if err != nil {
+		return nil, err
 	}
 	for {
 		apiService, err := service.Find(cClient, "rebar-api", "")
