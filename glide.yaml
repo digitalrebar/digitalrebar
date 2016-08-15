@@ -12,3 +12,4 @@ import:
     - multi-tenancy
     - store
     - service
+    - client

@@ -17,7 +17,6 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
-	"time"
 
 	"github.com/ghodss/yaml"
 	"github.com/gin-gonic/gin"
@@ -224,14 +223,9 @@ func main() {
 	} else if port, err = strconv.Atoi(pStr); err != nil {
 		log.Fatalf("APIPORT not an integer: %v", err)
 	}
-	var cClient *consul.Client
-	for {
-		cClient, err = consul.NewClient(consul.DefaultConfig())
-		if err == nil {
-			break
-		}
-		log.Println("Waiting for Consul...")
-		time.Sleep(10 * time.Second)
+	cClient, err := client.Consul(true)
+	if err != nil {
+		log.Fatal(err.Error())
 	}
 	var bs store.SimpleStore
 	switch backingStore {
