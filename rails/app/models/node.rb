@@ -170,8 +170,8 @@ class Node < ActiveRecord::Base
     res.flatten
   end
 
-  def address(ip_type_filter = :all, networks = ["admin"])
-    res = addresses(ip_type_filter,networks).detect{|a|a.reachable?}
+  def address(ip_type_filter = :all, networks = ["admin"], return_filter = :all)
+    res = addresses(ip_type_filter,networks,return_filter).detect{|a|a.reachable?}
     Rails.logger.warn("Node #{name} did not have any reachable addresses in networks #{networks.inspect}") unless res
     res
   end

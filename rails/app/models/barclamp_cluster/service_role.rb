@@ -39,6 +39,7 @@ class BarclampCluster::ServiceRole < Role
     hname = "#{nr.role.name}-hostnames"
     ipname = "#{nr.role.name}-address"
     netname = "#{nr.role.name}-network"
+    filtername = "#{nr.role.name}-filter"
     address = nil
     addresses = []
     hosts = []
@@ -50,6 +51,8 @@ class BarclampCluster::ServiceRole < Role
       # use node-control-address or private-node-control-address
       # for internal networking, you can use v4/network_name or v6/network_name
       map = Attrib.get(netname,nr) || "node-control-address"
+      filter = Attrib.get(filtername,nr) || "private" rescue "private"
+      filter = filter.to_sym
       Rails.logger.debug("For #{nr.role.name}, using network #{map}")
 
       d = nr.deployment
@@ -60,11 +63,11 @@ class BarclampCluster::ServiceRole < Role
         str_addr = nil
         case map.split("/")[0]
         when "v4"
-          str_addr ||= n.address(:v4_only, [map.split("/")[1]])
+          str_addr ||= n.addresses(:v4_only, [map.split("/")[1]], filter)[0] rescue n.address(:v4_only)
         when "v6"
-          str_addr ||= n.address(:v6_only, [map.split("/")[1]])
+	  str_addr ||= n.addresses(:v6_only, [map.split("/")[1]], filter)[0] rescue n.address(:v6_only)
         else
-          str_addr = n.address(:v4_only, [map]) rescue n.address
+          str_addr = n.addresses(:v4_only, [map], filter)[0] rescue n.address
         end
 	next unless str_addr
 	str_addr = str_addr.addr
