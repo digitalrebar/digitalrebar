@@ -112,7 +112,7 @@ class Servers
                              "Name" => my_name }
         fixed_args[:flavor_id] ||= 't2.micro'
 	fixed_args[:block_device_mappings] = [{ "DeviceName" => "/dev/sda1", "Ebs" => { "DeleteOnTermination" => true } }]
-        unless fixed_args[:image_id] and fixed_args[:image_id].start_with("ami")
+        unless fixed_args[:image_id] and fixed_args[:image_id].start_with?("ami")
           log("Setting default image to an Centos 7.2 Marketplace based image")
           # These are hvm:ebs images
           fixed_args[:image_id] = case ep.region
