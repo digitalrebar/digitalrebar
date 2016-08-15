@@ -37,6 +37,10 @@ class BarclampCluster::InstallSignedCert < LocalRole
     runlog << "Get key/cert pair: "
 
     hosts = [ nr.node.name ]
+    ca = Attrib.get('node-control-address',nr.node)
+    hosts << IP.coerce(ca).addr if ca
+    pca = Attrib.get('node-private-control-address',nr.node)
+    hosts << IP.coerce(pca).addr if pca
     hosts << NetworkAllocation.where(node_id: nr.node.id).map{|a|a.address.addr}
     hosts.flatten!
     out,err,status = run_local("sign-it -A -l #{label} -s -o #{tmpfile} -h #{hosts.join(",")}")

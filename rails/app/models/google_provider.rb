@@ -56,7 +56,7 @@ class GoogleProvider < CloudProvider
               "boot" => true,
               "type" => "PERSISTENT",
               "initializeParams" => {
-                "sourceImage" => "centos-7-v20160803"
+                "sourceImage" => "projects/centos-cloud/global/images/centos-7-v20160803"
               }
             }
           ]

@@ -220,7 +220,7 @@ class ApplicationController < ActionController::Base
   end
 
   def api_error(object, verb, message, code = 400)
-    return { :text=>message, :verb=>verb.upcase, :obj=>object),
+    return { :text=>message,
       :status => code,
       :content_type=>cb_content_type(object, "error")
     }
