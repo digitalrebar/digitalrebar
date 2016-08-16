@@ -58,7 +58,7 @@ class NetworkRouter < ActiveRecord::Base
     return if @after_create
     @after_create = true
     begin
-      Event.fire(self.network, event: 'on_network_change')
+      Event.fire(self, event: 'on_network_change')
     rescue Exception => e
       Rails.logger.error "NetworkRouter: on_network_change #{self.address} failed with #{e.message}"
     end
