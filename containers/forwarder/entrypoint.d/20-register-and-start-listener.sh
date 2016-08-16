@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Force TFTP state tracking.  This may not be handled properly when
+# doing packet forwarding in a container otherwise because reasons.
+iptables -A PREROUTING -t raw -p udp --dport 69 -d "${FORWARDER_IP}" -j CT --helper tftp
+
 cat >> /etc/consul.d/forwarder.json <<EOF
 {
   "service": {
