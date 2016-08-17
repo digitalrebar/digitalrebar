@@ -118,7 +118,7 @@ func (s *Sink) SetSelectors(c *api.Client, wanted []Selector) error {
 	for _, sel := range wanted {
 		doAdd := true
 		for _, es := range currentSelectors {
-			if reflect.DeepEqual(es.Selector, sel) {
+			if reflect.DeepEqual(es.Selector, map[string]interface{}(sel)) {
 				doAdd = false
 				unchanged = append(unchanged, es)
 				break
