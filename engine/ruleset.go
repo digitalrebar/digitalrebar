@@ -285,9 +285,9 @@ func (r *Rule) match(c *RunContext) (bool, error) {
 // RunActions runs the step MatchActions in order.  If any of them
 // return an error, no further MatchActions will be run.
 func (r *Rule) run(c *RunContext) error {
-	for _, action := range r.actions {
+	for i, action := range r.actions {
 		if err := action(c); err != nil {
-			return err
+			return fmt.Errorf("Event %s: Action %d failed: %v", c.Evt.Event.UUID, i, err)
 		}
 	}
 	return nil

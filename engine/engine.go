@@ -36,6 +36,7 @@ type Engine struct {
 	scriptEnv      map[string]string
 	Debug          bool
 	eventSelectors []etInvoker
+	currentEvents  map[string]interface{}
 }
 
 // NewEngine creates a new Engine for running Rulesets.
@@ -58,6 +59,7 @@ func NewEngine(backingStore store.SimpleStore,
 		scriptEnv:      scriptEnv,
 		ruleSets:       map[string]*RuleSet{},
 		eventSelectors: []etInvoker{},
+		currentEvents:  map[string]interface{}{},
 	}
 
 	// Load rules
@@ -277,8 +279,28 @@ func (e *Engine) runRules(toRun []ctx, evt *event.Event) {
 	}
 }
 
+func (e *Engine) handlingEvent(evt *event.Event) bool {
+	e.Lock()
+	_, ok := e.currentEvents[evt.Event.UUID]
+	if !ok {
+		e.currentEvents[evt.Event.UUID] = nil
+	}
+	e.Unlock()
+	return ok
+}
+
+func (e *Engine) finishEvent(evt *event.Event) {
+	e.Lock()
+	delete(e.currentEvents, evt.Event.UUID)
+	e.Unlock()
+}
+
 // HandleEvent should be called with an Event for the Engine to process.
 func (e *Engine) HandleEvent(evt *event.Event) error {
+	if e.handlingEvent(evt) {
+		log.Printf("Duplicate event recieved: %v", evt.Event.UUID)
+		return fmt.Errorf("Duplicate event: %v", evt.Event.UUID)
+	}
 	e.RLock()
 	toRun := []ctx{}
 	for _, invoker := range e.eventSelectors {
@@ -298,5 +320,6 @@ func (e *Engine) HandleEvent(evt *event.Event) error {
 	}
 	e.RUnlock()
 	e.runRules(toRun, evt)
+	e.finishEvent(evt)
 	return nil
 }

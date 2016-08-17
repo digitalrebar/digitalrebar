@@ -20,7 +20,7 @@ type action func(*RunContext) error
 func actionLog() (action, error) {
 	return func(c *RunContext) error {
 		log.Printf("Event %s matched ruleset %s for node %s",
-			c.Evt.Selector["event"],
+			c.Evt.Event.UUID,
 			c.ruleset.Name,
 			c.Evt.Node.Name)
 		return nil
@@ -434,10 +434,6 @@ func actionNode(v interface{}) (action, error) {
 	if !ok {
 		return nil, fmt.Errorf("Node needs a UUID element")
 	}
-	uuid, ok := uuidThing.(string)
-	if !ok {
-		return nil, fmt.Errorf("Node UUID must be a string")
-	}
 	actionThing, ok := tgt["Action"]
 	if !ok {
 		return nil, fmt.Errorf("Node needs an Action element")
@@ -452,11 +448,18 @@ func actionNode(v interface{}) (action, error) {
 		return nil, fmt.Errorf("Unknown node action %s", action)
 	}
 	return func(c *RunContext) error {
-		node := &api.Node{}
-		if err := c.Client.Fetch(node, uuid); err != nil {
+		uuidVar, err := c.getVar(uuidThing)
+		if err != nil {
 			return err
 		}
-		var err error
+		uuid, ok := uuidVar.(string)
+		if !ok {
+			return fmt.Errorf("UUID does not resolve to a String")
+		}
+		node := &api.Node{}
+		if err := c.Client.Fetch(node, uuid); err != nil {
+			return fmt.Errorf("NodeAction: Failed fetching %s: %v", uuid, err)
+		}
 		switch action {
 		case "Scrub":
 			err = node.Scrub()

@@ -420,7 +420,7 @@ func matchCmp(op string, val interface{}) (matcher, error) {
 			}
 		}
 	}
-	return func(c *RunContext) (bool, error) {
+	return func(c *RunContext) (res bool, err error) {
 		a, err := c.getVar(fixedArgs)
 		if err != nil {
 			return false, fmt.Errorf("Failed to fetch variable for %s on %v: %v", op, val, err)
@@ -429,29 +429,28 @@ func matchCmp(op string, val interface{}) (matcher, error) {
 		log.Printf("Comparing %v %s %v", args[0], op, args[1])
 		switch op {
 		case "Eq":
-			return reflect.DeepEqual(args[0], args[1]), nil
+			res = reflect.DeepEqual(args[0], args[1])
 		case "Ne":
-			return !reflect.DeepEqual(args[0], args[1]), nil
+			res = !reflect.DeepEqual(args[0], args[1])
 		case "Lt":
-			return lt(args[0], args[1])
+			res, err = lt(args[0], args[1])
 		case "Gt":
-			return lt(args[1], args[0])
+			res, err = lt(args[1], args[0])
 		case "Le":
-			res, err := lt(args[0], args[1])
+			res, err = lt(args[0], args[1])
 			if !res && err == nil {
 				res = reflect.DeepEqual(args[0], args[1])
 			}
-			return res, err
 		case "Ge":
-			res, err := lt(args[1], args[0])
+			res, err = lt(args[1], args[0])
 			if !res && err == nil {
 				res = reflect.DeepEqual(args[0], args[1])
 			}
-			return res, err
 		default:
 			log.Panicf("Op %s not implemented! Should never reach here", op)
 		}
-		return false, nil
+		log.Printf("'%v' %v '%v': %v", op, args[0], args[1], res)
+		return res, err
 
 	}, nil
 

@@ -36,12 +36,15 @@ type RunContext struct {
 	Vars      map[string]interface{} // The variables that any given Matcher deems interesting.
 }
 
+func (c *RunContext) log(str string, args ...interface{}) {
+	log.Printf("Event %s: Ruleset %s: %s", c.Evt.Event.UUID, c.ruleset.Name, fmt.Sprintf(str, args...))
+}
+
 // I am going to hell for this
 func (c *RunContext) getVar(arg interface{}) (interface{}, error) {
 	switch v := arg.(type) {
 	case string:
 		if strings.HasPrefix(v, `$`) {
-			log.Printf("Fetching variable %s", v)
 			res, ok := c.Vars[strings.TrimPrefix(v, `$`)]
 			if !ok {
 				return nil, fmt.Errorf("Unknown variable %s", v)
@@ -107,7 +110,7 @@ func (c *RunContext) fetchAttribs(attribs []string) error {
 		return fmt.Errorf("Event %s does not have attrib sources", eventID)
 	}
 	srcID, _ := attribSrc.Id()
-	log.Printf("Using %s %s as attrib source for event %s", attribSrcName, srcID, eventID)
+	c.log("Using %s %s as attrib source", attribSrcName, srcID)
 	c.Attribs = map[string]interface{}{}
 	for _, attribName := range attribs {
 		// We want an actual attrib, fetch and use it.
@@ -121,35 +124,37 @@ func (c *RunContext) fetchAttribs(attribs []string) error {
 }
 
 func (c *RunContext) processFrom(i int) {
-	log.Printf("Ruleset %s matched event %s at rule %d", c.ruleset.Name, c.Evt.Selector["event"], i)
+	c.log("matched at rule %d", i)
 	c.ruleIdx = i
 	c.ruleStack = []int{}
 	c.stop = false
 	for c.ruleIdx < len(c.ruleset.Rules) && !c.stop {
-		c.rule = &c.ruleset.Rules[c.ruleIdx]
+		ruleIdx := c.ruleIdx
+		c.rule = &c.ruleset.Rules[ruleIdx]
 		if err := c.fetchAttribs(c.rule.WantsAttribs); err != nil {
-			log.Printf("Ruleset %s rule %d: Error fetching attribs: %v", c.ruleset.Name, i, err)
+			c.log("Rule %d: Error fetching attribs: %v", i, err)
 			continue
 		}
 		matched, matcherr := c.rule.match(c)
 		if matcherr != nil {
-			log.Printf("Ruleset %s rule %d: Error matching event %s: %v",
-				c.ruleset.Name,
-				c.ruleIdx,
-				c.Evt.Selector["name"],
-				matcherr)
+			c.log("Rule %d: Match error: %v", ruleIdx, matcherr)
 			c.stop = true
 		}
 		if matched {
+			c.log("Rule %d: Matched, running actions", ruleIdx)
 			if runerr := c.rule.run(c); runerr != nil {
-				log.Printf("Ruleset %s rule %d: Failed to fire properly for event %s: %v",
-					c.ruleset.Name,
-					c.ruleIdx,
-					c.Evt.Selector["name"],
-					runerr)
+				c.log("Rule %d: Failed to fire: %v", ruleIdx, runerr)
 				c.stop = true
 			}
+		} else {
+			c.log("Rule %d did not match", ruleIdx)
 		}
 		c.ruleIdx++
+		if c.stop {
+			c.log("Rule %d: Stopping", ruleIdx)
+		} else {
+			c.log("Rule %d: continuing to rule %d", ruleIdx, c.ruleIdx)
+		}
+
 	}
 }

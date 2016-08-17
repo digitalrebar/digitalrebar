@@ -37,7 +37,6 @@ var (
 	version      = false
 	debug        = false
 	router       = gin.Default()
-	endpoint     string
 	listen       string
 	backingStore string
 	dataDir      string
@@ -292,7 +291,7 @@ func main() {
 	}
 
 	ruleEngine.Debug = debug
-	log.Printf("Talking to Rebar API at %s, our API at %s", endpoint, listen)
+	log.Printf("Talking to Rebar API at %s, our API at %s", rebarClient.URL, listen)
 
 	// Create the capabilities we need.
 	for _, capName := range []string{"RULESET_READ", "RULESET_UPDATE"} {
