@@ -13,6 +13,8 @@
 # limitations under the License.
 #
 
+require 'securerandom'
+
 class Event
   
   def self.fire(obj, params)
@@ -23,12 +25,15 @@ class Event
       wherefrags << "(((event_selectors.selector ->> '#{k.to_s}') IS NULL) OR (event_selectors.selector @> '#{ {k.to_s => v}.to_json }'::jsonb))"
     end
     res = []
+    evt = {params: params,
+           uuid: SecureRandom.uuid,
+           target_class: obj.class.name,
+           target: obj.as_json}
     EventSelector.where(wherefrags.join(" AND ")).order(:id).distinct.each do |ms|
       es = ms.event_sink
-      Rails.logger.info("Event: #{@params} matched #{ms.selector}")
+      Rails.logger.info("Event: #{params} matched #{ms.selector}")
       Rails.logger.info("Event: calling #{es.endpoint} for #{ms.selector}")
-      selector_params = {params: @params, target_class: obj.class.name, target: obj.as_json}
-      res << es.run(selector_params,obj, ms.selector)
+      res << es.run(evt, obj, ms.selector)
     end
     return res
   end
