@@ -21,9 +21,7 @@ require 'uri'
 require 'json'
 require 'yaml'
 
-$hostname = "127.0.0.1"
-$port = 3000
-$url = nil
+$url = "https://127.0.0.1:3000"
 $data = ""
 $timeout = 500
 $key = if ENV["REBAR_KEY"]
@@ -65,45 +63,43 @@ class REST
     uri.user=$username
     uri.password=$password
     res=nil
-    Net::HTTP.start(uri.host, uri.port, use_ssl: true, verify_mode: OpenSSL::SSL::VERIFY_NONE) {|http|
-      http.read_timeout = $timeout
-      r = req.new(uri.request_uri,request_headers)
-      r.body = data if data
-      res = http.request r
-      debug "(a) return code: #{res.code}"
-      debug "(a) return body: #{res.body}"
-      debug "(a) return headers:"
-      res.each_header do |h, v|
-        debug "#{h}: #{v}"
-      end if $debug
+    http = Net::HTTP.new(uri.host, uri.port)
+    if uri.scheme == "https"
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    end
+    http.read_timeout = $timeout
+    r = req.new(uri.request_uri,request_headers)
+    r.body = data if data
+    res = http.request r
+    debug "(a) return code: #{res.code}"
+    debug "(a) return body: #{res.body}"
+    debug "(a) return headers:"
+    res.each_header do |h, v|
+      debug "#{h}: #{v}"
+    end if $debug
 
-      if res['www-authenticate']
-        debug "(a) uri: #{uri}"
-        debug "(a) www-authenticate: #{res['www-authenticate']}"
-        debug "(a) req-method: #{req::METHOD}"
-        auth=Net::HTTP::DigestAuth.new.auth_header(uri,
-                                                   res['www-authenticate'],
-                                                   req::METHOD)
-        r.add_field 'Authorization', auth
-        res = http.request r
-      end
-    }
+    if res['www-authenticate']
+      debug "(a) uri: #{uri}"
+      debug "(a) www-authenticate: #{res['www-authenticate']}"
+      debug "(a) req-method: #{req::METHOD}"
+      auth=Net::HTTP::DigestAuth.new.auth_header(uri,
+                                                 res['www-authenticate'],
+                                                 req::METHOD)
+      r.add_field 'Authorization', auth
+      res = http.request r
+    end
     res
   end
 
   # Common data and debug handling.
   def self.go(verb,path,data=nil)
-    if $url
-      uri = URI.parse("#{$url}/#{path}" )
-    else
-      uri = URI.parse("https://#{$hostname}:#{$port}/#{path}" )
-    end
     # We want to give valid JSON to the API, so if we were
     # handed an array or a hash as the data to be messed with,
     # turn it into a blob of JSON.
+    uri = URI.parse(path)
     data = data.to_json if data.is_a?(Array) || data.is_a?(Hash)
     res = authenticate(verb,uri,data)
-    debug "(#{verb}) hostname: #{uri.host}:#{uri.port}"
     debug "(#{verb}) request: #{uri.path}"
     debug "(#{verb}) data: #{data}"
     debug "(#{verb}) return code: #{res.code}"
@@ -132,6 +128,14 @@ class REST
   end
 end
 
+$rule_engine = nil
+code = 0
+
+rule_engines, code = REST.get("http://localhost:8500/v1/catalog/service/rule-engine-service")
+if code == 200
+  $rule_engine = "https://#{rule_engines[0]["ServiceAddress"]}/rule-engine/api/v0/rulesets/"
+end
+
 # The base class for all Rebar commandline providers.
 # They will wind up being roughly grouped by controller or
 # barclamp name.
@@ -146,7 +150,7 @@ class RebarProxy
   end
 
   def self.path
-    "api/v2/#{apiname}"
+    "#{$url}/api/v2/#{apiname}"
   end
 
   # This should be passed either:
@@ -237,6 +241,8 @@ class RebarProxy
   end
 end
 
+
+
 class Barclamp < RebarProxy
   def self.install(path)
     if path.split("/")[-1] == "rebar.yml"
@@ -263,6 +269,18 @@ class Barclamp < RebarProxy
         create_Json({'value' => settings})
       else
         Barclamp.new(child).do_update_Json({'value' => settings})
+      end
+    end
+    classifier = File.join(path, "classifier.yml")
+    if File.exists?(classifier) && !$rule_engine.nil?
+      # We have a classifier, load it.
+      debug("Loading classifier ruleset from #{classifier}")
+      ruleset = YAML.load_file(classifier)
+      _, code = REST.post($rule_engine,ruleset)
+      if code <= 300
+        debug("Classifier ruleset #{ruleset["Name"]} loaded to #{$rule_engine}")
+      else
+        debug("Failed to load ruleset #{ruleset["Name"]}")
       end
     end
     bc
