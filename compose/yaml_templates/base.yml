@@ -40,6 +40,11 @@ rebar_api:
     - "3000:3000"
 {{ END ACCESS_MODE==HOST }}
 
+rule-engine:
+  extends:
+    file: docker-compose-common.yml
+    service: rule-engine
+
 cloudwrap:
   extends:
     file: docker-compose-common.yml
