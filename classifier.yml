@@ -15,81 +15,107 @@
 # Right now the classifier is in working proof of concept stage,
 # and there are several useability and interoperability improvements
 # on the table.
-- Name: 'Scrub nodes moved to the template-cleanup deployment'
-  Matchers:
-    - EventType:
-        - event: on_node_move
-    - JSON:
-        Selector: ':root .Evt .node .uuid'
-        PickResults:
-          node-uuid: 0
-    - JSON:
-        Selector: ':root .Evt .deployment .name'
-        PickResults:
-          deployment-name: 0
-    - Eq: [ '$deployment-name', 'template-cleanup' ]
-  MatchActions:
-    - Bind:
-        NodeID: '$node-uuid'
-        RoleID: template-scrub-node
-    - Commit:
-        NodeID: '$node-uuid'
-    - Script: |
-        rebar nodes scrub {{.Evt.Node.UUID}}
-        rebar nodes redeploy {{.Evt.Node.UUID}}
-        
-- Name: 'Move scrubbed nodes to the template-idle deployment'
-  Matchers:
-    - EventType:
+Name: template-workload-ruleset
+Active: true
+Description: "The ruleset used to implement the template workload lifecycle"
+Rules:
+  - EventSelectors:
+      - event: on_node_move
+    Matchers:
+      - JSON:
+          Selector: ':root .Evt .node .uuid'
+          PickResults:
+            node-uuid: 0
+      - JSON:
+          Selector: ':root .Evt .deployment .name'
+          PickResults:
+            deployment-name: 0
+      - Eq: [ '$deployment-name', 'template-cleanup' ]
+    Actions:
+      - Bind:
+          NodeID: '$node-uuid'
+          RoleID: template-scrub-node
+      - Node:
+          Action: "Commit"
+          UUID: '$node-uuid'
+      - Node:
+          Action: "Scrub"
+          UUID: '$node-uuid'
+      - Node:
+          Action: "Redeploy"
+          UUID: '$node-uuid'
+  - Actions:
+      - Stop: true
+  - EventSelectors:
       - event: on_active
         obj_class: role
         obj_id: template-scrub-node
-  MatchActions:
-    - Script: |
-        rebar nodes move {{.Evt.Node.UUID}} to template-idle
-        rebar nodes scrub {{.Evt.Node.UUID}}
-
-- Name: 'Set up nodes moved to the template-deploy deployment'
-  Matchers:
-    - EventType:
-        - event: on_node_move
-    - JSON:
-        Selector: ':root .Evt .node .uuid'
-        PickResults:
-          node-uuid: 0
-    - JSON:
-        Selector: ':root .Evt .deployment .name'
-        PickResults:
-          deployment-name: 0
-    - Eq: [ '$deployment-name', 'template-deploy' ]
-  MatchActions:
-    - Bind:
-        NodeID: '$node-uuid'
-        RoleID: template-echo-a-value-with-a-script
-    - Commit:
-        NodeID: '$node-uuid'
-
-- Name: 'Clean up deployed nodes'
-  Matchers:
-    - EventType:
-        - event: on_active
-          obj_class: role
-          obj_id: template-echo-a-value-with-a-script
-  MatchActions:
-    - Script: |
-        rebar nodes move {{.Evt.Node.UUID}} to template-cleanup
-
-- Name: 'Deploy idle nodes'
-  Matchers:
-    - EventType:
-        - event: on_active
-          obj_class: role
-          obj_id: rebar-managed-node
-    - JSON:
-        Selector: ':root .Evt .deployment .name'
-        PickResults:
-          deployment-name: 0
-    - Eq: [ '$deployment-name', 'template-idle' ]
-  MatchActions:
-    - Script: |
-        rebar nodes move {{.Evt.Node.UUID}} to template-deploy
+    Matchers:
+      - JSON:
+          Selector: ':root .Evt .node .uuid'
+          PickResults:
+            node-uuid: 0
+    Actions:
+      - Bind:
+          NodeID: '$node-uuid'
+          DeploymentID: 'template-idle'
+      - Node:
+          UUID: '$node-uuid'
+          Action: "Scrub"
+  - Actions:
+      - Stop: true
+  - EventSelectors:
+      - event: on_node_move
+    Matchers:
+      - JSON:
+          Selector: ':root .Evt .node .uuid'
+          PickResults:
+            node-uuid: 0
+      - JSON:
+          Selector: ':root .Evt .deployment .name'
+          PickResults:
+            deployment-name: 0
+      - Eq: [ '$deployment-name', 'template-deploy' ]
+    Actions:
+      - Bind:
+          NodeID: '$node-uuid'
+          RoleID: template-echo-a-value-with-a-script
+      - Commit:
+          NodeID: '$node-uuid'
+  - Actions:
+      - Stop: true   
+  - EventSelectors:
+      - event: on_active
+        obj_class: role
+        obj_id: template-echo-a-value-with-a-script
+    Matchers:
+      - JSON:
+          Selector: ':root .Evt .node .uuid'
+          PickResults:
+            node-uuid: 0
+    Actions:
+      - Bind:
+          NodeID: '$node-uuid'
+          DeploymentID: 'template-cleanup'
+  - Actions:
+      - Stop: true
+  - EventSelectors:
+      - event: on_active
+        obj_class: role
+        obj_id: rebar-managed-node
+    Matchers:
+      - JSON:
+          Selector: ':root .Evt .node .uuid'
+          PickResults:
+            node-uuid: 0
+      - JSON:
+          Selector: ':root .Evt .deployment .name'
+          PickResults:
+            deployment-name: 0
+      - Eq: [ '$deployment-name', 'template-idle' ]
+    Actions:
+      - Bind:
+          NodeID: '$node-uuid'
+          DeploymentID: 'template-deploy'
+  - Actions:
+      - Stop: true
