@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Wait for the initial rule-engine to register its sink endpoint
+while ! grep -q https < <(rebar eventsinks list); do
+    sleep 5
+done
+
 # Load the initial barclamp
 echo "Loading the core barclamp metadata"
 /opt/digitalrebar/core/bin/barclamp_import /opt/digitalrebar/core
