@@ -314,11 +314,9 @@ class DeploymentsController < ApplicationController
         end
       end # nodes loop
 
-      # we need to do this in cohort order!
-      roles = roles.sort_by { |k, r| r[:cohort] }
-
+      sroles = roles.sort_by { |k, r| r[:cohort] }
       # add roles to deployment
-      roles.each do |name, r|
+      sroles.each do |name, r|
         Rails.logger.debug("Deployment Batch: adding role #{name} deployment #{deployment.name}")
         role = find_key_cap(Role, name, cap("READ","ROLE"))
         deployment_roles << role.add_to_deployment(deployment)
@@ -336,14 +334,37 @@ class DeploymentsController < ApplicationController
     end # end Transaction
 
     # assign nodes roles to deployment (cannot be in the top transaction)
-    roles.each do |name, r|
+    #
+    # Roles should be applied in role_apply_order and then whatever is left in cohort order 
+    # (for lack of anything else)
+    rao = params["role_apply_order"] || []
+    rkeys = roles.keys
+
+    rao.each do |name|
+      next unless roles[name]
+      r = roles[name]
+
       role = find_key_cap(Role, name, cap("READ","ROLE"))
       Rails.logger.debug("Deployment Batch: adding role #{name} nodes #{r[:nodes]}")
       r[:nodes].each do |n|
         node = find_key_cap(Node, n, cap("READ", "NODE"))
         role.add_to_node node
       end
-    end # roles loop
+    end # rao loop
+
+    # What keys are left
+    rleft = rkeys - rao
+    rleft.sort_by! { |k| roles[k][:cohort] }
+
+    rleft.each do |name|
+      r = roles[name]
+      role = find_key_cap(Role, name, cap("READ","ROLE"))
+      Rails.logger.debug("Deployment Batch: adding role #{name} nodes #{r[:nodes]}")
+      r[:nodes].each do |n|
+        node = find_key_cap(Node, n, cap("READ", "NODE"))
+        role.add_to_node node
+      end
+    end # rleft loop
 
   end
 
