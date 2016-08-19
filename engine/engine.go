@@ -252,40 +252,11 @@ func (e *Engine) DeleteRuleSet(name string, version uuid.UUID) error {
 	return nil
 }
 
-func (e *Engine) runRules(toRun []ctx, evt *event.Event) {
-	for _, v := range toRun {
-		ctx := &RunContext{
-			Engine:  e,
-			Evt:     evt,
-			Vars:    make(map[string]interface{}),
-			ruleset: &v.ruleSet,
-		}
-		if e.trusted {
-			if v.ruleSet.Username == "" {
-				log.Panicf("Cannot happen: trusted client with no username")
-			}
-			if c, err := api.TrustedSession(e.Client.URL, v.ruleSet.Username); err != nil {
-				log.Panicf("Failed to establis trusted session impersonating %s", v.ruleSet.Username)
-			} else {
-				ctx.Client = c
-			}
-		} else {
-			ctx.Client = e.Client
-		}
-		ctx.Vars["eventType"] = evt.Selector["event"]
-		for _, ri := range v.ruleIndexes {
-			ctx.processFrom(ri)
-		}
-	}
-}
-
 func (e *Engine) handlingEvent(evt *event.Event) bool {
-	e.Lock()
 	_, ok := e.currentEvents[evt.Event.UUID]
 	if !ok {
 		e.currentEvents[evt.Event.UUID] = nil
 	}
-	e.Unlock()
 	return ok
 }
 
@@ -297,29 +268,30 @@ func (e *Engine) finishEvent(evt *event.Event) {
 
 // HandleEvent should be called with an Event for the Engine to process.
 func (e *Engine) HandleEvent(evt *event.Event) error {
+	e.Lock()
 	if e.handlingEvent(evt) {
+		e.Unlock()
 		log.Printf("Duplicate event recieved: %v", evt.Event.UUID)
 		return fmt.Errorf("Duplicate event: %v", evt.Event.UUID)
 	}
-	e.RLock()
-	toRun := []ctx{}
+	defer e.finishEvent(evt)
+	runCtx := NewRunContext(e, evt)
 	for _, invoker := range e.eventSelectors {
 		if !invoker.selector.Match(evt.Selector) {
 			continue
 		}
 		for k, v := range invoker.ruleIndexes {
 			// Skip inactive rulesets.
-			if rs, ok := e.ruleSets[k]; !ok || !rs.Active {
-				continue
-			}
 			// Make sure we save a copy of the ruleset to run, instead of a
 			// pointer to it.  This makes async running of rules from a ruleset
 			// not race with potential API updates of that ruleset.
-			toRun = append(toRun, ctx{*e.ruleSets[k], v})
+			rs, ok := e.ruleSets[k]
+			if !ok || !rs.Active {
+				continue
+			}
+			runCtx.AddRuleSet(*rs, v)
 		}
 	}
-	e.RUnlock()
-	e.runRules(toRun, evt)
-	e.finishEvent(evt)
-	return nil
+	e.Unlock()
+	return runCtx.Process()
 }

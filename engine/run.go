@@ -12,32 +12,73 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/VictorLowther/jsonpatch/utils"
 	"github.com/digitalrebar/go-common/event"
 	rebar "github.com/digitalrebar/rebar-api/api"
 )
 
-type ctx struct {
-	ruleSet     RuleSet
-	ruleIndexes []int
+type runErr struct {
+	ruleSet string
+	ruleIdx int
+	err     string
+}
+
+type rcEntry struct {
+	rs          RuleSet
+	entrypoints []int
 }
 
 // RunContext holds the running information for a given Event as it matches against the Rules.
 type RunContext struct {
-	Engine    *Engine                // The Engine that the Event is being processed with.
-	Evt       *event.Event           // The Event being matched against.
-	Client    *rebar.Client          `json:"-"` // The Client that should be used for Rebar API interactions.
-	ruleStack []int                  // The stack of rule indexes that we should Return to
-	ruleIdx   int                    // The index of the rule we are currently running.
-	stop      bool                   // Whether we should stop processing rules
-	ruleset   *RuleSet               // the Ruleset this context is processing.
-	rule      *Rule                  // the rule that is currently running
+	Engine    *Engine       // The Engine that the Event is being processed with.
+	Evt       *event.Event  // The Event being matched against.
+	Client    *rebar.Client `json:"-"` // The Client that should be used for Rebar API interactions.
+	ruleStack []int         // The stack of rule indexes that we should Return to
+	ruleIdx   int           // The index of the rule we are currently running.
+	stop      bool          // Whether we should stop processing rules
+	ruleset   *RuleSet      // the Ruleset this context is processing.
+	rule      *Rule         // the rule that is currently running
+	runErrors []*runErr
+	toHandle  []rcEntry
 	Attribs   map[string]interface{} // The DigitalRebar attributes relavent to the object that the event relates to
 	Vars      map[string]interface{} // The variables that any given Matcher deems interesting.
+
+}
+
+func NewRunContext(e *Engine, evt *event.Event) *RunContext {
+	return &RunContext{
+		Engine:    e,
+		Evt:       evt,
+		runErrors: []*runErr{},
+	}
+}
+
+func (c *RunContext) AddRuleSet(rs RuleSet, entrypoints []int) {
+	c.toHandle = append(c.toHandle, rcEntry{rs, entrypoints})
+}
+
+func (c *RunContext) Error() string {
+	res := make([]string, len(c.runErrors))
+	for i, e := range c.runErrors {
+		res[i] = fmt.Sprintf("ruleset %s rule %d err: %v", e.ruleSet, e.ruleIdx, e.err)
+	}
+	return strings.Join(res, "\n")
+}
+
+func (c *RunContext) logString(str string, args ...interface{}) string {
+	return fmt.Sprintf("Event %s: Ruleset %s: %s:",
+		c.Evt.Event.UUID,
+		c.ruleset.Name,
+		fmt.Sprintf(str, args...))
 }
 
 func (c *RunContext) log(str string, args ...interface{}) {
-	log.Printf("Event %s: Ruleset %s: %s", c.Evt.Event.UUID, c.ruleset.Name, fmt.Sprintf(str, args...))
+	log.Println(c.logString(str, args...))
+}
+
+func (c *RunContext) err(idx int, str string, args ...interface{}) {
+	logStr := c.logString(str, args...)
+	log.Println(logStr)
+	c.runErrors = append(c.runErrors, &runErr{c.ruleset.Name, idx, logStr})
 }
 
 // I am going to hell for this
@@ -47,7 +88,8 @@ func (c *RunContext) getVar(arg interface{}) (interface{}, error) {
 		if strings.HasPrefix(v, `$`) {
 			res, ok := c.Vars[strings.TrimPrefix(v, `$`)]
 			if !ok {
-				return nil, fmt.Errorf("Unknown variable %s", v)
+				c.err(c.ruleIdx, "Unknown variable %s", v)
+				return nil, c
 			}
 			return res, nil
 		}
@@ -61,7 +103,8 @@ func (c *RunContext) getVar(arg interface{}) (interface{}, error) {
 		for i, t := range v {
 			retVal, err := c.getVar(t)
 			if err != nil {
-				return nil, err
+				c.err(c.ruleIdx, "%v", err)
+				return nil, c
 			}
 			res[i] = retVal
 		}
@@ -78,16 +121,6 @@ func (c *RunContext) getVar(arg interface{}) (interface{}, error) {
 	default:
 		return arg, nil
 	}
-}
-
-func (c *RunContext) clone() (*RunContext, error) {
-	clonedContext := &RunContext{}
-	if err := utils.Remarshal(c, &clonedContext); err != nil {
-		return nil, fmt.Errorf("Unable to clone context: %v", err)
-	}
-	clonedContext.ruleset = c.ruleset
-	clonedContext.Engine = c.Engine
-	return clonedContext, nil
 }
 
 func (c *RunContext) fetchAttribs(attribs []string) error {
@@ -107,7 +140,8 @@ func (c *RunContext) fetchAttribs(attribs []string) error {
 		attribSrcName = "role"
 		attribSrc = c.Evt.Role
 	} else {
-		return fmt.Errorf("Event %s does not have attrib sources", eventID)
+		c.err(c.ruleIdx, "Event %s does not have attrib sources", eventID)
+		return c
 	}
 	srcID, _ := attribSrc.Id()
 	c.log("Using %s %s as attrib source", attribSrcName, srcID)
@@ -116,7 +150,8 @@ func (c *RunContext) fetchAttribs(attribs []string) error {
 		// We want an actual attrib, fetch and use it.
 		attr, err := c.Client.FetchAttrib(attribSrc, attribName, "")
 		if err != nil {
-			return fmt.Errorf("Error fetching attrib %s for event %s", attribName, eventID)
+			c.err(c.ruleIdx, "Error fetching attrib %s for event %s", attribName, eventID)
+			return c
 		}
 		c.Attribs[attribName] = attr.Value
 	}
@@ -128,22 +163,22 @@ func (c *RunContext) processFrom(i int) {
 	c.ruleIdx = i
 	c.ruleStack = []int{}
 	c.stop = false
+	c.Vars = make(map[string]interface{})
 	for c.ruleIdx < len(c.ruleset.Rules) && !c.stop {
 		ruleIdx := c.ruleIdx
 		c.rule = &c.ruleset.Rules[ruleIdx]
 		if err := c.fetchAttribs(c.rule.WantsAttribs); err != nil {
-			c.log("Rule %d: Error fetching attribs: %v", i, err)
 			continue
 		}
 		matched, matcherr := c.rule.match(c)
 		if matcherr != nil {
-			c.log("Rule %d: Match error: %v", ruleIdx, matcherr)
+			c.err(ruleIdx, "Match error: %v", matcherr)
 			c.stop = true
 		}
 		if matched {
 			c.log("Rule %d: Matched, running actions", ruleIdx)
 			if runerr := c.rule.run(c); runerr != nil {
-				c.log("Rule %d: Failed to fire: %v", ruleIdx, runerr)
+				c.err(ruleIdx, "Failed to fire: %v", runerr)
 				c.stop = true
 			}
 		} else {
@@ -157,4 +192,31 @@ func (c *RunContext) processFrom(i int) {
 		}
 
 	}
+}
+
+func (c *RunContext) Process() error {
+	for ent := range c.toHandle {
+		c.ruleset = &c.toHandle[ent].rs
+		var client *rebar.Client
+		if c.Engine.trusted {
+			if c.ruleset.Username == "" {
+				log.Panicf("Cannot happen: trusted client with no username")
+			}
+			var err error
+			client, err = rebar.TrustedSession(c.Engine.Client.URL, c.ruleset.Username)
+			if err != nil {
+				log.Panicf("Failed to establis trusted session impersonating %s", c.ruleset.Username)
+			}
+		} else {
+			client = c.Engine.Client
+		}
+		c.Client = client
+		for _, i := range c.toHandle[ent].entrypoints {
+			c.processFrom(i)
+		}
+	}
+	if len(c.runErrors) > 0 {
+		return c
+	}
+	return nil
 }
