@@ -258,22 +258,8 @@ func main() {
 			Interval: "10s",
 		},
 	}
-	if os.Getenv("FORWARDER_IP") != "" {
-		// Hack for now.  Forwarder and revproxy will migrate
-		// to full-on tag based scheme in the future.
-		reg.Name = "internal-rule-engine-service"
-	}
-	if err = cClient.Agent().ServiceRegister(reg); err != nil {
+	if err = service.Register(cClient, reg, false); err != nil {
 		log.Fatalf("Failed to register with Consul: %v", err)
-	}
-
-	// Make sure the reverse proxy knows how to route to us
-	_, err = cClient.KV().Put(&consul.KVPair{
-		Key:   "digitalrebar/public/revproxy/rule-engine-service/matcher",
-		Value: []byte(`^rule-engine/(api/.*)`),
-	}, nil)
-	if err != nil {
-		log.Fatalf("Failed to register route pattern with revproxy: %v", err)
 	}
 
 	// Now that we are all registered, register our actual listen address
