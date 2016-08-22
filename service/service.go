@@ -1,10 +1,41 @@
 package service
 
 import (
+	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/consul/api"
 )
+
+// Register registers a service with Consul.  It automatically handles setting up forwarder and
+// revproxy registration.
+func Register(client *api.Client, svc *api.AgentServiceRegistration, forwarder bool) error {
+	revproxy := false
+	for _, t := range svc.Tags {
+		if t == "revproxy" {
+			revproxy = true
+			break
+		}
+	}
+	if revproxy && forwarder {
+		return fmt.Errorf("service.Register %s: cannot use revproxy and forwarder at the same time", svc.Name)
+	}
+	if forwarder && os.Getenv("FORWARDER_IP") != "" {
+		svc.Name = "internal-" + svc.Name
+	}
+	err := client.Agent().ServiceRegister(svc)
+	if err != nil || !revproxy {
+		return err
+	}
+	rpName := strings.TrimSuffix(svc.Name, "-service")
+	_, err = client.KV().Put(&api.KVPair{
+		Key:   fmt.Sprintf("digitalrebar/public/revproxy/%s/matcher", svc.Name),
+		Value: []byte(fmt.Sprintf("^%s/(api/.*)", rpName)),
+	}, nil)
+	return err
+}
 
 // GetService is a thin wrapper around the consul API Service function
 func GetService(client *api.Client, name, tag string) ([]*api.CatalogService, error) {
