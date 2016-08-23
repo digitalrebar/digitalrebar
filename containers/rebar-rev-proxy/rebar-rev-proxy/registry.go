@@ -148,10 +148,8 @@ func (c *ConsulRegistry) WatchConsul() {
 			if !stringInSlice("revproxy", svc.ServiceTags) {
 				continue
 			}
-			if forwarderMode && !strings.HasPrefix(svcName, "internal-") {
+			if forwarderMode && strings.HasPrefix(svcName, "internal-") {
 				continue
-			} else if forwarderMode {
-				svcName = strings.TrimPrefix(svcName, "internal-")
 			}
 			if stringInSlice("revproxy-default", svc.ServiceTags) {
 				c.Default = svcName
