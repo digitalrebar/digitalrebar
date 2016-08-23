@@ -4,7 +4,7 @@ if which sudo 2>/dev/null >/dev/null ; then
     SUDO=sudo
 fi
 
-SERVICES="network-server rebar-api_service logging-service"
+SERVICES="network-server logging-service"
 
 function usage {
     echo "Usage: $0 <flags> [options docker-compose flags/commands]"
