@@ -42,7 +42,9 @@ class Service < Role
         end
         pieces.select! do |piece|
           # New-school method of seeing if this service is in the proper deployment
-          piece.ServiceTags.any? do |st|
+          # Ignore services with the "forward" tag, those are flags for the forwarder.
+          !piece.ServiceTags.any?{|st|st == "forward"} &&
+            piece.ServiceTags.any? do |st|
             st =~ /^deployment:\s?#{nr.deployment.name}$/ || st == nr.deployment.name
           end
         end
