@@ -22,19 +22,22 @@ func Register(client *api.Client, svc *api.AgentServiceRegistration, forwarder b
 	if revproxy && forwarder {
 		return fmt.Errorf("service.Register %s: cannot use revproxy and forwarder at the same time", svc.Name)
 	}
+	if revproxy {
+		rpName := strings.TrimSuffix(svc.Name, "-service")
+		// Match what we do with the bash code
+		rpName = strings.TrimSuffix(rpName, "-mgmt")
+		_, err := client.KV().Put(&api.KVPair{
+			Key:   fmt.Sprintf("digitalrebar/public/revproxy/%s/matcher", svc.Name),
+			Value: []byte(fmt.Sprintf("^%s/(api/.*)", rpName)),
+		}, nil)
+		if err != nil {
+			return err
+		}
+	}
 	if forwarder && os.Getenv("FORWARDER_IP") != "" {
 		svc.Name = "internal-" + svc.Name
 	}
-	err := client.Agent().ServiceRegister(svc)
-	if err != nil || !revproxy {
-		return err
-	}
-	rpName := strings.TrimSuffix(svc.Name, "-service")
-	_, err = client.KV().Put(&api.KVPair{
-		Key:   fmt.Sprintf("digitalrebar/public/revproxy/%s/matcher", svc.Name),
-		Value: []byte(fmt.Sprintf("^%s/(api/.*)", rpName)),
-	}, nil)
-	return err
+	return client.Agent().ServiceRegister(svc)
 }
 
 // GetService is a thin wrapper around the consul API Service function
