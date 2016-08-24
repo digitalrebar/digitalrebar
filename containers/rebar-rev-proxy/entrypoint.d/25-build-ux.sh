@@ -2,10 +2,9 @@
 
 # Build UX components
 cd /opt/digitalrebar-ux
-bower --allow-root install --config.interactive=false
-npm install cssnano-cli html-minifier uglify-js
-npm install -g n
-n stable
+if [[ $REVPROXY_REBUILD_BOWER ]] ; then
+  bower --allow-root install --config.interactive=false
+fi
 ./build.sh
 cd -
 
