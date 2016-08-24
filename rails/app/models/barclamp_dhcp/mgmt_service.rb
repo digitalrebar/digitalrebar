@@ -33,30 +33,11 @@ class BarclampDhcp::MgmtService < Service
   end
 
   def do_transition(nr,data)
-    wait_for_service(nr, data, 'dhcp-mgmt-service')
     deployment_role = nr.deployment_role
-    until Attrib.get('dhcp-management-servers',deployment_role) &&
-          Attrib.get('provisioner-webservers',deployment_role.deployment)
+    until Attrib.get('provisioner-webservers',deployment_role.deployment)
       sleep 1
       deployment_role.reload
     end
-  end
-
-  def self.get_service(service_name = 'system')
-    service = nil
-    # This is not cool, but should be small in most environments.
-    BarclampDhcp::MgmtService.all.each do |role|
-      role.node_roles.each do |nr|
-        next unless nr.active?
-        services = Attrib.get('dhcp-management-servers', nr)
-        next unless services
-        services.each do |s|
-          service = s if s['name'] == service_name
-          return service if service
-        end
-      end
-    end
-    nil
   end
 
   def on_active(nr)
@@ -268,9 +249,8 @@ class BarclampDhcp::MgmtService < Service
   # options is a hash of number => value string
   #
   def self.create_network(t_id, name, subnet, next_server, start_ip, end_ip, options)
-    service = get_service
-    return unless service
-
+    url = TrustedService.url("dhcp-mgmt-service")
+    return if url.nil?
     hash = {
       "name" => name,
       "tenant_id" => t_id,
@@ -284,14 +264,12 @@ class BarclampDhcp::MgmtService < Service
       hash["options"] << { "id" => k, "value" => v }
     end
 
-    url = "#{service['url']}/subnets"
-
-    TrustedClient.new(url).post(hash.to_json)
+    TrustedClient.new("#{url}/subnets").post(hash.to_json)
   end
 
   def self.update_network(t_id, name, subnet, next_server, start_ip, end_ip, options)
-    service = get_service
-    return unless service
+    url = TrustedService.url("dhcp-mgmt-service")
+    return if url.nil?
 
     hash = {
       "name" => name,
@@ -305,17 +283,13 @@ class BarclampDhcp::MgmtService < Service
       hash["options"] ||= []
       hash["options"] << { "id" => k, "value" => v }
     end
-
-    url = "#{service['url']}/subnets/#{name}"
-
-    TrustedClient.new(url).put(hash.to_json)
+    TrustedClient.new("#{url}/subnets/#{name}").put(hash.to_json)
   end
 
   def self.delete_network(name)
-    service = get_service
-    return unless service
-    url = "#{service['url']}/subnets/#{name}"
-    TrustedClient.new(url).delete
+    url = TrustedService.url("dhcp-mgmt-service")
+    return if url.nil?
+    TrustedClient.new("#(url)/subnets/#{name}").delete
   end
 
   def self.bind_node_ip_mac(name, mac, ip, bootenv, loader)
@@ -344,21 +318,17 @@ class BarclampDhcp::MgmtService < Service
       hash["options"] ||= []
       hash["options"] << { "id" => k, "value" => v }
     end
+    url = TrustedService.url("dhcp-mgmt-service")
+    return if url.nil?
 
-    service = get_service
-    return unless service
-    url = "#{service['url']}/subnets/#{name}/bind"
-    TrustedClient.new(url).post(hash.to_json)
+    TrustedClient.new("#{url}/subnets/#{name}/bind").post(hash.to_json)
   end
 
   def self.unbind_node_ip_mac(name, mac)
-
+    url = TrustedService.url("dhcp-mgmt-service")
+    return if url.nil?    
     Rails.logger.info("dhcp-mgmt unbind_node_ip_mac - #{name} #{mac}")
-
-    service = get_service
-    return unless service
-    url = "#{service['url']}/subnets/#{name}/bind/#{mac}"
-    TrustedClient.new(url).delete
+    TrustedClient.new("#{url}/subnets/#{name}/bind/#{mac}").delete
   end
 
 end

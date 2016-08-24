@@ -19,7 +19,6 @@ require 'uri'
 class BarclampDns::MgmtService < Service
 
   def do_transition(nr,data)
-    wait_for_service(nr, data, 'dns-mgmt-service')
     deployment_role = nr.deployment_role
     until Attrib.get('dns-management-servers',deployment_role) do
       sleep 1
@@ -50,23 +49,6 @@ class BarclampDns::MgmtService < Service
     end
   end
 
-  def self.get_service(service_name)
-    service = nil
-    # This is not cool, but should be small in most environments.
-    BarclampDns::MgmtService.all.each do |role|
-      role.node_roles.each do |nr|
-        next unless nr.active?
-        services = Attrib.get('dns-management-servers', nr)
-        next unless services
-        services.each do |s|
-          service = s if s['name'] == service_name
-          return service if service
-        end
-      end
-    end
-    nil
-  end
-
   def self.remove_ip_address(dne)
     self.update_ip_address(dne, 'REMOVE')
   end
@@ -76,22 +58,18 @@ class BarclampDns::MgmtService < Service
   end
 
   def self.update_ip_address(dne, action)
-    service = get_service(dne.dns_name_filter.service)
-    return unless service
-
-    return unless Rails.env.production?
-
     address = dne.network_allocation.address
     name, domain = dne.name.split('.', 2)
-    self.update_dns_record(service, domain, dne.tenant_id, dne.rr_type, name, address.addr, action)
+    self.update_dns_record(domain, dne.tenant_id, dne.rr_type, name, address.addr, action)
   end
 
-  def self.send_request(url, data)
+  def self.send_request(url,data)
     TrustedClient.new(url).patch(data.to_json)
   end
 
   def self.update_dns_record(service, zone, t_id, rr_type, name, value, action)
-    url = "#{service['url']}/zones/#{zone}"
+    url = TrustedService.url("dns-mgmt-service")
+    return if url.nil?
 
     data = {
         'tenant_id' => t_id,
@@ -101,7 +79,7 @@ class BarclampDns::MgmtService < Service
         'type' => rr_type
     }
 
-    send_request(url, data)
+    send_request("#{url}/zones/#{zone}", data)
   end
 
 end

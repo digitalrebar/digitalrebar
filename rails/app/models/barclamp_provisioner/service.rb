@@ -41,10 +41,8 @@ class BarclampProvisioner::Service < Service
 
   def do_transition(nr, data)
     wait_for_service(nr, data, 'provisioner-service')
-    wait_for_service(nr, data, 'provisioner-mgmt-service')
     deployment_role = nr.deployment_role
-    until Attrib.get('provisioner-webservers', deployment_role) &&
-          Attrib.get('provisioner-management-servers', deployment_role) do
+    until Attrib.get('provisioner-webservers', deployment_role) do
       sleep 1
       deployment_role.reload
     end
@@ -53,9 +51,7 @@ class BarclampProvisioner::Service < Service
   private
 
   def provisioner_create(node)
-    sysdepl = Deployment.system
-    provisioner_mgmt = Attrib.get('provisioner-management-servers',sysdepl)
-    url = provisioner_mgmt[0]['url']
+    url = TrustedService.url("provisioner-mgmt-service")
     payload = {'Name' => node.name,
                'Uuid' => node.uuid,
                'TenantId' => node.tenant_id,
@@ -100,9 +96,7 @@ class BarclampProvisioner::Service < Service
   end
 
   def provisioner_delete(uuid)
-    sysdepl = Deployment.system
-    provisioner_mgmt = Attrib.get('provisioner-management-servers',sysdepl)
-    url = provisioner_mgmt[0]['url']
+    url = TrustedService.url("provisioner-mgmt-service")
     TrustedClient.new("#{url}/machines/#{uuid}").delete
   end
 
