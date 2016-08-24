@@ -37,6 +37,7 @@ class BarclampCluster::InstallSignedCert < LocalRole
     runlog << "Get key/cert pair: "
 
     hosts = [ nr.node.name ]
+    hosts << nr.node.name.split(".")[0] if nr.node.name.include? "."
     ca = Attrib.get('node-control-address',nr.node)
     hosts << IP.coerce(ca).addr if ca
     pca = Attrib.get('node-private-control-address',nr.node)
