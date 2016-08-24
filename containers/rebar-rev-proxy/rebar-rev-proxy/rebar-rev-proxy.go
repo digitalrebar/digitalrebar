@@ -142,7 +142,8 @@ func main() {
 	// Make token test filter
 	tokenMux := http.NewServeMux()
 	tokenMux.HandleFunc("/api/license", NewMultipleHostReverseProxy(ServiceRegistry, tlsConfig))
-	tokenMux.Handle("/ux/", http.StripPrefix("/ux/", http.FileServer(http.Dir("/opt/digitalrebar-ux"))))
+	tokenMux.Handle("/ux/", http.StripPrefix("/ux/", http.FileServer(http.Dir("/opt/digitalrebar-ux/_build"))))
+	tokenMux.Handle("/ux-dev/", http.StripPrefix("/ux-dev/", http.FileServer(http.Dir("/opt/digitalrebar-ux"))))
 	tokenMux.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		// Handle CORS BS
 		addCorsHeader(w, req)
