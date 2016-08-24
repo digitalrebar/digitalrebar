@@ -22,6 +22,12 @@ while [[ $1 ]]; do
       ./workload.sh rackn digitalrebar-ux
       shift;;
     kubernetes)
+      ./workload.sh digitalrebar kompos8
+      shift;;
+    kompos8)
+      ./workload.sh digitalrebar $1
+      shift;;
+    kargo)
       ./workload.sh rackn $1
       shift;;
     hardware)
@@ -50,16 +56,13 @@ while [[ $1 ]]; do
     burnin)
       ./workload.sh rackn $1
       shift;;
-    stackengine)
-      ./workload.sh rackn $1
-      shift;;
     rackn)
       for wl in docker kubernetes hardware ceph; do
         ./workload.sh rackn ${wl}
       done
       shift;;
     all)
-      for wl in docker kubernetes hardware ceph packstack docker-swarm enterprise mesosphere burnin stackengine digitalrebar-ux; do
+      for wl in docker kompos8 hardware ceph packstack docker-swarm enterprise mesosphere burnin digitalrebar-ux; do
         ./workload.sh rackn ${wl}
       done
       shift;;
