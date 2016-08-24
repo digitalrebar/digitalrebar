@@ -163,7 +163,11 @@ class BarclampDhcp::MgmtService < Service
   # implement this hook.
   #
   # This does not include IP allocation/deallocation.
-  def on_network_change(network)
+  def on_network_change(obj)
+    network = obj
+    network = obj.network if obj.class == NetworkRange
+    network = obj.network if obj.class == NetworkRouter
+
     build_network(network)
   end
 

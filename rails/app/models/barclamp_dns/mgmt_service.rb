@@ -67,7 +67,7 @@ class BarclampDns::MgmtService < Service
     TrustedClient.new(url).patch(data.to_json)
   end
 
-  def self.update_dns_record(service, zone, t_id, rr_type, name, value, action)
+  def self.update_dns_record(zone, t_id, rr_type, name, value, action)
     url = TrustedService.url("dns-mgmt-service")
     return if url.nil?
 

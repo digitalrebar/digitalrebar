@@ -43,6 +43,8 @@ class BarclampCluster::InstallSignedCert < LocalRole
     pca = Attrib.get('node-private-control-address',nr.node)
     hosts << IP.coerce(pca).addr if pca
     hosts << NetworkAllocation.where(node_id: nr.node.id).map{|a|a.address.addr}
+    hosts << "10.32.0.1" # GREG: THIS IS BAD!
+    hosts << "127.0.0.1"
     hosts.flatten!
     out,err,status = run_local("sign-it -A -l #{label} -s -o #{tmpfile} -h #{hosts.join(",")}")
     if !status.success?
