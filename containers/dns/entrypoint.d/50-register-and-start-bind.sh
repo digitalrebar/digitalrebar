@@ -38,25 +38,6 @@ elif [[ $DNS_TYPE == EXTERNAL ]] ; then
     dns_ip=${external_server_array[0]}
 fi
 
-# Build list of dns servers
-attr="{\"value\":["
-COMMA=""
-for element in "${external_server_array[@]}"
-do
-    attr="${attr}${COMMA}
-    {\"address\": \"$element\",
-     \"port\": \"53\",
-     \"name\": \"$SERVICE_DEPLOYMENT\"}"
-    COMMA=","
-done
-attr="${attr}]}"
-
-# If we are not using forwarder, we need to use the external address to take to us.
-make_service "dns" "53" "{\"script\": \"dig @$dns_ip $dns_ip >/dev/null 2>&1\", \"interval\": \"10s\"}"
-bind_service dns-service
-set_service_attrib dns-service dns-domain "{\"value\": \"$BASE_DOMAINNAME\"}"
-set_service_attrib dns-service dns_servers "${attr}"
-
 #
 # If we aren't external, we need to start a management service.
 #
@@ -73,24 +54,35 @@ $OTHER_PARMS
 EOF
     /usr/local/bin/rebar-dns-mgmt --backing_store=consul --data_dir=digitalrebar/dns/database --auth_mode=KEY --host="dns,dns-mgmt,dns-mgmt-service,$IP,${EXTERNAL_IP%%/*},${HOSTNAME},127.0.0.1,localhost" &
 
-    # Add rev-proxy matcher
-    echo '^dns/(.*)' | kv_put digitalrebar/public/revproxy/dns-mgmt-service/matcher
-
-    # Set up the management service
-    OSD=$SERVICE_DEPLOYMENT
-    SERVICE_DEPLOYMENT="$OSD\", \"revproxy"
-    make_service "dns-mgmt" "6754" '{ "script": "pidof rebar-dns-mgmt","interval": "10s"}'
-    SERVICE_DEPLOYMENT=$OSD
-
+    make_revproxied_service "dns-mgmt" "6754" '{ "script": "pidof rebar-dns-mgmt","interval": "10s"}'
+    # Alas, we still need this for now.
     bind_service dns-mgmt_service
-
-    attr="{\"value\": [{
+    mgmt_attr="{\"value\": [{
        \"address\": \"$the_ip\",
        \"port\": \"6754\",
        \"name\": \"$SERVICE_DEPLOYMENT\",
        \"url\": \"https://${the_ip}:6754\"
       }]
 }"
-    set_service_attrib dns-mgmt_service dns-management-servers "$attr"
+    set_service_attrib dns-mgmt_service dns-management-servers "$mgmt_attr"
+
+
 fi
+
+attr="{\"value\":["
+COMMA=""
+for element in "${external_server_array[@]}"
+do
+    attr="${attr}${COMMA}
+    {\"address\": \"$element\",
+     \"port\": \"53\",
+     \"name\": \"$SERVICE_DEPLOYMENT\"}"
+    COMMA=","
+done
+attr="${attr}]}"
+
+make_service "dns" "53" "{\"script\": \"dig @$dns_ip $dns_ip >/dev/null 2>&1\", \"interval\": \"10s\"}"
+bind_service dns-service
+set_service_attrib dns-service dns-domain "{\"value\": \"$BASE_DOMAINNAME\"}"
+set_service_attrib dns-service dns_servers "${attr}"
 

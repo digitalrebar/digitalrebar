@@ -38,7 +38,8 @@ run_forever() (
   done
 )
 
-run_forever /usr/local/bin/rebar-rev-proxy --externalIp ${EXTERNAL_IP%%/*} \
+make_service "rebar-rev-proxy" $REVPROXY_PORT '{"script": "pidof rebar-rev-proxy", "interval": "10s"}'
+/usr/local/bin/rebar-rev-proxy --externalIp ${EXTERNAL_IP%%/*} \
 	$FORWARDER_FLAG \
 	$LISTENPORT \
 	$AUTHFILTER \
@@ -46,7 +47,8 @@ run_forever /usr/local/bin/rebar-rev-proxy --externalIp ${EXTERNAL_IP%%/*} \
 	--host "$IP,${EXTERNAL_IP%%/*},${HOSTNAME},127.0.0.1,localhost" \
 	$SAMLCERT \
 	$SAMLIDPSSOURL \
-	$SAMLIDPSSODESCURL &
+	$SAMLIDPSSODESCURL && exit 0
+exit 1
 
-make_service "rebar-rev-proxy" $REVPROXY_PORT '{"script": "pidof rebar-rev-proxy", "interval": "10s"}'
+
 

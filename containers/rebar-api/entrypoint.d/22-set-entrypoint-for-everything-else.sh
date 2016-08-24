@@ -11,7 +11,7 @@
     cat >/etc/rebar-data/rebar-key.sh <<EOF
 export REBAR_KEY="$REBAR_KEY"
 export REBAR_ENDPOINT="https://${IP}:3000"
-export EXTERNAL_REBAR_ENDPOINT="https://${EXTERNAL_IP%%/*}:3000"
+export EXTERNAL_REBAR_ENDPOINT="https://${EXTERNAL_IP%%/*}"
 EOF
     kv_put digitalrebar/private/api/keys/rebar_key </etc/rebar-data/rebar-key.sh
 )

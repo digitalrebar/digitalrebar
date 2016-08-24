@@ -7,7 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 
-	"github.com/kmanley/go-http-auth"
+	auth "github.com/kmanley/go-http-auth"
 )
 
 func getUserString(tlsConfig *tls.Config, user, data string) string {
@@ -19,7 +19,8 @@ func getUserString(tlsConfig *tls.Config, user, data string) string {
 
 	tag, err := ServiceRegistry.ExtractTag(req.URL)
 	if err != nil {
-		log.Printf("Failed to extract Tag: %v\n", err)
+
+		log.Printf("Failed to extract Tag of %s: %v\n", req.URL, err)
 		return ""
 	}
 	endpoints, err := ServiceRegistry.LookupTag(tag)

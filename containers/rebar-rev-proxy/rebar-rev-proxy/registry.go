@@ -216,8 +216,10 @@ func (c *ConsulRegistry) WatchConsul() {
 				log.Printf("kv lookup err: %v", err)
 			} else {
 				if kp != nil && kp.Value != nil {
+					log.Printf("%s: Using matcher regexp from Consul: %s", svcTag, string(kp.Value))
 					svcMatcher = string(kp.Value[:])
 				} else {
+					log.Printf("%s: Using default matcher ^%s/(.*)", svcTag, svcTag)
 					svcMatcher = "^" + svcTag + "/(.*)"
 				}
 			}
