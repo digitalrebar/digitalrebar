@@ -80,10 +80,8 @@ class DnsNameFilter < ActiveRecord::Base
   end
 
   def claim_and_update(na)
-    # Only if we have an active service should we claim things.
-    return false unless BarclampDns::MgmtService.get_service(service)
-
     # Is there an entry for this pair
+    return false if TrustedService.url("dns-mgmt-service").nil?
     dne = DnsNameEntry.for_network_allocation_and_filter(na, self).first # Should be only
 
     if claims(na)
