@@ -98,14 +98,14 @@ class OpenStackProvider < CloudProvider
     }
   end
 
+  def variant_default
+    'openstack'
+  end
+
   private
 
   def inject_packet
     auth_details['provider'] = 'OpenStack'
-  end
-
-  def variant_default
-    'openstack'
   end
 
 end

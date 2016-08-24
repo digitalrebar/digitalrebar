@@ -65,14 +65,14 @@ class GoogleProvider < CloudProvider
     }
   end
 
+  def variant_default
+    'google'
+  end
+
   private
 
   def inject_google
     auth_details['provider'] = 'Google'
-  end
-
-  def variant_default
-    'google'
   end
 
 end

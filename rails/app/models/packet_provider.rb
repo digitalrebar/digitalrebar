@@ -68,14 +68,14 @@ class PacketProvider < CloudProvider
     }
   end
 
+  def variant_default
+    'packet'
+  end
+
   private
 
   def inject_packet
     auth_details['provider'] = 'Packet'
-  end
-
-  def variant_default
-    'packet'
   end
 
 end
