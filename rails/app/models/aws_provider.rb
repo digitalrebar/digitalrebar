@@ -62,10 +62,15 @@ class AwsProvider < CloudProvider
         name: I18n.t('provider-create-hint', scope: "providers.show"),
         length: 3,
         default: {
-          image_id: "ami-113cf471"
+          image_id: "ami-113cf471",
+          flavor_id: "m3.medium"
         }
       }
     }
+  end
+
+  def variant_default
+    'aws'
   end
 
   private
@@ -74,8 +79,4 @@ class AwsProvider < CloudProvider
     auth_details['provider'] = 'AWS'
   end
 
-  def variant_default
-    'aws'
-  end
-  
 end
