@@ -24,6 +24,32 @@ get_service() {
     curl http://localhost:8500/v1/catalog/service/$1
 }
 
+# This should only be called in a subshell where we want a command to
+# be able to talk to the outside world.  It relies the proxy being registered and alive,
+# and it will wait until it is before proceeding.
+with_local_proxy() {
+    if [[ ! $(get_service consul) ]]; then
+        echo "with_local_proxy called before consul is up!"
+        echo "$0 must execute after 10 in the entrypoint script ordering"
+        echo "This is a deadlock situation"
+        sleep 600
+        exit 1
+    fi
+    local blob=""
+    while true; do
+        local blob=$(get_service proxy-service)
+        [[ $blob && $blob != '[]' ]] && break
+        sleep 5
+    done
+    local addr=$(jq -r '.[0] |.ServiceAddress' <<< "$blob")
+    [[ $addr ]] || addr=$(jq '.[0] |.Address' <<< "$blob")
+    local port=$(jq -r '.[0] |.ServicePort' <<< "$blob")
+    export HTTP_PROXY="http://$addr:$port"
+    export HTTPS_PROXY="$HTTP_PROXY"
+    export http_proxy="$HTTP_PROXY"
+    export https_proxy="$HTTP_PROXY"
+}
+
 make_service() {
     # $1 = service name.
     # $2 = port to check on
