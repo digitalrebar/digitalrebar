@@ -1,4 +1,4 @@
 #!/bin/bash
 
-# We are moving away from barclamps needing extra gems, so stop caring about this step for now.
-# su -l -c 'cd /opt/digitalrebar/core/rails; bundle install --path /var/cache/rebar/gems --standalone --binstubs /var/cache/rebar/bin' rebar
+# Just make sure all our bundled gems are properly configured locally.
+su -l -c 'cd /opt/digitalrebar/core/rails; bundle install --local --path /var/cache/rebar/gems --standalone --binstubs /var/cache/rebar/bin' rebar
