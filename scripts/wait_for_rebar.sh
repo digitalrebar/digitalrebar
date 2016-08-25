@@ -66,13 +66,13 @@ export REBAR_KEY=${REBAR_KEY:-$REBAR_ACCESS}
 
 # Make sure jq is installed
 if [[ -f /etc/redhat-release || -f /etc/centos-release ]]; then
-    yum install -y epel-release
-    yum -y makecache
-    yum install -y jq curl
+    sudo yum install -y epel-release
+    sudo yum -y makecache
+    sudo yum install -y jq curl
 elif [[ -d /etc/apt ]]; then
-    apt-get -y --force-yes install jq curl
+    sudo apt-get -y --force-yes install jq curl
 elif [[ -f /etc/SuSE-release ]]; then
-    zypper install -y -l jq curl
+    sudo zypper install -y -l jq curl
 else
     echo "Staged on to unknown OS media!"
     exit 1
