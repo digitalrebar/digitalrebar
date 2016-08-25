@@ -129,13 +129,14 @@ class REST
 end
 
 $rule_engine = nil
-code = 0
 
-rev_proxies, code = REST.get("http://localhost:8500/v1/catalog/service/rebar-rev-proxy-service")
-if code == 200
+loop do
+  rev_proxies, code = REST.get("http://localhost:8500/v1/catalog/service/rebar-rev-proxy-service")
+  next if code != 200 || rev_proxies[0].nil?
   addr = rev_proxies[0]["ServiceAddress"]
   addr = rev_proxies[0]["Address"] unless addr and !addr.empty?
   $rule_engine = "https://#{addr}/rule-engine/api/v0/rulesets/"
+  break
 end
 
 # The base class for all Rebar commandline providers.
