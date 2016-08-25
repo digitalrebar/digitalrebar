@@ -22,6 +22,8 @@ ssl_verify_mode          :verify_none
 EOF
 chown -R rebar:rebar /home/rebar/.chef
 chmod 0600 /home/rebar/.chef/*
-
-/opt/digitalrebar/core/bin/chef-cookbook-upload >/tmp/chef-upload.out 2>&1
+(
+    with_local_proxy
+    /opt/digitalrebar/core/bin/chef-cookbook-upload >/tmp/chef-upload.out 2>&1
+)
 
