@@ -13,7 +13,7 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 80F70E11F0F0D5F
  && mv /etc/squid3/squid.conf /etc/squid3/squid.conf.dist \
  && rm -rf /var/lib/apt/lists/*
 
-COPY squid.conf /etc/squid3/squid.conf
+COPY squid.conf /tmp/squid.conf
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
