@@ -82,7 +82,7 @@ class UserTenantCapabilitiesController < ::ApplicationController
                model.find_by!(tenant_id: t.id, capability_id: c.id, user_id: u.id)
              end
       # Compensate for visible and find_key_cap not working
-      raise RebarForbiddenError.new(@cap.id, model) unless capable(t_id, cap("DESTROY"))
+      raise RebarForbiddenError.new(@cap.id, model) unless capable(@cap.tenant_id, cap("DESTROY"))
       @cap.destroy
     end
     respond_to do |format|
