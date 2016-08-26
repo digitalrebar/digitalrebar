@@ -5,7 +5,10 @@ if [[ $UPSTREAM_PROXY_ADDRESS && $UPSTREAM_PROXY_PORT ]]; then
     sed -r -e "/^#cache_peer/ s/upstream\.cache\.address/${UPSTREAM_PROXY_ADDRESS}/" \
         -e "/^#cache_peer/ s/upstream-cache-port/${UPSTREAM_PROXY_PORT}/" \
         -e "/^#(cache_peer|never_direct)/ s/#//" </tmp/squid.conf > /etc/squid3/squid.conf
+else
+    cp /tmp/squid.conf /etc/squid3/squid.conf
 fi
+
 
 create_log_dir() {
   mkdir -p ${SQUID_LOG_DIR}
