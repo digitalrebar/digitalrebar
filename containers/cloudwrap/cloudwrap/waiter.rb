@@ -195,6 +195,13 @@ loop do
         answer = server.ssh("sudo -- ip addr | grep #{private_dev_ip} | awk '{ print $2 }' | awk -F/ '{ print $2 }'")
         private_dev_cidr = answer[0].stdout.strip
 
+	# Update hostname to match the node's actual name.
+        log "Getting Hostname to reset to actual"
+        answer = server.ssh("sudo -- hostname -f")
+        hostname = answer[0].stdout.strip
+        system("rebar nodes update #{rebar_id} '{\"name\": \"#{hostname}\"}'")
+        log "Reset hostname to #{hostname}"
+
       when 'Packet', 'OpenStack'
         log "Put keys to node"
         Tempfile.open("cloudwrap-keys") do |f|
@@ -236,6 +243,14 @@ loop do
               #future, some providers encrypt the home drive and prevent our adding keys
               # see http://ubuntuforums.org/showthread.php?t=1932058
             end
+
+	    # Update hostname to match the node's actual name.
+            log "Getting Hostname to reset to actual"
+            answer = ssh.exec!("sudo -- hostname -f")
+            log "answer = #{answer.inspect}"
+            hostname = answer.strip
+            system("rebar nodes update #{rebar_id} '{\"name\": \"#{hostname}\"}'")
+            log "Reset hostname to #{hostname}"
           end
         rescue Exception => e
           log "Server #{cloudwrap_device_id} not key updatable, skipping: #{e}"
