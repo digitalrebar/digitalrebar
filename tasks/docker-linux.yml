@@ -1,5 +1,8 @@
 # Try to keep this OS neutral
 ---
+  - name: allow for proxies on systems using systemd
+    include: systemd-proxies.yml
+    when: ansible_service_mgr == "systemd"
   - name: Get Docker
     get_url: url=https://get.docker.com/ dest=/tmp/docker.sh validate_certs=False
     sudo: yes
