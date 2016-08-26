@@ -101,6 +101,17 @@ if [[ $DR_TAG ]] ; then
   TAG_VARS="\"dr_tag\": \"$DR_TAG\","
 fi
 
+# Set up proxy vars
+if [[ $no_proxy ]] ; then
+  NO_PROXY_VAR="\"no_proxy\"=\"$no_proxy\","
+fi
+if [[ $http_proxy ]] ; then
+  HTTP_PROXY_VAR="\"http_proxy\"=\"$http_proxy\","
+fi
+if [[ $https_proxy ]] ; then
+  HTTPS_PROXY_VAR="\"https_proxy\"=\"$https_proxy\","
+fi
+
 CLA_VAR="\"dr_classifiers\": ["
 COMMA=""
 for c in "${classifiers[@]}"; do
@@ -129,6 +140,9 @@ WL_VAR="${WL_VAR} ]"
 
 JSON_STRING="{
   ${ENV_VAR}
+  ${HTTP_PROXY_VAR}
+  ${HTTPS_PROXY_VAR}
+  ${NO_PROXY_VAR}
   ${ACCESS_VAR}
   ${EXTRA_VARS}
   ${TAG_VARS}

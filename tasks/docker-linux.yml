@@ -16,6 +16,11 @@
     when: (ansible_distribution == "RedHat" or ansible_distribution == "CentOS") and ansible_distribution_major_version == "7"
     sudo: yes
 
+  - name: allow for proxies on systems using systemd
+    include: systemd-proxies.yml
+    when: ansible_service_mgr == "systemd" and
+        (http_proxy is defined or https_proxy is defined or no_proxy is defined)
+
   - name: restart docker service
     service: name=docker state=started
     sudo: yes
