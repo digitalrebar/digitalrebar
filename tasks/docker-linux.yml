@@ -1,5 +1,8 @@
 # Try to keep this OS neutral
 ---
+  - name: allow for proxies on systems using systemd
+    include: systemd-proxies.yml
+    when: ansible_service_mgr == "systemd"
   - name: Get Docker
     get_url: url=https://get.docker.com/ dest=/tmp/docker.sh validate_certs=False
     sudo: yes
@@ -15,11 +18,6 @@
       - docker-engine-selinux
     when: (ansible_distribution == "RedHat" or ansible_distribution == "CentOS") and ansible_distribution_major_version == "7"
     sudo: yes
-
-  - name: allow for proxies on systems using systemd
-    include: systemd-proxies.yml
-    when: ansible_service_mgr == "systemd" and
-        (http_proxy is defined or https_proxy is defined or no_proxy is defined)
 
   - name: restart docker service
     service: name=docker state=started
