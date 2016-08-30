@@ -43,12 +43,17 @@ const (
 // TrustedSession builds a Client that can only operate inside the local trust zone.
 // It assumes that there is a local Consul server that it can use to look up the
 // trust-me service and the internal endpoint for the Rebar API.
-func TrustedSession(URL, User string) (*Client, error) {
+func TrustedSession(URL, username string) (*Client, error) {
 	c, err := cert.Client("internal", "rebar-client")
 	if err != nil {
 		return nil, err
 	}
-	return &Client{URL: URL, Client: c, Challenge: challengeTrusted(User)}, nil
+	res := &Client{URL: URL, Client: c, Challenge: challengeTrusted(username)}
+	user := &User{}
+	if err := res.Fetch(user, username); err != nil {
+		return nil, fmt.Errorf("Unable to verify existence of %s user, cannot use trusted session", username)
+	}
+	return res, nil
 }
 
 // Session establishes a new connection to Rebar.  You must call
