@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Build initial access keys
-if ! rebar -U rebar -P rebar1 users show machine-install; then
+if ! rebar users show machine-install; then
     echo "Creating machine-install user"
     MACHINE_PASSWORD=$(dd if=/dev/urandom bs=64 count=1 2>/dev/null | sha512sum - 2>/dev/null | awk '{ print $1 }')
     machine_user="
@@ -15,7 +15,7 @@ if ! rebar -U rebar -P rebar1 users show machine-install; then
   \"digest\": true
 }"
 
-    if ! rebar -U rebar -P rebar1 users import "$machine_user"; then
+    if ! rebar users import "$machine_user"; then
         echo "Could not create machine-install user!"
         exit 1
     fi
@@ -23,7 +23,7 @@ if ! rebar -U rebar -P rebar1 users show machine-install; then
     for cap in NODE_READ ROLE_READ NODE_CREATE NODE_UPDATE NODE_COMMIT \
                          DEPLOYMENT_READ DEPLOYMENT_UPDATE PROVIDER_READ; do
         blob="{\"user_id\":\"machine-install\",\"tenant_id\":\"system\",\"capability_id\":\"$cap\"}"
-        rebar -U rebar -P rebar1 user_tenant_capabilitys create "$blob"
+        rebar user_tenant_capabilitys create "$blob"
     done
 
     echo "machine-install:${MACHINE_PASSWORD}" >/etc/rebar.install.key
