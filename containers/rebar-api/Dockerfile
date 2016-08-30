@@ -23,7 +23,7 @@ RUN apt-get -y update \
 RUN pip install dnspython
 RUN gem install bundler \
   && gem install net-http-digest_auth \
-  && gem install berkshelf 
+  && gem install berkshelf -v 4.3.5
 RUN test -d /opt/digitalrebar/core || git clone https://github.com/digitalrebar/core /opt/digitalrebar/core \
   && mkdir -p /var/run/rebar /var/cache/rebar/cookbooks /var/cache/rebar/gems /var/cache/rebar/bin /var/log/rebar \
   && chown -R rebar:rebar /opt/digitalrebar /var/run/rebar /var/cache/rebar /var/log/rebar /home/rebar/.ssh \
