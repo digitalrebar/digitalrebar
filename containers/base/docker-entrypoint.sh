@@ -24,6 +24,10 @@ get_service() {
     curl http://localhost:8500/v1/catalog/service/$1
 }
 
+rebar() {
+    command rebar -T -U system "$@"
+}
+
 # This should only be called in a subshell where we want a command to
 # be able to talk to the outside world.  It relies the proxy being registered and alive,
 # and it will wait until it is before proceeding.
