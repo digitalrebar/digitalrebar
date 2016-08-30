@@ -51,7 +51,7 @@ func TrustedSession(URL, username string) (*Client, error) {
 	res := &Client{URL: URL, Client: c, Challenge: challengeTrusted(username)}
 	user := &User{}
 	if err := res.Fetch(user, username); err != nil {
-		return nil, fmt.Errorf("Unable to verify existence of %s user, cannot use trusted session", username)
+		return nil, fmt.Errorf("Unable to verify existence of %s user, cannot use trusted session: %v", username, err)
 	}
 	return res, nil
 }
