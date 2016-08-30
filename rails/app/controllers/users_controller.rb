@@ -143,11 +143,8 @@ class UsersController < ApplicationController
   def start_password_reset
     User.transaction do
       # Probably need a PASSWORD_CHANGE cap or something.
-      @user = find_key_cap(model, params[:id],cap("UPDATE"))
-      unless current_user.is_admin || current_user == @user
-        sleep 2
-        raise "Cannot start password change"
-      end
+      @user = User.find_key(params[:id])
+      @user = find_key_cap(model, params[:id],cap("UPDATE")) if @user.id != current_user.id
       PasswordChangeToken.where(user_id: @user.id).delete_all
       render api_show PasswordChangeToken.create!(user: @user)
     end
@@ -155,13 +152,10 @@ class UsersController < ApplicationController
 
   def complete_password_reset
     # Same as the last one.
-    @user = find_key_cap(model,params[:id],cap("UPDATE"))
+    @user = User.find_key(params[:id])
+    @user = find_key_cap(model, params[:id],cap("UPDATE")) if @user.id != current_user.id
     User.transaction do 
       token = PasswordChangeToken.find_by!(token: params[:token])
-      unless @user.id == token.user_id && (current_user == @user || current_user.is_admin)
-        sleep 2
-        raise "Password change failed"
-      end
       payload = token.decode(params[:decoder],params[:nonce],params[:payload])
       @user.digest_password(payload["password"])
       @user.save!
