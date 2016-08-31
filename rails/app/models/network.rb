@@ -29,7 +29,6 @@ class Network < ActiveRecord::Base
   private :load_uuid
 
   validate        :check_network_sanity
-  after_commit    :add_role, on: :create
   after_save      :auto_prefix
   before_destroy  :remove_role
   after_commit :on_create_hooks, on: :create
@@ -374,6 +373,7 @@ class Network < ActiveRecord::Base
     # These should happen synchronously.
     # do the low cohorts first
     return if @after_create
+    add_role
     @after_create = true
     Event.fire(self, event: 'on_network_create')
   end
