@@ -16,9 +16,10 @@
 # Note : This script runs on both the admin and compute nodes.
 # It intentionally ignores the bios->enable node data flag.
 
-include_recipe "ipmi::ipmitool"
-
 node.set[:ipmi][:bmc_enable] = false
+return if node[:rebar_ohai][:in_docker]
+
+include_recipe "ipmi::ipmitool"
 
 unless IPMI.supported?(node)
   Chef::Log.info("BMC not supported.")

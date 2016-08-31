@@ -87,12 +87,13 @@ module BarclampRaid
 
     def useable?
       begin
-        lines = run_tool(nil, 0, ["-adpCount"])
-      rescue Exception => e
-        @logger << "Node #{@node.name} has no controllers controllable via MegaCLI...#{e.message}\n" if @logger
+        run_tool(nil, nil, ["-adpCount"]).each do |line|
+          return true if line =~ /Controller Count:.*([0-9]+)\./ && $~[1].to_i > 0
+        end
+        return false
+      rescue
         return false
       end
-      true
     end
 
     def controllers
