@@ -53,18 +53,24 @@
     command: mkdir -p {{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos
     when: "'--provisioner' in dr_services"
 
+  - name: use local ISOs by checking for tftpboot/isos/copy_isos.yes
+    local_action: stat path="./tftpboot/isos/copy_isos.yes"
+    register: local_isos
+
+  - debug: msg="Skipped Optimization > Did not find 'tftpboot/isos/copy_isos.yes' so NOT copying LOCAL ISOs"
+    when: not local_isos.stat.exists
+
   - name: push tftpboot cache files (ISOs) from local tftpboot (FAST LOCAL but SLOW REMOTE!)
     synchronize: src=./tftpboot dest={{home_dir.stdout}}/.cache/digitalrebar rsync_path="rsync"
-    when: "'--provisioner' in dr_services"
-    ignore_errors: yes
+    when: "'--provisioner' in dr_services and local_isos.stat.exists"
 
-  - name: download Ubuntu ISO (SLOW, see https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
-    get_url: url=http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.4-server-amd64.iso dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.3-server-amd64.iso"
-    when: "'--provisioner' in dr_services"
+  - name: download Ubuntu ISO (SLOW, see https://github.com/rackn/digitalrebar-deploy/tree/master/containers/provisioner/update-nodes/bootenvs)
+    get_url: url=http://mirrors.kernel.org/ubuntu-releases/16.04/ubuntu-16.04-server-amd64.iso dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/ubuntu-16.04-server-amd64.iso" checksum="sha256:b8b172cbdf04f5ff8adc8c2c1b4007ccf66f00fc6a324a6da6eba67de71746f6"
+    when: "'--provisioner' in dr_services and not local_isos.stat.exists"
 
-  - name: download Centos ISO (SLOW, see https://github.com/digitalrebar/core/blob/develop/barclamps/provisioner.yml)
-    get_url: url=http://mirrors.kernel.org/centos/7.2.1511/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1511.iso"
-    when: "'--provisioner' in dr_services"
+  - name: download Centos ISO (SLOW, see https://github.com/rackn/digitalrebar-deploy/tree/master/containers/provisioner/update-nodes/bootenvs)
+    get_url: url=http://mirrors.kernel.org/centos/7.2.1511/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1511.iso" checksum="sha256:f90e4d28fa377669b2db16cbcb451fcb9a89d2460e3645993e30e137ac37d284"
+    when: "'--provisioner' in dr_services and not local_isos.stat.exists"
 
   - name: Make code dirs
     file: path={{home_dir.stdout}}/digitalrebar/deploy/compose state=directory recurse=yes
