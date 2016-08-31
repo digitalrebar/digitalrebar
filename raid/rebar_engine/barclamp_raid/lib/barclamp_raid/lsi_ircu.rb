@@ -444,11 +444,5 @@ module BarclampRaid
       ours
     end
 
-    def run_tool(success, error, args, &block)
-      cmd = [CMD]
-      cmd = cmd + [*args]
-      run_command(cmd.join(" "), success, error, &block)
-    end
-
   end # This driver
 end # RAID

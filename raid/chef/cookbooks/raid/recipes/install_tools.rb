@@ -13,6 +13,9 @@
 # limitations under the License.
 #
 
+# This is a little bit of a hack for now.
+return if node[:platform] == "coreos" || node[:rebar_ohai][:in_docker]
+
 raid_utils = "#{node[:rebar][:provisioner][:server][:webservers].first[:url]}/files/raid"
 
 %w{unzip rpm2cpio curl}.each do |pkg|

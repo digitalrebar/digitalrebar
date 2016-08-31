@@ -130,8 +130,8 @@ class BarclampIpmi::IpmiHammer < Hammer
 
   def invoke(*args)
     Rails.logger.debug("IPMI: invoke: start")
-    sleep(5) unless node.quirks.member?("ipmi-nodelay")
-    cmd = "ipmitool -I lanplus -U #{username} -P #{authenticator} -H #{endpoint} #{args.map{|a|a.to_s}.join(' ')}"
+    @lanproto ||= Attrib.get('ipmi-version',node).to_f >= 2.0 ? "lanplus" : "lan"
+    cmd = "ipmitool -I #{@lanproto} -U #{username} -P #{authenticator} -H #{endpoint} #{args.map{|a|a.to_s}.join(' ')}"
     res = %x{ #{cmd} 2>&1}
     Rails.logger.debug("IPMI: invoke: result: #{res}")
     return [res, $?.exitstatus == 0]

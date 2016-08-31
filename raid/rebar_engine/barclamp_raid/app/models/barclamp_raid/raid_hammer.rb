@@ -79,8 +79,14 @@ class BarclampRaid::RaidHammer < Hammer
   def detect(nr)
     logger = NodeRoleLogger.new(nr)
     logger << "Detecting Raid Configuration\n"
-    ans = drivers(logger).map{|d|d.controllers}.flatten
-    ans
+    ans = []
+    drivers(logger).each do |d|
+      if d.useable?
+        logger << "#{d.class.name} claims to be useable."
+        ans << d.controllers
+      end
+    end
+    ans.flatten
   end
 
   # Apply the raid configuration from the provided noderole and update
