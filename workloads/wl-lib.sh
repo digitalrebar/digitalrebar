@@ -142,7 +142,7 @@ bring_up_admin() {
     esac
 
     if [[ $ADMIN_IP ]] ; then
-        export REBAR_ENDPOINT=https://${ADMIN_IP%/*}:3000
+        export REBAR_ENDPOINT=https://${ADMIN_IP%/*}
         if rebar ping 2>/dev/null >/dev/null ; then
             echo "Admin node at $ADMIN_IP already running."
             ADMIN_ALREADY_UP=true
@@ -173,7 +173,7 @@ bring_up_admin() {
             ;;
     esac
 
-    export REBAR_ENDPOINT=https://${ADMIN_IP%/*}:3000
+    export REBAR_ENDPOINT=https://${ADMIN_IP%/*}
 }
 
 tear_down_admin() {
@@ -586,7 +586,7 @@ fi
 validate_tools
 
 # Gets overridden when bringing up the admin node
-export REBAR_ENDPOINT=https://${ADMIN_IP%/*}:3000
+export REBAR_ENDPOINT=https://${ADMIN_IP%/*}
 
 validate_provider $DEPLOY_ADMIN
 validate_provider $PROVIDER
