@@ -647,7 +647,7 @@ in_chroot rm -rf $SYSTEM_TFTPBOOT_DIR
 if [[ -f $SLEDGEHAMMER_IMAGE_DIR/stage2.img ]]; then
     echo "New sledgehammer image in $SLEDGEHAMMER_IMAGE_DIR"
     echo "It has signature $signature"
-    echo "To use it locally, modify the bootstrap recipe to refer to the new signature."
+    echo "To use it locally, modify PROV_SLEDGEHAMMER_SIG in deploy/compose/common.env to use it."
     exit 0
 else
     exit 1
