@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"strings"
 	"time"
@@ -36,6 +37,12 @@ func Register(client *api.Client, svc *api.AgentServiceRegistration, forwarder b
 	}
 	if forwarder && os.Getenv("FORWARDER_IP") != "" {
 		svc.Name = "internal-" + svc.Name
+	} else if extIP := os.Getenv("EXTERNAL_IP"); extIP != "" && !forwarder {
+		ip, _, err := net.ParseCIDR(extIP)
+		if err != nil {
+			return fmt.Errorf("service.Register: EXTERNAL_IP not CIDR: %v", err)
+		}
+		svc.Address = ip.String()
 	}
 	return client.Agent().ServiceRegister(svc)
 }
