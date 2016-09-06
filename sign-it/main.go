@@ -11,25 +11,21 @@ import (
 	"strings"
 
 	"github.com/digitalrebar/go-common/cert"
+	"github.com/digitalrebar/go-common/client"
 	"github.com/digitalrebar/go-common/service"
-	consul "github.com/hashicorp/consul/api"
 )
 
-func getTrustMeServiceAddress() (string, error) {
-	cc, err := consul.NewClient(consul.DefaultConfig())
+func getTrustMeServiceAddress() string {
+	consulClient, err := client.Consul(true)
 	if err != nil {
-		return "", err
+		log.Fatalf("Could not talk to Consul: %v", err)
 	}
-	if _, err := cc.Agent().Self(); err != nil {
-		return "", err
-	}
-
-	svc, err := service.WaitService(cc, "trust-me-service", "")
+	svc, err := service.Find(consulClient, "trust-me", "")
 	if err != nil {
-		log.Printf("Could not get trust-me service: %v\n", err)
-		return "", err
+		log.Fatalf("Could not get trust-me service: %v\n", err)
 	}
-	return fmt.Sprintf("https://%s:%d", svc[0].ServiceAddress, svc[0].ServicePort), nil
+	addr, port := service.Address(svc[0])
+	return fmt.Sprintf("https://%s:%d", addr, port)
 }
 
 func main() {
@@ -69,10 +65,7 @@ func main() {
 
 	if *flagMakeRoot {
 		if *flagAuto {
-			address, err := getTrustMeServiceAddress()
-			if err != nil {
-				log.Fatal("Failed to get consul data: ", err)
-			}
+			address := getTrustMeServiceAddress()
 			*flagAddr = address
 		}
 
@@ -101,10 +94,7 @@ func main() {
 
 	if *flagInfo {
 		if *flagAuto {
-			address, err := getTrustMeServiceAddress()
-			if err != nil {
-				log.Fatal("Failed to get consul data: ", err)
-			}
+			address := getTrustMeServiceAddress()
 			*flagAddr = address
 		}
 
