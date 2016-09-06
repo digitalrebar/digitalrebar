@@ -18,7 +18,9 @@ func Consul(wait bool) (*consul.Client, error) {
 	for {
 		cClient, err := consul.NewClient(consul.DefaultConfig())
 		if err == nil {
-			return cClient, err
+			if _, err = cClient.Agent().Self(); err == nil {
+				return cClient, nil
+			}
 		}
 		if !wait {
 			return nil, fmt.Errorf("RebarClient: Error getting local Consul client: %v", err)
