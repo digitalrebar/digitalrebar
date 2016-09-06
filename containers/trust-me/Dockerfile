@@ -8,7 +8,7 @@ ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 RUN for i in trust-me sign-it; do \
     curl -fgL -o "/usr/local/bin/$i" \
          "https://s3-us-west-2.amazonaws.com/rebar-trust-me/$i" && \
-    chmod 755 "/usr/local/bin/$i" \
+         chmod 755 "/usr/local/bin/$i"; \
     done
 
 COPY test_tm_up.sh /usr/local/bin/test_tm_up.sh
