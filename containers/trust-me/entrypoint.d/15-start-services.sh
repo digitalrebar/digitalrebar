@@ -1,5 +1,4 @@
 #!/bin/bash
 
 # GREG: add hosts here
-trust-me -c &
-
+trust-me -c
