@@ -24,21 +24,18 @@ import (
 // requests made to that trust-me instance.  Digital Rebar services
 // inside the trust zone can use "internal" as the trustRoot string.
 func GetTrustMeServiceInfo(trustRoot string) (endpoint string, signingKey []byte, err error) {
-	cc, err := consul.NewClient(consul.DefaultConfig())
+	consulClient, err := consul.NewClient(consul.DefaultConfig())
 	if err != nil {
-		return "", nil, err
+		return "", nil, fmt.Errorf("Could not talk to Consul: %v", err)
 	}
-	if _, err := cc.Agent().Self(); err != nil {
-		return "", nil, err
-	}
-
-	svc, err := service.WaitService(cc, "trust-me-service", "")
+	svc, err := service.Find(consulClient, "trust-me", "")
 	if err != nil {
 		return "", nil, fmt.Errorf("Could not get trust-me service: %v\n", err)
 	}
-	endpoint = fmt.Sprintf("https://%s:%d", svc[0].ServiceAddress, svc[0].ServicePort)
+	addr, port := service.Address(svc[0])
+	endpoint = fmt.Sprintf("https://%s:%d", addr, port)
 
-	simpleStore, err := store.NewSimpleConsulStore(cc, "trust-me/cert-store")
+	simpleStore, err := store.NewSimpleConsulStore(consulClient, "trust-me/cert-store")
 	if err != nil {
 		return "", nil, fmt.Errorf("Failed to connect to consul: %v\n", err)
 	}
