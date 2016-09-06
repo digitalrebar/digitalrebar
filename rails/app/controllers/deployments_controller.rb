@@ -276,8 +276,8 @@ class DeploymentsController < ApplicationController
 
             Rails.logger.debug("Deployment Batch: checking to see if user has access to provider #{pro_raw['name']}")
             provider = find_key_cap(Provider,(pro_raw["name"]), cap("READ","PROVIDER"))
-
-            name = "#{node["prefix"] || deployment.name}-#{(block+1).to_s.rjust(2, "0")}-#{i.to_s.rjust(3, "0")}.#{provider.name}.#{params["tld"] || deployment.name + '.cloud'}"
+            default_prefix = "#{deployment.name}-#{(block+1).to_s.rjust(2, "0")}"
+            name = "#{node["prefix"] || default_prefix}-#{i.to_s.rjust(3, "0")}.#{provider.name}.#{params["tld"] || deployment.name + '.cloud'}"
             Rails.logger.debug("Deployment Batch: adding node #{name}")
             validate_create(@current_user.current_tenant_id, cap("CREATE"), Node)
             newnode = Node.create!( name: name,
