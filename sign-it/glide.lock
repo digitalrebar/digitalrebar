@@ -1,0 +1,53 @@
+hash: b56f494f717688cad66ab1f8eff599f2242e20e9a6d26740986fcf010648ecaa
+updated: 2016-09-06T09:46:59.292638736-05:00
+imports:
+- name: github.com/boltdb/bolt
+  version: ee4a0888a9abe7eefe5a0992ca4cb06864839873
+- name: github.com/cloudflare/cfssl
+  version: 7fb22c8cba7ecaf98e4082d22d65800cf45e042a
+  subpackages:
+  - api
+  - api/client
+  - auth
+  - certdb
+  - config
+  - crypto/pkcs7
+  - csr
+  - errors
+  - helpers
+  - helpers/derhelpers
+  - info
+  - log
+  - ocsp/config
+  - signer
+- name: github.com/digitalrebar/go-common
+  version: 4118dba7ae21e66511d21940c82ec1866397d94f
+  subpackages:
+  - cert
+  - service
+  - store
+- name: github.com/hashicorp/consul
+  version: 26a0ef8c41aa2252ab4cf0844fc6470c8e1d8256
+  subpackages:
+  - api
+- name: github.com/hashicorp/go-cleanhttp
+  version: 875fb671b3ddc66f8e2f0acc33829c8cb989a38d
+- name: github.com/hashicorp/serf
+  version: e4ec8cc423bbe20d26584b96efbeb9102e16d05f
+  subpackages:
+  - coordinate
+  - serf
+- name: golang.org/x/crypto
+  version: 1f22c0103821b9390939b6776727195525381532
+  repo: https://go.googlesource.com/crypto
+  subpackages:
+  - ocsp
+  - pbkdf2
+  - pkcs12
+  - pkcs12/internal/rc2
+  - scrypt
+- name: golang.org/x/sys
+  version: 20457ee8ea8546920d3f4e19e405da45250dc5a5
+  subpackages:
+  - unix
+testImports: []

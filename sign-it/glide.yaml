@@ -1,0 +1,10 @@
+package: github.com/digitalrebar/certificates/sign-it
+import:
+- package: github.com/digitalrebar/go-common
+  subpackages:
+  - cert
+  - service
+- package: github.com/hashicorp/consul
+  version: ~0.6.0
+  subpackages:
+  - api

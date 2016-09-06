@@ -6,22 +6,25 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/digitalrebar/go-common/cert"
+	"github.com/digitalrebar/go-common/service"
 	"github.com/digitalrebar/go-common/store"
 
 	"github.com/cloudflare/cfssl/api/info"
 	"github.com/cloudflare/cfssl/signer"
 	"github.com/cloudflare/cfssl/whitelist"
+	commonClient "github.com/digitalrebar/go-common/client"
 
 	consul "github.com/hashicorp/consul/api"
 )
 
 var (
 	defaultLabel    string
-	signers                = map[string]signer.Signer{}
-	whitelists             = map[string]whitelist.NetACL{}
-	consulKeyPrefix string = "trust-me/cert-store"
+	signers         = map[string]signer.Signer{}
+	whitelists      = map[string]whitelist.NetACL{}
+	consulKeyPrefix = "trust-me/cert-store"
 	simpleStore     store.SimpleStore
 )
 
@@ -111,22 +114,19 @@ func main() {
 	flag.Parse()
 
 	var err error
+	client, err := commonClient.Consul(true)
+	if err != nil {
+		log.Fatalf("Error getting Consul client: %v", err)
+	}
 	if *flagConsul {
-		client, err := consul.NewClient(consul.DefaultConfig())
-		if err != nil {
-			log.Fatal("%v", err)
-		}
-		if _, err := client.Agent().Self(); err != nil {
-			log.Fatal("%v", err)
-		}
 		simpleStore, err = store.NewSimpleConsulStore(client, consulKeyPrefix)
 		if err != nil {
-			log.Fatal("%v", err)
+			log.Fatalf("%v", err)
 		}
 	} else if *flagLocal {
 		simpleStore, err = store.NewSimpleLocalStore(".")
 		if err != nil {
-			log.Fatal("%v", err)
+			log.Fatalf("%v", err)
 		}
 	} else {
 		simpleStore = store.NewSimpleMemoryStore()
@@ -134,14 +134,14 @@ func main() {
 
 	err = loadSigners()
 	if err != nil {
-		log.Fatal("%v", err)
+		log.Fatalf("%v", err)
 	}
 
 	defaultLabel = "internal"
 	if _, ok := signers[defaultLabel]; !ok {
 		err = newRootCertificate(defaultLabel, "")
 		if err != nil {
-			log.Fatal("%v", err)
+			log.Fatalf("%v", err)
 		}
 	}
 
@@ -152,21 +152,24 @@ func main() {
 	s, _ := signers[defaultLabel]
 	csrPem, keyB, err := cert.CreateCSR(defaultLabel, "trust-me", hosts)
 	if err != nil {
-		log.Fatal("%v", err)
+		log.Fatalf("%v", err)
 	}
 	csrRequest := signer.SignRequest{
 		Request: string(csrPem),
 	}
 	certB, err := s.Sign(csrRequest)
 	if err != nil {
-		log.Fatal("%v", err)
+		log.Fatalf("%v", err)
 	}
 
 	initStats()
 
 	infoHandler, err := info.NewMultiHandler(signers, defaultLabel)
 	if err != nil {
-		log.Fatal("%v", err)
+		log.Fatalf("%v", err)
+	}
+	if err != nil {
+		log.Fatalf("Failed to talk to Consul: %v", err)
 	}
 
 	var localhost = whitelist.NewBasic()
@@ -174,7 +177,7 @@ func main() {
 	localhost.Add(net.ParseIP("::1"))
 	metrics, err := whitelist.NewHandlerFunc(dumpMetrics, metricsDisallowed, localhost)
 	if err != nil {
-		log.Fatal("failed to set up the metrics whitelist: %v", err)
+		log.Fatalf("failed to set up the metrics whitelist: %v", err)
 	}
 
 	http.HandleFunc("/api/v1/cfssl/authsign", dispatchRequest)
@@ -183,5 +186,23 @@ func main() {
 	http.HandleFunc("/api/v1/cfssl/root", newRoot)
 
 	log.Println("Now listening on https:// ", *flagAddr)
-	log.Fatal(cert.ListenAndServeTLS(*flagAddr, certB, keyB, nil))
+	go func() {
+		log.Printf("Cert API failed for trust-me: %v",
+			cert.ListenAndServeTLS(*flagAddr, certB, keyB, nil))
+	}()
+	reg := &consul.AgentServiceRegistration{
+		Name: "trust-me-service",
+		Port: 8888,
+		Tags: []string{"deployment:system"},
+		Check: &consul.AgentServiceCheck{
+			Script:   "/usr/local/bin/test_tm_up.sh",
+			Interval: "10s",
+		},
+	}
+	if err := service.Register(client, reg, true); err != nil {
+		log.Fatalf("Failed to register service with Consul: %v", err)
+	}
+	for {
+		time.Sleep(600)
+	}
 }
