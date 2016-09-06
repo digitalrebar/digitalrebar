@@ -22,9 +22,7 @@ RUN curl -fgL -o /tmp/ipxe.efi http://boot.ipxe.org/ipxe.efi
 RUN curl -fgL -o /tmp/ipxe.pxe http://boot.ipxe.org/ipxe.pxe
 #RUN curl -fgL -o /tmp/busybox https://www.busybox.net/downloads/binaries/busybox-x86_64
 RUN curl -fgL -o /tmp/busybox https://s3-us-west-2.amazonaws.com/rackn-busybox/busybox
-
-RUN /usr/local/go/bin/go get -u github.com/digitalrebar/certificates/sign-it \
-  && mv /go/bin/sign-it /usr/local/bin/sign-it
+RUN curl -fgL https://s3-us-west-2.amazonaws.com/rebar-trust-me/sign-it -o /usr/local/bin/sign-it && chmod 755 /usr/local/bin/sign-it
 
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 COPY start-up.sh udhcpc_config stage1_init /tmp/
