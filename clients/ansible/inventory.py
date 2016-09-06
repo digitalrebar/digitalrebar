@@ -27,7 +27,7 @@ example: ansible -i inventory.py all -a "uname -a"
 def main():
 
     # change these values to match your DigitalRebar installation
-    addr = "https://127.0.0.1:3000"
+    addr = "https://127.0.0.1"
     user = "rebar"
     password = "rebar1"
 
