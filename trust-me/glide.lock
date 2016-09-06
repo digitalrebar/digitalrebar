@@ -1,5 +1,5 @@
 hash: 22ebd08e3c95ddba8123437178b14b6aa34629c10d03b4faecb0a0216f62430e
-updated: 2016-09-06T09:33:29.308208483-05:00
+updated: 2016-09-06T13:36:23.167533695-05:00
 imports:
 - name: github.com/boltdb/bolt
   version: ee4a0888a9abe7eefe5a0992ca4cb06864839873
@@ -27,7 +27,7 @@ imports:
 - name: github.com/cloudflare/go-metrics
   version: 6a9aea36fb410b71add0d0e58438e0cfc44d3076
 - name: github.com/digitalrebar/go-common
-  version: 4118dba7ae21e66511d21940c82ec1866397d94f
+  version: 98e02046cc0f9760564a31d9e66cee20d463e73d
   subpackages:
   - cert
   - client
