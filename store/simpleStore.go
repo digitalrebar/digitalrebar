@@ -153,8 +153,7 @@ func (b *SimpleConsulStore) Keys() ([]string, error) {
 	keys, _, err := b.kv.Keys(b.baseKey, "", nil)
 	res := make([]string, len(keys))
 	for i := range keys {
-		sepPos := strings.LastIndex(keys[i], "/")
-		res[i] = keys[i][(sepPos + 1):]
+		res[i] = strings.TrimPrefix(keys[i], b.baseKey+"/")
 	}
 	return res, err
 }
