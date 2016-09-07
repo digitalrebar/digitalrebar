@@ -20,12 +20,15 @@ import (
 	consul "github.com/hashicorp/consul/api"
 )
 
-var (
-	defaultLabel    string
-	signers         = map[string]signer.Signer{}
-	whitelists      = map[string]whitelist.NetACL{}
+const (
 	consulKeyPrefix = "trust-me/cert-store"
-	simpleStore     store.SimpleStore
+)
+
+var (
+	defaultLabel string
+	signers      = map[string]signer.Signer{}
+	whitelists   = map[string]whitelist.NetACL{}
+	simpleStore  store.SimpleStore
 )
 
 func loadSigners() error {
@@ -36,15 +39,18 @@ func loadSigners() error {
 
 	data := make(map[string]map[string][]byte, 0)
 	for _, k := range keys {
-		parts := strings.Split(k, "/")
+		parts := strings.SplitN(k, "/", 2)
 		var piece map[string][]byte
 		var ok bool
 		if piece, ok = data[parts[0]]; !ok {
 			data[parts[0]] = make(map[string][]byte, 0)
 			piece = data[parts[0]]
 		}
-
-		piece[parts[1]], _ = simpleStore.Load(k)
+		val, err := simpleStore.Load(k)
+		if err != nil {
+			return err
+		}
+		piece[parts[1]] = val
 	}
 
 	for k, v := range data {
@@ -199,7 +205,7 @@ func main() {
 			Interval: "10s",
 		},
 	}
-	if err := service.Register(client, reg, true); err != nil {
+	if err := service.Register(client, reg, false); err != nil {
 		log.Fatalf("Failed to register service with Consul: %v", err)
 	}
 	for {

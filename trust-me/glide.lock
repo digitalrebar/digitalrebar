@@ -1,5 +1,5 @@
 hash: 22ebd08e3c95ddba8123437178b14b6aa34629c10d03b4faecb0a0216f62430e
-updated: 2016-09-06T13:36:23.167533695-05:00
+updated: 2016-09-07T11:04:28.334349424-05:00
 imports:
 - name: github.com/boltdb/bolt
   version: ee4a0888a9abe7eefe5a0992ca4cb06864839873
@@ -27,14 +27,14 @@ imports:
 - name: github.com/cloudflare/go-metrics
   version: 6a9aea36fb410b71add0d0e58438e0cfc44d3076
 - name: github.com/digitalrebar/go-common
-  version: 98e02046cc0f9760564a31d9e66cee20d463e73d
+  version: 343d9a6c27897672e4b4afad53f36098421915e3
   subpackages:
   - cert
   - client
   - service
   - store
 - name: github.com/digitalrebar/rebar-api
-  version: 5eaa9132d5f7221f9d7cede5f5f5afdb423e57b2
+  version: ddc75f02e42ff1737f31a8efd19516416cf900bb
   subpackages:
   - api
   - datatypes
