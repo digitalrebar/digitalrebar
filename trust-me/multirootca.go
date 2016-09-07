@@ -199,7 +199,7 @@ func main() {
 			Interval: "10s",
 		},
 	}
-	if err := service.Register(client, reg, true); err != nil {
+	if err := service.Register(client, reg, false); err != nil {
 		log.Fatalf("Failed to register service with Consul: %v", err)
 	}
 	for {
