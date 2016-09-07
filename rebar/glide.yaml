@@ -1,0 +1,10 @@
+package: github.com/digitalrebar/rebar-api/rebar
+import:
+- package: github.com/VictorLowther/jsonpatch
+- package: github.com/VictorLowther/yaml
+- package: github.com/digitalrebar/rebar-api
+  subpackages:
+  - api
+  - datatypes
+- package: github.com/guregu/null
+- package: github.com/spf13/cobra
