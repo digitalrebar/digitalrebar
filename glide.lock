@@ -1,5 +1,5 @@
 hash: 3baadbcc7ebc7c41f4db05eaa347eb7430220d3d71c870958aaf60fed0c52a32
-updated: 2016-09-06T17:43:53.209141112-05:00
+updated: 2016-09-07T10:13:56.938270983-05:00
 imports:
 - name: github.com/boltdb/bolt
   version: e72f08ddb5a52992c0a44c7dda9316c7333938b2
@@ -27,7 +27,7 @@ imports:
 - name: github.com/coddingtonbear/go-simplejson
   version: a582018feafb39c4884d1b03cad98b91e2804276
 - name: github.com/digitalrebar/go-common
-  version: fd021f44a7fd67863c152626b0464471e87134d0
+  version: 1dfc9a330158dc73abde9e9799673fcde9153b19
   subpackages:
   - cert
   - client
@@ -36,7 +36,7 @@ imports:
   - service
   - store
 - name: github.com/digitalrebar/rebar-api
-  version: 5eaa9132d5f7221f9d7cede5f5f5afdb423e57b2
+  version: ddc75f02e42ff1737f31a8efd19516416cf900bb
   subpackages:
   - api
   - datatypes
@@ -88,7 +88,7 @@ imports:
   - html
   - html/atom
 - name: golang.org/x/sys
-  version: a646d33e2ee3172a661fc09bca23bb4889a41bc8
+  version: 30de6d19a3bd89a5f38ae4028e23aaa5582648af
   subpackages:
   - unix
 - name: gopkg.in/go-playground/validator.v8
