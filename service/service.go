@@ -12,7 +12,7 @@ import (
 
 // Register registers a service with Consul.  It automatically handles setting up forwarder and
 // revproxy registration.
-func Register(client *api.Client, svc *api.AgentServiceRegistration, forwarder bool) error {
+func Register(client *api.Client, svc *api.AgentServiceRegistration, allowExternal bool) error {
 	revproxy := false
 	for _, t := range svc.Tags {
 		if t == "revproxy" {
@@ -20,8 +20,8 @@ func Register(client *api.Client, svc *api.AgentServiceRegistration, forwarder b
 			break
 		}
 	}
-	if revproxy && forwarder {
-		return fmt.Errorf("service.Register %s: cannot use revproxy and forwarder at the same time", svc.Name)
+	if revproxy && allowExternal {
+		return fmt.Errorf("service.Register %s: cannot use revproxy and advertise an external address at the same time.", svc.Name)
 	}
 	if revproxy {
 		rpName := strings.TrimSuffix(svc.Name, "-service")
@@ -35,9 +35,9 @@ func Register(client *api.Client, svc *api.AgentServiceRegistration, forwarder b
 			return err
 		}
 	}
-	if forwarder && os.Getenv("FORWARDER_IP") != "" {
+	if allowExternal && os.Getenv("FORWARDER_IP") != "" {
 		svc.Name = "internal-" + svc.Name
-	} else if extIP := os.Getenv("EXTERNAL_IP"); extIP != "" && !forwarder {
+	} else if extIP := os.Getenv("EXTERNAL_IP"); extIP != "" && allowExternal {
 		ip, _, err := net.ParseCIDR(extIP)
 		if err != nil {
 			return fmt.Errorf("service.Register: EXTERNAL_IP not CIDR: %v", err)
