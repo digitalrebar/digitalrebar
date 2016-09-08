@@ -209,6 +209,6 @@ func main() {
 		log.Fatalf("Failed to register service with Consul: %v", err)
 	}
 	for {
-		time.Sleep(600)
+		time.Sleep(600 * time.Second)
 	}
 }
