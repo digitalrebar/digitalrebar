@@ -15,5 +15,4 @@ RUN apt-get update \
   && cp $GOPATH/bin/rebar-dns-mgmt /usr/local/bin/rebar-dns-mgmt
 
 COPY bind /etc/bind
-COPY dns-mgmt.conf /etc/dns-mgmt.conf
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
