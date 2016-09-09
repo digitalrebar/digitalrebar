@@ -13,4 +13,3 @@ RUN curl -fgL https://s3-us-west-2.amazonaws.com/rebar-dhcp/rebar-dhcp \
     (cd /usr/local/bin && sha256sum -c rebar-dhcp.sha256sum && rm rebar-dhcp.sha256sum)
 
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
-COPY rebar-dhcp.conf /etc/rebar-dhcp.conf
