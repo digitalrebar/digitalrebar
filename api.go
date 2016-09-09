@@ -19,14 +19,12 @@ type NextServer struct {
 
 type Frontend struct {
 	DhcpInfo *DataTracker
-	data_dir string
-	cfg      Config
+	dataDir  string
 }
 
-func NewFrontend(cfg Config, store store.SimpleStore) *Frontend {
+func NewFrontend(store store.SimpleStore) *Frontend {
 	fe := &Frontend{
-		data_dir: data_dir,
-		cfg:      cfg,
+		dataDir:  dataDir,
 		DhcpInfo: NewDataTracker(store),
 	}
 	fe.DhcpInfo.Lock()
@@ -314,20 +312,8 @@ func (fe *Frontend) NextServer(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(nextServer)
 }
 
-func (fe *Frontend) RunServer(blocking bool, auth_mode string) http.Handler {
+func (fe *Frontend) RunServer(blocking bool) http.Handler {
 	api := rest.NewApi()
-	if auth_mode == "BASIC" {
-		api.Use(&rest.AuthBasicMiddleware{
-			Realm: "test zone",
-			Authenticator: func(userId string, password string) bool {
-				if userId == fe.cfg.Network.Username &&
-					password == fe.cfg.Network.Password {
-					return true
-				}
-				return false
-			},
-		})
-	}
 	api.Use(rest.DefaultDevStack...)
 	router, err := rest.MakeRouter(
 		rest.Get("/subnets", fe.GetAllSubnets),
@@ -348,12 +334,9 @@ func (fe *Frontend) RunServer(blocking bool, auth_mode string) http.Handler {
 		return api.MakeHandler()
 	}
 
-	connStr := fmt.Sprintf(":%d", fe.cfg.Network.Port)
+	connStr := fmt.Sprintf(":%d", serverPort)
 	log.Println("Web Interface Using", connStr)
 	acceptingRoot := "internal"
-	if auth_mode == "BASIC" {
-		acceptingRoot = ""
-	}
 	hosts := strings.Split(hostString, ",")
 	log.Fatal(cert.StartTLSServer(connStr, "dhcp-mgmt", hosts, acceptingRoot, "internal", api.MakeHandler()))
 
