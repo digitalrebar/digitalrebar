@@ -74,7 +74,6 @@ From the source directory, do the following.
 
 * mkdir /etc/dns-mgmt.d
 * cp *.tmpl /etc/dns-mgmt.d
-* cp config.gcfg /etc/dns-mgmt.conf
 * You will need a https-cert.pem and https-key.pem.
 ```
 openssl req -nodes -sha256 -x509 -newkey rsa:2048 \
@@ -91,28 +90,3 @@ NOTE: Sometimes certs need addition configuration to deal with names or IPs.
 ```
 $GOPATH/bin/rebar-dns-mgmt
 ```
-
-# Config Syntax
-
-Here is an example:
-```
-; The port
-[network]
-port = 8080
-username = admin
-password = admin
-
-[dns]
-type = POWERDNS
-hostname = 192.168.124.10
-port = 8081
-password = joerules
-server = localhost
-```
-
-The network section specifies the parameters for the API endpoint.  Access creds and listening port can be specifed.
-
-The dns section specifies the backend to operation.  The type field is either POWERDNS or BIND depending upon what is being managed.
-
-If BIND is specified, the server field is the only required field.  It is the DNS FQDN for the zones being created.
-If POWERDNS is specified, the server field is localhost or the server name that should be updated.  The other fields represent the PowerDNS endpoint specifiers.
