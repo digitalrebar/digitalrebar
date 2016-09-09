@@ -106,7 +106,7 @@ func findSubnet(h *DHCPHandler, p dhcp.Packet) *Subnet {
 		}
 
 	}
-	if ignore_anonymus {
+	if ignoreAnonymus {
 		// Search all subnets for a binding. First wins
 		nic := strings.ToLower(p.CHAddr().String())
 		log.Printf("%s: Looking up bound subnet for %s", xid(p), nic)
@@ -146,7 +146,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			log.Printf("%s: Discovery out of IPs for %s, ignoring %v", xid(p), subnet.Name, nic)
 			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
 		}
-		if ignore_anonymus && binding == nil {
+		if ignoreAnonymus && binding == nil {
 			log.Printf("%s: Discovery ignoring request from unknown MAC address %s: %v",
 				xid(p),
 				p.CHAddr().String(),
@@ -189,7 +189,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 
 		lease, binding := subnet.findInfo(h.info, nic)
 		// Ignore unknown MAC address
-		if ignore_anonymus && binding == nil {
+		if ignoreAnonymus && binding == nil {
 			log.Printf("%s: Request ignoring request from unknown MAC address %s",
 				xid(p),
 				nic)
