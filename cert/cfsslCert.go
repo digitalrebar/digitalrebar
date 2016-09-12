@@ -28,9 +28,15 @@ func GetTrustMeServiceInfo(trustRoot string) (endpoint string, signingKey []byte
 	if err != nil {
 		return "", nil, fmt.Errorf("Could not talk to Consul: %v", err)
 	}
-	svc, err := service.Find(consulClient, "trust-me", "")
-	if err != nil {
-		return "", nil, fmt.Errorf("Could not get trust-me service: %v\n", err)
+	svc := []*consul.CatalogService{}
+	for {
+		svc, err = service.Find(consulClient, "trust-me", "")
+		if err != nil {
+			return "", nil, fmt.Errorf("Could not get trust-me service: %v\n", err)
+		}
+		if len(svc) > 0 {
+			break
+		}
 	}
 	addr, port := service.Address(svc[0])
 	endpoint = fmt.Sprintf("https://%s:%d", addr, port)
