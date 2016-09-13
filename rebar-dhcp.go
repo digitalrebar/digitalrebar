@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/digitalrebar/go-common/store"
+	"github.com/digitalrebar/go-common/version"
 	consul "github.com/hashicorp/consul/api"
 )
 
@@ -14,8 +15,10 @@ var backingStore string
 var serverIp string
 var hostString string
 var serverPort int
+var versionFlag bool
 
 func init() {
+	flag.BoolVar(&versionFlag, "version", false, "Print version and exit")
 	flag.StringVar(&dataDir, "dataDir", "/var/cache/rebar-dhcp", "Path to store data.")
 	flag.StringVar(&serverIp, "serverIp", "", "Server IP to return in packets (e.g. 10.10.10.1/24)")
 	flag.StringVar(&backingStore, "backingStore", "file", "Backing store to use. Either 'consul' or 'file'")
@@ -26,6 +29,10 @@ func init() {
 
 func main() {
 	flag.Parse()
+
+	if versionFlag {
+		log.Fatalf("Version: %s", version.REBAR_VERSION)
+	}
 
 	var bs store.SimpleStore
 	switch backingStore {
