@@ -16,13 +16,16 @@ import (
 
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/digitalrebar/go-common/cert"
+	"github.com/digitalrebar/go-common/version"
 )
 
 var dataDir, backingStore, hostString string
 var dnsType, dnsServer, dnsHostname, dnsPassword string
 var serverPort, dnsPort int
+var versionFlag bool
 
 func init() {
+	flag.BoolVar(&versionFlag, "version", false, "Print version and exit")
 	flag.StringVar(&dataDir, "dataDir", "/var/cache/rebar-dns-mgmt", "Path to store data")
 	flag.StringVar(&backingStore, "backingStore", "file", "Backing store to use. Either 'consul' or 'file'")
 	flag.StringVar(&hostString, "host", "dns-mgmt,127.0.0.1,localhost", "Comma separated list of hosts to put in certificate")
@@ -39,6 +42,12 @@ func init() {
 
 func main() {
 	flag.Parse()
+
+	if versionFlag {
+		log.Fatalf("Version: %s", version.REBAR_VERSION)
+	}
+
+	log.Printf("Version: %s\n", version.REBAR_VERSION)
 
 	var be dns_backend_point
 	var err error
