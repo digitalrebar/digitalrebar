@@ -90,17 +90,26 @@ roles:
       - test-library
     attribs:
       - name: test-client-delay
-        map: 'delay'
+        map: 'test/delay'
         description: 'A test attrib'
         default: 6
+        schema:
+          type: int
+          required: true
       - name: test-client-marker
-        map: 'marker'
+        map: 'test/marker'
         description: 'A test attrib'
         default: "client"
+        schema:
+          type: str
+          required: true
       - name: test-client-test
-        map: 'test'
+        map: 'test/test'
         description: 'A test attrib'
         default: true
+        schema:
+          type: bool
+          required: true
   - name: test-client-client
     jig: test
     requires:
@@ -110,14 +119,23 @@ roles:
         map: 'delay'
         description: 'A test attrib'
         default: 6
+        schema:
+          type: int
+          required: true
       - name: test-client-client-marker
         map: 'marker'
         description: 'A test attrib'
         default: "client-client"
+        schema:
+          type: str
+          required: true
       - name: test-client-client-test
         map: 'test'
         description: 'A test attrib'
         default: true
+        schema:
+          type: bool
+          required: true
   - name: test-discovery
     jig: test
     flags:
@@ -130,14 +148,23 @@ roles:
         map: 'delay'
         description: 'A test attrib'
         default: 3
+        schema:
+          type: int
+          required: true
       - name: test-discovery-marker
         map: 'marker'
         description: 'A test attrib'
         default: "discovery"
+        schema:
+          type: str
+          required: true
       - name: test-discovery-delay
         map: 'test'
         description: 'A test attrib'
         default: true
+        schema:
+          type: bool
+          required: true
 
   - name: test-library
     jig: test
@@ -151,14 +178,23 @@ roles:
         map: 'delay'
         description: 'A test attrib'
         default: 5
+        schema:
+          type: int
+          required: true
       - name: test-library-marker
         map: 'marker'
         description: 'A test attrib'
         default: "library"
+        schema:
+          type: str
+          required: true
       - name: test-library-test
         map: 'test'
         description: 'A test attrib'
         default: true
+        schema:
+          type: bool
+          required: true
   - name: test-fails
     jig: test
   - name: test-event
@@ -169,7 +205,13 @@ attribs:
     map: 'test/random'
     description: 'Random # created by Test Jig instrumentation'
     default: 0000
+    schema:
+      type: int
+      required: true
   - name: test-marker
     map: 'test/marker'
     description: 'Last touched by information created by Test Jig instrumentation'
     default: "MARK"
+    schema:
+      type: str
+      required: true
