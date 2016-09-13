@@ -98,6 +98,8 @@ func main() {
 		logger.Fatalf("Could not connect to Rebar: %v", err)
 	}
 
+	logger.Printf("Version: %s\n", version.REBAR_VERSION)
+
 	var err error
 	switch backEndType {
 	case "consul":
