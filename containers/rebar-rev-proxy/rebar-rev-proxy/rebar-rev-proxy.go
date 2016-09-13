@@ -13,6 +13,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/digitalrebar/go-common/cert"
+	"github.com/digitalrebar/go-common/version"
 	"github.com/hashicorp/consul/api"
 )
 
@@ -29,6 +30,7 @@ var samlIdpcert string
 var externalIp string
 var forwarderMode bool
 var hostString string
+var versionFlag bool
 
 func init() {
 	flag.IntVar(&listenPort, "listenPort", 443, "Port to listen on")
@@ -41,6 +43,7 @@ func init() {
 	flag.StringVar(&samlIdpcert, "samlIdpcert", "/etc/rev-proxy/saml-dir/idpcert.crt", "Default SAML SSO Cert")
 	flag.StringVar(&externalIp, "externalIp", "127.0.0.1", "Server IP to advertise for SAML")
 	flag.BoolVar(&forwarderMode, "forwarder", false, "Add if the container is in forwarder mode")
+	flag.BoolVar(&versionFlag, "version", false, "Print version and exit")
 }
 
 func addCorsHeader(w http.ResponseWriter, req *http.Request) {
@@ -57,6 +60,11 @@ func addCorsHeader(w http.ResponseWriter, req *http.Request) {
 
 func main() {
 	flag.Parse()
+
+	if versionFlag {
+		log.Fatalf("Version: %s", version.REBAR_VERSION)
+	}
+	log.Printf("Version: %s\n", version.REBAR_VERSION)
 
 	trustMeAddr, authKeyB, err := cert.GetTrustMeServiceInfo("internal")
 	if err != nil {
