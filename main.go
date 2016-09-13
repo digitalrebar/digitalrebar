@@ -28,6 +28,7 @@ import (
 	multitenancy "github.com/digitalrebar/go-common/multi-tenancy"
 	"github.com/digitalrebar/go-common/service"
 	"github.com/digitalrebar/go-common/store"
+	rbversion "github.com/digitalrebar/go-common/version"
 	"github.com/digitalrebar/rebar-api/api"
 	"github.com/digitalrebar/rule-engine/engine"
 	consul "github.com/hashicorp/consul/api"
@@ -35,6 +36,7 @@ import (
 
 var (
 	version      = false
+	rbvFlag      = false
 	debug        = false
 	router       = gin.Default()
 	listen       string
@@ -206,16 +208,21 @@ func main() {
 	flag.StringVar(&backingStore, "backing", "file", "Backing store to use for RuleSets.  Permitted values are 'file' and 'consul'")
 	flag.StringVar(&dataDir, "dataloc", "/var/cache/rule-engine", "Path to store data at")
 	flag.BoolVar(&version, "version", false, "Print version and exit")
+	flag.BoolVar(&rbvFlag, "rbv", false, "Print rebar version and exit")
 	flag.BoolVar(&debug, "debug", false, "Whether to run in debug mode")
 	flag.Parse()
 	if version {
 		log.Fatalf("Version: 0.2.1")
+	}
+	if rbvFlag {
+		log.Fatalf("Rebar Version: %s", rbversion.REBAR_VERSION)
 	}
 	if debug {
 		jsonselect.EnableLogger()
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
+	log.Printf("Rebar Version: %s   Version: 0.2.1\n", rbversion.REBAR_VERSION)
 	var port int
 	if pStr := os.Getenv("APIPORT"); pStr == "" {
 		log.Fatalln("APIPORT not set, no idea where we will listen")
