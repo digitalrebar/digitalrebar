@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/digitalrebar/go-common/cert"
+	"github.com/digitalrebar/go-common/version"
 	"github.com/digitalrebar/rebar-api/client"
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
@@ -21,8 +22,13 @@ var api *gin.Engine
 var logger *log.Logger
 var username, password, endpoint string
 var hostString string
+var versionFlag bool
 
 func init() {
+	flag.BoolVar(&versionFlag,
+		"version",
+		false,
+		"Print Version and exit")
 	flag.StringVar(&backEndType,
 		"backend",
 		"consul",
@@ -83,6 +89,10 @@ func main() {
 	// Some initial setup
 	flag.Parse()
 	logger = log.New(os.Stderr, "provisioner-mgmt", log.LstdFlags|log.Lmicroseconds|log.LUTC)
+
+	if versionFlag {
+		logger.Fatalf("Version: %s", version.REBAR_VERSION)
+	}
 
 	if err := client.Session(endpoint, username, password); err != nil {
 		logger.Fatalf("Could not connect to Rebar: %v", err)
