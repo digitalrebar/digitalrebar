@@ -13,6 +13,7 @@ import (
 	"github.com/digitalrebar/go-common/cert"
 	"github.com/digitalrebar/go-common/client"
 	"github.com/digitalrebar/go-common/service"
+	"github.com/digitalrebar/go-common/version"
 )
 
 func getTrustMeServiceAddress() string {
@@ -33,6 +34,8 @@ func main() {
 	flagAddr := flag.String("a", "https://127.0.0.1:8888", "Remote to talk to")
 	flagLabel := flag.String("l", "internal", "Label to retrieve")
 
+	flagVersion := flag.Bool("v", false, "Print version")
+
 	flagOutput := flag.String("o", "cert", "Output base for action")
 
 	flagMakeRoot := flag.Bool("m", false, "Should we make a root for this label")
@@ -45,6 +48,11 @@ func main() {
 	flagHosts := flag.String("h", "127.0.0.1", "Comma list of hosts to add to cert")
 
 	flag.Parse()
+
+	if *flagVersion {
+		log.Printf("Version: %s\n", version.REBAR_VERSION)
+		return
+	}
 
 	count := 0
 	if *flagMakeRoot {
