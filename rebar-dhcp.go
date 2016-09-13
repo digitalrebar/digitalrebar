@@ -33,6 +33,7 @@ func main() {
 	if versionFlag {
 		log.Fatalf("Version: %s", version.REBAR_VERSION)
 	}
+	log.Printf("Version: %s\n", version.REBAR_VERSION)
 
 	var bs store.SimpleStore
 	switch backingStore {
