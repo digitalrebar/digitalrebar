@@ -11,6 +11,7 @@ import (
 	"github.com/digitalrebar/go-common/cert"
 	"github.com/digitalrebar/go-common/service"
 	"github.com/digitalrebar/go-common/store"
+	"github.com/digitalrebar/go-common/version"
 
 	"github.com/cloudflare/cfssl/api/info"
 	"github.com/cloudflare/cfssl/signer"
@@ -117,7 +118,15 @@ func main() {
 	flagAddr := flag.String("a", ":8888", "listening address")
 	flagConsul := flag.Bool("c", false, "Use consul storage")
 	flagLocal := flag.Bool("l", false, "Use local storage")
+	flagVersion := flag.Bool("v", false, "Print Version")
 	flag.Parse()
+
+	if *flagVersion {
+		log.Printf("Version: %s\n", version.REBAR_VERSION)
+		return
+	}
+
+	log.Printf("Starting trust-me version: %s\n", version.REBAR_VERSION)
 
 	var err error
 	client, err := commonClient.Consul(true)
