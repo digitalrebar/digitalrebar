@@ -10,10 +10,12 @@ import (
 	"time"
 
 	"github.com/coreos/go-iptables/iptables"
+	"github.com/digitalrebar/go-common/version"
 	"github.com/hashicorp/consul/api"
 )
 
 var myIPsubnet, myIface string
+var rbvFlag bool
 
 func init() {
 	flag.StringVar(&myIPsubnet, "ip", "192.168.124.11/24", "IP to register services as")
@@ -31,6 +33,11 @@ func ClearChains(ipt *iptables.IPTables) {
 }
 
 func main() {
+	flag.BoolVar(&rbvFlag, "version", false, "Print version and exit")
+	flag.Parse()
+	if rbvFlag {
+		log.Fatalf("Version: %s", version.REBAR_VERSION)
+	}
 	flag.Parse()
 
 	myIPs := make([]string, 0, 0)
