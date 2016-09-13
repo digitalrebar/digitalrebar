@@ -9,13 +9,14 @@ import (
 	"time"
 
 	"github.com/VictorLowther/jsonpatch"
+	rbversion "github.com/digitalrebar/go-common/version"
 	"github.com/digitalrebar/rebar-api/api"
 	"github.com/digitalrebar/rebar-api/datatypes"
 	"github.com/spf13/cobra"
 )
 
 var (
-	version            = "1.4.0"
+	version            = rbversion.REBAR_VERSION
 	trusted            = false
 	debug              = false
 	endpoint           = "https://127.0.0.1:3000"
