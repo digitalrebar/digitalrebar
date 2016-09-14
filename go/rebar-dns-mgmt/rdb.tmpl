@@ -1,0 +1,22 @@
+; Managed by Rebar
+; Do not edit.
+$ORIGIN {{.Domain}}.
+$TTL 1h
+
+{{.Domain}}. IN SOA (
+    {{.ServerName}}.
+    support.localhost.localdomain
+    {{.Serial}}
+    1d
+    2h
+    4w
+    300
+    )
+
+; Nameservers
+@ NS {{.ServerName}}.
+
+; Per-host records
+{{range $name := .Names}}
+{{$.Domain}}. IN PTR {{$name}}. {{end}}
+
