@@ -1,0 +1,15 @@
+package: github.com/rackn/rebar-dhcp
+import:
+- package: github.com/ant0ine/go-json-rest
+  subpackages:
+  - rest
+- package: github.com/hashicorp/consul
+  subpackages:
+  - api
+- package: github.com/krolaw/dhcp4
+- package: github.com/willf/bitset
+- package: github.com/digitalrebar/go-common
+  subpackages:
+  - store
+  - multi-tenancy
+  - cert

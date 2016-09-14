@@ -1,0 +1,23 @@
+#Commands that can be used to test:
+
+# Create subnet
+curl -X Post -H 'Content-Type: application/json' --data-binary @./test/subnet.json -k https://admin:admin@127.0.0.1:6755/subnets
+
+# Update a subnet
+curl -X Put -H 'Content-Type: application/json' --data-binary @./test/subnet.json -k https://admin:admin@127.0.0.1:6755/subnets/192.168.124.0
+
+# List subnets
+curl -k https://admin:admin@127.0.0.1:6755/subnets
+
+# list a subnet
+curl -k https://admin:admin@127.0.0.1:6755/subnets/192.168.124.0/24
+
+# bind
+curl -X Put -H 'Content-Type: application/json' --data-binary @./test/bind.json -k https://admin:admin@127.0.0.1:6755/subnets/192.168.124.0/bind
+
+# unbind
+curl -X Delete -H 'Content-Type: application/json' --data-binary @./test/bind.json -k https://admin:admin@127.0.0.1:6755/subnets/192.168.124.0/bind/aa:bb:cc:dd:ee:ff
+
+# Next server
+curl -X Put -H 'Content-Type: application/json' --data-binary @./test/next_server.json -k https://admin:admin@127.0.0.1:6755/subnets/192.168.124.0/next_server/192.168.124.22
+
