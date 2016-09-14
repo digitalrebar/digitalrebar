@@ -1,0 +1,77 @@
+hash: 1f4af79e08447c6c3c49f4bd9fca246a7967fdd129a993e6137c4b38de2ab467
+updated: 2016-09-07T11:09:28.334209818-05:00
+imports:
+- name: github.com/boltdb/bolt
+  version: e72f08ddb5a52992c0a44c7dda9316c7333938b2
+- name: github.com/cloudflare/cfssl
+  version: 7fb22c8cba7ecaf98e4082d22d65800cf45e042a
+  subpackages:
+  - api
+  - api/client
+  - auth
+  - certdb
+  - config
+  - crypto/pkcs7
+  - csr
+  - errors
+  - helpers
+  - helpers/derhelpers
+  - info
+  - log
+  - ocsp/config
+  - signer
+- name: github.com/digitalrebar/go-common
+  version: 343d9a6c27897672e4b4afad53f36098421915e3
+  subpackages:
+  - cert
+  - service
+  - store
+- name: github.com/digitalrebar/rebar-api
+  version: ddc75f02e42ff1737f31a8efd19516416cf900bb
+  subpackages:
+  - api
+  - datatypes
+- name: github.com/guregu/null
+  version: 41961cea0328defc5f95c1c473f89ebf0d1813f6
+- name: github.com/hashicorp/consul
+  version: 0a34741d7266af34eed36048d1a8e8880a7b17a1
+  subpackages:
+  - api
+- name: github.com/hashicorp/go-cleanhttp
+  version: ad28ea4487f05916463e2423a55166280e8254b5
+- name: github.com/hashicorp/serf
+  version: 9432bc08aa8d486e497e27f84878ebbe8c1eab66
+  subpackages:
+  - coordinate
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/spf13/cobra
+  version: 9c28e4bbd74e5c3ed7aacbc552b2cab7cfdfe744
+- name: github.com/spf13/pflag
+  version: 6fd2ff4ff8dfcdf5556fbdc0ac0284408274b1a7
+- name: github.com/VictorLowther/jsonpatch
+  version: bf36a043be1fdc3127cc160767769878824ed71f
+  subpackages:
+  - utils
+- name: github.com/VictorLowther/yaml
+  version: 7ad95dd0798a40da1ccdff6dff35fd177b5edf40
+- name: golang.org/x/crypto
+  version: 1f22c0103821b9390939b6776727195525381532
+  subpackages:
+  - curve25519
+  - nacl/box
+  - nacl/secretbox
+  - pkcs12
+  - pkcs12/internal/rc2
+  - poly1305
+  - salsa20/salsa
+- name: golang.org/x/net
+  version: 9313baa13d9262e49d07b20ed57dceafcd7240cc
+  subpackages:
+  - html
+  - html/atom
+- name: golang.org/x/sys
+  version: 30de6d19a3bd89a5f38ae4028e23aaa5582648af
+  subpackages:
+  - unix
+testImports: []
