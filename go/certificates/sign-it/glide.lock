@@ -1,0 +1,77 @@
+hash: b56f494f717688cad66ab1f8eff599f2242e20e9a6d26740986fcf010648ecaa
+updated: 2016-09-06T16:27:51.255325995-05:00
+imports:
+- name: github.com/boltdb/bolt
+  version: e72f08ddb5a52992c0a44c7dda9316c7333938b2
+- name: github.com/cloudflare/cfssl
+  version: 7fb22c8cba7ecaf98e4082d22d65800cf45e042a
+  subpackages:
+  - api/client
+  - auth
+  - csr
+  - info
+  - log
+  - signer
+  - api
+  - errors
+  - helpers
+  - certdb
+  - config
+  - crypto/pkcs7
+  - helpers/derhelpers
+  - ocsp/config
+- name: github.com/digitalrebar/go-common
+  version: fd021f44a7fd67863c152626b0464471e87134d0
+  subpackages:
+  - cert
+  - service
+  - client
+  - store
+- name: github.com/digitalrebar/rebar-api
+  version: 5eaa9132d5f7221f9d7cede5f5f5afdb423e57b2
+  subpackages:
+  - api
+  - datatypes
+- name: github.com/guregu/null
+  version: 41961cea0328defc5f95c1c473f89ebf0d1813f6
+- name: github.com/hashicorp/consul
+  version: 26a0ef8c41aa2252ab4cf0844fc6470c8e1d8256
+  subpackages:
+  - api
+- name: github.com/hashicorp/go-cleanhttp
+  version: 875fb671b3ddc66f8e2f0acc33829c8cb989a38d
+- name: github.com/hashicorp/serf
+  version: e4ec8cc423bbe20d26584b96efbeb9102e16d05f
+  subpackages:
+  - coordinate
+  - serf
+- name: github.com/VictorLowther/jsonpatch
+  version: bf36a043be1fdc3127cc160767769878824ed71f
+  subpackages:
+  - utils
+- name: golang.org/x/crypto
+  version: 1f22c0103821b9390939b6776727195525381532
+  repo: https://go.googlesource.com/crypto
+  subpackages:
+  - ocsp
+  - pbkdf2
+  - pkcs12
+  - scrypt
+  - nacl/box
+  - curve25519
+  - nacl/secretbox
+  - salsa20/salsa
+  - pkcs12/internal/rc2
+  - poly1305
+- name: golang.org/x/net
+  version: 3f122ce3dbbe488b7e6a8bdb26f41edec852a40b
+  repo: https://go.googlesource.com/net
+  subpackages:
+  - context
+  - html
+  - html/atom
+- name: golang.org/x/sys
+  version: 20457ee8ea8546920d3f4e19e405da45250dc5a5
+  subpackages:
+  - unix
+devImports: []

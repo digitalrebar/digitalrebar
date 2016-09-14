@@ -1,0 +1,26 @@
+package: github.com/digitalrebar/certificates/trust-me
+import:
+- package: github.com/cloudflare/cfssl
+  subpackages:
+  - api
+  - api/info
+  - auth
+  - config
+  - csr
+  - helpers
+  - initca
+  - log
+  - signer
+  - signer/local
+  - whitelist
+- package: github.com/cloudflare/go-metrics
+- package: github.com/digitalrebar/go-common
+  subpackages:
+  - cert
+  - client
+  - service
+  - store
+- package: github.com/hashicorp/consul
+  version: ~0.6.0
+  subpackages:
+  - api
