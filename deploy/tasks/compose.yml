@@ -120,19 +120,19 @@
     local_action: command whoami
     register: username_on_the_host
     sudo: no
-    change_when: False
+    changed_when: False
 
   - name: Create rebar group
     group: name=rebar
-    when: ansible_os_family != "Darwin" and username_on_the_host == "root"
+    when: ansible_os_family != "Darwin" and username_on_the_host.stdout == "root"
     sudo: yes
   - name: Create rebar user
     user: name=rebar group=rebar shell=/bin/bash
-    when: ansible_os_family != "Darwin" and username_on_the_host == "root"
+    when: ansible_os_family != "Darwin" and username_on_the_host.stdout == "root"
     sudo: yes
   - name: Set files to those permissions
     command: "chown -R rebar:rebar {{home_dir.stdout}}/digitalrebar"
-    when: ansible_os_family != "Darwin" and username_on_the_host == "root"
+    when: ansible_os_family != "Darwin" and username_on_the_host.stdout == "root"
     sudo: yes
 
   - name: Restart Docker (yet again)
