@@ -1,0 +1,130 @@
+---
+# For an explanation of these rules, see
+# https://github.com/rackn/rule-engine/blob/master/README.md
+#
+# This ruleset will cycle any nodes placed in template-idle
+# through template-deploy to template-cleanup and back to
+# template-idle, where the cycling will start again.
+# It acts as an example of how complex automated workflows
+# cam be created using a combination of classifier rules and
+# workload-specific roles.
+#
+### PLEASE NOTE ###
+#
+# The layout of this file may change as the classifier matures.
+# Right now the classifier is in working proof of concept stage,
+# and there are several useability and interoperability improvements
+# on the table.
+Name: template-workload-ruleset
+Active: true
+Description: "The ruleset used to implement the template workload lifecycle"
+Rules:
+  # The first set of rules will be called whenever a node moves from one
+  # deployment to another.
+  - EventSelectors:
+      - event: on_node_move
+    Matchers:
+      # The first matchers pick out the UUID of the node that moved
+      # and the name of the deployment it moved to.  They will be saved
+      # into the node-uuid and deployment-name variables.
+      # Variables are valid from the moment they are created until a rule chain
+      # stops executing.
+      - JSON:
+          Selector: ':root .Evt .node .uuid'
+          PickResults:
+            node-uuid: 0
+      - JSON:
+          Selector: ':root .Evt .deployment .name'
+          PickResults:
+            deployment-name: 0
+      - Eq: [ '$deployment-name', 'template-cleanup' ]
+        # The Actions defined below will be called if the node was moved
+        # into the template-cleanup deployment.
+    Actions:
+      # Bind a role that performs whatever cleanup actions you need, commit
+      # the changes, scrub off any nodes leftover from the previous deployments,
+      # and redeploy the node to have it cleanup.
+      - Bind:
+          NodeID: '$node-uuid'
+          RoleID: template-scrub-node
+      - Node:
+          Action: "Commit"
+          UUID: '$node-uuid'
+      - Node:
+          Action: "Scrub"
+          UUID: '$node-uuid'
+      - Node:
+          Action: "Redeploy"
+          UUID: '$node-uuid'
+  - Matchers:
+      # Note that $deployment-name and $node-uuid are still valid variables.
+      - Eq: [ '$deployment-name', 'template-deploy' ]
+    Actions:
+      # If the node was moved into the template-deploy deployment, add roles that
+      # define what we want to happen when we want to deploy a node.
+      # template-echo-a-value-with-a-script will ensure that the node
+      # has a valid Centos7 install as a side effect of the roles it depends on.
+      - Bind:
+          NodeID: '$node-uuid'
+          RoleID: template-echo-a-value-with-a-script
+      - Commit:
+          NodeID: '$node-uuid'
+  - Matchers:
+      # $deployment-name and node-uuid are still valid.
+      - Eq: [ '$deployment-name', 'template-idle' ]
+    Actions:
+      # If the node was moved into the idle deployment, scrub off any roles that
+      # we no longer care about and move it to the template-deploy deployment.
+      - Node:
+          Action: "Scrub"
+          UUID: '$node-uuid'
+      - Bind:
+          # To stop nodes from cycling forever through the three deployments,
+          # remove this Bind action.
+          NodeID: '$node-uuid'
+          DeploymentID: 'template-deploy'
+  - Actions:
+      # Stop walking through rules that started because of an incoming on_node_move event.
+      # Any variables created by JSON matchers are no longer valid.
+      - Stop: true
+  - EventSelectors:
+      # This rule is a new entrypoint that will be called whenever a noderole created by binding
+      # the template-scrub-node role to a node transitions to the ACTIVE state.
+      - event: on_active
+        obj_class: role
+        obj_id: template-scrub-node
+    Matchers:
+      - JSON:
+          # Pick out the UUID of the node
+          Selector: ':root .Evt .node .uuid'
+          PickResults:
+            node-uuid: 0
+    Actions:
+      # Move the node into the template-idle deployment.
+      - Bind:
+          NodeID: '$node-uuid'
+          DeploymentID: 'template-idle'
+  - Actions:
+      # Stop processing rules.
+      - Stop: true   
+  - EventSelectors:
+      # A new entrypoint that is called whenever a noderole created by binding
+      # template-echo-a-value-with-a-script to a node transitions to ACTIVE
+      - event: on_active
+        obj_class: role
+        obj_id: template-echo-a-value-with-a-script
+    Matchers:
+      - JSON:
+          # Pick out the UUID of the node
+          Selector: ':root .Evt .node .uuid'
+          PickResults:
+            node-uuid: 0
+    Actions:
+      - Bind:
+          # Move the node to the cleanup deployment.
+          NodeID: '$node-uuid'
+          DeploymentID: 'template-cleanup'
+  - Actions:
+      # Stop processing actions.  Not strictly required here, since there are no more
+      # rules after this in the ruleset to process.
+      - Stop: true
