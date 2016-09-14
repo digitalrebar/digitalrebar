@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Coverage 
-/workloads/
+# Other git trees that we bring in parallel.
+/digitalrebar-workloads/
+/rackn-workloads/
 /digitalrebar-ux/
 /doc/
