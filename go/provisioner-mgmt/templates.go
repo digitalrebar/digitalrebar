@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"text/template"
 
-	"github.com/digitalrebar/go-common/multi-tenancy"
+	"github.com/rackn/digitalrebar/go/common/multi-tenancy"
 	"github.com/gin-gonic/gin"
 )
 

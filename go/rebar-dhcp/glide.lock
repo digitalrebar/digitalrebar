@@ -25,7 +25,7 @@ imports:
   - log
   - ocsp/config
   - signer
-- name: github.com/digitalrebar/go-common
+- name: github.com/rackn/digitalrebar/go/common
   version: f9236f9f158ff93ce25be9a362078a65a220771a
   subpackages:
   - cert

@@ -1,6 +1,6 @@
 package api
 
-import "github.com/digitalrebar/rebar-api/datatypes"
+import "github.com/rackn/digitalrebar/go/rebar-api/datatypes"
 
 // AvailableHammer helps track what Hammers are available to be bound to a Node.
 type AvailableHammer struct {

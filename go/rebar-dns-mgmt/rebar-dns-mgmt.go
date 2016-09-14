@@ -15,8 +15,8 @@ import (
 	"strings"
 
 	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/digitalrebar/go-common/cert"
-	"github.com/digitalrebar/go-common/version"
+	"github.com/rackn/digitalrebar/go/common/cert"
+	"github.com/rackn/digitalrebar/go/common/version"
 )
 
 var dataDir, backingStore, hostString string

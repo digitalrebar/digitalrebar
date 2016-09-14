@@ -3,7 +3,7 @@ package api
 import (
 	"path"
 
-	"github.com/digitalrebar/rebar-api/datatypes"
+	"github.com/rackn/digitalrebar/go/rebar-api/datatypes"
 )
 
 type NodeRole struct {

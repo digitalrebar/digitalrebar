@@ -26,7 +26,7 @@ imports:
   version: 7a793de4cf71f6ca323a92e6ac6c14477d812dd4
 - name: github.com/coddingtonbear/go-simplejson
   version: a582018feafb39c4884d1b03cad98b91e2804276
-- name: github.com/digitalrebar/go-common
+- name: github.com/rackn/digitalrebar/go/common
   version: 1dfc9a330158dc73abde9e9799673fcde9153b19
   subpackages:
   - cert
@@ -35,7 +35,7 @@ imports:
   - multi-tenancy
   - service
   - store
-- name: github.com/digitalrebar/rebar-api
+- name: github.com/rackn/digitalrebar/go/rebar-api
   version: ddc75f02e42ff1737f31a8efd19516416cf900bb
   subpackages:
   - api

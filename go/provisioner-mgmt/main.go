@@ -7,9 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/digitalrebar/go-common/cert"
-	"github.com/digitalrebar/go-common/version"
-	"github.com/digitalrebar/rebar-api/client"
+	"github.com/rackn/digitalrebar/go/common/cert"
+	"github.com/rackn/digitalrebar/go/common/version"
+	"github.com/rackn/digitalrebar/go/rebar-api/client"
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
 )

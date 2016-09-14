@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/digitalrebar/go-common/store"
+	"github.com/rackn/digitalrebar/go/common/store"
 	dhcp "github.com/krolaw/dhcp4"
 )
 

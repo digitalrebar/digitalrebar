@@ -1,6 +1,6 @@
 package api
 
-import "github.com/digitalrebar/rebar-api/datatypes"
+import "github.com/rackn/digitalrebar/go/rebar-api/datatypes"
 
 // DnsNameEntry wraps datatypes.DnsNameEntry to provide client API
 // functionality

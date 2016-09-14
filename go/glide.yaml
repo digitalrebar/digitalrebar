@@ -1,0 +1,72 @@
+package: .
+import:
+- package: github.com/RobotsAndPencils/go-saml
+- package: github.com/VictorLowther/jsonpatch
+  subpackages:
+  - utils
+- package: github.com/VictorLowther/yaml
+- package: github.com/ant0ine/go-json-rest
+  version: ~3.3.1
+  subpackages:
+  - rest
+- package: github.com/boltdb/bolt
+  version: ~1.3.0
+- package: github.com/cloudflare/cfssl
+  subpackages:
+  - api
+  - api/client
+  - api/info
+  - auth
+  - config
+  - csr
+  - helpers
+  - info
+  - initca
+  - log
+  - signer
+  - signer/local
+  - whitelist
+- package: github.com/cloudflare/go-metrics
+- package: github.com/coddingtonbear/go-jsonselect
+- package: github.com/coreos/go-iptables
+  version: ~0.1.0
+  subpackages:
+  - iptables
+- package: github.com/dgrijalva/jwt-go
+  version: ~3.0.0
+  subpackages:
+  - request
+- package: github.com/ghodss/yaml
+- package: github.com/gin-gonic/gin
+- package: github.com/guregu/null
+  version: ~3.1.0
+- package: github.com/hashicorp/consul
+  subpackages:
+  - api
+- package: github.com/hashicorp/terraform
+  version: ~0.7.3
+  subpackages:
+  - helper/schema
+  - plugin
+  - terraform
+- package: github.com/kmanley/go-http-auth
+  version: ~0.3.0
+- package: github.com/krolaw/dhcp4
+- package: github.com/pborman/uuid
+  version: ~1.0.0
+- package: github.com/satori/go.uuid
+  version: ~1.1.0
+- package: github.com/spf13/cobra
+- package: github.com/willf/bitset
+  version: ~1.0.0
+- package: golang.org/x/crypto
+  subpackages:
+  - nacl/box
+- package: golang.org/x/net
+  subpackages:
+  - html
+testImport:
+- package: github.com/stretchr/testify
+  version: ~1.1.3
+  subpackages:
+  - assert

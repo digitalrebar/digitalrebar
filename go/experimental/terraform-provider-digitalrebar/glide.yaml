@@ -1,6 +1,6 @@
 package: github.com/rackn/terraform-provider-digitalrebar
 import:
-- package: github.com/digitalrebar/rebar-api
+- package: github.com/rackn/digitalrebar/go/rebar-api
   subpackages:
   - client
   - datatypes

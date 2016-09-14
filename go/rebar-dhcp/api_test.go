@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/digitalrebar/go-common/store"
+	"github.com/rackn/digitalrebar/go/common/store"
 	"github.com/stretchr/testify/assert"
 )
 

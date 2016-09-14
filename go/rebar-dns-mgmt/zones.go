@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/digitalrebar/go-common/multi-tenancy"
+	"github.com/rackn/digitalrebar/go/common/multi-tenancy"
 )
 
 /*

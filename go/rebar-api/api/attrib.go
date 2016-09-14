@@ -5,7 +5,7 @@ import (
 	"log"
 	"path"
 
-	"github.com/digitalrebar/rebar-api/datatypes"
+	"github.com/rackn/digitalrebar/go/rebar-api/datatypes"
 )
 
 // Attrib wraps datatypes.Attrib with the needed functionality for the

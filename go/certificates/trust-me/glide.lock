@@ -26,14 +26,14 @@ imports:
   - whitelist
 - name: github.com/cloudflare/go-metrics
   version: 6a9aea36fb410b71add0d0e58438e0cfc44d3076
-- name: github.com/digitalrebar/go-common
+- name: github.com/rackn/digitalrebar/go/common
   version: 343d9a6c27897672e4b4afad53f36098421915e3
   subpackages:
   - cert
   - client
   - service
   - store
-- name: github.com/digitalrebar/rebar-api
+- name: github.com/rackn/digitalrebar/go/rebar-api
   version: ddc75f02e42ff1737f31a8efd19516416cf900bb
   subpackages:
   - api

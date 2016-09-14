@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/digitalrebar/go-common/store"
+	"github.com/rackn/digitalrebar/go/common/store"
 	dhcp "github.com/krolaw/dhcp4"
 	"github.com/stretchr/testify/assert"
 	"github.com/willf/bitset"

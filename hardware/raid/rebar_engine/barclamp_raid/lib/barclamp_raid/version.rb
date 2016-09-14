@@ -1,3 +1,0 @@
-module BarclampRaid
-  VERSION = "0.0.1"
-end

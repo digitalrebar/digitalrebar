@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 
 	"github.com/VictorLowther/yaml"
-	"github.com/digitalrebar/rebar-api/api"
-	"github.com/digitalrebar/rebar-api/datatypes"
+	"github.com/rackn/digitalrebar/go/rebar-api/api"
+	"github.com/rackn/digitalrebar/go/rebar-api/datatypes"
 	"github.com/spf13/cobra"
 )
 

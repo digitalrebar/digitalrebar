@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/digitalrebar/rebar-api/datatypes"
+	"github.com/rackn/digitalrebar/go/rebar-api/datatypes"
 )
 
 type UserTenantCapability struct {

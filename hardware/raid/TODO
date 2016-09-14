@@ -1,8 +1,0 @@
-* TODO Generic RAID volume info -> Linux device mapping
-** Look for volume UUID, SCSI unique ID, SCSI ctrl/bus/id/lun numbers, etc.
-* TODO Nuke first and last meg of each partition on to-be deleted volumes
-** This should fix most of the install fun that happens when we change RAID levels.
-* TODO Zero MBR of to-be-deleted volumes
-** Same as above
-* TODO Look at doing the same to components of to-be-created volumes.
-** This might actually give us a better outcome.

@@ -14,7 +14,7 @@ import (
 	"path"
 
 	"github.com/VictorLowther/jsonpatch"
-	"github.com/digitalrebar/go-common/cert"
+	"github.com/rackn/digitalrebar/go/common/cert"
 )
 
 type challenge interface {

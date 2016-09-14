@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"path"
 
-	"github.com/digitalrebar/rebar-api/datatypes"
+	"github.com/rackn/digitalrebar/go/rebar-api/datatypes"
 )
 
 // Node wraps datatypes.Node to provide the client API.

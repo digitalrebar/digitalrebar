@@ -7,8 +7,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/digitalrebar/go-common/service"
-	"github.com/digitalrebar/rebar-api/api"
+	"github.com/rackn/digitalrebar/go/common/service"
+	"github.com/rackn/digitalrebar/go/rebar-api/api"
 	consul "github.com/hashicorp/consul/api"
 )
 

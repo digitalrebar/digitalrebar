@@ -17,7 +17,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/digitalrebar/rebar-api/client"
+	"github.com/rackn/digitalrebar/go/rebar-api/client"
 )
 
 // RenderData is the struct that is passed to templates as a source of

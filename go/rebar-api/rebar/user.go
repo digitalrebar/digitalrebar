@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/digitalrebar/rebar-api/api"
+	"github.com/rackn/digitalrebar/go/rebar-api/api"
 	"github.com/spf13/cobra"
 )
 

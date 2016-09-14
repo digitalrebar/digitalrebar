@@ -5,7 +5,7 @@ package client
 import (
 	"path"
 
-	"github.com/digitalrebar/rebar-api/datatypes"
+	"github.com/rackn/digitalrebar/go/rebar-api/datatypes"
 )
 
 // Jig wraps datatypes.Jig to provide client API functionality

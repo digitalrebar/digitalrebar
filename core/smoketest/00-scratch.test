@@ -1,4 +1,0 @@
-#!/bin/bash
-# If we got so far as to execute this test hook, all the nodes
-# have transitioned to ready state. This hook always passes.
-exit 0

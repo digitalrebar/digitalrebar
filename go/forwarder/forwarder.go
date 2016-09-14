@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/coreos/go-iptables/iptables"
-	"github.com/digitalrebar/go-common/version"
+	"github.com/rackn/digitalrebar/go/common/version"
 	"github.com/hashicorp/consul/api"
 )
 
