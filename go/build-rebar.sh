@@ -39,4 +39,8 @@ for arch in "${arches[@]}"; do
 done
 
 cd "bin/$binversion"
-find . -type f -perm -u=x |xargs sha256sum >sha256sums
+if [[ $(uname -s) == Darwin ]] ; then
+    find . -type f -perm -u=x |xargs shasum -a 256 >sha256sums
+else
+    find . -type f -perm -u=x |xargs sha256sum >sha256sums
+fi
