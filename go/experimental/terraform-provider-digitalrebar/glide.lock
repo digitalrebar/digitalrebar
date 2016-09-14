@@ -1,0 +1,149 @@
+hash: 3f3f61a31f8a1f4b4ca955c4be23afdad9870508b83f3d4f281ed739fb1f51e6
+updated: 2016-05-06T13:06:40.35094424-05:00
+imports:
+- name: github.com/apparentlymart/go-cidr
+  version: a3ebdb999b831ecb6ab8a226e31b07b2b9061c47
+  subpackages:
+  - cidr
+- name: github.com/aws/aws-sdk-go
+  version: 2cc71659118a868dc7544a7ef0808eb42d487011
+  subpackages:
+  - aws
+  - aws/awserr
+  - aws/awsutil
+  - aws/client
+  - aws/client/metadata
+  - aws/corehandlers
+  - aws/credentials
+  - aws/credentials/ec2rolecreds
+  - aws/defaults
+  - aws/ec2metadata
+  - aws/request
+  - aws/session
+  - private/endpoints
+  - private/protocol
+  - private/protocol/ec2query
+  - private/protocol/json/jsonutil
+  - private/protocol/jsonrpc
+  - private/protocol/query
+  - private/protocol/query/queryutil
+  - private/protocol/rest
+  - private/protocol/restjson
+  - private/protocol/restxml
+  - private/protocol/xml/xmlutil
+  - private/signer/v4
+  - private/waiter
+  - service/apigateway
+  - service/autoscaling
+  - service/cloudformation
+  - service/cloudfront
+  - service/cloudtrail
+  - service/cloudwatch
+  - service/cloudwatchevents
+  - service/cloudwatchlogs
+  - service/codecommit
+  - service/codedeploy
+  - service/directoryservice
+  - service/dynamodb
+  - service/ec2
+  - service/ecr
+  - service/ecs
+  - service/efs
+  - service/elasticache
+  - service/elasticbeanstalk
+  - service/elasticsearchservice
+  - service/elb
+  - service/emr
+  - service/firehose
+  - service/glacier
+  - service/iam
+  - service/kinesis
+  - service/kms
+  - service/lambda
+  - service/opsworks
+  - service/rds
+  - service/redshift
+  - service/route53
+  - service/s3
+  - service/sns
+  - service/sqs
+  - service/sts
+- name: github.com/digitalrebar/rebar-api
+  version: 0b51cd78ae31dac3a01f3dee1c1815a855057460
+  subpackages:
+  - client
+  - datatypes
+- name: github.com/go-ini/ini
+  version: afbd495e5aaea13597b5e14fe514ddeaa4d76fc3
+- name: github.com/guregu/null
+  version: 41961cea0328defc5f95c1c473f89ebf0d1813f6
+- name: github.com/hashicorp/errwrap
+  version: 7554cd9344cec97297fa6649b055a8c98c2a1e55
+- name: github.com/hashicorp/go-getter
+  version: 2822987a64e0df1236ac29dd277ddf79f4871f9a
+  subpackages:
+  - helper/url
+- name: github.com/hashicorp/go-multierror
+  version: d30f09973e19c1dfcd120b2d9c4f168e68d6b5d5
+- name: github.com/hashicorp/go-uuid
+  version: 36289988d83ca270bc07c234c36f364b0dd9c9a7
+- name: github.com/hashicorp/hcl
+  version: 9a905a34e6280ce905da1a32344b25e81011197a
+  subpackages:
+  - hcl/ast
+  - hcl/fmtcmd
+  - hcl/parser
+  - hcl/printer
+  - hcl/scanner
+  - hcl/strconv
+  - hcl/token
+  - json/parser
+  - json/scanner
+  - json/token
+- name: github.com/hashicorp/hil
+  version: 0640fefa3817883b16b77bf760c4c3a6f2589545
+  subpackages:
+  - ast
+- name: github.com/hashicorp/terraform
+  version: f0cf6564ade2cac76b7c79d76f12effa3693fe0f
+  subpackages:
+  - helper/schema
+  - plugin
+  - terraform
+  - helper/hashcode
+  - rpc
+  - config
+  - config/module
+  - dag
+  - dot
+  - flatmap
+- name: github.com/hashicorp/yamux
+  version: df949784da9ed028ee76df44652e42d37a09d7e4
+- name: github.com/jmespath/go-jmespath
+  version: c01cf91b011868172fdcd9f41838e80c9d716264
+- name: github.com/mitchellh/copystructure
+  version: 80adcec1955ee4e97af357c30dee61aadcc02c10
+- name: github.com/mitchellh/go-homedir
+  version: d682a8f0cf139663a984ff12528da460ca963de9
+- name: github.com/mitchellh/mapstructure
+  version: 281073eb9eb092240d33ef253c404f1cca550309
+- name: github.com/mitchellh/reflectwalk
+  version: eecf4c70c626c7cfbb95c90195bc34d386c74ac6
+- name: github.com/VictorLowther/jsonpatch
+  version: bf36a043be1fdc3127cc160767769878824ed71f
+  subpackages:
+  - utils
+- name: golang.org/x/crypto
+  version: 1f22c0103821b9390939b6776727195525381532
+  subpackages:
+  - nacl/box
+  - curve25519
+  - nacl/secretbox
+  - salsa20/salsa
+  - poly1305
+- name: golang.org/x/net
+  version: 04b9de9b512f58addf28c9853d50ebef61c3953e
+  subpackages:
+  - html
+  - html/atom
+devImports: []
