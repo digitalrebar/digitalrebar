@@ -1,4 +1,4 @@
-package: .
+package: github.com/digitalrebar/digitalrebar/go
 import:
 - package: github.com/RobotsAndPencils/go-saml
 - package: github.com/VictorLowther/jsonpatch
