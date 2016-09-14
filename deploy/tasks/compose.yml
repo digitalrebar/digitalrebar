@@ -106,7 +106,7 @@
       RACKN_PASSWORD: "{{dr_rackn_password|default('')}}"
     args:
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
-      creates: "{{home_dir.stdout}}/digitalrebar/deploy/compose/digitalrebar/core"
+      creates: "{{home_dir.stdout}}/digitalrebar/deploy/compose/digitalrebar/digitalrebar-ux"
   - name: init compose files
     command: ./init_files.sh --tag {{ dr_tag }} --external_ip {{ dr_external_ip }} --forwarder_ip {{ dr_forwarder_ip | default("0.0.0.0/24") }}  --access {{ dr_access_mode }} {{ dr_services| default([]) | join(" ") }} {{ dr_classifiers| default([]) | join(" ") }}
     args:
@@ -116,17 +116,23 @@
     args:
       creates: "{{home_dir.stdout}}/digitalrebar/deploy/compose/config-dir/api/config/ssh_keys/setup-0.key"
 
+  - name: get the username running the deploy
+    local_action: command whoami
+    register: username_on_the_host
+    sudo: no
+    change_when: False
+
   - name: Create rebar group
     group: name=rebar
-    when: ansible_os_family != "Darwin"
+    when: ansible_os_family != "Darwin" and username_on_the_host == "root"
     sudo: yes
   - name: Create rebar user
     user: name=rebar group=rebar shell=/bin/bash
-    when: ansible_os_family != "Darwin"
+    when: ansible_os_family != "Darwin" and username_on_the_host == "root"
     sudo: yes
   - name: Set files to those permissions
     command: "chown -R rebar:rebar {{home_dir.stdout}}/digitalrebar"
-    when: ansible_os_family != "Darwin"
+    when: ansible_os_family != "Darwin" and username_on_the_host == "root"
     sudo: yes
 
   - name: Restart Docker (yet again)
