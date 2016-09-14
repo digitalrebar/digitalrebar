@@ -1,0 +1,47 @@
+---
+  - name: Update repos
+    command: yum makecache
+    sudo: yes
+  - name: Install EPEL [SLOW]
+    yum: name={{ item }} state=latest
+    with_items:
+      - epel-release
+    sudo: yes
+  - name: Install Prereqs [SLOW]
+    yum: name={{ item }} state=latest
+    with_items:
+      - git
+      - curl
+      - wget
+      - psmisc
+      - python
+      - python-pycurl
+      - jq
+    sudo: yes
+  - name: Install Provisioner Prereqs [SLOW]
+    yum: name={{ item }} state=latest
+    with_items:
+      - screen
+      - qemu-kvm
+      - libvirt
+      - bridge-utils
+      - ruby-devel
+      - make
+      - gcc
+    sudo: yes
+    when: "'--provisioner' in dr_services"
+  - name: Install Provisioner ruby-gems for CentOS/RedHat 6
+    yum: name={{ item }} state=latest
+    with_items:
+      - rubygems
+    when: (ansible_distribution == "RedHat" or ansible_distribution == "CentOS") and ansible_distribution_major_version == "6"
+    sudo: yes
+  - name: gem install kvm slaves
+    command: sudo gem install json net-http-digest_auth
+    when: "'--provisioner' in dr_services"
+
+    # Docker will put back what it needs - firewalld on Centos7
+  - name: Silly flush of iptables
+    command: sudo iptables -F
+    ignore_errors: yes
+

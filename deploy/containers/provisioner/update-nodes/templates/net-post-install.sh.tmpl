@@ -1,0 +1,186 @@
+#!/bin/sh
+# Copyright 2016, RackN
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+set -x
+exec 2>&1
+exec >>/target/root/post-install.log
+{{if .Param "proxy-servers"}}
+echo "Acquire::http::Proxy \"{{index (.Param "proxy-servers") 0 "url"}}\";" >/target/etc/apt/apt.conf.d/00-proxy
+{{end}}
+
+rsyslog_dir="/target/etc/rsyslog.d"
+mkdir -p "$rsyslog_dir"
+echo '$IncludeConfig /etc/rsyslog.d/*.conf' >>/etc/rsyslog.conf
+if [ ! -f "$rsyslog_dir/10-rebar-client.conf" ]; then
+    echo "*.* @@${{index (.Param "logging_servers") 0}}" > "$rsyslog_dir/10-rebar-client.conf"
+    if ! curl -f -s -o "$rsyslog_dir/00-rebar-debug.conf" \
+        {{.ProvisionerURL}}/rsyslog.d/00-rebar-debug.conf
+    then
+        rm -f "$rsyslog_dir/00-rebar-debug.conf"
+    fi
+fi
+
+# Make sure we can install gems
+cat >/target/etc/gemrc <<EOF
+:sources:
+- http://rubygems.org/
+gem: --no-ri --no-rdoc --bindir /usr/local/bin {{if .Param "proxy-servers"}} --http-proxy="{{index (.Param "proxy-servers") 0 "url"}}"{{end}}
+EOF
+
+cp /target/etc/gemrc /target/root/.gemrc
+
+wget -q {{.Machine.Url}}/rebar_join.sh -O- > /target/etc/init.d/rebar_join
+
+mkdir -p /target/root/.ssh
+
+cat >/target/root/.ssh/authorized_keys <<EOF
+{{ range $key := .Param "rebar-access_keys" }}{{$key}}{{ end }}
+EOF
+
+echo "PermitRootLogin without-password" >> /target/etc/ssh/sshd_config
+echo "AcceptEnv http_proxy https_proxy no_proxy" >> /target/etc/ssh/sshd_config
+
+{{if .Param "proxy-servers"}}
+# Setup a proxy for the environment
+echo "http_proxy={{index (.Param "proxy-servers") 0 "url"}}" >> /target/etc/environment
+echo "https_proxy={{index (.Param "proxy-servers") 0 "url"}}" >> /target/etc/environment
+echo "no_proxy=127.0.0.1,localhost,::1,{{index (.Param "proxy-servers") 0 "address"}}" >> /target/etc/environment
+
+# Setup bash proxy env
+mkdir -p /etc/profile.d
+echo "http_proxy={{index (.Param "proxy-servers") 0 "url"}}" >> /target/etc/profile.d/proxy.sh
+echo "https_proxy={{index (.Param "proxy-servers") 0 "url"}}" >>  /target/etc/profile.d/proxy.sh
+echo "no_proxy=127.0.0.1,localhost,::1,{{index (.Param "proxy-servers") 0 "address"}}" >> /target/etc/profile.d/proxy.sh
+{{end}}
+
+mount /proc /target/proc
+
+cat > /target/update_system2.sh <<"EOF"
+#!/bin/bash
+set -x
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+export LC_ALL=C LANGUAGE=C LANG=C
+repofile=/etc/apt/sources.list
+repocontents=()
+if wget -O - {{.Env.OS.InstallUrl}}/dists/stable/Release &>/dev/null; then
+    repocontents+=('deb {{.Env.OS.InstallUrl}} stable restricted')
+fi
+
+case {{.Env.OS.Name}} in
+    ubuntu-12.04*)
+        repocontents+=('deb http://us.archive.ubuntu.com/ubuntu/ precise main restricted universe multiverse'
+'deb-src http://us.archive.ubuntu.com/ubuntu/ precise main restricted universe multiverse'
+'deb http://us.archive.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse'
+'deb-src http://us.archive.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse'
+'deb http://us.archive.ubuntu.com/ubuntu/ precise-backports main restricted universe multiverse'
+'deb-src http://us.archive.ubuntu.com/ubuntu/ precise-backports main restricted universe multiverse'
+'deb http://archive.canonical.com/ubuntu precise partner'
+'deb-src http://archive.canonical.com/ubuntu precise partner'
+'deb http://extras.ubuntu.com/ubuntu precise main'
+'deb-src http://extras.ubuntu.com/ubuntu precise main'
+'deb http://security.ubuntu.com/ubuntu precise-security main restricted universe multiverse'
+'deb-src http://security.ubuntu.com/ubuntu precise-security main restricted universe multiverse');;
+    ubuntu-14.04*)
+        repocontents+=('deb http://us.archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse'
+'deb-src http://us.archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse'
+'deb http://us.archive.ubuntu.com/ubuntu/ trusty-updates main restricted universe multiverse'
+'deb-src http://us.archive.ubuntu.com/ubuntu/ trusty-updates main restricted universe multiverse'
+'deb http://archive.canonical.com/ubuntu trusty partner'
+'deb-src http://archive.canonical.com/ubuntu trusty partner'
+'deb http://extras.ubuntu.com/ubuntu trusty main'
+'deb-src http://extras.ubuntu.com/ubuntu trusty main'
+'deb http://security.ubuntu.com/ubuntu trusty-security main restricted universe multiverse'
+'deb-src http://security.ubuntu.com/ubuntu trusty-security main restricted universe multiverse');;
+    ubuntu-15.04*)
+        repocontents+=('deb http://us.archive.ubuntu.com/ubuntu/ vivid main restricted universe multiverse'
+'deb-src http://us.archive.ubuntu.com/ubuntu/ vivid main restricted universe multiverse'
+'deb http://us.archive.ubuntu.com/ubuntu/ vivid-updates main restricted universe multiverse'
+'deb-src http://us.archive.ubuntu.com/ubuntu/ vivid-updates main restricted universe multiverse'
+'deb http://archive.canonical.com/ubuntu vivid partner'
+'deb-src http://archive.canonical.com/ubuntu vivid partner'
+'deb http://security.ubuntu.com/ubuntu vivid-security main restricted universe multiverse'
+'deb-src http://security.ubuntu.com/ubuntu vivid-security main restricted universe multiverse');;
+    ubuntu-16.04*)
+        repocontents+=('deb http://us.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse'
+'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse'
+'deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse'
+'deb-src http://us.archive.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse'
+'deb http://archive.canonical.com/ubuntu xenial partner'
+'deb-src http://archive.canonical.com/ubuntu xenial partner'
+'deb http://security.ubuntu.com/ubuntu xenial-security main restricted universe multiverse'
+'deb-src http://security.ubuntu.com/ubuntu xenial-security main restricted universe multiverse');;
+    debian-7*)
+        repocontents+=('deb http://ftp.us.debian.org/debian wheezy main contrib non-free'
+'deb-src http://ftp.us.debian.org/debian wheezy main contrib non-free'
+'deb http://security.debian.org/ wheezy/updates main contrib non-free'
+'deb-src http://security.debian.org/ wheezy/updates main contrib non-free'
+'deb http://ftp.us.debian.org/debian wheezy-updates main contrib non-free'
+'deb-src http://ftp.us.debian.org/debian wheezy-updates main contrib non-free'
+'deb http://ftp.us.debian.org/debian wheezy-backports main contrib non-free'
+'deb-src http://ftp.us.debian.org/debian wheezy-backports main contrib non-free');;
+    debian-8*)
+        repocontents+=('deb http://ftp.us.debian.org/debian jessie main contrib non-free'
+'deb-src http://ftp.us.debian.org/debian jessie main contrib non-free'
+'deb http://security.debian.org/ jessie/updates main contrib non-free'
+'deb-src http://security.debian.org/ jessie/updates main contrib non-free'
+'deb http://ftp.us.debian.org/debian jessie-updates main contrib non-free'
+'deb-src http://ftp.us.debian.org/debian jessie-updates main contrib non-free'
+'deb http://ftp.us.debian.org/debian jessie-backports main contrib non-free'
+'deb-src http://ftp.us.debian.org/debian jessie-backports main contrib non-free');;
+    *)
+        echo "Dunno how to add extra repos for {{.Env.OS.Name}}"
+        exit 1;;
+esac
+
+printf "%s\n" "${repocontents[@]}" > "$repofile"
+apt-get -y --force-yes update
+apt-get -y --force-yes remove apparmor
+apt-get -y --force-yes install ntpdate jq curl
+(cd /bin; curl -fgl -O "{{.ProvisionerURL}}/files/rebar"; chmod 755 rebar)
+export REBAR_ENDPOINT="{{.CommandURL}}"
+export REBAR_KEY="{{.Param "rebar-machine_key"}}"
+echo "$REBAR_KEY" >/etc/rebar.install.key
+
+node_json="$(rebar nodes show "{{.Machine.UUID}}")" && \
+    HOSTNAME="$(jq -r '.name' <<<"$node_json")" && \
+    REBAR_UUID="$(jq -r '.uuid' <<< "$node_json")" 
+
+if ! [[ $HOSTNAME && $HOSTNAME != null && $REBAR_UUID && $REBAR_UUID != null ]]; then
+    echo "Unable to configure hostname and rebar uuid!"
+    sleep 9000
+    exit 1
+fi
+if [ -f /etc/sysconfig/network ] ; then
+      sed -i -e "s/HOSTNAME=.*/HOSTNAME=${HOSTNAME}/" /etc/sysconfig/network
+fi
+echo "${HOSTNAME#*.}" >/etc/domainname
+echo "$HOSTNAME" >/etc/hostname
+hostname "$HOSTNAME"
+export HOSTNAME
+
+echo "$REBAR_UUID" > /etc/rebar-uuid
+update-rc.d rebar_join defaults
+rebar nodes update "$REBAR_UUID" '{"bootenv": "local"}'
+while [[ $(rebar nodes get "$REBAR_UUID" attrib provisioner-active-bootstate |jq -r '.value') != local ]]; do
+    sleep 1
+done
+EOF
+
+chmod +x /target/etc/init.d/rebar_join
+chmod +x /target/update_system2.sh
+chroot /target /update_system2.sh
+sync

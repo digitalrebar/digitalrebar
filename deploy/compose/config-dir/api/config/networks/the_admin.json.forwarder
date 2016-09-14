@@ -1,0 +1,28 @@
+{
+  "category": "admin",
+  "group": "internal",
+  "deployment": "system",
+  "conduit": "1g0",
+  "v6prefix": "auto",
+  "ranges": [
+    {
+      "name": "admin",
+      "first": "192.168.124.12/24",
+      "last": "192.168.124.20/24"
+    },
+    {
+      "name": "host",
+      "first": "192.168.124.81/24",
+      "last": "192.168.124.160/24"
+    },
+    {
+      "name": "dhcp",
+      "first": "192.168.124.21/24",
+      "last": "192.168.124.80/24"
+    }
+  ],
+  "router": {
+    "address": "192.168.124.11/24",
+    "pref": 10
+  }
+}

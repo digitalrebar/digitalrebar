@@ -1,0 +1,6 @@
+## Copyright RackN 2015
+## exclude Digital Rebar clones for Ansible syncronize
+
+- .vagrant
+- compose/digitalrebar
+- compose/data-dir/node/*.sh

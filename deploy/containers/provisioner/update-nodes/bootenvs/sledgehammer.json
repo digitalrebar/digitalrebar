@@ -1,0 +1,33 @@
+{
+    "Name": "sledgehammer",
+    "TenantId": 1,
+    "OS": {
+        "Name": "discovery"
+    },
+    "Kernel": "vmlinuz0",
+    "Initrds": [ "stage1.img" ],
+    "BootParams": "rootflags=loop stage2={{.ProvisionerURL}}/discovery/stage2.img root=live:/sledgehammer.iso rootfstype=auto ro liveimg rd_NO_LUKS rd_NO_MD rd_NO_DM provisioner.web={{.ProvisionerURL}} rebar.web={{.CommandURL}} rebar.uuid={{.Machine.UUID}} rebar.install.key={{.Param \"rebar-machine_key\"}}",
+    "RequiredParams": ["ntp_servers","provisioner-online","rebar-access_keys","rebar-machine_key"],
+    "Templates": [
+        {
+            "Name": "pxelinux",
+            "Path": "pxelinux.cfg/{{.Machine.HexAddress}}",
+            "UUID": "default-pxelinux.tmpl"
+        },
+        {
+            "Name": "elilo",
+            "Path": "{{.Machine.HexAddress}}.conf",
+            "UUID": "default-elilo.tmpl"
+        },
+        {
+            "Name": "ipxe",
+            "Path": "{{.Machine.Address}}.ipxe",
+            "UUID": "default-ipxe.tmpl"
+        },
+        {
+            "Name": "control.sh",
+            "Path": "{{.Machine.Path}}/control.sh",
+            "UUID": "sledgehammer-control.sh.tmpl"
+        }
+    ]
+}

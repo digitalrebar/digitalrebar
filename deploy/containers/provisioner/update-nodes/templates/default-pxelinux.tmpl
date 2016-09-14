@@ -1,0 +1,10 @@
+DEFAULT {{.Env.Name}}
+PROMPT 0
+TIMEOUT 10
+LABEL {{.Env.Name}}
+  KERNEL {{.Env.PathFor "tftp" .Env.Kernel}}
+  {{ if .Env.Initrds }}
+  INITRD {{.Env.JoinInitrds "tftp"}}
+  {{ end }}
+  APPEND {{.BootParams}}
+  IPAPPEND 2

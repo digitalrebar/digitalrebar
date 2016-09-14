@@ -1,0 +1,24 @@
+{
+    "Name": "local",
+    "TenantId": 1,
+    "OS": {
+        "Name": "local"
+    },
+    "Templates": [
+        {
+            "Name": "pxelinux",
+            "Path": "discovery/pxelinux.cfg/{{.Machine.HexAddress}}",
+            "UUID": "local-pxelinux.tmpl"
+        },
+        {
+            "Name": "elilo",
+            "Path": "discovery/{{.Machine.HexAddress}}.conf",
+            "UUID": "local-elilo.tmpl"
+        },
+        {
+            "Name": "ipxe",
+            "Path": "discovery/{{.Machine.Address}}.ipxe",
+            "UUID": "local-ipxe.tmpl"
+        }
+    ]
+}

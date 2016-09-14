@@ -1,0 +1,178 @@
+--- 
+  - name: Load tftp nat module
+    modprobe: name=nf_nat_tftp state=present
+    when: dr_access_mode == "FORWARDER" and ansible_os_family != "Darwin"
+    sudo: yes
+
+  # Stop services that get in the way of progress.
+  - name: Stop ntp
+    service: name=ntp state=stopped enabled=no
+    when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
+    ignore_errors: yes
+    sudo: yes
+  - name: Stop ntpd
+    service: name=ntpd state=stopped enabled=no
+    when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
+    ignore_errors: yes
+    sudo: yes
+  - name: Stop chronyd
+    service: name=chronyd state=stopped enabled=no
+    when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
+    ignore_errors: yes
+    sudo: yes
+  - name: Stop dnsmasq
+    command: killall dnsmasq
+    ignore_errors: yes
+    when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
+    sudo: yes
+  - name: Restart Docker (again)
+    service: name=docker state=restarted
+    when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
+    sudo: yes
+
+  - name: record home
+    command: echo $HOME
+    register: home_dir
+    tags: stop
+
+  - stat: path={{home_dir.stdout}}/.ssh/id_rsa.pub
+    register: ssh_pub
+
+  - name: Make SSH dirs
+    file: path={{home_dir.stdout}}/.ssh state=directory recurse=yes mode=0700
+
+  - name: create SSH key for host to access slaves
+    command: ssh-keygen -t rsa -f '{{home_dir.stdout}}/.ssh/id_rsa' -P ''
+    when: ssh_pub.stat.exists == False
+    args:
+      creates: "{{home_dir.stdout}}/.ssh/id_rsa.pub"
+
+  - debug: var=dr_services
+
+  - name: Make cache dirs
+    command: mkdir -p {{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos
+    when: "'--provisioner' in dr_services"
+
+  - name: use local ISOs by checking for tftpboot/isos/copy_isos.yes
+    local_action: stat path="./tftpboot/isos/copy_isos.yes"
+    register: local_isos
+
+  - debug: msg="Skipped Optimization > Did not find 'tftpboot/isos/copy_isos.yes' so NOT copying LOCAL ISOs"
+    when: not local_isos.stat.exists
+
+  - name: push tftpboot cache files (ISOs) from local tftpboot (FAST LOCAL but SLOW REMOTE!)
+    synchronize: src=./tftpboot dest={{home_dir.stdout}}/.cache/digitalrebar rsync_path="rsync"
+    when: "'--provisioner' in dr_services and local_isos.stat.exists"
+
+  - name: download Ubuntu ISO (SLOW, see https://github.com/rackn/digitalrebar-deploy/tree/master/containers/provisioner/update-nodes/bootenvs)
+    get_url: url=http://mirrors.kernel.org/ubuntu-releases/16.04/ubuntu-16.04-server-amd64.iso dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/ubuntu-16.04-server-amd64.iso" checksum="sha256:b8b172cbdf04f5ff8adc8c2c1b4007ccf66f00fc6a324a6da6eba67de71746f6"
+    when: "'--provisioner' in dr_services and not local_isos.stat.exists"
+
+  - name: download Centos ISO (SLOW, see https://github.com/rackn/digitalrebar-deploy/tree/master/containers/provisioner/update-nodes/bootenvs)
+    get_url: url=http://mirrors.kernel.org/centos/7.2.1511/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1511.iso" checksum="sha256:f90e4d28fa377669b2db16cbcb451fcb9a89d2460e3645993e30e137ac37d284"
+    when: "'--provisioner' in dr_services and not local_isos.stat.exists"
+
+  - name: Make code dirs
+    file: path={{home_dir.stdout}}/digitalrebar/deploy/compose state=directory recurse=yes
+  - name: Link dirs
+    file: src={{home_dir.stdout}}/digitalrebar path={{home_dir.stdout}}/digitalrebar/deploy/compose/digitalrebar state=link
+
+  - name: remove previous data
+    command: sudo rm -rf {{home_dir.stdout}}/digitalrebar/deploy/compose/data-dir
+
+  - name: get code (from local system) compose
+    synchronize: src=./compose dest={{home_dir.stdout}}/digitalrebar/deploy rsync_path="rsync"
+    when: dr_clone_deploy is not defined
+
+  - name: get code (from local system) scripts
+    synchronize: src=./scripts dest={{home_dir.stdout}}/digitalrebar/deploy rsync_path="rsync"
+    when: dr_clone_deploy is not defined
+
+  - name: get code (from github)
+    git: repo=https://github.com/rackn/digitalrebar-deploy.git dest={{home_dir.stdout}}/digitalrebar/deploy
+    when: dr_clone_deploy is defined
+
+  - local_action: stat path=~/.netrc
+    register: netrc_path
+
+  - name: copy Github .NetRC for restricted repos
+    synchronize: src=~/.netrc dest={{home_dir.stdout}} rsync_path="rsync"
+    when: netrc_path.stat.exists
+
+  - name: setup compose
+    command: ./setup.sh --tag {{ dr_tag }} {{ dr_workloads | default([]) | join(" ") }}
+    environment:
+      RACKN_USER: "{{dr_rackn_username|default('')}}"
+      RACKN_PASSWORD: "{{dr_rackn_password|default('')}}"
+    args:
+      chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
+      creates: "{{home_dir.stdout}}/digitalrebar/deploy/compose/digitalrebar/core"
+  - name: init compose files
+    command: ./init_files.sh --tag {{ dr_tag }} --external_ip {{ dr_external_ip }} --forwarder_ip {{ dr_forwarder_ip | default("0.0.0.0/24") }}  --access {{ dr_access_mode }} {{ dr_services| default([]) | join(" ") }} {{ dr_classifiers| default([]) | join(" ") }}
+    args:
+      chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
+  - name: copy user ssh public key to rebar
+    command: cp {{home_dir.stdout}}/.ssh/id_rsa.pub {{home_dir.stdout}}/digitalrebar/deploy/compose/config-dir/api/config/ssh_keys/setup-0.key
+    args:
+      creates: "{{home_dir.stdout}}/digitalrebar/deploy/compose/config-dir/api/config/ssh_keys/setup-0.key"
+
+  - name: Create rebar group
+    group: name=rebar
+    when: ansible_os_family != "Darwin"
+    sudo: yes
+  - name: Create rebar user
+    user: name=rebar group=rebar shell=/bin/bash
+    when: ansible_os_family != "Darwin"
+    sudo: yes
+  - name: Set files to those permissions
+    command: "chown -R rebar:rebar {{home_dir.stdout}}/digitalrebar"
+    when: ansible_os_family != "Darwin"
+    sudo: yes
+
+  - name: Restart Docker (yet again)
+    service: name=docker state=restarted
+    when: ansible_os_family != "Darwin"
+    sudo: yes
+  - name: allow docker access (without reboot - again)
+    command: sudo chmod 666 /var/run/docker.sock
+    when: ansible_os_family != "Darwin"
+
+  - name: Pull compose images [SLOW]
+    shell: "DR_TAG={{dr_tag}} /usr/local/bin/docker-compose pull"
+    args:
+      chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
+
+  - name: Ensure containers are off
+    shell: "DR_TAG={{dr_tag}} /usr/local/bin/docker-compose kill"
+    args:
+      chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
+    tags: stop
+
+  - name: Ensure containers are removed
+    shell: "DR_TAG={{dr_tag}} /usr/local/bin/docker-compose rm -f"
+    args:
+      chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
+    tags: stop
+
+  - name: Compose up containers
+    shell: "DR_TAG={{dr_tag}} /usr/local/bin/docker-compose up -d"
+    args:
+      chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
+
+  - debug: msg="Expected IP {{dr_external_ip | ipaddr('address')}}"
+    when: dr_access_mode == "HOST" and ansible_version is defined and {{ansible_version.full|version_compare('1.9.0', '>=')}}
+
+  - name: HOSTMODE wait until Digital Rebar service is up [1 upto 20 minutes]
+    wait_for: host="{{dr_external_ip | ipaddr('address')}}" port=3000 delay=60 timeout=1200
+    when: dr_access_mode == "HOST" and ansible_version is defined and {{ansible_version.full|version_compare('1.9.0', '>=')}}
+
+  - debug: msg="Expected IP {{ansible_default_ipv4.address}}"
+    when: dr_access_mode == "FORWARDER" and ansible_version is defined and {{ansible_version.full|version_compare('1.9.0', '>=')}}
+
+  - name: FORWARDER wait until Digital Rebar service is up [1 upto 20 minutes]
+    wait_for: host="{{ansible_default_ipv4.address}}" port=3000 delay=60 timeout=1200
+    when: dr_access_mode == "FORWARDER" and ansible_version is defined and {{ansible_version.full|version_compare('1.9.0', '>=')}}
+
+  - name: wait for admin convergence
+    command: "{{home_dir.stdout}}/digitalrebar/deploy/scripts/wait_for_rebar.sh"
+

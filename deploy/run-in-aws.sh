@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# Copyright 2015, RackN Inc
+
+#
+# We are deploying in aws add this aws instance as a provider
+# and force the admin deploy to aws
+#
+FORCE_PROVIDER=${PROVIDER:-aws}
+FORCE_DEPLOY_ADMIN=${DEPLOY_ADMIN:-aws}
+
+# Processes args, inits provider, and validates provider
+. workloads/wl-lib.sh
+
+PROVIDER_AWS_ADMIN_INSTANCE_TYPE=${PROVIDER_AWS_ADMIN_INSTANCE_TYPE:-m4.large}
+
+# Choose aws image
+IID=$(lookup_image_id "aws" $PROVIDER_AWS_REGION "centos7")
+
+# Access controls for the above image
+INIT_ID_FILE="--init-ident $HOME/.ssh/$(hostname)"
+CLEAN_IT="--clean"
+LOGIN_USER="centos"
+
+# Check to see if device id exists.
+if [ "$DEVICE_ID" != "" ] ; then
+    STATE=`aws ec2 describe-instances --instance-id $DEVICE_ID | jq -r .Reservations[0].Instances[0].State.Name`
+
+    if [[ $STATE == null ]] ; then
+        echo "Instance ID doesn't exist in aws: $DEVICE_ID"
+        exit 1
+    fi
+    echo "AWS reuse ${DEVICE_ID}"
+else
+    echo "AWS will create ${NODENAME}"
+
+    # Make name for unamed items
+    NODENAME=$1
+    if [ "$NODENAME" == "" ] ; then
+        TSTAMP=`date +%H%M`
+        NODENAME="${USER}1-${TSTAMP}"
+    else
+        shift
+    fi
+
+    KEY_NAME=$(hostname)
+    if ! aws ec2 describe-key-pairs --key-names $(hostname) 2>/dev/null >/dev/null ; then
+      aws ec2 create-key-pair --key-name $(hostname) | jq -r .KeyMaterial > ~/.ssh/$(hostname)
+      chmod 600 ~/.ssh/$(hostname)
+    fi
+
+    SG_ID=$(aws ec2 describe-security-groups --group-names "digital rebar" | jq -r .SecurityGroups[0].GroupId)
+    if [[ ! $SG_ID ]] ; then
+        echo "Please create a security group called: 'digital rebar'"
+        echo "The group should allow ICMP ping, TCP ports 22, 443, 3000, 8888, 8300, and 8301"
+        echo "If provisioner is turned on and to be used, add 4646 TCP port."
+        exit -1
+    fi
+
+    DISK_INFO='[{ "DeviceName": "/dev/sda1", "Ebs": { "DeleteOnTermination": true } }]'
+
+    DEVICE_ID=`aws ec2 run-instances --image-id $IID --count 1 --block-device-mappings "$DISK_INFO" --instance-type ${PROVIDER_AWS_ADMIN_INSTANCE_TYPE} --key-name $KEY_NAME --security-group-ids $SG_ID | jq -r .Instances[0].InstanceId`
+
+    # Set Name
+    aws ec2 create-tags --resources $DEVICE_ID --tags Key=Name,Value=${NODENAME%%.*}
+
+fi
+
+# Wait for device to be up
+STATE=`aws ec2 describe-instances --instance-id $DEVICE_ID | jq -r .Reservations[0].Instances[0].State.Name`
+while [ "$STATE" != "running" ] ; do
+  echo "STATE = $STATE"
+  sleep 5
+  STATE=`aws ec2 describe-instances --instance-id $DEVICE_ID | jq -r .Reservations[0].Instances[0].State.Name`
+done
+# HACK give a little extra settle time
+sleep 10 
+
+# Get Public IP - HACK - should look it up
+IP=`aws ec2 describe-instances --instance-id $DEVICE_ID | jq -r .Reservations[0].Instances[0].PublicIpAddress`
+CIDR=32
+
+ENV_VAR="\"aws\": true,"
+
+export ADMIN_IP="$IP/$CIDR"
+
+. ./run-in-system.sh
+
+echo "AWS Device ID: $DEVICE_ID"
+echo "repeat AWS run: ./run-in-aws.sh --device-id=${DEVICE_ID}"
+echo "SSH access: ssh -X root@${IP}"

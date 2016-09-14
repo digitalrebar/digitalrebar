@@ -1,0 +1,67 @@
+
+consul:
+  extends:
+    file: docker-compose-common.yml
+    service: consul
+  net: host
+  command: agent -config-dir=/etc/consul.d -data-dir=/tmp/consul -server -bootstrap
+
+postgres:
+  extends:
+    file: docker-compose-common.yml
+    service: postgres
+
+logging:
+  extends:
+    file: docker-compose-common.yml
+    service: logging
+{{ START ACCESS_MODE==FORWARDER }}
+  links:
+    - forwarder:forwarder
+{{ END ACCESS_MODE==FORWARDER }}
+{{ START ACCESS_MODE==HOST }}
+  ports:
+    - "514:514"
+    - "514/udp:514/udp"
+    - "2514:2514"
+{{ END ACCESS_MODE==HOST }}
+
+rebar_api:
+  extends:
+    file: docker-compose-common.yml
+    service: rebar_api
+  links:
+    - postgres:database
+{{ START ACCESS_MODE==FORWARDER }}
+    - forwarder:forwarder
+{{ END ACCESS_MODE==FORWARDER }}
+{{ START ACCESS_MODE==HOST }}
+  ports:
+    - "3000:3000"
+{{ END ACCESS_MODE==HOST }}
+
+rule-engine:
+  extends:
+    file: docker-compose-common.yml
+    service: rule-engine
+
+cloudwrap:
+  extends:
+    file: docker-compose-common.yml
+    service: cloudwrap
+{{ START ACCESS_MODE==FORWARDER }}
+  links:
+    - forwarder:forwarder
+{{ END ACCESS_MODE==FORWARDER }}
+{{ START ACCESS_MODE==HOST }}
+  ports:
+    - "3030:3030"
+{{ END ACCESS_MODE==HOST }}
+    
+{{ START ACCESS_MODE==FORWARDER }}
+forwarder:
+  extends:
+    file: docker-compose-common.yml
+    service: forwarder
+{{ END ACCESS_MODE==FORWARDER }}
+

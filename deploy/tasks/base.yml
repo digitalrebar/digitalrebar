@@ -1,0 +1,21 @@
+# Base include for OS prep
+---
+  - debug: msg="LONG INSTALL NOTE >> Installing Provisioner takes longer than normal install"
+    when: "'--provisioner' in dr_services"
+
+  - name: "Check RAM to prevent low memory bring up issues"
+    fail: msg="!!! LOW RAM FAILURE - {{ ansible_memtotal_mb }} is insufficient RAM to run Digital Rebar.  6Gb Minimum !!!"
+    when: ansible_memtotal_mb < 6000
+
+  - include: base-centos.yml
+    when: ansible_os_family == "RedHat"
+  - include: base-ubuntu1510.yml
+    when: ansible_os_family == "Debian" and ansible_lsb.major_release == "15"
+  - include: base-ubuntu1404.yml
+    when: ansible_os_family == "Debian" and ansible_lsb.major_release == "14"
+  - include: base-debian-7.yml
+    when: ansible_os_family == "Debian" and ansible_lsb.major_release == "7"
+  - include: base-debian-8.yml
+    when: ansible_os_family == "Debian" and ansible_lsb.major_release == "8"
+  - include: base-darwin.yml
+    when: ansible_os_family == "Darwin"

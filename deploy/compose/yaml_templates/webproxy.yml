@@ -1,0 +1,14 @@
+
+webproxy:
+  extends:
+    file: docker-compose-common.yml
+    service: webproxy
+{{ START ACCESS_MODE==FORWARDER }}
+  links:
+    - forwarder:forwarder
+{{ END ACCESS_MODE==FORWARDER }}
+{{ START ACCESS_MODE==HOST }}
+  ports:
+    - "3128:3128"
+{{ END ACCESS_MODE==HOST }}
+

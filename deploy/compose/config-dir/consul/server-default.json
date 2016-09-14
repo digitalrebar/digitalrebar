@@ -1,0 +1,11 @@
+{
+    "datacenter": "digitalrebar",
+    "domain": "consul",
+    "acl_datacenter": "digitalrebar",
+    "acl_master_token": "f91b0ec7-777b-4f95-a4fd-12e28b0761ba",
+    "acl_default_policy": "allow",
+    "acl_down_policy": "allow",
+    "encrypt": "NMXDBhIgIN4naRrrYDt/Qg==",
+    "disable_remote_exec": true
+}
+

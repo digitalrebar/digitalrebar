@@ -1,0 +1,9 @@
+{
+  "rebar": {
+    "realm": "Rebar",
+    "capabilities": [ "ADMIN" ],
+    "password": "$apr1$7WR4gkPy$oaktcxfJnlvKcezPSr5/F1",
+    "digestpassword": "3e5bd355f88ca8e3e938bc7c22299193"
+  }
+}
+

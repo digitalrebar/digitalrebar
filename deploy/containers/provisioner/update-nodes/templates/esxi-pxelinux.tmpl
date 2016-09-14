@@ -1,0 +1,7 @@
+DEFAULT {{.Env.Name}}
+PROMPT 0
+TIMEOUT 10
+LABEL {{.Env.Name}}
+  KERNEL {{.Env.Kernel}}
+  APPEND {{.BootParams}}
+  IPAPPEND 2

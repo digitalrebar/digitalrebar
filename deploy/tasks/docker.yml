@@ -1,0 +1,6 @@
+# Try to keep this OS neutral
+---
+  - include: docker-linux.yml
+    when: ansible_os_family == "RedHat" or ansible_os_family == "Debian"
+  - include: docker-mac.yml
+    when: ansible_os_family == "Darwin"

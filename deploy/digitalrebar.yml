@@ -1,0 +1,7 @@
+--- 
+- name: Install Digital Rebar by RackN 2015
+  hosts: all
+  tasks:
+    - include: tasks/base.yml
+    - include: tasks/docker.yml
+    - include: tasks/compose.yml

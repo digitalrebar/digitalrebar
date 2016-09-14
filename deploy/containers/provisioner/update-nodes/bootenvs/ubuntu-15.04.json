@@ -1,0 +1,59 @@
+{
+    "Name": "ubuntu-15.04-install",
+    "TenantId": 1,
+    "OS": {
+        "Name": "ubuntu-15.04",
+        "Family": "ubuntu",
+        "Version": "15.04",
+        "IsoFile": "ubuntu-15.04-server-amd64.iso",
+        "IsoUrl": "http://mirrors.kernel.org/ubuntu-releases/vivid/ubuntu-15.04-server-amd64.iso",
+        "IsoSha256": "6501c8545374665823384bbb6235f865108f56d8a30bbf69dd18df73c14ccb84"
+    },
+    "Kernel": "install/netboot/ubuntu-installer/amd64/linux",
+    "Initrds": [ "install/netboot/ubuntu-installer/amd64/initrd.gz" ],
+    "BootParams": "debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto url={{.Machine.Url}}/seed netcfg/get_hostname={{.Machine.Name}} root=/dev/ram rw quiet -- ",
+    "RequiredParams": [
+        "dns-domain",
+        "logging_servers",
+        "ntp_servers",
+        "operating-system-disk",
+        "provisioner-default-password-hash",
+        "provisioner-default-user",
+        "provisioner-use-local-security",
+        "proxy-servers",
+        "rebar-access_keys",
+        "rebar-machine_key"
+    ],
+    "Templates": [
+        {
+            "Name": "pxelinux",
+            "Path": "pxelinux.cfg/{{.Machine.HexAddress}}",
+            "UUID": "default-pxelinux.tmpl"
+        },
+        {
+            "Name": "elilo",
+            "Path": "{{.Machine.HexAddress}}.conf",
+            "UUID": "default-elilo.tmpl"
+        },
+        {
+            "Name": "ipxe",
+            "Path": "{{.Machine.Address}}.ipxe",
+            "UUID": "default-ipxe.tmpl"
+        },
+        {
+            "Name": "seed",
+            "Path": "{{.Machine.Path}}/seed",
+            "UUID": "net_seed.tmpl"
+        },
+        {
+            "Name": "net-post-install.sh",
+            "Path": "{{.Machine.Path}}/post-install.sh",
+            "UUID": "net-post-install.sh.tmpl"
+        },
+        {
+            "Name": "rebar_join.sh",
+            "Path": "{{.Machine.Path}}/rebar_join.sh",
+            "UUID": "rebar-join.sh.tmpl"
+        }
+    ]
+}

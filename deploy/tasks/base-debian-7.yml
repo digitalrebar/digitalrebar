@@ -1,0 +1,30 @@
+---
+  - name: Update repos (was not working from apt:)
+    command: sudo apt-get update -y
+  - name: Install Prereqs [SLOW]
+    apt: name={{ item }} state=latest
+    with_items:
+      - git
+      - curl
+      - wget
+      - python
+      - python-pycurl
+      - jq
+    sudo: yes
+  - name: Install Provisioner Prereqs [SLOW]
+    apt: name={{ item }} state=latest
+    with_items:
+      - screen
+      - qemu-kvm
+      - libvirt-bin
+      - bridge-utils
+      - ruby1.9.1-dev
+      - make
+    sudo: yes
+    when: "'--provisioner' in dr_services"
+  - name: Provisioner gem install kvm slaves
+    command: sudo gem install json net-http-digest_auth
+    args:
+      creates: /var/lib/gems/1.9.1/cache/json-1.8.3.gem
+    sudo: yes
+    when: "'--provisioner' in dr_services"

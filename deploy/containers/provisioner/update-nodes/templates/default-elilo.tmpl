@@ -1,0 +1,6 @@
+delay=2
+timeout=20
+verbose=5
+image={{.Env.PathFor "tftp" .Env.Kernel}}
+initrd={{.Env.JoinInitrds "tftp"}}
+append={{.BootParams}}

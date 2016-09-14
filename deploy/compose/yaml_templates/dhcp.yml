@@ -1,0 +1,12 @@
+
+dhcp:
+  extends:
+    file: docker-compose-common.yml
+    service: dhcp
+{{ START ACCESS_MODE==FORWARDER }}
+  net: "container:forwarder"
+{{ END ACCESS_MODE==FORWARDER }}
+{{ START ACCESS_MODE==HOST }}
+  net: "host"
+{{ END ACCESS_MODE==HOST }}
+

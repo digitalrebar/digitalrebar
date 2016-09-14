@@ -1,0 +1,51 @@
+# Copyright 2015, RackN
+#
+# All rights reserved.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+/.vagrant/
+/compose/digitalrebar
+
+# upload tftpboot to .cache/digitalrebar stored here
+/tftpboot
+
+.#*
+*~
+*.dia.autosave
+install-*.log
+
+/compose/config-dir/api/config/ssh_keys/*.key
+/compose/config-dir/api/config/filters/*.json
+/compose/config-dir/api/config/networks/the_admin.json
+/compose/config-dir/api/config/networks/the_bmc.json
+/compose/config-dir/api/config/domain.json
+/compose/config-dir/consul/server-advertise.json
+/compose/config-dir/rev-proxy/saml-dir/idpcert.crt
+/compose/config-dir/webproxy/squid.user.conf
+/compose/tag
+/compose/data-dir
+/compose/docker-compose-common.dev
+
+/containers/tree_bag
+
+# Dynamically built by init_files.sh
+/compose/access.env
+/compose/services.env
+/compose/docker-compose.yml
+
+.idea
+Berksfile.lock
+
+# Used by run-in-packet.sh
+run-in-hosts
+
+# Used by Vagrant 
+rebar-key.sh
+
+# Cli tool
+rebar

@@ -1,0 +1,14 @@
+
+revproxy:
+  extends:
+    file: docker-compose-common.yml
+    service: revproxy
+{{ START ACCESS_MODE==FORWARDER }}
+  links:
+    - forwarder:forwarder
+{{ END ACCESS_MODE==FORWARDER }}
+{{ START ACCESS_MODE==HOST }}
+  ports:
+    - "443:443"
+{{ END ACCESS_MODE==HOST }}
+

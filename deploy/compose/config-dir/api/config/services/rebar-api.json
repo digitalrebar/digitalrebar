@@ -1,0 +1,5 @@
+{
+  "type": "external",
+  "name": "rebar-api",
+  "has_service": true
+}

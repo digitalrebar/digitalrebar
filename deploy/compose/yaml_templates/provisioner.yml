@@ -1,0 +1,16 @@
+
+provisioner:
+  extends:
+    file: docker-compose-common.yml
+    service: provisioner
+{{ START ACCESS_MODE==FORWARDER }}
+  links:
+    - forwarder:forwarder
+{{ END ACCESS_MODE==FORWARDER }}
+{{ START ACCESS_MODE==HOST }}
+  ports:
+    - "69/udp:69/udp"
+    - "8091:8091"
+    - "8092:8092"
+{{ END ACCESS_MODE==HOST }}
+

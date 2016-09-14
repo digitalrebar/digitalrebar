@@ -1,0 +1,13 @@
+--- 
+- name: Packet.net shortcut by RackN 2015
+  hosts: all
+  tasks:
+    - name: Make cache dirs
+      command: mkdir -p ~/.cache/digitalrebar/tftpboot/isos
+    - name: download Ubuntu ISO (FAST local mirror)
+      get_url: url=http://mirror.ewr1.packet.net/ubuntu/isos/x86_64/14.04/ubuntu-14.04.3-server-amd64.iso dest=~/.cache/digitalrebar/tftpboot/isos/ubuntu-14.04.4-server-amd64.iso
+      ignore_errors: yes
+
+    - name: download Centos ISO (FAST local mirror)
+      get_url: url=http://mirror.ewr1.packet.net/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso dest=~/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1511.iso
+      ignore_errors: yes
