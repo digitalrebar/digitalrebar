@@ -16,7 +16,7 @@ func Exists(name string) (bool, error) {
 	return err == nil, err
 }
 
-func RunCmd(addVendorGoPath bool, name string, arg ...string) (error, string, string) {
+func RunCmd(addVendorGoPath bool, additionalEnv []string, name string, arg ...string) (error, string, string) {
 	cmd := exec.Command(name, arg...)
 
 	if addVendorGoPath {
@@ -37,6 +37,13 @@ func RunCmd(addVendorGoPath bool, name string, arg ...string) (error, string, st
 		gp := env[index]
 		parts := strings.SplitN(gp, "=", 2)
 		env[index] = "GOPATH=" + parts[1] + "/vendor_src:" + parts[1]
+		cmd.Env = env
+	}
+	if additionalEnv != nil {
+		env := cmd.Env
+		for _, s := range additionalEnv {
+			env = append(env, s)
+		}
 		cmd.Env = env
 	}
 
@@ -106,7 +113,7 @@ func main() {
 
 	// Run glide i to make sure we have all the dependencies.
 	log.Printf("Running glide to pull in dependencies")
-	err, stdOut, stdErr := RunCmd(false, "glide", "i")
+	err, stdOut, stdErr := RunCmd(false, nil, "glide", "i")
 	if err != nil {
 		log.Printf("glide return: %v\n", err)
 		log.Printf("glide output: %v\n", stdOut)
@@ -125,14 +132,26 @@ func main() {
 		"github.com/rackn/digitalrebar/go/forwarder",
 		"github.com/rackn/digitalrebar/go/provisioner-mgmt",
 	}
-	for _, prog := range progs {
-		log.Printf("Running build for %s", prog)
-		err, stdOut, stdErr = RunCmd(true, "go", "install", prog)
-		if err != nil {
-			log.Printf("build %s return: %v\n", prog, err)
-			log.Printf("build %s output: %v\n", prog, stdOut)
-			log.Printf("build %s error: %v\n", prog, stdErr)
-			log.Fatalf("build failed: %s!!", prog)
+	envs := [][]string{
+		[]string{
+			"GOOS=linux",
+			"GOARCH=amd64",
+		},
+		[]string{
+			"GOOS=darwin",
+			"GOARCH=amd64",
+		},
+	}
+	for _, env := range envs {
+		for _, prog := range progs {
+			log.Printf("Running build for %s", prog)
+			err, stdOut, stdErr = RunCmd(true, env, "go", "install", prog)
+			if err != nil {
+				log.Printf("build %s return: %v\n", prog, err)
+				log.Printf("build %s output: %v\n", prog, stdOut)
+				log.Printf("build %s error: %v\n", prog, stdErr)
+				log.Fatalf("build failed: %s!!", prog)
+			}
 		}
 	}
 
