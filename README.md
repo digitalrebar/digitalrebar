@@ -27,3 +27,14 @@ Commercial support for Digital Rebar is available from [RackN Inc](http://rackn.
   * Anvil became v2.0 in Apr 2014
   * Broom became v2.1 in Dec 2014
   * Camshaft became v2.2 in Apr 2015
+
+## Dangerous But Fun Quickstart command.
+
+From the home directory of a user with sudo capabilities,
+
+curl -fsSL https://raw.githubusercontent.com/digitalrebar/digitalrebar/master/deploy/quickstart.sh | bash
+
+This command will turn the current node into a DigitalRebar admin node in Host mode operating as the IP on 
+the default gateway interface.  For cloud instances, this means that it will use the private network and will
+only safely manage nodes in its private network.  UX and API will be available through the public IP of the 
+cloud instance assuming https is allowed through the cloud's network protections. 
