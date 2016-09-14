@@ -1,0 +1,31 @@
+%h1
+  = t('.title')
+  %table.data.box
+    %thead
+      %tr
+        %th= t('.username')
+        %th= t('.email')
+        %th= t('.sign_in_count')
+        %th= t('.failed_attempts')
+        %th= t('.last_sign_in_at')
+        %th= t('.last_sign_in_ip')
+        %th= t('.is_admin')
+    %tbody
+      - if @users.count > 0
+        - @users.each do |user|
+          %tr.node{ :class => cycle(:odd, :even) }
+            -if is_edit_mode?
+              %td{:nowrap=>"nowrap"}= link_to user.username, edit_user_path(user)
+            -else
+              %td{:nowrap=>"nowrap"}= user.username
+            %td= user.email
+            %td= user.sign_in_count
+            %td= user.failed_attempts
+            %td= user.last_sign_in_at
+            %td= user.last_sign_in_ip
+            -if current_user.is_admin?
+              %td= check_box_tag "user:#{user.username}:is_admin",  user.is_admin, checked=user.is_admin?, :disabled=>true
+      - else
+        %tr
+          %td{ :colspan=>5 }
+            = t 'no_items'

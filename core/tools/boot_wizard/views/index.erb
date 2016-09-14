@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>JSON Modifier</title>
+    <script src="jquery.min.js"></script>
+    <script src="parallax.js"></script>
+    <script src="networkscripts.js"></script>
+    <link rel="stylesheet" href="reset.css" type="text/css" />
+    <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="style.css" type="text/css" />
+  </head>
+  <body>
+    <div class='parallax' data-parallax="scroll" data-image-src="http://digitalrebar.github.io/images/image.jpg">
+    <content>
+        <header>
+          Digital Rebar Configuration Editor
+        </header>
+        <article>
+          <header>
+            Networks
+          </header>
+            <%=
+              @networks.map do |network|
+                partial(:network, locals: {network: network})
+              end * ''
+            %>
+        </article>
+      </content>
+    </div>
+  </body>
+</html>

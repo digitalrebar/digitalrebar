@@ -1,0 +1,109 @@
+%h1= @role.name
+
+%dl
+  %dt= t '.description' 
+  %dd= @role.description
+
+  - unless params.include? :form
+    %dt= t '.jig' 
+    %dd= link_to @role.jig_name, jig_path(@role.jig_name)
+    %dt= t '.barclamp' 
+    %dd= link_to @role.barclamp.name, barclamp_path(@role.barclamp.id), :title=>@role.barclamp.description
+    %dt= t '.type'
+    %dd= "[#{@role.class.to_s}]"
+    - if @role.github and (current_user.settings(:docs).sources rescue false)
+      %dt= t '.source'
+      %dd= link_to @role.github, @role.github
+    %dt= t '.icon'
+    %dd= link_to @role.icon, "https://design.google.com/icons/#ic_#{@role.icon}"
+    %dt= t '.flags'
+    %dd
+      = t '.library' if @role.library 
+      = t '.discovery' if @role.discovery
+      = t '.implicit' if @role.implicit
+      = t '.bootstrap' if @role.bootstrap
+      = t '.abstract' if @role.abstract
+      = t '.service' if @role.service
+
+.clear
+
+- begin 
+  - specific = "barclamp_#{@role.barclamp.name}/node_roles/#{@role.name}"
+  - general = "barclamp_#{@role.barclamp.name}/roles/role"
+  - template = @role.template.to_json
+- rescue Exception => moderror
+  %p= t '.model_error', :error=>moderror.message
+
+%h3= t '.upstream'
+
+= render :partial => "index", :locals => { :list => @role.parents, :jig_name => nil }
+
+%h3= t'.attributes'
+
+- if @role.attribs.count == 0
+  =t 'no_items'
+- else
+  %table.data.box
+    %thead
+      %tr.node{ :class => cycle(:odd, :even) }
+        %th= t '.attrib'
+        %th= 'Default'
+        %th= t '.map'
+    %tbdoy
+      - @role.attribs.each do |a|
+        %tr{ :class => cycle(:odd, :even) }
+          - begin
+            = render :partial => a.ui_renderer, :locals => { :attrib => a, :obj => @role, :obj_type => Role, :flag => :none, :editable => false}
+          - rescue Exception => e
+            = render :partial => Attrib::UI_RENDERER, :locals => { :attrib => a, :obj => @role, :obj_type => Role, :flag => :error, :editable => false, :error => e}
+
+%h3= t '.wanted'
+
+- if @role.wanted_attribs.count == 0
+  =t 'no_items'
+- else
+  %table.data.box
+    %thead
+      %tr.node{ :class => cycle(:odd, :even) }
+        %th= t '.attrib'
+        %th= t '.description'
+        %th= "Provided By"
+    %tbdoy
+      - @role.wanted_attribs.each do |a|
+        %tr{ :class => cycle(:odd, :even) }
+          %td= link_to a.name, attrib_path(a.id)
+          %td= a.description
+          - if a.role
+            %td= link_to a.role.name, role_path(a.role.name)
+          - else
+            %td= 'Node'
+
+%h3= t '.metadata'
+
+%pre= JSON.pretty_generate @role.metadata
+
+- inuse = @role.node_roles.sort
+%h3
+  = t '.inuse'
+  - if inuse.length > 0
+    - nrlist = inuse.map { |nr| nr.id }.join(",")
+    %raw_button{:style => 'float:right'}
+      = link_to t('.reapply'), "javascript:retry_all('#{nrlist}')", :class => 'button'
+
+- if inuse.length == 0
+  =t 'no_items'
+- else
+  = render :partial=>'node_roles/index', :locals => { :list => inuse }
+
+  .clear
+
+  :javascript
+
+    function retry_all(nr_ids) {
+      var ids = nr_ids.split(",");
+      for (var id of ids) {
+        console.log("/api/v2/node_roles/"+id+"/retry");
+        $.ajax({url: "/api/v2/node_roles/"+id+"/retry", type: "PUT"})
+      };
+      location.reload();
+    }

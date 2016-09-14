@@ -1,0 +1,8 @@
+#!/bin/bash
+if [[ $(whoami) != rebar ]]; then
+    su -l -c "$0 $*" rebar
+    exit $?
+fi
+. /etc/profile
+cd /opt/digitalrebar/core/rails
+bundle exec rails c ${1:-production}

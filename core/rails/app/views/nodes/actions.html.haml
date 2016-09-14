@@ -1,0 +1,71 @@
+%h1= t('.title')
+
+#hint= t('.hint').html_safe
+
+#states
+  - i = -1
+  - @states.each do |state, state_details|
+    - nodes = state_details[:nodes]
+    .column_25{:class => cb_column_class(i+=1,4)}
+      %table.data.box{:id => "state_#{(state || t('unknown')).parameterize}"}
+        %thead
+          %tr.state{:id=>state, :draggable=>'true' }
+            %th.status
+              .led{:class => state_details[:status], :title=>t("state.#{state}", :default=>state.titlecase)} 
+            %th= t state, :scope => :state, :default=>state.titlecase
+            %th
+        %tbody
+          - if nodes.length==0
+            %tr
+              %td
+              %td= t 'no_items'
+              %td
+          - else
+            - nodes.each do |handle, details|
+              %tr{ :class => cycle(:odd, :even), :id => handle }
+                %td
+                %td.node
+                  %a.node{:href => node_path(:name=>handle), :title=>details['description'], :id => handle, :draggable=>'true'}
+                    = details['name']
+                %td
+
+.clear
+
+:javascript
+
+    // set draggable attributes
+  $('a.node[draggable="true"]')
+    .bind('dragend', function( ev ) {
+      false;
+    })
+    .bind('dragstart', function( ev ) {
+      // console.debug("dragging " + ev.target.id);
+      var dt = ev.originalEvent.dataTransfer;
+      // TODO make sure only a available set this!
+      dt.setData("Text", ev.target.id);
+    });
+
+  // set droppable attributes using bind_drop
+  $('tr.state[draggable="true"]').each(function() { bind_drop($(this))} );
+
+    
+  function bind_drop(div) {
+    // Decide whether the thing dragged in is welcome.
+    div.bind('dragover', function(ev) {
+        if (ev.preventDefault) ev.preventDefault(); // allows us to drop
+        return false;
+    });
+
+    // Handle the final drop...
+    div.bind('drop', function(ev) {
+      if (ev.preventDefault) ev.preventDefault(); // allows us to drop
+      var handle = ev.originalEvent.dataTransfer.getData("Text");
+      var group = $(this).attr('id');
+      var node = $("a.node#"+handle);
+      console.debug('hit: /nodes/'+handle+'/hit/'+group );
+      node.animate({"opacity":"0"}, 2500);
+      $.getJSON("/nodes/"+handle+"/hit/"+group, function(data) {
+        console.debug(data);
+      });
+    });
+  }

@@ -1,0 +1,28 @@
+#!/bin/bash
+if [[ $(whoami) != rebar ]]; then
+    exec su -l -c "$0" rebar
+fi
+. /etc/profile
+# Chef/Berks uses Faraday which doesn't work right with proxies.
+# Unset them because the chef server is local
+unset http_proxy
+unset https_proxy
+unset no_proxy
+set -e
+IFS=$'\n'
+while read -r -s berksfile; do
+   /usr/local/bin/berks install -d -b "$berksfile"
+   /usr/local/bin/berks upload -d -b "$berksfile" --no-ssl-verify
+done < <(find /opt/digitalrebar -path '*/chef/cookbooks/Berksfile' || :)
+
+roles=($(find /opt/digitalrebar -path '*/chef/roles/*.rb' || :))
+if [[ $roles ]]; then
+   knife role from file "${roles[@]}"
+fi
+
+data_bags=($(find /opt/digitalrebar -path '*/chef/data_bags/*' -type d || :))
+for bag in "${data_bags[@]}"; do
+    knife data bags show "${bag##*/}" &>/dev/null || \
+        knife data bag create "${bag##*/}" -d
+    knife data bag from file "${bag##*/}"  "${bag}"
+done

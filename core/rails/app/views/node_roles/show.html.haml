@@ -1,0 +1,68 @@
+%h1
+  = link_to @node_role.deployment.name, deployment_path(@node_role.deployment.id)
+  = link_to @node_role.node.name, node_path(@node_role.node.id)
+  = link_to @node_role.role.name_i18n, role_path(@node_role.role.id)
+  = link_to "Destroy", node_role_path(@node_role.id, :api_version=>2), :class => 'button', :method => :delete, data: { confirm: "Are you certain you want to destroy #{@node_role.node.name} node data for #{@node_role.role.name}?" }
+%table.plane
+  %tr
+    %td
+      .led{:class => NodeRole::STATES[@node_role.state || NodeRole::ERROR], :title=>@node_role.state_name}
+    %td
+      = @node_role.state_name
+    - if @node_role.error? || @node_role.active?
+      %td{:width=>'100%', :align=>'right'}
+        = link_to t('.retry'), "/api/v2/node_roles/#{@node_role.id}/retry.html", :class => 'button', :method=>:put
+
+- if @node_role.state == NodeRole::ERROR
+  - has_hint = t(@node_role.role.name, :scope => 'node_roles.show.error_hints', :default => 'none')
+  - has_link = t(@node_role.role.name, :scope => 'node_roles.show.error_links', :default => 'none')
+  - unless has_hint.eql? 'none'
+    %p
+      %strong= t '.error_hint'
+      = has_hint
+      - unless has_link.eql? 'none'
+        = link_to t('.error_link'), has_link
+
+- unless params.key? :raw
+  %p#raw_button{:style => 'float:right'}
+    = link_to t('.default'), node_role_path(:id=>params[:id], :raw=>true), :class => 'button'
+%h3= t '.data'
+
+= render :partial => 'raw', :locals => { :obj => @node_role }
+
+%h3
+  %a.toggle.with_label{:href => "#", :id => "#data_toggle", :rel => "rawdata"}= t '.rawdata'
+
+%div{:id=>"rawdata", :style =>"display:none"}
+
+  %p
+    %h4= t '.data'
+    %pre= JSON.pretty_generate @node_role.data
+
+  %p
+    %h4= t '.sysdata'
+    %pre= JSON.pretty_generate @node_role.sysdata
+
+  %p
+    %h4= t '.wall'
+    %pre= JSON.pretty_generate @node_role.wall
+
+%h3= t '.upstream'
+= render :partial=>'index', :locals => { :list => @node_role.parents }
+
+%h3= t '.downstream'
+= render :partial=>'index', :locals => { :list => @node_role.children }
+
+%h3= t '.runlog'
+%pre= @node_role.runlog
+
+- unless @node_role.state == NodeRole::ACTIVE
+  .clear
+  :javascript
+
+    function update() {
+      $.ajaxSetup({ timeout: #{current_user.settings(:ui).refresh} });
+      if (elasped < 3600) {
+        location.reload();
+      }
+    }

@@ -1,0 +1,128 @@
+#!/bin/bash
+# Copyright 2014, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+if [[ ! -x /rebar-init ]]; then
+    image="<%=@image%>"
+    if ! which docker &>/dev/null; then
+        echo "Please install Docker!"
+        exit 1
+    fi
+    if [[ $0 = /* ]]; then
+        initscript="$0"
+    elif [[ $0 = .*  || $0 = */* ]]; then
+        initscript="$(readlink -f "$PWD/$0")"
+    else
+        echo "Cannot figure out where I am running from!"
+        exit 1
+    fi
+    docker_args=(-i -w / -v "$initscript:/rebar-init")
+    # Have the Docker container use Rebar's DNS server.
+    docker_args+=('--dns=<%=@dns_servers.join(",")%>')
+    # Give the Docker container a Rebar-assigned name
+    docker_args+=(-h '<%=@name%>')
+    # since 0.8.1 we need to run in privileged mode so we can change the networking
+    docker_args+=("--privileged")
+    # Run whatever we specified to run inside a container.
+    docker run "${docker_args[@]}" "$image" /rebar-init
+    exit $?
+fi
+
+(cd /bin; curl -fgl -O "<%=@provisioner_web%>/files/rebar"; chmod 755 rebar)
+
+set -x
+export http_proxy='<%=@proxy%>'
+export https_proxy="$http_proxy"
+export REBAR_KEY="<%=@machine_key%>"
+printf '%s' "$REBAR_KEY" >/etc/rebar.install.key
+export REBAR_ENDPOINT="<%=@admin_url%>"
+<% @addresses.each do |addr| -%>
+ip addr add <%=addr%> dev eth0
+<% end -%>
+mkdir -p /root/.ssh
+printf '%s\n' '<%=@keys%>' >/root/.ssh/authorized_keys
+# Figure out what we are running on.
+if [[ -f /etc/system-release ]]; then
+    read DISTRIB_ID _t DISTRIB_RELEASE rest < /etc/system-release
+elif [[ -f /etc/os-release ]]; then
+    . /etc/os-release
+    DISTRIB_ID="$ID"
+    DISTRIB_RELEASE="$VERSION_ID"
+elif [[ -f /etc/lsb-release ]]; then
+    . /etc/lsb-release
+else
+    echo "Cannot figure out what we are running on!"
+fi
+
+DISTRIB_ID="${DISTRIB_ID,,}"
+OS_TOKEN="$DISTRIB_ID-$DISTRIB_RELEASE"
+export OS_TOKEN DISTRIB_ID DISTRIB_RELEASE
+
+# Docker puts a policy-rc.d in place that gets in the way.
+case $DISTRIB_ID in
+  ubuntu) cat >/usr/sbin/policy-rc.d <<EOF
+#!/bin/sh
+exit 0
+EOF
+;;
+  debian|redhat|centos) ;;
+esac
+
+if ! (which curl && which sshd) &>/dev/null; then
+    case $DISTRIB_ID in
+        ubuntu|debian) apt-get -y update && apt-get -y install openssh-client openssh-server curl;;
+        redhat|centos) yum -y install openssh-clients openssh-server curl;;
+    esac
+fi
+
+cat <<EOF >/etc/ssh/sshd_config
+Port 22
+ListenAddress ::
+ListenAddress 0.0.0.0
+Protocol 2
+HostKey /etc/ssh/ssh_host_rsa_key
+UsePrivilegeSeparation yes
+KeyRegenerationInterval 3600
+ServerKeyBits 768
+SyslogFacility AUTH
+LogLevel INFO
+LoginGraceTime 120
+PermitRootLogin without-password
+StrictModes yes
+RSAAuthentication yes
+PubkeyAuthentication yes
+IgnoreRhosts yes
+RhostsRSAAuthentication no
+HostbasedAuthentication no
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+TCPKeepAlive yes
+AcceptEnv LANG LC_*
+AcceptEnv http_proxy https_proxy no_proxy
+Subsystem sftp /usr/lib/openssh/sftp-server
+UsePAM no
+UseDNS no
+EOF
+
+[[ -f /etc/ssh/ssh_host_rsa_key ]] || ssh-keygen -q -b 2048 -P '' -f /etc/ssh/ssh_host_rsa_key
+mkdir -p /var/run/sshd
+pkill -9 sshd
+$(which sshd)
+
+rebar nodes update <%=@name%> '{"alive": false}'
+rebar nodes update <%=@name%> '{"alive": true}'
+
+hostname <%=@name%>
+
+/bin/bash -i

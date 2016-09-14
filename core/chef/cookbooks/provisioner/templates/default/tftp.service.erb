@@ -1,0 +1,6 @@
+[Unit]
+Description=Rebar TFTP Server
+
+[Service]
+ExecStart=/usr/sbin/in.tftpd -s <%= @tftproot %>
+StandardInput=socket

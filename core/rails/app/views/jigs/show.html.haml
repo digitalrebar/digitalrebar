@@ -1,0 +1,16 @@
+%h1= @jig.name
+
+%table.plane
+  %tr    
+    %td
+      - if @jig.active
+        .led{:id => @jig.name, :class => 'active', :style => "float:left", :title=>t('active')}
+      - else
+        .led{:id => @jig.name, :class => 'proposed', :style => "float:left", :title=>t('inactive')}
+    %td= @jig.description
+    - unless @jig.active
+      %td
+        = link_to t('.activate'), "/api/v2/jigs/#{@jig.id}/activate", :class => 'button', :'onclick'=>'location.reload();', :"data-method"=>:put, :'data-remote' => true
+<br>
+
+= render :partial => 'roles/index', :locals => { :list => @jig.roles, :jig_name => @jig.name }

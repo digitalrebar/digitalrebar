@@ -1,0 +1,44 @@
+%h1= @barclamp.name
+
+%dl
+  = dl_item t('.description'), @barclamp.description
+  = dl_item t('.source_path'), @barclamp.source_path
+  = dl_item t('.version'), @barclamp.version
+  = dl_item t('.commit'), @barclamp.commit
+  = dl_item t('.build_on'), @barclamp.build_on
+  = dl_item t('.rawconfig'), link_to(t('edit'), barclamp_upload_path(@barclamp.id))
+
+
+- if @barclamp.cfg_data["barclamp"]["os_support"]
+  %h3= t '.os_support'
+
+  - provisioner = Role.find_key 'provisioner-service'
+  - if provisioner
+    - admin = provisioner.nodes.first
+    - available_os = Attrib.get("provisioner-available-oses", admin).map{ |k,v| k } rescue []
+  
+  %ul
+    - @barclamp.cfg_data["barclamp"]["os_support"].each do |os|
+      %li
+        = os
+        - if provisioner and !available_os.include? os
+          = t '.not_available'
+
+%h3= t '.roles'
+
+= render :partial => "roles/index", :locals => { :list => @barclamp.roles, :jig_name => nil }
+
+- githistory = %x[cd #{@barclamp.source_path} && git log -n 10].split("commit ") rescue nil
+
+- if githistory.length>0
+  %h3= "Git History"
+  %ol
+    - githistory.each do |commit|
+      - lines = commit.split("\n")
+      - if lines.length>0
+        %li
+          = lines[0]
+          %ul
+            - lines[1..1000].each do |l| 
+              - if l.length>0
+                %li= l

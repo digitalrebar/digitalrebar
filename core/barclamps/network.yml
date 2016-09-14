@@ -1,0 +1,119 @@
+# Copyright 2013, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#
+
+barclamp:
+  name: "network"
+  parent: "core"
+  display: "Network"
+  description: "Network Configuration"
+  version: "2.E"
+  source_url: "https://github.com/digitalrebar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
+
+
+
+roles:
+  # network-server exists to hold interface maps right now.
+  - name: network-server
+    jig: noop
+    attribs:
+      - name: network_interface_maps
+        description: 'The global set of interface maps that should be used to figure out nic ordering.'
+        map: 'rebar/interface_map'
+        ui_renderer: 'barclamp_network/attribs/interface_map'
+        schema:
+          type: seq
+          sequence:
+            - type: map
+              mapping:
+                "pattern":
+                  type: str
+                  required: true
+                "bus_order":
+                  type: seq
+                  sequence:
+                    - type: str
+                      pattern: /[0-9a-fA-F]{4}\:[0-9a-fA-F]{2}\/[0-9a-fA-F]{4}\:[0-9a-fA-F]{2}\:[0-9a-fA-F]{2}/
+        default:
+          - "pattern": "PowerEdge R610"
+            "bus_order":
+              - "0000:00/0000:00:01"
+              - "0000:00/0000:00:03"
+          - "pattern": "PowerEdge R710"
+            "bus_order":
+              - "0000:00/0000:00:01"
+              - "0000:00/0000:00:03"
+          - "pattern": "PowerEdge R620"
+            "bus_order":
+              - "0000:00/0000:00:01.1/0000:01:00.0"
+              - "0000:00/0000:00:01.1/0000:01:00.1"
+              - "0000:00/0000:00:01.0/0000:02:00.0"
+              - "0000:00/0000:00:01.0/0000:02:00.1"
+          - "pattern": "PowerEdge R720"
+            "bus_order":
+              - "0000:00/0000:00:01.1/0000:01:00.0"
+              - "0000:00/0000:00:01.1/0000:01:00.1"
+              - "0000:00/0000:00:01.0/0000:02:00.0"
+              - "0000:00/0000:00:01.0/0000:02:00.1"
+          - "pattern": "PowerEdge R730"
+            "bus_order":
+              - "0000:00/0000:00:03.1/0000:01:00.0"
+              - "0000:00/0000:00:03.1/0000:01:00.1"
+              - "0000:00/0000:00:03.0/0000:02:00.0"
+              - "0000:00/0000:00:03.0/0000:02:00.1"
+          - "pattern": "PowerEdge R720xd"
+            "bus_order":
+              - "0000:00/0000:00:01.1/0000:01:00.0"
+              - "0000:00/0000:00:01.1/0000:01:00.1"
+              - "0000:00/0000:00:01.0/0000:02:00.0"
+              - "0000:00/0000:00:01.0/0000:02:00.1"
+          - "pattern": "PowerEdge C6145"
+            "bus_order":
+              - "0000:00/0000:00:04"
+              - "0000:00/0000:00:02"
+          - "pattern": "PowerEdge C2100"
+            "bus_order":
+              - "0000:00/0000:00:1c"
+              - "0000:00/0000:00:07"
+              - "0000:00/0000:00:09"
+              - "0000:00/0000:00:01"
+          - "pattern": "C6100"
+            "bus_order":
+              - "0000:00/0000:00:01"
+              - "0000:00/0000:00:03"
+              - "0000:00/0000:00:07"
+  - name: network-lldpd
+    jig: chef
+    flags:
+      - implicit
+  # there are more roles BUT they are dynamically created
+
+attribs:
+  - name: 'nics'
+    description: 'Ethernet Interface Ports'
+    map: 'ohai/rebar_ohai/detected/network'
+  - name: 'switches'
+    description: 'Connected Networking Switches'
+    map: 'ohai/rebar_ohai/switch_config'
+  - name: network-current-config
+    description: 'The current networking configuration Rebar has on the node.'
+    map: 'rebar_wall/network'
+    type: 'BarclampNetwork::Attrib::CurrentConfig'
+  - name: network-wanted-config
+    description: 'The entire desired network config for this node'
+    map: 'rebar/network'
+    type: 'BarclampNetwork::Attrib::AllConfig'

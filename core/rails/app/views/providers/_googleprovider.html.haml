@@ -1,0 +1,21 @@
+- template = GoogleProvider.template
+%tr
+  %td{:colspan=>2}
+    %a{:href=>"http://cloud.google.com"}
+      %img{:src=>"https://cloud.google.com/_static/8fea0d66ce/images/new-gcp-logo.png"}
+    = hidden_field_tag "auth_details[provider]", "Google"
+- template.each do |key, values|
+  -if values[:name]
+    %tr
+      %td= values[:name]
+      %td
+        - if values[:type] == "text"
+          = text_field_tag("auth_details[#{key}]", @item.auth_details[key.to_s] || values[:default], :size => values[:length])
+        - elsif values[:type] == "password"
+          = password_field_tag("auth_details[#{key}]", @item.auth_details[key.to_s], :size => values[:length])
+        - elsif values[:type] == "json_key"
+          - j = (@item.auth_details[key.to_s] || values[:default])
+          %textarea{:name => "auth_details[#{key}]", :rows=>values[:length], :cols=>160}
+            = JSON.pretty_generate j rescue j
+        - else
+          = "form #{key} for #{values[:type]} not implemented"

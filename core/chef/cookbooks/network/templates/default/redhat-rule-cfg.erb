@@ -1,0 +1,9 @@
+# Managed by Rebar.
+# Do not edit.
+<% iface = @interfaces[@nic.name] -%>
+<% v4addrs, v6addrs = iface["addresses"].map{|a|::IP.coerce(a)}.partition{|a|a.v4?} -%>
+<% v4addr = v4addrs.first.to_s.split('/')[0] rescue nil -%>
+<% if iface['pbr'] and v4addr -%>
+to <%=v4addr%> dev <%=@nic.name%> table <%=iface['pbr']%>
+from <%=v4addr%> to any table <%=iface['pbr']%>
+<% end -%>

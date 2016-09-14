@@ -1,0 +1,4 @@
+%h1= @cap.user.username @cap.tenant.name @cap.capability.name
+
+= render :partial => 'user_tenant_capabilities/show', :locals  => { :cap => @cap } 
+

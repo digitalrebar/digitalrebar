@@ -1,0 +1,10 @@
+- value_raw = Attrib.get(attrib.name, obj)
+- value = value_raw.map { |iface| iface["pattern"] }.join ","
+= form_for :attrib, :remote => true, :url => attribs_api_path(:id=>attrib.id, obj_type=>obj.id, :api_version=>'v2'), :html => { :method=>:put, :'data-type' => 'html',  :class => "formtastic" } do |f|
+  %tr
+    %td= link_to attrib.name_i18n, attrib_path(attrib.id), :title=>attrib.description
+    %td= value
+    %td= link_to t('edit'), interfaces_path(), :class=>'button'
+
+    - if current_user and current_user.settings(:ui).debug
+      %th= attrib.ui_renderer rescue Attrib::UI_RENDERER

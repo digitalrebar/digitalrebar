@@ -1,0 +1,49 @@
+<%
+# Silly code to make sure that we have access to libs
+require 'ostruct'
+require "#{`pwd`.strip}/lib/consul_access.rb"
+require 'httpclient'
+Faraday.default_adapter = :httpclient
+
+db = nil
+while db.nil? do
+  begin
+    db = ConsulAccess.getService('rebar-database')
+    username = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/username')
+    password = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/password')
+    database = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/database')
+  rescue Exception => e
+    puts("Consul Access failed: #{e.message}")
+    db = nil
+  end
+end
+
+host = db.ServiceAddress 
+host = db.Address if host.nil? or host.empty?
+host = "database" if host.nil? or host.empty?
+port = db.ServicePort
+port = 5432 if port.nil? or port == 0
+%>
+
+base: &default
+  adapter: postgresql
+  username: <%= username %>
+  pool: 32
+  timeout: 5000
+  reaping_frequency: 3
+  host:               <%= host %>
+  port:               <%= port %>
+  database: <%= database %>
+  password: <%= password %>
+
+production:
+  <<: *default
+
+development:
+  <<: *default
+
+# Warning: The database defined as "test" will be erased and
+# re-generated from your development database when you run "rake".
+# Do not set this db to the same as development or production.
+test: &test
+  <<: *default

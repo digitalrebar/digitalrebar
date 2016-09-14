@@ -1,0 +1,6 @@
+- tt = JSON.parse template 
+%dl
+  %dt= t ".template"
+  %dd= text_field_tag :data_template, tt["template"], :size => 20
+= hidden_field_tag :dataprefix, "data_"
+

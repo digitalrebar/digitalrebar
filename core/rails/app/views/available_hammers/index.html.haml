@@ -1,0 +1,16 @@
+%h1= t '.title'
+
+%table.data.box
+  %thead
+    %tr
+      %th= t '.name'
+      %th= t '.klass'
+      %th= t '.priority'
+      %th= t '.hammers'
+  %tbody
+    - @hammers.each do |h|
+      %tr.node{ :class => cycle(:odd, :even) }
+        %td= link_to h.name, available_hammer_path(h.id)
+        %td= h.klass
+        %td= h.priority
+        %td= h.hammers.count

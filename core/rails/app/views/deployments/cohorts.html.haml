@@ -1,0 +1,34 @@
+%h1= t '.title'
+
+- if @nodes
+
+  %table.data
+    %thead
+      %tr
+        %th= t '.node'
+        - @roles.each do |dr|
+          %th.dr{:id=>dr.id}
+            %div
+              - name = dr.role.name_safe.truncate(20).html_safe
+              = name #link_to name, deployment_role_path(dr.id), :title=>dr.role.description
+    %tbody
+      - @nodes.each do |node|
+        %tr.node{:id => node.id}
+          %td.nodename
+            = link_to node.name, node_path(node.id), :title=>node.description
+          - @roles.each do |dr|
+            - nr = node.node_roles.where(:role_id => dr.role_id, :deployment_id => dr.deployment_id).first
+            %td.noderole{:id=>(nr ? nr.id : -1), :dr=>dr.id}
+              - if nr
+                - nr.parents.each do |p|
+                  %div
+                    = link_to p.role.name_safe.html_safe.truncate(20) , node_role_path(p.id), :title=>nr.node.name
+                %div.led{:style=>"width:16px; margin:0px auto; text-align:left", :class => NodeRole::STATES[nr.state || NodeRole::ERROR]}
+                  = link_to "___", node_role_path(nr.id), :title=>nr.role.description
+                - nr.children.each do |c|
+                  %div
+                    = link_to c.role.name_safe.html_safe.truncate(20), node_role_path(c.id), :title=>nr.node.name
+              - else 
+                = "-"
+- else 
+  = t 'no_items'

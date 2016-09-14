@@ -1,0 +1,12 @@
+name 'consul'
+maintainer 'Victor Lowther'
+maintainer_email 'victor.lowther@gmail.com'
+license 'Apache v2.0'
+description 'Installs/Configures consul'
+long_description 'Installs/Configures consul'
+version '0.6.0'
+
+recipe 'consul', 'Installs and starts consul service.'
+recipe 'consul::install_binary', 'Installs consul service from binary.'
+recipe 'consul::ui', 'Installs consul ui service.'
+recipe 'consul::start-service', 'Starts the consul service'

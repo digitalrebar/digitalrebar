@@ -1,0 +1,31 @@
+#!/bin/bash
+# Copyright 2014, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+exec 2>&1
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+set -x
+export TMPDIR=$1
+export ROLE=$2
+
+
+mkdir -p "$TMPDIR/logs"
+
+for script in "$TMPDIR/$ROLE/"*.pp; do
+    # error code of 2 means there were changes, which is normal - 1 or > 2 means errors
+    /usr/local/bin/puppet apply --detailed-exitcodes "$script" --modulepath "$TMPDIR/modules" 2>&1 |tee  "$TMPDIR/logs/${script##*/}.log"
+    ret=${PIPESTATUS[0]}
+    ([[ $ret == 1 ]] || [[ $ret > 2 ]]) && exit 1
+done
+exit 0

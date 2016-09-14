@@ -1,0 +1,46 @@
+#!/bin/bash
+
+set -e 
+. "${0%/*}/kvm_lib.sh"
+
+OCB_MEM=${SLAVE_MEM:-2G}
+OCB_CPUS=${SLAVE_CPUS:-2}
+bridge_exists "$OCB_BRIDGE" || OCB_BRIDGE=docker0
+
+bridge_exists "$OCB_BRIDGE" || die "No bridge $OCB_BRIDGE to attach to!"
+
+# Create our disk images
+qemu-img create -f raw "$VM_DIR/$VMID.disk" 20G &>/dev/null
+qemu-img create -f qcow2 "$VM_DIR/$VMID-01.disk" 20G &>/dev/null
+qemu-img create -f qcow2 "$VM_DIR/$VMID-02.disk" 20G &>/dev/null
+qemu-img create -f qcow2 "$VM_DIR/$VMID-03.disk" 20G &>/dev/null
+qemu-img create -f qcow2 "$VM_DIR/$VMID-04.disk" 20G &>/dev/null
+makenics
+trap 'cleanup' 0 INT QUIT TERM
+
+while [[ ! -f $VM_DIR/$VMID.killed ]]; do
+    # If we have a valid MBR on our primary disk, boot to it.
+    # This works around a bug in KVM where you cannot boot to a
+    # local disk if you are asked to while PXE booting.
+    if [[ $(hexdump -n 2 -s 0x1fe "$VM_DIR/$VMID.disk") =~ \
+        aa55 ]]; then
+        update_vm_status "Booting node to disk ($((count++)))"
+        if run_kvm -bootc; then
+            kill_vm exited
+        else
+            update_vm_status "Node failed to deploy."
+            kill_vm exited
+        fi
+    else
+        # Otherwise, PXE boot the machine.
+        update_vm_status "PXE booting node ($((count++)))"
+        if run_kvm -bootn; then
+            kill_vm exited
+        else
+            update_vm_status "Node failed to deploy"
+            kill_vm timeout
+        fi
+    fi
+done
+update_vm_status "Asked to be killed, giving up."
+exit 0

@@ -1,0 +1,26 @@
+- available = {t('.aws')=>"AwsProvider", t('.google')=>"GoogleProvider", t('.iaas')=>"FogProvider", t('.metal')=>'MetalProvider', t('.openstack')=>'OpenStackProvider', t('.packet')=>'PacketProvider'}
+
+%table{:width=>'100%'}
+  %tr
+    %td
+      %h1= t '.title'
+    %td{:align=>'right'}
+      = form_for :provider, :'data-remote' => true, :url => providers_path(), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
+        = select_tag :type, options_for_select(available, available.keys.first)
+        = hidden_field_tag :name, I18n.t('default')+rand(1000).to_s
+        = hidden_field_tag :description, I18n.t('not_set')
+        = hidden_field_tag :auth_details, "{}"
+        %input.button{:type => "submit", :name => "create", :method=>:post, :value => t("add")}
+
+%table.data.box
+  %thead
+    %th= t '.name'
+    %th= t '.type'
+    %th= t '.description'
+  %tbody
+    - @list.each do |i|
+      - next unless i.type
+      %tr
+        %td= link_to i.name, provider_path(i.id)
+        %td= i.type
+        %td= i.description

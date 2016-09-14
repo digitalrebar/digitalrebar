@@ -1,0 +1,51 @@
+%h1= t '.title'
+
+- if @init
+  %table
+    %tr
+      %td
+        .led{:class => 'off'}
+      %td#status
+        = "#{t '.in_process'}"
+
+  - log = File.join RAILS_ROOT, 'public', 'export', SERVER_PID+'.import.log'
+  - if params[:id].eql? "import" and File.exist?(log)
+    %br
+    .column_100
+      %section.box#details
+        %h3
+          = t('.import_log')
+          = ':'
+          = link_to SERVER_PID+'.import.log', utils_files_path
+        %div
+          - File.open(log, 'r').each do |line|
+            %p= line
+            
+- else
+  = link_to t('.button'), restart_path(:id=>'request'), :class => 'button', :id=>'restart_button'
+  
+.clear
+
+:javascript
+  
+  function update() {
+    if (#{@init}) {
+      jUrl = '/utils/restart/#{SERVER_PID}?format=json';
+      $.get('/utils/restart/in_process');
+      $.ajaxSetup({ timeout: 100});
+      $.ajax({url: jUrl, success: function(data) {   
+        if (data) {
+          $('.led').attr('class','led ready');
+          $('#status').text('#{t(".complete")}');
+          location.href = "/utils/import";
+          }
+        else {
+          $('.led').attr('class','led pending');
+          $('#status').text('#{Rails.env=="development" ? t(".dev_restart") : t(".restarting")}');
+        }
+      }, error: function(XMLHttpRequest, textStatus, errorThrown){
+        $('.led').attr('class','led in_process');
+        $('#status').text('#{t(".server_down")}');
+      }});      
+    }
+  }

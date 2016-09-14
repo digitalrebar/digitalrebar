@@ -1,0 +1,43 @@
+<%
+  require 'uri'
+  node ||= @node
+  name = @name || node.name.split('.')[0]
+  unless node[:rebar].nil? or node[:rebar][:network].nil? or node[:rebar][:network][:admin].nil?
+    ip = node[:rebar][:network][:admin][:address] || "unknown"
+  else
+    ip = node[:ipaddress] || "unknown"
+  end
+  icon = node.state
+  show_switch=false
+  unless node[:rebar].nil? or node.rebar_ohai[:switch_config].nil?
+    show_switch=true
+    sw_port = node.switch_port
+    sw_unit = node.switch_unit
+    sw_name = node.switch_name
+    show_switch = false if sw_name == "-1"
+  end
+  state = icon.capitalize
+%>
+<td>
+  <a onclick='$.colorbox({href:"/main/nodebox?id=<%= URI.escape(node.name, Regexp.new("[^#{URI::PATTERN::UNRESERVED}]")) %>", width:"80%", height:"60%", scrolling:true});'>
+    <%= image_tag("<%= icon %>.png", :class => "state", :id => name, :title => state) %>
+    <strong><%= name %></strong>
+  </a>
+</td>
+<td><%= ip %></td>
+<% if show_switch -%>
+<td><%= sw_name %>  <%= sw_unit %>/<%= sw_port %></td>
+<% else -%>
+<td> - </td>
+<% end -%>
+<td>
+<% unless name == "admin" -%>
+<a href="/machines/reinstall?name=<%= name %>"><%= image_tag("reinstall.png", :title => "Reinstall") %></a>
+<a href="/machines/reset?name=<%= name %>"><%= image_tag("delete.png", :title => "Reset") %></a>
+<a href="/machines/identify?name=<%= name %>"><%= image_tag("i_info.png", :title => "Identify") %></a>
+<a href="/machines/reboot?name=<%= name %>"><%= image_tag("reboot.png", :title => "Reboot") %></a>
+<a href="/machines/shutdown?name=<%= name %>"><%= image_tag("shutdown.png", :title => "Shutdown") %></a>
+<a href="/machines/poweron?name=<%= name %>"><%= image_tag("poweron.png", :title => "Power On") %></a>
+<% end -%>
+</td>
+

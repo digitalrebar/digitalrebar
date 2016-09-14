@@ -1,0 +1,46 @@
+# Managed by Rebar.
+# Do not edit.
+<% iface = @interfaces[@nic.name] -%>
+DEVICE=<%=@nic.name%>
+<% case
+   when @nic.kind_of?(Nic::Bridge) -%>
+TYPE=Bridge
+<% if @nic.stp -%>
+STP=yes
+DELAY=<%=@nic.forward_delay%>
+<% else -%>
+STP=no
+<% end -%>
+<% when @nic.kind_of?(Nic::Bond) -%>
+BONDING_OPTS="miimon=<%=@nic.miimon%> mode=<%=@nic.mode%>"
+<% when @nic.kind_of?(Nic::Vlan) -%>
+VLAN=yes
+<% when @nic.kind_of?(Nic) -%>
+#HWADDR=<%=@nic.mac%>
+TYPE=Ethernet
+<% end -%>
+<% if @nic.bond_master -%>
+SLAVE=yes
+MASTER=<%=@nic.bond_master.name%>
+<% end -%>
+<% if @nic.bridge_master-%>
+BRIDGE=<%=@nic.bridge_master.name%>
+<% end -%>
+ONBOOT=yes
+BOOTPROTO=none
+<% v4addrs, v6addrs = iface["addresses"].map{|a|::IP.coerce(a)}.partition{|a|a.v4?}
+   v4addrs.each_index do |i| -%>
+IPADDR<%=(i == 0)?'':(i+1).to_s%>=<%=v4addrs[i].to_s.split('/')[0]%>
+PREFIX<%=(i == 0)?'':(i+1).to_s%>=<%=v4addrs[i].subnet%>
+<% end -%>
+<% unless v6addrs.empty? -%>
+IPV6INIT=yes
+IPV6ADDR=<%=v6addrs.pop.to_s%>
+<% end -%>
+<% unless v6addrs.empty? -%>
+IPV6ADDR_SECONDARIES="<%=v6addrs.map{|a|a.to_s}.join(" ")%>"
+<% end -%>
+
+<% if iface["gateway"] -%>
+GATEWAY=<%=iface["gateway"]%>
+<% end -%>

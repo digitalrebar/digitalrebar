@@ -1,0 +1,10 @@
+%table{:width=>'100%'}
+  %tr
+    %td
+      %h1= t '.title'
+    %td{:align=>'right'}
+      = form_for :deployment, :'data-remote' => true, :url => deployments_path(), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
+        = text_field_tag :name, t('.default'), :size => 15
+        %input.button{:type => "submit", :name => "create", :method=>:post, :value => t('.create')}
+
+= render :partial=>'index', :locals => { :list => @list }

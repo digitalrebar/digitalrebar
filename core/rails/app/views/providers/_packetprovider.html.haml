@@ -1,0 +1,20 @@
+- template = PacketProvider.template
+%tr
+  %td{:colspan=>2}
+    %a{:href=>"http://packet.net"}
+      %img{:src=>"https://www.packet.net/assets/images/logo-main.png", :width=>138}
+- template.each do |key, values|
+  -if values[:name]
+    %tr
+      %td= values[:name]
+      %td
+        - if values[:type] == "text"
+          = text_field_tag("auth_details[#{key}]", @item.auth_details[key.to_s] || values[:default], :size => values[:length])
+        - elsif values[:type] == "password"
+          = password_field_tag("auth_details[#{key}]", @item.auth_details[key.to_s], :size => values[:length])
+        - elsif values[:type] == "json_key"
+          - j = (@item.auth_details[key.to_s] || values[:default])
+          %textarea{:name => "auth_details[#{key}]", :rows=>values[:length], :cols=>160}
+            = JSON.pretty_generate j rescue j
+        - else
+          = "form for #{values[:type]} not implemented"

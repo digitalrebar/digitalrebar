@@ -1,0 +1,84 @@
+# Copyright 2016, RackN
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+barclamp:
+  name: "cluster"
+  parent: "core"
+  display: "Cluster Prep"
+  description: "General Cluster Preparation Roles"
+  version: "2.F"
+  source_url: "https://github.com/digitalrebar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
+
+roles:
+  # Rebar  Core
+  - name: cluster
+    description: "Cluster Configuration & Networking Info"
+    jig: noop
+    icon: 'donut_small'
+    type: "BarclampCluster::ServiceRole"
+    flags:
+      - milestone
+    events:
+      - endpoint: inproc://role:cluster/on_active
+        selectors:
+          - event: on_todo
+            obj_class: role
+            obj_id: cluster
+          - event: synch_on_delete
+            obj_class: role
+            obj_id: cluster
+    attribs:
+      - name: cluster-name
+        map: 'cluster/name'
+        description: 'Name used for Cluster'
+        default: 'default'
+        type: str
+        pattern: /^\[?[a-z]\]*/
+      - name: cluster-active-only
+        map: 'cluster/active-only'
+        description: 'Use addresses from Active NodeRoles only?'
+        default: false
+        type: bool
+      - name: cluster-network
+        map: 'cluster/network'
+        description: 'Network used for Cluster'
+        default: 'node-control-address'
+        type: str
+      - name: cluster-addresses
+        description: "All addresses of the Cluster nodes"
+        map: 'cluster/addresses'
+        default: []
+        schema:
+          type: seq
+          required: false
+          sequence:
+            - type: str
+              pattern: /\[?[0-9a-f:.]*\]?:?[0-9]*/
+      - name: cluster-hostnames
+        description: "All hostnames of the Cluster nodes"
+        map: 'cluster/hostnames'
+        default: []
+        schema:
+          type: seq
+          required: false
+          sequence:
+            - type: str
+      - name: cluster-address
+        map: 'cluster/address'
+        description: 'IP of Node for Cluster'      
+        type: str
+        pattern: /\[?[0-9a-f:.]*\]?:?[0-9]*/

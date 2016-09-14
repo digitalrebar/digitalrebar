@@ -1,0 +1,57 @@
+{
+  "sysloginfo": [
+    {
+      "loglevel":"WARN",
+      "logservers":[
+        {
+          "serverip":"<%= @admin_node_ip %>",
+          "port_num":514,
+          "description":"Rebar admin node"
+        }
+      ]
+    }
+  ],
+
+  "vlans": [
+    <% vlans = @unique_vlans.keys.sort %>
+    <% vlans.each do |vlan| %>
+    {
+      "vlan_name": "vlan<%= vlan %>",
+      "vlan_id": <%= vlan %><%= ",\n      \"default\": \"true\"" if @unique_vlans[vlan] == "admin" %>
+    }<%= "," if vlan != vlans.last %>
+    <% end %>
+  ],
+
+  "LAGs": [
+  <% lag_ids = @lags.keys.sort %>
+  <% lag_ids.each do |lag_id| %>
+    {
+      "lag_id": "lag<%= lag_id %>",
+      "ports": [
+      <% ports = @lags[lag_id]["ports"] %>
+      <% ports.each do |port_key| %>
+        { "port_id": "<%= port_key %>" }<%= "," if port_key != ports.last %>
+      <% end %>
+      ]
+    }<%= "," if lag_id != lag_ids.last %>
+  <% end %>
+  ],
+
+  "interfaces": [
+    <% interface_ids = @interfaces.keys.sort %>
+    <% interface_ids.each do |interface_id| %>
+    {
+      "id": "<%= interface_id %>",
+      "vlans": [
+      <% vlans = @interfaces[interface_id].keys.sort %>
+      <% vlans.each do |vlan| %>
+        { 
+          "vlan_name": "vlan<%= vlan %>",
+          "vlan_mode": "<%= @interfaces[interface_id][vlan] ? "TAGGED" : "UNTAGGED" %>"
+        }<%= "," if vlan != vlans.last %>
+      <% end %>
+      ]
+    }<%= "," if interface_id != interface_ids.last %>
+    <% end %>
+  ]
+}

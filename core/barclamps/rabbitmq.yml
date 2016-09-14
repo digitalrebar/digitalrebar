@@ -1,0 +1,110 @@
+# Copyright 2015, RackN
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+barclamp:
+  name: "rabbitmq"
+  parent: "core"
+  display: "RabbitMQ"
+  description: "Rabbit MQ (AMQP)"
+  version: "2.E"
+  source_url: "https://github.com/digitalrebar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
+
+roles:
+  - name: rabbitmq-server
+    jig: chef
+    requires:
+      - consul
+    attribs:
+      - name: rabbitmq-cluster-cookie
+        description: "RabbitMQ Erlang Security Token"
+        map: 'rabbitmq/erlang_cookie'
+        schema:
+          type: str
+          required: false
+      - name: rabbitmq-port
+        description: "RabbitMQ Port"
+        map: 'rabbitmq/port'
+        schema:
+          type: int
+          required: false
+      - name: rabbitmq-enabled-users
+        description: "RabbitMQ Users to Enable"
+        map: 'rabbitmq/enabled_users'
+        schema:
+          type: seq
+          sequence:
+            - type: map
+              mapping:
+                "name":
+                  type: str
+                  required: true
+                "password":
+                  type: str
+                  required: true
+                "tag":
+                  type: str
+                "rights":
+                  type: seq
+                  required: true
+                  sequence:
+                    - type: map
+                      mapping:
+                        "vhost":
+                          type: str
+                        "conf":
+                          type: str
+                        "write":
+                          type: str
+                        "read":
+                          type: str
+        default:
+          - "name": "guest"
+            "password": "guest"
+            "rights":
+              - "vhost": null
+                "conf" : ".*"
+                "write": ".*"
+                "read" : ".*"
+          - "name": "rebar"
+            "password": "rebar1"
+            "tag": "administrator"
+            "rights":
+              - "vhost": "/digitalrebar"
+                "conf" : ".*"
+                "write": ".*"
+                "read" : ".*"
+      - name: rabbitmq-virtualhosts
+        description: "RabbitMQ VirtualHosts to Enable"
+        map: 'rabbitmq/virtualhosts'
+        default: [ "/digitalrebar" ]
+        schema:
+          type: seq
+          sequence:
+            - type: str
+  - name: amqp-service
+    jig: role-provided
+    flags:
+      - service
+    attribs:
+      - name: amqp_servers
+        description: "Addresses of the AMQP servers to use"
+        map: 'rebar/amqp/servers'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/

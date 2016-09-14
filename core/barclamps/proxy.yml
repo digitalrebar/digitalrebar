@@ -1,0 +1,99 @@
+# Copyright 2015, RackN
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+barclamp:
+  name: "proxy"
+  parent: "core"
+  display: "Proxy"
+  description: "Caching Web Proxy"
+  version: "2.E"
+  source_url: "https://github.com/digitalrebar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
+
+roles:
+  - name: proxy-server
+    jig: chef
+    icon: assignment
+    requires:
+      - consul
+    events:
+      - endpoint: inproc://role:proxy-server/on_network_create
+        selectors:
+          - event: on_network_create
+      - endpoint: inproc://role:proxy-server/on_network_delete
+        selectors:
+          - event: on_network_delete
+    attribs:
+      - name: proxy-upstream_proxy
+        description: "The upstream Web proxy that the proxy on the system will use"
+        map: 'rebar/proxy/server/upstream_proxy'
+        schema:
+          type: str
+          required: true
+          pattern: '/\Ahttp:\/\/.+\z/'
+      - name: proxy-port
+        description: "The port to use as the basis for our proxy"
+        map: 'rebar/proxy/server/port'
+        schema:
+          type: int
+  - name: proxy-service
+    jig: role-provided
+    icon: assignment_returned
+    flags:
+      - service
+    attribs:
+      - name: proxy-servers
+        description: 'Proxy servers that all Rebar clients should use'
+        map: 'rebar/proxy/servers'
+        schema:
+          type: seq
+          sequence:
+            - type: map
+              mapping:
+                address:
+                  type: str
+                  required: true
+                port:
+                  type: str
+                  required: true
+                url:
+                  type: str
+                  required: true
+                  pattern: '/\Ahttp:\/\/.+\z/'
+  - name: proxy-client
+    jig: script
+    icon: assignment_turned_in
+    events:
+      - endpoint: inproc://role:proxy-client/on_network_allocation_create
+        selectors:
+          - event: on_network_allocation_create
+      - endpoint: inproc://role:proxy-client/on_network_allocation_delete
+        selectors:
+          - event: on_network_allocation_delete
+    flags:
+      - implicit
+    wants-attribs:
+      - proxy-servers
+      - use-proxy
+
+attribs:
+  - name: use-proxy
+    description: 'Whether the node should attempt to use the proxy service'
+    map: 'rebar/providers/use_proxy'
+    default: true
+    schema:
+      type: bool
+      required: true

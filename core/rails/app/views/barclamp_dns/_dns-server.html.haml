@@ -1,0 +1,10 @@
+- begin 
+  - d = JSON.parse(template)["rebar"]["dns"] 
+  %dl
+    %dt= t ".domain"
+    %dd= d["domain"]
+    %dt= t ".forwarders"
+    %dd= (d["forwarders"].length==0 ? t('not_set') : d["forwarders"].join(","))
+- rescue StandardError => e
+  = e.message
+  = template.inspect

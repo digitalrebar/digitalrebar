@@ -1,0 +1,23 @@
+#cloud-config
+coreos:
+  units:
+    - name: etcd.service
+      command: start
+    - name: fleet.service
+      command: start
+    - name: rebar-join.service
+      command: start
+      content: |
+        [Unit]
+        Description=Rebar Join
+        Requires=systemd-hostnamed.service
+        After=systemd-hostnamed.service
+
+        [Service]
+        ExecStart=/opt/digitalrebar/bin/rebar_join.sh start
+        RemainAfterExit=yes
+        Type=oneshot
+ssh_authorized_keys:
+<% @keys.each do |k| -%>
+  - <%=k%>
+<% end -%>

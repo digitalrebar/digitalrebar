@@ -1,0 +1,12 @@
+%h1= t '.title', hammer: @hammer.name, node: @hammer.node.name
+
+%dl
+	- if Rails.env.development?
+		= dl_item t('.id'), @hammer.id
+	= dl_item t('.hammer'), link_to(@hammer.available_hammer.name, available_hammer_path(id: @hammer.available_hammer.id))
+	= dl_item t('.nodes'), link_to(@hammer.node.name, node_path(@hammer.node.id))
+	= dl_item t('.name'), @hammer.name
+	= dl_item t('.authenticator'), @hammer.authenticator || t('not_set')
+	= dl_item t('.endpoint'), @hammer.endpoint || t('not_set')
+	= dl_item t('.priority'), @hammer.priority
+	= dl_item t('.username'), @hammer.username

@@ -1,0 +1,155 @@
+- state = @deployment.state rescue Deployment::ERROR
+- system_roles = @deployment.system_node.node_roles.count
+
+%table{:width=>'100%'}
+  %tr
+    = render :partial => "header", :locals => { :deployment => @deployment }
+    %td
+      - if state == Deployment::PROPOSED
+        = form_for :add_role, :'data-remote' => true, :url => deployment_roles_path(:deployment_id=>@deployment.id, :api_version=>'v2'), :html => { :method=>:post, :'data-type' => 'html',  :class => "formtastic" } do |f|
+          - aroles = @deployment.available_roles.sort_by{:name}.to_a
+          - if current_user and current_user.settings(:ui).milestone_roles
+            - aroles.keep_if {| r | r.milestone }
+          - if aroles.length > 0
+            = hidden_field_tag :deployment_id, @deployment.id
+            = f.collection_select :role_id, aroles, :id, :name
+            %input.button{:type => "submit", :name => "add", :value => t('.add_role')}
+    %td{:align=>'right'}
+      %h3= t '.services'
+    %td{:style=>"width:16px;"}
+  - 0.upto(system_roles) do |row|
+    %tr{:valign=>'top'}
+      - if row == 0 
+        %td{:rowspan=>system_roles}
+        %td{:rowspan=>system_roles}
+          %h3= @deployment.state_name(state)
+        %td{:rowspan=>system_roles}
+          = render :partial => 'deployments/buttons', :locals => { :state=>state, :deployment=>@deployment }
+          - if state == Deployment::PROPOSED
+            = link_to t('.pick'), bulk_edit_path(), :title=>t('.pick_hint'), :class=>'button'
+      - if @deployment.system_node and system_roles > 0 and row < system_roles
+        - srv_role = @deployment.system_node.node_roles[row]
+        %td{:align=>'right'}= link_to srv_role.role.name.html_safe, node_role_path(srv_role.id)
+        %td
+          %span{:align=>'center'}
+            .led{:style=>"margin:0px auto; text-align:left", :class => NodeRole::STATES[srv_role.state || NodeRole::ERROR], :title=>srv_role.role.name}
+      - if system_roles == 0
+        %td{:align=>'right'}= t 'no_items'
+        %td
+
+  %tr
+    %td= " "
+
+%table.snap{:align=>'left'}
+  - if @nodes.count > 0 or  @roles.count > 0
+    %thead
+      %tr
+        %th.anode{colspan: 2}= link_to t('.nodes'), bulk_edit_path()
+        - @roles.each do |dr|
+          %th.dr{:id=>dr.id}
+            %div
+              - name = dr.role.name_safe.html_safe
+              = link_to name, deployment_role_path(dr.id), :title=>dr.role.description
+    %tbody
+      - nodes = @nodes.sort{|a,b| a.name <=> b.name}
+      - admins = nodes.select{|n| n.admin?}
+      - @nodes = admins + (nodes - admins)
+      - @nodes.each do |node|
+        - working = true
+        - node_led = 'on'
+        - if !node.available
+          - node_led = (node.alive ? 'reserved' : 'idle')
+          - working = false
+        - elsif !node.alive
+          - node_led = 'off'
+          - working = false
+        %tr.node{id: node.id, class: cycle(:odd, :even), working: working.to_s }
+          %td
+            - unless working
+              = image_tag "icons/led/#{node_led}.png", {title: t(node_led, scope: "common.state")}
+          %td.nodename{style: node.admin? ? 'font-weight: bold' : ''}
+            = link_to node.name, node_path(node.id), :title=>node.description
+            - unless node.deployment_id == @deployment.id
+              = "("
+              = link_to node.deployment.name, deployment_path(node.deployment_id), :title=>node.deployment.description
+              = ")"
+          - @roles.each do |dr|
+            - nr = node.node_roles.where(:role_id => dr.role_id, :deployment_id => dr.deployment_id).first
+            - id = (!nr.nil? ? nr.id : ((dr.role.noop? and state == Deployment::PROPOSED) ? -1 : 0))
+            %td.noderole{:style=>"text-align:center", :id=>id, :dr=>dr.id}
+              - if nr
+                - nr_led = NodeRole::STATES[nr.state || NodeRole::ERROR]
+                - nr_led = "wait" if !working and nr.state == NodeRole::TODO 
+                %span{:align=>'center'}
+                  .led{:style=>"width:16px; margin:0px auto; text-align:center", :class => nr_led, :title=>nr.role.name}
+                    = link_to "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;".html_safe, node_role_path(nr.id)
+              - elsif state == Deployment::PROPOSED
+                - display = (dr.role.noop? ? "inline" : "none" )
+                %span{:style=>"margin-left:30%; display:#{display}"}
+                  = link_to image_tag('icons/add.png'), node_roles_path(:deployment_id=>@deployment.id, :format=>:json, :api_version=>'v2', :node_id=>node.id, :role_id=>dr.role.id), :'data-remote'=>true, :method=>:post, :class=>'node_role_add'
+              - else
+                %span{:style=>"width:16px; margin:0px auto; text-align:center"}= "-"
+  - else
+    %tr
+      %td= t 'no_items'
+
+.clear
+
+:javascript
+
+  var height = 100;
+
+
+  function update() {
+    $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
+    nodes = parseInt($('span#node_count').text());
+    if (#{state != Deployment::PROPOSED} && nodes<#{current_user.settings(:ui).node_refresh}) {
+      var elasped = parseInt($('span#elapsed_heartbeat').text());
+      if (elasped < 3600) {
+        location.reload();
+      }
+    }
+  };
+
+  $('th.dr div a').each(function(){
+    w = parseInt($(this).width());
+    if (w > height) height = w;
+  });
+
+  // return message if error creating noderole
+  $('.node_role_add')
+    .bind("ajax:error", function(evt, xhr, status, error){
+      alert(JSON.parse(xhr.responseText)["message"]);
+      })
+    .bind("ajax:success", function(data, status, xhr){
+      setTimeout(function(){
+        location.reload();
+      }, 1000);
+      });
+
+  // set hover showing
+  $('td.noderole')
+    .bind('hover',
+      function( ev ) {
+        id = $(this).attr("id")
+        dr = $(this).attr("dr");
+        if (id == 0 && dr > 0) {
+          if (ev['type']=="mouseenter")
+            { $(this).children().show();
+              // $("td.dr#"+dr).css("font-weight","italic");
+            }
+          else if (ev['type']=="mouseleave")
+            { $(this).children().hide();
+              // $("td.dr#"+dr).css("font-weight","normal");
+            }
+        }
+      }
+    );
+
+  $(document).ready(function() {
+
+    $('th.dr').each(function(){
+      $(this).height(height+5);
+    });
+
+  });

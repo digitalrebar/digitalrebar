@@ -1,0 +1,7 @@
+%h1= t '.title'
+
+- Jig.all.each do |j|
+  %h3 
+    = link_to j.name, jig_path(j.id), :title=>j.description
+    = t '.jig'
+  = render :partial => 'index', :locals => { :list => @list, :jig_name => j.name }

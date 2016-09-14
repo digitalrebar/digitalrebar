@@ -1,0 +1,45 @@
+- mylist = ( jig_name.nil? ? list : list.select { |r| r.jig_name.eql? jig_name })
+- if mylist.length  == 0
+  %p= t 'no_items'
+- else
+  %table.data.box
+    %thead
+      %tr
+        %th= t '.role'
+        %th= t '.barclamp'
+        %th= t '.description'
+        %th= t '.cohort'
+        %th= t '.flags'
+        %th= t '.upstream'
+        %th= t '.preceeds'
+        %th= t '.provides'
+        %th= t '.conflicts'
+    %tbody
+      - mylist.each do |role|
+        %tr.node{ :class => cycle(:odd, :even) }
+          %td= link_to role.name_i18n, role_path(:id=>role.id), :title=>role.name
+          %td= link_to role.barclamp.name, barclamp_path(role.barclamp.id), :title=>role.barclamp.description
+          %td= role.description
+          %td= role.cohort
+          %td
+            = t '.milestone' if role.milestone
+            = t '.library' if role.library
+            = t '.discovery' if role.discovery
+            = t '.implicit' if role.implicit
+            = t '.bootstrap' if role.bootstrap
+            = t '.abstract' if role.abstract
+            = t '.cluster' if role.cluster
+            = t '.destructive' if role.destructive
+            = t '.service' if role.service
+          %td
+            - role.parents.each do |p|
+              = link_to p.name, role_path(p), :title=>p.description
+          %td
+            - role.preceeds.each do |r|
+              = link_to r, role_path(r)
+          %td
+            - role.provides.each do |r|
+              = link_to r, role_path(r)
+          %td
+            - role.conflicts.each do |r|
+              = link_to r, role_path(r)

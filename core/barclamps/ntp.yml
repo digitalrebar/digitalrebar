@@ -1,0 +1,60 @@
+# Copyright 2013, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+barclamp:
+  name: "ntp"
+  parent: "core"
+  display: "NTP"
+  description: "Network Time Protocol (NTP)"
+  version: "2.E"
+  source_url: "https://github.com/digitalrebar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
+
+roles:
+  - name: ntp-service
+    jig: role-provided
+    flags:
+      - service
+    icon: access_time
+    attribs:
+      - name: ntp_servers
+        description: "Addresses of the NTP servers to use for cluster-wide time synchronization"
+        map: 'rebar/ntp/servers'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/
+  - name: ntp-client
+    jig: script
+    requires:
+      - ntp-service
+      - rebar-installed-node
+    flags:
+      - implicit
+    wants-attribs:
+      - ntp_servers
+      - use-ntp
+    icon: watch
+
+attribs:
+  - name: use-ntp
+    description: 'Whether the node should attempt to use the ntp service'
+    map: 'rebar/providers/use_ntp'
+    default: true
+    schema:
+      type: bool
+      required: true

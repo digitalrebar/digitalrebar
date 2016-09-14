@@ -1,0 +1,48 @@
+%h1= t '.title'
+
+- error = NodeRole.where(state: NodeRole::ERROR).joins(:node,:role,:deployment).select("node_roles.*, roles.name as role_name, nodes.name as node_name, nodes.alive as node_alive, nodes.available as node_available, deployments.name as deployment_name, roles.jig_name as role_jig_name")
+%h2
+  = t '.error'
+  - if error.length > 0
+    - list = error.first(current_user.settings(:ui).node_refresh).map { |nr| nr.id }.join(",")
+    %raw_button{:style => 'float:right'}
+      = link_to t('.retry'), "javascript:retry_all('#{list}')", :class => 'button'
+= render :partial=>'node_roles/index', :locals => { :list => error }
+
+%h2= t '.transition'
+- trans = NodeRole.where(state: NodeRole::TRANSITION).joins(:node,:role,:deployment).select("node_roles.*, roles.name as role_name, nodes.name as node_name, nodes.alive as node_alive, nodes.available as node_available, deployments.name as deployment_name, roles.jig_name as role_jig_name")
+= render :partial=>'node_roles/index', :locals => { :list => trans }
+
+%h2= t '.todo'
+- todo = NodeRole.where(state: NodeRole::TODO).joins(:node,:role,:deployment).select("node_roles.*, roles.name as role_name, nodes.name as node_name, nodes.alive as node_alive, nodes.available as node_available, deployments.name as deployment_name, roles.jig_name as role_jig_name")
+= render :partial=>'node_roles/index', :locals => { :list => todo }
+  
+%h2= t '.blocked'
+- blocked = NodeRole.where(state: NodeRole::BLOCKED).joins(:node,:role,:deployment).select("node_roles.*, roles.name as role_name, nodes.name as node_name, nodes.alive as node_alive, nodes.available as node_available, deployments.name as deployment_name, roles.jig_name as role_jig_name")
+= render :partial=>'node_roles/index', :locals => { :list => blocked }
+
+.clear
+
+:javascript
+
+  function update() {
+    nodes = parseInt($('span#node_count').text());
+    if (nodes<#{current_user.settings(:ui).node_refresh}) {
+      $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
+        var elasped = parseInt($('span#elapsed_heartbeat').text());
+        if (elasped < 3600) {
+          location.reload();
+        }
+      }
+    }
+
+  function retry_all(nr_ids) {
+    var ids = nr_ids.split(",");
+    for (var id of ids) {
+      console.log("/api/v2/node_roles/"+id+"/retry");
+      $.ajax({url: "/api/v2/node_roles/"+id+"/retry", type: "PUT"})
+    };
+    setTimeout(function(){
+      location.reload();
+    }, 1000);
+  }

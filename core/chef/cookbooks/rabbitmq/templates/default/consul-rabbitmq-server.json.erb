@@ -1,0 +1,14 @@
+{
+  "service": {
+    "name": "amqp-service",
+    "tags": [ "system" ],
+    <% if @ip_addr -%>
+    "address": "<%= @ip_addr %>",
+    <% end -%>
+    "port": <%= @port %>,
+    "check": {
+      "script": "rabbitmqctl status 2>&1 >/dev/null",
+      "interval": "10s"
+    }
+  }
+}

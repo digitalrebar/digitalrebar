@@ -1,0 +1,21 @@
+- template = AwsProvider.template
+%tr
+  %td{:colspan=>2}
+    %a{:href=>"http://aws.amazon.com"}
+      %img{:src=>"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/AmazonWebservices_Logo.svg/2000px-AmazonWebservices_Logo.svg.png", :width=>138}
+    = hidden_field_tag "auth_details[provider]", "AWS"
+- template.each do |key, values|
+  -if values[:name]
+    %tr
+      %td= values[:name]
+      %td
+        - if values[:type] == "text"
+          = text_field_tag("auth_details[#{key}]", @item.auth_details[key.to_s] || values[:default], :size => values[:length])
+        - elsif values[:type] == "password"
+          = password_field_tag("auth_details[#{key}]", @item.auth_details[key.to_s], :size => values[:length])
+        - elsif values[:type] == "json_key"
+          - j = (@item.auth_details[key.to_s] || values[:default])
+          %textarea{:name => "auth_details[#{key}]", :rows=>values[:length], :cols=>160}
+            = JSON.pretty_generate j rescue j
+        - else
+          = "form for #{values[:type]} not implemented"

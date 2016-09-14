@@ -1,0 +1,53 @@
+- if @source
+  - available_os = Attrib.get("provisioner-available-oses", @source).map{ |k,v| k } rescue ["enter o/s"]
+  - data = { "hint" => {}, "attribs" => {}, "nodes" => [] }
+  - data["hint"]["available_oses"] = available_os
+  - data["attribs"]["provisioner-target_os"] = available_os.first
+  - @source.nodes.each do |n|
+    - unless n.system?
+      - data["nodes"] << { "id" => n.name, "roles" => [ "rebar-installed-node" ] }
+- else
+  - data = { "provider" => { }, "attribs" => {}, "nodes" => [ { "roles" => [] } ] } 
+  - @provider.each { |p| data["provider"]["name"] = p.name }
+
+%table
+  %tr
+    %td
+      %h1
+        = "Batch Upload:" 
+        = link_to @deployment.name, deployment_path(@deployment.id)
+    %td{:align=>'right'}
+      = link_to "Batch", "javascript:put_deployment()", :class=>:button
+  %tr
+    %td{:colspan=>2}
+      %textarea{:id => "value", :rows=>50, :cols=>120}
+        = JSON.pretty_generate data
+
+
+
+:javascript
+
+  function put_deployment() {
+    try {
+      var raw = jQuery.parseJSON($("textarea#value").val());
+    }
+    catch (e) {
+      alert("Bad JSON: " + e);
+      return;
+    }
+    console.debug("#{@deployment.name}");
+    $.ajax({
+      type: "put",
+      data: JSON.stringify(raw),
+      timeout: 60000,
+      contentType: "application/json",
+      url: "/api/v2/deployments/#{@deployment.id}/batch"
+      })
+      .done(function() {
+        console.debug("reloading to /deployments/#{@deployment.name}");
+        location.href = "/deployments/#{@deployment.id}";
+      })
+      .fail(function(jqXHR, textStatus, errorThrown) {
+        alert( "POST ERROR: " + errorThrown )
+      });
+  }

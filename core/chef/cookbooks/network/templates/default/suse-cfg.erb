@@ -1,0 +1,40 @@
+# Managed by Rebar.
+# Do not edit.
+<%
+# quote a string for the shell
+# usage: "VARIABLE=#{quote value}"
+def quote(s)
+  # Watch out, in gsub \' means "after the matched string"
+  # We must escape it once to get rid of that
+  # and the second time in double quotes
+  # so that "Joe's" comes out as WHOSE='Joe'\''s'
+  # Using to_s for nils and numbers.
+  "'" + s.to_s.gsub(/'/, "'\\\\''") + "'"
+end
+iface=@interfaces[@nic.name]
+-%>
+NAME=<%=quote(@nic.name)%>
+STARTMODE=auto
+<% if iface["slave"] -%>
+BOOTPROTO=none
+<% else -%>
+BOOTPROTO=static
+<% end -%>
+<% case
+   when @nic.kind_of?(Nic::Bridge) -%>
+BRIDGE=yes
+BRIDGE_PORTS=<%=quote(iface["slaves"])%>
+<% when @nic.kind_of?(Nic::Vlan) -%>
+VLAN_ID=<%=iface["vlan"]%>
+ETHERDEVICE=<%=quote(iface["parent"])%>
+<% when @nic.kind_of?(Nic::Bond) -%>
+BONDING_MASTER=yes
+BONDING_MODULE_OPTS=<%=quote("mode=#{@nic.mode} miimon=#{@nic.miimon}")%>
+<% iface["slaves"].each_with_index do |slave,i| -%>
+BONDING_SLAVE_<%=i%>=<%=quote(slave)%>
+<% end -%>
+<% end -%>
+<% v4addrs, v6addrs = iface["addresses"].map{|a|::IP.coerce(a)}.partition{|a|a.v4?}
+   v4addrs.each_index do |i| -%>
+IPADDR<%=(i == 0)?'':(i+1).to_s%>=<%=v4addrs[i].to_s%>
+<% end -%>

@@ -1,0 +1,437 @@
+# Copyright 2013, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+barclamp:
+  name: "rebar"
+  parent: "core"
+  display: "Rebar"
+  description: "Foundational Roles"
+  version: "2.E"
+  source_url: "https://github.com/digitalrebar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
+
+wizard:
+  version: 2
+  name: "Install O/S"
+  description: "Provision Operating Systems on Discovered Hardware"
+  icon: "publish"
+  system_nodes: true
+  create_nodes: false
+  services:
+    - name: provision
+      description: "Provision O/S"
+      icon: "publish"
+      type: required
+      count: -1
+      roles:
+        provision:
+          - rebar-installed-node
+    - name: docker
+      description: "Install Docker Base"
+      icon: "directions_ferry"
+      type: optional
+      count: -1
+      roles:
+        docker:
+          - docker-ready
+
+roles:
+  # Rebar  Core
+  - name: rebar-managed-node
+    description: "Rebar Node Service Bundle"
+    jig: noop
+    icon: 'assistant'
+    flags:
+      - milestone
+      - implicit
+      - powersave
+    requires:
+      - rebar-access
+      - deployer-client
+      - logging-client
+      - network-lldpd
+      - rebar-inventory
+  - name: rebar-hardware-configured
+    description: "Rebar Hardware Configured Checkpoint"
+    jig: noop
+    icon: 'redeem'
+    flags:
+      - implicit
+      - milestone
+      - powersave
+    preceeds:
+      - provisioner-os-install
+    requires:
+      - rebar-managed-node
+  - name: rebar-installed-node
+    description: "Rebar Node Ready Checkpoint"
+    jig: noop
+    icon: 'thumb_up'
+    flags:
+      - milestone
+      - implicit
+      - powersave
+    requires:
+      - provisioner-os-install
+  - name: rebar-docker-node
+    description: "Docker Node Ready Checkpoint"
+    jig: noop
+    icon: 'developer_board'
+    flags:
+      - milestone
+      - implicit
+    requires:
+      - rebar-package-sources
+      - provisioner-docker-setup
+      - rebar-access
+    provides:
+      - rebar-managed-node
+      - rebar-installed-node
+  - name: rebar-inventory
+    description: "Rebar Inventory"
+    flags:
+      - implicit
+    jig: script
+    icon: 'add_shopping_cart'
+    requires:
+      - rebar-package-sources
+  - name: rebar-access
+    description: "Rebar Access Keys"
+    flags:
+      - implicit
+    jig: script
+    icon: 'person_pin'
+    attribs:
+      - name: rebar-machine_key
+        description: 'The username and password that managed nodes should use to talk to the Rebar API'
+        map: 'rebar/machine_key'
+        schema:
+          type: str
+          required: true
+      - name: rebar-access_keys
+        description: 'The SSH public keys that should allow password-less root access on managed nodes.'
+        map: 'rebar/access_keys'
+        ui_renderer: 'barclamp_rebar/attribs/rebar_access'
+        schema:
+          type: map
+          mapping:
+            =:
+              type: str
+  - name: rebar-api_server
+    jig: chef
+    wants-attribs:
+      - consul-acl-master-token
+    requires:
+      - consul
+  - name: rebar-api_service
+    jig: role-provided
+    flags:
+      - service
+    attribs:
+      - name: rebar-api-servers
+        description: "IP:Port pairs of the Rebar API servers"
+        map: 'rebar/api/servers'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/
+  - name: rebar-job_runner
+    jig: chef
+    wants-attribs:
+      - consul-acl-master-token
+    requires:
+      - consul
+  - name: rebar-job_runner_service
+    jig: role-provided
+    icon: motorcycle
+    flags:
+      - service
+    attribs:
+      - name: rebar-job-runners
+        description: "Addresses of the Rebar Job Runners"
+        map: 'rebar/api/runners'
+        schema:
+          type: seq
+          sequence:
+            - type: str
+              pattern: /[0-9a-f:.]*/
+  - name: rebar-joined-node
+    description: "Joined Node Ready Checkpoint"
+    jig: noop
+    icon: loyalty
+    flags:
+      - milestone
+      - implicit
+    requires:
+      - rebar-inventory
+      - rebar-package-sources
+      - rebar-access
+    conflicts:
+      - rebar-managed-node
+    provides:
+      - rebar-installed-node
+      - rebar-managed-node
+      - deployer-client
+  - name: rebar-package-sources
+    description: "Sources that Rebar should install packages from"
+    jig: script
+    icon: shop_two
+    flags:
+      - implicit
+    requires:
+      - proxy-client
+    attribs:
+      - name: package-repositories
+        description: 'The repositories that should be used to install packages from by default'
+        map: 'rebar/package_repos'
+        schema:
+          type: seq
+          required: true
+          sequence:
+            - type: map
+              mapping:
+                name:
+                  type: str
+                  required: true
+                description:
+                  type: str
+                  required: true
+                disabled:
+                  type: bool
+                  required: false
+                oses:
+                  type: seq
+                  required: true
+                  sequence:
+                    - type: map
+                      required: true
+                      mapping:
+                        os:
+                          type: str
+                          required: true
+                        repos:
+                          type: seq
+                          required: true
+                          sequence:
+                            - type: str
+        default:
+          - name: epel
+            description: 'Extra Packages for Enterprise Linux'
+            oses:
+              - os: redhat-6
+                repos:
+                  - bare http://mirrors.kernel.org/fedora-epel/6/x86_64/
+              - os: centos-6
+                repos:
+                  - bare http://mirrors.kernel.org/fedora-epel/6/x86_64/
+              - os: centos-7
+                repos:
+                  - bare http://mirrors.kernel.org/fedora-epel/7/x86_64/
+          - name: saltstack
+            description: 'Installation source for up-to-date Saltstack binaries'
+            oses:
+              - os: ubuntu-12.04
+                repos:
+                  - deb http://ppa.launchpad.net/saltstack/salt/ubuntu precise main
+              - os: ubuntu-14.04
+                repos:
+                  - deb http://ppa.launchpad.net/saltstack/salt/ubuntu trusty main
+              - os: ubuntu-15.04
+                repos:
+                  - deb http://ppa.launchpad.net/saltstack/salt/ubuntu vivid main
+          - name: vbernat
+            description: 'vbernat is where we download lldpd for systems that do not have it.'
+            oses:
+              - os: centos-6
+                repos:
+                  - bare http://download.opensuse.org/repositories/home:/vbernat/CentOS_CentOS-6/
+              - os: redhat-6
+                repos:
+                  - bare http://download.opensuse.org/repositories/home:/vbernat/RedHat_RHEL-6/
+              - os: centos-7
+                repos:
+                  - bare http://download.opensuse.org/repositories/home:/vbernat/CentOS_7/
+          - name: bsdtar
+            description: 'bsdtar is our one stop shop for all decompression needs'
+            oses:
+              - os: centos-6
+                repos:
+                  - bare http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
+              - os: redhat-6
+                repos:
+                  - bare http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
+          - name: draios
+            description: 'Up to date Ruby packages'
+            oses:
+              - os: ubuntu
+                repos:
+                  - deb http://download.draios.com/stable/deb stable-amd64/
+              - os: debian
+                repos:
+                  - deb http://download.draios.com/stable/deb stable-amd64/
+              - os: redhat
+                repos:
+                  - bare http://download.draios.com/stable/rpm/x86_64
+              - os: centos
+                repos:
+                  - bare http://download.draios.com/stable/rpm/x86_64
+hammers:
+  - name: 'ssh'
+    type: 'SecureShellHammer'
+    priority: 0
+
+attribs:
+  # Rebar Core
+  - name: bios-vendor
+    map: 'ohai/dmi/bios/vendor'
+    description: 'BIOS vendor'
+  - name: bios-version
+    map: 'ohai/dmi/bios/version'
+    description: 'BIOS version'
+  - name: bios-release-date
+    map: 'ohai/dmi/bios/release_date'
+    description: 'BIOS release date'
+  - name: bios-revision
+    map: 'ohai/dmi/bios/bios_revision'
+    description: 'BIOS revision'
+  - name: asset_tag
+    map: 'ohai/dmi/base_board/asset_tag'
+    description: 'BIOS configured system identifier'
+  - name: system_serial_number
+    description: 'System Serial Number'
+    map: 'ohai/dmi/system/serial_number'
+  - name: 'system_product'
+    description: 'System Product Name'
+    map: 'ohai/dmi/system/product_name'
+  - name: 'system_manufacturer'
+    description: 'System Vendor'
+    map: 'ohai/dmi/system/manufacturer'
+  - name: chassis_serial_number
+    description: 'Chassis Serial Number'
+    map: 'ohai/dmi/chassis/serial_number'
+  - name: 'chassis_product'
+    description: 'Chassis Product Name'
+    map: 'ohai/dmi/chassis/product_name'
+  - name: 'chassis_manufacturer'
+    description: 'Chassis Vendor'
+    map: 'ohai/dmi/chassis/manufacturer'
+  - name: 'kernel'
+    description: 'Kernel Name'
+    map: 'ohai/kernel/name'
+  - name: 'kernel_version'
+    description: 'Kernel Version'
+    map: 'ohai/kernel/version'
+  - name: 'os'
+    description: 'O/S Name'
+    map: 'ohai/platform'
+  - name: 'os_version'
+    description: 'O/S Version'
+    map: 'ohai/platform_version'
+  - name: 'os_description'
+    description: 'O/S Description'
+    map: 'ohai/lsb/description'
+  - name: 'memory'
+    description: 'System Memory'
+    map: 'ohai/memory/total'
+  - name: 'cpu'
+    description: 'System Processor'
+    map: 'ohai/cpu/0/model_name'
+  - name: 'cpu_count'
+    description: 'Number of Processors'
+    map: 'ohai/cpu/total'
+  - name: 'number_of_drives'
+    description: 'RAID set'
+    map: 'ohai/block_device'
+  - name: stay_on
+    map: 'rebar/stay_on'
+    description: 'Leave the node powered on when there is nothing to do'
+    schema:
+      type: bool
+      required: false
+  # Node specific hints.
+  - name: 'hint-admin-macs'
+    description: 'Hint for Admin MAC addresses'
+    map: 'admin_macs'
+    schema:
+      type: seq
+      required: true
+      sequence:
+        - type: str
+          pattern: '/([0-9a-fA-F]{2}:){5}[0-9a-fA-F]/'
+  - name: 'ports'
+    description: 'The ports present in the system'
+    map: 'reservations/ports'
+  - name: 'disks'
+    description: 'The disks present in the system'
+    map: 'reservations/disks'
+  - name: 'claimed-disks'
+    description: 'The disks that have been claimed by roles on a node'
+    map: 'reservations/claimed_disks'
+    schema:
+      type: map
+      required: true
+      mapping:
+        =:
+          type: str
+  - name: operating-system-disk
+    description: 'The unique name of the disk that the operating system is installed on'
+    map: 'rebar/operating_system_disk'
+    schema:
+      type: str
+      required: false
+  - name: provider-create-hint
+    description: 'Extra parameters to be passed to the provider at node create time'
+    map: 'provider/create_hints'
+    default: {}
+    schema:
+      type: map
+      mapping:
+        =:
+          type: any
+  - name: provider-node-id
+    description: 'The node ID as understood by the remote provider'
+    map: 'provider/node_id'
+  - name: node-control-address
+    description: 'The network address that should be used to control the node.  Will be used if no other address is reachable.'
+    map: 'provider/control_address'
+    schema:
+      type: str
+  - name: node-private-control-address
+    description: 'The private network address that should be used to control the node.'
+    map: 'provider/private_control_address'
+    schema:
+      type: str
+  - name: provider-rate
+    description: 'The cost of this node in the provider'
+    map: 'provider/rate'
+    default: 1.0
+    schema:
+      type: float
+  - name: provider-type
+    description: 'Provider type'
+    map: 'provider/type'
+    type: 'BarclampRebar::Attrib::ProviderType'
+  - name: provider-details
+    description: 'Provider access credentials, type and name'
+    map: 'provider/details'
+    type: 'BarclampRebar::Attrib::ProviderDetails'
+
+providers:
+  - name: phantom
+    class: Provider
+    description: "Provide basic provicer services for phantom nodes."
+    auth_details: {}

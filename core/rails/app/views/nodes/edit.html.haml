@@ -1,0 +1,37 @@
+%p{:style => 'float:right'}
+  = link_to t('cancel'), nodes_path(:selected => @node.name), :class => 'button'
+%h1= @node.name
+.box
+  = form_for :node, :'data-remote' => true, :url => edit_node_path(@node.name), :html => { :'data-type' => 'html', :'data-method' => 'put', :id => 'update_node_form', :class => "formtastic" } do |f|
+    %fieldset.inputs
+      %ol
+        %li.text
+          = f.label :description, t('.description')
+          = text_field_tag :description, @node.description, :size => 40
+        %li.text
+          = f.label :group, t('.group')
+          = select_tag :group, options_for_select(@groups, :selected=>@node.groups[0].id)
+        %li.select
+          = f.label :bios, t('.bios')
+          -if @node.is_admin?
+            = t 'na'
+            -#-elsif @options[:show].include? :bios
+            -#  = select_tag :bios, options_for_select(option_default(@options[:bios], @node.bios_set, 'bios'), @node.bios_set)
+          -else
+            = t 'feature_na'
+        %li.select
+          = f.label :raid, t('.raid')
+          -if @node.is_admin?
+            = t 'na'
+            -#-elsif @options[:show].include? :raid and !@node.is_admin?
+            -#  = select_tag :raid,  options_for_select(option_default(@options[:raid], @node.raid_set, 'raid'), @node.raid_set)
+          -else
+            = t 'feature_na'
+    %fieldset.buttons
+      %ol
+        -unless @node.allocated? or @node.is_admin?
+          %li
+            %input.button{:type => "submit", :name => "submit", :value => t('.allocate')}
+        %li
+          %input.button{:type => "submit", :name => "submit", :value => t('.save')}
+

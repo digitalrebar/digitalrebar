@@ -1,0 +1,49 @@
+%p{:style => 'float:right'}
+  = select_tag "deployment", options_from_collection_for_select(Deployment.all, "name", "name", params[:deployment]), :id=>"filter"
+%h1
+  =t '.title'
+  -if @deployment
+    = link_to @deployment.name, deployment_path(@deployment.id), :title=>@deployment.description
+  -else
+    = t('all')
+
+- # filter to only show unallocated nodes, with an option to display all
+= form_for :dashboard, :'data-remote' => true, :url => '/dashboard/list', :html => { :method=>:put, :'data-type' => 'html',  :id => 'list', :class => "formtastic" } do |f|
+  %table.data.box
+    %thead
+      %tr
+        %th= t('.name')
+        %th= t('.description')
+        %th= t('.deployment')
+    %tbody
+      - if @nodes and @nodes.count > 0
+        - @nodes.sort_by{|n| n.name } #sort nodes by name and by admin
+        - admins = @nodes.select{|n| n.admin}.sort_by{|n| n.name }
+        - @nodes = admins + (@nodes - admins)
+        - @nodes.each do |node|
+          %tr.node{ :class => cycle(:odd, :even, :name => "nodes"), :id => node.id }
+            %td{:style=>node.admin&&"font-weight: bold;"}
+              = text_field_tag "node:#{node.id}:name".to_sym, node.name, :size => 50
+            %td= text_field_tag "node:#{node.id}:description".to_sym, "#{node.description || ""}", :size => 50
+            %td 
+              - deployments = Deployment.all
+              = select_tag "node:#{node.id}:deployment_id", options_from_collection_for_select(deployments, "id", "name", node.deployment.id)
+      - else
+        %tr
+          %td{ :colspan=>4 }
+            = t 'no_items'
+
+  %input.button{:type => "submit", :name => "submit", :value => t('save')}
+
+.clear
+
+  
+:javascript
+
+$(document).ready(function(){
+  $("#filter").on("change", function() {
+    url = $("#filter").find('option:selected').text();
+    console.debug(url);
+    window.location.href = "#{(@deployment.nil? ? "list/" : "")}"  +url;
+  });
+});

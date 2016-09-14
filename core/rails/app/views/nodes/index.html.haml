@@ -1,0 +1,158 @@
+- providers = Provider.all.to_a.keep_if { |p| p.can_create_nodes }
+
+%table{:width=>'100%'}
+  %tr
+    %td
+      %h1= t '.title'
+    %td{:align=>'right', :id=>'addcell'}
+      - if providers and providers.count > 0
+        = link_to t('.create_nodes'), providers_path
+        = text_field_tag :name, t('.name_base'), :size => 15
+        = select :add, :provider, options_for_select(providers.map{|p| p.name}, providers.first)
+        = text_field_tag :add_os, t('.default_os'), :size => 8
+        = text_field_tag :number, 1, :size => 2
+        %button{:id=>'addbut', :onclick=>"add_nodes()"}= t('add')
+      - else
+        = link_to t('.no_providers'), providers_path, :class=>:button
+- if @list.length == 0
+  %p= t '.no_nodes'
+- else
+  = render :partial => 'index', :locals=>{:nodes => @list}
+
+.clear
+
+:javascript
+
+  var freshness = 0
+
+  $(".node_action").change(function() {
+    if (this.checked)
+      $(":checkbox[id^=" + this.name + "]").attr('checked', true);
+    else
+      $(":checkbox[id^=" + this.name + "]").attr('checked', false);
+  })
+
+  $("#act_on_nodes").change(function() {
+    var action = this.value;
+    console.debug("action #{nodes_path()}");
+    $.ajaxSetup({ timeout: 50000 });
+    freshness = 0;
+    $(":checkbox[id^=node_action]").each( function(index, value) {
+      if (value.checked) {
+        console.debug("loop " + action + " on " + value.value);
+        if (action == "delete") {
+          freshness --;
+          $.ajax({
+            type: 'DELETE',
+            url: "#{nodes_path}/" + value.value + "?format=json"})
+            .done(function() { 
+              value.disabled = true;
+            }
+          );
+        };
+      };
+    });
+    this.value = "none";
+    if (action == "delete") { 
+      update(); 
+    };
+  });
+
+  function add_nodes() {
+    $(this).prop("disabled",true);
+    var base_name = $("#name").val();
+    var provider = $("#add_provider").val();
+    var os = $("#add_os").val();
+    var payload = {
+          name: base_name+"-X."+provider+".neode.org",
+          description: "created by #{current_user.username}",
+          provider: provider,
+          hints: { 
+            'use-proxy': false,
+            'use-ntp': false,
+            'use-dns': false,
+            'use-logging': false,
+            'provider-create-hint': { 
+              'hostname': base_name+"-X"
+              }
+            }
+          };
+    if (os != "#{t('.default_os')}") {
+      // packet
+      payload.hints['provider-create-hint'].os = os;
+      // aws
+      payload.hints['provider-create-hint'].image_id = os;
+      // google
+      payload.hints['provider-create-hint'].disks = [];
+      payload.hints['provider-create-hint'].disks.push(
+                { 
+                  'autoDelete': true,
+                  'boot': true,
+                  'type': 'PERSISTENT',
+                  'initializeParams': {
+                    'sourceImage': os
+                  }
+                });
+    };
+    var number = parseInt($("#number").val());
+    $.ajaxSetup({ timeout: 5000*number });
+    $('#addcell').fadeOut().fadeIn('slow');
+    freshness = -1*number;
+    for (var i=0; i<number; i++) {
+      payload.name = base_name+"-"+i+"."+provider+".neode.org";
+      payload.hints['provider-create-hint'].hostname = base_name+"-"+i;
+      console.debug("add " + JSON.stringify(payload, null, 2));
+      // hack because POST converts JSON array to hash
+      $.ajax({
+        url: "#{nodes_path}",
+        data: JSON.stringify(payload),
+        contentType: "application/json",
+        type: "post"
+      });
+    };
+    $('#addcell').fadeOut().fadeIn('slow');
+    update();
+  }
+
+  function update() {
+
+    if (#{params.include?(:nopoll) ? 'false' : 'true'}) {
+      $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} })
+
+      $.getJSON('#{nodes_status_path()}', function(data) {
+        
+        // If node count has changed, re-render the page
+        var current_nodes = $('.node').length;
+
+        // update node counts        
+        $.each(data, function(id,node) { current_nodes--; });
+        // Update nodes
+        freshness ++;
+        $.each(data, function(id,node) {
+          if (current_nodes != 0 && 0 < freshness) {
+            console.debug("REFRESH: (" + freshness + ") current_nodes " + 0 + " != " + current_nodes);
+            location.reload();
+          	return;
+          } else {
+            console.debug("no refresh: (" + freshness + ") current_nodes " + 0 + " == " + current_nodes);
+          };
+          var tr = $('#'+id+'.node');
+          var td = tr.children('.status');
+          var led = td.children('.led');
+          if(led.attr('raw') != node['state']) {
+            led.destroy();
+            led.attr('class', 'led '+node['status']);
+            led.attr('raw', node['state']);
+            td.effect("highlight", {color: '#666666'}, 2000);
+            led.attr('title', node['status']);
+          }
+          var status = tr.children('.strStatus');
+          if(status.html() != node['strStatus']) {
+            status.destroy();
+            status.html(node['strStatus']);
+            status.effect("highlight", {color: '#666666'}, 2000);
+          }
+        });
+      });
+    }
+  }

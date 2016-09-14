@@ -1,0 +1,54 @@
+#!/bin/bash
+# Copyright 2014, Rob Hirschfeld
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+language: ruby
+rvm:
+  - "2.1.2"
+addons:
+  postgresql: "9.4"
+env:
+  - RAILS_ENV='development'
+sudo: false
+cache: bundler
+
+before_script:
+  - tools/travis_consul.sh
+  - cd rails
+  - cp config/database.yml.travis config/database.yml
+  - psql -c 'create database digitalrebar_dev;' -U postgres
+  - psql -c 'create database digitalrebar_test;' -U postgres
+  - psql -d digitalrebar_dev -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto";' -U postgres
+  - psql -d digitalrebar_test -c 'CREATE EXTENSION IF NOT EXISTS "pgcrypto";' -U postgres
+  - bundle install
+
+script: 
+  - ../consul agent -server -bootstrap-expect 1 -data-dir /tmp/consul &
+  - pwd
+  - bundle exec rake db:migrate
+  - bundle exec rake db:seed
+  - QUE_WORKER_COUNT=2 QUE_QUEUE=HighPriorityRunner bundle exec rake que:work &
+  - QUE_WORKER_COUNT=10 QUE_QUEUE=NodeRoleRunner bundle exec rake que:work &
+  - bundle exec rails server -d
+  - '(export REBAR_KEY=rebar:rebar1; cd ..; while ! bin/barclamp_import $PWD; do sleep 10; done)'
+  - kill `cat tmp/pids/server.pid`
+  - pkill -f que:work
+  - RAILS_ENV=test bundle exec rake db:migrate
+  - RAILS_ENV=test bundle exec rake db:seed
+  - RAILS_ENV=test bundle exec rake test
+  - RAILS_ENV=test bundle exec rspec
+  - sleep 10
+
+after_failure:
+  - tail -n 100 ../rails/log/development.log

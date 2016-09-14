@@ -1,0 +1,28 @@
+- action = (user.id.nil?) ? :create : :update
+= form_for(user,  :url => { :action => action } ) do |ff|
+ %ul
+  - user.errors.full_messages.each do |er|
+   %li=er
+ %table.center
+  %tr
+   %td= ff.label :username, t(".username")
+   %td= ff.label :email, t(".email")
+   -if action == :create
+    %td= ff.label :password, t(".password")
+    %td= ff.label :password_confirmation, t(".password_confirmation")
+   %td.nowrap= ff.label :admin, t(".is_admin")
+   %td &nbsp;
+  %tr
+   %td= ff.text_field :username, :size => 20
+   %td= ff.text_field :email, :size => 20
+   -if action == :create
+    %td= ff.password_field :password, :size => 20
+    %td= ff.password_field :password_confirmation, :size => 20
+   %td= ff.check_box :is_admin
+   -if action == :create
+    %td= ff.submit t(".add"), :class=>'button'
+   -else
+    %td
+     %span= ff.submit t(".update"), :class=>'button' 
+     = ff.submit t("cancel"),:name => 'cancel', :class=>'button'
+    

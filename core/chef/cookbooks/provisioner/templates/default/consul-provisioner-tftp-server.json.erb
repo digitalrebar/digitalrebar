@@ -1,0 +1,14 @@
+{
+  "service": {
+    "name": "<%= @internal ? "internal-" : "" %>provisioner-tftp-service",
+    "tags": [ "system" ],
+    <% if @ip_addr -%>
+    "address": "<%=@ip_addr%>",
+    <% end -%>
+    "port": 69,
+    "check": {
+      "script": "pidof sws",
+      "interval": "10s"
+    }
+  }
+}

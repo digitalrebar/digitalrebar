@@ -1,0 +1,77 @@
+# Copyright 2014, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+barclamp:
+  name: "core"
+  description: "Core DigitalRebar functionality"
+  display: "Core"
+  version: "2.E"
+  source_url: "https://github.com/digitalrebar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
+
+rebar:
+  layout: 2.0
+
+os_support:
+  - ubuntu-12.04
+  - ubuntu-14.04
+  - ubuntu-15.04
+  - redhat-6.5
+  - redhat-6.6
+  - redhat-6.7
+  - centos-6.5
+  - centos-6.6
+  - centos-6.7
+  - centos-7.1.1503
+  - opensuse-13.1
+  - fedora-20
+  - debian-7
+  - debian-8
+  - xenserver-6.5
+  - esxi-5.5
+  - fuel-6.0    
+
+jigs:
+  - name: script
+    class: 'BarclampRebar::Jig'
+    description: 'Run arbitrary scripts on nodes via SSH'
+  - name: noop
+    class: NoopJig
+    description: "Jig used when roles have no action to run"
+  - name: test
+    description: 'Test jig for exercising jig and noderole operations.'
+    class: 'BarclampTest::Jig'
+  - name: chef
+    class: 'BarclampChef::Jig'
+    description: "Allow Rebar to manage nodes using Chef"
+    implementor: chef-client
+  - name: chef-solo
+    class: 'BarclampChef::SoloJig'
+    description: "Allow Rebar to manage nodes using chef-solo"
+    implementor: chef-solo
+  - name: puppet-sa
+    class: 'BarclampPuppet::SaJig'
+    description: "Puppet jig for using standalone puppet agent"
+  - name: role-provided
+    class: 'BarclampRebar::RoleProvidedJig'
+    description: "Jig that delegates back to a role-provided do_transition method"
+  - name: ansible-playbook
+    class: 'BarclampRebar::AnsiblePlaybookJig'
+    description: "Allow Rebar to run an Ansible playbook against a node"
+  - name: ansible
+    class: 'BarclampRebar::AnsibleJig'
+    description: "Allow Rebar to run an Ansible command/module against a node"
+      

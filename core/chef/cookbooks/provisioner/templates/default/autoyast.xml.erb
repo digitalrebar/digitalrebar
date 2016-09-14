@@ -1,0 +1,178 @@
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile xmlns="http://www.suse.com/1.0/yast2ns" xmlns:config="http://www.suse.com/1.0/configns">
+  <deploy_image>
+    <image_installation config:type="boolean">false</image_installation>
+  </deploy_image>
+  <general>
+    <ask-list config:type="list"/>
+    <mode>
+      <confirm config:type="boolean">false</confirm>
+      <final_halt config:type="boolean">false</final_halt>
+      <final_reboot config:type="boolean">true</final_reboot>
+      <halt config:type="boolean">false</halt>
+      <second_stage config:type="boolean">true</second_stage>
+    </mode>
+    <mouse>
+      <id>none</id>
+    </mouse>
+    <proposals config:type="list"/>
+    <signature-handling>
+      <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+      <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
+      <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+      <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+      <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+      <import_gpg_key config:type="boolean">true</import_gpg_key>
+    </signature-handling>
+    <storage/>
+  </general>
+  <add-on>
+    <add_on_products config:type="list">
+       <listentry>
+            <media_url>http://<%= @admin_node_ip %>:<%=@provisioner_port%>/repos/Cloud/</media_url>
+            <product>SLE-Cloud</product>
+            <product_dir>/</product_dir>
+            <ask_on_error config:type="boolean">false</ask_on_error> <!-- available since openSUSE 11.0 -->
+            <name>SLE-cloud</name> <!-- available since openSUSE 11.1/SLES11 (bnc#433981) -->
+        </listentry>
+        <listentry>
+            <media_url>http://<%= @admin_node_ip %>:<%=@provisioner_port%>/repos/SLES11-SP2-Core/</media_url>
+            <product>SLES11-SP2-Core</product>
+            <product_dir>/</product_dir>
+            <ask_on_error config:type="boolean">false</ask_on_error>
+            <name>SLES11-SP2-Core </name>
+        </listentry>
+        <listentry>
+            <media_url>http://<%= @admin_node_ip %>:<%=@provisioner_port%>/repos/SLES11-SP2-Updates/</media_url>
+            <product>SLES11-SP2-Updates</product>
+            <product_dir>/</product_dir>
+            <ask_on_error config:type="boolean">false</ask_on_error>
+            <name>SLES11-SP2-Updates</name>
+        </listentry>
+        <listentry>
+            <media_url>http://<%= @admin_node_ip %>:<%=@provisioner_port%>/repos/SLES11-SP1-Updates/</media_url>
+            <product>SLES11-SP1-Updates</product>
+            <product_dir>/</product_dir>
+            <ask_on_error config:type="boolean">false</ask_on_error>
+            <name>SLES11-SP1-Updates</name>
+        </listentry>
+        <listentry>
+            <media_url>http://<%= @admin_node_ip %>:<%=@provisioner_port%>/repos/SLES11-SP1-Pool/</media_url>
+            <product>SLES11-SP1-Pool</product>
+            <product_dir>/</product_dir>
+            <ask_on_error config:type="boolean">false</ask_on_error>
+            <name>SLES11-SP1-Pool</name>
+        </listentry>
+    </add_on_products>
+  </add-on>
+  <users config:type="list">
+      <user>
+         <username>root</username>
+         <user_password>root</user_password>
+         <encrypted config:type="boolean">false</encrypted>
+         <forename/>
+         <surname/>
+      </user>
+  </users>
+  <networking>
+    <keep_install_network config:type="boolean">true</keep_install_network>
+    <dns>
+      <dhcp_hostname config:type="boolean">true</dhcp_hostname>
+      <domain>rebar.site</domain>
+      <resolv_conf_policy>auto</resolv_conf_policy>
+      <write_hostname config:type="boolean">false</write_hostname>
+    </dns>
+    <managed config:type="boolean">false</managed>
+    <routing>
+      <ip_forward config:type="boolean">false</ip_forward>
+    </routing>
+  </networking>
+  <partitioning config:type="list">
+    <drive>
+      <initialize config:type="boolean">true</initialize>
+      <partitions config:type="list"/>
+      <type config:type="symbol">CT_DISK</type>
+      <use>all</use>
+    </drive>
+  </partitioning>
+  <scripts>
+    <chroot-scripts config:type="list">
+        <script>
+            <chrooted config:type="boolean">false</chrooted>
+            <debug config:type="boolean">true</debug>
+            <filename>rebar_post</filename>
+            <source>
+<![CDATA[
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+HTTP_SERVER="<%= @admin_node_ip %>:<%= @web_port %>"
+IP="<%= @admin_node_ip %>"
+HOSTNAME=$(hostname)
+
+key_re='rebar\.install\.key=([^ ]+)'
+if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
+export REBAR_KEY="${BASH_REMATCH[1]}"
+echo "$REBAR_KEY" >/mnt/etc/rebar.install.key
+elif [[ -f /mnt/etc/rebar.install.key ]]; then
+export REBAR_KEY="$(cat /mnt/etc/rebar.install.key)"
+fi
+
+post_state() {
+local curlargs=(-k -o "/var/log/$1-$2.json" --connect-timeout 60 -s \
+  -L -X POST --data-binary "{ \"name\": \"$1\", \"state\": \"$2\" }" \
+  -H "Accept: application/json" -H "Content-Type: application/json" \
+  --max-time 240)
+[[ $REBAR_KEY ]] && curlargs+=(-u "$REBAR_KEY" --digest --anyauth)
+curl "${curlargs[@]}" "https://$IP:3000/rebar/rebar/1.0/transition/default"
+}
+
+mkdir -p /mnt/root/.ssh
+chmod 700 /mnt/root/.ssh
+if ! curl -s -o /mnt/root/.ssh/authorized_keys.wget \
+    http://$HTTP_SERVER/authorized_keys; then
+    rm -f /mnt/root/.ssh/authorized_keys.wget
+else
+    chmod 644 /mnt/root/.ssh/authorized_keys
+    cat /mnt/root/.ssh/authorized_keys.wget >> /mnt/root/.ssh/authorized_keys
+    rm -f /mnt/root/.ssh/authorized_keys.wget
+fi
+
+curl -s -o /mnt/usr/local/sbin/rebar_join.sh <%= @rebar_join %>
+chmod +x /mnt/usr/local/sbin/rebar_join.sh
+
+while true; do
+      curl -k -s -f -L -o /tmp/bootstate "<%=@provisioner_web%>/nodes/$HOSTNAME/bootstate" && \
+        [[ -f /tmp/bootstate && $(cat /tmp/bootstate) = local ]] && break
+    sleep 1
+done
+
+
+post_state $HOSTNAME "installed"
+
+# Wait for DHCP to update - this is mainly for virtual environments or really large deploys
+sleep 30
+sync
+]]>
+            </source>
+        </script>
+    </chroot-scripts>
+    <init-scripts config:type="list">
+      <script>
+        <filename>rebar_join</filename>
+        <location>file:///usr/local/sbin/rebar_join.sh</location>
+      </script>
+    </init-scripts>
+  </scripts>
+  <software>
+    <packages config:type="list">
+      <package>autoyast2-installation</package>
+      <package>biosdevname</package>
+      <package>rubygem-cstruct</package>
+      <package>ntpdate</package>
+    </packages>
+    <patterns config:type="list">
+      <pattern>Minimal</pattern>
+      <pattern>base</pattern>
+    </patterns>
+  </software>
+</profile>

@@ -1,0 +1,10 @@
+- if @item != nil
+  %h1= t '.title'
+  %dl
+    %dt= t('.network')
+    %dd
+      = link_to @item.network.name, network_path(@item.network.id)
+    = dl_item(t('.address'), @item.address)
+    = dl_item(t('.pref'), @item.pref)
+- else
+  %h1= t('unknown')

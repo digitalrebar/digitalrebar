@@ -1,0 +1,139 @@
+#!/bin/sh
+# Copyright 2011, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# This script is called by the net_ubuntu.seed file during
+# ubuntu install.  It handles doing the manual sets needed to layout the
+# filesystem the rest of the way before running the common_install.sh.
+#
+# The intent is that once the system is finished installing, the customer
+# will edit the config.json file and run install.sh to complete installation
+# and initial configuration.
+#
+
+#
+# We are a net install.
+#
+set -x
+exec 2>&1
+exec >>/target/root/post-install.log
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+echo "Acquire::http::Proxy \"<%=@proxy%>\";" >/target/etc/apt/apt.conf.d/00-proxy
+
+<% @repos.each do |name,urls|
+       case name
+       when "base-packages" then target = '00-base.list'
+       else target = "10-rebar-#{name}.list"
+       end
+       urls.each do |url| -%>
+echo "<%=url%>" >> "/target/etc/apt/sources.list.d/<%=target%>"
+<%     end
+  end -%>
+
+# This is the one we used to bootstrap from.  It is useless to us now.
+rm -f /target/etc/apt/sources.list
+rsyslog_dir="/target/etc/rsyslog.d"
+if [ -d "$rsyslog_dir" ]; then
+    if [ ! -f "$rsyslog_dir/10-rebar-client.conf" ]; then
+        echo "*.* @@<%= @logging_server %>" > "$rsyslog_dir/10-rebar-client.conf"
+        if ! wget -O "$rsyslog_dir/00-rebar-debug.conf" -q <%=@provisioner_web%>/rsyslog.d/00-rebar-debug.conf
+        then
+            rm -f "$rsyslog_dir/00-rebar-debug.conf"
+        fi
+    fi
+fi
+
+# Make sure we can install gems
+cat >/target/etc/gemrc <<EOF
+:sources:
+- http://rubygems.org/
+gem: --no-ri --no-rdoc --bindir /usr/local/bin --http-proxy <%=@proxy%>
+EOF
+
+cp /etc/gemrc /root/.gemrc
+
+wget -q <%=@web_path%>/rebar_join.sh -O- > /target/etc/init.d/rebar_join
+
+mkdir -p /target/root/.ssh
+
+cat >/target/root/.ssh/authorized_keys <<EOF
+<%= @keys %>
+EOF
+
+# Setup a proxy for the environment
+echo "http_proxy=<%=@proxy%>" >> /target/etc/environment
+echo "https_proxy=<%=@proxy%>" >> /target/etc/environment
+echo "no_proxy=127.0.0.1,localhost,::1,<%=@proxy_addr%>" >> /target/etc/environment
+
+# Setup bash proxy env
+mkdir -p /target/etc/profile.d
+echo "export http_proxy=<%=@proxy%>" >> /target/etc/profile.d/proxy.sh
+echo "export https_proxy=<%=@proxy%>" >> /target/etc/profile.d/proxy.sh
+echo "export no_proxy=127.0.0.1,localhost,::1,<%=@proxy_addr%>" >> /target/etc/profile.d/proxy.sh
+
+mount /proc /target/proc
+
+cat > /target/update_system2.sh <<"EOF"
+#!/bin/bash
+
+set -x
+apt-get -y install jq curl
+key_re='rebar\.install\.key=([^ ]+)'
+if [[ $(cat /proc/cmdline) =~ $key_re ]]; then
+    export REBAR_KEY="${BASH_REMATCH[1]}"
+    echo "$REBAR_KEY" >/etc/rebar.install.key
+elif [[ -f /etc/rebar.install.key ]]; then
+    export REBAR_KEY="$(cat /etc/rebar.install.key)"
+fi
+(cd /bin; curl -fgl -O "<%=@provisioner_web%>/files/rebar"; chmod 755 rebar)
+export REBAR_ENDPOINT="<%=@api_server%>"
+
+hostname_re='rebar\.fqdn=([^ ]+)'
+if [[ $(cat /proc/cmdline) =~ $hostname_re ]]; then
+   HOSTNAME=${BASH_REMATCH[1]}
+   if [ -f /etc/sysconfig/network ] ; then
+      sed -i -e "s/HOSTNAME=.*/HOSTNAME=${HOSTNAME}/" /etc/sysconfig/network
+    fi
+    echo "${HOSTNAME#*.}" >/etc/domainname
+else
+    echo "Cannot set hostname, we fail."
+    sleep 999
+    reboot -f
+fi
+echo "$HOSTNAME" >/etc/hostname
+hostname "$HOSTNAME"
+
+
+export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+export LC_ALL=C LANGUAGE=C LANG=C
+apt-get -y --force-yes update
+apt-get -y --force-yes remove apparmor
+apt-get -y --force-yes install ntpdate jq
+
+echo "PermitRootLogin without-password" >> /etc/ssh/sshd_config
+# Allow client to pass http proxy environment variables
+echo "AcceptEnv http_proxy https_proxy no_proxy" >> /etc/ssh/sshd_config
+
+update-rc.d rebar_join defaults
+rebar nodes update "$HOSTNAME" '{"bootenv": "local"}'
+while [[ $(rebar nodes get "$HOSTNAME" attrib provisioner-active-bootstate |jq -r '.value') != local ]]; do
+    sleep 1
+done
+EOF
+
+chmod +x /target/etc/init.d/rebar_join
+chmod +x /target/update_system2.sh
+chroot /target /update_system2.sh
+sync

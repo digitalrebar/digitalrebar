@@ -1,0 +1,18 @@
+%h1= t '.title'
+
+%table.data.box
+  %thead
+    %tr
+      %th= t '.network'
+      %th= t '.address'
+      %th= t '.pref'
+  %tbody
+    - if @list.count > 0
+      - @list.each do |router|
+        %tr
+          %td= link_to router.network.name, network_path(router.network.id), :title=>(router.network.description || t('not_set'))
+          %td= link_to router.address, network_router_path(router.id)
+          %td= router.pref
+    - else
+      %tr
+        %td= t 'no_items'

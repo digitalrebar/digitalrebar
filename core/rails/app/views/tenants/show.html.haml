@@ -1,0 +1,4 @@
+%h1= @tenant.name
+
+= render :partial => 'tenants/show', :locals  => { :tenant => @tenant } 
+

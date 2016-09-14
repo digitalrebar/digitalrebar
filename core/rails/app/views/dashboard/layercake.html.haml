@@ -1,0 +1,41 @@
+#layercake
+
+  %h1.title= t '.title'
+  %div{:style=>"width: auto; padding: 2em;"}
+    #leftColumn
+      #core{:class=>(@status['core'] || 'ready')}
+        = render :partial=>'layercake', :locals=>{ :layer=>'core' }
+      #jigs{:class=>(@status['jigs'] || 'ready')}
+        = render :partial=>'layercake', :locals=>{ :layer=>'jigs' }
+
+    #rightColumn
+      #apps{:class=>(@status['apps'] || 'ready')}
+        = render :partial=>'layercake', :locals=>{ :layer=>'apps' }
+      #services{:class=>(@status['services'] || 'ready')}
+        = render :partial=>'layercake', :locals=>{ :layer=>'services' }
+      #clients{:class=>(@status['clients'] || 'ready')}
+        = render :partial=>'layercake', :locals=>{ :layer=>'clients' }
+      #os{:class=>(@status['is'] || 'ready')}
+        = render :partial=>'layercake', :locals=>{ :layer=>'os' }
+      #nodes{:class=>(@status['nodes'] || 'ready')}
+        = render :partial=>'layercake', :locals=>{ :layer=>'nodes' }
+      #network{:class=>(@status['network'] || 'ready')}
+        = render :partial=>'layercake', :locals=>{ :layer=>'network' }
+
+.clear
+
+
+:javascript
+
+  function update() {
+    nodes = parseInt($('span#node_count').text());
+    if (nodes<#{current_user.settings(:ui).node_refresh}) {
+      $.ajaxSetup({ timeout: #{current_user.settings(:ui).refresh} });
+        var elasped = parseInt($('span#elapsed_heartbeat').text());
+        if (elasped < 3600) {
+          location.reload();
+        } else {
+          console.debug("layercake no refresh: ", elasped);
+        }
+    }
+  }

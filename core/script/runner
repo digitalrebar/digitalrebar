@@ -1,0 +1,317 @@
+#!/bin/bash
+exec 2>&1
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+set -o pipefail -o errexit -o xtrace
+shopt -s nullglob extglob globstar
+export TMPDIR=$1
+export ROLE=$2
+
+# pkgs and services are hashes with the following format:
+# hash["pkg-or-svc-name"]="alt-os-name pkg-or-svc-name\n..."
+# os-identifier can be either an OS_TYPE or an OS_NAME
+
+declare -A pkgs svcs
+
+# Figure out what Linux distro we are running on.
+export OS_TYPE= OS_VER= OS_NAME=
+
+fix_path() {
+    local -A pathparts
+    local part
+    local IFS=':'
+    for part in $PATH; do
+        pathparts["$part"]="true"
+    done
+    local wanted_pathparts=("/usr/local/bin" "/usr/local/sbin" "/bin" "/sbin" "/usr/bin" "/usr/sbin")
+    for part in "${wanted_pathparts[@]}"; do
+        [[ ${pathparts[$part]} ]] && continue
+        PATH="$part:$PATH"
+    done
+}
+fix_path
+unset fix_path
+
+if [[ -f /etc/os-release ]]; then
+    . /etc/os-release
+    OS_TYPE=${ID,,}
+    OS_VER=${VERSION_ID,,}
+elif [[ -f /etc/lsb-release ]]; then
+    . /etc/lsb-release
+    OS_VER=${DISTRIB_RELEASE,,}
+    OS_TYPE=${DISTRIB_ID,,}
+elif [[ -f /etc/centos-release || -f /etc/fedora-release || -f /etc/redhat-release ]]; then
+    for rel in centos-release fedora-release redhat-release; do
+        [[ -f /etc/$rel ]] || continue
+        OS_TYPE=${rel%%-*}
+        OS_VER="$(egrep -o '[0-9.]+' "/etc/$rel")"
+        break
+    done
+    if [[ ! $OS_TYPE ]]; then
+        echo "Cannot determine Linux version we are running on!"
+        exit 1
+    fi
+elif [[ -f /etc/debian_version ]]; then
+    OS_TYPE=debian
+    OS_VER=$(cat /etc/debian_version)
+fi
+OS_NAME="$OS_TYPE-$OS_VER"
+
+case $OS_TYPE in
+    centos|redhat|fedora) OS_FAMILY="rhel";;
+    debian|ubuntu) OS_FAMILY="debian";;
+    *) OS_FAMILY=$OS_TYPE;;
+esac
+
+# Add an alternate name for a package based on the OS.
+add_pkgalt() {
+    # $1 = base_pkg_name
+    # $2 = alt OS name
+    # $3 = alt pkg name
+    if [[ ! ${pkgs["$1"]} ]]; then
+        pkgs["$1"]="$2 $3"
+    else
+        local osrel= pkg= pkgline=
+        pkgline="${pkgs[$1]}"
+        while read osrel pkg; do
+            [[ $osrel = $2 && $pkg = $3 ]] && return 0
+        done <<< "$pkgline"
+        pkgline+="$(printf '\n%s %s' "$2" "$3")"
+        pkgs["$1"]="$pkgline"
+    fi
+}
+
+# Add an alternate name for a service based on OS
+add_svcalt() {
+    # $1 = base_svc_name
+    # $2 = alt OS name
+    # $3 = alt svc name
+    if [[ ! ${svcs["$1"]} ]]; then
+        svcs["$1"]="$2 $3"
+    else
+        local osrel= svc= svcline=
+        svcline="${svcs[$1]}"
+        while read osrel svc; do
+            [[ $osrel = $2 && $svc = $3 ]] && return 0
+        done <<< "$svcline"
+        svcline+="$(printf '\n%s %s' "$2" "$3")"
+        svcs["$1"]="$svcline"
+    fi
+}
+
+# Generate valid alternate OS names based on the current OS.
+gen_subs() {
+    local res=()
+    res+=("$OS_NAME")
+    case $OS_TYPE in
+        redhat) res+=("centos-$OS_VER" "$OS_TYPE" "centos");;
+        centos) res+=("redhat-$OS_VER" "$OS_TYPE" "redhat");;
+        fedora) res+=("$OS_TYPE" redhat centos);;
+        ubuntu) res+=("$OS_TYPE" debian);;
+        debian) res+=("$OS_TYPE" ubuntu);;
+    esac
+    echo "${res[@]}"
+}
+
+# Lookup the proper name of the package for this OS based on the alts.
+lookup_package() {
+    local pkgline="${pkgs[$1]}"
+    if [[ ! $pkgline ]]; then
+        printf '%s' "$1"
+        return
+    fi
+    local -A pkgalts
+    local osrel= alt=
+    while read osrel alt; do
+        pkgalts["$osrel"]="$alt"
+    done <<< "$pkgline"
+    for osrel in $(gen_subs); do
+        if [[ ${pkgalts["$osrel"]} ]]; then
+            printf '%s' "${pkgalts[$osrel]}"
+            return
+        fi
+    done
+    printf '%s' "$1"
+}
+
+# Lookup the proper name for the service based on the alts.
+lookup_service() {
+    local svcline="${svcs[$1]}"
+    if [[ ! $svcline ]]; then
+        printf '%s' "$1"
+        return
+    fi
+    local -A svcalts
+    local osrel= alt=
+    while read osrel alt; do
+        svcalts["$osrel"]="$alt"
+    done <<< "$svcline"
+    for osrel in $(gen_subs); do
+        if [[ ${svcalts["$osrel"]} ]]; then
+            printf '%s' "${svcalts[$osrel]}"
+            return
+        fi
+    done
+    printf '%s' "$1"
+}
+
+if_update_needed() {
+    local timestampref=/tmp/pkg_cache_update
+    if [[ ! -f $timestampref ]] || \
+           (( ($(stat -c '%Y' "$timestampref") - $(date '+%s')) > 86400 )); then
+        touch "$timestampref"
+        "$@"
+    fi
+}
+
+# Install a package
+install() {
+    local to_install=()
+    local pkg
+    for pkg in "$@"; do
+        to_install+=("$(lookup_package "$pkg")")
+    done
+    case $OS_FAMILY in
+        rhel)
+            if_update_needed yum -y makecache
+            # The ssl ciphers are out-to-date on some of these systems.
+            # Make sure they are up to date.
+            yum -y update nss
+            yum -y install epel-release # Everyone gets epel for free.
+            yum -y install "${to_install[@]}";;
+        debian)
+            if_update_needed apt-get -y update
+            apt-get -y install "${to_install[@]}";;
+        alpine)
+            if_update_needed apk update
+            apk add "${to_install[@]}";;
+        *) echo "No idea how to install packages on $OS_NAME"
+           exit 1;;
+    esac
+}
+
+INITSTYLE="sysv"
+if which systemctl &>/dev/null; then
+    INITSTYLE="systemd"
+elif which initctl &>/dev/null; then
+    INITSTYLE="upstart"
+fi
+
+# Perform service actions.
+service() {
+    # $1 = service name
+    # $2 = action to perform
+    local svc="$(lookup_service $1)"
+    shift
+    if which systemctl &>/dev/null; then
+        systemctl "$1" "$svc.service"
+    elif which chkconfig &>/dev/null; then
+        case $1 in
+            enable) chkconfig "$svc" on;;
+            disable) chkconfig "$svc" off;;
+            *)  command service "$svc" "$@";;
+        esac
+    elif which initctl &>/dev/null && initctl version 2>/dev/null | grep -q upstart ; then
+        /usr/sbin/service "$svc" "$1"
+    elif [[ -f /etc/init/$svc.unit ]]; then
+        initctl "$1" "$svc"
+    elif which update-rc.d &>/dev/null; then
+        case $1 in
+            enable|disable) update-rc.d "$svc" "$1";;
+            *) "/etc/init.d/$svc" "$1";;
+        esac
+    elif [[ -x /etc/init.d/$svc ]]; then
+        "/etc/init.d/$svc" "$1"
+    else
+        echo "No idea how to manage services on $OS_NAME"
+        exit 1
+    fi
+}
+
+# To force dpkg on Debian-based distros to play nice.
+export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
+export LC_ALL=C LANGUAGE=C LANG=C
+
+has_attribute() {
+    [[ $(read_attribute "$1") ]]
+}
+
+get_keys() {
+    local -a keys
+    local i
+    local num_re='^[0-9]+$'
+    IFS='/' read -r -s -a keys <<< "$1"
+    for i in "${!keys[@]}"; do
+        if [[ ${keys[$i]} =~ $num_re ]]; then
+            keys[$i]="[${keys[$i]}]"
+        else
+            keys[$i]="[\"${keys[$i]}\"]"
+        fi
+    done
+    local keyarg="$(printf '.%s | ' "${keys[@]}")"
+    local v="$(jq -r -c "${keyarg%* | } | keys | reduce .[] as \$item (\"\"; . + \$item + \" \")" <"$TMPDIR/attrs.json")"
+    if [[ $v = null ]]; then
+        echo ""
+    else
+        printf '%s' "$v"
+    fi
+}
+
+read_attribute() {
+    local -a keys
+    local i
+    local num_re='^[0-9]+$'
+    IFS='/' read -r -s -a keys <<< "$1"
+    for i in "${!keys[@]}"; do
+        if [[ ${keys[$i]} =~ $num_re ]]; then
+            keys[$i]="[${keys[$i]}]"
+        else
+            keys[$i]="[\"${keys[$i]}\"]"
+        fi
+    done
+    local keyarg="$(printf '.%s | ' "${keys[@]}")"
+    local v="$(jq -r -c "${keyarg%* | }" <"$TMPDIR/attrs.json")"
+    if [[ $v = null ]]; then
+        echo ""
+    else
+        printf '%s' "$v"
+    fi
+}
+
+read_attribute_file_content() {
+    read_attribute "$1" > "$2"
+    # The write content stripped the newline - in rails
+    echo "" >> "$2"
+}
+
+write_attribute() {
+    local loc="$TMPDIR/attrs/$1"
+    mkdir -p "$loc"
+    printf "%s" "$2" > "$loc/wall"
+}
+
+write_attribute_file_content() {
+    local loc="$TMPDIR/attrs/$1"
+    mkdir -p "$loc"
+    cp $2 "$loc/wall"
+}
+
+addr_port() {
+    if [[ $1 =~ ':' ]]; then
+        printf '[%s]:%d' "$1" "$2"
+    else
+        printf '%s:%d' "$1" "$2"
+    fi
+}   
+
+if ! (which jq &>/dev/null || install jq); then
+    echo "JQ not installed and not installable.  The script jig requires it to function"
+    exit 1
+fi
+
+mkdir -p "$TMPDIR/attrs"
+mkdir -p "$TMPDIR/logs"
+
+for script in "$TMPDIR/$ROLE/"*.sh; do
+    (set -e; . "$script" 2>&1 |tee  "$TMPDIR/logs/${script##*/}.log") || exit $?
+done
+exit 0

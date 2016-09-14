@@ -1,0 +1,16 @@
+%h1= t '.title'
+
+%table.data.box
+  %thead
+    %tr
+      %th= t '.network'
+      %th= t '.name'
+      %th= t '.first'
+      %th= t '.last'
+  %tbody
+    - @list.each do |net|
+      %tr
+        %td= link_to net.network.name, network_path(net.id), :title=>(net.network.description || t('not_set'))
+        %td= net.name
+        %td= net.first
+        %td= net.last

@@ -1,0 +1,4 @@
+rails/app/**/*.rb
+rails/lib/*.rb
+rails/config/routes.rb
+-o doc/internals

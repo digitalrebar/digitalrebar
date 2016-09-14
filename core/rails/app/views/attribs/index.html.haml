@@ -1,0 +1,28 @@
+%h1
+  - if @node
+    = link_to @node.name, node_path(@node.id), :title=>@node.description
+  = t '.title'
+
+%table.data.box
+  %thead
+    %tr
+      %th= t '.name'
+      - if @node
+        %th= t '.value'
+      %th= t '.description'
+      %th= t '.map'
+      %th= 'Default'
+  %tbody
+    - @list.each do |a|
+      %tr    
+        %td= link_to a.name, attrib_path(a.id)
+        - if @node
+          %td= @node.get_attrib(a) || t('not_set') rescue t('.unresolved')
+        %td= a.description
+        %td= a.map
+        %td= a.default["value"]
+
+- if Rails.env.development?
+  %h2 Discovery Debug Info (dev only)
+  %textarea.editor{:name => "template"}
+    = JSON.pretty_generate @node.discovery rescue "{}"

@@ -1,0 +1,224 @@
+# Copyright 2014, Victor Lowther
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+barclamp:
+  name: "consul"
+  parent: "core"
+  description: "Consul Service Monitoring and Management"
+  display: "Consul"
+  version: "2.E"
+  source_url: "https://github.com/digitalrebar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
+
+roles:
+  - name: consul-config
+    description: "Consul is our default service monitoring and discovery tool."
+    type: 'BarclampConsul::ConsulConfig'
+    jig: noop
+    requires:
+      - rebar-installed-node
+    flags:
+      - implicit
+    events:
+      - endpoint: inproc://role:consul-config/on_deployment_create
+        selectors:
+          - event: on_deployment_create
+            obj_class: role
+            obj_id: consul-config
+    attribs:
+      - name: consul-disable-remote-exec
+        description: 'Whether Consul is allowed to remotel execute programs'
+        map: 'consul/disable_remote_exec'
+        default: true
+        schema:
+          type: bool
+      - name: consul-config-dir
+        description: "The location that Consul will store its config data"
+        map: 'consul/config_dir'
+        default: '/etc/consul.d'
+        schema:
+          type: str
+          required: false
+      - name: consul-data-dir
+        description: "The location that Consul will store its running data"
+        map: 'consul/data_dir'
+        default: '/var/lib/consul'
+        schema:
+          type: str
+          required: false
+      - name: consul-install-dir
+        description: "The location that Consul will installed into"
+        map: 'consul/install_dir'
+        default: '/usr/local/bin'
+        schema:
+          type: str
+          required: false
+      - name: consul-ui-dir
+        description: "The location that Consul will install the UI"
+        map: 'consul/ui_dir'
+        default: '/var/lib/consul/ui'
+        schema:
+          type: str
+          required: false
+      - name: consul-encrypt
+        description: "The shared encryption key for GOSSIP"
+        map: 'consul/encrypt'
+        default: "change_me"
+        schema:
+          type: str
+          required: false
+      - name: consul-address
+        description: "The address that Consul should use for inter-cluster communications."
+        map: 'consul/bind_addr'
+        schema:
+          type: str
+          required: false
+      - name: consul-domain
+        description: "The domain that Consul assume it owns for DNS lookups"
+        map: 'consul/domain'
+        default: "consul"
+        schema:
+          type: str
+          required: false
+      - name: consul-datacenter
+        description: "The name of the datacenter that this Consul instance is running in"
+        map: 'consul/datacenter'
+        default: 'digitalrebar'
+        schema:
+          type: str
+          required: false
+      - name: consul-acl-datacenter
+        description: "The name of the datacenter that is authoritative for ACLs"
+        map: 'consul/acl_datacenter'
+        default: 'digitalrebar'
+        schema:
+          type: str
+          required: false
+      - name: consul-acl-master-token
+        description: "Token to use to update ACLs"
+        map: 'consul/acl_master_token'
+        default: 'change_me'
+        schema:
+          type: str
+          required: false
+      - name: consul-acl-default-policy
+        description: "The mode that Consul is operating in on a specific node"
+        map: 'consul/acl_default_policy'
+        default: 'allow'
+        schema:
+          type: str
+          required: true
+          enum:
+            - allow
+            - deny
+      - name: consul-acl-down-policy
+        description: "The mode that Consul is operating in on a specific node"
+        map: 'consul/acl_down_policy'
+        default: 'allow'
+        schema:
+          type: str
+          required: true
+          enum:
+            - allow
+            - deny
+  - name: consul-master
+    description: 'Master node for Consul services'
+    jig: chef
+    type: 'BarclampConsul::ConsulMaster'
+    flags:
+      - cluster
+    requires:
+      - consul-config
+    conflicts:
+      - consul-member
+    provides:
+      - consul
+    events:
+      - endpoint: inproc://role:consul-master/sync_on_todo
+        selectors:
+          - event: sync_on_todo
+            obj_class: role
+            obj_id: consul-master
+    wants-attribs:
+      - consul-acl-down-policy
+      - consul-acl-default-policy
+      - consul-acl-master-token
+      - consul-acl-datacenter
+      - consul-domain
+      - consul-address
+      - consul-encrypt
+      - consul-ui-dir
+      - consul-install-dir
+      - consul-data-dir
+      - consul-config-dir
+      - consul-disable-remote-exec
+    attribs:
+      - name: consul-serve-ui
+        description: 'Whether Consul is allowed to serve its Web interface'
+        map: 'consul/serve_ui'
+        default: true
+        schema:
+          type: bool
+      - name: consul-bootstrap-expect
+        description: "The number of servers we expect to have in the datacenter"
+        map: 'consul/bootstrap_expect'
+        default: 1
+        schema:
+          type: int
+      - name: consul-servers
+        description: "The addresses of the Consul server nodes"
+        map: 'consul/servers'
+        default: []
+        schema:
+          type: seq
+          required: false
+          sequence:
+            - type: str
+              pattern: /\[?[0-9a-f:.]*\]?:?[0-9]*/
+  - name: consul-member
+    description: 'Member node for Consul services'
+    jig: chef
+    type: 'BarclampConsul::ConsulMember'
+    flags:
+      - implicit
+    wants-attribs:
+      - consul-acl-down-policy
+      - consul-acl-default-policy
+      - consul-acl-master-token
+      - consul-acl-datacenter
+      - consul-domain
+      - consul-address
+      - consul-encrypt
+      - consul-ui-dir
+      - consul-install-dir
+      - consul-data-dir
+      - consul-config-dir
+      - consul-disable-remote-exec
+      - consul-servers
+      - consul-bootstrap-expect
+    requires:
+      - consul-config
+      - consul-master
+    conflicts:
+      - consul-master
+    provides:
+      - consul
+    events:
+      - endpoint: inproc://role:consul-member/sync_on_todo
+        selectors:
+          - event: sync_on_todo
+            obj_class: role
+            obj_id: consul-member
+            

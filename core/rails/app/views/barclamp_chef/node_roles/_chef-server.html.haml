@@ -1,0 +1,7 @@
+- tt = JSON.parse template 
+%dl
+  %dt= t ".deploy"
+  %dd
+    - tf = [ 'true', 'false' ]
+    = select_tag :data_deploy, options_for_select(tf, tt["deploy"])
+= hidden_field_tag :dataprefix, "data_"

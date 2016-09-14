@@ -1,0 +1,101 @@
+- s = @node.state
+- led = NodeRole::STATES[s]
+- if !@node.available
+  - led = (@node.alive ? 'reserved' : 'idle')
+- elsif !@node.alive
+  - led = 'off'
+
+
+%p{:style => 'float:right'}
+  = link_to t('.all_node_roles'), node_node_roles_path(:node_id=>@node.id), :class => 'button'
+
+%table
+  %tr
+    %td
+      .led{:valign=>'center', :class => led, :title=>t(".#{led}")}
+    %td
+      %h1
+        = @node.name
+        = t '.admin' if @node.is_admin?
+        = t '.system' if @node.is_system?
+
+= render :partial => 'show', :locals => { :node => @node }
+
+%h3
+  = t '.power'
+  = ":"
+  - [ :on, :off, :reboot, :reset, :cycle, :identify].select{|m|@node.power[m]}.each do |meth|
+    = link_to t(".#{meth.to_s}"), "/api/v2/nodes/#{@node.id}/power?poweraction=#{meth.to_s}", :method=>:put, :class => 'button', :'data-remote' => true,:'data-confirm' => t('are_you_sure') 
+
+%h3= t '.addresses'
+
+%dl
+  - switch = @node.attrib_switches.detect{ |k, v| v["link"] }.second  rescue nil # get the first active switch
+  - if switch and switch.length > 0
+    -if switch["unit"].eql? "-1"
+      = dl_item(t('.switch_name_port'), "#{switch["name"]} / #{switch["port"]}")
+    -else
+      = dl_item(t('.switch_name_unit_port'), "#{switch["name"]} / #{switch["unit"]} / #{switch["port"]}")
+  - else
+    = dl_item(t('.switch_name'), t('.switch_no_link'))
+
+- if @node.network_allocations.count > 0
+  %table.data.box
+    %thead
+      %tr
+        %th= t ".network"
+        %th= t ".range"
+        %th= t ".address"
+        %th= t ".conduit"
+        %th= t ".vlan"
+    %tbody
+      - @node.network_allocations.order("id ASC").each do |a|
+        %tr{:class => cycle("even", "odd")}
+          %td= link_to a.network.name, network_path(a.network.id)
+          %td= a.network_range.name
+          %td= a.address.to_s
+          %td= a.network_range.conduit
+          %td= a.network_range.use_vlan? ? a.network_range.vlan : t("none")
+- else
+  %dl
+    = dl_item t('.address'), @node.get_attrib('node-control-address')
+
+%h3= t '.node_roles'
+- node_roles = NodeRole.committed_by_node(@node).order("cohort, id")
+= render :partial=>'node_roles/index', :locals => { :list => node_roles }
+
+%h3= t '.attribs'
+
+%table.data.box
+  %thead
+    %tr
+      %th= t '.name'
+      %th= t '.value'
+  %tbody
+    - @node.attribs.order("name ASC").each do |a|
+      - begin
+        - if params.key? :raw
+          = render :partial => Attrib::UI_RENDERER, :locals => {:obj=>@node, :obj_type => Node, :attrib=>a, :editable=>false, :flag=>:raw }
+        - else
+          = render :partial => a.ui_renderer, :locals => {:obj=>@node, :obj_type => Node, :attrib=>a, :editable=>false, :flag=>:ok }
+      - rescue StandardError => e
+        - if current_user and current_user.settings(:ui).debug 
+          %tr.node{ :class => cycle(:odd, :even) }
+            %td= t '.error'
+            %td= e.message
+            %td= t 'debug'
+            %td= a.ui_renderer rescue t 'not_set'
+        - else
+          = render :partial => Attrib::UI_RENDERER, :locals => {:obj=>@node, :obj_type => Node, :attrib=>a, :editable=>false, :flag=>:error, :error=>e.message }  
+
+:javascript
+  function expand(element) {
+    var flip = element.attr("flat") != "true"
+    console.log(flip);
+    element.text(element.attr(
+      flip ? 
+        "content" :
+        "trunc"
+      ));
+    element.attr("flat", flip);
+  }

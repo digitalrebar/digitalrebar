@@ -1,0 +1,100 @@
+# Copyright 2016, RackN
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+barclamp:
+  name: "certexample"
+  parent: "core"
+  display: "Cert Example"
+  description: "Example of Cert System"
+  version: "2.E"
+  source_url: "https://github.com/digitalrebar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
+
+roles:
+  - name: example-ca
+    jig: role-provided
+    type: "BarclampCluster::MakeCa"
+    icon: account_balance
+    attribs:
+      - name: example-ca-label
+        description: "Label of the root CA"
+        default: "example"
+        map: 'cert/label'
+        schema:
+          type: str
+  - name: example-ca-install-root
+    jig: role-provided
+    type: "BarclampCluster::InstallRootCa"
+    requires:
+      - example-ca
+    flags:
+      - implicit
+      - milestone
+    wants-attribs:
+      - example-ca-label
+    icon: stars
+    attribs:
+      - name: example-root-file
+        description: "Information about the root file"
+        map: "cert/root"
+        default:
+          destination: "/etc/example-root.pem"
+          perm: "0600"
+          user: "root"
+          group: "root"
+        schema:
+          type: map
+          mapping:
+            =:
+              type: str
+  - name: example-ca-signed-cert
+    jig: role-provided
+    type: "BarclampCluster::InstallSignedCert"
+    requires:
+      - example-ca
+    flags:
+      - implicit
+      - milestone
+    wants-attribs:
+      - example-ca-label
+    icon: enhanced_encryption
+    attribs:
+      - name: example-cert-file
+        description: "Information about the cert file"
+        map: "cert/cert"
+        default:
+          destination: "/etc/example.pem"
+          perm: "0600"
+          user: "root"
+          group: "root"
+        schema:
+          type: map
+          mapping:
+            =:
+              type: str
+      - name: example-key-file
+        description: "Information about the key file"
+        map: "cert/key"
+        default:
+          destination: "/etc/example.key"
+          perm: "0600"
+          user: "root"
+          group: "root"
+        schema:
+          type: map
+          mapping:
+            =:
+              type: str

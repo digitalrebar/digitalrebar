@@ -1,0 +1,75 @@
+#!/bin/bash
+# Copyright 2011, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# We get the following variables from start-up.sh
+# MAC BOOTDEV ADMIN_IP DOMAIN HOSTNAME HOSTNAME_MAC MYIP
+
+set -x
+shopt -s extglob
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+cp /usr/share/zoneinfo/GMT /etc/localtime
+
+export http_proxy="<%=@proxy%>"
+export https_proxy="$http_proxy"
+export no_proxy="localhost,127.0.0.1,localaddress,.<%=@domain%>,<%=@provisioner_addr%>"
+provisioner="<%=@provisioner_web%>"
+api_server="<%=@api_server%>"
+chef_rpm=chef-11.16.4-1.el6.x86_64.rpm
+
+# Set up just enough infrastructure to let the jigs work.
+# Allow client to pass http proxy environment variables
+echo "AcceptEnv http_proxy https_proxy no_proxy" >> /etc/ssh/sshd_config
+service sshd restart
+
+# Synchronize our date
+ntpdate "<%=@ntp_server%>"
+
+# Other gem dependency installs.
+cat > /etc/gemrc <<EOF
+:sources:
+<% if @online -%>
+- http://rubygems.org/
+<% end -%>
+gem: --no-ri --no-rdoc --bindir /usr/local/bin --http-proxy $http_proxy
+EOF
+
+cp /etc/gemrc /root/.gemrc
+# gem install rest-client
+# gem install xml-simple
+# gem install libxml-ruby
+# gem install net-http-digest_auth
+# gem install wsman
+# gem install cstruct
+
+# Get the "right" version of Chef.  Eventually we should not hardcode this.
+[[ -f /tmp/$chef_rpm ]] || (
+    cd /tmp
+    curl -g -O "$provisioner/files/$chef_rpm"
+    rpm -Uvh "./$chef_rpm"
+)
+
+mkdir -p /root/.ssh
+cat >/root/.ssh/authorized_keys <<EOF
+<%= @keys %>
+EOF
+
+# Mark us as alive.
+# Mark the node as alive.
+while ! rebar nodes update $HOSTNAME '{"alive": true}'; do sleep 5; done
+
+# We are alive, and we should have a host entry created now.  Wait forever to do something.
+# The last line in this script must always be exit 0!!
+exit 0

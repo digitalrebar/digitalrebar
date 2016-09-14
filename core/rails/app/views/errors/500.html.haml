@@ -1,0 +1,24 @@
+- style = "#{(!current_user.settings(:errors).expand ? 'display:none; ' : '')}position:relative; top:1em" rescue 'display:none;'
+%div#error_500{:class=>"fail box"}
+  %div.message
+    %h2= t 'error.title'
+    %ul
+      %li
+        = t 'error.logfile' 
+        (
+        = link_to t('link'), main_app.utils_path()
+        )
+      %li
+        = t 'error.filebug' 
+        (
+        = link_to t('link'), "http://rebar.github.io/issues.html"
+        )
+    %div
+      %a.toggle.with_label{:href => "#", :id => "#error_toggle", :rel => "error"}= t('error.details', :message=>@error.message)
+    %div.box{:id=>"error", :style => style } 
+      %p
+        %em= @error.message
+      %h3= t 'error.backtrace'
+      %ol
+        - @error.backtrace.each do |l|
+          %li= l

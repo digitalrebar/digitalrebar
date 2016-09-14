@@ -1,0 +1,224 @@
+table.data
+
+  width: 100%
+  font-size: 12px
+  line-height: 17px
+  border-spacing: 0
+  a
+    font-size: 12px
+    white-space: nowrap
+  thead th, table > tr th
+    padding: 3px 10px
+    text-align: left
+    +gradient($secondary_bg, $secondary_bg + #222)
+  thead td, table > tr th
+    text-align: left
+    +gradient($secondary_bg, $secondary_bg + #222)
+  td, tbody th
+    padding: 5px 10px
+    text-align: left
+    &.action
+      text-align: right
+      white-space: nowrap
+  td, th
+    &.right
+      text-align: right
+    &.center
+      text-align: center
+  tr
+    &:hover, &:active
+      background: $secondary_bg
+  tfoot
+    td
+      //background: $secondary_bg
+      +gradient($secondary_bg + #222,$secondary_bg)
+
+table.box
+  padding: 0
+  tr
+    &:hover, &:active
+      background: $secondary_bg
+    th:first-child
+      +rounded_corners(10px,0,0,0)
+    th:last-child
+      +rounded_corners(0,10px,0,0)
+    td:first-child
+      padding-left: 15px
+    td:last-child
+      padding-right: 15px
+  tr:last-child
+    td:first-child
+      +rounded_corners(0,0,10px,0)
+    td:last-child
+      +rounded_corners(0,0,0,10px)
+    td:first-child:last-child
+      +rounded_corners(0,0,10px,10px)
+  tr.no-hover
+    &:hover, &:active
+      background: transparent !important
+  tr.shrunk
+    height: 15px !important
+    td.value
+      height: 15px
+      overflow: hidden
+      text-overflow: ellipsis
+    &:hover
+      td.value
+        overflow: visible
+
+
+table.box.no-hover
+  tr
+    &:hover, &:active
+      background: transparent !important
+
+table
+  border-collapse: collapse
+  tr
+    // cell classes
+    th, td
+      border-style: none
+      &.number, &.percent, &.money
+        text-align: right
+      &.short
+        width: 18px
+      &.status
+        width: 16px
+      &[colspan]
+        // was center, but changed for IE formatting
+        text-align: left  
+      &.container
+        background: $page_bg
+        .box
+          margin: 5px 0
+          background: $content_bg
+          +shadow(0,0,5px,#000)
+        table
+          th
+            background: $page_bg
+            font-size: 90%
+            &:first-child
+    th.status
+      padding-left: 15px
+    &.odd
+      td
+        background: $odd
+        &.container
+          background: mix($page_bg, $odd)
+          .box
+            background: $odd
+      &.selected
+        td
+          background: mix($odd, $selected)
+      &:hover
+        td
+          background: mix($odd, $selected)
+    &.even
+      td
+        background: $even
+        &.container
+          background: mix($page_bg, $even)
+          .box
+            background: $even
+      &.selected
+        td
+          background: mix($even, $selected)
+      &:hover
+        td
+          background: mix($odd, $selected)
+
+table.plain
+  background: none
+  tbody tr, tr
+    td, th
+      background: none
+
+$snapheight: 12em
+
+table.snap
+  align: left
+  background: $content_bg
+  padding: 2
+  thead th
+    padding: 3px 10px
+    background: $page_bg
+    border-style: none
+    &.anode
+      +rounded_corners(10px,0,0,0)
+      vertical-align: bottom
+      padding: 1
+    &.role
+      text-align: center
+    &.dr
+      transform-origin: 100% 100%
+      height: $snapheight
+      width: 1em
+      align: left
+      padding: 1
+      div
+        position: relative
+        top: 44% 
+        width: 1em
+        -webkit-transform: rotate(-45deg)
+        /* Firefox */
+        -moz-transform: rotate(-45deg)
+        /* IE */
+        -ms-transform: rotate(-45deg)
+        /* Opera */
+        -o-transform: rotate(-45deg)
+        /* Internet Explorer */
+        filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3)
+        /* Safari */
+  td 
+    &.nodename
+      text-align: right
+      padding-right: 0.2em
+    &.noderole
+      text-align: left
+  tr
+    &:hover, &:active
+      background: $secondary_bg
+  tr.no-hover
+    &:hover, &:active
+      background: transparent !important
+
+table.top
+  td,th
+    vertical-align: top  
+
+table#nodelist
+  border-collapse: collapse
+  th
+    padding-bottom: 0.5em
+  tr
+    td
+      padding: 0.5em
+      background: $even
+    &.selected
+      td
+        background: mix($even, $selected)
+    &:hover
+      td
+        background: mix($even, $selected)
+    &:nth-child(odd)
+      td
+        padding: 0.5em
+        background: $odd
+      &.selected
+        td
+          background: mix($odd, $selected)
+      &:hover
+        td
+          background: mix($odd, $selected)
+
+    
+#node_tbl_filter
+  float: right
+  padding-right: 10px
+  
+table.center
+  margin-left: auto
+  margin-right: auto
+  tbody tr td
+    padding-right: 10px
+

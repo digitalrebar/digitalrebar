@@ -1,0 +1,99 @@
+#!/bin/bash
+declare -A CONTAINERS
+CONTAINERS['digitalrebar/base']='rackn/deploy-base'
+CONTAINERS['digitalrebar/deploy-service-wrapper']='rackn/deploy-service-wrapper'
+CONTAINERS['digitalrebar/dr_dns']='rackn/deploy-dns'
+CONTAINERS['digitalrebar/dr_forwarder']='rackn/deploy-forwarder'
+CONTAINERS['digitalrebar/dr_goiardi']='rackn/deploy-goiardi'
+CONTAINERS['digitalrebar/dr_ntp']='rackn/deploy-ntp'
+CONTAINERS['digitalrebar/dr_postgres']='rackn/deploy-postgres'
+CONTAINERS['digitalrebar/dr_provisioner']='rackn/deploy-provisioner'
+CONTAINERS['digitalrebar/dr_rebar_api']='rackn/deploy-rebar-api'
+CONTAINERS['digitalrebar/dr_rebar_dhcp']='rackn/deploy-rebar-dhcp'
+CONTAINERS['digitalrebar/dr_ux']='rackn/deploy-ux'
+CONTAINERS['digitalrebar/dr_webproxy']='rackn/deploy-webproxy'
+CONTAINERS['digitalrebar/cloudwrap']='rackn/deploy-cloudwrap'
+CONTAINERS['digitalrebar/managed-service']='rackn/deploy-managed-service'
+
+declare -A REPOS
+for container in "${!CONTAINERS[@]}"; do
+    REPOS[${CONTAINERS[$container]}]=$container
+done
+
+unset container
+
+declare -A CONTAINERS_TO_BUILD
+declare -A BUILT_CONTAINERS
+declare -A UNKNOWN_CONTAINERS
+BUILD_TAG='latest'
+
+if [[ $0 = /* ]]; then
+    mountdir="$0"
+elif [[ $0 = .*  || $0 = */* ]]; then
+    mountdir="$(readlink "$PWD/$0")"
+    if [ "$mountdir" == "" ] ; then
+        mountdir="$PWD/$0"
+    fi
+else
+    echo "Cannot figure out where core is!"
+    exit 1
+fi
+
+# This gets us to core
+mountdir="${mountdir%/core/tools/*}"
+
+CONTAINER_DIR="$mountdir/containers"
+
+# Make sure all our containers are cloned
+for repo in "${CONTAINERS[@]}"; do
+    [[ -d $CONTAINER_DIR/$repo/.git ]] && continue
+    mkdir -p "$CONTAINER_DIR/$repo"
+    git clone "https://github.com/$repo" "$CONTAINER_DIR/$repo"
+done
+
+build_children_of() {
+    # $1 = container to find the children of
+    local child
+    for child in "$CONTAINER_DIR"/*/*/Dockerfile; do
+        fgrep -q "FROM $1" "$child" || continue
+        local child_dir="${child#${CONTAINER_DIR}/}"
+        child_dir="${child_dir%/Dockerfile}"
+        [[ ${REPOS[$child_dir]} ]] || continue
+        build_container "${REPOS[$child_dir]}" || return 1
+    done
+    return 0
+}
+
+build_container() {
+    # $1 = container to build
+    [[ ${BUILT_CONTAINERS[$1]} ]] && return
+    local repo_dir="$CONTAINER_DIR/${CONTAINERS[$1]}"
+    echo "Building container $1"
+    if ! ( cd "$repo_dir" && docker build -t "${1}:${BUILD_TAG}" . &>/dev/null); then
+        echo "Build of $1 failed."
+        echo "Run 'cd \"$repo_dir\" && docker build -t \"${1}:${BUILD_TAG}\" .' to see what failed."
+        return 1
+    fi
+    BUILT_CONTAINERS[$1]=true
+    build_children_of "$1"
+}
+
+while (( $# != 0)); do
+    case $1 in
+        --tag)
+            shift
+            BUILD_TAG=$1;;
+        *)
+            if [[ ! ${CONTAINERS[$1]} ]]; then
+                UNKNOWN_CONTAINERS[$1]=''
+                continue
+            else
+                CONTAINERS_TO_BUILD[$1]=true
+            fi;;
+    esac
+    shift
+done
+
+for container in "${!CONTAINERS_TO_BUILD[@]}"; do
+    build_container "$container"
+done

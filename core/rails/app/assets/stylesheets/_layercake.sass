@@ -1,0 +1,131 @@
+$green: #84d300
+$pink: #ff92a4
+$orange: #f2af00
+$light_green: #b9ff8f
+$blue: #95c2ff
+$yellow: #b9ff8f
+$yellow_dark: #df3
+
+#layercake
+  width: 960px
+  z-index: 0
+  width: 100% auto
+  margin-left: auto
+  margin-right: auto
+
+  .title
+    text-align: center
+    zindex: 1000
+  
+  .layer
+    z-index: 100
+    text-align: left
+    padding-left: 0px
+    padding-top: 5px
+
+  .dots
+    float: top
+    height: 30px
+    z-index: 10
+
+  .dark_green, .pink, .orange, .green, .blue, .yellow, .dark_blue, .user, .system, .alert, .ready
+    +shadow
+    margin-bottom: 15px
+    padding: 5px 10px
+    color: #000
+    h2
+      font-size: 30px
+      color: #EEE
+    h3
+      font-size: 16px
+    &.off
+      color: #777
+  .yellow
+    +gradient($yellow, $yellow - #333)
+    border: 1px solid #555
+    color: #000
+    &.off
+      color: #333
+      background: desaturate($yellow - #111, 60%)
+  .pink, .alert
+    +gradient($pink + #333, $pink)
+    border: 1px solid $pink
+    &.off
+      background: desaturate($pink - #111, 60%)
+      border: 1px solid #444
+  .orange, .system
+    +gradient($orange + #333, $orange)
+    border: 1px solid $orange + #111
+    color: #000
+    &.off
+      color: #fff
+      background: desaturate($secondary_bg - #111, 90%)
+  .green, .ready
+    +gradient($light_green + #222, $light_green)
+    border: 1px solid $light_green - #555
+    &.off
+      background: desaturate($light_green - #333, 60%)
+      border: 1px solid #444
+  .blue
+    +gradient($blue + #333, $blue)
+    border: 1px solid $blue
+    &.off
+      background: desaturate($blue - #111, 60%)
+      border: 1px solid #444
+  .dark_blue, .user
+    +gradient($blue - #333, $blue + #333)
+    border: 1px solid $blue
+    &.off
+      background: desaturate($blue - #333, 60%)
+      border: 1px solid #444
+
+  #leftColumn
+    width: 25%
+    position: relative
+    float: left
+    margin: 0.5em
+    display: inline-block
+
+  #rightColumn
+    width: 70%
+    margin: 0.5em
+    position: relative
+    float: right
+    display: inline-block
+
+  #core
+    height: 340px
+    padding: 0 10px
+    +clearfix
+
+  #jigs
+    height: 88px
+    padding: 0 10px
+  +clearfix
+
+  #apps
+    padding: 0 10px
+    height: 60px
+    
+          
+  #services
+    padding: 0 10px
+    height: 60px
+    
+  #clients
+    padding: 0 10px
+    height: 60px
+    
+  #os
+    padding: 0 10px
+    height: 60px
+    
+  #network
+    padding: 0 10px
+    height: 60px
+    
+  
+  #nodes
+    padding: 0 10px
+    height: 60px
+      

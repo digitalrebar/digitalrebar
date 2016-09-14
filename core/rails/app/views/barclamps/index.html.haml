@@ -1,0 +1,31 @@
+%table{:width=>'100%'}
+  %tr
+    %td
+      %h1= t '.title'
+    %td{:align=>'right'}
+      = link_to t('add'), barclamp_upload_path(-1), :class => 'button'
+
+- if @list.length==0
+  %p= t 'no_items'
+- else
+  %table.data.box
+    %thead
+      %tr
+        %th= t '.barclamp'
+        %th= t '.parent'
+        %th= t '.description'
+        %th= t '.roles'
+        %th= t '.commit'
+    %tbody
+      - @list.each do |bc|
+        %tr.node{ :class => cycle(:odd, :even) }
+          %td= link_to bc.name, barclamp_path(bc.id)
+          - if bc.parent
+            %td= link_to bc.parent.name, barclamp_path(bc.parent.id)
+          - else
+            %td= t 'na'
+          %td= bc.description
+          %td
+            - bc.roles.each do |r|
+              = link_to r.name, role_path(r.id)
+          %td= bc.commit

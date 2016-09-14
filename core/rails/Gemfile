@@ -1,0 +1,82 @@
+# Copyright 2014, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+source 'https://rubygems.org'
+
+gem 'rails', '~> 4.2.0'
+gem 'pg'
+gem 'haml'
+# Pinned until we fix our stypesheets for sass ~> 3.3.0
+gem 'sass', '~> 3.2.0'
+gem 'sass-rails'
+gem 'simple-navigation'
+gem 'syslogger'
+# Give us real foriegn keys in idiomatic Rails,
+# adds support for database-level constraints, support for views,
+# etc.
+gem 'schema_plus'
+gem 'kwalify'
+gem 'maruku'
+gem 'puma', '~> 2.15.2'
+gem 'bunny'
+gem 'xml-simple'
+gem 'daemons'
+gem 'active_scaffold'
+gem 'devise', "~> 3.4.0"
+gem 'config'
+gem 'que'
+gem 'ledermann-rails-settings', :require => 'rails-settings'
+gem 'jquery-rails'
+gem 'net-ssh'
+gem 'chef', "~> 12.3"
+gem 'open4'
+gem 'structurematch', '~> 0.1.1'
+gem 'diplomat'
+gem 'httpclient'
+gem 'rest-client'
+gem 'berkshelf'
+# For RFC 6902 json patch support
+gem 'json-patch'
+# For password change via the API
+gem 'rbnacl-libsodium'
+# For talking to JSONRPC 2.0 servers via HTTP
+gem 'jsonrpc-client'
+
+group :development, :test do
+  gem 'coveralls'
+  gem "factory_girl"
+  gem "factory_girl_rails"
+  gem 'faker'
+  gem 'rspec-rails', '=3.2.1'
+  gem "email_spec"
+  gem "database_cleaner"
+  gem "launchy"
+  gem "simplecov"
+end
+
+
+# to use digest auth in cli unit tests
+gem 'net-http-digest_auth'
+
+#Install gems from each barclamp.  The rebar_path variable is
+#needed by Gemfile.d/*.gemfile so that they can determine the correct
+# path at run-time rather than having to hard-code a path at
+# install-time which may be different and therefore incorrect.
+
+Dir.glob("/opt/digitalrebar/**/rebar_engine/barclamp_*/*.gemspec") do |gemfile|
+  gemname = gemfile.split('/')[-2]
+  gemdir = File.join(*gemfile.split('/')[1...-1])
+  gemdef = "gem '#{gemname}', :path => '/#{gemdir}'"
+  eval(gemdef, binding)
+end

@@ -1,0 +1,118 @@
+# Copyright 2013, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+barclamp:
+  name: "dns"
+  parent: "core"
+  display: "DNS"
+  description: "Domain Name Service (DNS)"
+  version: "2.E"
+  source_url: "https://github.com/digitalrebar/core"
+  license: "Apache 2"
+  license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
+
+roles:
+  - name: dns-service
+    jig: role-provided
+    icon: local_library
+    flags:
+      - service
+    attribs:
+      - name: dns_servers
+        description: 'DNS servers that all Rebar clients should use'
+        map: 'rebar/dns/nameservers'
+        schema:
+          type: seq
+          sequence:
+            - type: map
+              mapping:
+                address:
+                  type: str
+                  required: true
+                  pattern: /[0-9a-f:.]*/
+                port:
+                  type: str
+                  required: true
+                name:
+                  type: str
+                  required: true
+      - name: dns-domain
+        description: 'DNS domain name for the cluster'
+        map: 'rebar/dns/domain'
+        schema:
+          type: str
+          required: true
+  - name: dns-client
+    jig: script
+    icon: local_offer
+    flags:
+      - implicit
+    requires:
+      - dns-service
+      - rebar-installed-node
+    wants-attribs:
+      - dns_servers
+      - dns-domain
+      - use-dns
+  - name: dns-mgmt_service
+    jig: role-provided
+    icon: local_library
+    events:
+      - endpoint: inproc://role:dns-mgmt_service/on_active
+        selectors:
+          - event: on_active
+            obj_class: role
+            obj_id: dns-mgmt_service
+      - endpoint: inproc://role:dns-mgmt_service/on_node_change
+        selectors:
+          - event: on_node_change
+      - endpoint: inproc://role:dns-mgmt_service/on_network_allocation_create
+        selectors:
+          - event: on_network_allocation_create
+      - endpoint: inproc://role:dns-mgmt_service/on_network_allocation_delete
+        selectors:
+          - event: on_network_allocation_delete
+    flags:
+      - service
+    attribs:
+      - name: dns-management-servers
+        description: 'DNS Management servers that all Rebar admins should use'
+        map: 'rebar/dns/management_servers'
+        schema:
+          type: seq
+          sequence:
+            - type: map
+              mapping:
+                address:
+                  type: str
+                  required: true
+                port:
+                  type: str
+                  required: true
+                name:
+                  type: str
+                  required: true
+                url:
+                  type: str
+                  required: true
+
+attribs:
+  - name: use-dns
+    description: 'Whether the node should attempt to use the dns service'
+    map: 'rebar/providers/use_dns'
+    default: true
+    schema:
+      type: bool
+      required: true

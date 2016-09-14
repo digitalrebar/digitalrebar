@@ -1,0 +1,20 @@
+- if @deployment
+  %p{:style => 'float:right'}
+    = link_to t('.anneal'), deployment_transition_path(@deployment.id, :step=>Rails.env.development?), :class => 'button' if @deployment.committed?
+%h1
+  = link_to @deployment.name, deployment_path(@deployment.id) if @deployment
+  = t '.title'
+
+= render :partial=>'node_roles/index', :locals => { :list => @list }
+
+.clear
+
+:javascript
+
+  function update() {
+    $.ajaxSetup({ timeout: #{current_user.settings(:ui).fast_refresh} });
+      var elasped = parseInt($('span#elapsed_heartbeat').text());
+      if (elasped < 3600) {
+        location.reload();
+      }
+  }

@@ -1,0 +1,29 @@
+- if obj.attribs.count == 0
+  =t 'no_items'
+- else
+  - obj_type = obj.class.to_s.underscore + "_id"
+  - editable = (obj.is_a? NodeRole and obj.proposed?) || (obj.is_a? DeploymentRole)
+  %table.data.box
+    %thead
+      %tr
+        %th= t '.attrib'
+        %th= t '.value'
+        %th= ""
+        - if current_user and current_user.settings(:ui).debug
+          %th= t '.ui_renderer'
+    %tbdoy
+      - obj.attribs.each do |attrib|
+        - begin
+          - if params.key? :raw
+            = render :partial => Attrib::UI_RENDERER, :locals => {:obj=>obj, :obj_type => obj_type, :attrib=>attrib, :editable=>editable, :flag=>:raw }
+          - else
+            = render :partial => attrib.ui_renderer, :locals => {:obj=>obj, :obj_type => obj_type, :attrib=>attrib, :editable=>editable, :flag=>:ok }
+        - rescue StandardError => e
+          - if current_user and current_user.settings(:ui).debug
+            %tr.node{ :class => cycle(:odd, :even) }
+              %td= t '.error'
+              %td= e.message
+              %td= t 'debug'
+              %td= attrib.ui_renderer rescue t 'not_set'
+          - else
+            = render :partial => Attrib::UI_RENDERER, :locals => {:obj=>obj, :obj_type => obj_type, :attrib=>attrib, :editable=>editable, :flag=>:error, :error=>e.message }  
