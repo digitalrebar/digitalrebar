@@ -1,0 +1,47 @@
+{
+    "Name": "redhat-6.5-install",
+    "OS": {
+        "Name": "redhat-6.5",
+        "IsoFile": "RHEL6.5-20131111.0-Server-x86_64-DVD1.iso",
+        "IsoSha256": "a51b90f3dd4585781293ea08adde60eeb9cfa94670943bd99e9c07f13a259539"
+    },
+    "Kernel": "images/pxeboot/vmlinuz",
+    "Initrds": [ "images/pxeboot/initrd.img" ],
+    "BootParams": "ksdevice=bootif ks={{.Machine.Url}}/compute.ks method={{.Env.OS.InstallUrl}}",
+    "RequiredParams": [
+        "logging_servers",
+        "ntp_servers",
+        "operating-system-disk",
+        "provisioner-default-password-hash",
+        "proxy-servers",
+        "rebar-access_keys",
+        "rebar-machine_key"
+    ],
+    "Templates": [
+        {
+            "Name": "pxelinux",
+            "Path": "pxelinux.cfg/{{.Machine.HexAddress}}",
+            "UUID": "default-pxelinux.tmpl"
+        },
+        {
+            "Name": "elilo",
+            "Path": "{{.Machine.HexAddress}}.conf",
+            "UUID": "default-elilo.tmpl"
+        },
+        {
+            "Name": "ipxe",
+            "Path": "{{.Machine.Address}}.ipxe",
+            "UUID": "default-ipxe.tmpl"
+        },
+        {
+            "Name": "compute.ks",
+            "Path": "{{.Machine.Path}}/compute.ks",
+            "UUID": "centos-6.ks.tmpl"
+        },
+        {
+            "Name": "rebar_join.sh",
+            "Path": "{{.Machine.Path}}/rebar_join.sh",
+            "UUID": "rebar-join.sh.tmpl"
+        }
+    ]
+}

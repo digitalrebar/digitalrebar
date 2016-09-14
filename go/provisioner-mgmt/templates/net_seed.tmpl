@@ -1,0 +1,84 @@
+# Rebar seed file for Debian installs
+d-i debian-installer/locale string en_US.UTF-8
+d-i console-setup/ask_detect boolean false
+d-i console-setup/layoutcode string us
+d-i keyboard-configuration/xkb-keymap select us
+d-i debian-installer/locale string en_US.UTF-8
+d-i console-tools/archs select at
+d-i console-keymaps-at/keymap select American English
+d-i debian-installer/keymap string us
+d-i keyboard-configuration/toggle select No toggling
+d-i netcfg/choose_interface select auto
+d-i netcfg/dhcp_timeout string 120
+d-i netcfg/get_hostname string {{.Machine.ShortName}}
+d-i netcfg/get_domain string {{.Param "dns-domain"}}
+d-i mirror/country string manual
+{{if (eq "debian" .Env.OS.Family)}}
+d-i mirror/protocol string http
+d-i mirror/http/hostname string http.us.debian.org
+d-i mirror/http/directory string /debian
+{{else}}
+d-i mirror/protocol string {{.ParseUrl "scheme" .Env.OS.InstallUrl}}
+d-i mirror/http/hostname string {{.ParseUrl "host" .Env.OS.InstallUrl}}
+d-i mirror/http/directory string {{.ParseUrl "path" .Env.OS.InstallUrl}}
+{{end}}
+{{if .Param "proxy-servers"}}
+d-i mirror/http/proxy string {{index (.Param "proxy-servers") 0 "url"}}
+{{else}}
+d-i mirror/http/proxy string
+{{end}}
+{{if (and (ne "debian" .Env.OS.Family) (.Param "provisioner-use-local-security")) }}
+d-i apt-setup/security_host string {{.ParseUrl "host" .Env.OS.InstallUrl}}
+d-i apt-setup/security_path string {{.ParseUrl "path" .Env.OS.InstallUrl}}
+{{else}}
+d-i apt-setup/security_host string
+d-i apt-setup/security_path string
+{{end}}
+d-i clock-setup/utc boolean true
+d-i time/zone string UTC
+d-i clock-setup/ntp boolean true
+d-i clock-setup/ntp-server string {{index (.Param "ntp_servers") 0}}
+d-i partman-auto/disk string {{ .Param "operating-system-disk" }}
+d-i partman-auto/method string lvm
+d-i partman-lvm/device_remove_lvm boolean true
+d-i partman-lvm/device_remove_lvm_span boolean true
+d-i partman-auto/purge_lvm_from_device boolean true
+d-i partman-md/device_remove_md boolean true
+d-i partman-lvm/confirm boolean true
+d-i partman-lvm/confirm_nochanges boolean true
+d-i partman-lvm/confirm_nooverwrite boolean true
+d-i partman-auto-lvm/guided_size string max
+d-i partman-auto-lvm/new_vg_name string {{ .Machine.ShortName }}
+d-i partman-auto/choose_recipe select custom_lvm
+d-i partman/confirm_write_new_label boolean true
+d-i partman/choose_partition select finish
+d-i partman/confirm boolean true
+d-i partman/confirm_nooverwrite boolean true
+d-i partman/auto expert_recipe string \
+    custom_lvm::  \
+      500 50 1024 free $iflabel{ gpt } $reusemethod{ } method{ efi } format{ } . \
+      128 50 256  ext2 $defaultignore{ } method{ format } format{ } use_filesystem{ } filesystem{ ext2 } mountpoint{ /boot } . \
+      10240 20 10240 ext4 $lvmok{ } mountpoint{ / } lv_name{ root } in_vg{ {{ .Machine.ShortName }} } method{ format } format{ } use_filesystem{ } filesystem{ ext4 } . \
+      50% 20 100% linux-swap $lvmok{ } lv_name{ swap } in_vg{ {{ .Machine.ShortName }} } method{ swap } format{ } .
+{{if (and (eq "ubuntu" .Env.OS.Family)  (lt "12.10" .Env.OS.Version))}}
+d-i live-installer/net-image string {{.Env.OS.InstallUrl}}/install/filesystem.squashfs
+{{end}}
+d-i passwd/user-fullname string {{.Param "provisioner-default-user"}}
+d-i passwd/username string {{.Param "provisioner-default-user"}}
+d-i passwd/user-password-crypted password {{.Param "provisioner-default-password-hash"}}
+d-i user-setup/allow-password-weak boolean true
+d-i user-setup/encrypt-home boolean false
+d-i debian-installer/allow_unauthenticated string true
+tasksel tasksel/first multiselect ubuntu-standard, openssh-server
+d-i pkgsel/include string openssh-server curl efibootmgr
+d-i pkgsel/update-policy select none
+d-i grub-installer/only_debian boolean true
+{{if (not (and (eq "debian" .Env.OS.Family) (gt "7" .Env.OS.Version)))}}
+d-i grub-installer/choose_bootdev select {{ .Param "operating-system-disk" }}
+d-i grub-installer/bootdev string {{ .Param "operating-system-disk" }}
+{{end}}
+d-i finish-install/reboot_in_progress note
+xserver-xorg xserver-xorg/autodetect_monitor boolean true
+xserver-xorg xserver-xorg/config/monitor/selection-method select medium
+xserver-xorg xserver-xorg/config/monitor/mode-list select 1024x768 @ 60 Hz
+d-i preseed/late_command string wget {{.Machine.Url}}/post-install.sh -O /target/net-post-install.sh ; chmod +x /target/net-post-install.sh ; /target/net-post-install.sh

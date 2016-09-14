@@ -1,0 +1,88 @@
+hash: 6450d72cd92b251f73ce746308f0140312f4b072caa6c1905ff72cc43c2fc4a1
+updated: 2016-09-07T16:02:58.172924059-05:00
+imports:
+- name: github.com/boltdb/bolt
+  version: e72f08ddb5a52992c0a44c7dda9316c7333938b2
+- name: github.com/cloudflare/cfssl
+  version: 7fb22c8cba7ecaf98e4082d22d65800cf45e042a
+  subpackages:
+  - api
+  - api/client
+  - auth
+  - certdb
+  - config
+  - crypto/pkcs7
+  - csr
+  - errors
+  - helpers
+  - helpers/derhelpers
+  - info
+  - log
+  - ocsp/config
+  - signer
+- name: github.com/digitalrebar/go-common
+  version: 343d9a6c27897672e4b4afad53f36098421915e3
+  subpackages:
+  - cert
+  - multi-tenancy
+  - service
+  - store
+- name: github.com/digitalrebar/rebar-api
+  version: 1f9c1247612130ff65db4d9f16d3fabb0c5fd247
+  subpackages:
+  - client
+  - datatypes
+- name: github.com/gin-gonic/gin
+  version: f931d1ea80ae95a6fc739213cdd9399bd2967fb6
+  subpackages:
+  - binding
+  - render
+- name: github.com/golang/protobuf
+  version: 2402d76f3d41f928c7902a765dfc872356dd3aad
+  subpackages:
+  - proto
+- name: github.com/guregu/null
+  version: 41961cea0328defc5f95c1c473f89ebf0d1813f6
+- name: github.com/hashicorp/consul
+  version: 0a34741d7266af34eed36048d1a8e8880a7b17a1
+  subpackages:
+  - api
+- name: github.com/hashicorp/go-cleanhttp
+  version: ad28ea4487f05916463e2423a55166280e8254b5
+- name: github.com/hashicorp/serf
+  version: 9432bc08aa8d486e497e27f84878ebbe8c1eab66
+  subpackages:
+  - coordinate
+- name: github.com/manucorporat/sse
+  version: ee05b128a739a0fb76c7ebd3ae4810c1de808d6d
+- name: github.com/satori/go.uuid
+  version: 0aa62d5ddceb50dbcb909d790b5345affd3669b6
+- name: github.com/VictorLowther/jsonpatch
+  version: bf36a043be1fdc3127cc160767769878824ed71f
+  subpackages:
+  - utils
+- name: golang.org/x/crypto
+  version: 9e590154d2353f3f5e1b24da7275686040dcf491
+  subpackages:
+  - curve25519
+  - nacl/box
+  - nacl/secretbox
+  - pkcs12
+  - pkcs12/internal/rc2
+  - poly1305
+  - salsa20/salsa
+- name: golang.org/x/net
+  version: f315505cf3349909cdf013ea56690da34e96a451
+  subpackages:
+  - context
+  - html
+  - html/atom
+- name: golang.org/x/sys
+  version: 30de6d19a3bd89a5f38ae4028e23aaa5582648af
+  subpackages:
+  - unix
+- name: gopkg.in/go-playground/validator.v8
+  version: c193cecd124b5cc722d7ee5538e945bdb3348435
+- name: gopkg.in/yaml.v2
+  version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
+testImports: []

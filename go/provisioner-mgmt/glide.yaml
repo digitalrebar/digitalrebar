@@ -1,0 +1,14 @@
+package: github.com/rackn/provisioner-mgmt
+import:
+- package: github.com/VictorLowther/jsonpatch
+- package: github.com/digitalrebar/rebar-api
+  subpackages:
+  - client
+- package: github.com/digitalrebar/go-common
+  subpackages:
+  - cert
+- package: github.com/gin-gonic/gin
+- package: github.com/hashicorp/consul
+  subpackages:
+  - api
+- package: github.com/satori/go.uuid

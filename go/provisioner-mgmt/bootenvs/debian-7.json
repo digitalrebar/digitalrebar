@@ -1,0 +1,58 @@
+{
+    "Name": "debian-7-install",
+    "OS": {
+        "Name": "debian-7",
+        "Family": "debian",
+        "Version": "7",
+        "IsoFile": "debian-7-amd64-mini.iso",
+        "IsoUrl": "http://mirrors.kernel.org/debian/dists/wheezy/main/installer-amd64/current/images/netboot/mini.iso",
+        "IsoSha256": "8a05824f13357576900345899a9c2dff47375f1bfc2000dda4083ce9fbaf4030"
+    },
+    "Kernel": "linux",
+    "Initrds": [ "initrd.gz" ],
+    "BootParams": "priority=critical console-tools/archs=at console-setup/charmap=UTF-8 console-keymaps-at/keymap=us popularity-contest/participate=false passwd/root-login=false keyboard-configuration/xkb-keymap=us netcfg/get_domain=unassigned-domain console-setup/ask_detect=false debian-installer/locale=en_US.utf8 console-setup/layoutcode=us keyboard-configuration/layoutcode=us netcfg/dhcp_timeout=120 netcfg/choose_interface=auto url={{.Machine.Url}}/seed netcfg/get_hostname={{.Machine.Name}} root=/dev/ram rw quiet -- ",
+    "RequiredParams": [
+        "dns-domain",
+        "logging_servers",
+        "ntp_servers",
+        "operating-system-disk",
+        "provisioner-default-password-hash",
+        "provisioner-default-user",
+        "provisioner-use-local-security",
+        "proxy-servers",
+        "rebar-access_keys",
+        "rebar-machine_key"
+    ],
+    "Templates": [
+        {
+            "Name": "pxelinux",
+            "Path": "pxelinux.cfg/{{.Machine.HexAddress}}",
+            "UUID": "default-pxelinux.tmpl"
+        },
+        {
+            "Name": "elilo",
+            "Path": "{{.Machine.HexAddress}}.conf",
+            "UUID": "default-elilo.tmpl"
+        },
+        {
+            "Name": "ipxe",
+            "Path": "{{.Machine.Address}}.ipxe",
+            "UUID": "default-ipxe.tmpl"
+        },
+        {
+            "Name": "seed",
+            "Path": "{{.Machine.Path}}/seed",
+            "UUID": "net_seed.tmpl"
+        },
+        {
+            "Name": "net-post-install.sh",
+            "Path": "{{.Machine.Path}}/post-install.sh",
+            "UUID": "net-post-install.sh.tmpl"
+        },
+        {
+            "Name": "rebar_join.sh",
+            "Path": "{{.Machine.Path}}/rebar_join.sh",
+            "UUID": "rebar-join.sh.tmpl"
+        }
+    ]
+}

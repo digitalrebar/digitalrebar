@@ -1,0 +1,11 @@
+{
+    "Name": "foo.bar.baz",
+    "Address": "1.2.3.4",
+    "BootEnv": "sledgehammer",
+    "Params": {
+        "ntp-servers": ["1.2.3.4"],
+        "provisioner-online": true,
+        "rebar-access_keys": [ "a", "b", "c"],
+        "rebar-machine_key": "rebar:rebar1"
+    }
+}    
