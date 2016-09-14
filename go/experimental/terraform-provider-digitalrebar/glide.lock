@@ -68,7 +68,7 @@ imports:
   - service/sns
   - service/sqs
   - service/sts
-- name: github.com/rackn/digitalrebar/go/rebar-api
+- name: github.com/digitalrebar/digitalrebar/go/rebar-api
   version: 0b51cd78ae31dac3a01f3dee1c1815a855057460
   subpackages:
   - client

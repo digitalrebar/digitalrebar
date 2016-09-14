@@ -51,8 +51,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     client.vm.provision "shell", inline: "ssh-keygen -t rsa -f /home/vagrant/.ssh/vagrant-ubuntu-trusty-64 -P ''", privileged: false
 
     # get the deploy code
-    client.vm.provision "shell", inline: "mkdir digitalrebar", privileged: false
-    client.vm.provision "shell", inline: "git clone https://github.com/rackn/digitalrebar-deploy digitalrebar/deploy", privileged: false
+    client.vm.provision "shell", inline: "git clone https://github.com/digitalrebar/digitalrebar digitalrebar", privileged: false
     client.vm.provision "shell", inline: "digitalrebar/deploy/workloads/kubernetes.sh --help", privileged: false
     client.vm.provision "shell", inline: "cp digitalrebar/deploy/.dr_info.example /home/vagrant/.dr_info", privileged: false
     # get the rebar client

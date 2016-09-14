@@ -1,6 +1,6 @@
 package main
 
-import "github.com/rackn/digitalrebar/go/rebar-api/api"
+import "github.com/digitalrebar/digitalrebar/go/rebar-api/api"
 
 func init() {
 	app.AddCommand(makeCommandTree("capability",

@@ -12,8 +12,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/rackn/digitalrebar/go/common/event"
-	rebar "github.com/rackn/digitalrebar/go/rebar-api/api"
+	"github.com/digitalrebar/digitalrebar/go/common/event"
+	rebar "github.com/digitalrebar/digitalrebar/go/rebar-api/api"
 )
 
 type runErr struct {

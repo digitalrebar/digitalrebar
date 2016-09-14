@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/rackn/digitalrebar/go/common/cert"
-	"github.com/rackn/digitalrebar/go/common/multi-tenancy"
-	"github.com/rackn/digitalrebar/go/common/store"
+	"github.com/digitalrebar/digitalrebar/go/common/cert"
+	"github.com/digitalrebar/digitalrebar/go/common/multi-tenancy"
+	"github.com/digitalrebar/digitalrebar/go/common/store"
 )
 
 type NextServer struct {

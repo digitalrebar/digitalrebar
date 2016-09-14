@@ -5,7 +5,7 @@ package client
 import (
 	"path"
 
-	"github.com/rackn/digitalrebar/go/rebar-api/datatypes"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 )
 
 // Provider wraps datatypes.Provider to provide client API functionality

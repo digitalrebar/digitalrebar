@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	dr "github.com/rackn/digitalrebar/go/rebar-api/client"
-	drtypes "github.com/rackn/digitalrebar/go/rebar-api/datatypes"
+	dr "github.com/digitalrebar/digitalrebar/go/rebar-api/client"
+	drtypes "github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/plugin"
 	"github.com/hashicorp/terraform/terraform"

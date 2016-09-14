@@ -3,7 +3,7 @@ package api
 import (
 	"path"
 
-	"github.com/rackn/digitalrebar/go/rebar-api/datatypes"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 )
 
 // Hammer wraps datatypes.Hammer to provide client API functionality

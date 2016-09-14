@@ -23,14 +23,14 @@ import (
 	"github.com/pborman/uuid"
 
 	"github.com/coddingtonbear/go-jsonselect"
-	"github.com/rackn/digitalrebar/go/common/cert"
-	"github.com/rackn/digitalrebar/go/common/client"
-	multitenancy "github.com/rackn/digitalrebar/go/common/multi-tenancy"
-	"github.com/rackn/digitalrebar/go/common/service"
-	"github.com/rackn/digitalrebar/go/common/store"
-	rbversion "github.com/rackn/digitalrebar/go/common/version"
-	"github.com/rackn/digitalrebar/go/rebar-api/api"
-	"github.com/rackn/digitalrebar/go/rule-engine/engine"
+	"github.com/digitalrebar/digitalrebar/go/common/cert"
+	"github.com/digitalrebar/digitalrebar/go/common/client"
+	multitenancy "github.com/digitalrebar/digitalrebar/go/common/multi-tenancy"
+	"github.com/digitalrebar/digitalrebar/go/common/service"
+	"github.com/digitalrebar/digitalrebar/go/common/store"
+	rbversion "github.com/digitalrebar/digitalrebar/go/common/version"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
+	"github.com/digitalrebar/digitalrebar/go/rule-engine/engine"
 	consul "github.com/hashicorp/consul/api"
 )
 

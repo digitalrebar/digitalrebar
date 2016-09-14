@@ -6,7 +6,7 @@ import "io/ioutil"
 import "os"
 import "os/exec"
 import "strings"
-import "github.com/rackn/digitalrebar/go/common/version"
+import "github.com/digitalrebar/digitalrebar/go/common/version"
 
 func Exists(name string) (bool, error) {
 	_, err := os.Stat(name)
@@ -73,7 +73,7 @@ func main() {
 			log.Fatalf("glide.yaml issue: %v", err)
 		}
 		log.Println("Linking to glide.yaml file")
-		err = os.Link("src/github.com/rackn/digitalrebar/go/glide.yaml", "glide.yaml")
+		err = os.Link("src/github.com/digitalrebar/digitalrebar/go/glide.yaml", "glide.yaml")
 		if err != nil {
 			log.Fatalf("Failed to create link to glide.yaml: %v", err)
 		}
@@ -83,7 +83,7 @@ func main() {
 			log.Fatalf("glide.lock issue: %v", err)
 		}
 		log.Println("Linking to glide.lock file")
-		err = os.Link("src/github.com/rackn/digitalrebar/go/glide.lock", "glide.lock")
+		err = os.Link("src/github.com/digitalrebar/digitalrebar/go/glide.lock", "glide.lock")
 		if err != nil {
 			log.Fatalf("Failed to create link to glide.lock: %v", err)
 		}
@@ -122,15 +122,15 @@ func main() {
 	}
 
 	progs := []string{
-		"github.com/rackn/digitalrebar/go/certificates/sign-it",
-		"github.com/rackn/digitalrebar/go/certificates/trust-me",
-		"github.com/rackn/digitalrebar/go/rebar-dhcp",
-		"github.com/rackn/digitalrebar/go/rebar-dns-mgmt",
-		"github.com/rackn/digitalrebar/go/rule-engine",
-		"github.com/rackn/digitalrebar/go/rebar-rev-proxy",
-		"github.com/rackn/digitalrebar/go/rebar-api/rebar",
-		"github.com/rackn/digitalrebar/go/forwarder",
-		"github.com/rackn/digitalrebar/go/provisioner-mgmt",
+		"github.com/digitalrebar/digitalrebar/go/certificates/sign-it",
+		"github.com/digitalrebar/digitalrebar/go/certificates/trust-me",
+		"github.com/digitalrebar/digitalrebar/go/rebar-dhcp",
+		"github.com/digitalrebar/digitalrebar/go/rebar-dns-mgmt",
+		"github.com/digitalrebar/digitalrebar/go/rule-engine",
+		"github.com/digitalrebar/digitalrebar/go/rebar-rev-proxy",
+		"github.com/digitalrebar/digitalrebar/go/rebar-api/rebar",
+		"github.com/digitalrebar/digitalrebar/go/forwarder",
+		"github.com/digitalrebar/digitalrebar/go/provisioner-mgmt",
 	}
 	envs := [][]string{
 		[]string{

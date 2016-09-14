@@ -179,7 +179,7 @@ rebar() {
 
 validate_tools
 
-git clone https://github.com/rackn/digitalrebar
+git clone https://github.com/digitalrebar/digitalrebar
 cd digitalrebar/deploy
 ./run-in-system.sh --admin-ip=$IPADDR --access=HOST --deploy-admin=local
 

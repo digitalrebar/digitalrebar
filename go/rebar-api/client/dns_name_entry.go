@@ -2,7 +2,7 @@ package client
 
 // Deprecated: use api instead. client will not be updated
 
-import "github.com/rackn/digitalrebar/go/rebar-api/datatypes"
+import "github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 
 // DnsNameEntry wraps datatypes.DnsNameEntry to provide client API
 // functionality

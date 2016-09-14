@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/rackn/digitalrebar/go/rebar-api/api"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
 )
 
 // Handler describes the interface that anything that handles Events should satisfy.

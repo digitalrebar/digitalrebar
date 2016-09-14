@@ -12,8 +12,8 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/rackn/digitalrebar/go/common/cert"
-	"github.com/rackn/digitalrebar/go/common/version"
+	"github.com/digitalrebar/digitalrebar/go/common/cert"
+	"github.com/digitalrebar/digitalrebar/go/common/version"
 	"github.com/hashicorp/consul/api"
 )
 

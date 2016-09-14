@@ -64,11 +64,11 @@
     synchronize: src=./tftpboot dest={{home_dir.stdout}}/.cache/digitalrebar rsync_path="rsync"
     when: "'--provisioner' in dr_services and local_isos.stat.exists"
 
-  - name: download Ubuntu ISO (SLOW, see https://github.com/rackn/digitalrebar-deploy/tree/master/containers/provisioner/update-nodes/bootenvs)
+  - name: download Ubuntu ISO (SLOW, see https://github.com/digitalrebar/digitalrebar/tree/master/deploy/containers/provisioner/update-nodes/bootenvs)
     get_url: url=http://mirrors.kernel.org/ubuntu-releases/16.04/ubuntu-16.04-server-amd64.iso dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/ubuntu-16.04-server-amd64.iso" checksum="sha256:b8b172cbdf04f5ff8adc8c2c1b4007ccf66f00fc6a324a6da6eba67de71746f6"
     when: "'--provisioner' in dr_services and not local_isos.stat.exists"
 
-  - name: download Centos ISO (SLOW, see https://github.com/rackn/digitalrebar-deploy/tree/master/containers/provisioner/update-nodes/bootenvs)
+  - name: download Centos ISO (SLOW, see https://github.com/digitalrebar/digitalrebar/tree/master/deploy/containers/provisioner/update-nodes/bootenvs)
     get_url: url=http://mirrors.kernel.org/centos/7.2.1511/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1511.iso" checksum="sha256:f90e4d28fa377669b2db16cbcb451fcb9a89d2460e3645993e30e137ac37d284"
     when: "'--provisioner' in dr_services and not local_isos.stat.exists"
 
@@ -80,6 +80,7 @@
   - name: remove previous data
     command: sudo rm -rf {{home_dir.stdout}}/digitalrebar/deploy/compose/data-dir
 
+# GREG: These three stanzas need work.
   - name: get code (from local system) compose
     synchronize: src=./compose dest={{home_dir.stdout}}/digitalrebar/deploy rsync_path="rsync"
     when: dr_clone_deploy is not defined
@@ -89,7 +90,7 @@
     when: dr_clone_deploy is not defined
 
   - name: get code (from github)
-    git: repo=https://github.com/rackn/digitalrebar-deploy.git dest={{home_dir.stdout}}/digitalrebar/deploy
+    git: repo=https://github.com/digitalrebar/digitalrebar.git dest={{home_dir.stdout}}/digitalrebar
     when: dr_clone_deploy is defined
 
   - local_action: stat path=~/.netrc

@@ -6,9 +6,9 @@ set -e
 OLDPATH=`pwd`
 cd $GOPATH
 
-go get github.com/rackn/digitalrebar/go
+go get github.com/digitalrebar/digitalrebar/go
 rm -f bin/go
-go build -o build-rebar github.com/rackn/digitalrebar/go
+go build -o build-rebar github.com/digitalrebar/digitalrebar/go
 ./build-rebar 
 
 cd $OLDPATH

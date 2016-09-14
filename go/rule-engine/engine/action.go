@@ -12,7 +12,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/rackn/digitalrebar/go/rebar-api/api"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
 )
 
 type action func(*RunContext) error

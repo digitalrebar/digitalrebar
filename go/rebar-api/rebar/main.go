@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/VictorLowther/jsonpatch"
-	rbversion "github.com/rackn/digitalrebar/go/common/version"
-	"github.com/rackn/digitalrebar/go/rebar-api/api"
-	"github.com/rackn/digitalrebar/go/rebar-api/datatypes"
+	rbversion "github.com/digitalrebar/digitalrebar/go/common/version"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 	"github.com/spf13/cobra"
 )
 

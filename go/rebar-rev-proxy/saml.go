@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/RobotsAndPencils/go-saml"
-	"github.com/rackn/digitalrebar/go/common/cert"
+	"github.com/digitalrebar/digitalrebar/go/common/cert"
 )
 
 type SamlAuthFilter struct {

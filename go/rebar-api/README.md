@@ -7,4 +7,4 @@ This is the start of a sane-ish Rebar API in Go.
 
 To build the CLI, just run ```go build``` in the rebar directory.
 
-Documents are at https://godoc.org/github.com/rackn/digitalrebar/go/rebar-api/client and https://godoc.org/github.com/rackn/digitalrebar/go/rebar-api/datatypes
+Documents are at https://godoc.org/github.com/digitalrebar/digitalrebar/go/rebar-api/client and https://godoc.org/github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes

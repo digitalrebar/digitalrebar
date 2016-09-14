@@ -7,9 +7,9 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/rackn/digitalrebar/go/common/event"
-	"github.com/rackn/digitalrebar/go/common/store"
-	"github.com/rackn/digitalrebar/go/rebar-api/api"
+	"github.com/digitalrebar/digitalrebar/go/common/event"
+	"github.com/digitalrebar/digitalrebar/go/common/store"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
 	"github.com/pborman/uuid"
 )
 

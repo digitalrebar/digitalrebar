@@ -147,10 +147,7 @@ bridge_addr_re='inet ([0-9.]+)/'
 
 bring_up_admin_containers() {
     # Clone the deploy repo to a known location, if we don't already have it.
-    if [[ ! -d $mountdir/deploy ]]; then
-        # Clone the deploy repo to a known location.
-        git clone https://github.com/rackn/digitalrebar-deploy "$mountdir/deploy"
-    elif [[ ! -d $mountdir/deploy/compose ]]; then
+    if [[ ! -d $mountdir/deploy/compose ]]; then
         echo "$mountdir/deploy does not contain a checkout of the digitalrebar container deployer!"
     elif [[ ! -L  $mountdir/deploy/compose/digitalrebar ]]; then
         $SUDO rm -rf "$mountdir/deploy/compose/digitalrebar"

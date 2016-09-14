@@ -1,8 +1,8 @@
-package: github.com/rackn/digitalrebar/go/rebar-api/rebar
+package: github.com/digitalrebar/digitalrebar/go/rebar-api/rebar
 import:
 - package: github.com/VictorLowther/jsonpatch
 - package: github.com/VictorLowther/yaml
-- package: github.com/rackn/digitalrebar/go/rebar-api
+- package: github.com/digitalrebar/digitalrebar/go/rebar-api
   subpackages:
   - api
   - datatypes

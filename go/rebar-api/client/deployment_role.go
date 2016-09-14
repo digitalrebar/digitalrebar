@@ -5,7 +5,7 @@ package client
 import (
 	"path"
 
-	"github.com/rackn/digitalrebar/go/rebar-api/datatypes"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 )
 
 // DeploymentRole wraps datatypes.DeploymentRole to add client API functionality.

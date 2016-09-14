@@ -4,8 +4,8 @@ import (
 	"flag"
 	"log"
 
-	"github.com/rackn/digitalrebar/go/common/store"
-	"github.com/rackn/digitalrebar/go/common/version"
+	"github.com/digitalrebar/digitalrebar/go/common/store"
+	"github.com/digitalrebar/digitalrebar/go/common/version"
 	consul "github.com/hashicorp/consul/api"
 )
 

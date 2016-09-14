@@ -1,6 +1,6 @@
 package api
 
-import "github.com/rackn/digitalrebar/go/rebar-api/datatypes"
+import "github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 
 // Barclamp wraps datatypes.Barclamp to provide client API
 // functionality

@@ -3,7 +3,7 @@ package event
 import (
 	"reflect"
 
-	"github.com/rackn/digitalrebar/go/rebar-api/api"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
 )
 
 // EventSelector is used to register with the Rebar API for the types

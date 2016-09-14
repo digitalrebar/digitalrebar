@@ -6,8 +6,7 @@ RUN apt-get update && \
     apt-get install git sudo unzip jq curl python python-pymongo python-pycurl -y
 
 # Rebar Deploy Code
-RUN mkdir digitalrebar && \
-    git clone https://github.com/rackn/digitalrebar-deploy /root/digitalrebar/deploy
+RUN git clone https://github.com/digitalrebar/digitalrebar /root/digitalrebar
 WORKDIR /root/digitalrebar/deploy
 
 # Rebar CLI

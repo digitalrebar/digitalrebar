@@ -12,8 +12,8 @@ import (
 	"github.com/cloudflare/cfssl/info"
 	cfssllog "github.com/cloudflare/cfssl/log"
 	"github.com/cloudflare/cfssl/signer"
-	"github.com/rackn/digitalrebar/go/common/service"
-	"github.com/rackn/digitalrebar/go/common/store"
+	"github.com/digitalrebar/digitalrebar/go/common/service"
+	"github.com/digitalrebar/digitalrebar/go/common/store"
 	consul "github.com/hashicorp/consul/api"
 )
 

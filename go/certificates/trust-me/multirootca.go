@@ -8,15 +8,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rackn/digitalrebar/go/common/cert"
-	"github.com/rackn/digitalrebar/go/common/service"
-	"github.com/rackn/digitalrebar/go/common/store"
-	"github.com/rackn/digitalrebar/go/common/version"
+	"github.com/digitalrebar/digitalrebar/go/common/cert"
+	"github.com/digitalrebar/digitalrebar/go/common/service"
+	"github.com/digitalrebar/digitalrebar/go/common/store"
+	"github.com/digitalrebar/digitalrebar/go/common/version"
 
 	"github.com/cloudflare/cfssl/api/info"
 	"github.com/cloudflare/cfssl/signer"
 	"github.com/cloudflare/cfssl/whitelist"
-	commonClient "github.com/rackn/digitalrebar/go/common/client"
+	commonClient "github.com/digitalrebar/digitalrebar/go/common/client"
 
 	consul "github.com/hashicorp/consul/api"
 )

@@ -16,7 +16,7 @@ import (
 
 	"github.com/VictorLowther/jsonpatch/utils"
 	js "github.com/coddingtonbear/go-jsonselect"
-	"github.com/rackn/digitalrebar/go/rebar-api/api"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
 )
 
 // Matcher is what is used by Rules to determine whether they shouuld

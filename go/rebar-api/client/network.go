@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/rackn/digitalrebar/go/rebar-api/datatypes"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 )
 
 // Network wraps datatypes.Network to provide client API functionality

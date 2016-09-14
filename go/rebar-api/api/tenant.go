@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/rackn/digitalrebar/go/rebar-api/datatypes"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 )
 
 type Tenant struct {

@@ -10,10 +10,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/rackn/digitalrebar/go/common/cert"
-	"github.com/rackn/digitalrebar/go/common/client"
-	"github.com/rackn/digitalrebar/go/common/service"
-	"github.com/rackn/digitalrebar/go/common/version"
+	"github.com/digitalrebar/digitalrebar/go/common/cert"
+	"github.com/digitalrebar/digitalrebar/go/common/client"
+	"github.com/digitalrebar/digitalrebar/go/common/service"
+	"github.com/digitalrebar/digitalrebar/go/common/version"
 )
 
 func getTrustMeServiceAddress() string {

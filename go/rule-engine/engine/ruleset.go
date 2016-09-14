@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/rackn/digitalrebar/go/common/event"
+	"github.com/digitalrebar/digitalrebar/go/common/event"
 	"github.com/pborman/uuid"
 )
 
