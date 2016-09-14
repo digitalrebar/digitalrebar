@@ -1,0 +1,15 @@
+package: github.com/digitalrebar/rule-engine
+import:
+- package: github.com/digitalrebar/rebar-api
+  subpackages:
+  - api
+- package: github.com/ghodss/yaml
+- package: github.com/coddingtonbear/go-jsonselect
+- package: github.com/gin-gonic/gin
+- package: github.com/digitalrebar/go-common
+  subpackages:
+    - cert
+    - multi-tenancy
+    - store
+    - service
+    - client
