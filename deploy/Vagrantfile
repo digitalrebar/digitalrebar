@@ -89,7 +89,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     base.vm.provision "shell", inline: "sudo apt-get install git ansible jq -y"
     base.vm.provision "shell", inline: "mkdir digitalrebar"
     base.vm.provision "shell", inline: "git clone https://github.com/rackn/digitalrebar-deploy digitalrebar/deploy"
-    base.vm.provision "shell", inline: "cd digitalrebar/deploy && ./run-in-system.sh --deploy-admin=local --access=HOST --wl-docker-swarm --admin-ip=#{ADMIN_IP}\/#{ADMIN_CIDR}"
+    base.vm.provision "shell", inline: "cd digitalrebar/deploy && ./run-in-system.sh --deploy-admin=local --access=HOST --admin-ip=#{ADMIN_IP}\/#{ADMIN_CIDR}"
     # check external interface
     base.trigger.after :up do
       run "rebar ping -E https://#{ADMIN_IP}:3000 -U rebar -P rebar1"

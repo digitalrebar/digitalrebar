@@ -14,59 +14,22 @@ if [[ $1 == "--tag" ]] ; then
     shift
 fi
 
-./workload.sh digitalrebar core
-
 while [[ $1 ]]; do
   case "$1" in
     ux)
       ./workload.sh rackn digitalrebar-ux
       shift;;
-    kubernetes)
-      ./workload.sh digitalrebar kompos8
+    digitalrebar-workloads)
+      ./workload.sh rackn digitalrebar-workloads
       shift;;
-    kompos8)
-      ./workload.sh digitalrebar $1
-      shift;;
-    kargo)
-      ./workload.sh rackn $1
-      shift;;
-    hardware)
-      ./workload.sh rackn $1
-      shift;;
-    ceph)
-      ./workload.sh rackn $1
-      shift;;
-    packstack)
-      ./workload.sh rackn $1
-      shift;;
-    docker)
-      ./workload.sh rackn $1
-      shift;;
-    docker-swarm)
-      ./workload.sh rackn docker
-      ./workload.sh rackn $1
-      shift;;
-    enterprise)
-      ./workload.sh rackn $1
-      shift;;
-    mesosphere)
-      ./workload.sh rackn docker
-      ./workload.sh rackn $1
-      shift;;
-    burnin)
-      ./workload.sh rackn $1
-      shift;;
-    rackn)
-      for wl in docker kubernetes hardware ceph; do
-        ./workload.sh rackn ${wl}
-      done
+    rackn-workloads)
+      ./workload.sh rackn rackn-workloads
       shift;;
     all)
-      for wl in docker kompos8 hardware ceph packstack docker-swarm enterprise mesosphere burnin digitalrebar-ux; do
-        ./workload.sh rackn ${wl}
-      done
+      ./workload.sh rackn digitalrebar-ux
+      ./workload.sh rackn digitalrebar-workloads
+      ./workload.sh rackn rackn-workloads
       shift;;
-
     *)
       echo "$1 is not known, use `./workload [organization] [repo]` to install"
       exit -1;;

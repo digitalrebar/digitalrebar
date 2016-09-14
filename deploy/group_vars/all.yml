@@ -38,70 +38,18 @@ dr_services:
 # Workloads
 #   Value: A list of workloads to include for this installation
 #   The items in the list a passed to the setup script
-#   Default: kubernetes
+#   Default: digitalrebar-workloads
 #
-# Kubernetes - Used to deploy a kubernetes cluster
-#   Builds an etcd cluster
-#   A set of kubernetes masters
-#   Adds minions.
+# DigitalRebar Workloads - Default workloads for digitalrebar
+#  - digitalrebar-workloads
 #
-#  - kubernetes
-#
-# Ceph - Used to deploy a simple ceph cluster
-#
-#  - ceph
-#
-# Hardware - Provides IPMI, BIOS, and Raid 
-#   configuration tools
-#
-#  - hardware
-#
-# Packstack - creates an RDO-based environment
-#   that allows for running packstack to setup
-#   openstack on provided nodes
-#
-#  - packstack
-#
-# Docker - deploy docker-engine to a node
-#
-#  - docker
-#
-# Docker-swarm - Deploy docker swarm to aggregate
-#   a set of nodes that have docker deployed.
-#
-#  - docker-swarm       # Needs rackn access
-#
-# Enterprise - RackN added branding and additional
-#   features.
-#
-#  - enterprise         # Needs rackn access
-#
-# Mesosphere - Workload to deploy mesosphere
-#
-#  - mesosphere         # Needs rackn access
-#
-# Burnin - RackN provided tools to provide a 
-#   burnin test/stress environment
-#
-#  - burnin             # Needs rackn access
-#
-# StackEngine - RackN provided workloaded that
-#   can deploy a licensed copy of StackEngine.
-#
-#  - stackengine        # Needs rackn access
-#
-# UX - RackN new UI
-#
-#  - ux        # Needs rackn access
-#
-# All - will attempt to get all the known repos
-#
-#  - all                # Needs rackn access
+# RackN Workloads - Additional RackN workloads for digitalrebar
+#  - rackn-workloads
 #
 # If no workloads are desired, comment out the dr_workloads: line as well
 #
 dr_workloads:
-  - kubernetes
+  - digitalrebar-workloads
 
 # enable and set these variables to supply a github password directly
 # dr_rackn_username: 

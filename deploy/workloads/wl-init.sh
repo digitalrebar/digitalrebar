@@ -225,7 +225,7 @@ usage() {
   for i in "${known_workloads[@]}"; do
       printf "  %s\n" $i
   done
-  echo "Used by: --wl-kubernetes or --wl-no-kubernetes"
+  echo "Used by: --wl-digitalrebar-workloads or --wl-no-digitalrebar-workloads"
   echo
 }
 
@@ -255,8 +255,8 @@ help_options["--provider-google-zone"]="Google zone to use for nodes"
 
 help_options["--con-*"]="Container services to enable"
 help_options["--con-no-*"]="Container services to disable"
-help_options["--wl-*"]="Container services to enable"
-help_options["--wl-no-*"]="Container services to disable"
+help_options["--wl-*"]="Workload to enable"
+help_options["--wl-no-*"]="Worload services to disable"
 
 help_options["--clean-ids"]="Clean the ssh keys authorized_keys file when touching it"
 help_options["--id-file=<file>"]="Identity file to use to log into the node to ensure keys are in place"

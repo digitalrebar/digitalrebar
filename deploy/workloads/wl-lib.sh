@@ -450,7 +450,7 @@ start_machine() {
 }
 
 known_containers=(provisioner dhcp dns dns-mgmt ntp chef revproxy webproxy logging debug node access)
-known_workloads=(all docker kubernetes hardware ceph packstack docker-swarm enterprise mesosphere burnin k8s-contrail stackengine rackn ux)
+known_workloads=(rackn-workloads digitalrebar-workloads ux)
 
 declare -A containers
 declare -A workloads
@@ -467,6 +467,7 @@ classifiers=()
 
 # Default include the ux workload as well.
 [[ ${workloads["ux"]} ]] || workloads["ux"]=true
+[[ ${workloads["digitalrebar-workloads"]} ]] || workloads["digitalrebar-workloads"]=true
 
 use_container() {
     ! [[ ! ${containers[$1]} || ${containers[$1]} == false ]]

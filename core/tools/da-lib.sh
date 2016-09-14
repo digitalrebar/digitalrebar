@@ -54,8 +54,6 @@ known_containers=(provisioner dhcp ntp dns dns-mgmt revproxy chef webproxy loggi
 
 declare -A containers
 
-classifiers=()
-
 use_container() {
     ! [[ ! ${containers[$1]} || ${containers[$1]} == false ]]
 }
@@ -83,9 +81,6 @@ while (( $# > 0 )); do
         --dev) export DEV_MODE="Y";;
         --tag)
             export DR_TAG="$2"
-            shift;;
-	--classifier)
-            classifiers+=("$2")
             shift;;
         --access)
             case $2 in
@@ -124,11 +119,6 @@ make_compose_args() {
         if [[ ${containers["$c"]} != true ]]; then
             REAL_COMPOSE_ARGS="$REAL_COMPOSE_ARGS ${containers[$c]}"
         fi
-    done
-
-    for var in "${classifiers[@]}"
-    do
-        REAL_COMPOSE_ARGS="$REAL_COMPOSE_ARGS --classifier ${var}"
     done
 }
 
