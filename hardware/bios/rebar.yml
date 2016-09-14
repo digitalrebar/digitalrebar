@@ -1,0 +1,533 @@
+# Copyright 2013, Dell, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Author: RobHirschfeld
+#
+
+barclamp:
+  name: bios
+  display: BIOS
+  version: "2.E"
+
+rebar:
+  layout: 1
+
+gems:
+  required_pkgs:
+    - libxml-ruby
+    - xml-simple
+
+roles:
+  - name: bios-discover
+    jig: role-provided
+    flags:
+      - implicit
+      - discovery
+    preceeds:
+      - rebar-managed-node
+    requires:
+      - provisioner-service
+    attribs:
+      - name: bios-set-mapping
+        map: 'bios/set_mapping'
+        ui_renderer: 'barclamp_bios/attribs/set_mapping'
+        description: "Mapping of chassis manufacturers and product names to config sets"
+        schema:
+          type: seq
+          sequence:
+            - type: map
+              mapping:
+                "match": { type: any, required: true }
+                "role": { type: str, required: true }
+                "configs":
+                  type: seq
+                  sequence:
+                    - type: map
+                      mapping:
+                        "name": { type: str, required: true }
+                        "parent": { type: str, required: false }
+                        "settings":
+                          type: map
+                          mapping:
+                            =: { type: str }
+        default:
+          - "match":
+              "chassis_manufacturer": "Supermicro"
+              "system_manufacturer": "iXsystems"
+              "system_product": "42X848"
+            "role": "bios-supermicro-configure"
+            "configs":
+              - "name": "default"
+                "settings":
+                  "Advanced|ACPI Settings|High Precision Event Timer": "01 (Enabled)"
+                  "Advanced|ACPI Settings|NUMA": "01 (Enabled)"
+                  "Advanced|ACPI Settings|PCI AER Support": "00 (Disabled)"
+                  "Advanced|ACPI Settings|WHEA Support": "01 (Enabled)"
+                  "Advanced|Boot Feature|AddOn ROM Display Mode": "01 (Force BIOS)"
+                  "Advanced|Boot Feature|Bootup NumLock State": "01 (On)"
+                  "Advanced|Boot Feature|INT19 Trap Response": "01 (Immediate)"
+                  "Advanced|Boot Feature|Power Button Function": "01 (Instant Off)"
+                  "Advanced|Boot Feature|Quiet Boot": 1
+                  "Advanced|Boot Feature|Re-try Boot": "00 (Disabled)"
+                  "Advanced|Boot Feature|Restore on AC Power Loss": "02 (Last State)"
+                  "Advanced|Boot Feature|Wait For \"F1\" If Error": "01 (Enabled)"
+                  "Advanced|Boot Feature|Watch Dog Function": "00 (Disabled)"
+                  "Advanced|CPU Configuration|AES-NI": "01 (Enable)"
+                  "Advanced|CPU Configuration|Adjacent Cache Prefetch": "01 (Enable)"
+                  "Advanced|CPU Configuration|Advanced Power Management Configuration|CPU C State Control|CPU C3 Report": "00 (Disable)"
+                  "Advanced|CPU Configuration|Advanced Power Management Configuration|CPU C State Control|CPU C6 Report": "01 (Enable)"
+                  "Advanced|CPU Configuration|Advanced Power Management Configuration|CPU C State Control|Enhanced Halt State (C1E)": "01 (Enable)"
+                  "Advanced|CPU Configuration|Advanced Power Management Configuration|CPU C State Control|Package C State Limit": "03 (C6(Retention) state)"
+                  "Advanced|CPU Configuration|Advanced Power Management Configuration|CPU P State Control|EIST (P-States)": "01 (Enable)"
+                  "Advanced|CPU Configuration|Advanced Power Management Configuration|CPU P State Control|P-State Coordination": "00 (HW_ALL)"
+                  "Advanced|CPU Configuration|Advanced Power Management Configuration|CPU P State Control|Turbo Mode": "01 (Enable)"
+                  "Advanced|CPU Configuration|Advanced Power Management Configuration|CPU T State Control|ACPI T-States": "01 (Enable)"
+                  "Advanced|CPU Configuration|Advanced Power Management Configuration|Energy Efficient Turbo": "00 (Enable)"
+                  "Advanced|CPU Configuration|Advanced Power Management Configuration|Energy Performance BIAS setting.": "07 (Balanced Performance)"
+                  "Advanced|CPU Configuration|Advanced Power Management Configuration|Energy Performance Tuning": "01 (Disable)"
+                  "Advanced|CPU Configuration|Advanced Power Management Configuration|Power Technology": "01 (Energy Efficient)"
+                  "Advanced|CPU Configuration|Clock Spread Spectrum": 0
+                  "Advanced|CPU Configuration|Cores Enabled": 0
+                  "Advanced|CPU Configuration|DCU IP Prefetcher": "01 (Enable)"
+                  "Advanced|CPU Configuration|DCU Streamer Prefetcher": "01 (Enable)"
+                  "Advanced|CPU Configuration|Direct Cache Access (DCA)": "02 (Auto)"
+                  "Advanced|CPU Configuration|Execute Disable Bit": "01 (Enable)"
+                  "Advanced|CPU Configuration|Hardware Prefetcher": "01 (Enable)"
+                  "Advanced|CPU Configuration|Hyper-Threading (ALL)": "00 (Enable)"
+                  "Advanced|CPU Configuration|Intel Virtualization Technology": "01 (Enable)"
+                  "Advanced|CPU Configuration|PPIN Control": "01 (Unlock/Enable)"
+                  "Advanced|CPU Configuration|X2APIC": "00 (Disable)"
+                  "Advanced|CPU Configuration|X2APIC_OPT_OUT Flag": "00 (Disable)"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|EV DFX Features": "00 (Disable)"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO1 Configuration|IIO1 PORT 1A Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO1 Configuration|IIO1 PORT 1B Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO1 Configuration|IIO1 PORT 2A Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO1 Configuration|IIO1 PORT 2B Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO1 Configuration|IIO1 PORT 2C Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO1 Configuration|IIO1 PORT 2D Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO1 Configuration|IIO1 PORT 3A Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO1 Configuration|IIO1 PORT 3B Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO1 Configuration|IIO1 PORT 3C Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO1 Configuration|IIO1 PORT 3D Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO1 Configuration|IOU0 (IIO1 PCIe Port 2)": "FF (Auto)"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO1 Configuration|IOU1 (IIO1 PCIe Port 3)": "FF (Auto)"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO1 Configuration|IOU2 (IIO1 PCIe Port 1)": "FF (Auto)"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO2 Configuration|IIO2 PORT 1A Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO2 Configuration|IIO2 PORT 1B Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO2 Configuration|IIO2 PORT 2A Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO2 Configuration|IIO2 PORT 2B Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO2 Configuration|IIO2 PORT 2C Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO2 Configuration|IIO2 PORT 2D Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO2 Configuration|IIO2 PORT 3A Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO2 Configuration|IIO2 PORT 3B Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO2 Configuration|IIO2 PORT 3C Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO2 Configuration|IIO2 PORT 3D Link Speed": "03 (Gen 3 (8 GT/s))"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO2 Configuration|IOU0 (IIO2 PCIe Port 2)": "FF (Auto)"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO2 Configuration|IOU1 (IIO2 PCIe Port 3)": "FF (Auto)"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IIO2 Configuration|IOU2 (IIO2 PCIe Port 1)": "FF (Auto)"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IOAT Configuration|Enable IOAT": "01 (Enable)"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IOAT Configuration|No Snoop": "00 (Disable)"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|IOAT Configuration|Relaxed Ordering": "00 (Disable)"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|Intel VT for Directed I/O (VT-d)|Intel VT for Directed I/O (VT-d)": "01 (Enable)"
+                  "Advanced|Chipset Configuration|North Bridge|IIO Configuration|Intel VT for Directed I/O (VT-d)|Interrupt Remapping": "01 (Enable)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory Configuration|A7 Mode": "01 (Enable)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory Configuration|DRAM RAPL Baseline": "02 (DRAM RAPL Mode 1)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory Configuration|Data Scrambling": "02 (Auto)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory Configuration|Enable ADR": "01 (Hardware Triggered ADR)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory Configuration|Enforce POR": "00 (Enabled)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory Configuration|Erase-Arm NVDIMMs": "01 (Enabled)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory Configuration|Interleave NVDIMMs": "00 (Disabled)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory Configuration|Memory Frequency": "00 (Auto)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory Configuration|Restore NVDIMMs": "01 (Enabled)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory Configuration|Set Throttling Mode": "02 (CLTT)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory RAS Configuration|Demand Scrub": "01 (Enable)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory RAS Configuration|Device Tagging": "00 (Disable)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory RAS Configuration|Memory Rank Sparing": "00 (Disabled)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory RAS Configuration|Multi Rank Sparing": "04 (Auto)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory RAS Configuration|Patrol Scrub": "01 (Enable)"
+                  "Advanced|Chipset Configuration|North Bridge|Memory RAS Configuration|Patrol Scrub Interval": 24
+                  "Advanced|Chipset Configuration|North Bridge|Memory RAS Configuration|RAS Mode": "00 (Independent)"
+                  "Advanced|Chipset Configuration|North Bridge|QPI Configuration|QPI General Configuration|COD Enable": "00 (Disable)"
+                  "Advanced|Chipset Configuration|North Bridge|QPI Configuration|QPI General Configuration|Early Snoop": "02 (Auto)"
+                  "Advanced|Chipset Configuration|North Bridge|QPI Configuration|QPI General Configuration|Home Dir Snoop with IVT- Style OSB": "02 (Auto)"
+                  "Advanced|Chipset Configuration|North Bridge|QPI Configuration|QPI General Configuration|Isoc Mode": "00 (Disable)"
+                  "Advanced|Chipset Configuration|North Bridge|QPI Configuration|QPI General Configuration|Link Frequency Select": "06 (Auto)"
+                  "Advanced|Chipset Configuration|North Bridge|QPI Configuration|QPI General Configuration|Link L0p Enable": "01 (Enable)"
+                  "Advanced|Chipset Configuration|North Bridge|QPI Configuration|QPI General Configuration|Link L1 Enable": "01 (Enable)"
+                  "Advanced|Chipset Configuration|South Bridge|Azalia": "02 (Auto)"
+                  "Advanced|Chipset Configuration|South Bridge|Azalia PME Enable": "00 (Disabled)"
+                  "Advanced|Chipset Configuration|South Bridge|EHCI Hand-off": "00 (Disabled)"
+                  "Advanced|Chipset Configuration|South Bridge|EHCI1": "01 (Enabled)"
+                  "Advanced|Chipset Configuration|South Bridge|EHCI2": "01 (Enabled)"
+                  "Advanced|Chipset Configuration|South Bridge|Legacy USB Support": "00 (Enabled)"
+                  "Advanced|Chipset Configuration|South Bridge|Port 60/64 Emulation": "01 (Enabled)"
+                  "Advanced|Chipset Configuration|South Bridge|SATA Frozen": "01 (Enabled)"
+                  "Advanced|Chipset Configuration|South Bridge|USB 3.0 Support": "02 (Auto)"
+                  "Advanced|Chipset Configuration|South Bridge|XHCI Hand-off": "01 (Enabled)"
+                  "Advanced|Chipset Configuration|South Bridge|XHCI Pre-Boot Driver": "01 (Enabled)"
+                  "Advanced|PCIe/PCI/PnP Configuration|ASPM Support": "00 (Disabled)"
+                  "Advanced|PCIe/PCI/PnP Configuration|Above 4G Decoding": "00 (Disabled)"
+                  "Advanced|PCIe/PCI/PnP Configuration|CPU1 SAS PCI-E 3.0 X8 OPROM": "01 (Legacy)"
+                  "Advanced|PCIe/PCI/PnP Configuration|CPU2 SLOT1 PCI-E 3.0 X16 OPROM": "01 (Legacy)"
+                  "Advanced|PCIe/PCI/PnP Configuration|CPU2 SLOT2 PCI-E 3.0 X8 OPROM": "01 (Legacy)"
+                  "Advanced|PCIe/PCI/PnP Configuration|CPU2 SXB1 PCI-E 3.0 X16 OPROM": "01 (Legacy)"
+                  "Advanced|PCIe/PCI/PnP Configuration|Ipv4 PXE Support": "01 (Enabled)"
+                  "Advanced|PCIe/PCI/PnP Configuration|Ipv6 PXE Support": "00 (Disabled)"
+                  "Advanced|PCIe/PCI/PnP Configuration|MMIO High Size": "00000000 (256 GB)"
+                  "Advanced|PCIe/PCI/PnP Configuration|MMIOHBase": "00000000 (56 TB)"
+                  "Advanced|PCIe/PCI/PnP Configuration|Maximum Payload": "37 (Auto)"
+                  "Advanced|PCIe/PCI/PnP Configuration|Maximum Read Request": "37 (Auto)"
+                  "Advanced|PCIe/PCI/PnP Configuration|Network Stack": "01 (Enabled)"
+                  "Advanced|PCIe/PCI/PnP Configuration|Onboard LAN OPROM Type": "00 (Legacy)"
+                  "Advanced|PCIe/PCI/PnP Configuration|Onboard LAN1 OPROM": "01 (PXE)"
+                  "Advanced|PCIe/PCI/PnP Configuration|Onboard LAN2 OPROM": "00 (Disabled)"
+                  "Advanced|PCIe/PCI/PnP Configuration|Onboard NVMe1 OPROM": "02 (EFI)"
+                  "Advanced|PCIe/PCI/PnP Configuration|Onboard NVMe2 OPROM": "02 (EFI)"
+                  "Advanced|PCIe/PCI/PnP Configuration|Onboard NVMe3 OPROM": "02 (EFI)"
+                  "Advanced|PCIe/PCI/PnP Configuration|Onboard NVMe4 OPROM": "02 (EFI)"
+                  "Advanced|PCIe/PCI/PnP Configuration|Onboard Video OPROM": "01 (Legacy)"
+                  "Advanced|PCIe/PCI/PnP Configuration|PCI Latency Timer": "20 (32 PCI Bus Clocks)"
+                  "Advanced|PCIe/PCI/PnP Configuration|PCI PERR/SERR Support": "00 (Disabled)"
+                  "Advanced|PCIe/PCI/PnP Configuration|PCI-X Latency Timer": "40 (64 PCI Bus Clocks)"
+                  "Advanced|PCIe/PCI/PnP Configuration|SR-IOV Support": "00 (Disabled)"
+                  "Advanced|PCIe/PCI/PnP Configuration|VGA Priority": "01 (Onboard)"
+                  "Advanced|SATA Configuration|Configure SATA as": "01 (AHCI)"
+                  "Advanced|SATA Configuration|Port 0 Hot Plug": "01 (Enabled)"
+                  "Advanced|SATA Configuration|Port 0 SATA Device Type": "00 (Hard Disk Drive)"
+                  "Advanced|SATA Configuration|Port 0 Spin Up Device": "00 (Disabled)"
+                  "Advanced|SATA Configuration|Port 1 Hot Plug": "01 (Enabled)"
+                  "Advanced|SATA Configuration|Port 1 SATA Device Type": "00 (Hard Disk Drive)"
+                  "Advanced|SATA Configuration|Port 1 Spin Up Device": "00 (Disabled)"
+                  "Advanced|SATA Configuration|Port 2 Hot Plug": "01 (Enabled)"
+                  "Advanced|SATA Configuration|Port 2 SATA Device Type": "00 (Hard Disk Drive)"
+                  "Advanced|SATA Configuration|Port 2 Spin Up Device": "00 (Disabled)"
+                  "Advanced|SATA Configuration|Port 3 Hot Plug": "01 (Enabled)"
+                  "Advanced|SATA Configuration|Port 3 SATA Device Type": "00 (Hard Disk Drive)"
+                  "Advanced|SATA Configuration|Port 3 Spin Up Device": "00 (Disabled)"
+                  "Advanced|SATA Configuration|Port 4 Hot Plug": "01 (Enabled)"
+                  "Advanced|SATA Configuration|Port 4 SATA Device Type": "00 (Hard Disk Drive)"
+                  "Advanced|SATA Configuration|Port 4 Spin Up Device": "00 (Disabled)"
+                  "Advanced|SATA Configuration|Port 5 Hot Plug": "01 (Enabled)"
+                  "Advanced|SATA Configuration|Port 5 SATA Device Type": "00 (Hard Disk Drive)"
+                  "Advanced|SATA Configuration|Port 5 Spin Up Device": "00 (Disabled)"
+                  "Advanced|SATA Configuration|SATA AHCI ALPM": "01 (Enabled)"
+                  "Advanced|SATA Configuration|SATA Controller": "01 (Enabled)"
+                  "Advanced|SATA Configuration|SATA RAID Option ROM/UEFI Driver": "02 (Legacy)"
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection": 0
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Bits per second": "07 (115200)"
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Data Bits": "08 (8)"
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Flow Control": "00 (None)"
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Legacy OS Redirection Resolution": "01 (80x25)"
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Parity": "01 (None)"
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Putty KeyPad": "01 (VT100)"
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Recorder Mode": 0
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Redirection After BIOS POST": "00 (Always Enable)"
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Resolution 100x31": 1
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Stop Bits": "01 (1)"
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Terminal Type": "01 (VT100+)"
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 VT-UTF8 Combo Key Support": 1
+                  "Advanced|Serial Port Console Redirection|EMS Console Redirection": 0
+                  "Advanced|Serial Port Console Redirection|EMS Console Redirection Settings|EMS Bits per second": "07 (115200)"
+                  "Advanced|Serial Port Console Redirection|EMS Console Redirection Settings|EMS Flow Control": "00 (None)"
+                  "Advanced|Serial Port Console Redirection|EMS Console Redirection Settings|EMS Terminal Type": "02 (VT-UTF8)"
+                  "Advanced|Serial Port Console Redirection|EMS Console Redirection Settings|Out-of-Band Mgmt Port": "00 (COM1)"
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection": 1
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Bits per second": "07 (115200)"
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Data Bits": "08 (8)"
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Flow Control": "00 (None)"
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Legacy OS Redirection Resolution": "01 (80x25)"
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Parity": "01 (None)"
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Putty KeyPad": "01 (VT100)"
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Recorder Mode": 0
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Redirection After BIOS POST": "00 (Always Enable)"
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Resolution 100x31": 1
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Stop Bits": "01 (1)"
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Terminal Type": "01 (VT100+)"
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL VT-UTF8 Combo Key Support": 1
+                  "Advanced|Super IO Configuration|Serial Port 1 Configuration|Change Port 1 Settings": "00 (Auto)"
+                  "Advanced|Super IO Configuration|Serial Port 1 Configuration|Serial Port 1": 1
+                  "Advanced|Super IO Configuration|Serial Port 2 Configuration|Change Port 2 Settings": "00 (Auto)"
+                  "Advanced|Super IO Configuration|Serial Port 2 Configuration|Serial Port 2": 1
+                  "Advanced|Super IO Configuration|Serial Port 2 Configuration|Serial Port 2 Attribute": "03 (SOL)"
+                  "Advanced|Trusted Computing|Device Select": "02 (Auto)"
+                  "Advanced|Trusted Computing|Pending Operation": "00 (None)"
+                  "Advanced|Trusted Computing|Security Device Support": "01 (Enabled)"
+                  "Advanced|Trusted Computing|TPM State": "00 (Disabled)"
+                  "Advanced|Trusted Computing|TXT Support": "00 (Disabled)"
+                  "Advanced|sSATA Configuration|Configure sSATA as": "01 (AHCI)"
+                  "Advanced|sSATA Configuration|Port 0 sSATA Device Type": "00 (Hard Disk Drive)"
+                  "Advanced|sSATA Configuration|Port 1 sSATA Device Type": "00 (Hard Disk Drive)"
+                  "Advanced|sSATA Configuration|Port 2 sSATA Device Type": "00 (Hard Disk Drive)"
+                  "Advanced|sSATA Configuration|Port 3 sSATA Device Type": "00 (Hard Disk Drive)"
+                  "Advanced|sSATA Configuration|SATA/sSATA RAID Boot Select": "01 (sSATA Controller)"
+                  "Advanced|sSATA Configuration|sSATA Controller": "01 (Enabled)"
+                  "Advanced|sSATA Configuration|sSATA Port 0 Hot Plug": "01 (Enabled)"
+                  "Advanced|sSATA Configuration|sSATA Port 0 Spin Up Device": "00 (Disabled)"
+                  "Advanced|sSATA Configuration|sSATA Port 1 Hot Plug": "01 (Enabled)"
+                  "Advanced|sSATA Configuration|sSATA Port 1 Spin Up Device": "00 (Disabled)"
+                  "Advanced|sSATA Configuration|sSATA Port 2 Hot Plug": "01 (Enabled)"
+                  "Advanced|sSATA Configuration|sSATA Port 2 Spin Up Device": "00 (Disabled)"
+                  "Advanced|sSATA Configuration|sSATA Port 3 Hot Plug": "01 (Enabled)"
+                  "Advanced|sSATA Configuration|sSATA Port 3 Spin Up Device": "00 (Disabled)"
+                  "Advanced|sSATA Configuration|sSATA RAID Option ROM/UEFI Driver": "02 (Legacy)"
+                  "Advanced|sSATA Configuration|sSATA Support Aggressive Link Power Management": "01 (Enabled)"
+                  "Boot|Boot Mode Select": "02 (DUAL)"
+                  "Boot|CD/DVD special boot instance": "00 (Boot Option #1)"
+                  "Boot|Dual Boot Order #1": "0008 (Hard Disk)"
+                  "Boot|Dual Boot Order #10": "0002 (UEFI USB Hard Disk)"
+                  "Boot|Dual Boot Order #11": "0003 (UEFI USB CD/DVD)"
+                  "Boot|Dual Boot Order #12": "0004 (UEFI USB Key)"
+                  "Boot|Dual Boot Order #13": "0005 (UEFI USB Floppy)"
+                  "Boot|Dual Boot Order #14": "0006 (UEFI Network)"
+                  "Boot|Dual Boot Order #15": "0007 (UEFI AP)"
+                  "Boot|Dual Boot Order #2": "0009 (CD/DVD)"
+                  "Boot|Dual Boot Order #3": "000A (USB Hard Disk)"
+                  "Boot|Dual Boot Order #4": "000B (USB CD/DVD)"
+                  "Boot|Dual Boot Order #5": "000C (USB Key)"
+                  "Boot|Dual Boot Order #6": "000D (USB Floppy)"
+                  "Boot|Dual Boot Order #7": "000E (Network)"
+                  "Boot|Dual Boot Order #8": "0000 (UEFI Hard Disk)"
+                  "Boot|Dual Boot Order #9": "0001 (UEFI CD/DVD)"
+                  "Boot|HDD special boot instance": "00 (Boot Option #1)"
+                  "Boot|Legacy Boot Order #1": "0000 (Hard Disk)"
+                  "Boot|Legacy Boot Order #2": "0001 (CD/DVD)"
+                  "Boot|Legacy Boot Order #3": "0002 (USB Hard Disk)"
+                  "Boot|Legacy Boot Order #4": "0003 (USB CD/DVD)"
+                  "Boot|Legacy Boot Order #5": "0004 (USB Key)"
+                  "Boot|Legacy Boot Order #6": "0005 (USB Floppy)"
+                  "Boot|Legacy Boot Order #7": "0006 (Network)"
+                  "Boot|Network special boot instance": "00 (Boot Option #1)"
+                  "Boot|UEFI Boot Order #1": "0000 (Hard Disk)"
+                  "Boot|UEFI Boot Order #2": "0001 (CD/DVD)"
+                  "Boot|UEFI Boot Order #3": "0002 (USB Hard Disk)"
+                  "Boot|UEFI Boot Order #4": "0003 (USB CD/DVD)"
+                  "Boot|UEFI Boot Order #5": "0004 (USB Key)"
+                  "Boot|UEFI Boot Order #6": "0005 (USB Floppy)"
+                  "Boot|UEFI Boot Order #7": "0006 (Network)"
+                  "Boot|UEFI Boot Order #8": "0007 (UEFI AP)"
+                  "Boot|USB CD/DVD special boot instance": "00 (Boot Option #1)"
+                  "Boot|USB Floppy special boot instance": "00 (Boot Option #1)"
+                  "Boot|USB Hard Disk special boot instance": "00 (Boot Option #1)"
+                  "Boot|USB Key special boot instance": "00 (Boot Option #1)"
+                  "Event Logs|Change SMBIOS Event Log Settings|Erase Event Log": "00 (No)"
+                  "Event Logs|Change SMBIOS Event Log Settings|Log System Boot Event": "00 (Disabled)"
+                  "Event Logs|Change SMBIOS Event Log Settings|MECI": 1
+                  "Event Logs|Change SMBIOS Event Log Settings|METW": 60
+                  "Event Logs|Change SMBIOS Event Log Settings|Memory Corr. Error Threshold": 10
+                  "Event Logs|Change SMBIOS Event Log Settings|Memory Corrected Error Enabling": "00 (Disable)"
+                  "Event Logs|Change SMBIOS Event Log Settings|PCI-Ex Error Enable": "00 (No)"
+                  "Event Logs|Change SMBIOS Event Log Settings|Runtime Error Logging Support": "01 (Enable)"
+                  "Event Logs|Change SMBIOS Event Log Settings|SMBIOS Event Log": "01 (Enabled)"
+                  "Event Logs|Change SMBIOS Event Log Settings|When Log is Full": "00 (Do Nothing)"
+                  "IPMI|System Event Log|Erase SEL": "00 (No)"
+                  "IPMI|System Event Log|SEL Components": "01 (Enabled)"
+                  "IPMI|System Event Log|When SEL is Full": "00 (Do Nothing)"
+          - "match":
+             "system_manufacturer": "Dell Inc."
+             "system_product":
+               "__sm_leaf": true,
+               "op": "regex"
+               "match": "^PowerEdge (M.|R.|T[34])[23]0"
+            "role": "bios-dell-rseries-configure"
+            "configs":
+              - "name": "default"
+                "settings":
+                  "AcPwrRcvry": "Last"
+                  "AcPwrRcvryDelay": "Immediate"
+                  "AcPwrRcvryUserDelay": "60"
+                  "AesNi": "Enabled"
+                  "BootMode": "Bios"
+                  "BootSeqRetry": "Enabled"
+                  "ConTermType": "Vt100Vt220"
+                  "CorePerfBoost": "Enabled"
+                  "DataReuse": "Enabled"
+                  "DcuIpPrefetcher": "Enabled"
+                  "DcuStreamerPrefetcher": "Enabled"
+                  "DmaVirtualization": "Enabled"
+                  "EmbNic1Nic2": "Enabled"
+                  "EmbNic1": "EnabledPxe"
+                  "EmbNic2": "EnabledPxe"
+                  "EmbNic3Nic4": "Enabled"
+                  "EmbNic3": "EnabledPxe"
+                  "EmbNic4": "EnabledPxe"
+                  "EmbSata": "AhciMode"
+                  "EmbVideo": "Enabled"
+                  "ErrPrompt": "Disabled"
+                  "eSataPort1": "Auto"
+                  "ExtSerialConnector": "RemoteAccDevice"
+                  "FailSafeBaud": "115200"
+                  "InSystemCharacterization": "Enabled"
+                  "IntegratedNetwork1": "Enabled"
+                  "IntegratedNetwork2": "Enabled"
+                  "IntegratedRaid": "Enabled"
+                  "IntegratedSas": "Enabled"
+                  "IntelTxt": "Off"
+                  "InternalSdCard": "Off"
+                  "InternalSdCardRedundancy": "Mirror"
+                  "InternalUsb": "On"
+                  "InternalUsb1": "On"
+                  "InternalUsb2": "On"
+                  "LogicalProc": "Enabled"
+                  "MemFrequency": "MaxPerf"
+                  "MemOpMode": "OptimizerMode"
+                  "MemPatrolScrub": "Standard"
+                  "MemPwrMgmt": "Enabled"
+                  "MemRefreshRate": "1x"
+                  "MemTest": "Enabled"
+                  "NmiButton": "Disabled"
+                  "NodeInterleave": "Disabled"
+                  "NumLock": "On"
+                  "OsWatchdogTimer": "Disabled"
+                  "PowerDelivery": "MaxReliability"
+                  "ProcAdjCacheLine": "Enabled"
+                  "ProcBusSpeed": "7.20 GT/s"
+                  "ProcC1E": "Enabled"
+                  "ProcCStates": "Enabled"
+                  "ProcCores": "All"
+                  "ProcDramPrefetcher": "Enabled"
+                  "ProcExecuteDisable": "Enabled"
+                  "ProcHtAssist": "Enabled"
+                  "ProcHwPrefetcher": "Enabled"
+                  "ProcHyperTransport": "HT3"
+                  "ProcPwrPerf": "SysDbpm"
+                  "ProcTurboMode": "Enabled"
+                  "ProcVirtualization": "Disabled"
+                  "PwrButton": "Enabled"
+                  "QpiSpeed": "MaxDataRate"
+                  "RedirAfterBoot": "Enabled"
+                  "ReportKbdErr": "Report"
+                  "RtidSetting": "Disabled"
+                  "SataPortA": "Auto"
+                  "SataPortB": "Auto"
+                  "SataPortC": "Auto"
+                  "SataPortD": "Auto"
+                  "SataPortE": "Auto"
+                  "SataPortF": "Auto"
+                  "SataPortG": "Auto"
+                  "SataPortH": "Auto"
+                  "SerialComm": "OnConRedirCom2"
+                  "SerialPortAddress": "Serial1Com1Serial2Com2"
+                  "Slot1": "Enabled"
+                  "Slot2": "Enabled"
+                  "Slot3": "Enabled"
+                  "Slot4": "Enabled"
+                  "Slot5": "Enabled"
+                  "Slot6": "Enabled"
+                  "Slot7": "Enabled"
+                  "SnoopFilter": "Enabled"
+                  "SriovGlobalEnable": "Disabled"
+                  "SysProfile": "PerfPerWattOptimizedDapc"
+                  "SystemUefiShell": "Disabled"
+                  "TpmActivation": "NoChange"
+                  "TpmClear": "No"
+                  "TpmSecurity": "Off"
+                  "TpmStatus": "Unknown"
+                  "UsbPorts": "AllOn"
+              - "name": "uefi"
+                "parent": "default"
+                "settings":
+                  "BootMode": "Uefi"
+              - "name": "virtualization"
+                "parent": "default"
+                "settings":
+                  "ProcVirtualization": "Enabled"
+                  "SriovGlobalEnable": "Enabled"
+      - name: bios-all_configs
+        map: 'bios/all_configs'
+        description: 'All the BIOS configurations the BIOS barclamp knows how to handle'
+      - name: bios-config-sets
+        map: 'bios/config_sets'
+        description: 'The permitted BIOS configurations for this node.'
+    wants-attribs:
+      - provisioner-webservers
+  - name: bios-supermicro-configure
+    jig: role-provided
+    events:
+      - endpoint: inproc://role:bios-supermicro-configure/on_proposed
+        selectors:
+          - event: on_proposed
+            obj_class: role
+            obj_id: bios-supermicro-configure
+    flags:
+      - leaverunlog
+    requires:
+      - bios-discover
+    preceeds:
+      - rebar-hardware-configured
+    wants-attribs:
+      - bios-config-sets
+      - ipmi-macaddr
+    attribs:
+      - name: bios-sum-archive
+        map: 'bios/supermicro/sum_archive'
+        description: 'The name of the SuperMicro Update Manager utility'
+        default: 'sum_1.6.0_Linux_x86_64_20160128.tar.gz'
+        schema:
+          type: str
+      - name: bios-sum-licenses
+        map: 'bios/supermicro/sum_licenses'
+        description: "The license keys for the SuperMicro systems"
+        schema:
+          type: map
+          mapping:
+            =:
+              type: str
+  - name: bios-dell-rseries-configure
+    jig: role-provided
+    flags:
+      - leaverunlog
+    requires:
+      - bios-discover
+    preceeds:
+      - rebar-hardware-configured
+    wants-attribs:
+      - bios-config-sets
+    attribs:
+      - name: bios-configuration
+        map: 'bios/config'
+        description: "The desired BIOS configuration for this node."
+        default: [ "default" ]
+        schema:
+          type: seq
+          sequence:
+            - type: str
+
+extra_files:
+  # These files must be kept in sync with the ones in bc-template-bios.json
+  # RKR: Files and links updated as of July 2nd 2013
+  # PEC 2100 BIOS C99Q3B22 and BMC 1.82
+  #- http://downloads.dell.com/FOLDER01091388M/1/C2100_BIOS_5PY2C_LN32_B23.BIN bios/2100
+  #- http://downloads.dell.com/FOLDER00699088M/1/C2100_ESM_Firmware_HJR3N_LN32_1.82_A01.BIN bios/2100
+  # PEC 6100 BIOS 1.70 and BMC 1.32
+  #- http://downloads.dell.com/FOLDER01170221M/1/BIOS_P8GRR_LN32_1.70.BIN bios/6100
+  #- http://downloads.dell.com/FOLDER01496500M/1/ESM_Firmware_47XCH_LN32_1.32.BIN bios/6100
+  # PEC 6105 BIOS 2.2.1 and BMC 1.30
+  #- http://downloads.dell.com/FOLDER01316667M/1/BIOS_KDT7G_LN32_2.2.1.BIN bios/6105
+  #- http://downloads.dell.com/FOLDER01084633M/1/ESM_Firmware_WVV5T_LN32_1.30.BIN bios/6105
+  # PEC 6145 BIOS 3.0.0 and BMC 1.13
+  #- http://downloads.dell.com/FOLDER00896230M/1/C6145_BIOS_F3CYY_LN32_3.0.0_A01.BIN bios/6145
+  #- http://downloads.dell.com/FOLDER01383976M/1/C6145_ESM_Firmware_T3PPM_LN32_1.13.BIN bios/6145
+  ## PEC 6220 BIOS 1.1.19 and BMC 2.02
+  #- http://downloads.dell.com/FOLDER01384192M/1/C6220_BIOS_NXJXX_LN32_1.1.19.BIN bios/6220
+  #- http://downloads.dell.com/FOLDER01371273M/1/C6220_ESM_Firmware_9JJW3_LN32_2.02.BIN bios/6220
+  # PEC 8000 BIOS 1.1.19 and BMC 2.03
+  #- http://downloads.dell.com/FOLDER01727106M/1/C8000_BIOS_J3KJW_LN_2.1.2.BIN bios/8000
+  #- http://downloads.dell.com/FOLDER01766418M/1/ESM_Firmware_V4DTW_LN32_2.25.BIN bios/8000
+  # Utility for configuring Dell-specific BMC settings on PEC gear.
+  - http://poweredgec.com/files/bmc-2013-10-22.tgz bios/tools
+  # Utility for configuring BIOS setting on PEC gear.
+  - http://poweredgec.com/files/setupbios-2013-10-03.tgz bios/tools
+  # Utility for doing various things to the ASPEED BMC and BIOS.
+  #- http://upload.aspeedtech.com/SOC/socflash_v10601.zip bios/tools
+  - http://opencrowbar.s3-website-us-east-1.amazonaws.com/socflash_v10601.zip bios/tools

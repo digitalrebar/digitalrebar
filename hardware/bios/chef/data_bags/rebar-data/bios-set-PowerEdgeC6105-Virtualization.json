@@ -1,0 +1,12 @@
+{
+  "versions": [
+    "2.1.4"
+  ],
+  "style": "unified_pec",
+  "id": "bios-set-PowerEdgeC6105-Virtualization",
+  "attributes": {
+    "secure_virtual_machine_mode": "enabled",
+    "sr_iov_supported": "enabled",
+    "iommu": "enabled"
+  }
+}

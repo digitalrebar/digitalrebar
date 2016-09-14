@@ -1,0 +1,23 @@
+{
+  "type" : "map", "required": true, "mapping": {
+    "id" : { "type": "str", "required": true },
+    "style" : { "type": "str", "required": false },
+    "attributes" : { "type": "map", "required": true,
+      "mapping":  {
+        = : { "type": "map",
+          "mapping":  {
+            = : { "type": "map",
+              "mapping":  {
+                = : { "type": "map",
+                  "mapping":  {
+                    = : { "type" : "str", "required": false }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

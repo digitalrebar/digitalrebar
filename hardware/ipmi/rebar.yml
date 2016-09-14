@@ -1,0 +1,372 @@
+# Copyright 2013, Dell
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+barclamp:
+  name: ipmi
+  display: IPMI
+  version: "2.E"
+  license: "apache2"
+  copyright: "Dell, Inc 2013"
+  api_version: "v2"
+  api_version_accepts: "v2"
+  requires:
+    - chef
+    - network
+  member:
+    - rebar
+
+rebar:
+  layout: 2.0
+
+hammers:
+  - name: ipmi
+    priority: 6
+    type: 'BarclampIpmi::IpmiHammer'
+  - name: wsman
+    priority: 2
+    type: 'BarclampIpmi::WsmanHammer'
+  - name: amt
+    priority: 2
+    type: 'BarclampIpmi::AmtHammer'
+
+roles:
+  - name: amt-discover
+    jig: script
+    type: 'BarclampIpmi::AmtDiscover'
+    events:
+      - endpoint: inproc://role:amt-discover/on_active
+        selectors:
+          - event: on_active
+            obj_class: role
+            obj_id: amt-discover
+    flags:
+      - implicit
+      - discovery
+    attribs:
+      - name: amt-enable
+        description: "Whether to try to enable Intel AMT support on the system"
+        map: 'amt/enable'
+        default: false
+        schema:
+          type: bool
+  - name: amt-configure
+    jig: role-provided
+    type: 'BarclampIpmi::AmtConfigure'
+    requires:
+      - amt-discover
+    preceeds:
+      - rebar-managed-node
+    wants-attribs:
+      - node-control-address
+      - amt-enable
+    attribs:
+      - name: amt-password
+        description: 'The password for the AMT controller'
+        map: 'amt/password'
+        default: 'Rebar_1!'
+        schema:
+          type: str
+  - name: ipmi-discover
+    jig: chef
+    preceeds:
+      - rebar-managed-node
+    requires:
+      - deployer-client
+    flags:
+      - implicit
+      - discovery
+    events:
+      - endpoint: inproc://role:ipmi-discover/on_active
+        selectors:
+          - event: on_active
+            obj_class: role
+            obj_id: ipmi-discover
+    attribs:
+      - name: ipmi-enable
+        description: "Says whether to try and enable IPMI for this node"
+        map: 'ipmi/bmc_enable'
+        default: true
+        schema:
+          type: bool
+      - name: ipmi-detected-params
+        description: "The firmware and network settings that IPMI is configured with."
+        map: 'rebar_wall/ipmi'
+      - name: ipmi-version
+        description: "The version of IPMI that this controller implements"
+        map: 'rebar_wall/ipmi/bmcinfo/version'
+      - name: ipmi-device-id
+        description: "The device ID of the IPMI controller"
+        map: 'rebar_wall/ipmi/bmcinfo/device_id'
+      - name: ipmi-device-rev
+        description: "The device revision of the IPMI controller"
+        map: 'rebar_wall/ipmi/bmcinfo/device_rev'
+      - name: ipmi-firmware-rev
+        description: "The firmware revision the IPMI controller is at"
+        map: 'rebar_wall/ipmi/bmcinfo/firmware_rev'
+      - name: ipmi-mfgr-id
+        description: "The manufacturer ID of the IPMI controller"
+        map: 'rebar_wall/ipmi/bmcinfo/mfgr_id'
+      - name: ipmi-mfgr-name
+        description: "The manufacturer of the IPMI controller"
+        map: 'rebar_wall/ipmi/bmcinfo/mfgr_name'
+      - name: ipmi-product-id
+        description: "The product ID of the IPMI controller"
+        map: 'rebar_wall/ipmi/bmcinfo/product_id'
+      - name: ipmi-product-name
+        description: "The product name of the IPMI controller"
+        map: 'rebar_wall/ipmi/bmcinfo/product_name'
+      - name: ipmi-provides-device-sdrs
+        description: "Whether this IPMI controller provides access to additional devices"
+        map: 'rebar_wall/ipmi/bmcinfo/provides_device_sdrs'
+      - name: ipmi-additional-devices
+        description: "The additional devices this IPMI controller provides"
+        map: 'rebar_wall/ipmi/bmcinfo/additional_devs'
+      - name: ipmi-macaddr
+        description: "The MAC address of this IPMI controller"
+        map: 'rebar_wall/ipmi/laninfo/macaddr'
+      - name: ipmi-quirklist
+        description: 'List of interesting quirks to use when talking to IPMI controllers'
+        map: 'ipmi/quirks'
+        default:
+          "dell-rseries":
+            "quirklist": ["ipmi-nodelay","ipmi-dell-dedicated-nic"]
+            "match":
+              "bmcinfo":
+                "device_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "32"
+                "mfgr_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "674"
+                  "score": 5
+                "product_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "256 (0x0100)"
+                  "score": 3
+          "hp-19-11-bmc":
+            "quirklist": ["ipmi-crossed-access-channels","ipmi-hard-reset-after-config"]
+            "match":
+              "bmcinfo":
+                "device_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "19"
+                "mfgr_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "11"
+                  "score": 5
+          "intel-33-343-bmc":
+            "quirklist": ["ipmi-immutable-rootname"]
+            "match":
+              "bmcinfo":
+                "device_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "33"
+                "mfgr_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "343"
+                  "score": 5
+          "ibm-2-220-bmc":
+            "quirklist": ["ipmi-immutable-root"]
+            "match":
+              "bmcinfo":
+                "device_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "32"
+                "mfgr_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "2"
+                  "score": 5
+                "product_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "220 (0x00dc)"
+                  "score": 3
+          "ibm-2-291-bmc":
+            "quirklist": ["ipmi-immutable-root"]
+            "match":
+              "bmcinfo":
+                "device_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "32"
+                "mfgr_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "2"
+                  "score": 5
+                "product_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "291 (0x0123)"
+                  "score": 3
+          "ibm-2-other-bmc":
+            "quirklist": ["ipmi-immutable-root"]
+            "match":
+              "bmcinfo":
+                "device_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "32"
+                "mfgr_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "2"
+                  "score": 6
+          "super-micro-bmc":
+            "quirklist": ["ipmi-immutable-root"]
+            "match":
+              "bmcinfo":
+                "device_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "32"
+                "mfgr_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "47488"
+                  "score": 5
+          "super-micro-redfish-bmc":
+            "quirklist": ["ipmi-immutable-root"]
+            "match":
+              "bmcinfo":
+                "device_id":
+                  "__sm_leaf": true
+                  "match": "32"
+                  "op": "=="
+                "mfgr_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "10876"
+                  "score": 5
+                "product_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "2084 (0x0824)"
+                  "score": 5
+          "quanta-bmc":
+            "quirklist": ["ipmi-immutable-root"]
+            "match":
+              "bmcinfo":
+                "device_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "32"
+                "mfgr_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "7244"
+                  "score": 5
+          "ibm-20301-bmc":
+            "quirklist": ["ipmi-immutable-root"]
+            "match":
+              "bmcinfo":
+                "device_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "32"
+                "mfgr_id":
+                  "__sm_leaf": true
+                  "op": "=="
+                  "match": "20301"
+                  "score": 5
+        schema:
+          type: map
+          mapping:
+            =:
+              type: map
+              mapping:
+                "match": { type: any, required: true }
+                "quirklist":
+                  type: seq
+                  sequence:
+                    - type: str
+                      enum:
+                        - ipmi-nodelay
+                        - ipmi-dell-dedicated-nic
+                        - ipmi-crossed-access-channels
+                        - ipmi-immutable-rootname
+                        - ipmi-immutable-root
+  - name: ipmi-configure
+    jig: chef
+    requires:
+      - ipmi-discover
+    wants-attribs:
+      - ipmi-enable
+      - ipmi-detected-params
+    preceeds:
+      - rebar-managed-node
+    events:
+      - endpoint: inproc://role:ipmi-configure/on_active
+        selectors:
+          - event: on_active
+            obj_class: role
+            obj_id: ipmi-configure
+    attribs:
+      - name: ipmi-username
+        description: "The username that will be used to access the IPMI controller remotely."
+        map: 'ipmi/bmc_user'
+        default: "root"
+        schema:
+          type: str
+          required: true
+      - name: ipmi-password
+        description: "The password for the IPMI user."
+        map: 'ipmi/bmc_password'
+        default: 'cr0wBar!'
+        schema:
+          type: str
+          required: true
+      - name: ipmi-use-dhcp
+        description: "Whether the IPMI controller should get its address via DHCP"
+        map: 'ipmi/use_dhcp'
+        default: false
+        schema:
+          type: bool
+      - name: ipmi-configured
+        description: "Whether the username and password has been configured for this IPMI controller"
+        map: 'ipmi/configured'
+      - name: ipmi-messages
+        description: 'Messages from configuring IPMI on the system'
+        map: 'rebar_wall/status/ipmi/messages'
+        default: []
+    flags:
+      - implicit
+
+debs:
+  required_pkgs:
+    - ipmitool
+
+rpms:
+  centos-6.5:
+    required_pkgs:
+      - libwsman1
+      - libwsman-devel
+  centos-6.6:
+    required_pkgs:
+      - libwsman1
+      - libwsman-devel
+
+extra_files:
+  # Utility for configuring Dell-specific BMC settings on PEC gear.
+  - http://poweredgec.com/files/bmc-2013-10-22.tgz

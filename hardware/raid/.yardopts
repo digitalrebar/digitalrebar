@@ -1,0 +1,3 @@
+rebar_engine/*/app/**/*.rb
+rebar_engine/*/lib/**/*.rb
+-o doc/internals

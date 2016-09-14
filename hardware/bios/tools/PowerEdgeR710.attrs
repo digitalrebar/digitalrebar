@@ -1,0 +1,383 @@
+BIOS.Setup.1-1:MemTest DCIM_BIOSEnumeration false "Enabled" Enabled,Disabled 
+BIOS.Setup.1-1:MemOpMode DCIM_BIOSEnumeration false "OptimizerMode" OptimizerMode,AdvEccMode,MirrorMode 
+BIOS.Setup.1-1:NodeInterleave DCIM_BIOSEnumeration false "Disabled" Enabled,Disabled 
+BIOS.Setup.1-1:MemVolt DCIM_BIOSEnumeration true "AutoVolt" AutoVolt,Volt15V 
+BIOS.Setup.1-1:LogicalProc DCIM_BIOSEnumeration false "Enabled" Enabled,Disabled 
+BIOS.Setup.1-1:ProcVirtualization DCIM_BIOSEnumeration false "Enabled" Enabled,Disabled 
+BIOS.Setup.1-1:ProcAdjCacheLine DCIM_BIOSEnumeration false "Enabled" Enabled,Disabled 
+BIOS.Setup.1-1:ProcHwPrefetcher DCIM_BIOSEnumeration false "Enabled" Enabled,Disabled 
+BIOS.Setup.1-1:ProcExecuteDisable DCIM_BIOSEnumeration false "Enabled" Enabled,Disabled 
+BIOS.Setup.1-1:ProcCores DCIM_BIOSEnumeration false "All" All,Single,Dual 
+BIOS.Setup.1-1:ProcC1E DCIM_BIOSEnumeration false "Enabled" Enabled,Disabled 
+BIOS.Setup.1-1:ProcTurboMode DCIM_BIOSEnumeration false "Enabled" Enabled,Disabled 
+BIOS.Setup.1-1:ProcCStates DCIM_BIOSEnumeration false "Enabled" Enabled,Disabled 
+BIOS.Setup.1-1:EmbSata DCIM_BIOSEnumeration false "AtaMode" AtaMode,Off 
+BIOS.Setup.1-1:SataPortA DCIM_BIOSEnumeration false "Auto" Off,Auto 
+BIOS.Setup.1-1:SataPortB DCIM_BIOSEnumeration false "Off" Off,Auto 
+BIOS.Setup.1-1:BootMode DCIM_BIOSEnumeration false "Bios" Bios,Uefi 
+BIOS.Setup.1-1:BootSeqRetry DCIM_BIOSEnumeration false "Disabled" Disabled,Enabled 
+BIOS.Setup.1-1:IntegratedRaid DCIM_BIOSEnumeration false "Enabled" Enabled,Disabled 
+BIOS.Setup.1-1:UsbPorts DCIM_BIOSEnumeration false "AllOn" AllOn,OnlyBackPortsOn,AllOff 
+BIOS.Setup.1-1:InternalUsb DCIM_BIOSEnumeration false "On" On,Off 
+BIOS.Setup.1-1:InternalSdCard DCIM_BIOSEnumeration true "Off" Off,On 
+BIOS.Setup.1-1:EmbNic1Nic2 DCIM_BIOSEnumeration false "Enabled" Enabled,DisabledOs 
+BIOS.Setup.1-1:EmbNic1 DCIM_BIOSEnumeration false "EnabledPxe" Enabled,EnabledPxe,EnablediScsi,Disabled 
+BIOS.Setup.1-1:EmbNic2 DCIM_BIOSEnumeration false "Enabled" Enabled,EnabledPxe,EnablediScsi,Disabled 
+BIOS.Setup.1-1:EmbNic3Nic4 DCIM_BIOSEnumeration false "Enabled" Enabled,DisabledOs 
+BIOS.Setup.1-1:EmbNic3 DCIM_BIOSEnumeration false "Enabled" Enabled,EnabledPxe,EnablediScsi,Disabled 
+BIOS.Setup.1-1:EmbNic4 DCIM_BIOSEnumeration false "Enabled" Enabled,EnabledPxe,EnablediScsi,Disabled 
+BIOS.Setup.1-1:OsWatchdogTimer DCIM_BIOSEnumeration false "Disabled" Disabled,Enabled 
+BIOS.Setup.1-1:IoatEngine DCIM_BIOSEnumeration false "Disabled" Disabled,Enabled 
+BIOS.Setup.1-1:EmbVideo DCIM_BIOSEnumeration true "Enabled" Enabled,Disabled 
+BIOS.Setup.1-1:SriovGlobalEnable DCIM_BIOSEnumeration false "Disabled" Disabled,Enabled 
+BIOS.Setup.1-1:SerialComm DCIM_BIOSEnumeration false "OnConRedirCom2" OnNoConRedir,OnConRedirCom1,OnConRedirCom2,Off 
+BIOS.Setup.1-1:SerialPortAddress DCIM_BIOSEnumeration false "Serial1Com1Serial2Com2" Serial1Com1Serial2Com2,Serial1Com2Serial2Com1 
+BIOS.Setup.1-1:ExtSerialConnector DCIM_BIOSEnumeration false "RemoteAccDevice" Serial1,Serial2,RemoteAccDevice 
+BIOS.Setup.1-1:FailSafeBaud DCIM_BIOSEnumeration false "115200" 115200,57600,19200,9600 
+BIOS.Setup.1-1:ConTermType DCIM_BIOSEnumeration false "Vt100Vt220" Vt100Vt220,Ansi 
+BIOS.Setup.1-1:RedirAfterBoot DCIM_BIOSEnumeration false "Enabled" Enabled,Disabled 
+BIOS.Setup.1-1:FrontLcd DCIM_BIOSEnumeration true "Advanced" Advanced 
+BIOS.Setup.1-1:PowerMgmt DCIM_BIOSEnumeration false "MaxPerf" OsCtrl,ActivePwrCtrl,Custom,MaxPerf 
+BIOS.Setup.1-1:ProcPwrPerf DCIM_BIOSEnumeration true "MaxPerf" SysDbpm,MaxPerf,MinPwr,OsDbpm 
+BIOS.Setup.1-1:FanPwrPerf DCIM_BIOSEnumeration true "MaxPerf" MinPwr,MaxPerf 
+BIOS.Setup.1-1:MemPwrPerf DCIM_BIOSEnumeration true "MaxPerf" MaxPerf,1333MHz,1067MHz,978MHz,800MHz,MinPwr 
+BIOS.Setup.1-1:PasswordStatus DCIM_BIOSEnumeration false "Unlocked" Unlocked,Locked 
+BIOS.Setup.1-1:TpmSecurity DCIM_BIOSEnumeration false "Off" Off,OnPbm,OnNoPbm 
+BIOS.Setup.1-1:TpmActivation DCIM_BIOSEnumeration true "NoChange" NoChange,Activate,Deactivate 
+BIOS.Setup.1-1:TpmClear DCIM_BIOSEnumeration true "No" No,Yes 
+BIOS.Setup.1-1:PwrButton DCIM_BIOSEnumeration false "Enabled" Enabled,Disabled 
+BIOS.Setup.1-1:NmiButton DCIM_BIOSEnumeration false "Disabled" Enabled,Disabled 
+BIOS.Setup.1-1:AcPwrRcvry DCIM_BIOSEnumeration false "Last" Last,On,Off 
+BIOS.Setup.1-1:AcPwrRcvryDelay DCIM_BIOSEnumeration false "Immediate" Immediate,Random,User 
+BIOS.Setup.1-1:NumLock DCIM_BIOSEnumeration false "On" On,Off 
+BIOS.Setup.1-1:ReportKbdErr DCIM_BIOSEnumeration false "Report" Report,NoReport 
+BIOS.Setup.1-1:ErrPrompt DCIM_BIOSEnumeration false "Enabled" Enabled,Disabled 
+BIOS.Setup.1-1:UserLcdStr DCIM_BIOSString false "" 0 62
+BIOS.Setup.1-1:AssetTag DCIM_BIOSString false "" 0 10
+BIOS.Setup.1-1:AcPwrRcvryUserDelay DCIM_BIOSinteger true "30" 
+NIC.Embedded.4-1:ChipMdl DCIM_NICString true "BCM5709 C0" 0 0
+NIC.Embedded.4-1:MacAddr DCIM_NICString true "A4:BA:DB:15:19:BA" 0 0
+NIC.Embedded.4-1:VirtMacAddr DCIM_NICString true "A4:BA:DB:15:19:BA" 0 0
+NIC.Embedded.4-1:IscsiMacAddr DCIM_NICString true "A4:BA:DB:15:19:BB" 0 0
+NIC.Embedded.4-1:VirtIscsiMacAddr DCIM_NICString true "A4:BA:DB:15:19:BB" 0 0
+NIC.Embedded.4-1:DhcpVendId DCIM_NICString false "BRCM ISAN" 0 32
+NIC.Embedded.4-1:IscsiInitiatorIpAddr DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.4-1:IscsiInitiatorSubnet DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.4-1:IscsiInitiatorGateway DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.4-1:IscsiInitiatorPrimDns DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.4-1:IscsiInitiatorSecDns DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.4-1:IscsiInitiatorName DCIM_NICString false "iqn.1995-05.com.broadcom.iscsiboot" 0 128
+NIC.Embedded.4-1:IscsiInitiatorChapId DCIM_NICString false "" 0 128
+NIC.Embedded.4-1:IscsiInitiatorChapPwd DCIM_NICString false "" 0 16
+NIC.Embedded.4-1:FirstTgtIpAddress DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.4-1:FirstTgtIscsiName DCIM_NICString false "" 0 128
+NIC.Embedded.4-1:FirstTgtChapId DCIM_NICString false "" 0 128
+NIC.Embedded.4-1:FirstTgtChapPwd DCIM_NICString false "" 0 16
+NIC.Embedded.4-1:SecondTgtIpAddress DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.4-1:SecondTgtIscsiName DCIM_NICString false "" 0 128
+NIC.Embedded.4-1:SecondTgtChapId DCIM_NICString false "" 0 128
+NIC.Embedded.4-1:SecondTgtChapPwd DCIM_NICString false "" 0 16
+NIC.Embedded.4-1:SecondaryDeviceMacAddr DCIM_NICString false "00:00:00:00:00:00" 17 17
+NIC.Embedded.3-1:ChipMdl DCIM_NICString true "BCM5709 C0" 0 0
+NIC.Embedded.3-1:MacAddr DCIM_NICString true "A4:BA:DB:15:19:B8" 0 0
+NIC.Embedded.3-1:VirtMacAddr DCIM_NICString true "A4:BA:DB:15:19:B8" 0 0
+NIC.Embedded.3-1:IscsiMacAddr DCIM_NICString true "A4:BA:DB:15:19:B9" 0 0
+NIC.Embedded.3-1:VirtIscsiMacAddr DCIM_NICString true "A4:BA:DB:15:19:B9" 0 0
+NIC.Embedded.3-1:DhcpVendId DCIM_NICString false "BRCM ISAN" 0 32
+NIC.Embedded.3-1:IscsiInitiatorIpAddr DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.3-1:IscsiInitiatorSubnet DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.3-1:IscsiInitiatorGateway DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.3-1:IscsiInitiatorPrimDns DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.3-1:IscsiInitiatorSecDns DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.3-1:IscsiInitiatorName DCIM_NICString false "iqn.1995-05.com.broadcom.iscsiboot" 0 128
+NIC.Embedded.3-1:IscsiInitiatorChapId DCIM_NICString false "" 0 128
+NIC.Embedded.3-1:IscsiInitiatorChapPwd DCIM_NICString false "" 0 16
+NIC.Embedded.3-1:FirstTgtIpAddress DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.3-1:FirstTgtIscsiName DCIM_NICString false "" 0 128
+NIC.Embedded.3-1:FirstTgtChapId DCIM_NICString false "" 0 128
+NIC.Embedded.3-1:FirstTgtChapPwd DCIM_NICString false "" 0 16
+NIC.Embedded.3-1:SecondTgtIpAddress DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.3-1:SecondTgtIscsiName DCIM_NICString false "" 0 128
+NIC.Embedded.3-1:SecondTgtChapId DCIM_NICString false "" 0 128
+NIC.Embedded.3-1:SecondTgtChapPwd DCIM_NICString false "" 0 16
+NIC.Embedded.3-1:SecondaryDeviceMacAddr DCIM_NICString false "00:00:00:00:00:00" 17 17
+NIC.Embedded.2-1:ChipMdl DCIM_NICString true "BCM5709 C0" 0 0
+NIC.Embedded.2-1:MacAddr DCIM_NICString true "A4:BA:DB:15:19:B6" 0 0
+NIC.Embedded.2-1:VirtMacAddr DCIM_NICString true "A4:BA:DB:15:19:B6" 0 0
+NIC.Embedded.2-1:IscsiMacAddr DCIM_NICString true "A4:BA:DB:15:19:B7" 0 0
+NIC.Embedded.2-1:VirtIscsiMacAddr DCIM_NICString true "A4:BA:DB:15:19:B7" 0 0
+NIC.Embedded.2-1:DhcpVendId DCIM_NICString false "BRCM ISAN" 0 32
+NIC.Embedded.2-1:IscsiInitiatorIpAddr DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.2-1:IscsiInitiatorSubnet DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.2-1:IscsiInitiatorGateway DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.2-1:IscsiInitiatorPrimDns DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.2-1:IscsiInitiatorSecDns DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.2-1:IscsiInitiatorName DCIM_NICString false "iqn.1995-05.com.broadcom.iscsiboot" 0 128
+NIC.Embedded.2-1:IscsiInitiatorChapId DCIM_NICString false "" 0 128
+NIC.Embedded.2-1:IscsiInitiatorChapPwd DCIM_NICString false "" 0 16
+NIC.Embedded.2-1:FirstTgtIpAddress DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.2-1:FirstTgtIscsiName DCIM_NICString false "" 0 128
+NIC.Embedded.2-1:FirstTgtChapId DCIM_NICString false "" 0 128
+NIC.Embedded.2-1:FirstTgtChapPwd DCIM_NICString false "" 0 16
+NIC.Embedded.2-1:SecondTgtIpAddress DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.2-1:SecondTgtIscsiName DCIM_NICString false "" 0 128
+NIC.Embedded.2-1:SecondTgtChapId DCIM_NICString false "" 0 128
+NIC.Embedded.2-1:SecondTgtChapPwd DCIM_NICString false "" 0 16
+NIC.Embedded.2-1:SecondaryDeviceMacAddr DCIM_NICString false "00:00:00:00:00:00" 17 17
+NIC.Embedded.1-1:ChipMdl DCIM_NICString true "BCM5709 C0" 0 0
+NIC.Embedded.1-1:MacAddr DCIM_NICString true "A4:BA:DB:15:19:B4" 0 0
+NIC.Embedded.1-1:VirtMacAddr DCIM_NICString true "A4:BA:DB:15:19:B4" 0 0
+NIC.Embedded.1-1:IscsiMacAddr DCIM_NICString true "A4:BA:DB:15:19:B5" 0 0
+NIC.Embedded.1-1:VirtIscsiMacAddr DCIM_NICString true "A4:BA:DB:15:19:B5" 0 0
+NIC.Embedded.1-1:DhcpVendId DCIM_NICString false "BRCM ISAN" 0 32
+NIC.Embedded.1-1:IscsiInitiatorIpAddr DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.1-1:IscsiInitiatorSubnet DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.1-1:IscsiInitiatorGateway DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.1-1:IscsiInitiatorPrimDns DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.1-1:IscsiInitiatorSecDns DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.1-1:IscsiInitiatorName DCIM_NICString false "iqn.1995-05.com.broadcom.iscsiboot" 0 128
+NIC.Embedded.1-1:IscsiInitiatorChapId DCIM_NICString false "" 0 128
+NIC.Embedded.1-1:IscsiInitiatorChapPwd DCIM_NICString false "" 0 16
+NIC.Embedded.1-1:FirstTgtIpAddress DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.1-1:FirstTgtIscsiName DCIM_NICString false "" 0 128
+NIC.Embedded.1-1:FirstTgtChapId DCIM_NICString false "" 0 128
+NIC.Embedded.1-1:FirstTgtChapPwd DCIM_NICString false "" 0 16
+NIC.Embedded.1-1:SecondTgtIpAddress DCIM_NICString false "0.0.0.0" 2 39
+NIC.Embedded.1-1:SecondTgtIscsiName DCIM_NICString false "" 0 128
+NIC.Embedded.1-1:SecondTgtChapId DCIM_NICString false "" 0 128
+NIC.Embedded.1-1:SecondTgtChapPwd DCIM_NICString false "" 0 16
+NIC.Embedded.1-1:SecondaryDeviceMacAddr DCIM_NICString false "00:00:00:00:00:00" 17 17
+NIC.Embedded.4-1:BlnkLeds DCIM_NICInteger false "0" 0 15
+NIC.Embedded.4-1:LnkUpDelayTime DCIM_NICInteger false "0" 0 255
+NIC.Embedded.4-1:LunBusyRetryCnt DCIM_NICInteger false "0" 0 60
+NIC.Embedded.4-1:FirstTgtTcpPort DCIM_NICInteger false "3260" 1 65535
+NIC.Embedded.4-1:FirstTgtBootLun DCIM_NICInteger false "0" 0 255
+NIC.Embedded.4-1:SecondTgtTcpPort DCIM_NICInteger false "3260" 1 65535
+NIC.Embedded.4-1:SecondTgtBootLun DCIM_NICInteger false "0" 0 255
+NIC.Embedded.4-1:VLanId DCIM_NICInteger true "0" 0 4095
+NIC.Embedded.3-1:BlnkLeds DCIM_NICInteger false "0" 0 15
+NIC.Embedded.3-1:LnkUpDelayTime DCIM_NICInteger false "0" 0 255
+NIC.Embedded.3-1:LunBusyRetryCnt DCIM_NICInteger false "0" 0 60
+NIC.Embedded.3-1:FirstTgtTcpPort DCIM_NICInteger false "3260" 1 65535
+NIC.Embedded.3-1:FirstTgtBootLun DCIM_NICInteger false "0" 0 255
+NIC.Embedded.3-1:SecondTgtTcpPort DCIM_NICInteger false "3260" 1 65535
+NIC.Embedded.3-1:SecondTgtBootLun DCIM_NICInteger false "0" 0 255
+NIC.Embedded.3-1:VLanId DCIM_NICInteger true "0" 0 4095
+NIC.Embedded.2-1:BlnkLeds DCIM_NICInteger false "0" 0 15
+NIC.Embedded.2-1:LnkUpDelayTime DCIM_NICInteger false "0" 0 255
+NIC.Embedded.2-1:LunBusyRetryCnt DCIM_NICInteger false "0" 0 60
+NIC.Embedded.2-1:FirstTgtTcpPort DCIM_NICInteger false "3260" 1 65535
+NIC.Embedded.2-1:FirstTgtBootLun DCIM_NICInteger false "0" 0 255
+NIC.Embedded.2-1:SecondTgtTcpPort DCIM_NICInteger false "3260" 1 65535
+NIC.Embedded.2-1:SecondTgtBootLun DCIM_NICInteger false "0" 0 255
+NIC.Embedded.2-1:VLanId DCIM_NICInteger true "0" 0 4095
+NIC.Embedded.1-1:BlnkLeds DCIM_NICInteger false "0" 0 15
+NIC.Embedded.1-1:LnkUpDelayTime DCIM_NICInteger false "0" 0 255
+NIC.Embedded.1-1:LunBusyRetryCnt DCIM_NICInteger false "0" 0 60
+NIC.Embedded.1-1:FirstTgtTcpPort DCIM_NICInteger false "3260" 1 65535
+NIC.Embedded.1-1:FirstTgtBootLun DCIM_NICInteger false "0" 0 255
+NIC.Embedded.1-1:SecondTgtTcpPort DCIM_NICInteger false "3260" 1 65535
+NIC.Embedded.1-1:SecondTgtBootLun DCIM_NICInteger false "0" 0 255
+NIC.Embedded.1-1:VLanId DCIM_NICInteger true "0" 0 4095
+NIC.Embedded.4-1:TcpIpViaDHCP DCIM_NICEnumeration false "Enabled" Disabled,Enabled 
+NIC.Embedded.4-1:IscsiViaDHCP DCIM_NICEnumeration false "Enabled" Disabled,Enabled 
+NIC.Embedded.4-1:ChapAuthEnable DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.4-1:IscsiTgtBoot DCIM_NICEnumeration false "Enabled" Disabled,Enabled,One Time Disabled 
+NIC.Embedded.4-1:TcpTimestmp DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.4-1:FirstHddTarget DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.4-1:IpVer DCIM_NICEnumeration false "IPv4" IPv4,IPv6 
+NIC.Embedded.4-1:ConnectFirstTgt DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.4-1:ConnectSecondTgt DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.4-1:LegacyBootProto DCIM_NICEnumeration false "PXE" PXE,iSCSI,NONE 
+NIC.Embedded.4-1:LnkSpeed DCIM_NICEnumeration false "AutoNeg" AutoNeg,10Mbps Half,10Mbps Full,100Mbps Half,100Mbps Full 
+NIC.Embedded.4-1:WakeOnLan DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.4-1:VLanMode DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.4-1:BootRetryCnt DCIM_NICEnumeration false "No Retry" No Retry,1 Retry,2 Retries,3 Retries,4 Retries,5 Retries,6 Retries,Indefinite Retries 
+NIC.Embedded.4-1:UseIndTgtPortal DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.4-1:UseIndTgtName DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.3-1:TcpIpViaDHCP DCIM_NICEnumeration false "Enabled" Disabled,Enabled 
+NIC.Embedded.3-1:IscsiViaDHCP DCIM_NICEnumeration false "Enabled" Disabled,Enabled 
+NIC.Embedded.3-1:ChapAuthEnable DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.3-1:IscsiTgtBoot DCIM_NICEnumeration false "Enabled" Disabled,Enabled,One Time Disabled 
+NIC.Embedded.3-1:TcpTimestmp DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.3-1:FirstHddTarget DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.3-1:IpVer DCIM_NICEnumeration false "IPv4" IPv4,IPv6 
+NIC.Embedded.3-1:ConnectFirstTgt DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.3-1:ConnectSecondTgt DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.3-1:LegacyBootProto DCIM_NICEnumeration false "PXE" PXE,iSCSI,NONE 
+NIC.Embedded.3-1:LnkSpeed DCIM_NICEnumeration false "AutoNeg" AutoNeg,10Mbps Half,10Mbps Full,100Mbps Half,100Mbps Full 
+NIC.Embedded.3-1:WakeOnLan DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.3-1:VLanMode DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.3-1:BootRetryCnt DCIM_NICEnumeration false "No Retry" No Retry,1 Retry,2 Retries,3 Retries,4 Retries,5 Retries,6 Retries,Indefinite Retries 
+NIC.Embedded.3-1:UseIndTgtPortal DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.3-1:UseIndTgtName DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.2-1:TcpIpViaDHCP DCIM_NICEnumeration false "Enabled" Disabled,Enabled 
+NIC.Embedded.2-1:IscsiViaDHCP DCIM_NICEnumeration false "Enabled" Disabled,Enabled 
+NIC.Embedded.2-1:ChapAuthEnable DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.2-1:IscsiTgtBoot DCIM_NICEnumeration false "Enabled" Disabled,Enabled,One Time Disabled 
+NIC.Embedded.2-1:TcpTimestmp DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.2-1:FirstHddTarget DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.2-1:IpVer DCIM_NICEnumeration false "IPv4" IPv4,IPv6 
+NIC.Embedded.2-1:ConnectFirstTgt DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.2-1:ConnectSecondTgt DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.2-1:LegacyBootProto DCIM_NICEnumeration false "PXE" PXE,iSCSI,NONE 
+NIC.Embedded.2-1:LnkSpeed DCIM_NICEnumeration false "AutoNeg" AutoNeg,10Mbps Half,10Mbps Full,100Mbps Half,100Mbps Full 
+NIC.Embedded.2-1:WakeOnLan DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.2-1:VLanMode DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.2-1:BootRetryCnt DCIM_NICEnumeration false "No Retry" No Retry,1 Retry,2 Retries,3 Retries,4 Retries,5 Retries,6 Retries,Indefinite Retries 
+NIC.Embedded.2-1:UseIndTgtPortal DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.2-1:UseIndTgtName DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.1-1:TcpIpViaDHCP DCIM_NICEnumeration false "Enabled" Disabled,Enabled 
+NIC.Embedded.1-1:IscsiViaDHCP DCIM_NICEnumeration false "Enabled" Disabled,Enabled 
+NIC.Embedded.1-1:ChapAuthEnable DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.1-1:IscsiTgtBoot DCIM_NICEnumeration false "Enabled" Disabled,Enabled,One Time Disabled 
+NIC.Embedded.1-1:TcpTimestmp DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.1-1:FirstHddTarget DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.1-1:IpVer DCIM_NICEnumeration false "IPv4" IPv4,IPv6 
+NIC.Embedded.1-1:ConnectFirstTgt DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.1-1:ConnectSecondTgt DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.1-1:LegacyBootProto DCIM_NICEnumeration false "PXE" PXE,iSCSI,NONE 
+NIC.Embedded.1-1:LnkSpeed DCIM_NICEnumeration false "AutoNeg" AutoNeg,10Mbps Half,10Mbps Full,100Mbps Half,100Mbps Full 
+NIC.Embedded.1-1:WakeOnLan DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.1-1:VLanMode DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.1-1:BootRetryCnt DCIM_NICEnumeration false "No Retry" No Retry,1 Retry,2 Retries,3 Retries,4 Retries,5 Retries,6 Retries,Indefinite Retries 
+NIC.Embedded.1-1:UseIndTgtPortal DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+NIC.Embedded.1-1:UseIndTgtName DCIM_NICEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#NIC.1#DNSRacName DCIM_iDRACCardString false "idrac-HBWK5M1" 1 63
+iDRAC.Embedded.1#NIC.1#DNSDomainName DCIM_iDRACCardString false "" 1 254
+iDRAC.Embedded.1#IPv4.1#Address DCIM_iDRACCardString false "192.168.124.184" 1 16
+iDRAC.Embedded.1#IPv4.1#Netmask DCIM_iDRACCardString false "255.255.255.0" 1 16
+iDRAC.Embedded.1#IPv4.1#Gateway DCIM_iDRACCardString false "192.168.124.10" 1 16
+iDRAC.Embedded.1#IPv4.1#DNS1 DCIM_iDRACCardString false "0.0.0.0" 1 16
+iDRAC.Embedded.1#IPv4.1#DNS2 DCIM_iDRACCardString false "0.0.0.0" 1 16
+iDRAC.Embedded.1#Users.1#UserName DCIM_iDRACCardString true "" 1 16
+iDRAC.Embedded.1#Users.2#UserName DCIM_iDRACCardString false "root" 1 16
+iDRAC.Embedded.1#Users.3#UserName DCIM_iDRACCardString false "rebar" 1 16
+iDRAC.Embedded.1#Users.4#UserName DCIM_iDRACCardString false "" 1 16
+iDRAC.Embedded.1#Users.5#UserName DCIM_iDRACCardString false "" 1 16
+iDRAC.Embedded.1#Users.6#UserName DCIM_iDRACCardString false "" 1 16
+iDRAC.Embedded.1#Users.7#UserName DCIM_iDRACCardString false "" 1 16
+iDRAC.Embedded.1#Users.8#UserName DCIM_iDRACCardString false "" 1 16
+iDRAC.Embedded.1#Users.9#UserName DCIM_iDRACCardString false "" 1 16
+iDRAC.Embedded.1#Users.10#UserName DCIM_iDRACCardString false "" 1 16
+iDRAC.Embedded.1#Users.11#UserName DCIM_iDRACCardString false "" 1 16
+iDRAC.Embedded.1#Users.12#UserName DCIM_iDRACCardString false "" 1 16
+iDRAC.Embedded.1#Users.13#UserName DCIM_iDRACCardString false "" 1 16
+iDRAC.Embedded.1#Users.14#UserName DCIM_iDRACCardString false "" 1 16
+iDRAC.Embedded.1#Users.15#UserName DCIM_iDRACCardString false "" 1 16
+iDRAC.Embedded.1#Users.16#UserName DCIM_iDRACCardString false "" 1 16
+iDRAC.Embedded.1#Users.1#Password DCIM_iDRACCardString true "******" 1 20
+iDRAC.Embedded.1#Users.2#Password DCIM_iDRACCardString false "******" 1 20
+iDRAC.Embedded.1#Users.3#Password DCIM_iDRACCardString false "******" 1 20
+iDRAC.Embedded.1#Users.4#Password DCIM_iDRACCardString false "******" 1 20
+iDRAC.Embedded.1#Users.5#Password DCIM_iDRACCardString false "******" 1 20
+iDRAC.Embedded.1#Users.6#Password DCIM_iDRACCardString false "******" 1 20
+iDRAC.Embedded.1#Users.7#Password DCIM_iDRACCardString false "******" 1 20
+iDRAC.Embedded.1#Users.8#Password DCIM_iDRACCardString false "******" 1 20
+iDRAC.Embedded.1#Users.9#Password DCIM_iDRACCardString false "******" 1 20
+iDRAC.Embedded.1#Users.10#Password DCIM_iDRACCardString false "******" 1 20
+iDRAC.Embedded.1#Users.11#Password DCIM_iDRACCardString false "******" 1 20
+iDRAC.Embedded.1#Users.12#Password DCIM_iDRACCardString false "******" 1 20
+iDRAC.Embedded.1#Users.13#Password DCIM_iDRACCardString false "******" 1 20
+iDRAC.Embedded.1#Users.14#Password DCIM_iDRACCardString false "******" 1 20
+iDRAC.Embedded.1#Users.15#Password DCIM_iDRACCardString false "******" 1 20
+iDRAC.Embedded.1#Users.16#Password DCIM_iDRACCardString false "******" 1 20
+iDRAC.Embedded.1#NIC.1#VLanPriority DCIM_iDRACCardInteger false "0" 0 7
+iDRAC.Embedded.1#NIC.1#VLanID DCIM_iDRACCardInteger false "1" 1 4094
+iDRAC.Embedded.1#Users.1#Privilege DCIM_iDRACCardInteger true "0" 0 511
+iDRAC.Embedded.1#Users.2#Privilege DCIM_iDRACCardInteger false "511" 0 511
+iDRAC.Embedded.1#Users.3#Privilege DCIM_iDRACCardInteger false "0" 0 511
+iDRAC.Embedded.1#Users.4#Privilege DCIM_iDRACCardInteger false "0" 0 511
+iDRAC.Embedded.1#Users.5#Privilege DCIM_iDRACCardInteger false "0" 0 511
+iDRAC.Embedded.1#Users.6#Privilege DCIM_iDRACCardInteger false "0" 0 511
+iDRAC.Embedded.1#Users.7#Privilege DCIM_iDRACCardInteger false "0" 0 511
+iDRAC.Embedded.1#Users.8#Privilege DCIM_iDRACCardInteger false "0" 0 511
+iDRAC.Embedded.1#Users.9#Privilege DCIM_iDRACCardInteger false "0" 0 511
+iDRAC.Embedded.1#Users.10#Privilege DCIM_iDRACCardInteger false "0" 0 511
+iDRAC.Embedded.1#Users.11#Privilege DCIM_iDRACCardInteger false "0" 0 511
+iDRAC.Embedded.1#Users.12#Privilege DCIM_iDRACCardInteger false "0" 0 511
+iDRAC.Embedded.1#Users.13#Privilege DCIM_iDRACCardInteger false "0" 0 511
+iDRAC.Embedded.1#Users.14#Privilege DCIM_iDRACCardInteger false "0" 0 511
+iDRAC.Embedded.1#Users.15#Privilege DCIM_iDRACCardInteger false "0" 0 511
+iDRAC.Embedded.1#Users.16#Privilege DCIM_iDRACCardInteger false "0" 0 511
+iDRAC.Embedded.1#NIC.1#Enable DCIM_iDRACCardEnumeration false "Enabled" Disabled,Enabled 
+iDRAC.Embedded.1#NIC.1#Selection DCIM_iDRACCardEnumeration false "Dedicated" Shared,SharedLom2Failover,Dedicated,SharedAllFailover 
+iDRAC.Embedded.1#NIC.1#Speed DCIM_iDRACCardEnumeration false "100" 10,100 
+iDRAC.Embedded.1#NIC.1#Autoneg DCIM_iDRACCardEnumeration false "Enabled" Disabled,Enabled 
+iDRAC.Embedded.1#NIC.1#Duplex DCIM_iDRACCardEnumeration false "Full" Half,Full 
+iDRAC.Embedded.1#NIC.1#DNSRegister DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#NIC.1#DNSDomainNameFromDHCP DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#NIC.1#VLanEnable DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#VirtualMedia.1#Attached DCIM_iDRACCardEnumeration false "Detached" Detached,Attached,Autoattach 
+iDRAC.Embedded.1#IPv4.1#Enable DCIM_iDRACCardEnumeration false "Enabled" Disabled,Enabled 
+iDRAC.Embedded.1#IPv4.1#DHCPEnable DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#IPv4.1#DNSFromDHCP DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.1#IpmiLanPrivilege DCIM_iDRACCardEnumeration true "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.1#IpmiSerialPrivilege DCIM_iDRACCardEnumeration true "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.1#Enable DCIM_iDRACCardEnumeration true "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.2#IpmiLanPrivilege DCIM_iDRACCardEnumeration false "Administrator" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.2#IpmiSerialPrivilege DCIM_iDRACCardEnumeration false "Administrator" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.2#Enable DCIM_iDRACCardEnumeration false "Enabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.3#IpmiLanPrivilege DCIM_iDRACCardEnumeration false "Administrator" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.3#IpmiSerialPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.3#Enable DCIM_iDRACCardEnumeration false "Enabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.4#IpmiLanPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.4#IpmiSerialPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.4#Enable DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.5#IpmiLanPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.5#IpmiSerialPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.5#Enable DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.6#IpmiLanPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.6#IpmiSerialPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.6#Enable DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.7#IpmiLanPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.7#IpmiSerialPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.7#Enable DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.8#IpmiLanPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.8#IpmiSerialPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.8#Enable DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.9#IpmiLanPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.9#IpmiSerialPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.9#Enable DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.10#IpmiLanPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.10#IpmiSerialPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.10#Enable DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.11#IpmiLanPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.11#IpmiSerialPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.11#Enable DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.12#IpmiLanPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.12#IpmiSerialPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.12#Enable DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.13#IpmiLanPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.13#IpmiSerialPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.13#Enable DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.14#IpmiLanPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.14#IpmiSerialPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.14#Enable DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.15#IpmiLanPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.15#IpmiSerialPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.15#Enable DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+iDRAC.Embedded.1#Users.16#IpmiLanPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.16#IpmiSerialPrivilege DCIM_iDRACCardEnumeration false "NoAccess" User,Operator,Administrator,NoAccess 
+iDRAC.Embedded.1#Users.16#Enable DCIM_iDRACCardEnumeration false "Disabled" Disabled,Enabled 
+Disk.Virtual.0:RAID.Integrated.1-1:Name DCIM_RAIDString true "Virtual Disk 0" 0 15
+RAID.Integrated.1-1:RAIDSupportedRAIDLevels DCIM_RAIDEnumeration true "RAID-60" RAID-0,RAID-1,RAID-5,RAID-6,RAID-10,RAID-50,RAID-60 
+RAID.Integrated.1-1:RAIDSupportedDiskProt DCIM_RAIDEnumeration true "SATA" SAS,SATA 
+RAID.Integrated.1-1:RAIDloadBalancedMode DCIM_RAIDEnumeration false "Automatic" Automatic,Disabled 
+RAID.Integrated.1-1:RAIDBatteryLearnMode DCIM_RAIDEnumeration false "Automatic" Automatic,Warn only,Disabled 
+RAID.Integrated.1-1:RAIDccMode DCIM_RAIDEnumeration false "Normal" Normal,Stop on Error 
+RAID.Integrated.1-1:RAIDprMode DCIM_RAIDEnumeration false "Automatic" Disabled,Automatic,Manual 
+RAID.Integrated.1-1:RAIDcopybackMode DCIM_RAIDEnumeration false "On" On,On with SMART 
+RAID.Integrated.1-1:RAIDMaxCapableSpeed DCIM_RAIDEnumeration true "6_GBS" 1_5_GBS,3_GBS,6_GBS 
+Disk.Virtual.0:RAID.Integrated.1-1:RAIDdefaultWritePolicy DCIM_RAIDEnumeration false "WriteBack" WriteThrough,WriteBack,WriteBackForce 
+Disk.Virtual.0:RAID.Integrated.1-1:RAIDdefaultReadPolicy DCIM_RAIDEnumeration false "Adaptive" NoReadAhead,ReadAhead,Adaptive 
+Disk.Virtual.0:RAID.Integrated.1-1:DiskCachePolicy DCIM_RAIDEnumeration false "Default" Default,Enabled,Disabled 
+Enclosure.Internal.0-0:RAID.Integrated.1-1:RAIDMultipath DCIM_RAIDEnumeration true "On" Off,On 
+RAID.Integrated.1-1:RAIDmaxSupportedVD DCIM_RAIDInteger true "64" 0 0
+RAID.Integrated.1-1:RAIDmaxPDsInSpan DCIM_RAIDInteger true "32" 0 0
+RAID.Integrated.1-1:RAIDmaxSpansInVD DCIM_RAIDInteger true "8" 0 0
+RAID.Integrated.1-1:RAIDrebuildRate DCIM_RAIDInteger false "30" 1 100
+RAID.Integrated.1-1:RAIDccRate DCIM_RAIDInteger false "30" 1 100
+RAID.Integrated.1-1:RAIDreconstructRate DCIM_RAIDInteger false "30" 1 100
+RAID.Integrated.1-1:RAIDbgiRate DCIM_RAIDInteger false "30" 1 100
+RAID.Integrated.1-1:RAIDprRate DCIM_RAIDInteger true "30" 1 100
