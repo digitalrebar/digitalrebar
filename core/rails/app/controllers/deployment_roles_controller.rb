@@ -63,6 +63,7 @@ class DeploymentRolesController < ApplicationController
       params[:role_id] = r.id
       params[:deployment_id] = d.id
       params.require(:role_id)
+      params.delete(:proposed) # this is in the get, but not used in create because of methods for proposed/commit
       params.require(:deployment_id)
       @deployment_role = DeploymentRole.create!(params.permit(:data, :role_id, :deployment_id))
     end
@@ -79,6 +80,7 @@ class DeploymentRolesController < ApplicationController
         raise "Cannot PATCH deployment roles!"
       end
       params.require(:data)
+      params.delete(:proposed) # this is in the get, but not used in update because of methods for proposed/commit
       @deployment_role.data = params[:data]
       @deployment_role.save!
     end
