@@ -9,6 +9,14 @@ if [[ $PWD != */src/github.com/digitalrebar/digitalrebar/go ]]; then
     cd src/github.com/digitalrebar/digitalrebar/go
 fi
 
+DR_TAG=${DR_TAG:-latest}
+if [[ $DR_TAG != "latest" ]] ; then
+    git fetch --all
+    git checkout $DR_TAG
+else
+    git checkout master
+fi
+
 mkdir -p vendor_src
 (cd vendor_src && ln -sf ../vendor src)
 
@@ -44,3 +52,9 @@ if [[ $(uname -s) == Darwin ]] ; then
 else
     find . -type f -perm -u=x |xargs sha256sum >sha256sums
 fi
+cd -
+
+if [[ $DR_TAG == "latest" ]] ; then
+    cp -r "bin/$binversion" bin/latest
+fi
+
