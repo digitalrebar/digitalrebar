@@ -190,6 +190,7 @@ class Barclamp < ActiveRecord::Base
                              conflicts:   role_conflicts,
                              preceeds:    role_preceeds,
                              milestone:   flags.include?('milestone'),
+                             replace_node_icon: flags.include?('replace_node_icon'),
                              library:     flags.include?('library'),
                              implicit:    flags.include?('implicit'),
                              bootstrap:   flags.include?('bootstrap'),

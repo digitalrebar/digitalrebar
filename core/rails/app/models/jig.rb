@@ -123,6 +123,14 @@ class NoopJig < Jig
   end
 
   def run(nr,data)
+    # allows a nooprole to coerce the icon for a node
+    if nr.role.replace_node_icon
+      Node.transaction do
+        n = nr.node
+        n.icon = nr.role.icon
+        n.save!
+      end
+    end
     return true
   end
 
