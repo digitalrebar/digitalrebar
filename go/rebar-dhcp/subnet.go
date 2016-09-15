@@ -44,6 +44,11 @@ type Lease struct {
 	ExpireTime time.Time `json:"expire_time"`
 }
 
+func (l *Lease) Phantom() bool {
+	addr, _ := net.ParseMAC(l.Mac)
+	return addr[0] == 00 && addr[1] == 0x53
+}
+
 type Binding struct {
 	Ip         net.IP    `json:"ip"`
 	Mac        string    `json:"mac"`
@@ -206,6 +211,8 @@ func firstClearBit(bs *bitset.BitSet) (uint, bool) {
 	return 0, false
 }
 
+// This will need to be updated to be more efficient with larger subnets.
+// Class C and below should be fine, however.
 func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 	// Free invalid or expired leases
 	used := bitset.New(0)
@@ -217,11 +224,18 @@ func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 			saveMe = true
 			continue
 		}
-		// If the range we manage has changed underneath us, flag the lease as invalid.
-		if !subnet.InRange(v.Ip) {
+		// If the lease is out of range and does not have a static binding,
+		// mark it as invalid.  This will cause it to be NAK'ed the next time
+		// the client checks in.
+		if _, found := subnet.Bindings[k]; !found && !subnet.InRange(v.Ip) {
 			v.Valid = false
 			saveMe = true
 			continue
+		}
+		// If an invaild lease was made valid again due to a range change, make it valid again.
+		if !v.Valid && !v.Phantom() {
+			v.Valid = true
+			saveMe = true
 		}
 		used.Set(uint(dhcp.IPRange(subnet.ActiveStart, v.Ip) - 1))
 	}
@@ -311,12 +325,10 @@ func (s *Subnet) phantomLease(dt *DataTracker, nic string) {
 	if err != nil {
 		return
 	}
-	addr[0] = 00
-	addr[1] = 53
+	addr[0] = 0x00
+	addr[1] = 0x53
 	lease.Valid = false
 	lease.ExpireTime = time.Now().Add(30 * time.Second)
-	addr[0] = 00
-	addr[1] = 53
 	lease.Mac = addr.String()
 	delete(s.Leases, nic)
 	s.Leases[lease.Mac] = lease
