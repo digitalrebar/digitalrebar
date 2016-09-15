@@ -14,7 +14,7 @@ if [[ $DR_TAG != "latest" ]] ; then
     git fetch --all
     git checkout $DR_TAG
 else
-    git checkout master
+    echo "Assuming master/active branch is already checked out"
 fi
 
 mkdir -p vendor_src
