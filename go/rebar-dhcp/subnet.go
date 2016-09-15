@@ -1,4 +1,5 @@
 // Example of minimal DHCP server:
+
 package main
 
 import (
@@ -57,7 +58,6 @@ type Subnet struct {
 	ActiveStart       net.IP
 	ActiveEnd         net.IP
 	ActiveLeaseTime   time.Duration
-	ActiveBits        *bitset.BitSet
 	ReservedLeaseTime time.Duration
 	Leases            map[string]*Lease
 	Bindings          map[string]*Binding
@@ -67,10 +67,9 @@ type Subnet struct {
 
 func NewSubnet() *Subnet {
 	return &Subnet{
-		Leases:     make(map[string]*Lease),
-		Bindings:   make(map[string]*Binding),
-		Options:    make([]*Option, 0),
-		ActiveBits: bitset.New(0),
+		Leases:   make(map[string]*Lease),
+		Bindings: make(map[string]*Binding),
+		Options:  make([]*Option, 0),
 	}
 }
 
@@ -142,7 +141,6 @@ func (s *Subnet) UnmarshalJSON(data []byte) error {
 
 	s.ActiveLeaseTime = time.Duration(as.ActiveLeaseTime) * time.Second
 	s.ReservedLeaseTime = time.Duration(as.ReservedLeaseTime) * time.Second
-	s.ActiveBits = bitset.New(uint(dhcp.IPRange(s.ActiveStart, s.ActiveEnd)))
 	if as.NextServer != nil {
 		ip := net.ParseIP(*as.NextServer).To4()
 		s.NextServer = &ip
@@ -159,9 +157,6 @@ func (s *Subnet) UnmarshalJSON(data []byte) error {
 
 	for _, v := range as.Leases {
 		s.Leases[v.Mac] = v
-		if dhcp.IPInRange(s.ActiveStart, s.ActiveEnd, v.Ip) {
-			s.ActiveBits.Set(uint(dhcp.IPRange(s.ActiveStart, v.Ip) - 1))
-		}
 	}
 
 	if s.Bindings == nil {
@@ -170,9 +165,6 @@ func (s *Subnet) UnmarshalJSON(data []byte) error {
 
 	for _, v := range as.Bindings {
 		s.Bindings[v.Mac] = v
-		if dhcp.IPInRange(s.ActiveStart, s.ActiveEnd, v.Ip) {
-			s.ActiveBits.Set(uint(dhcp.IPRange(s.ActiveStart, v.Ip) - 1))
-		}
 	}
 
 	s.Options = as.Options
@@ -189,18 +181,14 @@ func (s *Subnet) UnmarshalJSON(data []byte) error {
 func (subnet *Subnet) freeLease(dt *DataTracker, nic string) {
 	lease := subnet.Leases[nic]
 	if lease != nil {
-		//log.Printf("Freeing Lease for: %v\n", nic)
-		//log.Println("Current ActiveBits " + subnet.ActiveBits.DumpAsBits())
-		//log.Printf("test = %v\n", dhcp.IPInRange(subnet.ActiveStart, subnet.ActiveEnd, lease.Ip))
-
-		if dhcp.IPInRange(subnet.ActiveStart, subnet.ActiveEnd, lease.Ip) {
-			//log.Printf("bit = %v\n", dhcp.IPRange(subnet.ActiveStart, lease.Ip)-1)
-			//log.Printf("ubit = %v\n", uint(dhcp.IPRange(subnet.ActiveStart, lease.Ip)-1))
-			subnet.ActiveBits.Clear(uint(dhcp.IPRange(subnet.ActiveStart, lease.Ip) - 1))
-		}
 		delete(subnet.Leases, nic)
 		dt.save_data()
 	}
+}
+
+func (s *Subnet) InRange(addr net.IP) bool {
+	return bytes.Compare(addr, s.ActiveStart) >= 0 &&
+		bytes.Compare(addr, s.ActiveEnd) <= 0
 }
 
 func (subnet *Subnet) findInfo(dt *DataTracker, nic string) (*Lease, *Binding) {
@@ -219,39 +207,36 @@ func firstClearBit(bs *bitset.BitSet) (uint, bool) {
 }
 
 func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
-	//log.Println("Getting Free IP from " + subnet.Name)
-	//log.Println("Current ActiveBits " + subnet.ActiveBits.DumpAsBits())
-	bit, success := firstClearBit(subnet.ActiveBits)
+	// Free invalid or expired leases
+	used := bitset.New(0)
+	saveMe := false
+	for k, v := range subnet.Leases {
+		// If the lease has expired, whack it.
+		if time.Now().After(v.ExpireTime) {
+			delete(subnet.Leases, k)
+			saveMe = true
+			continue
+		}
+		// If the range we manage has changed underneath us, flag the lease as invalid.
+		if !subnet.InRange(v.Ip) {
+			v.Valid = false
+			saveMe = true
+			continue
+		}
+		used.Set(uint(dhcp.IPRange(subnet.ActiveStart, v.Ip) - 1))
+	}
+	// Check bindings as well to keep it real.
+	for _, v := range subnet.Bindings {
+		if subnet.InRange(v.Ip) {
+			used.Set(uint(dhcp.IPRange(subnet.ActiveStart, v.Ip) - 1))
+		}
+	}
+	bit, success := firstClearBit(used)
 	if success {
-		subnet.ActiveBits.Set(bit)
 		ip := dhcp.IPAdd(subnet.ActiveStart, int(bit))
 		//log.Printf("Returning bit = %v ip = %v\n", bit, ip)
 		return &ip, true
 	}
-
-	// Free invalid or expired leases
-	saveMe := false
-	now := time.Now()
-	for k, lease := range subnet.Leases {
-		if now.After(lease.ExpireTime) {
-			if dhcp.IPInRange(subnet.ActiveStart, subnet.ActiveEnd, lease.Ip) {
-				subnet.ActiveBits.Clear(uint(dhcp.IPRange(subnet.ActiveStart, lease.Ip) - 1))
-			}
-			delete(subnet.Leases, k)
-			saveMe = true
-		}
-	}
-
-	//log.Println("Second  ActiveBits " + subnet.ActiveBits.DumpAsBits())
-	bit, success = firstClearBit(subnet.ActiveBits)
-	if success {
-		subnet.ActiveBits.Set(bit)
-		ip := dhcp.IPAdd(subnet.ActiveStart, int(bit))
-		//log.Printf("Returning second pass bit = %v ip = %v\n", bit, ip)
-		return &ip, true
-	}
-
-	// We got nothin'
 	return nil, saveMe
 }
 
@@ -314,6 +299,27 @@ func (subnet *Subnet) findOrGetInfo(dt *DataTracker, nic string, suggest net.IP)
 
 func (s *Subnet) updateLeaseTime(dt *DataTracker, lease *Lease, d time.Duration) {
 	lease.ExpireTime = time.Now().Add(d)
+	dt.save_data()
+}
+
+func (s *Subnet) phantomLease(dt *DataTracker, nic string) {
+	lease, _ := s.findInfo(dt, nic)
+	if lease == nil {
+		return
+	}
+	addr, err := net.ParseMAC(nic)
+	if err != nil {
+		return
+	}
+	addr[0] = 00
+	addr[1] = 53
+	lease.Valid = false
+	lease.ExpireTime = time.Now().Add(30 * time.Second)
+	addr[0] = 00
+	addr[1] = 53
+	lease.Mac = addr.String()
+	delete(s.Leases, nic)
+	s.Leases[lease.Mac] = lease
 	dt.save_data()
 }
 
