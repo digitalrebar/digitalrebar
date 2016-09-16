@@ -6,6 +6,7 @@ consul:
     - ./config-dir/consul/server-default.json:/etc/consul.d/default.json
     - ./config-dir/consul/server-advertise.json:/etc/consul.d/server-advertise.json
     - ./data-dir/consul/:/tmp/consul/
+    - ./data-dir/bin:/usr/local/dev/bin
   env_file:
     - ./common.env
     - ./access.env
@@ -16,6 +17,7 @@ trust_me:
   privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./data-dir/bin:/usr/local/dev/bin
   env_file:
     - ./common.env
     - ./access.env
@@ -27,6 +29,7 @@ postgres:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/postgres/initdb.d:/docker-entrypoint-initdb.d
     - ./data-dir/postgresql/:/var/lib/postgresql/
+    - ./data-dir/bin:/usr/local/dev/bin
   env_file:
     - ./common.env
     - ./access.env
@@ -37,6 +40,7 @@ webproxy:
   privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./data-dir/bin:/usr/local/dev/bin
   env_file:
     - ./common.env
     - ./access.env
@@ -47,6 +51,7 @@ goiardi:
   volumes:
     - ./data-dir/goiardi:/var/cache/goiardi
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./data-dir/bin:/usr/local/dev/bin
   env_file:
     - ./common.env
     - ./access.env
@@ -60,6 +65,7 @@ rebar_api:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/api/config:/opt/digitalrebar/core/config
     - ~/.cache/digitalrebar/tftpboot:/tftpboot
+    - ./data-dir/bin:/usr/local/dev/bin
     # development mapping for playbook authors
     # example: - ./digitalrebar/kompos8:/var/cache/rebar/ansible_playbook/k8
   env_file:
@@ -83,6 +89,7 @@ cloudwrap:
   restart: always
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./data-dir/bin:/usr/local/dev/bin
     # debugging maps
     #- ../containers/cloudwrap/cloudwrap/api.rb:/opt/cloudwrap/api.rb
     #- ../containers/cloudwrap/cloudwrap/common.rb:/opt/cloudwrap/common.rb
@@ -96,6 +103,7 @@ dns:
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/bind/named.conf:/etc/bind/named.conf.tmpl
+    - ./data-dir/bin:/usr/local/dev/bin
   env_file:
     - ./common.env
     - ./access.env
@@ -106,6 +114,7 @@ dhcp:
   privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./data-dir/bin:/usr/local/dev/bin
   env_file:
     - ./common.env
     - ./access.env
@@ -117,6 +126,7 @@ provisioner:
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ~/.cache/digitalrebar/tftpboot:/tftpboot
+    - ./data-dir/bin:/usr/local/dev/bin
   env_file:
     - ./common.env
     - ./access.env
@@ -128,6 +138,7 @@ logging:
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./data-dir/node-logs:/var/log/nodes
+    - ./data-dir/bin:/usr/local/dev/bin
   env_file:
     - ./common.env
     - ./access.env
@@ -136,11 +147,13 @@ elasticsearch:
   image: elasticsearch
   volumes:
     - ./config-dir/elasticsearch:/usr/share/elasticsearch/config
-
+    - ./data-dir/bin:/usr/local/dev/bin
+    
 logstash:
   image: logstash
   volumes:
     - ./config-dir/logstash/logstash.conf:/etc/logstash.conf
+    - ./data-dir/bin:/usr/local/dev/bin
   environment:
     # otherwise logstash will keep sending its own logs to itself over and
     # over... not fun
@@ -176,8 +189,10 @@ forwarder:
   privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./data-dir/bin:/usr/local/dev/bin
   env_file:
     - ./common.env
+
     - ./access.env
   ports:
     - "3000:3000"
@@ -192,6 +207,7 @@ revproxy:
     - ./config-dir/rev-proxy/db-store.json:/etc/rev-proxy/db-store.json
     - ./config-dir/rev-proxy/saml-dir:/etc/rev-proxy/saml-dir
     - ./digitalrebar/digitalrebar-ux:/opt/digitalrebar-ux
+    - ./data-dir/bin:/usr/local/dev/bin
   env_file:
     - ./common.env
     - ./access.env
@@ -207,6 +223,7 @@ rule-engine:
   restart: always
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
+    - ./data-dir/bin:/usr/local/dev/bin
   env_file:
     - ./common.env
     - ./access.env

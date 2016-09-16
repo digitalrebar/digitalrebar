@@ -170,6 +170,11 @@ else
     exit 1
 fi
 
+if [[ -x ../../go/bin/latest/linux/amd64/rebar ]]; then
+    mkdir -p data-dir/bin
+    cp ../../go/bin/latest/linux/amd64/* data-dir/bin
+fi
+
 # Process templates and build one big yml file for now.
 rm -f docker-compose.yml
 for i in $FILES
