@@ -131,6 +131,7 @@ validate_tools() {
             yum install -y sudo
         elif [[ $OS_FAMILY == debian ]] ; then
             apt-get install -y sudo
+	    sudo updatedb
         fi
 
         if ! which sudo &>/dev/null; then
@@ -147,6 +148,7 @@ validate_tools() {
             sudo yum install -y git
         elif [[ $OS_FAMILY == debian ]] ; then
             sudo apt-get install -y git
+	    sudo updatedb
         fi
 
         if ! which git &>/dev/null; then
@@ -167,6 +169,7 @@ validate_tools() {
             sudo apt-add-repository -y ppa:ansible/ansible
             sudo apt-get update -y
             sudo apt-get install -y ansible python-netaddr
+	    sudo updatedb
         fi
 
         if ! which ansible &>/dev/null; then
@@ -183,6 +186,7 @@ validate_tools() {
             sudo yum install -y curl
         elif [[ $OS_FAMILY == debian ]] ; then
             sudo apt-get install -y curl
+	    sudo updatedb
         fi
 
         if ! which curl &>/dev/null; then
@@ -200,6 +204,7 @@ validate_tools() {
             sudo yum install -y jq
         elif [[ $OS_FAMILY == debian ]] ; then
             sudo apt-get install -y jq
+	    sudo updatedb
         fi
 
         if ! which jq &>/dev/null; then
