@@ -55,6 +55,7 @@ fi
 cd -
 
 if [[ $DR_TAG == "latest" ]] ; then
+    rm -rf bin/latest
     cp -r "bin/$binversion" bin/latest
 fi
 
