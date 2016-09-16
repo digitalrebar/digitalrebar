@@ -1,6 +1,59 @@
 #!/bin/bash
 
-IPADDR=$1
+usage() {
+	echo "Usage: $0 [--access=<MODE>] [--admin-ip=<admin ip>] [--con-provisioner] [--con-dhcp]"
+	echo "Defaults are: "
+	echo "  MODE = HOST (instead of FORWARDER)"
+	echo "  admin ip = IP of interface with the default gateway or first global address"
+	echo "  No DHCP or Provisioner Components"
+	exit 1
+}
+
+IPADDR=""
+ACCESS=""
+args=()
+while (( $# > 0 )); do
+    arg="$1"
+    arg_key="${arg%%=*}"
+    arg_data="${arg#*=}"
+    case $arg_key in
+        # This used to process init-files.sh and workload.sh args
+        --con-*)
+            args+=("$arg");;
+        --wl-*)
+            args+=("$arg");;
+        --admin-ip)
+	    IPADDR=$arg
+	    ;;
+        --access)
+	    ACCESS=$arg
+	    ;;
+        --help|-h)
+            usage
+            exit 0
+            ;;
+        --*)
+            arg_key="${arg_key#--}"
+            arg_key="${arg_key//-/_}"
+            arg_key="${arg_key^^}"
+            echo "Overriding $arg_key with $arg_data"
+            export $arg_key="$arg_data"
+            ;;
+        *)
+            args+=("$arg");;
+    esac
+    shift
+done
+set -- "${args[@]}"
+
+if [[ $DEBUG == true ]] ; then
+    set -x
+fi
+
+if [[ $ACCESS == "" ]] ; then
+    ACCESS="--access=HOST"
+fi
+
 if [[ $IPADDR == "" ]] ; then
     gwdev=$(/sbin/ip -o -4 route show default |head -1 |awk '{print $5}')
     if [[ $gwdev ]]; then
@@ -11,6 +64,8 @@ if [[ $IPADDR == "" ]] ; then
         # global scope and hope for the best.
 	IPADDR=$(/sbin/ip -o -4 addr show scope global |head -1 |awk '{print $4}')
     fi
+
+    IPADDR="--admin-ip=$IPADDR"
 fi
 
 # Figure out what Linux distro we are running on.
@@ -181,5 +236,5 @@ validate_tools
 
 git clone https://github.com/digitalrebar/digitalrebar
 cd digitalrebar/deploy
-./run-in-system.sh --admin-ip=$IPADDR --access=HOST --deploy-admin=local
+./run-in-system.sh $ACCESS $IPADDR --deploy-admin=local $@
 
