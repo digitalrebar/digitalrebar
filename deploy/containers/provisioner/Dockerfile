@@ -11,22 +11,16 @@ ENV DR_TAG ${DR_TAG}
 
 # Get packages
 RUN mkdir -p linux/amd64 && \
-    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/linux/amd64/provisioner-mgmt \
-         -o linux/amd64/provisioner-mgmt && \
     curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/sha256sums \
          -o rebar-bins.sha256sum && \
-    (grep "linux/amd64/provisioner-mgmt" rebar-bins.sha256sum | sha256sum -c && rm rebar-bins.sha256sum) && \
-    mv linux/amd64/provisioner-mgmt /usr/local/bin/provisioner-mgmt && \
-    chmod 755 /usr/local/bin/provisioner-mgmt && \
-    rm -rf linux
-RUN mkdir -p linux/amd64 && \
-    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/linux/amd64/sign-it \
-         -o linux/amd64/sign-it && \
-    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/sha256sums \
-         -o rebar-bins.sha256sum && \
-    (grep "linux/amd64/sign-it" rebar-bins.sha256sum | sha256sum -c && rm rebar-bins.sha256sum) && \
-    mv linux/amd64/sign-it /usr/local/bin/sign-it && \
-    chmod 755 /usr/local/bin/sign-it && \
+    for bin in provisioner-mgmt sign-it; do \
+        curl -fgL "https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/linux/amd64/$bin" \
+             -o "linux/amd64/$bin" && \
+        (grep "linux/amd64/$bin" rebar-bins.sha256sum | sha256sum -c) && \
+        mv "linux/amd64/$bin" "/usr/local/bin/$bin" && \
+        chmod 755 "/usr/local/bin/$bin"; \
+    done; \
+    rm rebar-bins.sha256sum && \
     rm -rf linux
 
 # Set our command

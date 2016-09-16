@@ -3,27 +3,6 @@ FROM digitalrebar/deploy-service-wrapper
 ARG DR_TAG=latest
 ENV DR_TAG ${DR_TAG}
 
-# Get packages
-RUN mkdir -p linux/amd64 && \
-    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/linux/amd64/rebar \
-           -o linux/amd64/rebar && \
-    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/sha256sums \
-           -o rebar-bins.sha256sum && \
-    (grep "linux/amd64/rebar\$" rebar-bins.sha256sum | sha256sum -c && rm rebar-bins.sha256sum) && \
-    mv linux/amd64/rebar /usr/local/bin/rebar && \
-    chmod 755 /usr/local/bin/rebar && \
-    rm -rf linux
-
-RUN mkdir -p linux/amd64 && \
-    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/linux/amd64/sign-it \
-           -o linux/amd64/sign-it && \
-    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/sha256sums \
-           -o rebar-bins.sha256sum && \
-    (grep "linux/amd64/sign-it\$" rebar-bins.sha256sum | sha256sum -c && rm rebar-bins.sha256sum) && \
-    mv linux/amd64/sign-it /usr/local/bin/sign-it && \
-    chmod 755 /usr/local/bin/sign-it && \
-    rm -rf linux
-
 # Set our command
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 
