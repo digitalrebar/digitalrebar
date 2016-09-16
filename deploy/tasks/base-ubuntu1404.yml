@@ -24,7 +24,7 @@
       - libvirt-bin
       - ubuntu-vm-builder
       - bridge-utils
-      - ruby1.9.1-dev
+      - ruby2.0-dev
       - make
       - gcc
     sudo: yes
