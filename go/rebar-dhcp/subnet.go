@@ -246,59 +246,42 @@ func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 }
 
 func (subnet *Subnet) findOrGetInfo(dt *DataTracker, nic string, suggest net.IP) (*Lease, *Binding) {
-	// Fast path to see if we have a good lease
 	binding := subnet.Bindings[nic]
 	lease := subnet.Leases[nic]
 
-	var theip *net.IP
-
-	if binding != nil {
-		theip = &binding.Ip
-	}
-
-	// Resolve potential conflicts.
-	if lease != nil && binding != nil {
-		if lease.Ip.Equal(binding.Ip) {
-			return lease, binding
-		}
-		lease = nil
-	}
-
-	if lease == nil {
-		// Slow path to see if we have can get a lease
-		// Make sure nothing sneaked in
-		lease = subnet.Leases[nic]
-		binding = subnet.Bindings[nic]
-		theip = nil
-		if binding != nil {
-			theip = &binding.Ip
-		}
-		// Resolve potential conflicts.
-		if lease != nil && binding != nil {
-			if lease.Ip.Equal(binding.Ip) {
-				return lease, binding
-			}
-		}
-
-		if theip == nil {
-			var saveMe bool
-			theip, saveMe = subnet.getFreeIP()
+	if binding == nil {
+		if lease == nil {
+			// We have neither a lease nor a binding, create a lease.
+			theip, saveMe := subnet.getFreeIP()
 			if theip == nil {
 				if saveMe {
 					dt.save_data()
 				}
 				return nil, nil
 			}
+			lease = &Lease{
+				Ip:         *theip,
+				Mac:        nic,
+				Valid:      true,
+				ExpireTime: time.Now().Add(subnet.ActiveLeaseTime),
+			}
+			subnet.Leases[nic] = lease
+			dt.save_data()
 		}
-		lease = &Lease{
-			Ip:    *theip,
-			Mac:   nic,
-			Valid: true,
-		}
-		subnet.Leases[nic] = lease
-		dt.save_data()
+		return lease, nil
 	}
 
+	if lease != nil && lease.Ip.Equal(binding.Ip) {
+		return lease, binding
+	}
+	lease = &Lease{
+		Ip:         binding.Ip,
+		Mac:        nic,
+		Valid:      true,
+		ExpireTime: time.Now().Add(subnet.ReservedLeaseTime),
+	}
+	subnet.Leases[nic] = lease
+	dt.save_data()
 	return lease, binding
 }
 
