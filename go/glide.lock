@@ -1,5 +1,5 @@
-hash: ecd50f7fe764bfae902411ac8c796f6c30a700b980e8fa3d69198720ea9baa6f
-updated: 2016-09-12T16:35:20.400406333-05:00
+hash: 1568ebce19811d88358f2bb9f320c47c3f937266c32821b73fe1454dd622c18b
+updated: 2016-09-16T14:27:19.647327392-05:00
 imports:
 - name: github.com/ant0ine/go-json-rest
   version: 37ad7dc626602a8355801da6acd85155655520f8
@@ -11,7 +11,7 @@ imports:
   subpackages:
   - cidr
 - name: github.com/aws/aws-sdk-go
-  version: 1eda36db14da389a03c5e7d41f2172e353c2ce57
+  version: d54f7c6d021d8fca3275e29d13255ededdc54839
   subpackages:
   - aws
   - aws/awserr
@@ -95,7 +95,7 @@ imports:
   subpackages:
   - proto
 - name: github.com/google/certificate-transparency
-  version: cb98b9e765081a48a410619ef67c310cce7bb2ec
+  version: 057aecf9911862b7c69aa34cb6d1f572dab03254
   subpackages:
   - go
   - go/asn1
@@ -105,7 +105,7 @@ imports:
 - name: github.com/guregu/null
   version: 41961cea0328defc5f95c1c473f89ebf0d1813f6
 - name: github.com/hashicorp/consul
-  version: 0a34741d7266af34eed36048d1a8e8880a7b17a1
+  version: 6f0a3b9bf5c7fd0673213d451bbc9e66f7a9cad9
   subpackages:
   - api
 - name: github.com/hashicorp/errwrap
@@ -113,7 +113,7 @@ imports:
 - name: github.com/hashicorp/go-cleanhttp
   version: ad28ea4487f05916463e2423a55166280e8254b5
 - name: github.com/hashicorp/go-getter
-  version: 0eb633db32e432fabba9eca8fa21192fab2b96be
+  version: 2fbd997432e72fe36060c8f07ec1eaf98d098177
   subpackages:
   - helper/url
 - name: github.com/hashicorp/go-multierror
@@ -125,7 +125,7 @@ imports:
 - name: github.com/hashicorp/go-version
   version: deeb027c13a95d56c7585df3fe29207208c6706e
 - name: github.com/hashicorp/hcl
-  version: 99df0eb941dd8ddbc83d3f3605a34f6a686ac85e
+  version: ef8133da8cda503718a74741312bf50821e6de79
   subpackages:
   - hcl/ast
   - hcl/parser
@@ -140,7 +140,7 @@ imports:
   subpackages:
   - ast
 - name: github.com/hashicorp/serf
-  version: 9432bc08aa8d486e497e27f84878ebbe8c1eab66
+  version: 555e0dcbb180ecbd03431adc28226bb3192558bc
   subpackages:
   - coordinate
 - name: github.com/hashicorp/terraform
@@ -191,7 +191,7 @@ imports:
 - name: github.com/spf13/cobra
   version: 9c28e4bbd74e5c3ed7aacbc552b2cab7cfdfe744
 - name: github.com/spf13/pflag
-  version: 7b17cc4658ef5ca157b986ea5c0b43af7938532b
+  version: c7e63cf4530bcd3ba943729cee0efeff2ebea63f
 - name: github.com/VictorLowther/jsonpatch
   version: bf36a043be1fdc3127cc160767769878824ed71f
   subpackages:
@@ -199,9 +199,9 @@ imports:
 - name: github.com/VictorLowther/yaml
   version: 7ad95dd0798a40da1ccdff6dff35fd177b5edf40
 - name: github.com/willf/bitset
-  version: 3582df120789e0e260108c11fd01775b30782fa7
+  version: 1730870b454dde6756091d8c6a3d780ef123674c
 - name: golang.org/x/crypto
-  version: e311231e83195f401421a286060d65643f9c9d40
+  version: 81372b2fc2f10bef2a7f338da115c315a56b2726
   subpackages:
   - bcrypt
   - blowfish
@@ -221,7 +221,7 @@ imports:
   - internal/iana
   - ipv4
 - name: golang.org/x/sys
-  version: 30de6d19a3bd89a5f38ae4028e23aaa5582648af
+  version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
   subpackages:
   - unix
 - name: gopkg.in/go-playground/validator.v8
