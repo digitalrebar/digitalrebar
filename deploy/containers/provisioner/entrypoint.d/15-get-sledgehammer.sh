@@ -17,7 +17,7 @@ done
 if ! [[ -L $TFTPROOT/nodes ]]; then
     (cd "$TFTPROOT"; rm -rf nodes && ln -s machines nodes)
 fi
-cp /usr/local/bin/rebar "${TFTPROOT}/files/rebar"
+cp "$(which rebar)" "${TFTPROOT}/files/rebar"
 cp /tmp/start-up.sh "${TFTPROOT}/nodes/start-up.sh"
 cp /tmp/ipxe.* "${TFTPROOT}"
 

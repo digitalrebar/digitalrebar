@@ -50,7 +50,7 @@ if [[ $DNS_TYPE != EXTERNAL ]] ; then
     fi
     BACKEND_ARGS="--dnsType=$DNS_TYPE --dnsServer=$DNS_SERVER_PARM $OTHER_PARAM"
 
-    /usr/local/bin/rebar-dns-mgmt $BACKEND_ARGS --backingStore=consul --dataDir=digitalrebar/dns/database --host="dns,dns-mgmt,dns-mgmt-service,$IP,${EXTERNAL_IP%%/*},${HOSTNAME},127.0.0.1,localhost" &
+    rebar-dns-mgmt $BACKEND_ARGS --backingStore=consul --dataDir=digitalrebar/dns/database --host="dns,dns-mgmt,dns-mgmt-service,$IP,${EXTERNAL_IP%%/*},${HOSTNAME},127.0.0.1,localhost" &
 
     make_revproxied_service "dns-mgmt" $DNS_MGMT_PORT '{ "script": "pidof rebar-dns-mgmt","interval": "10s"}'
     # Alas, we still need this for now.

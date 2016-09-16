@@ -4,6 +4,10 @@ set -e
 set -x
 set -o pipefail
 
+if [[ -d /usr/local/dev/bin ]]; then
+    export PATH="/usr/local/dev/bin:$PATH"
+fi
+
 kv_get() {
     # $1 = path into the KV store of the thing to get
     curl -sfg "http://localhost:8500/v1/kv/${1}?token=${CONSUL_M_ACL}" | \

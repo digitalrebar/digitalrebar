@@ -39,7 +39,7 @@ run_forever() (
 )
 
 make_service "rebar-rev-proxy" $REVPROXY_PORT '{"script": "pidof rebar-rev-proxy", "interval": "10s"}'
-/usr/local/bin/rebar-rev-proxy --externalIp ${EXTERNAL_IP%%/*} \
+rebar-rev-proxy --externalIp ${EXTERNAL_IP%%/*} \
 	$FORWARDER_FLAG \
 	$LISTENPORT \
 	$AUTHFILTER \
