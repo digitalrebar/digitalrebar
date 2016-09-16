@@ -205,14 +205,12 @@ validate_tools() {
         elif [[ $OS_FAMILY == debian ]] ; then
             sudo apt-get install -y jq
 	    sudo updatedb
-        fi
-
-        if ! which jq &>/dev/null; then
+        else
             echo "Please install jq!"
             if [[ $(uname -s) == Darwin ]] ; then
                 echo "Something like: brew install jq"
+                error=1
             fi
-            error=1
         fi
     fi
 
