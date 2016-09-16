@@ -24,8 +24,6 @@ RUN apt-get update \
   && mkdir -p /var/cache/rebar-dns-mgmt \
   && chmod 700 /var/cache/rebar-dns-mgmt
 
-# GREG FIx this in config
-#  && cp -r $GOPATH/src/github.com/rackn/rebar-dns-mgmt/*.tmpl /etc/dns-mgmt.d \
-
+COPY dns-mgmt.d/* /etc/dns-mgmt.d/
 COPY bind /etc/bind
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
