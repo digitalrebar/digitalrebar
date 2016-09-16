@@ -1,10 +1,34 @@
 FROM digitalrebar/deploy-service-wrapper
 
+ARG DR_TAG=latest
+ENV DR_TAG ${DR_TAG}
+
+# Get packages
+RUN mkdir -p linux/amd64 && \
+    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/linux/amd64/rebar \
+           -o linux/amd64/rebar && \
+    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/sha256sums \
+           -o rebar-bins.sha256sum && \
+    (grep "linux/amd64/rebar\$" rebar-bins.sha256sum | sha256sum -c && rm rebar-bins.sha256sum) && \
+    mv linux/amd64/rebar /usr/local/bin/rebar && \
+    chmod 755 /usr/local/bin/rebar && \
+    rm -rf linux
+
+RUN mkdir -p linux/amd64 && \
+    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/linux/amd64/sign-it \
+           -o linux/amd64/sign-it && \
+    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/sha256sums \
+           -o rebar-bins.sha256sum && \
+    (grep "linux/amd64/sign-it\$" rebar-bins.sha256sum | sha256sum -c && rm rebar-bins.sha256sum) && \
+    mv linux/amd64/sign-it /usr/local/bin/sign-it && \
+    chmod 755 /usr/local/bin/sign-it && \
+    rm -rf linux
+
 # Set our command
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 
 RUN groupadd -r rebar && useradd -r -u 1000 -g rebar -p '$6$afAL.34B$T2WR6zycEe2q3DktVtbH2orOroblhR6uCdo5n3jxLsm47PBm9lwygTbv3AjcmGDnvlh0y83u2yprET8g9/mve.' -m -d /home/rebar -s /bin/bash rebar \
-  && mkdir -p /opt/digitalrebar /etc/sudoers.d /home/rebar/.ssh /var/run/rebar /var/cache/rebar/ansible_playbook /home/rebar/.ansible \
+  && mkdir -p /opt /etc/sudoers.d /home/rebar/.ssh /var/run/rebar /var/cache/rebar/ansible_playbook /home/rebar/.ansible \
   && chown rebar:rebar /var/run/rebar /home/rebar/.ansible /home/rebar/.ssh /var/cache/rebar/ansible_playbook
 
 COPY rebar_sudoer /etc/sudoers.d/rebar
@@ -24,7 +48,7 @@ RUN pip install dnspython
 RUN gem install bundler \
   && gem install net-http-digest_auth \
   && gem install berkshelf -v 4.3.5
-RUN test -d /opt/digitalrebar/core || git clone https://github.com/digitalrebar/core /opt/digitalrebar/core \
+RUN test -d /opt/digitalrebar || git clone https://github.com/digitalrebar/digitalrebar /opt/digitalrebar \
   && mkdir -p /var/run/rebar /var/cache/rebar/cookbooks /var/cache/rebar/gems /var/cache/rebar/bin /var/log/rebar \
   && chown -R rebar:rebar /opt/digitalrebar /var/run/rebar /var/cache/rebar /var/log/rebar /home/rebar/.ssh \
   && chmod 755 /home/rebar/.ssh 
@@ -46,11 +70,5 @@ RUN curl -fgL -o '/tmp/chef.deb' \
 RUN /usr/local/go/bin/go get -u github.com/VictorLowther/intelamt/amttool \
   && mv /go/bin/amttool /usr/local/bin/amttool \
   && /usr/local/go/bin/go get -u github.com/VictorLowther/wsman/wscli
-
-RUN curl -fgL -o /usr/local/bin/rebar \
-         https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64 \
-          && chmod 755 /usr/local/bin/rebar
-RUN curl -fgL https://s3-us-west-2.amazonaws.com/rebar-trust-me/sign-it -o /usr/local/bin/sign-it && chmod 755 /usr/local/bin/sign-it
-
 
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/

@@ -1,6 +1,9 @@
 # vim:set ft=dockerfile:
 FROM debian:jessie
 
+ARG DR_TAG=latest
+ENV DR_TAG ${DR_TAG}
+
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN groupadd -r postgres && useradd -r -g postgres postgres
 

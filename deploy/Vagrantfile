@@ -55,7 +55,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     client.vm.provision "shell", inline: "digitalrebar/deploy/workloads/kubernetes.sh --help", privileged: false
     client.vm.provision "shell", inline: "cp digitalrebar/deploy/.dr_info.example /home/vagrant/.dr_info", privileged: false
     # get the rebar client
-    client.vm.provision "shell", inline: "sudo curl -o /usr/local/sbin/rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64"
+    client.vm.provision "shell", inline: "sudo curl -o /usr/local/sbin/rebar https://s3-us-west-2.amazonaws.com/rebar-bins/linux/amd64/rebar"
     client.vm.provision "shell", inline: "sudo chmod +x /usr/local/sbin/rebar"
     client.vm.provision "shell", inline: "rebar --help"
 

@@ -225,9 +225,9 @@ rebar() {
     rebar_cmd=$(which rebar)
     if [[ $rebar_cmd == "" ]] ; then
         if [[ $(uname -s) == Darwin ]] ; then
-            curl -so rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-darwin-amd64
+            curl -so rebar https://s3-us-west-2.amazonaws.com/rebar-bins/darwin/amd64/rebar
         else
-            curl -so rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64
+            curl -so rebar https://s3-us-west-2.amazonaws.com/rebar-bins/linux/amd64/rebar
         fi
         chmod +x ./rebar
     fi

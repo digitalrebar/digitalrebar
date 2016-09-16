@@ -1,6 +1,9 @@
 FROM digitalrebar/deploy-service-wrapper
 MAINTAINER Victor Lowther <victor@rackn.com>
 
+ARG DR_TAG=latest
+ENV DR_TAG ${DR_TAG}
+
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 
 RUN apt-get update && apt-get -y install rsyslog rsyslog-relp logrotate

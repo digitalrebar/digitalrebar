@@ -6,6 +6,29 @@ ENV TFTPROOT /tftpboot
 ENV WEBPORT 8091
 ENV APIPORT 8092
 
+ARG DR_TAG=latest
+ENV DR_TAG ${DR_TAG}
+
+# Get packages
+RUN mkdir -p linux/amd64 && \
+    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/linux/amd64/provisioner-mgmt \
+         -o linux/amd64/provisioner-mgmt && \
+    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/sha256sums \
+         -o rebar-bins.sha256sum && \
+    (grep "linux/amd64/provisioner-mgmt" rebar-bins.sha256sum | sha256sum -c && rm rebar-bins.sha256sum) && \
+    mv linux/amd64/provisioner-mgmt /usr/local/bin/provisioner-mgmt && \
+    chmod 755 /usr/local/bin/provisioner-mgmt && \
+    rm -rf linux
+RUN mkdir -p linux/amd64 && \
+    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/linux/amd64/sign-it \
+         -o linux/amd64/sign-it && \
+    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/sha256sums \
+         -o rebar-bins.sha256sum && \
+    (grep "linux/amd64/sign-it" rebar-bins.sha256sum | sha256sum -c && rm rebar-bins.sha256sum) && \
+    mv linux/amd64/sign-it /usr/local/bin/sign-it && \
+    chmod 755 /usr/local/bin/sign-it && \
+    rm -rf linux
+
 # Set our command
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 
@@ -13,7 +36,6 @@ ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 RUN apt-get -y update && apt-get -y install bsdtar createrepo xz-utils unzip bsdmainutils
 RUN apt-get -y purge make build-essential
 RUN curl -fgL https://s3-us-west-2.amazonaws.com/rebar-sws/sws-linux-amd64 -o /usr/local/bin/sws && chmod 755 /usr/local/bin/sws
-RUN curl -fgL https://s3-us-west-2.amazonaws.com/rebar-provisioner-mgmt/provisioner-mgmt -o /usr/local/bin/provisioner-mgmt && chmod 755 /usr/local/bin/provisioner-mgmt
 RUN curl -fgL -o /tmp/elilo.tar.gz http://downloads.sourceforge.net/project/elilo/elilo/elilo-3.16/elilo-3.16-all.tar.gz
 RUN curl -fgL -o /tmp/syslinux-6.03.tar.xz https://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.xz
 # for esxi
@@ -22,7 +44,6 @@ RUN curl -fgL -o /tmp/ipxe.efi http://boot.ipxe.org/ipxe.efi
 RUN curl -fgL -o /tmp/ipxe.pxe http://boot.ipxe.org/ipxe.pxe
 #RUN curl -fgL -o /tmp/busybox https://www.busybox.net/downloads/binaries/busybox-x86_64
 RUN curl -fgL -o /tmp/busybox https://s3-us-west-2.amazonaws.com/rackn-busybox/busybox
-RUN curl -fgL https://s3-us-west-2.amazonaws.com/rebar-trust-me/sign-it -o /usr/local/bin/sign-it && chmod 755 /usr/local/bin/sign-it
 
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 COPY start-up.sh udhcpc_config stage1_init /tmp/

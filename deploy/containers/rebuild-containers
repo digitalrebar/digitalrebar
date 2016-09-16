@@ -162,6 +162,7 @@ build_container() {
     echo
     echo "Building container $1"
     local buildargs=("-t" "${1}:${BUILD_TAG}")
+    buildargs+=("--build-arg" "DR_TAG=${BUILD_TAG}")
     [[ $FORCE_BUILD = true ]] && buildargs+=("--no-cache")
     if ! ( cd "$repo_dir" && docker build "${buildargs[@]}" .); then
         echo "Build of container $1 failed."
