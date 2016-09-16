@@ -202,15 +202,6 @@ func (subnet *Subnet) findInfo(dt *DataTracker, nic string) (*Lease, *Binding) {
 	return l, b
 }
 
-func firstClearBit(bs *bitset.BitSet) (uint, bool) {
-	for i := uint(0); i < bs.Len(); i++ {
-		if !bs.Test(i) {
-			return i, true
-		}
-	}
-	return 0, false
-}
-
 // This will need to be updated to be more efficient with larger subnets.
 // Class C and below should be fine, however.
 func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
@@ -245,10 +236,10 @@ func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 			used.Set(uint(dhcp.IPRange(subnet.ActiveStart, v.Ip) - 1))
 		}
 	}
-	bit, success := firstClearBit(used)
-	if success {
+	used = used.Complement()
+	bit, success := used.NextSet(0)
+	if success || used.Len() == 0 {
 		ip := dhcp.IPAdd(subnet.ActiveStart, int(bit))
-		//log.Printf("Returning bit = %v ip = %v\n", bit, ip)
 		return &ip, true
 	}
 	return nil, saveMe
