@@ -27,6 +27,9 @@ case node[:platform]
 when "centos"
   package_name = "lldpad" if node[:platform_version] == "6.5"
   service_name = "lldpad" if node[:platform_version] == "6.5"
+when "rhel", "redhat"
+  package_name = "lldpad"
+  service_name = "lldpad"
 end
 
 unless system("which #{service_name}")
