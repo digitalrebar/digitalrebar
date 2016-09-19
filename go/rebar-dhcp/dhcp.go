@@ -212,6 +212,16 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
 		}
 
+		if !lease.Valid {
+			log.Printf("%s: Request IP %s from %s matched invalid lease IP %s",
+				xid(p),
+				reqIP,
+				nic,
+				lease.Ip)
+			subnet.updateLeaseTime(h.info, lease, 5*time.Second)
+			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
+		}
+
 		options, leaseTime := subnet.buildOptions(lease, binding, p)
 
 		subnet.updateLeaseTime(h.info, lease, leaseTime)
@@ -231,14 +241,23 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 			reply.YIAddr(),
 			reply.CHAddr())
 		return reply
-
-	case dhcp.Release, dhcp.Decline:
+	case dhcp.Decline:
+		subnet.phantomLease(h.info, nic)
+		reqIP := net.IP(options[dhcp.OptionRequestedIPAddress])
+		if reqIP == nil {
+			reqIP = net.IP(p.CIAddr())
+		}
+		log.Printf("%s: Decline from %s, blacklisting %s for 30 seconds",
+			xid(p),
+			nic,
+			reqIP)
+	case dhcp.Release:
 		subnet.freeLease(h.info, nic)
 		reqIP := net.IP(options[dhcp.OptionRequestedIPAddress])
 		if reqIP == nil {
 			reqIP = net.IP(p.CIAddr())
 		}
-		log.Printf("%s: Release/Decline from %s for %s",
+		log.Printf("%s: Release from %s for %s",
 			xid(p),
 			nic,
 			reqIP)

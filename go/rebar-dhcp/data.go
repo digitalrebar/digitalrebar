@@ -9,12 +9,11 @@ import (
 	"sync"
 
 	"github.com/digitalrebar/digitalrebar/go/common/store"
-	dhcp "github.com/krolaw/dhcp4"
 )
 
 type DataTracker struct {
 	sync.Mutex `json:"-"`
-	store      store.SimpleStore  `json:"-"`
+	store      store.SimpleStore
 	Subnets    map[string]*Subnet // subnet -> SubnetData
 }
 
@@ -80,9 +79,6 @@ func (dt *DataTracker) ReplaceSubnet(subnetName string, subnet *Subnet) (error, 
 	// Take Leases and Bindings from old to new if nets match
 	subnet.Leases = lsubnet.Leases
 	subnet.Bindings = lsubnet.Bindings
-
-	// XXX: One day we should handle if active/reserved change.
-	subnet.ActiveBits = lsubnet.ActiveBits
 
 	delete(dt.Subnets, lsubnet.Name)
 
@@ -168,19 +164,6 @@ func (dt *DataTracker) AddBinding(subnetName string, binding Binding) (error, in
 		return errors.New("Not Found"), http.StatusNotFound
 	}
 
-	// If existing, clear the reservation for IP
-	b := lsubnet.Bindings[binding.Mac]
-	if b != nil {
-		if dhcp.IPInRange(lsubnet.ActiveStart, lsubnet.ActiveEnd, b.Ip) {
-			lsubnet.ActiveBits.Clear(uint(dhcp.IPRange(lsubnet.ActiveStart, b.Ip) - 1))
-		}
-	}
-
-	// Reserve the IP if in Active range
-	if dhcp.IPInRange(lsubnet.ActiveStart, lsubnet.ActiveEnd, binding.Ip) {
-		lsubnet.ActiveBits.Set(uint(dhcp.IPRange(lsubnet.ActiveStart, binding.Ip) - 1))
-	}
-
 	lsubnet.Bindings[binding.Mac] = &binding
 	dt.save_data()
 	return nil, http.StatusOK
@@ -195,10 +178,6 @@ func (dt *DataTracker) DeleteBinding(subnetName, mac string) (error, int) {
 	b := lsubnet.Bindings[mac]
 	if b == nil {
 		return errors.New("Binding Not Found"), http.StatusNotFound
-	}
-
-	if dhcp.IPInRange(lsubnet.ActiveStart, lsubnet.ActiveEnd, b.Ip) {
-		lsubnet.ActiveBits.Clear(uint(dhcp.IPRange(lsubnet.ActiveStart, b.Ip) - 1))
 	}
 
 	delete(lsubnet.Bindings, mac)
