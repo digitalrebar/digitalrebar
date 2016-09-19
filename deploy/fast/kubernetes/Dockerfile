@@ -9,9 +9,19 @@ RUN apt-get update && \
 RUN git clone https://github.com/digitalrebar/digitalrebar /root/digitalrebar
 WORKDIR /root/digitalrebar/deploy
 
-# Rebar CLI
-RUN curl -o /usr/local/sbin/rebar https://s3-us-west-2.amazonaws.com/rebar-cli/rebar-linux-amd64 && \
-    chmod +x /usr/local/sbin/rebar
+ARG DR_TAG=latest
+ENV DR_TAG ${DR_TAG}
+
+# Get packages
+RUN mkdir -p linux/amd64 && \
+    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/linux/amd64/rebar \
+         -o linux/amd64/rebar && \
+    curl -fgL https://s3-us-west-2.amazonaws.com/rebar-bins/${DR_TAG}/sha256sums \
+         -o rebar-bins.sha256sum && \
+    (grep "linux/amd64/rebar\$" rebar-bins.sha256sum | sha256sum -c && rm rebar-bins.sha256sum) && \
+    mv linux/amd64/rebar /usr/local/bin/rebar && \
+    chmod 755 /usr/local/bin/rebar && \
+    rm -rf linux
 
 # Assuming AWS, we'll preinstall the AWS tools
 RUN curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip" && \
