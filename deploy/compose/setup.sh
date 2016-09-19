@@ -20,14 +20,14 @@ while [[ $1 ]]; do
       ./workload.sh rackn digitalrebar-ux
       shift;;
     digitalrebar-workloads)
-      ./workload.sh rackn digitalrebar-workloads
+      ./workload.sh digitalrebar digitalrebar-workloads
       shift;;
     rackn-workloads)
       ./workload.sh rackn rackn-workloads
       shift;;
     all)
       ./workload.sh rackn digitalrebar-ux
-      ./workload.sh rackn digitalrebar-workloads
+      ./workload.sh digitalrebar digitalrebar-workloads
       ./workload.sh rackn rackn-workloads
       shift;;
     *)
