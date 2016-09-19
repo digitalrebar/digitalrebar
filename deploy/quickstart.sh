@@ -23,11 +23,11 @@ while (( $# > 0 )); do
         --wl-*)
             args+=("$arg");;
         --admin-ip)
-	    IPADDR=$arg
-	    ;;
+            IPADDR=$arg
+            ;;
         --access)
-	    ACCESS=$arg
-	    ;;
+            ACCESS=$arg
+            ;;
         --help|-h)
             usage
             exit 0
@@ -105,33 +105,29 @@ case $OS_TYPE in
     *) OS_FAMILY=$OS_TYPE;;
 esac
 
-die() {
-    echo "$@"
-    exit 1
-}
-
 #
 # Functions that help validate or start things.
 # 
 
 validate_tools() {
-    error=0
+    error_flag=0
     if [ "${BASH_VERSINFO}" -lt 4 ] ; then
         echo "Must have a bash version of 4 or higher"
-        error=1
+        error_flag=1
     fi
 
     if [[ ! -e ~/.ssh/id_rsa ]] ; then
         echo "SSH key missing so we are adding one for you"
-        ssh-keygen -t rsa -f ~/.ssh/id_rsa -P ''
+        ssh-keygen -t rsa -f ~/.ssh/id_rsa -P '' 2>/dev/null >/dev/null
     fi
 
     if ! which sudo &>/dev/null; then
+	echo "Installing sudo ..."
         if [[ $OS_FAMILY == rhel ]] ; then
-            yum install -y sudo
+            yum install -y sudo 2>/dev/null >/dev/null
         elif [[ $OS_FAMILY == debian ]] ; then
-            apt-get install -y sudo
-	    sudo updatedb
+            apt-get install -y sudo 2>/dev/null >/dev/null
+            sudo updatedb 2>/dev/null >/dev/null
         fi
 
         if ! which sudo &>/dev/null; then
@@ -139,16 +135,17 @@ validate_tools() {
             if [[ $(uname -s) == Darwin ]] ; then
                 echo "Something like: brew install sudo"
             fi
-            error=1
+            error_flag=1
         fi
     fi
 
     if ! which git &>/dev/null; then
+	echo "Installing git ..."
         if [[ $OS_FAMILY == rhel ]] ; then
-            sudo yum install -y git
+            sudo yum install -y git 2>/dev/null >/dev/null
         elif [[ $OS_FAMILY == debian ]] ; then
-            sudo apt-get install -y git
-	    sudo updatedb
+            sudo apt-get install -y git 2>/dev/null >/dev/null
+            sudo updatedb 2>/dev/null >/dev/null
         fi
 
         if ! which git &>/dev/null; then
@@ -156,20 +153,21 @@ validate_tools() {
             if [[ $(uname -s) == Darwin ]] ; then
                 echo "Something like: brew install git"
             fi
-            error=1
+            error_flag=1
         fi
     fi
 
     if ! which ansible &>/dev/null; then
+	echo "Installing ansible ..."
         if [[ $OS_FAMILY == rhel ]] ; then
-            sudo yum -y install epel-release # Everyone gets epel for free.
-            sudo yum install -y ansible python-netaddr
+            sudo yum -y install epel-release 2>/dev/null >/dev/null
+            sudo yum install -y ansible python-netaddr 2>/dev/null >/dev/null
         elif [[ $OS_FAMILY == debian ]] ; then
-            sudo apt-get install -y software-properties-common
-            sudo apt-add-repository -y ppa:ansible/ansible
-            sudo apt-get update -y
-            sudo apt-get install -y ansible python-netaddr
-    	    sudo updatedb
+            sudo apt-get install -y software-properties-common 2>/dev/null >/dev/null
+            sudo apt-add-repository -y ppa:ansible/ansible 2>/dev/null >/dev/null
+            sudo apt-get update -y 2>/dev/null >/dev/null
+            sudo apt-get install -y ansible python-netaddr 2>/dev/null >/dev/null
+            sudo updatedb 2>/dev/null >/dev/null
         fi
 
         if ! which ansible &>/dev/null; then
@@ -177,16 +175,17 @@ validate_tools() {
             if [[ $OS_FAMILY == darwin ]] ; then
                 echo "Something like: brew install ansible or pip install ansible python-netaddr"
             fi
-            error=1
+            error_flag=1
         fi
     fi
 
     if ! which curl &>/dev/null; then
+	echo "Installing curl ..."
         if [[ $OS_FAMILY == rhel ]] ; then
-            sudo yum install -y curl
+            sudo yum install -y curl 2>/dev/null >/dev/null
         elif [[ $OS_FAMILY == debian ]] ; then
-            sudo apt-get install -y curl
-	    sudo updatedb
+            sudo apt-get install -y curl 2>/dev/null >/dev/null
+            sudo updatedb 2>/dev/null >/dev/null
         fi
 
         if ! which curl &>/dev/null; then
@@ -194,27 +193,28 @@ validate_tools() {
             if [[ $(uname -s) == Darwin ]] ; then
                 echo "Something like: brew install curl"
             fi
-            error=1
+            error_flag=1
         fi
     fi
 
     if ! which jq &>/dev/null; then
+	echo "Installing jq ..."
         if [[ $OS_FAMILY == rhel ]] ; then
-            sudo yum -y install epel-release # Everyone gets epel for free.
-            sudo yum install -y jq
+            sudo yum -y install epel-release 2>/dev/null >/dev/null
+            sudo yum install -y jq 2>/dev/null >/dev/null
         elif [[ $OS_FAMILY == debian ]] ; then
-            sudo apt-get install -y jq
-	    sudo updatedb
+            sudo apt-get install -y jq 2>/dev/null >/dev/null
+            sudo updatedb 2>/dev/null >/dev/null
         else
             echo "Please install jq!"
             if [[ $(uname -s) == Darwin ]] ; then
                 echo "Something like: brew install jq"
-                error=1
+                error_flag=1
             fi
         fi
     fi
 
-    if [[ $error == 1 ]] ; then
+    if [[ $error_flag == 1 ]] ; then
         exit 1
     fi
 }
