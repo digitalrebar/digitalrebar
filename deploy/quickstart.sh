@@ -240,4 +240,5 @@ validate_tools
 git clone https://github.com/digitalrebar/digitalrebar
 cd digitalrebar/deploy
 ./run-in-system.sh $ACCESS $IPADDR --deploy-admin=local $@
-
+echo "!!! QUICK START REMINDER !!!"
+echo "You must use the EXTERNAL IP ADDRESS (not the one shown above) to access Digital Rebar"
