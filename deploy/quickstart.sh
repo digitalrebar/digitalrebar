@@ -169,7 +169,7 @@ validate_tools() {
             sudo apt-add-repository -y ppa:ansible/ansible
             sudo apt-get update -y
             sudo apt-get install -y ansible python-netaddr
-	    sudo updatedb
+    	    sudo updatedb
         fi
 
         if ! which ansible &>/dev/null; then
@@ -240,4 +240,5 @@ validate_tools
 git clone https://github.com/digitalrebar/digitalrebar
 cd digitalrebar/deploy
 ./run-in-system.sh $ACCESS $IPADDR --deploy-admin=local $@
-
+echo "!!! QUICK START REMINDER !!!"
+echo "You must use the EXTERNAL IP ADDRESS (not the one shown above) to access Digital Rebar"
