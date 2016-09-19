@@ -202,8 +202,8 @@ func (subnet *Subnet) findInfo(dt *DataTracker, nic string) (*Lease, *Binding) {
 	return l, b
 }
 
-// This will need to be updated to be more efficient with larger subnets.
-// Class C and below should be fine, however.
+// This will need to be updated to be more efficient with larger
+// subnets.  Class C and below should be fine, however.
 func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 	// Free invalid or expired leases
 	used := bitset.New(0)
@@ -215,22 +215,34 @@ func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 			saveMe = true
 			continue
 		}
-		// If the lease is out of range and does not have a static binding,
-		// mark it as invalid.  This will cause it to be NAK'ed the next time
-		// the client checks in.
-		if _, found := subnet.Bindings[k]; !found && !subnet.InRange(v.Ip) {
-			v.Valid = false
-			saveMe = true
+		if !subnet.InRange(v.Ip) {
+			if _, found := subnet.Bindings[k]; found {
+				// Lease is out of range, but we have a static binding for
+				// it that matches.  Leave it alone.
+				continue
+			}
+			if v.Valid {
+				// Lease is out of range, and it does
+				// not have a static binding.  Someone
+				// changed our lease ranges out from
+				// underneath us.  Mark the lease as
+				// invalid so that it will get NAK'ed
+				// the next time the client checks in.
+				v.Valid = false
+				saveMe = true
+			}
 			continue
 		}
-		// If an invaild lease was made valid again due to a range change, make it valid again.
 		if !v.Valid && !v.Phantom() {
+			// The lease was marked invalid, but it is in
+			// range and not a phantom lease.  Mark it as
+			// valid again.
 			v.Valid = true
 			saveMe = true
 		}
 		used.Set(uint(dhcp.IPRange(subnet.ActiveStart, v.Ip) - 1))
 	}
-	// Check bindings as well to keep it real.
+	// Make sure that any static bindings in our range are masked out.
 	for _, v := range subnet.Bindings {
 		if subnet.InRange(v.Ip) {
 			used.Set(uint(dhcp.IPRange(subnet.ActiveStart, v.Ip) - 1))
@@ -299,9 +311,13 @@ func (s *Subnet) phantomLease(dt *DataTracker, nic string) {
 	if err != nil {
 		return
 	}
+	// This is the MAC address range reserved for use in documentation.
+	// We use it to ensure that we don't collide with real mac address ranges.
 	addr[0] = 0x00
 	addr[1] = 0x53
 	lease.Valid = false
+	// Phantom leases expire in 30 seconds.  This allows getFreeIP to cycle through
+	// address ranges when a client NAKs a lease.
 	lease.ExpireTime = time.Now().Add(30 * time.Second)
 	lease.Mac = addr.String()
 	delete(s.Leases, nic)
