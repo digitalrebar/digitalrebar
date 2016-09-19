@@ -79,11 +79,11 @@ else
 fi
 
 echo "Waiting on system deployment"
-retry_until 240 \
+retry_until 1200 \
             "Took too long for system deployment to appear" \
             rebar deployments show system || exit 1
 echo "Waiting on system-phantom.internal.local"
-retry_until 240 \
+retry_until 1200 \
             "Took too long for system-phantom.internal.local to be runnable" \
             test_phantom || exit 1
 echo "Waiting for rebar to converge (up to 10 minutes)"
