@@ -24,6 +24,12 @@ class BarclampTest::Jig < Jig
     raise "Cannot call TestJig::Run on #{nr.name}" unless nr.state == NodeRole::TRANSITION
 
     Node.transaction do
+      # allows a noop role to coerce the icon for a node
+      if nr.role.replace_node_icon
+        n = nr.node
+        n.icon = nr.role.icon
+        n.save!
+      end
       # create tests data
       Attrib.set('random', nr.node, Random.rand(1000000)) rescue nil
       marker = Attrib.get('marker', nr.node) || nr.name rescue nr.name

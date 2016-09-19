@@ -85,6 +85,7 @@ roles:
     flags:
       - implicit
       - milestone
+      - replace_node_icon
     requires:
       - test-server
       - test-library
