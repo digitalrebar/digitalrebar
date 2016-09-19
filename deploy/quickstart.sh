@@ -169,7 +169,7 @@ validate_tools() {
             sudo apt-add-repository -y ppa:ansible/ansible
             sudo apt-get update -y
             sudo apt-get install -y ansible python-netaddr
-	    sudo updatedb
+    	    sudo updatedb
         fi
 
         if ! which ansible &>/dev/null; then
