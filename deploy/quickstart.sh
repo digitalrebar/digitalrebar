@@ -122,6 +122,7 @@ validate_tools() {
     fi
 
     if ! which sudo &>/dev/null; then
+	echo "Installing sudo ..."
         if [[ $OS_FAMILY == rhel ]] ; then
             yum install -y sudo 2>/dev/null >/dev/null
         elif [[ $OS_FAMILY == debian ]] ; then
@@ -139,6 +140,7 @@ validate_tools() {
     fi
 
     if ! which git &>/dev/null; then
+	echo "Installing git ..."
         if [[ $OS_FAMILY == rhel ]] ; then
             sudo yum install -y git 2>/dev/null >/dev/null
         elif [[ $OS_FAMILY == debian ]] ; then
@@ -156,6 +158,7 @@ validate_tools() {
     fi
 
     if ! which ansible &>/dev/null; then
+	echo "Installing ansible ..."
         if [[ $OS_FAMILY == rhel ]] ; then
             sudo yum -y install epel-release 2>/dev/null >/dev/null
             sudo yum install -y ansible python-netaddr 2>/dev/null >/dev/null
@@ -177,6 +180,7 @@ validate_tools() {
     fi
 
     if ! which curl &>/dev/null; then
+	echo "Installing curl ..."
         if [[ $OS_FAMILY == rhel ]] ; then
             sudo yum install -y curl 2>/dev/null >/dev/null
         elif [[ $OS_FAMILY == debian ]] ; then
@@ -194,6 +198,7 @@ validate_tools() {
     fi
 
     if ! which jq &>/dev/null; then
+	echo "Installing jq ..."
         if [[ $OS_FAMILY == rhel ]] ; then
             sudo yum -y install epel-release 2>/dev/null >/dev/null
             sudo yum install -y jq 2>/dev/null >/dev/null
