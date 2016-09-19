@@ -84,6 +84,8 @@ class EventSink < ActiveRecord::Base
       when obj.is_a?(NetworkRouter)
         data['network'] = obj.network
         data['network_router'] = obj
+      when obj.is_a?(Tenant)
+        data['tenant'] = obj
       else
         raise "http handler does not know how to handle #{obj.class.name}"
       end
