@@ -157,6 +157,15 @@ validate_tools() {
         fi
     fi
 
+    if [[ $OS_VER == 14.04 ]] ; then
+        echo "Updating python to get one that does unicode correctly ..."
+        sudo apt-get install -y software-properties-common 2>/dev/null >/dev/null
+        sudo apt-add-repository -y ppa:fkrull/deadsnakes-python2.7 2>/dev/null >/dev/null
+        sudo apt-get update -y 2>/dev/null >/dev/null
+        sudo apt-get install -y python python-pycurl 2>/dev/null >/dev/null
+        sudo updatedb 2>/dev/null >/dev/null
+    fi
+
     if ! which ansible &>/dev/null; then
 	echo "Installing ansible ..."
         if [[ $OS_FAMILY == rhel ]] ; then
