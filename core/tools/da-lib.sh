@@ -71,8 +71,12 @@ docker_admin_default_containers() {
 }
 
 args=()
+branch="$(git symbolic-ref -q HEAD)"
+branch="${branch##refs/heads/}"
+branch="${branch:-latest}"
 
-export DR_TAG=latest
+DR_TAG="${DR_TAG:-${branch}}"
+export DR_TAG
 
 while (( $# > 0 )); do
     arg="$1"

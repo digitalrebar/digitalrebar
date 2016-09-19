@@ -479,7 +479,11 @@ use_workload() {
 DEFAULT_ACCESS=${DEFAULT_ACCESS:-FORWARDER}
 ACCESS=${ACCESS:-$DEFAULT_ACCESS}
 DEPLOY_ADMIN=${DEPLOY_ADMIN:-system}
-DR_TAG=${DR_TAG:-latest}
+branch="$(git symbolic-ref -q HEAD)"
+branch="${branch##refs/heads/}"
+branch="${branch:-latest}"
+
+DR_TAG="${DR_TAG:-${branch}}"
 
 # preseed the containers from the environment variables
 for cval in "${known_containers[@]}"; do

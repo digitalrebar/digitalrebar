@@ -3,8 +3,7 @@ MAINTAINER Victor Lowther <victor@rackn.com>
 
 ENV GOPATH /usr/local
 
-ARG DR_TAG=latest
-ENV DR_TAG ${DR_TAG}
+ARG DR_TAG=
 
 RUN apk update && apk upgrade
 RUN apk add bash bash-completion curl jq git go openssh

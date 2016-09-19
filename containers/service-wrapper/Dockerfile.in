@@ -1,0 +1,17 @@
+FROM digitalrebar/base
+MAINTAINER Victor Lowther <victor@rackn.com>
+
+RUN echo ${DR_TAG}
+ARG DR_TAG
+RUN echo ${DR_TAG}
+
+RUN mkdir -p /tmp/consul /etc/consul.d  && \
+    curl -fgL -o consul.zip \
+        https://releases.hashicorp.com/consul/0.6.4/consul_0.6.4_linux_amd64.zip && \
+    unzip consul.zip -d /usr/local/bin && \
+    rm consul.zip
+ADD http://localhost:28569/${DR_TAG}/linux/amd64/sign-it /usr/local/bin/
+RUN chmod 755 /usr/local/bin/*
+
+COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
+
