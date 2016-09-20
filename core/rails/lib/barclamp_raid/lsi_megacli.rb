@@ -15,7 +15,7 @@
 #
 
 module BarclampRaid
-  class Lsi_Megacli < BarclampRaid::Driver
+  class Lsi_Megacli < Driver
     @@vol_re = /Virtual Drive:\s*(\d+)\s*\(Target Id:\s*(\d+)\)/
     @@disk_re = /PD:\s*(\d+)\s*Information/
     @@adapter_line = /^Adapter #(\d+)$/
@@ -88,6 +88,7 @@ module BarclampRaid
     def useable?
       begin
         run_tool(nil, nil, ["-adpCount"]).each do |line|
+          Rails.logger.warn("BarclampRaid::Lsi_Megacli.useable?: #{line}")
           return true if line =~ /Controller Count:.*([0-9]+)\./ && $~[1].to_i > 0
         end
         return false

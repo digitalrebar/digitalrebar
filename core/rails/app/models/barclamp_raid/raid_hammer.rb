@@ -36,10 +36,14 @@ class BarclampRaid::RaidHammer < Hammer
   def self.drivers(candidate_node, logger)
     res = []
     Attrib.get('raid-drivers',candidate_node).each do |driver|
-      next unless Object.qualified_const_defined?(driver["type"])
-      driver = Object.qualified_const_get(driver["type"]).new(candidate_node,logger,driver)
-      next unless driver.useable?
-      res << driver
+      Rails.logger.info("BarclampRaid::RaidHammer: Testing for the existence of #{driver["type"]}")
+      begin
+        driver = Object.qualified_const_get(driver["type"]).new(candidate_node,logger,driver)
+        next unless driver.useable?
+        res << driver
+      rescue
+        Rails.logger.warn("BarclampRaid::RaidHammer: #{driver["type"]} not defined.")
+      end
     end
     res
   end
