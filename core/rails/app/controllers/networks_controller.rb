@@ -71,6 +71,7 @@ class NetworksController < ::ApplicationController
       params[:configure] = true unless params.key?(:configure)
       params[:deployment_id] = depl.id
       params[:group] ||= "default"
+      params[:conduit] ||= "?1g0"
       params.require(:category)
       params.require(:group)
       params.require(:conduit)
