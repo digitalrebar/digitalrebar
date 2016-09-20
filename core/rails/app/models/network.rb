@@ -93,7 +93,7 @@ class Network < ActiveRecord::Base
   def self.check_sanity(n)
     res = []
     # First, check the conduit to be sure it is sane.
-    intf_re =  /^bmc|^([-+?]?)(\d{1,3}[mg])(\d+)$/
+    intf_re =  /^bmc$|^dhcp$|^([-+?]?)(\d{1,3}[mg])(\d+)$/
     if n.conduit.nil? || n.conduit.empty?
       res << [:conduit, "Conduit definition cannot be empty"]
       intfs = []
@@ -227,7 +227,7 @@ class Network < ActiveRecord::Base
       create_auto_v6_range
       r = Role.find_or_create_by!(name: role_name,
                                   type: "BarclampNetwork::Role",   # force
-                                  jig_name: "chef",
+                                  jig_name: (["bmc","dhcp"].member?(conduit) ? "noop": "chef"),
                                   barclamp_id: bc.id,
                                   description: I18n.t('automatic_by', :name=>name),
                                   library: false,
