@@ -65,7 +65,7 @@
     when: "'--provisioner' in dr_services and local_isos.stat.exists"
 
   - name: download Ubuntu ISO (SLOW, see https://github.com/digitalrebar/digitalrebar/tree/master/deploy/containers/provisioner/update-nodes/bootenvs)
-    get_url: url=http://mirrors.kernel.org/ubuntu-releases/16.04/ubuntu-16.04-server-amd64.iso dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/ubuntu-16.04-server-amd64.iso" checksum="sha256:b8b172cbdf04f5ff8adc8c2c1b4007ccf66f00fc6a324a6da6eba67de71746f6"
+    get_url: url=http://mirrors.kernel.org/ubuntu-releases/16.04/ubuntu-16.04.1-server-amd64.iso dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/ubuntu-16.04.1-server-amd64.iso" checksum="sha256:29a8b9009509b39d542ecb229787cdf48f05e739a932289de9e9858d7c487c80"
     when: "'--provisioner' in dr_services and not local_isos.stat.exists"
 
   - name: download Centos ISO (SLOW, see https://github.com/digitalrebar/digitalrebar/tree/master/deploy/containers/provisioner/update-nodes/bootenvs)
