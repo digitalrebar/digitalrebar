@@ -2,8 +2,7 @@ FROM digitalrebar/deploy-service-wrapper
 MAINTAINER Victor Lowther <victor@rackn.com>
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 
-ARG DR_TAG=latest
-ENV DR_TAG ${DR_TAG}
+ARG DR_TAG
 
 RUN apt-get -y update && \
     apt-get -y install software-properties-common wget && \

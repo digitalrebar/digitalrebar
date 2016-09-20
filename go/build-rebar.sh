@@ -3,26 +3,22 @@
 set -e
 # Requires GOPATH to be set and will use it
 
+branch="$(git symbolic-ref -q HEAD)"
+branch="${branch##refs/heads/}"
+branch="${branch:-latest}"
+
+DR_TAG="${DR_TAG:-${branch}}"
+
 if [[ $PWD != */src/github.com/digitalrebar/digitalrebar/go ]]; then
     cd "${GOPATH%%:*}"
     go get -d github.com/digitalrebar/digitalrebar/go
     cd src/github.com/digitalrebar/digitalrebar/go
 fi
 
-DR_TAG=${DR_TAG:-latest}
-if [[ $DR_TAG != "latest" ]] ; then
-    git fetch --all
-    git checkout $DR_TAG
-else
-    echo "Assuming master/active branch is already checked out"
-fi
-
 mkdir -p vendor_src
 (cd vendor_src && ln -sf ../vendor src)
 
 glide i
-
-binversion="$(go run version.go)"
 
 arches=("amd64")
 oses=("linux" "darwin")
@@ -38,7 +34,7 @@ packages=("github.com/digitalrebar/digitalrebar/go/certificates/sign-it"
 
 for arch in "${arches[@]}"; do
     for os in "${oses[@]}"; do
-        binpath="bin/$binversion/$os/$arch"
+        binpath="bin/$DR_TAG/$os/$arch"
         mkdir -p "$binpath"
         for pkg in "${packages[@]}"; do
             GOOS="$os" GOARCH="$arch" go build -o "${binpath}/${pkg##*/}" "$pkg"
@@ -46,16 +42,9 @@ for arch in "${arches[@]}"; do
     done
 done
 
-cd "bin/$binversion"
+cd "bin/$DR_TAG"
 if [[ $(uname -s) == Darwin ]] ; then
     find . -type f -perm -u=x |xargs shasum -a 256 >sha256sums
 else
     find . -type f -perm -u=x |xargs sha256sum >sha256sums
 fi
-cd -
-
-if [[ $DR_TAG == "latest" ]] ; then
-    rm -rf bin/latest
-    cp -r "bin/$binversion" bin/latest
-fi
-

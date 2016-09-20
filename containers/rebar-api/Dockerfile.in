@@ -1,8 +1,6 @@
 FROM digitalrebar/deploy-service-wrapper
 
-ARG DR_TAG=latest
-ENV DR_TAG ${DR_TAG}
-
+ARG DR_TAG
 # Set our command
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 

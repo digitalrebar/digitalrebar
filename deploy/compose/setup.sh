@@ -7,7 +7,11 @@ if [[ ! -e workload.sh ]]; then
   cd compose
 fi
 
-DR_TAG=latest
+branch="$(git symbolic-ref -q HEAD)"
+branch="${branch##refs/heads/}"
+branch="${branch:-latest}"
+
+DR_TAG="${DR_TAG:-${branch}}"
 if [[ $1 == "--tag" ]] ; then
     shift
     DR_TAG=$1

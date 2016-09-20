@@ -1,0 +1,21 @@
+FROM digitalrebar/deploy-service-wrapper
+MAINTAINER Victor Lowther <victor@rackn.com>
+
+ENV SERVICE_NAME rev-proxy
+
+ARG DR_TAG
+
+# Set our command
+ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
+
+RUN apt-get -y update && apt-get install -y xmlsec1
+ADD http://localhost:28569/${DR_TAG}/linux/amd64/rebar-rev-proxy /usr/local/bin/
+RUN apt-get -y install nodejs nodejs-legacy npm \
+  && npm install -g bower \
+  && npm install cssnano-cli html-minifier uglify-js \
+  && npm install -g n \
+  && n stable \
+  && chmod 755 /usr/local/bin/*
+
+COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
+

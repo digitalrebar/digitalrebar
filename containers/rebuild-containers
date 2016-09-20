@@ -17,7 +17,7 @@ CONTAINERS['digitalrebar/dr_node']='node'
 CONTAINERS['digitalrebar/logging']='logging'
 CONTAINERS['digitalrebar/dr_rev_proxy']='rebar-rev-proxy'
 CONTAINERS['digitalrebar/dr_trust_me']='trust-me'
-CONTAINERS['digitalrebar/slave']='slave'
+#CONTAINERS['digitalrebar/slave']='slave'
 CONTAINERS['digitalrebar/rule-engine']='rule-engine'
 
 declare -A REPOS
@@ -31,32 +31,13 @@ declare -A UNKNOWN_CONTAINERS
 declare -A PARENT_CONTAINER_REBUILT
 declare -A CONTAINERS_TO_SKIP
 
-declare -A TREES
-# Trees to run from
-# Deploy is handled automatically
-TREES['core']='https://github.com/digitalrebar/core'
-TREES['hardware']='https://github.com/rackn/hardware'
-TREES['heartbeat']='https://github.com/rackn/heartbeat'
-TREES['kubernetes']='https://github.com/rackn/kubernetes'
-TREES['kargo']='https://github.com/rackn/kubernetes-kargo'
-TREES['opencontrail']='https://github.com/rackn/container-networking-ansible'
-TREES['enterprise']='https://github.com/rackn/enterprise'
-TREES['ceph']='https://github.com/rackn/ceph'
-TREES['burnin']='https://github.com/rackn/burnin'
-TREES['docker']='https://github.com/rackn/docker'
-TREES['docker-swarm']='https://github.com/rackn/docker-swarm'
+branch="$(git symbolic-ref -q HEAD)"
+branch="${branch##refs/heads/}"
+branch="${branch:-latest}"
 
-# GO Trees that should be tagged too
-TREES['forwarder']='https://github.com/digitalrebar/forwarder'
-TREES['rebar-api']='https://github.com/digitalrebar/rebar-api'
-TREES['gcfg']='https://github.com/digitalrebar/gcfg'
-TREES['rebar-dhcp']='https://github.com/rackn/rebar-dhcp'
-TREES['rebar-dns-mgmt']='https://github.com/rackn/rebar-dns-mgmt'
-
-BUILD_TAG='latest'
+DR_TAG="${DR_TAG:-${branch}}"
 PULL_CONTAINERS=false
 PUSH_CONTAINERS=false
-TAG_TREES=false
 UPDATE_GIT=false
 FORCE_BUILD=false
 
@@ -82,9 +63,9 @@ setup_parents() {
     done
     local dockerfile repo unused parent
     # Figure out who the parent of a container is
-    for dockerfile in "$CONTAINER_DIR"/*/Dockerfile; do
+    for dockerfile in "$CONTAINER_DIR"/*/Dockerfile.in; do
         repo=${dockerfile#${CONTAINER_DIR}/}
-        repo=${repo%/Dockerfile}
+        repo=${repo%/Dockerfile.in}
         local container=${REPOS[$repo]}
         read unused parent < <(grep '^FROM' "$dockerfile" |head -1)
         if [[ ${CONTAINERS[${parent%:*}]} ]]; then
@@ -123,23 +104,31 @@ build_children_of() {
 
 # Get the image numeric ID of a container image given the name of the image.
 image_id() {
-    docker inspect --type=image -f '{{.Config.Image}}' "${1}:${BUILD_TAG}"
+    docker inspect --type=image -f '{{.Config.Image}}' "${1}:${DR_TAG}"
 }
 
 branch_exists() { git show-ref --quiet --verify --heads -- "refs/heads/$1"; }
 
 # Test to see if a container does not need to be rebuilt.
 container_is_up_to_date() (
+    # We already built it in this run.
     [[ ${BUILT_CONTAINERS[$1]} ]] && return 0
     local pc=${CONTAINER_PARENTS[$1]}
+    # We rebuilt its barent, so it needs rebuilt.
     [[ $pc && ${BUILT_CONTAINERS[$pc]} ]] && return 1
+    # We are forcing a rebuild, it needs rebuilding.
     [[ $FORCE_BUILD == true ]] && return 1
-    [[ $ALWAYS_PULL = true ]] && docker pull "$1:$BUILD_TAG"
+    [[ $ALWAYS_PULL = true ]] && docker pull "$1:$DR_TAG"
+    # It does not have a last-built-image-id, it needs building.
     [[ -f $repo_dir/last-built-image-id ]] || return 1
     cd "$repo_dir"
     local last_changed_rev=$(git rev-list -1 HEAD -- last-built-image-id)
+    # This port of the git repo has changed since the last time we built this container,
+    # it needs rebuilding.
     [[ $last_changed_rev ]] || return 1
+    # the commit for the last built ID does not exist, it needs rebuilding.
     git diff --exit-code -s "$last_changed_rev" -- . || return 1
+    # if the current image ID does not equal the last built one, it needs rebuilding.
     [[ $(image_id "$1") = $(cat last-built-image-id) ]]
 )
 
@@ -161,14 +150,18 @@ build_container() {
     fi
     echo
     echo "Building container $1"
-    local buildargs=("-t" "${1}:${BUILD_TAG}")
-    buildargs+=("--build-arg" "DR_TAG=${BUILD_TAG}")
+    local buildargs=("-t" "${1}:${DR_TAG}")
+    buildargs+=("--build-arg" "DR_TAG=${DR_TAG}")
     [[ $FORCE_BUILD = true ]] && buildargs+=("--no-cache")
-    if ! ( cd "$repo_dir" && docker build "${buildargs[@]}" .); then
+    if ! (
+            cd "$repo_dir" && \
+                sed "/FROM digitalrebar/ s/\$/:${DR_TAG}/" <Dockerfile.in >Dockerfile && \
+                docker build "${buildargs[@]}" .); then
         echo "Build of container $1 failed."
-        UNBUILT_CONTAINERS[$1]="Run 'cd \"$repo_dir\" && docker build -t \"${1}:${BUILD_TAG}\" .' to see what failed."
+        UNBUILT_CONTAINERS[$1]="Run 'cd \"$repo_dir\" && docker build ${buildargs[*]} .' to see what failed."
         return 1
     fi
+    rm "$repo_dir/Dockerfile"
     BUILT_CONTAINERS[$1]=true
     echo "Build of $1 successful"
     echo
@@ -181,56 +174,6 @@ sort_containers() {
     for container in "$@"; do
         printf "%s %s\n" "${CONTAINER_RANK[$container]}" "$container"
     done |sort -n |awk '{print $2}'
-}
-
-tag_trees() {
-    local tree
-    local rel_base
-
-    rel_base=${BUILD_TAG%-*}
-
-    DEP_BRANCH=$(git status -b -s | grep \#\# | awk '{ print $2 }' | awk -F. '{print $1}')
-    if [[ $DEP_BRANCH != $rel_base ]]; then
-	    echo "deployment should be on this branch: $rel_base $DEP_BRANCH"
-	    exit -1
-    fi
-
-    rm -rf tree_bag
-    mkdir -p tree_bag
-
-    cd tree_bag
-    for tree in "${!TREES[@]}"; do
-	    echo "Updating: $tree"
-	    git clone ${TREES[$tree]} $tree
-
-	    cd $tree
-
-	    base=$(git branch -a | egrep "remotes/origin/$rel_base\$")
-	    if [[ $base != $rel_base ]]; then
-		    echo "Making base branch: $rel_base"
-		    git branch $rel_base
-		    git checkout $rel_base
-		    git push origin $rel_base
-	    fi
-
-	    echo "Making tag: $BUILD_TAG"
-	    git checkout $rel_base
-	    git tag $BUILD_TAG
-	    git push origin $BUILD_TAG
-	    cd ..
-    done
-    cd ..
-
-    rm -rf tree_bag
-
-    # Update the tag
-    echo "$BUILD_TAG" > ../compose/tag
-    git commit -m "Update tag to $BUILD_TAG" ../compose/tag
-    git push origin $rel_base
-
-    # Update development - Assumes rebuild containers is run from the branch
-    git tag $BUILD_TAG
-    git push origin $BUILD_TAG
 }
 
 help() {
@@ -271,7 +214,7 @@ while (( $# != 0)); do
     case $1 in
         --tag)
             shift
-            BUILD_TAG=$1;;
+            DR_TAG=$1;;
         --pull)
             ALWAYS_PULL=true;;
         --push)
@@ -288,7 +231,7 @@ while (( $# != 0)); do
             help && exit 0;;
         --all)
             for d in "$CONTAINER_DIR"/*; do
-                [[ -f $d/Dockerfile ]] || continue
+                [[ -f $d/Dockerfile.in ]] || continue
                 [[ ${REPOS[${d##*/}]} ]] || continue
                 CONTAINERS_TO_BUILD[${REPOS[${d##*/}]}]=true
             done;;
@@ -304,10 +247,6 @@ while (( $# != 0)); do
     shift
 done
 
-if [[ $UPDATE_GIT = true && $BUILD_TAG != latest ]]; then
-	TAG_TREES=true
-fi
-
 if [[ ${#UNKNOWN_CONTAINERS[@]} != 0 ]]; then
     echo "Cannot build unknown containers:"
     printf "\t%s\n" "${!UNKNOWN_CONTAINERS[@]}"
@@ -318,6 +257,13 @@ if [[ ${#CONTAINERS_TO_BUILD[@]} == 0 ]]; then
     help
     exit 0
 fi
+
+if ! which sws; then
+    go get -u sws
+fi
+
+sws -listen 127.0.0.1:28569 -site ../go/bin &
+trap 'kill %1' INT TERM EXIT KILL
 
 for container in $(sort_containers "${!CONTAINERS_TO_BUILD[@]}"); do
     [[ ${BUILT_CONTAINERS[$container]} ]] || build_container "$container" || break
@@ -334,7 +280,7 @@ fi
 
 if [[ $UPDATE_GIT = true && ${#BUILT_CONTAINERS[@]} != 0 ]]; then
     for container in $(sort_containers "${!BUILT_CONTAINERS[@]}"); do
-        [[ $PUSH_CONTAINERS = true ]] && docker push "${container}:${BUILD_TAG}"
+        [[ $PUSH_CONTAINERS = true ]] && docker push "${container}:${DR_TAG}"
         id_file="$CONTAINER_DIR/${CONTAINERS[$container]}/last-built-image-id"
         image_id "$container" >"$id_file"
         git add "$id_file"
@@ -342,5 +288,4 @@ if [[ $UPDATE_GIT = true && ${#BUILT_CONTAINERS[@]} != 0 ]]; then
     git commit -m "Built containers: ${!BUILT_CONTAINERS[*]}"
     [[ $PUSH_CONTAINERS = true ]] && \
         git push origin "HEAD:containers-built-for-$(git rev-parse --short HEAD)"
-    [[ $TAG_TREES = true ]] && tag_trees
 fi

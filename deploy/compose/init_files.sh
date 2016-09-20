@@ -46,10 +46,14 @@ FILES="base.yml trust-me.yml"
 REMOVE_FILES=""
 ACCESS_MODE="FORWARDER"
 PROVISION_IT="NO"
+
 if [[ -f tag ]]; then
     DR_TAG="$(cat tag)"
 elif [[ ! $DR_TAG ]]; then
-    DR_TAG="latest"
+    branch="$(git symbolic-ref -q HEAD)"
+    branch="${branch##refs/heads/}"
+    branch="${branch:-latest}"
+    DR_TAG="${DR_TAG:-${branch}}"
 fi
 ADD_DNS=false
 RUN_NTP="NO"
@@ -57,9 +61,9 @@ RUN_NTP="NO"
 while [[ $1 == -* ]] ; do
   arg=$1
   shift
-
+  
   case $arg in
-    --help)
+      --help)
       usage
       exit 0
       ;;
@@ -170,19 +174,18 @@ else
     exit 1
 fi
 
-if [[ -x ../../go/bin/latest/linux/amd64/rebar ]]; then
+if [[ -x ../../go/bin/$DR_TAG/linux/amd64/rebar ]]; then
     mkdir -p data-dir/bin
-    cp ../../go/bin/latest/linux/amd64/* data-dir/bin
+    cp "../../go/bin/$DR_TAG/linux/amd64/"* data-dir/bin
 fi
 
 # Process templates and build one big yml file for now.
 rm -f docker-compose.yml
-for i in $FILES
-do
+for i in $FILES; do
     fname=$i
     if [[ $i != /* ]] ; then
-	    fname=yaml_templates/$i
-    fi
+	fname=yaml_templates/$i
+        fi
     # Fix Access Mode
     sed "/START ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/,/END ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/d" $fname >> docker-compose.yml
 done
