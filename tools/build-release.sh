@@ -16,9 +16,9 @@ if [[ $1 = tag ]]; then
         exit 1
     fi
     do_tag=true
-    git tag -a "$DR_TAG"
 fi
 
 export DR_TAG
 (cd go && ./build-rebar.sh)
 (cd containers && ./rebuild-containers --all --tag "$DR_TAG" --update-git)
+[[ $do_tag ]] && git tag -a "$DR_TAG"
