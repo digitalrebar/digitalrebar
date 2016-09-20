@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+
+#
+# NOTE: When building on MAC, you must set SWS_LISTEN_ADDR to your docker
+# bridge IP (e.g. 192.168.99.1) and accept the mac firewall port allowance.
+#
+
+
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 declare -A CONTAINERS
 CONTAINERS['digitalrebar/base']='base'
@@ -155,7 +162,7 @@ build_container() {
     [[ $FORCE_BUILD = true ]] && buildargs+=("--no-cache")
     if ! (
             cd "$repo_dir" && \
-                sed "/FROM digitalrebar/ s/\$/:${DR_TAG}/" <Dockerfile.in >Dockerfile && \
+                sed -e "/ADD / s/localhost/${SWS_LISTEN_ADDR}/" -e "/FROM digitalrebar/ s/\$/:${DR_TAG}/" <Dockerfile.in >Dockerfile && \
                 docker build "${buildargs[@]}" .); then
         echo "Build of container $1 failed."
         UNBUILT_CONTAINERS[$1]="Run 'cd \"$repo_dir\" && docker build ${buildargs[*]} .' to see what failed."
@@ -262,7 +269,8 @@ if ! which sws; then
     go get -u github.com/VictorLowther/sws
 fi
 
-sws -listen 127.0.0.1:28569 -site ../go/bin &
+SWS_LISTEN_ADDR=${SWS_LISTEN_ADDR:-localhost}
+sws -listen ${SWS_LISTEN_ADDR}:28569 -site ../go/bin &
 trap 'kill %1' INT TERM EXIT KILL
 
 for container in $(sort_containers "${!CONTAINERS_TO_BUILD[@]}"); do
