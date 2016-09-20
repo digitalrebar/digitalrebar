@@ -259,7 +259,7 @@ if [[ ${#CONTAINERS_TO_BUILD[@]} == 0 ]]; then
 fi
 
 if ! which sws; then
-    go get -u sws
+    go get -u github.com/VictorLowther/sws
 fi
 
 sws -listen 127.0.0.1:28569 -site ../go/bin &
