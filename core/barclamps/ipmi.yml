@@ -66,8 +66,9 @@ roles:
     type: 'BarclampIpmi::AmtConfigure'
     requires:
       - amt-discover
-    preceeds:
       - rebar-managed-node
+    preceeds:
+      - rebar-hardware-configured
     wants-attribs:
       - node-control-address
       - amt-enable
@@ -311,11 +312,12 @@ roles:
     jig: chef
     requires:
       - ipmi-discover
+      - rebar-managed-node
     wants-attribs:
       - ipmi-enable
       - ipmi-detected-params
     preceeds:
-      - rebar-managed-node
+      - rebar-hardware-configured
     events:
       - endpoint: inproc://role:ipmi-configure/on_active
         selectors:
