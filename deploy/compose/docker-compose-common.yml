@@ -124,6 +124,7 @@ provisioner:
   privileged: true
   restart: always
   volumes:
+    - ./config-dir/provisioner:/opt/provisioner-mgmt
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ~/.cache/digitalrebar/tftpboot:/tftpboot
     - ./data-dir/bin:/usr/local/dev/bin
