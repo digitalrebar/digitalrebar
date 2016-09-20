@@ -159,6 +159,32 @@ ActiveRecord::Base.transaction do
     Capability.find_or_create_by!(name: row[0], description: row[1], source: "provisioner")
   end
 
+  unless Capability.find_by_name("NODE_ALL") begin
+    # CLOUD CAP GROUPS
+    Capability.create! name: "NODE_ALL", description: "All Node Capabilities", source: "dr-groups", 
+      includes: ["NODE_READ", "NODE_PROPOSE", "NODE_DESTROY", "NODE_CREATE", "NODE_RETRY", "NODE_COMMIT", "NODE_POWER", "NODE_SCRUB", "NODE_UPDATE", "NODE_REDEPLOY"]
+    Capability.create! name: "DEPLOYMENT_ALL", description: "All Deployment Capabilities", source: "dr-groups", 
+      includes: ["DEPLOYMENT_READ", "DEPLOYMENT_ANNEAL", "DEPLOYMENT_PROPOSE", "DEPLOYMENT_COMMIT", "DEPLOYMENT_REDEPLOY", "DEPLOYMENT_DESTROY", "DEPLOYMENT_UPDATE", "DEPLOYMENT_CREATE"]
+  end
+
+  unless Capability.find_by_name("DR_CLOUD_READ") begin
+    # CLOUD CAP GROUPS
+    Capability.create! name: "DR_CLOUD_READ", description: "Digital Rebar Read Only User", source: "dr-groups",
+      includes: ["NODE_READ", "DEPLOYMENT_READ", "GROUP_READ"]
+    Capability.create! name: "DR_CLOUD_USER", description: "Digital Rebar Read Only User", source: "dr-groups",
+      includes: ["DR_CLOUD_READ", "NODE_PROPOSE", "PROVIDER_READ"]
+    Capability.create! name: "DR_CLOUD_ADMIN", description: "Digital Rebar Read Only User", source: "dr-groups",
+      includes: ["DR_CLOUD_USER", "NODE_CREATE", "NODE_DESTROY", "PROVIDER_CREATE"]
+    
+    # GENERAL CAP GROUP
+    Capability.create! name: "DR_READ", description: "Digital Rebar Read Only User", source: "dr-groups",
+      includes: ["NODE_READ", "DEPLOYMENT_READ", "GROUP_READ"]
+    Capability.create! name: "DR_USER", description: "Digital Rebar Read Only User", source: "dr-groups",
+      includes: ["DR_READ", "NODE_DESTROY", "NODE_PROPOSE"]
+    Capability.create! name: "DR_ADMIN", description: "Digital Rebar Read Only User", source: "dr-groups",
+      includes: ["DR_USER", "NODE_CREATE"]
+  end
+
   Nav.find_or_create_by(item: 'root', name: 'nav.root', description: 'nav.root_description', path: "main_app.root_path", order: 0, development: true)
 
   # monitor
