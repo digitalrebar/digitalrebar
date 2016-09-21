@@ -22,13 +22,12 @@ COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 COPY start-up.sh udhcpc_config stage1_init /tmp/
 COPY explode_iso.sh /
 
-COPY update-nodes/templates/ /opt/provisioner-mgmt/templates
-COPY update-nodes/bootenvs/ /opt/provisioner-mgmt/bootenvs
+RUN mkdir -p /opt/provisioner-mgmt
 
 RUN chmod 755 /usr/local/bin/*
 
 # Set our command
-ENTRYPOINT ["/sbin/docker-entrypoint.sh"]git 
+ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 
 # Get Latest Go
 RUN apt-get -y update && apt-get -y install bsdtar createrepo xz-utils unzip bsdmainutils

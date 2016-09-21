@@ -1,13 +1,13 @@
 {
-    "Name": "ubuntu-16.04-install",
+    "Name": "ubuntu-14.04-install",
     "TenantId": 1,
     "OS": {
-        "Name": "ubuntu-16.04",
+        "Name": "ubuntu-14.04",
         "Family": "ubuntu",
-        "Version": "16.04",
-        "IsoFile": "ubuntu-16.04-server-amd64.iso",
-        "IsoUrl": "http://mirrors.kernel.org/ubuntu-releases/16.04/ubuntu-16.04-server-amd64.iso",
-        "IsoSha256": "b8b172cbdf04f5ff8adc8c2c1b4007ccf66f00fc6a324a6da6eba67de71746f6"
+        "Version": "14.04",
+        "IsoFile": "ubuntu-14.04.5-server-amd64.iso",
+        "IsoUrl": "http://mirrors.kernel.org/ubuntu-releases/trusty/ubuntu-14.04.5-server-amd64.iso",
+        "IsoSha256": "dde07d37647a1d2d9247e33f14e91acb10445a97578384896b4e1d985f754cc1"
     },
     "Kernel": "install/netboot/ubuntu-installer/amd64/linux",
     "Initrds": [ "install/netboot/ubuntu-installer/amd64/initrd.gz" ],

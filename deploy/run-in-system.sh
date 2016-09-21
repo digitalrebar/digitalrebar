@@ -152,9 +152,6 @@ fi
 echo "$IP ansible_ssh_user=root" > /tmp/run-in-hosts.$$
 
 export ANSIBLE_HOST_KEY_CHECKING=False
-if [[ $ENV_VAR = "\"packet\": true," ]] ; then
-    ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars "$JSON_STRING" tasks/packet_isos.yml
-fi
 ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars "$JSON_STRING" digitalrebar.yml ${LC}
 
 # DHCP WARNING (if needed)
