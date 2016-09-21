@@ -8,12 +8,14 @@
     {
       "name": "host",
       "first": "192.168.99.110/24",
-      "last": "192.168.99.254/24"
+      "last": "192.168.99.254/24",
+      "allow_bound_leases": true
     },
     {
       "name": "dhcp",
       "first": "192.168.99.21/24",
-      "last": "192.168.99.80/24"
+      "last": "192.168.99.80/24",
+      "allow_anon_leases": true
     }
   ],
   "router": {

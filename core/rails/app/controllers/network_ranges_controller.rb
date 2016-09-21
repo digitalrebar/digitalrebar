@@ -53,6 +53,21 @@ class NetworkRangesController < ::ApplicationController
     params.require(:name)
     params.require(:first)
     params.require(:last)
+    # Legacy support for special "host" and "dhcp" range names
+    case params[:name]
+    when "host"
+      params[:allow_anon_leases] = false
+      params[:allow_bound_leases] = true
+    when "dhcp"
+      params[:allow_anon_leases] = true
+      params[:allow_bound_leases] = false
+    end
+    if params[:anon_lease_time] && params[:anon_lease_time] == 0
+      params[:anon_lease_time] = 60
+    end
+    if params[:bound_lease_time] && params[:bound_lease_time] == 0
+      params[:bound_lease_time] = 2592000
+    end
     model.transaction do
       net = find_key_cap(Network, params[:network] || params[:network_id], cap("UPDATE"))
       params[:network_id] = net.id
@@ -70,7 +85,11 @@ class NetworkRangesController < ::ApplicationController
                                                    :overlap,
                                                    :use_vlan,
                                                    :use_bridge,
-                                                   :use_team)
+                                                   :use_team,
+                                                   :anon_lease_time,
+                                                   :bound_lease_time,
+                                                   :allow_anon_leases,
+                                                   :allow_bound_leases)
     end
     render api_show @range
   end

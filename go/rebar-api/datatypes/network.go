@@ -83,9 +83,13 @@ type NetworkRange struct {
 	First string `json:"first"`
 	// The last address that can be callocated from this NetworkRange.
 	// It must be of the same type and in the same subnet as the First address.
-	Last     string `json:"last"`
-	Name     string `json:"name"`
-	TenantID int64  `json:"tenant_id,omitempty"`
+	Last             string `json:"last"`
+	Name             string `json:"name"`
+	TenantID         int64  `json:"tenant_id,omitempty"`
+	AnonLeaseTime    int64  `json:"anon_lease_time"`
+	BoundLeaseTime   int64  `json:"bound_lease_time"`
+	AllowAnonLeases  bool   `json:"allow_anon_leases"`
+	AllowBoundLeases bool   `json:"allow_bound_leases"`
 }
 
 func (o *NetworkRange) ApiName() string {
