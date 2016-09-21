@@ -150,11 +150,11 @@ if [ "$ACCESS_MODE" == "FORWARDER" ] ; then
     ACCESS_MODE_SED_DELETE="HOST"
     MYPWD=`pwd`
     cd config-dir/api/config/networks
-    rm -f the_admin.json
-    rm -f the_bmc.json
-    if [ "$PROVISION_IT" == "YES" ] ; then
-        ln -s the_admin.json.forwarder the_admin.json
-        ln -s the_bmc.json.forwarder the_bmc.json
+    rm -f the_admin.json || :
+    rm -f the_bmc.json || :
+    if [[ $PROVISION_IT = YES ]] ; then
+        [[ -f the_admin.json.forwarder ]] && ln -s the_admin.json.forwarder the_admin.json
+        [[ -f the_bmc.json.forwarder ]] && ln -s the_bmc.json.forwarder the_bmc.json
     fi
     cd $MYPWD
 elif [ "$ACCESS_MODE" == "HOST" ] ; then
@@ -163,10 +163,10 @@ elif [ "$ACCESS_MODE" == "HOST" ] ; then
     ACCESS_MODE_SED_DELETE="FORWARDER"
     MYPWD=`pwd`
     cd config-dir/api/config/networks
-    rm -f the_admin.json
-    rm -f the_bmc.json
-    if [ "$PROVISION_IT" == "YES" ] ; then
-        ln -s the_admin.json.mac the_admin.json
+    rm -f the_admin.json || :
+    rm -f the_bmc.json || :
+    if [[ $PROVISION_IT = YES ]] ; then
+        [[ -f the_admin.json.mac ]] && ln -s the_admin.json.mac the_admin.json
     fi
     cd $MYPWD
 else
