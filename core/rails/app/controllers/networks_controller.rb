@@ -106,6 +106,21 @@ class NetworksController < ::ApplicationController
           range_params.require(:network_id)
           range_params.require(:first)
           range_params.require(:last)
+          # Legacy support for special "host" and "dhcp" range names
+          case range_params[:name]
+          when "host"
+            range_params[:allow_anon_leases] = false
+            range_params[:allow_bound_leases] = true
+          when "dhcp"
+            range_params[:allow_anon_leases] = true
+            range_params[:allow_bound_leases] = false
+          end
+          if range_params[:anon_lease_time] && range_params[:anon_lease_time] == 0
+            range_params[:anon_lease_time] = 60
+          end
+          if range_params[:bound_lease_time] && range_params[:bound_lease_time] == 0
+            range_params[:bound_lease_time] = 2592000
+          end
           unless range_params[:tenant_id]
              range_params[:tenant_id] = @current_user.tenant_id
           end
@@ -120,7 +135,11 @@ class NetworksController < ::ApplicationController
                                                    :overlap,
                                                    :use_vlan,
                                                    :use_bridge,
-                                                   :use_team)
+                                                   :use_team,
+                                                   :anon_lease_time,
+                                                   :bound_lease_time,
+                                                   :allow_anon_leases,
+                                                   :allow_bound_leases)
         end
         params.delete :ranges
       end

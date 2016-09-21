@@ -51,11 +51,16 @@ class Network < ActiveRecord::Base
 
   def self.lookup_network(ipstring, category = "admin")
     addr = IP.coerce(ipstring)
+    found_range = false
+    net = nil
     Network.in_category(category).each do |n|
       n.ranges.where(overlap: false).each do |r|
-        return n if r === addr
+        next unless found_range = (r === addr)
+        net = n 
+        break
       end
     end
+    return net if found_range && net.ranges.exists?(allow_bound_leases: true)
     nil
   end
 
@@ -157,11 +162,7 @@ class Network < ActiveRecord::Base
 
   def auto_ranges(node)
     res = []
-    if node.is_admin? && ranges.exists?(name: "admin")
-      res << ranges.find_by(name: "admin")
-    else
-      res << ranges.find_by(name: "host")
-    end
+    res << ranges.find_by(allow_bound_leases: true)
     res << ranges.find_by(name: "host-v6")
     res.compact
   end
@@ -209,10 +210,11 @@ class Network < ActiveRecord::Base
         cluster_prefix = Network.make_global_v6prefix
         user.settings(:network).v6prefix[name] = cluster_prefix
       end
+      prefix = sprintf("#{cluster_prefix}:%04x",id)
       Network.transaction do
-        update_column("v6prefix", sprintf("#{cluster_prefix}:%04x",id))
+        update_column("v6prefix", prefix)
       end
-      Rails.logger.info("Network: Created #{sprintf("#{cluster_prefix}:%04x",id)} for #{name}")
+      Rails.logger.info("Network: Created #{prefix} for #{name}")
       create_auto_v6_range
     end
   end

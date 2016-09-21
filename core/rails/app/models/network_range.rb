@@ -184,6 +184,12 @@ class NetworkRange < ActiveRecord::Base
       end
     end
 
+    errors.add(:anon_lease_time, "NetworkRange #{fullname} must have an anonymous lease time >= 60 seconds") unless anon_lease_time >= 60
+
+    errors.add(:bound_lease_time, "NetworkRange #{fullname} must have a bound lease time at least 3 times greater than its anonymous lease time") unless bound_lease_time >= (anon_lease_time * 3)
+
+    errors.add(:allow_anon_leases, "NetworkRange #{fullname} must allow either anonymous leases or bound leases, but not both.") if allow_anon_leases && allow_bound_leases
+
     errors.add(:network, "NetworkRange #{fullname}: must have a non-configure parent network with specifying overlap") if (overlap and network and network.configure)
 
     unless first.subnet == last.subnet

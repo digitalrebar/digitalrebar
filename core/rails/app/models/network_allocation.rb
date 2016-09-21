@@ -56,8 +56,9 @@ class NetworkAllocation < ActiveRecord::Base
 
   def sanity_check_address
     unless network_range === address
-      errors.add("Allocation #{network.name}.#{network_range.name}.{address.to_s} not in parent range!")
+      errors.add("Allocation #{network.name}.#{network_range.name}.#{address.to_s} not in parent range!")
     end
+    errors.add("Allocation #{network_range.fullname}.#{address.to_s} cannot be bound because it is in a range set aside for anonymous leases!") if network_range.allow_anon_leases
   end
 
   def on_destroy_hooks

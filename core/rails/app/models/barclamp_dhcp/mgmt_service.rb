@@ -57,10 +57,13 @@ class BarclampDhcp::MgmtService < Service
     # For now, only do admin networks
     return unless network.category == 'admin'
 
-    r = network.ranges.find_by(name: "dhcp")
-    r = network.ranges.find_by(name: "host") unless r
-    unless r
-      # All goes away, makes sure we pull it.
+    r = nil
+    if r= network.ranges.find_by(allow_anon_leases: true)
+      Rails.logger.info("Network range #{r.fullname} allows anonymous leases, having DHCP use it.")
+    elsif r = network.ranges.find_by(allow_bound_leases: true)
+      Rails.logger.info("Network range #{r.fullname} allows pre-bound leases, having DHCP use it.")
+    else
+      Rails.logger.info("Network #{network.name} does not have a range suitable for DHCP, ignoring it.")
       begin
         self.class.delete_network(network.name)
       rescue RestClient::ResourceNotFound
@@ -68,11 +71,6 @@ class BarclampDhcp::MgmtService < Service
       end
       return
     end
-
-    start_ip = r.first.addr
-    end_ip = r.last.addr
-    subnet = r.first.network.to_s
-
     next_server = nil
     boot_program = 'lpxelinux'
     BarclampProvisioner::Service.all.each do |role|
@@ -134,16 +132,7 @@ class BarclampDhcp::MgmtService < Service
     # Option 3 - gateway
     options[3] = network.network_router.address.addr if network and network.network_router
     options[67] = self.class.bootloader(boot_program)
-    begin
-      self.class.create_network(network.tenant_id, network.name, subnet, next_server, start_ip, end_ip, options)
-    rescue
-      begin
-        self.class.update_network(network.tenant_id, network.name, subnet, next_server, start_ip, end_ip, options)
-      rescue Exception => e
-        Rails.logger.fatal("Failed to update: #{network.name}: #{e.message}")
-        raise e
-      end
-    end
+    self.class.update_network(network, r, next_server, options)
   end
 
   # Event triggers for node creation.
@@ -173,7 +162,7 @@ class BarclampDhcp::MgmtService < Service
 
   def on_network_allocation_create(na)
     Rails.logger.info("dhcp-mgmt on_network_allocation_create - #{na.address} net cat #{na.network.category}")
-    return unless na.network.category == 'admin'
+    return unless na.network.category == 'admin' && na.network_range.allow_bound_leases
 
     Rails.logger.info("dhcp-mgmt on_network_allocation_create - v4? #{na.address.v4?}")
     return unless na.address.v4?
@@ -208,7 +197,7 @@ class BarclampDhcp::MgmtService < Service
 
   def on_network_allocation_delete(na)
     Rails.logger.info("dhcp-mgmt on_network_allocation_delete - #{na.address} net cat #{na.network.category}")
-    return unless na.network.category == 'admin'
+    return unless na.network.category == 'admin' && na.network_range.allow_bound_leases
     return unless na.address.v4?
 
     # Get the mac addresses
@@ -252,42 +241,30 @@ class BarclampDhcp::MgmtService < Service
   # next_server, start_ip, end_ip is an IP string
   # options is a hash of number => value string
   #
-  def self.create_network(t_id, name, subnet, next_server, start_ip, end_ip, options)
+  def self.update_network(network, netrange, next_server, options)
     url = TrustedService.url("dhcp-mgmt-service")
     return if url.nil?
-    hash = {
-      "name" => name,
-      "tenant_id" => t_id,
-      "subnet" => subnet,
+     hash = {
+      "name" => network.name,
+      "tenant_id" => network.tenant_id,
+      "subnet" => netrange.first.network.to_s,
       "next_server" => next_server,
-      "active_start" => start_ip,
-      "active_end" => end_ip
+      "active_start" => netrange.first.addr,
+      "active_end" => netrange.last.addr,
+      "active_lease_time" => netrange.anon_lease_time,
+      "reserved_lease_time" => netrange.bound_lease_time,
+      "only_bound_leases" => netrange.allow_bound_leases
     }
     options.each do |k,v|
       hash["options"] ||= []
       hash["options"] << { "id" => k, "value" => v }
     end
-
-    TrustedClient.new("#{url}/subnets").post(hash.to_json)
-  end
-
-  def self.update_network(t_id, name, subnet, next_server, start_ip, end_ip, options)
-    url = TrustedService.url("dhcp-mgmt-service")
-    return if url.nil?
-
-    hash = {
-      "name" => name,
-      "subnet" => subnet,
-      "tenant_id" => t_id,
-      "next_server" => next_server,
-      "active_start" => start_ip,
-      "active_end" => end_ip
-    }
-    options.each do |k,v|
-      hash["options"] ||= []
-      hash["options"] << { "id" => k, "value" => v }
+    tc = TrustedClient.new("#{url}/subnets/#{network.name}")
+    if (tc.get rescue nil)
+      tc.put(hash.to_json)
+    else
+      TrustedClient.new("#{url}/subnets").post(hash.to_json)
     end
-    TrustedClient.new("#{url}/subnets/#{name}").put(hash.to_json)
   end
 
   def self.delete_network(name)

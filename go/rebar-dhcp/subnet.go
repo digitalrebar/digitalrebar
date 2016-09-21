@@ -64,6 +64,7 @@ type Subnet struct {
 	ActiveEnd         net.IP
 	ActiveLeaseTime   time.Duration
 	ReservedLeaseTime time.Duration
+	OnlyBoundLeases   bool
 	Leases            map[string]*Lease
 	Bindings          map[string]*Binding
 	Options           []*Option // Options to send to DHCP Clients
@@ -86,6 +87,7 @@ type apiSubnet struct {
 	ActiveEnd         string     `json:"active_end"`
 	ActiveLeaseTime   int        `json:"active_lease_time"`
 	ReservedLeaseTime int        `json:"reserved_lease_time"`
+	OnlyBoundLeases   bool       `json:"only_bound_leases"`
 	Leases            []*Lease   `json:"leases,omitempty"`
 	Bindings          []*Binding `json:"bindings,omitempty"`
 	Options           []*Option  `json:"options,omitempty"`
@@ -206,7 +208,7 @@ func (subnet *Subnet) findInfo(dt *DataTracker, nic string) (*Lease, *Binding) {
 // subnets.  Class C and below should be fine, however.
 func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 	// Free invalid or expired leases
-	used := bitset.New(0)
+	used := bitset.New(uint(dhcp.IPRange(subnet.ActiveStart, subnet.ActiveEnd)))
 	saveMe := false
 	for k, v := range subnet.Leases {
 		// If the lease has expired, whack it.
