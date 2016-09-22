@@ -175,7 +175,7 @@ ActiveRecord::Base.transaction do
     "CLOUD_ADMIN" => { desc: "Cloud Admin", includes: ["CLOUD_ADMIN"] },
     "DR_READER"=> { desc: "General Read Only", includes: ["NODE_READ", "DEPLOYMENT_READ", "GROUP_READ"] },
     "DR_USER" => { desc: "General", includes: ["DR_READER"] },
-    "DR_ADMIN" => { desc: "General Admin", includes: ["DR_ADMIN", "TEMPLATE_ALL", "BOOTENV_ALL", "MACHINE_ALL", "ZONE_ALL", "SUBENET_ALL", "BARCLAMP__ALL"] },
+    "DR_ADMIN" => { desc: "General Admin", includes: ["DR_ADMIN", "TEMPLATE_ALL", "BOOTENV_ALL", "MACHINE_ALL", "ZONE_ALL", "SUBENET_ALL", "BARCLAMP_ALL"] },
   }.each do |name, cap|
     Capability.create! name: name, description: "Digital Rebar #{cap[:desc]} Users", source: "dr-groups", includes: cap[:includes] rescue nil
   end
