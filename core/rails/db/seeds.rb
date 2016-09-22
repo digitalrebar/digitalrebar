@@ -159,6 +159,27 @@ ActiveRecord::Base.transaction do
     Capability.find_or_create_by!(name: row[0], description: row[1], source: "provisioner")
   end
 
+  # create ALL CAP groups
+  ["NODE_", "DEPLOYMENT_", "NETWORK_", "CAPABILITY_", "TENANT_", "USER_", "EVENT_", "USER_TENANT", "EVENT_", "ATTRIB_", "ROLE_", "BARCLAMP_", 
+            "TEMPLATE_", "BOOTENV_", "SUBNET_", "ZONE_", "MACHINE_"
+  ].each do |block|
+    includes = []
+    Capability.where("name like '#{block}%'").each { |cap| includes << cap.name }
+    Capability.create! name: "#{block}ALL", description: "All #{block} Capabilities", source: "cap-groups", includes: includes rescue nil
+  end
+
+  # create CAP groups
+  {
+    "CLOUD_READER" => { desc: "Cloud Read Only", includes: ["NODE_READ", "DEPLOYMENT_READ", "GROUP_READ"] },
+    "CLOUD_USER" => { desc: "Cloud", includes: ["CLOUD_READER", "NODE_PROPOSE", "NODE_COMMIT", "NODE_UPDATE", "NODE_CREATE", "NODE_DESTROY"] },
+    "CLOUD_ADMIN" => { desc: "Cloud Admin", includes: ["CLOUD_USER"] },
+    "DR_READER"=> { desc: "General Read Only", includes: ["NODE_READ", "DEPLOYMENT_READ", "GROUP_READ"] },
+    "DR_USER" => { desc: "General", includes: ["DR_READER"] },
+    "DR_ADMIN" => { desc: "General Admin", includes: ["DR_USER", "TEMPLATE_ALL", "BOOTENV_ALL", "MACHINE_ALL", "ZONE_ALL", "SUBENET_ALL", "BARCLAMP_ALL"] },
+  }.each do |name, cap|
+    Capability.create! name: name, description: "Digital Rebar #{cap[:desc]} Users", source: "dr-groups", includes: cap[:includes] rescue nil
+  end
+
   Nav.find_or_create_by(item: 'root', name: 'nav.root', description: 'nav.root_description', path: "main_app.root_path", order: 0, development: true)
 
   # monitor
