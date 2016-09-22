@@ -89,47 +89,52 @@ if node["quirks"].member?("ipmi-dell-dedicated-nic")
   end
 end
 
-if node[:ipmi][:use_dhcp]
-  ruby_block "Configure BMC to use DHCP" do
-    block do
-      IPMI.tool(node,"lan set #{chan} ipsrc dhcp")
-      raise "Could not set IPMI to use DHCP" unless $?.exitstatus == 0
-      node.set["rebar_wall"]["status"]["ipmi"]["configured"] = true
-    end
-  end unless lan_current_cfg['ipsrc'] == "dhcp"
-else
-  lan_cfg = Mash.new
-  lan_cfg['ipsrc'] = "static"
-
-  address = nil
-  node[:ipmi][:network].each do |addr,opts|
-    address = IP.coerce(addr)
-    lan_cfg['vlan id'] = opts[:use_vlan] ? opts[:vlan].to_s : "off"
-    lan_cfg['ipaddr'] = address.addr
-    lan_cfg['netmask'] = address.netmask
-    lan_cfg['defgw ipaddr'] = (IP.coerce(opts["router"]["address"]).addr || "0.0.0.0" rescue "0.0.0.0")
-    node.set["rebar_wall"]["status"]["ipmi"]["configured"] = true
-    break
-  end
-  unless address
-    node.set["rebar_wall"]["status"]["ipmi"]["messages"] <<= "Bad IP address specifications (#{address.inspect})"
-    Chef::Log.error("Invalid IPv4 address #{address.inspect}")
-    return
-  end
-
-  ['ipsrc','ipaddr','netmask','defgw ipaddr','vlan id'].each do |k|
-    v = lan_cfg[k]
-    next if lan_current_cfg[k] == v
-    cmd = "lan set #{chan} #{k.to_s} #{v}"
-    ruby_block cmd do
+if node[:ipmi][:configure_networking]
+  if node[:ipmi][:use_dhcp]
+    ruby_block "Configure BMC to use DHCP" do
       block do
-        IPMI.tool(node,cmd)
-        raise "Could not #{cmd}" unless $?.exitstatus == 0
-        node.set["rebar_wall"]["status"]["ipmi"]["configured"] = true
+        IPMI.tool(node,"lan set #{chan} ipsrc dhcp")
+        raise "Could not set IPMI to use DHCP" unless $?.exitstatus == 0
         node.set["rebar_wall"]["status"]["ipmi"]["net_changed"] = true
+        node.set["rebar_wall"]["status"]["ipmi"]["configured"] = true
+      end
+    end unless lan_current_cfg['ipsrc'] == "dhcp"
+  else
+    lan_cfg = Mash.new
+    lan_cfg['ipsrc'] = "static"
+    
+    address = nil
+    node[:ipmi][:network].each do |addr,opts|
+      address = IP.coerce(addr)
+      lan_cfg['vlan id'] = opts[:use_vlan] ? opts[:vlan].to_s : "off"
+      lan_cfg['ipaddr'] = address.addr
+      lan_cfg['netmask'] = address.netmask
+      lan_cfg['defgw ipaddr'] = (IP.coerce(opts["router"]["address"]).addr || "0.0.0.0" rescue "0.0.0.0")
+      node.set["rebar_wall"]["status"]["ipmi"]["configured"] = true
+      break
+    end
+    unless address
+      node.set["rebar_wall"]["status"]["ipmi"]["messages"] <<= "Bad IP address specifications (#{address.inspect})"
+      Chef::Log.error("Invalid IPv4 address #{address.inspect}")
+      return
+    end
+
+    ['ipsrc','ipaddr','netmask','defgw ipaddr','vlan id'].each do |k|
+      v = lan_cfg[k]
+      next if lan_current_cfg[k] == v
+      cmd = "lan set #{chan} #{k.to_s} #{v}"
+      ruby_block cmd do
+        block do
+          IPMI.tool(node,cmd)
+          raise "Could not #{cmd}" unless $?.exitstatus == 0
+          node.set["rebar_wall"]["status"]["ipmi"]["configured"] = true
+          node.set["rebar_wall"]["status"]["ipmi"]["net_changed"] = true
+        end
       end
     end
   end
+else
+  Chef::Log.info("Skipping network configuration")
 end
 
 if node["quirks"].member?("ipmi-hard-reset-after-config")
@@ -146,6 +151,19 @@ if node["quirks"].member?("ipmi-hard-reset-after-config")
     end
   end
 end
+
+if node["rebar_wall"]["status"]["ipmi"]["net_changed"] && node[:ipmi][:use_dhcp]
+  Chef::Log.info("Waiting 30 seconds for DHCP lease to be acquired")
+  sleep 30
+end
+laninfo = IPMI.laninfo(node)
+if laninfo.empty?
+  Chef::Log.info("Cannot validate that BMC is remotely accessible")
+  return
+end
+
+node.set[:rebar_wall][:ipmi][:laninfo] = laninfo
+
 
 ruby_block "Mark IPMI as configured" do
   block do

@@ -17,6 +17,7 @@ class BarclampIpmi::Configure < Role
 
   def sysdata(nr)
     na = NetworkAllocation.node_cat(nr.node, "bmc").first
+    return Hash.new unless na
     endpoint = na.address.to_s
     router = na.network.network_router ? na.network.network_router.address.to_s : "0.0.0.0/0"
     r = na.network_range
@@ -38,7 +39,7 @@ class BarclampIpmi::Configure < Role
   def on_active(nr)
     username = Attrib.get('ipmi-username',nr.node)
     authenticator = Attrib.get('ipmi-password',nr.node)
-    endpoint = NetworkAllocation.node_cat(nr.node, "bmc").first.address.addr
+    endpoint = Attrib.get('ipmi-address',nr)
 
     unless nr.node.hammers.find_by(type: "BarclampIpmi::IpmiHammer")
       # We must have a configured IPMI controller to operate.

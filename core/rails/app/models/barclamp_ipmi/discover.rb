@@ -23,21 +23,6 @@ class BarclampIpmi::Discover < Role
       return
     end
 
-    # If we do not have a BMC network defined, we cannot continue.
-    # lookup up a BMC network-based upon the category/group of the admin network.
-    group_name = 'default'
-    NetworkAllocation.node(nr.node).each do |na|
-      if na.network.category == 'admin'
-        group_name = na.network.group
-        break
-      end
-    end
-    bmcnet = Network.find_by(category: "bmc", group: group_name)
-    unless bmcnet
-      Rails.logger.info("No BMC network created for #{group_name}.")
-      return
-    end
-
     # If the detected IPMI controller needs any quirks, make sure they are added
     # to the node's quirklist
     quirklist = []
@@ -53,29 +38,60 @@ class BarclampIpmi::Discover < Role
     Rails.logger.info("IPMI: #{nr.node.name} using #{quirkset} quirks.")
     nr.node.merge_quirks(quirklist)
 
-    # All BMCs should get addresses from the host range.
-    bmcrange = NetworkRange.find_by!(network_id: bmcnet.id, name: "host")
-    # If we have already allocated an IP address for this BMC, we are done.
-    unless NetworkAllocation.find_by(node_id: nr.node.id, network_range_id: bmcrange.id)
-      Rails.logger.info("No address allocated for the BMC on #{nr.node.name}")
-      addr = nr.wall["rebar_wall"]["ipmi"]["laninfo"]["ipaddr"]
-      mask = nr.wall["rebar_wall"]["ipmi"]["laninfo"]["netmask"]
-      suggested_addr = IP.coerce("#{addr}/#{mask}")
-      address = bmcrange.allocate(nr.node,suggested_addr)
-      # Once we have an address allocated, we will have a noderole created
-      # for this node for the network-bmc role.
-      # Commit it.
-      Rails.logger.info("BMC address #{address.address.to_s} allocated for #{nr.node.name}")
-      nr.node.node_roles.find_by!(role_id: bmcnet.role.id).commit!
-    end
-    # Now that we have the appropriate network information, we need to bind
-    # the ipmi-configure role to this node.
     icr_role = Role.find_by!(name: 'ipmi-configure')
-    unless nr.node.node_roles.find_by(role_id: icr_role.id)
+    ipmi_config = nr.node.node_roles.find_by(role_id: icr_role.id)
+    do_commit = false
+    unless ipmi_config
       Rails.logger.info("Adding ipmi-configure role to #{nr.node.name}")
       # Force the config role into the same deployment as the discover role
       ipmi_config = icr_role.add_to_node_in_deployment(nr.node, nr.deployment)
-      ipmi_config.commit!
+      do_commit = true
     end
+
+    # If we do not have a BMC network defined, we cannot continue.
+    # lookup up a BMC network-based upon the category/group of the admin network.
+    netgroup = nil
+    NetworkAllocation.node(nr.node).each do |na|
+      if na.network.category == 'admin'
+        netgroup = na.network.group
+        break
+      end
+    end
+
+    bmcnet = netgroup ? Network.find_by(category: "bmc", group: netgroup) : nil
+    if !bmcnet
+      if Attrib.get('ipmi-configure-networking',ipmi_config)
+        Attrib.set('ipmi-configure-networking',ipmi_config, false)
+        do_commit = true
+      end
+    else
+      unless Attrib.get('ipmi-configure-networking',ipmi_config) 
+        Attrib.set('ipmi-configure-networking',ipmi_config, true)
+        do_commit = true
+      end
+      if bmcnet.conduit == "bmc"
+        # All BMCs should get addresses from the host range.
+        bmcrange = NetworkRange.find_by!(network_id: bmcnet.id, name: "host")
+        # If we have already allocated an IP address for this BMC, we are done.
+        unless NetworkAllocation.find_by(node_id: nr.node.id, network_range_id: bmcrange.id)
+          Rails.logger.info("No address allocated for the BMC on #{nr.node.name}")
+          addr = nr.wall["rebar_wall"]["ipmi"]["laninfo"]["ipaddr"]
+          mask = nr.wall["rebar_wall"]["ipmi"]["laninfo"]["netmask"]
+          suggested_addr = IP.coerce("#{addr}/#{mask}")
+          address = bmcrange.allocate(nr.node,suggested_addr)
+          # Once we have an address allocated, we will have a noderole created
+          # for this node for the network-bmc role.
+          # Commit it.
+          Rails.logger.info("BMC address #{address.address.to_s} allocated for #{nr.node.name}")
+          nr.node.node_roles.find_by!(role_id: bmcnet.role.id).commit!
+        end
+      elsif bmcnet.conduit == "dhcp"
+        unless Attrib.get('ipmi-use-dhcp',ipmi_config)
+          Attrib.set('ipmi-use-dhcp',ipmi_config, true)
+          do_commit = true
+        end
+      end
+    end
+    ipmi_config.commit! if do_commit
   end
 end
