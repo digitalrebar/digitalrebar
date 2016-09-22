@@ -339,6 +339,12 @@ roles:
         schema:
           type: str
           required: true
+      - name: ipmi-configure-networking
+        description: "Whether to configure IPMI networking or leave it alone"
+        map: 'ipmi/configure_networking'
+        default: true
+        schema:
+          type: bool
       - name: ipmi-use-dhcp
         description: "Whether the IPMI controller should get its address via DHCP"
         map: 'ipmi/use_dhcp'
@@ -352,6 +358,9 @@ roles:
         description: 'Messages from configuring IPMI on the system'
         map: 'rebar_wall/status/ipmi/messages'
         default: []
+      - name: ipmi-address
+        description: "The address of the IPMI controller as detected at the end of configuration"
+        map: 'rebar_wall/ipmi/laninfo/ipaddr'
     flags:
       - implicit
 
