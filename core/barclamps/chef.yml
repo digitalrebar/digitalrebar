@@ -57,6 +57,9 @@ roles:
   - name: chef-client
     jig: script
     description: 'Provides a chef client.'
+    preceeds:
+      # Let chef-client provide ohai of we will use it
+      - rebar-inventory
     requires:
       - chef-service
       - proxy-client
