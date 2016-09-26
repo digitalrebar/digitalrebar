@@ -1,4 +1,4 @@
-update-nodes is responsible for managing provisioner bootstates for
+provisioner-mgmt is responsible for managing provisioner bootstates for
 Rebar, although it can be used in a generic fashion.
 
 ## Parameters ##
@@ -139,7 +139,7 @@ endpoint that facilitates uploading larger templates.
 
 #### Create Template (JSON) ####
 
-POST to /templates with a body containing the following JSON:
+POST to /provisoner/templates with a body containing the following JSON:
 
     {
         "UUID": "a unique identifier for the template",
@@ -148,24 +148,24 @@ POST to /templates with a body containing the following JSON:
         
 #### Create Template (plain text) ####
 
-POST the contents of the template to /templates/a-unique-template-name
+POST the contents of the template to /provisioner/templates/a-unique-template-name
 
 #### List Templates ####
 
-GET from /templates
+GET from /provisioner/templates
 
 #### Get a template ####
 
-GET from /templates/template-UUID
+GET from /provisioner/templates/template-UUID
 
 #### Update a template ####
 
-PATCH to /templates/template-UUID with a body containing a JSON patch
+PATCH to /provisioner/templates/template-UUID with a body containing a JSON patch
 that describes the changes to make to the template.
 
 #### Delete a template ####
 
-DELETE to /templates/template-UUID
+DELETE to /provisioner/templates/template-UUID
 
 ## Boot Environments ##
 
@@ -183,6 +183,7 @@ that nodes can boot into.  They are described with the following JSON:
             "IsoSha256": "The SHA256 of the ISO file",
             "IsoUrl": "The URL that the ISO file can be downloaded from, if applicable"
         },
+        "Available": true,
         "Kernel": "path/to/kernel/in/expanded/ISO",
         "Initrds": [ "path/to/initrd/1/on/ISO", "path/to/initrd/2/on/iso" ],
         "BootParams": "A text/template describing the boot parameters for the kernel this bootenv will boot",
@@ -193,30 +194,40 @@ that nodes can boot into.  They are described with the following JSON:
                 "Path": "text/template describing how to build the path the template should be expanded to",
                 "UUID": "The UUID of the template"
             },
-        ]
+        ],
+        "Errors": []
     }
         
+The Available parameter of a boot environment will be set to true if
+all the components it needs to operate (OS install tree extracted from
+the IsoFile, kernel and initrds, templates) are all uploaded and
+functional, otherwise Available will be set to false.  To make the
+boot environment available, fix whatever issues are listed in the
+Errors array (by fixing templates or uploading the ISO using the isos
+endpoint), and re-uploading the bootenv any fixes applied and
+Available set to true.
+
 ### Boot Environment Endpoints ###
 
 #### Create a bootenv ####
 
-POST to /bootenvs with a body consisting of properly-formatted JSON.
+POST to /provisioner/bootenvs with a body consisting of properly-formatted JSON.
 
 #### List bootenvs ####
 
-GET from /bootenvs
+GET from /provisioner/bootenvs
 
 #### Get a single bootenv ####
 
-GET from /bootenvs/name
+GET from /provisioner/bootenvs/name
 
 #### Update a bootenv ####
 
-PATCH to /bootenvs/name with a body consisting of a JSON patch describing the changes to make
+PATCH to /provisioner/bootenvs/name with a body consisting of a JSON patch describing the changes to make
 
 #### Delete a bootenv ####
 
-DELETE to /bootenvs/name
+DELETE to /provisioner/bootenvs/name
 
 ## Machines ##
 
@@ -243,20 +254,43 @@ bootenvs for template expansion.  They are described with the following JSON:
 
 #### Create a machine ####
 
-POST to /machines with a body consisting of properly-formatted JSON.
+POST to /provisioner/machines with a body consisting of properly-formatted JSON.
 
 #### List machines ####
 
-GET from /machines
+GET from /provisioner/machines
 
 #### Get a single machine ####
 
-GET from /machines/name
+GET from /provisioner/machines/name
 
 #### Update a machine ####
 
-PATCH to /machines/name with a body consisting of a JSON patch describing the changes to make
+PATCH to /provisioner/machines/name with a body consisting of a JSON patch describing the changes to make
 
 #### Delete a machine ####
 
-DELETE to /machines/name
+DELETE to /provisioner/machines/name
+
+## Isos ##
+
+The DigitalRebar provisioner deals with install in terms of ISO images that it expands and serves for os installs.
+
+### Iso Endpoints ###
+
+#### List uploaded isos ####
+
+GET from /provisioner/isos
+
+#### Download an iso ####
+
+GET from /provisioner/isos/name
+
+#### Upload an iso ####
+
+POST to /provisioner/isos/name with a body consisting of the ISO to upload
+
+#### Delete an iso ####
+
+DELETE to /provisioner/isos/name
+
