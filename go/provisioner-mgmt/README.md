@@ -198,6 +198,15 @@ that nodes can boot into.  They are described with the following JSON:
         "Errors": []
     }
         
+The Available parameter of a boot environment will be set to true if
+all the components it needs to operate (OS install tree extracted from
+the IsoFile, kernel and initrds, templates) are all uploaded and
+functional, otherwise Available will be set to false.  To make the
+boot environment available, fix whatever issues are listed in the
+Errors array (by fixing templates or uploading the ISO using the isos
+endpoint), and re-uploading the bootenv any fixes applied and
+Available set to true.
+
 ### Boot Environment Endpoints ###
 
 #### Create a bootenv ####
@@ -262,3 +271,26 @@ PATCH to /provisioner/machines/name with a body consisting of a JSON patch descr
 #### Delete a machine ####
 
 DELETE to /provisioner/machines/name
+
+## Isos ##
+
+The DigitalRebar provisioner deals with install in terms of ISO images that it expands and serves for os installs.
+
+### Iso Endpoints ###
+
+#### List uploaded isos ####
+
+GET from /provisioner/isos
+
+#### Download an iso ####
+
+GET from /provisioner/isos/name
+
+#### Upload an iso ####
+
+POST to /provisioner/isos/name with a body consisting of the ISO to upload
+
+#### Delete an iso ####
+
+DELETE to /provisioner/isos/name
+

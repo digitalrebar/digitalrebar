@@ -178,6 +178,23 @@ func main() {
 			deleteThing(c, &Template{UUID: c.Param(`uuid`)})
 		})
 
+	// Isos methods
+	api.GET("/isos",
+		func(c *gin.Context) {
+			listIsos(c, fileRoot)
+		})
+	api.GET("/isos/:name",
+		func(c *gin.Context) {
+			getIso(c, fileRoot, c.Param(`name`))
+		})
+	api.POST("/isos/:name",
+		func(c *gin.Context) {
+			uploadIso(c, fileRoot, c.Param(`name`))
+		})
+	api.DELETE("/isos/:name",
+		func(c *gin.Context) {
+			deleteIso(c, fileRoot, c.Param(`name`))
+		})
 	hosts := strings.Split(hostString, ",")
 	log.Fatal(cert.StartTLSServer(fmt.Sprintf(":%d", apiPort), "provisioner-mgmt", hosts, "internal", "internal", api))
 }
