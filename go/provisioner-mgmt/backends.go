@@ -92,7 +92,7 @@ func (f fileBackend) load(thing keySaver) error {
 
 func (f fileBackend) save(newThing keySaver, oldThing interface{}) error {
 	f.mkThingPath(newThing)
-	if err := newThing.onChange(oldThing); err != nil {
+	if err := newThing.onChange(oldThing); err != nil && oldThing != nil {
 		return err
 	}
 	fullPath := f.mkThingName(newThing)
@@ -159,7 +159,7 @@ func (cb *consulBackend) list(thing keySaver) [][]byte {
 }
 
 func (cb *consulBackend) save(newThing keySaver, oldThing interface{}) error {
-	if err := newThing.onChange(oldThing); err != nil {
+	if err := newThing.onChange(oldThing); err != nil && oldThing != nil {
 		return err
 	}
 	buf, err := json.Marshal(newThing)

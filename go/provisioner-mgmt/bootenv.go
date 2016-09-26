@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -115,8 +114,25 @@ type BootEnv struct {
 	Initrds        []string        // Partial paths to the initrds that should be loaded for the boot environment.
 	BootParams     string          // A template that will be expanded to create the full list of boot parameters for the environment.
 	RequiredParams []string        // The list of extra required parameters for this bootstate. They should be present as Machine.Params when the bootenv is applied to the machine.
+	Available      bool
 	bootParamsTmpl *template.Template
 	TenantId       int
+	Errors         []string
+}
+
+func (b *BootEnv) Error() string {
+	return strings.Join(b.Errors, "\n")
+}
+
+func (b *BootEnv) errorOrNil() error {
+	if len(b.Errors) == 0 {
+		return nil
+	}
+	return b
+}
+
+func (b *BootEnv) Errorf(arg string, args ...interface{}) {
+	b.Errors = append(b.Errors, fmt.Sprintf(arg, args...))
 }
 
 // PathFor expands the partial paths for kernels and initrds into full
@@ -144,29 +160,32 @@ func (b *BootEnv) PathFor(proto, f string) string {
 	return ""
 }
 
-func (b *BootEnv) parseTemplates() error {
+func (b *BootEnv) parseTemplates() {
 	for _, templateParams := range b.Templates {
 		pathTmpl, err := template.New(templateParams.Name).Parse(templateParams.Path)
 		if err != nil {
-			return fmt.Errorf("bootenv: Error compiling path template %s (%s): %v",
+			b.Errorf("bootenv: Error compiling path template %s (%s): %v",
 				templateParams.Name,
 				templateParams.Path,
 				err)
+			continue
 		}
 		templateParams.pathTmpl = pathTmpl.Option("missingkey=error")
 		if templateParams.contents == nil {
 			tmpl := &Template{UUID: templateParams.UUID}
 			if err := backend.load(tmpl); err != nil {
-				return fmt.Errorf("bootenv: Error loading template %s for %s: %v",
+				b.Errorf("bootenv: Error loading template %s for %s: %v",
 					templateParams.UUID,
 					templateParams.Name,
 					err)
+				continue
 			}
 			if err := tmpl.Parse(); err != nil {
-				return fmt.Errorf("bootenv: Error compiling template %s: %v\n---template---\n %s",
+				b.Errorf("bootenv: Error compiling template %s: %v\n---template---\n %s",
 					templateParams.Name,
 					err,
 					tmpl.Contents)
+				continue
 			}
 			templateParams.contents = tmpl
 		}
@@ -175,13 +194,13 @@ func (b *BootEnv) parseTemplates() error {
 	if b.BootParams != "" {
 		tmpl, err := template.New("machine").Parse(b.BootParams)
 		if err != nil {
-			return fmt.Errorf("bootenv: Error compiling boot parameter template: %v\n----TEMPLATE---\n%s",
+			b.Errorf("bootenv: Error compiling boot parameter template: %v\n----TEMPLATE---\n%s",
 				err,
 				b.BootParams)
 		}
 		b.bootParamsTmpl = tmpl.Option("missingkey=error")
 	}
-	return nil
+	return
 }
 
 // JoinInitrds joins the fully expanded initrd paths into a comma-separated string.
@@ -230,14 +249,15 @@ func (b *BootEnv) RenderPaths(machine *Machine) error {
 	for _, templateParams := range b.Templates {
 		pathBuf := &bytes.Buffer{}
 		if err := templateParams.pathTmpl.Execute(pathBuf, vars); err != nil {
-			return fmt.Errorf("template: Error rendering path %s (%s): %v",
+			b.Errorf("template: Error rendering path %s (%s): %v",
 				templateParams.Name,
 				templateParams.Path,
 				err)
+			continue
 		}
 		templateParams.finalPath = filepath.Join(fileRoot, pathBuf.String())
 	}
-	return nil
+	return b.errorOrNil()
 }
 
 // RenderTemplates renders the templates in the bootenv with the data from the machine.
@@ -249,12 +269,8 @@ func (b *BootEnv) RenderTemplates(machine *Machine) error {
 		CommandURL:     commandURL,
 		TenantId:       b.TenantId,
 	}
-	if err := b.parseTemplates(); err != nil {
-		return err
-	}
-	if err := b.RenderPaths(machine); err != nil {
-		return err
-	}
+	b.parseTemplates()
+	b.RenderPaths(machine)
 	var missingParams []string
 	for _, param := range b.RequiredParams {
 		if _, ok := machine.Params[param]; !ok {
@@ -262,29 +278,32 @@ func (b *BootEnv) RenderTemplates(machine *Machine) error {
 		}
 	}
 	if len(missingParams) > 0 {
-		return fmt.Errorf("bootenv: %s missing required machine params for $s:\n %v", b.Name, machine.Name, missingParams)
+		b.Errorf("bootenv: %s missing required machine params for %s:\n %v", b.Name, machine.Name, missingParams)
 	}
 	for _, templateParams := range b.Templates {
 		tmplPath := templateParams.finalPath
 		if err := os.MkdirAll(path.Dir(tmplPath), 0755); err != nil {
-			return fmt.Errorf("template: Unable to create dir for %s: %v", tmplPath, err)
+			b.Errorf("template: Unable to create dir for %s: %v", tmplPath, err)
+			continue
 		}
 
 		tmplDest, err := os.Create(tmplPath)
 		if err != nil {
-			return fmt.Errorf("template: Unable to create file %s: %v", tmplPath, err)
+			b.Errorf("template: Unable to create file %s: %v", tmplPath, err)
+			continue
 		}
 		defer tmplDest.Close()
 		if err := templateParams.contents.Render(tmplDest, vars); err != nil {
 			os.Remove(tmplPath)
-			return fmt.Errorf("template: Error rendering template %s: %v\n---template---\n %s",
+			b.Errorf("template: Error rendering template %s: %v\n---template---\n %s",
 				templateParams.Name,
 				err,
 				templateParams.contents.Contents)
+			continue
 		}
 		tmplDest.Sync()
 	}
-	return nil
+	return b.errorOrNil()
 }
 
 // DeleteRenderedTemplates deletes the templates that were rendered
@@ -299,7 +318,7 @@ func (b *BootEnv) DeleteRenderedTemplates(machine *Machine) {
 	}
 }
 
-func (b *BootEnv) explode_iso() error {
+func (b *BootEnv) explodeIso() error {
 	// Only explode install things
 	if !strings.HasSuffix(b.Name, "-install") {
 		logger.Printf("Explode ISO: Skipping %s becausing not -install\n", b.Name)
@@ -327,18 +346,17 @@ func (b *BootEnv) explode_iso() error {
 	if b.OS.IsoSha256 != "" {
 		f, err := os.Open(isoPath)
 		if err != nil {
-			logger.Printf("Explode ISO: For %s, failed to open iso file %s\n", b.Name, isoPath)
-			return err
-		}
-		defer f.Close()
-		hasher := sha256.New()
-		if _, err := io.Copy(hasher, f); err != nil {
-			logger.Printf("Explode ISO: For %s, failed to read iso file %s\n", b.Name, isoPath)
-			return err
-		}
-		hash := hex.EncodeToString(hasher.Sum(nil))
-		if hash != b.OS.IsoSha256 {
-			return fmt.Errorf("iso: Iso checksum bad.  Re-download image: %s: actual: %v expected: %v", isoPath, hash, b.OS.IsoSha256)
+			return fmt.Errorf("Explode ISO: For %s, failed to open iso file %s: %v", b.Name, isoPath, err)
+		} else {
+			defer f.Close()
+			hasher := sha256.New()
+			if _, err := io.Copy(hasher, f); err != nil {
+				return fmt.Errorf("Explode ISO: For %s, failed to read iso file %s: %v", b.Name, isoPath, err)
+			}
+			hash := hex.EncodeToString(hasher.Sum(nil))
+			if hash != b.OS.IsoSha256 {
+				return fmt.Errorf("iso: Iso checksum bad.  Re-download image: %s: actual: %v expected: %v", isoPath, hash, b.OS.IsoSha256)
+			}
 		}
 	}
 
@@ -347,14 +365,12 @@ func (b *BootEnv) explode_iso() error {
 	cmdName := "/explode_iso.sh"
 	cmdArgs := []string{b.OS.Name, isoPath, path.Dir(canaryPath)}
 	if _, err := exec.Command(cmdName, cmdArgs...).Output(); err != nil {
-		logger.Printf("Explode ISO: Exec command failed for %s: %s\n", b.Name, err)
-		return err
+		return fmt.Errorf("Explode ISO: Exec command failed for %s: %s\n", b.Name, err)
 	}
-
 	return nil
 }
 
-func (b *BootEnv) get_file(f *FileData) error {
+func (b *BootEnv) getFile(f *FileData) error {
 	logger.Printf("Downloading file: %s\n", f.Name)
 	filePath := b.PathFor("disk", f.Name)
 	if err := os.MkdirAll(path.Dir(filePath), 0755); err != nil {
@@ -377,7 +393,7 @@ func (b *BootEnv) get_file(f *FileData) error {
 	return err
 }
 
-func (b *BootEnv) validate_file(f *FileData) error {
+func (b *BootEnv) validateFile(f *FileData) error {
 	logger.Printf("Validating file: %s\n", f.Name)
 	filePath := b.PathFor("disk", f.Name)
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
@@ -390,6 +406,7 @@ func (b *BootEnv) onChange(oldThing interface{}) error {
 	seenPxeLinux := false
 	seenELilo := false
 	seenIPXE := false
+	b.Errors = []string{}
 	for _, template := range b.Templates {
 		if template.Name == "pxelinux" {
 			seenPxeLinux = true
@@ -403,49 +420,46 @@ func (b *BootEnv) onChange(oldThing interface{}) error {
 		if template.Name == "" ||
 			template.Path == "" ||
 			template.UUID == "" {
-			return errors.New(fmt.Sprintf("bootenv: Illegal template: %+v", template))
+			b.Errorf("bootenv: Illegal template: %+v", template)
 		}
 	}
 	if !seenIPXE {
 		if !(seenPxeLinux && seenELilo) {
-			return errors.New("bootenv: Missing elilo or pxelinux template")
+			b.Errorf("bootenv: Missing elilo or pxelinux template")
 		}
 	}
 
 	// Make sure the ISO is exploded
 	if b.OS.IsoFile != "" {
 		logger.Printf("Exploding ISO for %s\n", b.OS.Name)
-		if err := b.explode_iso(); err != nil {
-			return err
+		if err := b.explodeIso(); err != nil {
+			b.Errorf("bootenv: Unable to expand ISO %s: %v", b.OS.IsoFile, err)
 		}
 	}
 
 	// Make sure we download extra files
 	for _, f := range b.OS.Files {
-		if b.validate_file(f) != nil {
-			if err := b.get_file(f); err != nil {
-				return err
+		if b.validateFile(f) != nil {
+			if err := b.getFile(f); err != nil {
+				b.Errorf("bootenv: Unable to download extra file %s: %v", f, err)
+				continue
 			}
 		}
-		if err := b.validate_file(f); err != nil {
-			return err
+		if err := b.validateFile(f); err != nil {
+			b.Errorf("bootenv: Unable to validate extra file %s: %v", f, err)
 		}
 	}
-
-	if err := b.parseTemplates(); err != nil {
-		return err
-	}
+	b.parseTemplates()
 	if b.Kernel != "" {
 		kPath := b.PathFor("disk", b.Kernel)
 		kernelStat, err := os.Stat(kPath)
 		if err != nil {
-			return fmt.Errorf("bootenv: %s: missing kernel %s (%s)",
+			b.Errorf("bootenv: %s: missing kernel %s (%s)",
 				b.Name,
 				b.Kernel,
 				kPath)
-		}
-		if !kernelStat.Mode().IsRegular() {
-			return fmt.Errorf("bootenv: %s: invalid kernel %s (%s)",
+		} else if !kernelStat.Mode().IsRegular() {
+			b.Errorf("bootenv: %s: invalid kernel %s (%s)",
 				b.Name,
 				b.Kernel,
 				kPath)
@@ -456,13 +470,14 @@ func (b *BootEnv) onChange(oldThing interface{}) error {
 			iPath := b.PathFor("disk", initrd)
 			initrdStat, err := os.Stat(iPath)
 			if err != nil {
-				return fmt.Errorf("bootenv: %s: missing initrd %s (%s)",
+				b.Errorf("bootenv: %s: missing initrd %s (%s)",
 					b.Name,
 					initrd,
 					iPath)
+				continue
 			}
 			if !initrdStat.Mode().IsRegular() {
-				return fmt.Errorf("bootenv: %s: invalid initrd %s (%s)",
+				b.Errorf("bootenv: %s: invalid initrd %s (%s)",
 					b.Name,
 					initrd,
 					iPath)
@@ -472,12 +487,12 @@ func (b *BootEnv) onChange(oldThing interface{}) error {
 
 	if old, ok := oldThing.(*BootEnv); ok && old != nil {
 		if old.Name != b.Name {
-			return errors.New("Cannot change name of bootenv")
+			b.Errorf("bootenv: Cannot change name of bootenv %s", old.Name)
 		}
 		machine := &Machine{}
 		machines, err := machine.List()
 		if err != nil {
-			return err
+			b.Errorf("bootenv: Failed to get list of current machines: %v", err)
 		}
 
 		for _, machine := range machines {
@@ -485,15 +500,16 @@ func (b *BootEnv) onChange(oldThing interface{}) error {
 				continue
 			}
 			if err := b.RenderTemplates(machine); err != nil {
-				return err
+				b.Errorf("bootenv: Failed to render templates for machine %s: %v", machine.Name, err)
 			}
 		}
 	}
-
+	b.Available = (len(b.Errors) == 0)
 	return nil
 }
 
 func (b *BootEnv) onDelete() error {
+	b.Errors = []string{}
 	machine := &Machine{}
 	machines, err := machine.List()
 	if err == nil {
@@ -501,10 +517,10 @@ func (b *BootEnv) onDelete() error {
 			if machine.BootEnv != b.Name {
 				continue
 			}
-			return errors.New(fmt.Sprintf("Bootenv %s in use by Machine %s", b.Name, machine.Name))
+			b.Errorf("Bootenv %s in use by Machine %s", b.Name, machine.Name)
 		}
 	}
-	return err
+	return b.errorOrNil()
 }
 
 func (b *BootEnv) List() ([]*BootEnv, error) {
@@ -521,7 +537,7 @@ func (b *BootEnv) List() ([]*BootEnv, error) {
 }
 
 func (b *BootEnv) RebuildRebarData() error {
-	preferred_oses := map[string]int{
+	preferredOses := map[string]int{
 		"centos-7.2.1511": 0,
 		"centos-7.1.1503": 1,
 		"ubuntu-14.04":    2,
@@ -537,6 +553,10 @@ func (b *BootEnv) RebuildRebarData() error {
 	attrValOS := "STRING"
 	attrPref := 1000
 
+	if !b.Available {
+		return b.errorOrNil()
+	}
+
 	bes, err := b.List()
 	if err != nil {
 		return err
@@ -546,8 +566,11 @@ func (b *BootEnv) RebuildRebarData() error {
 		if !strings.HasSuffix(be.Name, "-install") {
 			continue
 		}
+		if !be.Available {
+			continue
+		}
 		attrValOSes[be.OS.Name] = true
-		numPref, ok := preferred_oses[be.OS.Name]
+		numPref, ok := preferredOses[be.OS.Name]
 		if !ok {
 			numPref = 999
 		}
