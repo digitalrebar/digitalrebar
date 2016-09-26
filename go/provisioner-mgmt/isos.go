@@ -33,6 +33,9 @@ func getIso(c *gin.Context, fileRoot, name string) {
 }
 
 func uploadIso(c *gin.Context, fileRoot, name string) {
+	if c.Request.Header.Get(`Content-Type`) != `application/octet-stream` {
+		c.JSON(http.StatusUnsupportedMediaType, NewError(fmt.Sprintf("upload: iso %s must have content-type application/octet-stream", name)))
+	}
 	isoTmpName := path.Join(fileRoot, `isos`, fmt.Sprintf(`.%s.part`, path.Base(name)))
 	isoName := path.Join(fileRoot, `isos`, path.Base(name))
 	if _, err := os.Open(isoTmpName); err == nil {
@@ -46,7 +49,12 @@ func uploadIso(c *gin.Context, fileRoot, name string) {
 
 	copied, err := io.Copy(tgt, c.Request.Body)
 	if err != nil {
+		os.Remove(isoTmpName)
 		c.JSON(http.StatusInsufficientStorage, NewError(fmt.Sprintf("upload: Failed to upload %s: %v", name, err)))
+	}
+	if c.Request.ContentLength != 0 && copied != c.Request.ContentLength {
+		os.Remove(isoTmpName)
+		c.JSON(http.StatusBadRequest, NewError(fmt.Sprintf("upload: Failed to upload entire file: %d bytes expected, %d bytes recieved", name, c.Request.ContentLength, copied)))
 	}
 	os.Remove(isoName)
 	os.Rename(isoTmpName, isoName)
