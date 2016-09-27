@@ -288,7 +288,7 @@ GET from /provisioner/isos/name
 
 #### Upload an iso ####
 
-POST to /provisioner/isos/name with a body consisting of the ISO to upload
+POST to /provisioner/isos/name with a body consisting of the ISO to upload, with a content-type of application/octet-stream.
 
 #### Delete an iso ####
 
