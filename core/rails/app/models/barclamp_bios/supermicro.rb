@@ -120,6 +120,10 @@ class BarclampBios::Supermicro < BarclampBios::Driver
     true
   end
 
+  def flash(packages)
+    true
+  end
+
   def sum(cmd)
     res = %x{/usr/local/bin/sum -u #{@ipmi.username} -p #{@ipmi.authenticator} -i #{@ipmi.endpoint} #{cmd}}
     status = $?.exitstatus

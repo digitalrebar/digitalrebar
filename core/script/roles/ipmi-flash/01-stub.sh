@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+declare -A PARAMS
+PARAMS['ipmi-firmware-rev']='rebar_wall/ipmi/bmcinfo/firmware_rev'
+PARAMS['ipmi-mfgr-id']='rebar_wall/ipmi/bmcinfo/mfgr_id'
+PARAMS['ipmi-product-id']='rebar_wall/ipmi/bmcinfo/product_id'
+PARAMS['ipmi-device-id']='rebar_wall/ipmi/bmcinfo/device_id'
+PARAMS['ipmi-device-rev']='rebar_wall/ipmi/bmcinfo/device_rev'
+
+
+rev_lt() {
+    # $1 = current firmware rev
+    # $2 = target firmware rev
+    local val_a=() val_b=()
+    IFS='.-_' read -a val_a <<< "$1"
+    IFS='.-_' read -a val_b <<< "$2"
+    for ((i=0; i<${#val_a[@]}; i++)); do
+        ((${val_a[$i]} >= ${val_b[$i]})) && return 1
+    done
+    return 0
+}
+
+declare -A VALUES
+
+for v in "${!PARAMS[@]}"; do
+    VALUES["$v"]="$(read_attribute "${PARAMS[$v]}")"
+done
+
+while read -r entry; do
+    match=true
+    found=true
+    package="$(jq -r -c '.["package"]' <<< "$entry")"
+    printf "Testing firmware update %s\n" "$package"
+    for v in "${!PARAMS[@]}"; do
+        val=$(jq -r -c ".[\"$v\"]" <<< "$entry")
+        case $v in
+            'ipmi-firmware-rev')
+                printf "Testing firmware version '%s' against '%s'\n" "$v" "$val"
+                if ! rev_lt "$val" "${VALUES[$v]}"; then
+                    match=false
+                fi;;
+            *)
+                printf "Checking that '%s' value '%s' = '%s'\n" "$v" "$val" "${VALUES[$v]}"
+                if [[ $val && $val != ${VALUES[$v]} ]]; then
+                    found=false
+                    break
+                fi
+        esac
+    done
+    if [[ $found = true ]]; then
+        printf 'Package %s is valid for this system\n' "$package"
+        break
+    else
+        printf 'Package %s is not valid for this system\n' "$package"
+    fi
+done < <(jq -r -c '.[]' <<< "$(read_attribute 'ipmi/firmware_updates')")
+if [[ $found = false ]]; then
+    echo "No IPMI firmware update found for this system"
+    exit 0
+elif [[ $match = false ]]; then
+    echo "IPMI firmware $package already up to date"
+    exit 0
+fi
+
+# Entry points at the firmware entry to update.  Download package from
+# the provisioner, check its sha256sum, and run its script if all
+# appears sane.
+
+server="$(read_attribute 'rebar/provisioner/server/webservers' |jq -r -c '.[0] | .url')"
+if ! curl -O -fgl "$server/files/ipmi/$package"; then
+    echo "Failed to download $package from $server/files/ipmi"
+    echo "Make sure it has been made available."
+    exit 1
+fi
+if ! sha256sum -c <(printf '%s  %s' "$(jq -r '.["package-sha256sum"]' <<< "$entry")" "$package"); then
+    echo "Invalid checksum for $package"
+    exit 1
+fi
+
+printf '%b' "$(jq -r '.script' <<< "$entry")" > update.sh
+. ./update.sh
+
