@@ -1,5 +1,5 @@
-hash: 1568ebce19811d88358f2bb9f320c47c3f937266c32821b73fe1454dd622c18b
-updated: 2016-09-16T14:27:19.647327392-05:00
+hash: 6bed19716da8ee3c6d5b2f636158f331804f297d1f089866b813cc6043c936d5
+updated: 2016-09-27T15:07:37.014832419-05:00
 imports:
 - name: github.com/ant0ine/go-json-rest
   version: 37ad7dc626602a8355801da6acd85155655520f8
@@ -144,7 +144,7 @@ imports:
   subpackages:
   - coordinate
 - name: github.com/hashicorp/terraform
-  version: 0dd7c657d6d60d2e7392b66ae6f74fb84582cab9
+  version: 84592f5967490d118aae0b61a25d589d269fd0b6
   subpackages:
   - config
   - config/module
@@ -182,6 +182,10 @@ imports:
   version: 179d4d0c4d8d407a32af483c2354df1d2c91e6c3
 - name: github.com/pborman/uuid
   version: a97ce2ca70fa5a848076093f05e639a89ca34d06
+- name: github.com/pin/tftp
+  version: 9ea92f6b1029bc1bf3072bba195c84bb9b0370e3
+  subpackages:
+  - netascii
 - name: github.com/RobotsAndPencils/go-saml
   version: aa127de49a0111329d9dbd2e19ddf21da90eb931
   subpackages:
@@ -238,6 +242,6 @@ testImports:
   subpackages:
   - difflib
 - name: github.com/stretchr/testify
-  version: f390dcf405f7b83c997eac1b06768bb9f44dec18
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
   subpackages:
   - assert

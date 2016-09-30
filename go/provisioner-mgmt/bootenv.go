@@ -16,7 +16,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/digitalrebar/digitalrebar/go/rebar-api/client"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
 )
 
 // RenderData is the struct that is passed to templates as a source of
@@ -580,50 +580,50 @@ func (b *BootEnv) RebuildRebarData() error {
 		}
 	}
 
-	deployment := &client.Deployment{}
-	if err := client.Fetch(deployment, "system"); err != nil {
+	deployment := &api.Deployment{}
+	if err := rebarClient.Fetch(deployment, "system"); err != nil {
 		return err
 	}
 
-	role := &client.Role{}
-	if err := client.Fetch(role, "provisioner-service"); err != nil {
+	role := &api.Role{}
+	if err := rebarClient.Fetch(role, "provisioner-service"); err != nil {
 		return err
 	}
 
-	drs := []*client.DeploymentRole{}
+	drs := []*api.DeploymentRole{}
 	matcher := make(map[string]interface{})
 	matcher["role_id"] = role.ID
 	matcher["deployment_id"] = deployment.ID
-	if err := client.Match("deployment_roles", matcher, &drs); err != nil {
+	if err := rebarClient.Match("deployment_roles", matcher, &drs); err != nil {
 		return err
 	}
 
-	var tgt client.Attriber
+	var tgt api.Attriber
 	tgt = drs[0]
 
-	attrib := &client.Attrib{}
+	attrib := &api.Attrib{}
 	attrib.SetId("provisioner-available-oses")
-	attrib, err = client.GetAttrib(tgt, attrib, "")
+	attrib, err = rebarClient.GetAttrib(tgt, attrib, "")
 	if err != nil {
 		return err
 	}
 	attrib.Value = attrValOSes
-	if err := client.SetAttrib(tgt, attrib, ""); err != nil {
+	if err := rebarClient.SetAttrib(tgt, attrib, ""); err != nil {
 		return err
 	}
 
-	attrib = &client.Attrib{}
+	attrib = &api.Attrib{}
 	attrib.SetId("provisioner-default-os")
-	attrib, err = client.GetAttrib(tgt, attrib, "")
+	attrib, err = rebarClient.GetAttrib(tgt, attrib, "")
 	if err != nil {
 		return err
 	}
 	attrib.Value = attrValOS
-	if err := client.SetAttrib(tgt, attrib, ""); err != nil {
+	if err := rebarClient.SetAttrib(tgt, attrib, ""); err != nil {
 		return err
 	}
 
-	if err := client.Commit(tgt); err != nil {
+	if err := rebarClient.Commit(tgt); err != nil {
 		return err
 	}
 

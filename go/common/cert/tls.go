@@ -15,11 +15,11 @@ func simpleKeys(trustRoot, name string) (*x509.CertPool, *tls.Certificate, error
 	if err != nil {
 		return nil, nil, err
 	}
-	addrs := []string{name}
+	addrs := []string{name, "localhost"}
 	for _, ip := range ips {
 		cidr := ip.String()
 		ip, _, err := net.ParseCIDR(cidr)
-		if err != nil || ip == nil || ip.IsLoopback() {
+		if err != nil || ip == nil {
 			continue
 		}
 		addrs = append(addrs, ip.String())
