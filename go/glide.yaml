@@ -26,6 +26,7 @@ import:
   - signer
   - signer/local
   - whitelist
+- package: github.com/pin/tftp
 - package: github.com/cloudflare/go-metrics
 - package: github.com/coddingtonbear/go-jsonselect
 - package: github.com/coreos/go-iptables
