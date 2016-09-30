@@ -48,18 +48,18 @@ d-i partman-lvm/confirm boolean true
 d-i partman-lvm/confirm_nochanges boolean true
 d-i partman-lvm/confirm_nooverwrite boolean true
 d-i partman-auto-lvm/guided_size string max
-d-i partman-auto-lvm/new_vg_name string {{ .Machine.ShortName }}
+d-i partman-auto-lvm/new_vg_name string vg0
 d-i partman-auto/choose_recipe select custom_lvm
 d-i partman/confirm_write_new_label boolean true
 d-i partman/choose_partition select finish
 d-i partman/confirm boolean true
 d-i partman/confirm_nooverwrite boolean true
-d-i partman/auto expert_recipe string \
-    custom_lvm::  \
+d-i partman-auto/expert_recipe string \
+    custom_lvm ::  \
       500 50 1024 free $iflabel{ gpt } $reusemethod{ } method{ efi } format{ } . \
       128 50 256  ext2 $defaultignore{ } method{ format } format{ } use_filesystem{ } filesystem{ ext2 } mountpoint{ /boot } . \
-      10240 20 10240 ext4 $lvmok{ } mountpoint{ / } lv_name{ root } in_vg{ {{ .Machine.ShortName }} } method{ format } format{ } use_filesystem{ } filesystem{ ext4 } . \
-      50% 20 100% linux-swap $lvmok{ } lv_name{ swap } in_vg{ {{ .Machine.ShortName }} } method{ swap } format{ } .
+      10240 20 10240 ext4 $lvmok{ } mountpoint{ / } lv_name{ root } in_vg{ vg0 } method{ format } format{ } use_filesystem{ } filesystem{ ext4 } . \
+      50% 20 100% linux-swap $lvmok{ } lv_name{ swap } in_vg{ vg0 } method{ swap } format{ } .
 {{if (and (eq "ubuntu" .Env.OS.Family)  (lt "12.10" .Env.OS.Version))}}
 d-i live-installer/net-image string {{.Env.OS.InstallUrl}}/install/filesystem.squashfs
 {{end}}
