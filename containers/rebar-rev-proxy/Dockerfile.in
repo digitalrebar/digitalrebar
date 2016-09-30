@@ -8,14 +8,19 @@ ARG DR_TAG
 # Set our command
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 
-RUN apt-get -y update && apt-get install -y xmlsec1
+RUN apt-get -y update \
+    && apt-get install -y xmlsec1 nodejs nodejs-legacy npm \
+    && npm install -g bower n \
+    && n stable \
+    && chmod 755 /usr/local/bin/* \
+    && mkdir -p /opt/digitalrebar-ux
 ADD http://localhost:28569/${DR_TAG}/linux/amd64/rebar-rev-proxy /usr/local/bin/
-RUN apt-get -y install nodejs nodejs-legacy npm \
-  && npm install -g bower \
+RUN git clone -b ${DR_TAG} https://github.com/rackn/digitalrebar-ux /opt/digitalrebar-ux \
+  && cd /opt/digitalrebar-ux \
+  && bower --allow-root install --config.interactive=false \
   && npm install cssnano-cli html-minifier uglify-js \
-  && npm install -g n \
-  && n stable \
-  && chmod 755 /usr/local/bin/*
+  && ./build.sh \
+  && touch .using_prebuilt
 
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 

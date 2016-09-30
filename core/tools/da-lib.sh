@@ -159,7 +159,7 @@ bring_up_admin_containers() {
            "$mountdir/deploy/compose/digitalrebar"
     fi
 
-    if [[ ! -d $mountdir/digitalrebar-ux ]]; then
+    if [[ $DEV_MODE = Y && ! -d $mountdir/digitalrebar-ux ]]; then
         # Clone the digitalrebar-ux repo to a known location.
         git clone https://github.com/rackn/digitalrebar-ux "$mountdir/digitalrebar-ux"
     fi

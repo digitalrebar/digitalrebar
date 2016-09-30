@@ -207,7 +207,6 @@ revproxy:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/rev-proxy/db-store.json:/etc/rev-proxy/db-store.json
     - ./config-dir/rev-proxy/saml-dir:/etc/rev-proxy/saml-dir
-    - ./digitalrebar/digitalrebar-ux:/opt/digitalrebar-ux
     - ./data-dir/bin:/usr/local/dev/bin
   env_file:
     - ./common.env

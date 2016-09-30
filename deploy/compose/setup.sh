@@ -19,23 +19,22 @@ if [[ $1 == "--tag" ]] ; then
 fi
 
 while [[ $1 ]]; do
-  case "$1" in
-    ux)
-      ./workload.sh rackn digitalrebar-ux
-      shift;;
-    digitalrebar-workloads)
-      ./workload.sh digitalrebar digitalrebar-workloads
-      shift;;
-    rackn-workloads)
-      ./workload.sh rackn rackn-workloads
-      shift;;
-    all)
-      ./workload.sh rackn digitalrebar-ux
-      ./workload.sh digitalrebar digitalrebar-workloads
-      ./workload.sh rackn rackn-workloads
-      shift;;
-    *)
-      echo "$1 is not known, use `./workload [organization] [repo]` to install"
-      exit -1;;
-  esac
+    case "$1" in
+        ux)
+            ## nop
+            shift;;
+        digitalrebar-workloads)
+            ./workload.sh digitalrebar digitalrebar-workloads
+            shift;;
+        rackn-workloads)
+            ./workload.sh rackn rackn-workloads
+            shift;;
+        all)
+            ./workload.sh digitalrebar digitalrebar-workloads
+            ./workload.sh rackn rackn-workloads
+            shift;;
+        *)
+            echo "$1 is not known, use `./workload [organization] [repo]` to install"
+            exit -1;;
+    esac
 done
