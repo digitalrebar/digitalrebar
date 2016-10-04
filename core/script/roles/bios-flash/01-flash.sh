@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
 declare -A PARAMS
-PARAMS['ipmi-firmware-rev']='rebar_wall/ipmi/bmcinfo/firmware_rev'
-PARAMS['ipmi-mfgr-id']='rebar_wall/ipmi/bmcinfo/mfgr_id'
-PARAMS['ipmi-product-id']='rebar_wall/ipmi/bmcinfo/product_id'
-PARAMS['ipmi-device-id']='rebar_wall/ipmi/bmcinfo/device_id'
-PARAMS['ipmi-device-rev']='rebar_wall/ipmi/bmcinfo/device_rev'
-
+PARAMS['bios-vendor']='ohai/dmi/bios/vendor'
+PARAMS['bios-version']='ohai/dmi/bios/version'
+PARAMS['bios-revision']='ohai/dmi/bios/bios_revision'
+PARAMS['system_manufacturer']='ohai/dmi/system/manufacturer'
+PARAMS['system_product']='ohai/dmi/system/product_name'
+PARAMS['baseboard_manufacturer']='ohai/dmi/base_board/manufacturer'
+PARAMS['baseboard_product_name']='ohai/dmi/base_board/product_name'
 
 rev_lt() {
     # $1 = current firmware rev
@@ -34,7 +35,7 @@ while read -r entry; do
     for v in "${!PARAMS[@]}"; do
         val=$(jq -r -c ".[\"$v\"]" <<< "$entry")
         case $v in
-            'ipmi-firmware-rev')
+            bios-version|bios-revision)
                 printf "Testing firmware version '%s' against '%s'\n" "$v" "$val"
                 if ! rev_lt "$val" "${VALUES[$v]}"; then
                     match=false
@@ -79,4 +80,3 @@ fi
 
 printf '%b' "$(jq -r '.script' <<< "$entry")" > update.sh
 . ./update.sh
-

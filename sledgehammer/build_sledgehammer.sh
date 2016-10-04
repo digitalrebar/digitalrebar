@@ -361,7 +361,7 @@ setup_sledgehammer_chroot() {
     sudo -H chroot "$CHROOT" /bin/sed -i -e '/keepcache/ s/0/1/' /etc/yum.conf
     sudo -H chroot "$CHROOT" /bin/sh -c "echo 'exclude = *.i386' >>/etc/yum.conf"
     # fourth, have yum bootstrap everything else into usefulness
-    chroot_install livecd-tools tar bsdtar
+    chroot_install livecd-tools tar bsdtar bzip2 pciutils pciutils-devel zlib-devel gcc make
 }
 
 setup_sledgehammer_chroot
@@ -543,6 +543,15 @@ set -e
 set -x 
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 export SIGNATURE="::SIGNATURE::"
+(
+    mkdir -p /mnt/flashrom
+    cd /mnt/flashrom
+    curl -fgL -O http://download.flashrom.org/releases/flashrom-0.9.9.tar.bz2
+    tar xf flashrom-0.9.9.tar.bz2
+    cd flashrom-0.9.9
+    make CONFIG_ENABLE_LIBUSB0_PROGRAMMERS=no CONFIG_ENABLE_LIBUSB1_PROGRAMMERS=no
+    make DESTDIR=/mnt/staged CONFIG_ENABLE_LIBUSB0_PROGRAMMERS=no CONFIG_ENABLE_LIBUSB1_PROGRAMMERS=no install
+)
 cd /mnt
 livecd-creator --config=sledgehammer.ks --cache=./cache -f sledgehammer
 rm -fr /mnt/tftpboot
@@ -612,7 +621,7 @@ if ! grep -q 'early_cpio' ss0.img; then
 fi
 mkdir -p ss0/dev ss0/proc ss0/sys ss0/bin ss0/etc \
        ss0/usr/share/udhcpc ss0/tmp ss0/newinitramfs \
-       ss1
+       ss1 stage1
 
 echo "Making stage1.img"
 (    cd ss0
@@ -631,9 +640,15 @@ echo "Making stage1.img"
 )
 echo "Making stage2.img"
 unsquashfs squashfs.img
-mount -o loop,ro squashfs-root/LiveOS/ext3fs.img ss1
+mount -o loop,ro squashfs-root/LiveOS/ext3fs.img stage1
+(cd stage1; tar cpf - .) | (cd ss1; tar xpf -)
+umount stage1 && rmdir stage1
+if [[ -d /mnt/staged ]]; then
+    echo "Staging externally built stuff"
+    (cd /mnt/staged; tar cfp - .) | (cd ss1; tar xpf -)
+fi
 mksquashfs ss1 $SIGNATURE.squashfs -comp xz -Xbcj x86
-umount ss1
+rm -rf ss1
 echo $SIGNATURE.squashfs |cpio -o -R 0:0 --format=newc >/mnt/tftpboot/stage2.img
 
 (cd /mnt/tftpboot; sha1sum vmlinuz0 *.img >sha1sums)
