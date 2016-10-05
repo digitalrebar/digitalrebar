@@ -37,6 +37,8 @@ class BarclampProvisioner::OsInstall < Role
         claims.delete_if{|k,v|v == 'operating system'}
         # Grab the first unclaimed nonremovable disk for the OS.
         target_disk = disks.detect{|d|!d["removable"] && !claims[d['unique_name']]}
+        # On some systems, all disks are removable.  Try again if we didn't find one.
+        target_disk = disks.detect{|d|!claims[d['unique_name']]} unless target_disk
         Attrib.set('operating-system-disk',node,target_disk["unique_name"])
         claims[target_disk["unique_name"]] = "operating system"
         Attrib.set('claimed-disks',node,claims)
