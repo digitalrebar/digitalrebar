@@ -15,9 +15,9 @@ rev_lt() {
     IFS='.-_' read -a val_a <<< "$1"
     IFS='.-_' read -a val_b <<< "$2"
     for ((i=0; i<${#val_a[@]}; i++)); do
-         [[ ${val_a[$i]} < ${val_b[$i]} ]] || return 1
+         [[ ${val_a[$i]} < ${val_b[$i]} ]] && return 0
     done
-    return 0
+    return 1
 }
 
 declare -A VALUES
@@ -33,15 +33,17 @@ while read -r entry; do
     printf "Testing firmware update %s\n" "$package"
     for v in "${!PARAMS[@]}"; do
         val=$(jq -r -c ".[\"$v\"]" <<< "$entry")
+        [[ ! $val || $val = null ]] && continue
         case $v in
             'ipmi-firmware-rev')
                 printf "Testing firmware version '%s' against '%s'\n" "$v" "$val"
+                version=$val
                 if ! rev_lt "$val" "${VALUES[$v]}"; then
                     match=false
                 fi;;
             *)
                 printf "Checking that '%s' value '%s' = '%s'\n" "$v" "$val" "${VALUES[$v]}"
-                if [[ $val && $val != ${VALUES[$v]} ]]; then
+                if [[ $val != ${VALUES[$v]} ]]; then
                     found=false
                     break
                 fi
@@ -57,7 +59,11 @@ done < <(jq -r -c '.[]' <<< "$(read_attribute 'ipmi/firmware_updates')")
 if [[ $found = false ]]; then
     echo "No IPMI firmware update found for this system"
     exit 0
-elif [[ $match = false ]]; then
+fi
+write_attribute 'ipmi/firmware_applicable_version' "$version"
+write_attribute 'ipmi/firmware_applicable_package' "$package"
+if [[ $match = false ]]; then
+     write_attribute 'ipmi/firmware_updated' false
     echo "IPMI firmware $package already up to date"
     exit 0
 fi
@@ -76,7 +82,6 @@ if ! sha256sum -c <(printf '%s  %s' "$(jq -r '.["package-sha256sum"]' <<< "$entr
     echo "Invalid checksum for $package"
     exit 1
 fi
-
+write_attribute 'bios/firmware_updated' true
 printf '%b' "$(jq -r '.script' <<< "$entry")" > update.sh
 . ./update.sh
-

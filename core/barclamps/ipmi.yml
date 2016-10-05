@@ -321,6 +321,14 @@ roles:
       - ipmi-product-id
       - provisioner-webservers
     attribs:
+      - name: ipmi-firmware-applied
+        map: 'ipmi/firmware_updated'
+        description: "Whether a IPMI update was applied to this system"
+      - name: ipmi-firmware-applicable-version
+        map: 'ipmi/firmware_applicable_version'
+        description: 'The IPMI version that is applicable to this system.'
+      - name: ipmi-firmware-applicable-package
+        map: 'ipmi/firmware_applicable_package'
       - name: ipmi-firmware-list
         description: "List of firmware updates available"
         map: 'ipmi/firmware_updates'
@@ -367,6 +375,7 @@ roles:
             ipmi-firmware-rev: "2.32"
             script: |
               #!/usr/bin/env bash
+              chmod 755 "$package"
               "$package" -q -r
               case $? in
                   0)  # No reboot required.

@@ -23,11 +23,6 @@ barclamp:
 rebar:
   layout: 1
 
-gems:
-  required_pkgs:
-    - libxml-ruby
-    - xml-simple
-
 roles:
   - name: bios-discover
     jig: role-provided
@@ -465,6 +460,14 @@ roles:
       - baseboard_product_name
       - provisioner-webservers
     attribs:
+      - name: bios-firmware-applied
+        map: 'bios/firmware_updated'
+        description: "Whether a BIOS update was applied to this system"
+      - name: bios-firmware-applicable-version
+        map: 'bios/firmware_applicable_version'
+        description: 'The BIOS version that is applicable to this system.'
+      - name: bios-firmware-applicable-package
+        map: 'bios/firmware_applicable_package'
       - name: bios-firmware-list
         map: 'bios/firmware_updates'
         description: "List of BIOS firmware updates available"
@@ -524,7 +527,35 @@ roles:
               echo "Flash succeeded.  Rebooting."
               reboot
               sleep 600
-
+          - package: T320_BIOS_8H9VP_LN_2.4.2.BIN
+            package-source: 'http://downloads.dell.com/FOLDER02804892M/1/T320_BIOS_8H9VP_LN_2.4.2.BIN'
+            package-sha256sum: '70514af312ffb7bdd43b9c736497ab0509094afde1fb9e26db7620c8dc31b300'
+            bios-version: '2.4.2'
+            system_manufacturer: 'Dell Inc.'
+            system_product: 'PowerEdge T320'
+            script: |
+              #!/usr/bin/env bash
+              chmod 755 "$package"
+              "$package" -q -r
+              case $? in
+                  0)  # No reboot required.
+                      exit 0;;
+                  1)  # The update failed.
+                      exit 1;;
+                  2)  # Update suceeded, system needs a reboot.
+                      reboot; sleep 600;;
+                  3)  # Dependency error, system already up to date
+                      echo "System up to date, but should have been caught by pre-version check"
+                      exit 0;;
+                  4|5) # Update not applicable to the system
+                      echo "Update $package not applicable to this system, but not caught by qualification checking"
+                      exit 1;;
+                  6) # System is automatically rebooting
+                     sleep 600;;
+                  *) # Update package is corrupt or Something Weird happened.
+                     echo "Unexpected exit status $?, something weird happened"
+                     exit 1;;
+              esac
   - name: bios-supermicro-configure
     jig: role-provided
     events:
@@ -536,7 +567,7 @@ roles:
     flags:
       - leaverunlog
     requires:
-      - bios-discover
+      - bios-flash
       - rebar-managed-node
     preceeds:
       - rebar-hardware-configured
@@ -563,7 +594,7 @@ roles:
     flags:
       - leaverunlog
     requires:
-      - bios-discover
+      - bios-flash
       - rebar-managed-node
     preceeds:
       - rebar-hardware-configured
