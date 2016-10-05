@@ -316,6 +316,7 @@ roles:
     wants-attribs:
       - ipmi-enable
       - ipmi-detected-params
+      - ipmi-shared
     preceeds:
       - rebar-hardware-configured
     events:
@@ -381,3 +382,13 @@ rpms:
 extra_files:
   # Utility for configuring Dell-specific BMC settings on PEC gear.
   - http://poweredgec.com/files/bmc-2013-10-22.tgz
+
+attribs:
+  - name: ipmi-shared
+    map: 'ipmi/shared_port'
+    description: 'Should the IPMI Port be shared or not for Dell systems'
+    default: false
+    schema:
+      type: bool
+      required: true
+

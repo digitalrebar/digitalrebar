@@ -78,14 +78,21 @@ ruby_block "Set IPMI credentials and enable LAN channel access" do
 end
 
 # If this is a Dell system, tell the BMC that we want to use the dedicated nic.
+# Check the ipmi/shared_port bool as well.
 if node["quirks"].member?("ipmi-dell-dedicated-nic")
-  ruby_block "Set Dell BMC nic to dedicated mode" do
+  should_share = node["ipmi"]["shared_port"] rescue false
+  if should_share
+    value = "shared"
+  else
+    value = "dedicated"
+  end
+  ruby_block "Set Dell BMC nic to #{value} mode" do
     block do
-      IPMI.tool(node,"delloem lan set dedicated")
-      raise "Unable to set IPMI to dedicated nic mode" unless $?.exitstatus == 0
+      IPMI.tool(node,"delloem lan set #{value}")
+      raise "Unable to set IPMI to #{value} nic mode" unless $?.exitstatus == 0
       node.set["rebar_wall"]["status"]["ipmi"]["configured"] = true
     end
-    not_if { IPMI.tool(node,"delloem lan get").strip == "dedicated" }
+    not_if { IPMI.tool(node,"delloem lan get").strip == value }
   end
 end
 
