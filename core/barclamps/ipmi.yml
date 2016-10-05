@@ -428,6 +428,8 @@ roles:
       - ipmi-shared
     preceeds:
       - rebar-hardware-configured
+      - bios-dell-rseries-configure
+      - bios-supermicro-configure
     events:
       - endpoint: inproc://role:ipmi-configure/on_active
         selectors:
