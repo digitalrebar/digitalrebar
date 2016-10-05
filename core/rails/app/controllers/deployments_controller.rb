@@ -250,6 +250,8 @@ class DeploymentsController < ApplicationController
 
         # collect the roles, take no action
         node["roles"].each do |r|
+          next if roles[r]
+
           role = find_key_cap(Role,r, cap("READ","ROLE"))
           roles[r] = { id: role.id, cohort: role.cohort, nodes: [] }
         end
@@ -324,13 +326,6 @@ class DeploymentsController < ApplicationController
 
       Rails.logger.debug("Deployment Batch: deployment_roles #{deployment_roles.inspect}")
 
-      # set the attributes
-      if params["attribs"]
-        params["attribs"].each do |a, v|
-          Attrib.set(a, deployment, v)
-        end
-      end
-
     end # end Transaction
 
     # assign nodes roles to deployment (cannot be in the top transaction)
@@ -365,6 +360,15 @@ class DeploymentsController < ApplicationController
         role.add_to_node node
       end
     end # rleft loop
+
+    # set the attributes
+    Deployment.transaction do
+      if params["attribs"]
+        params["attribs"].each do |a, v|
+          Attrib.set(a, deployment, v)
+        end
+      end
+    end
 
   end
 
