@@ -314,21 +314,27 @@ attribs:
   - name: system_serial_number
     description: 'System Serial Number'
     map: 'ohai/dmi/system/serial_number'
-  - name: 'system_product'
+  - name: system_product
     description: 'System Product Name'
     map: 'ohai/dmi/system/product_name'
-  - name: 'system_manufacturer'
+  - name: system_manufacturer
     description: 'System Vendor'
     map: 'ohai/dmi/system/manufacturer'
   - name: chassis_serial_number
     description: 'Chassis Serial Number'
     map: 'ohai/dmi/chassis/serial_number'
-  - name: 'chassis_product'
+  - name: chassis_product
     description: 'Chassis Product Name'
     map: 'ohai/dmi/chassis/product_name'
-  - name: 'chassis_manufacturer'
+  - name: chassis_manufacturer
     description: 'Chassis Vendor'
     map: 'ohai/dmi/chassis/manufacturer'
+  - name: baseboard_manufacturer
+    description: 'BaseBoard Manufacturer'
+    map: 'ohai/dmi/base_board/manufacturer'
+  - name: baseboard_product_name
+    description: 'BaseBoard Product Name'
+    map: 'ohai/dmi/base_board/product_name'
   - name: 'kernel'
     description: 'Kernel Name'
     map: 'ohai/kernel/name'

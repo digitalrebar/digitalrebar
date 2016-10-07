@@ -116,6 +116,10 @@ class BarclampBios::Dellrseries < BarclampBios::Driver
     raise("Unable to commit BIOS settings!\n#{res.to_xml}") if res.ReturnValue.text != "4096"
     true
   end
+  
+  def flash(packages)
+    true
+  end
 
   # Arguably not correct, but it is what we have right now.
   def factory_reset!

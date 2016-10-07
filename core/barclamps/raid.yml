@@ -170,6 +170,8 @@ roles:
     jig: chef
     requires:
       - raid-configure
+    preceeds:
+      - rebar-hardware-configured
     flags:
       - implicit
 hammers:

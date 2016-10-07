@@ -165,6 +165,13 @@ module BarclampBios
       raise "Must be implemented by subclass!"
     end
 
+    # Flash firmware on the target system.  This will cause the node to require (possibly several) reboots.
+    # @param packages [Array<string>] The name of the packages to flash on the system.  When to reboot is at
+    # the discresion of the lower-level driver, but may be as often as once per package.
+    def flash(packages)
+      raise "Must be implemented by subclass"
+    end
+
     # Wipe the BIOS settings back to the factory defaults.
     # Please note that this does not ensure that the node will PXE boot
     # by default.

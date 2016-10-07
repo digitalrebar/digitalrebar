@@ -196,7 +196,7 @@ class BarclampIpmi::WsmanHammer < Hammer
     # For now, restrict ourselves to running on a Dell IDRAC 7.
     # We will need to be more flexible in the future.
     return false unless BarclampIpmi::IpmiHammer.probe(node)
-    address = NetworkAllocation.node_cat(node, "bmc").first.address.addr
+    address = Attrib.get('ipmi-address',node)
     if Attrib.get('ipmi-mfgr-id',node) == "674" &&
         Attrib.get('ipmi-product-id',node) == "256 (0x0100)" &&
         Attrib.get('ipmi-device-id',node) == "32"
