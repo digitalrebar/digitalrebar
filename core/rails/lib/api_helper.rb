@@ -154,7 +154,7 @@ module ApiHelper
 
     # Helper to determine if a given key is an ActiveRecord DB ID
     def db_id?(key)
-      key.is_a?(Fixnum) or key.is_a?(Integer) or key =~ /^[0-9]+$/
+      key.is_a?(Fixnum) or key.is_a?(Integer) or key =~ /^[^a-zA-Z]+$/
     end
   end
 
