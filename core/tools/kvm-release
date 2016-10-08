@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd ~/.cache/digitalrebar/tftpboot/
+sudo rm -f 192*.ipxe C*.conf pxelinux.cfg/C*

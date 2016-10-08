@@ -6,6 +6,11 @@
 
 start_args="$@"
 
+if ! which rebar &>/dev/null; then
+	echo "Missing Rebar CLI, see http://digital-rebar.readthedocs.io/en/latest/clients/cli.html"
+	break
+fi
+
 #
 # Process config and validate providers
 #

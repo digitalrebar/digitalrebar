@@ -16,9 +16,9 @@
 # Run the container in FORWARDER mode
 #
 VAGRANTFILE_API_VERSION = "2"
-ADMIN_OS_BOX = "ubuntu/trusty64"
+ADMIN_OS_BOX = "ubuntu/xenial64"
 #BASE_OS_BOX = "ubuntu/trusty64"
-BASE_OS_BOX = "bento/centos-7.1"
+BASE_OS_BOX = "bento/centos-7.2"
 SLAVE_RAM = "4096"
 # Host Mode - MAC
 ADMIN_PREFIX = "192.168.99"
@@ -82,18 +82,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # Admin nodes eat themselves without swap
     #
     base.vm.provision "shell", path: "scripts/increase_swap.sh"
-
-    # make sure vagrant user can sudo
-    base.vm.provision "shell", inline: "sudo apt-get update"
-    base.vm.provision "shell", inline: "sudo apt-get install git ansible jq -y"
-    base.vm.provision "shell", inline: "mkdir digitalrebar"
-    base.vm.provision "shell", inline: "git clone https://github.com/rackn/digitalrebar-deploy digitalrebar/deploy"
-    base.vm.provision "shell", inline: "cd digitalrebar/deploy && ./run-in-system.sh --deploy-admin=local --access=HOST --admin-ip=#{ADMIN_IP}\/#{ADMIN_CIDR}"
+    base.vm.provision "shell", path: "quickstart.sh"
     # check external interface
     base.trigger.after :up do
-      run "rebar ping -E https://#{ADMIN_IP}:3000 -U rebar -P rebar1"
+      run "rebar ping -E https://#{ADMIN_IP} -U rebar -P rebar1"
     end
-    puts "To monitor > https://#{ADMIN_IP}:3000 (Digital Rebar)"
+    puts "To monitor > https://#{ADMIN_IP} (Digital Rebar)"
     puts "After the system is up, you can start the nodes using `vagrant up /node[1-20]/`"
   end
 
@@ -102,14 +96,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       if ENV['REBAR_ENDPOINT']
         endpoint = ENV['REBAR_ENDPOINT']
-        endpoint =~ /https:\/\/(.*):3000/
+        endpoint =~ /https:\/\/(.*)/
         admin_ip = $1
       else
-        endpoint = "https://#{ADMIN_IP}:3000"
+        endpoint = "https://#{ADMIN_IP}"
         admin_ip = ADMIN_IP
       end
       puts "Using Digital Rebar Admin on #{admin_ip}."
-      if endpoint == "https://127.0.0.1:3000"
+      if endpoint == "https://127.0.0.1"
         puts "ERROR: you cannot use localhost (or 127.0.0.1) for the endpoint!"
       else
         key = "-U rebar -P rebar1" unless ENV['REBAR_KEY']
