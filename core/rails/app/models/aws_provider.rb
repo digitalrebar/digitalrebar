@@ -51,11 +51,11 @@ class AwsProvider < CloudProvider
     		length: 30,
     		name: I18n.t('region', scope: "providers.show.aws" )
   		},
-      vpc_id: {
+      subnet_id: {
         type: "text",
         default: "!default",
         length: 30,
-        name: I18n.t('vpc_id', scope: "providers.show.aws" )
+        name: I18n.t('subnet_id', scope: "providers.show.aws" )
       },
       'provider-create-hint' => {
         type: "json_key",

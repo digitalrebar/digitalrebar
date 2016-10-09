@@ -487,7 +487,7 @@ en:
         access_key_id: "Access Key"
         secret_access_key: "Secret"
         region: "Region"
-        vpc_id: "VPC ID"
+        subnet_id: "Subnet ID"
       packet:
         token: "Token"
         id: "ID"
