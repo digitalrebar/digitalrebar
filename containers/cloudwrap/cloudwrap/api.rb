@@ -102,6 +102,7 @@ class Servers
       endpoint.delete_if { |key, value| value.is_a? String and value.start_with? "!" }
       ep = get_endpoint(endpoint)
       fixed_args = fix_hash(args)
+      log("Create for #{endpoint["provider"]} started with args: #{args.inspect}")
 
       kp, kp_loc = upload_key(endpoint, ep, node_id, fixed_args)
 
@@ -111,7 +112,9 @@ class Servers
         fixed_args[:tags] = {"rebar:node-id" => node_id.to_s,
                              "Name" => my_name }
         fixed_args[:flavor_id] ||= 't2.micro'
-	fixed_args[:block_device_mappings] = [{ "DeviceName" => "/dev/sda1", "Ebs" => { "DeleteOnTermination" => true } }]
+        fixed_args[:block_device_mappings] = [{ "DeviceName" => "/dev/sda1", "Ebs" => { "DeleteOnTermination" => true } }]
+        # subnets come from the provider, not server
+        fixed_args[:subnet_id] = endpoint["subnet_id"] if endpoint["subnet_id"] =~ /^subnet-/
         unless fixed_args[:image_id] and fixed_args[:image_id].start_with?("ami")
           log("Setting default image to an Centos 7.2 Marketplace based image")
           # These are hvm:ebs images
@@ -132,8 +135,7 @@ class Servers
                                   end
         end
         log("Region #{ep.region} -> image #{fixed_args[:image_id]}")
-
-        log("Will create new srver with #{fixed_args.inspect}")
+        log("Will create new server with #{fixed_args.inspect}")
         server = ep.servers.create(fixed_args)
         log("Created server #{server.to_json}")
       when 'Google'
