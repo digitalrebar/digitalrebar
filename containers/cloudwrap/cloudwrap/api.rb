@@ -113,8 +113,10 @@ class Servers
                              "Name" => my_name }
         fixed_args[:flavor_id] ||= 't2.micro'
         fixed_args[:block_device_mappings] = [{ "DeviceName" => "/dev/sda1", "Ebs" => { "DeleteOnTermination" => true } }]
-        # subnets come from the provider, not server
-        fixed_args[:subnet_id] = endpoint["subnet_id"] if endpoint["subnet_id"] =~ /^subnet-/
+        # remove subnets that don't fit the naming pattern 
+        fixed_args.delete(:subnet_id) unless fixed_args[:subnet_id] =~ /^subnet-/
+        # if missing, subnets come from the provider
+        fixed_args[:subnet_id] ||= endpoint["subnet_id"] if endpoint["subnet_id"] =~ /^subnet-/
         unless fixed_args[:image_id] and fixed_args[:image_id].start_with?("ami")
           log("Setting default image to an Centos 7.2 Marketplace based image")
           # These are hvm:ebs images

@@ -63,7 +63,8 @@ class AwsProvider < CloudProvider
         length: 3,
         default: {
           image_id: "ami-113cf471",
-          flavor_id: "m3.medium"
+          flavor_id: "m3.medium",
+          subnet_id: "!use_provider"
         }
       }
     }
