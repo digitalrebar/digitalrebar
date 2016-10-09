@@ -38,6 +38,7 @@ loop do
     servers.each do |key, val|
       rebar_id = val[0]
       cloudwrap_device_id = server = val[1]
+      next unless server
       ep = val[2]
       endpoint = val[3]
 
@@ -56,7 +57,7 @@ loop do
       # State good?
       case endpoint['provider']
       when 'AWS', 'Google'
-        log "` #{server.id}" rescue log "no server id"
+        log "checking state of ` #{server.id}" rescue log "no server id"
         unless server.ready?
           log "Server #{server.id} not ready, skipping"
           next

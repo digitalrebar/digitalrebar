@@ -211,7 +211,10 @@ def get_endpoint(ep)
   return FakeDriver.new(ep) if ep['debug']
 
   case ep['provider']
-  when 'AWS' then Fog::Compute.new(fix_hash(ep))
+  when 'AWS' then
+    eph = fix_hash(ep)
+    eph.delete(:subnet_id) if eph[:subnet_id]
+    Fog::Compute.new(eph)
   when 'Google'
     unless ep['google_json_key']
       log("Google requires the JSON authentication token at google_json_key")
