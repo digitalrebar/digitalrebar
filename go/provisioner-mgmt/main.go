@@ -5,26 +5,37 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/digitalrebar/digitalrebar/go/common/cert"
+	"github.com/digitalrebar/digitalrebar/go/common/client"
+	"github.com/digitalrebar/digitalrebar/go/common/service"
 	"github.com/digitalrebar/digitalrebar/go/common/version"
-	"github.com/digitalrebar/digitalrebar/go/rebar-api/client"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
 	"github.com/gin-gonic/gin"
+	consul "github.com/hashicorp/consul/api"
 	uuid "github.com/satori/go.uuid"
 )
 
 var machineKey, fileRoot, provisionerURL, commandURL string
 var backEndType string
-var apiPort int64
+var apiPort, staticPort, tftpPort int
 var backend storageBackend
-var api *gin.Engine
+var rebarClient *api.Client
 var logger *log.Logger
 var username, password, endpoint string
 var hostString string
 var versionFlag bool
 
-func init() {
+func popMachine(param string) *Machine {
+	if _, err := uuid.FromString(param); err == nil {
+		return &Machine{Uuid: param}
+	} else {
+		return &Machine{Name: param}
+	}
+}
+
+func main() {
+	// Some initial setup
 	flag.BoolVar(&versionFlag,
 		"version",
 		false,
@@ -37,56 +48,22 @@ func init() {
 		"data-root",
 		"digitalrebar/provisioner/boot-info",
 		"Location we should store runtime information in")
-	flag.Int64Var(&apiPort,
+	flag.IntVar(&apiPort,
 		"api-port",
 		8092,
 		"Port the HTTP API should listen on")
+	flag.IntVar(&staticPort,
+		"static-port",
+		8091,
+		"Port the static HTTP file server should listen on")
+	flag.IntVar(&tftpPort,
+		"tftp-port",
+		69,
+		"Port for the TFTP server to listen on")
 	flag.StringVar(&fileRoot,
 		"file-root",
 		"/tftpboot",
 		"Root of filesystem we should manage")
-	flag.StringVar(&provisionerURL,
-		"provisioner",
-		"http://localhost:8091",
-		"Public URL for the provisioner")
-	flag.StringVar(&commandURL,
-		"command",
-		"https://localhost:3000",
-		"Public URL for the Command and Control server machines should communicate with")
-	flag.StringVar(&hostString,
-		"host",
-		"localhost,provisioner,127.0.0.1",
-		"The host IPs and names to place in the certificate.  Comma separated")
-
-	if ep := os.Getenv("REBAR_ENDPOINT"); ep != "" {
-		endpoint = ep
-	}
-	if kv := os.Getenv("REBAR_KEY"); kv != "" {
-		key := strings.SplitN(kv, ":", 2)
-		if len(key) < 2 {
-			log.Fatal("REBAR_KEY does not contain a username:password pair!")
-		}
-		if key[0] == "" || key[1] == "" {
-			log.Fatal("REBAR_KEY contains an invalid username:password pair!")
-		}
-		username = key[0]
-		password = key[1]
-	}
-	flag.StringVar(&username, "username", username, "Username for Digital Rebar endpoint")
-	flag.StringVar(&password, "password", password, "Password for Digital Rebar endpoint")
-	flag.StringVar(&endpoint, "endpoint", endpoint, "API Endpoint for Digital Rebar")
-}
-
-func popMachine(param string) *Machine {
-	if _, err := uuid.FromString(param); err == nil {
-		return &Machine{Uuid: param}
-	} else {
-		return &Machine{Name: param}
-	}
-}
-
-func main() {
-	// Some initial setup
 	flag.Parse()
 	logger = log.New(os.Stderr, "provisioner-mgmt", log.LstdFlags|log.Lmicroseconds|log.LUTC)
 
@@ -94,13 +71,81 @@ func main() {
 		logger.Fatalf("Version: %s", version.REBAR_VERSION)
 	}
 
-	if err := client.Session(endpoint, username, password); err != nil {
-		logger.Fatalf("Could not connect to Rebar: %v", err)
+	commandURL = os.Getenv("EXTERNAL_REBAR_ENDPOINT")
+
+	if commandURL == "" {
+		logger.Fatalln("EXTERNAL_REBAR_ENDPOINT not set!")
 	}
 
 	logger.Printf("Version: %s\n", version.REBAR_VERSION)
 
 	var err error
+	consulClient, err := client.Consul(true)
+	if err != nil {
+		logger.Fatalf("Error talking to Consul: %v", err)
+	}
+
+	rebarClient, err = client.Trusted("system", true)
+	if err != nil {
+		logger.Fatalf("Error creating trusted Rebar API client: %v", err)
+	}
+
+	// Register service with Consul before continuing
+	if err = service.Register(consulClient,
+		&consul.AgentServiceRegistration{
+			Name: "provisioner-service",
+			Tags: []string{"deployment:system"},
+			Port: staticPort,
+			Check: &consul.AgentServiceCheck{
+				HTTP:     fmt.Sprintf("http://[::]:%d/", staticPort),
+				Interval: "10s",
+			},
+		},
+		true); err != nil {
+		log.Fatalf("Failed to register provisioner-service with Consul: %v", err)
+	}
+
+	if err = service.Register(consulClient,
+		&consul.AgentServiceRegistration{
+			Name: "provisioner-mgmt-service",
+			Tags: []string{"revproxy"}, // We want to be exposed through the revproxy
+			Port: apiPort,
+			Check: &consul.AgentServiceCheck{
+				HTTP:     fmt.Sprintf("http://[::]:%d/", staticPort),
+				Interval: "10s",
+			},
+		},
+		false); err != nil {
+		log.Fatalf("Failed to register provisioner-mgmt-service with Consul: %v", err)
+	}
+	if err = service.Register(consulClient,
+		&consul.AgentServiceRegistration{
+			Name: "provisioner-tftp-service",
+			Port: tftpPort,
+			Check: &consul.AgentServiceCheck{
+				HTTP:     fmt.Sprintf("http://[::]:%d/", staticPort),
+				Interval: "10s",
+			},
+		},
+		true); err != nil {
+		log.Fatalf("Failed to register provisioner-tftp-service with Consul: %v", err)
+	}
+	// Figure out our service address
+
+	for {
+		svc, err := service.Find(consulClient, "provisioner", "")
+		if err != nil {
+			log.Fatalf("Error talking to Consul: %v", err)
+		}
+		if len(svc) == 0 {
+			continue
+		}
+
+		ourAddress, _ := service.Address(svc[0])
+		provisionerURL = fmt.Sprintf("http://%s:%d", ourAddress, staticPort)
+		break
+	}
+
 	switch backEndType {
 	case "consul":
 		backend, err = newConsulBackend(machineKey)
@@ -109,92 +154,111 @@ func main() {
 	default:
 		logger.Fatalf("Unknown storage backend type %v\n", backEndType)
 	}
-	api := gin.Default()
+
+	mgmtApi := gin.Default()
 	if err != nil {
 		logger.Fatal(err)
 	}
 	// bootenv methods
-	api.GET("/bootenvs",
+	mgmtApi.GET("/bootenvs",
 		func(c *gin.Context) {
 			listThings(c, &BootEnv{})
 		})
-	api.POST("/bootenvs",
+	mgmtApi.POST("/bootenvs",
 		func(c *gin.Context) {
 			createThing(c, &BootEnv{})
 		})
-	api.GET("/bootenvs/:name",
+	mgmtApi.GET("/bootenvs/:name",
 		func(c *gin.Context) {
 			getThing(c, &BootEnv{Name: c.Param(`name`)})
 		})
-	api.PATCH("/bootenvs/:name",
+	mgmtApi.PATCH("/bootenvs/:name",
 		func(c *gin.Context) {
 			updateThing(c, &BootEnv{Name: c.Param(`name`)}, &BootEnv{})
 		})
-	api.DELETE("/bootenvs/:name",
+	mgmtApi.DELETE("/bootenvs/:name",
 		func(c *gin.Context) {
 			deleteThing(c, &BootEnv{Name: c.Param(`name`)})
 		})
 	// machine methods
-	api.GET("/machines",
+	mgmtApi.GET("/machines",
 		func(c *gin.Context) {
 			listThings(c, &Machine{})
 		})
-	api.POST("/machines",
+	mgmtApi.POST("/machines",
 		func(c *gin.Context) {
 			createThing(c, &Machine{})
 		})
-	api.GET("/machines/:name", func(c *gin.Context) {
+	mgmtApi.GET("/machines/:name", func(c *gin.Context) {
 		getThing(c, popMachine(c.Param(`name`)))
 	})
-	api.PATCH("/machines/:name",
+	mgmtApi.PATCH("/machines/:name",
 		func(c *gin.Context) {
 			updateThing(c, popMachine(c.Param(`name`)), &Machine{})
 		})
-	api.DELETE("/machines/:name",
+	mgmtApi.DELETE("/machines/:name",
 		func(c *gin.Context) {
 			deleteThing(c, popMachine(c.Param(`name`)))
 		})
 
 	// template methods
-	api.GET("/templates",
+	mgmtApi.GET("/templates",
 		func(c *gin.Context) {
 			listThings(c, &Template{})
 		})
-	api.POST("/templates",
+	mgmtApi.POST("/templates",
 		func(c *gin.Context) {
 			createThing(c, &Template{})
 		})
-	api.POST("/templates/:uuid", createTemplate)
-	api.GET("/templates/:uuid",
+	mgmtApi.POST("/templates/:uuid", createTemplate)
+	mgmtApi.GET("/templates/:uuid",
 		func(c *gin.Context) {
 			getThing(c, &Template{UUID: c.Param(`uuid`)})
 		})
-	api.PATCH("/templates/:uuid",
+	mgmtApi.PATCH("/templates/:uuid",
 		func(c *gin.Context) {
 			updateThing(c, &Template{UUID: c.Param(`uuid`)}, &Template{})
 		})
-	api.DELETE("/templates/:uuid",
+	mgmtApi.DELETE("/templates/:uuid",
 		func(c *gin.Context) {
 			deleteThing(c, &Template{UUID: c.Param(`uuid`)})
 		})
 
 	// Isos methods
-	api.GET("/isos",
+	mgmtApi.GET("/isos",
 		func(c *gin.Context) {
 			listIsos(c, fileRoot)
 		})
-	api.GET("/isos/:name",
+	mgmtApi.GET("/isos/:name",
 		func(c *gin.Context) {
 			getIso(c, fileRoot, c.Param(`name`))
 		})
-	api.POST("/isos/:name",
+	mgmtApi.POST("/isos/:name",
 		func(c *gin.Context) {
 			uploadIso(c, fileRoot, c.Param(`name`))
 		})
-	api.DELETE("/isos/:name",
+	mgmtApi.DELETE("/isos/:name",
 		func(c *gin.Context) {
 			deleteIso(c, fileRoot, c.Param(`name`))
 		})
-	hosts := strings.Split(hostString, ",")
-	log.Fatal(cert.StartTLSServer(fmt.Sprintf(":%d", apiPort), "provisioner-mgmt", hosts, "internal", "internal", api))
+
+	s, err := cert.Server("internal", "provisioner-mgmt-service")
+	if err != nil {
+		log.Fatalf("Error creating trusted server: %v", err)
+	}
+	s.Addr = fmt.Sprintf(":%d", apiPort)
+	s.Handler = mgmtApi
+
+	go func() {
+		if err = s.ListenAndServeTLS("", ""); err != nil {
+			log.Fatalf("Error running API service: %v", err)
+		}
+	}()
+	if err = serveTftp(fmt.Sprintf(":%d", tftpPort)); err != nil {
+		log.Fatalf("Error starting TFTP server: %v", err)
+	}
+	// Static file server must always be last, as all our health checks key off of it.
+	if err = serveStatic(fmt.Sprintf(":%d", staticPort), fileRoot); err != nil {
+		log.Fatalf("Error starting static file server: %v", err)
+	}
 }

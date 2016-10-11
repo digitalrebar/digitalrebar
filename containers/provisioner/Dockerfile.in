@@ -10,7 +10,6 @@ ARG DR_TAG
 # Get packages
 ADD http://localhost:28569/${DR_TAG}/linux/amd64/provisioner-mgmt /usr/local/bin/
 ADD http://localhost:28569/${DR_TAG}/linux/amd64/sign-it /usr/local/bin/
-ADD https://s3-us-west-2.amazonaws.com/rebar-sws/sws-linux-amd64 /usr/local/bin/sws
 ADD https://s3-us-west-2.amazonaws.com/rackn-busybox/busybox /tmp/busybox
 ADD http://downloads.sourceforge.net/project/elilo/elilo/elilo-3.16/elilo-3.16-all.tar.gz /tmp/elilo.tar.gz
 ADD  https://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.xz /tmp/syslinux-6.03.tar.xz

@@ -4,11 +4,9 @@
 (
     with_local_proxy
     cd /opt/digitalrebar-ux
-    if [[ $REVPROXY_REBUILD_BOWER ]] ; then
+    if [[ ! -d bower_components ]]; then
         bower --allow-root install --config.interactive=false
         npm install cssnano-cli html-minifier uglify-js
-        npm install -g n
-        n stable
     fi
-    ./build.sh
+    [[ -f .using_prebuilt ]] || ./build.sh
 )

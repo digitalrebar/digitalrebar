@@ -3,6 +3,10 @@ revproxy:
   extends:
     file: docker-compose-common.yml
     service: revproxy
+{{ START DEV_MODE }}
+  volumes:
+    - ./digitalrebar/digitalrebar-ux:/opt/digitalrebar-ux
+{{ END DEV_MODE }}
 {{ START ACCESS_MODE==FORWARDER }}
   links:
     - forwarder:forwarder

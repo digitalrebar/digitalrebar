@@ -185,12 +185,16 @@ for i in $FILES; do
     fname=$i
     if [[ $i != /* ]] ; then
 	fname=yaml_templates/$i
-        fi
+    fi
     # Fix Access Mode
-    sed "/START ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/,/END ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/d" $fname >> docker-compose.yml
+    cat "$fname" >> docker-compose.yml
 done
-sed "/ACCESS_MODE==/d" docker-compose.yml > dc.yml
-mv dc.yml docker-compose.yml
+sed -i "/START ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/,/END ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/d" docker-compose.yml
+
+if [[ ! $DEV_MODE = Y ]]; then
+    sed -i "/START DEV_MODE/,/END DEV_MODE/d" docker-compose.yml
+fi
+sed -i -e "/ACCESS_MODE/d" -e '/DEV_MODE/d' docker-compose.yml
 
 if [[ $REMOVE_FILES ]] ; then
 	rm -f $REMOVE_FILES
