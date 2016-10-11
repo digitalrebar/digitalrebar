@@ -448,6 +448,8 @@ roles:
       - provisioner-webservers
   - name: bios-flash
     jig: script
+    flags:
+      - implicit
     requires:
       - bios-discover
     wants-attribs:
