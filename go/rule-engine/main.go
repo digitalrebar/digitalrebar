@@ -258,7 +258,7 @@ func main() {
 	// Register service with Consul before continuing
 	reg := &consul.AgentServiceRegistration{
 		Name: "rule-engine-service",
-		Tags: []string{"revproxy"}, // We want to be exposed through the revproxy
+		Tags: []string{"revproxy", "revproxyapi"}, // We want to be exposed through the revproxy
 		Port: port,
 		Check: &consul.AgentServiceCheck{
 			Script:   "pidof rule-engine",
