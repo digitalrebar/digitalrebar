@@ -361,13 +361,27 @@ class DeploymentsController < ApplicationController
       end
     end # rleft loop
 
-    # set the attributes
+    # for attribs, we need a new transactions.  not ideal, but required
     Deployment.transaction do
+
+      # set the attributes from the user request
       if params["attribs"]
         params["attribs"].each do |a, v|
           Attrib.set(a, deployment, v)
         end
       end
+
+      # handle setting the rebar_access value - we want to preserve keys if they already exist
+      if params["public_keys"]
+        Rails.logger.info("Deployment Batch: setting public_keys #{params["public_keys"].keys}")
+        raccess = find_key_cap(Role, "rebar-access", cap("READ","ROLE"))
+        raccess.add_to_deployment(deployment)
+        keys = Attrib.get("rebar-access_keys", deployment) || {}
+        keys.merge! params["public_keys"]
+        Rails.logger.debug("Deployment Batch: public_keys updated to be #{keys}")
+        Attrib.set("rebar-access_keys", deployment, keys)
+      end
+
     end
 
   end

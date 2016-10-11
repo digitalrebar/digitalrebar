@@ -221,6 +221,7 @@ def get_endpoint(ep)
       raise "Cannot authenticate Google endpoint"
     end
     res = fix_hash(ep)
+    res.delete(:'provider-create-hint') if res[:'provider-create-hint']
     res[:google_json_key_string] = JSON.generate(res.delete(:google_json_key))
     Fog::Compute.new(res)
   when 'OpenStack' then nil
