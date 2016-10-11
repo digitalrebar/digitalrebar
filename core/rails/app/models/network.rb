@@ -59,6 +59,7 @@ class Network < ActiveRecord::Base
         net = n 
         break
       end
+      break if net
     end
     return net if found_range && net.ranges.exists?(allow_bound_leases: true)
     nil
