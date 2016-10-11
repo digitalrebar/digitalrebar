@@ -310,6 +310,8 @@ roles:
                         - ipmi-immutable-root
   - name: ipmi-flash
     jig: script
+    flags:
+      - implicit
     requires:
       - ipmi-discover
     wants-attribs:
