@@ -14,10 +14,13 @@ import (
 // revproxy registration.
 func Register(client *api.Client, svc *api.AgentServiceRegistration, allowExternal bool) error {
 	revproxy := false
+	revproxyFormat := "^%s/(.*)"
 	for _, t := range svc.Tags {
 		if t == "revproxy" {
 			revproxy = true
-			break
+		} else if t == "revproxyapi" {
+			revproxy = true
+			revproxyFormat = "^%s/(api/.*)"
 		}
 	}
 	if revproxy && allowExternal {
@@ -29,7 +32,7 @@ func Register(client *api.Client, svc *api.AgentServiceRegistration, allowExtern
 		rpName = strings.TrimSuffix(rpName, "-mgmt")
 		_, err := client.KV().Put(&api.KVPair{
 			Key:   fmt.Sprintf("digitalrebar/public/revproxy/%s/matcher", svc.Name),
-			Value: []byte(fmt.Sprintf("^%s/(api/.*)", rpName)),
+			Value: []byte(fmt.Sprintf(revproxyFormat, rpName)),
 		}, nil)
 		if err != nil {
 			return err
