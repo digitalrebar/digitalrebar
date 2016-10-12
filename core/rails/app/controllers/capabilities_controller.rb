@@ -49,7 +49,7 @@ class CapabilitiesController < ::ApplicationController
     Capability.transaction do
       @capability = find_key_cap(model, params[:id], cap("UPDATE")).lock!
       simple_update(@capability,%w{description source})
-      # for select cap types, we allow edits
+      # for select cap types only, we allow edits
       if ["dr-groups","user-defined"].include? @capability.source
         @capability.includes = params[:includes]
         @capability.save!

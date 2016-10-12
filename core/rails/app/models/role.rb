@@ -106,7 +106,12 @@ class Role < ActiveRecord::Base
   def as_json(args = nil)
     args ||= {}
     args[:except] = [ :template, :notes ]
-    super(args)
+    o = super(args)
+    # read only but crticial properties
+    o['requires'] = self.parents.map { |r| r.name }
+    o['attribs'] = self.attribs.map { |a| a.name }
+    o['wanted_attribs'] = self.wanted_attribs.map { |a| a.name }
+    o
   end
 
   # incremental update (merges with existing)
