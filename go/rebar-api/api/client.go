@@ -10,11 +10,13 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"path"
 
 	"github.com/VictorLowther/jsonpatch"
 	"github.com/digitalrebar/digitalrebar/go/common/cert"
+	"github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 )
 
 type challenge interface {
@@ -32,13 +34,6 @@ type Client struct {
 // The Rebar API is exposed over a digest authenticated HTTP(s)
 // connection.  This file implements all of the basic REST and HTTP
 // operations that Rebar uses.
-
-const (
-	// API_PATH is where the API lives at the Client.
-	// This will be prepended to every
-	// url passed to one of the request functions.
-	API_PATH = "/api/v2"
-)
 
 // TrustedSession builds a Client that can only operate inside the local trust zone.
 // It assumes that there is a local Consul server that it can use to look up the
@@ -68,7 +63,7 @@ func Session(URL, User, Password string) (*Client, error) {
 		Client: &http.Client{Transport: tr},
 	}
 	// retrieve the digest info from the 301 message
-	resp, e := c.Head(c.URL + path.Join(API_PATH, "digest"))
+	resp, e := c.Head(c.URL + path.Join(datatypes.API_PATH, "digest"))
 	if e != nil {
 		return nil, e
 	}
@@ -103,11 +98,11 @@ func (c *Client) basicRequest(method, uri string, objIn []byte) (resp *http.Resp
 		body = bytes.NewReader(objIn)
 	}
 	// Construct the http.Request.
-	req, err := http.NewRequest(method, c.URL+path.Join(API_PATH, uri), body)
+	req, err := http.NewRequest(method, c.URL+uri, body)
 	if err != nil {
 		return nil, err
 	}
-	err = c.Challenge.authorize(method, path.Join(API_PATH, uri), req)
+	err = c.Challenge.authorize(method, uri, req)
 	if err != nil {
 		return nil, err
 	}
@@ -118,6 +113,7 @@ func (c *Client) basicRequest(method, uri string, objIn []byte) (resp *http.Resp
 	}
 	req.Header.Set("User-Agent", "gobar/v1.0")
 	req.Header.Set("Accept", "application/json")
+	log.Printf("basicRequest: uri %s", uri)
 	resp, err = c.Do(req)
 	if err == nil {
 		return

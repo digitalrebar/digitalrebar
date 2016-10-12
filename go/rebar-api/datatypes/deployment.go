@@ -1,6 +1,10 @@
 package datatypes
 
-import "github.com/guregu/null"
+import (
+	"path"
+
+	"github.com/guregu/null"
+)
 
 // Deployments are the main tool that Rebar provides to group
 // related nodes together.  They carry Deployment-specific
@@ -35,6 +39,10 @@ type Deployment struct {
 
 func (o *Deployment) ApiName() string {
 	return "deployments"
+}
+
+func (o *Deployment) ApiPath() string {
+	return path.Join(API_PATH, o.ApiName())
 }
 
 const (

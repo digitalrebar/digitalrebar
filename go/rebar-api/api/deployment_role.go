@@ -43,9 +43,9 @@ type DeploymentRoler interface {
 func (c *Client) DeploymentRoles(scope ...DeploymentRoler) (res []*DeploymentRole, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = urlFor(scope[i])
+		paths[i] = fragTo(scope[i])
 	}
 	paths = append(paths, "deployment_roles")
 	res = make([]*DeploymentRole, 0)
-	return res, c.List(path.Join(paths...), &res)
+	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
 }

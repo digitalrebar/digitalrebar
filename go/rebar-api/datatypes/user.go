@@ -1,5 +1,7 @@
 package datatypes
 
+import "path"
+
 type User struct {
 	SimpleID
 	Name            string `json:"username"`
@@ -34,4 +36,8 @@ func (o *User) SetId(s string) error {
 
 func (o *User) ApiName() string {
 	return "users"
+}
+
+func (o *User) ApiPath() string {
+	return path.Join(API_PATH, o.ApiName())
 }

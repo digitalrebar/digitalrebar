@@ -22,11 +22,11 @@ type NodeRoler interface {
 func (c *Client) NodeRoles(scope ...NodeRoler) (res []*NodeRole, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = urlFor(scope[i])
+		paths[i] = fragTo(scope[i])
 	}
 	paths = append(paths, "node_roles")
 	res = make([]*NodeRole, 0)
-	return res, c.List(path.Join(paths...), &res)
+	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
 }
 
 // Force the noderole to retry

@@ -1,5 +1,7 @@
 package datatypes
 
+import "path"
+
 // Role is a discrete unit of functionality that can be run on or
 // against a Node.  If you want to install, configure, or monitor
 // something on a Node, a Role is what you need to write to
@@ -60,10 +62,14 @@ type Role struct {
 	Cohort    int      `json:"cohort"`
 	Conflicts []string `json:"conflicts"`
 	Provides  []string `json:"provides"`
-        // Metadata is an structure passed to the jib for operation
-        Metadata interface{} `json:"metadata"`
+	// Metadata is an structure passed to the jib for operation
+	Metadata interface{} `json:"metadata"`
 }
 
 func (o *Role) ApiName() string {
 	return "roles"
+}
+
+func (o *Role) ApiPath() string {
+	return path.Join(API_PATH, o.ApiName())
 }
