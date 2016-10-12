@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	dhcp "github.com/krolaw/dhcp4"
+	"github.com/digitalrebar/digitalrebar/go/rebar-dhcp/dhcp"
 )
 
 func convertByteToOptionValue(code dhcp.OptionCode, b []byte) string {

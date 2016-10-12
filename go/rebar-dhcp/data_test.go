@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/digitalrebar/digitalrebar/go/common/store"
-	dhcp "github.com/krolaw/dhcp4"
+	"github.com/digitalrebar/digitalrebar/go/rebar-dhcp/dhcp"
 	"github.com/stretchr/testify/assert"
 	"github.com/willf/bitset"
 )

@@ -1,5 +1,5 @@
-hash: 6bed19716da8ee3c6d5b2f636158f331804f297d1f089866b813cc6043c936d5
-updated: 2016-09-27T15:07:37.014832419-05:00
+hash: a2584db90f4831d70e4e202d13cfccec6f6d2ebbdd5b51262f4cd5f94d89404c
+updated: 2016-10-11T19:45:59.248641262-05:00
 imports:
 - name: github.com/ant0ine/go-json-rest
   version: 37ad7dc626602a8355801da6acd85155655520f8
@@ -144,7 +144,7 @@ imports:
   subpackages:
   - coordinate
 - name: github.com/hashicorp/terraform
-  version: 84592f5967490d118aae0b61a25d589d269fd0b6
+  version: f7fa78592555db29b82de1f3a049ab1f9338e79c
   subpackages:
   - config
   - config/module
@@ -166,8 +166,6 @@ imports:
   version: c2c54e542fb797ad986b31721e1baedf214ca413
 - name: github.com/kmanley/go-http-auth
   version: efc9484eee77263a11f158ef4f30fcc30298a942
-- name: github.com/krolaw/dhcp4
-  version: ffbbb16f447b3e05b80e8ddecbb8ada36e2ae006
 - name: github.com/manucorporat/sse
   version: ee05b128a739a0fb76c7ebd3ae4810c1de808d6d
 - name: github.com/mitchellh/copystructure
@@ -222,8 +220,6 @@ imports:
   - context
   - html
   - html/atom
-  - internal/iana
-  - ipv4
 - name: golang.org/x/sys
   version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
   subpackages:

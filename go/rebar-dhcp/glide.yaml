@@ -1,4 +1,6 @@
 package: github.com/rackn/rebar-dhcp
+subpackages:
+- dhcp
 import:
 - package: github.com/ant0ine/go-json-rest
   subpackages:
@@ -6,7 +8,6 @@ import:
 - package: github.com/hashicorp/consul
   subpackages:
   - api
-- package: github.com/krolaw/dhcp4
 - package: github.com/willf/bitset
 - package: github.com/digitalrebar/digitalrebar/go/common
   subpackages:

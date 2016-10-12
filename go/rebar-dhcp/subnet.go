@@ -12,7 +12,7 @@ import (
 	"text/template"
 	"time"
 
-	dhcp "github.com/krolaw/dhcp4"
+	"github.com/digitalrebar/digitalrebar/go/rebar-dhcp/dhcp"
 	"github.com/willf/bitset"
 )
 
