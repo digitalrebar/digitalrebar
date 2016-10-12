@@ -9,20 +9,29 @@ import (
 	"strings"
 	"time"
 
-	dhcp "github.com/krolaw/dhcp4"
+	"github.com/digitalrebar/digitalrebar/go/rebar-dhcp/dhcp"
 )
 
-func RunDhcpHandler(dhcpInfo *DataTracker, intf net.Interface, myIp string) {
-	log.Println("Starting on interface: ", intf.Name, " with server ip: ", myIp)
+type ipinfo struct {
+	intf net.Interface
+	myIp string
+}
 
-	serverIP, _, _ := net.ParseCIDR(myIp)
-	serverIP = serverIP.To4()
-	handler := &DHCPHandler{
-		ip:   serverIP,
-		intf: intf,
-		info: dhcpInfo,
+func RunDhcpHandler(dhcpInfo *DataTracker, ifs []ipinfo) {
+	handlers := make(map[int]dhcp.Handler, 0)
+	for _, ii := range ifs {
+		log.Println("Starting on interface: ", ii.intf.Name, " with server ip: ", ii.myIp)
+
+		serverIP, _, _ := net.ParseCIDR(ii.myIp)
+		serverIP = serverIP.To4()
+		handler := &DHCPHandler{
+			ip:   serverIP,
+			intf: ii.intf,
+			info: dhcpInfo,
+		}
+		handlers[ii.intf.Index] = handler
 	}
-	log.Fatal(dhcp.ListenAndServeIf(intf.Name, handler))
+	log.Fatal(dhcp.ListenAndServeIf(handlers))
 }
 
 func StartDhcpHandlers(dhcpInfo *DataTracker, serverIp string) error {
@@ -30,6 +39,7 @@ func StartDhcpHandlers(dhcpInfo *DataTracker, serverIp string) error {
 	if err != nil {
 		return err
 	}
+	ifs := make([]ipinfo, 0, 0)
 	for _, intf := range intfs {
 		if (intf.Flags & net.FlagLoopback) == net.FlagLoopback {
 			continue
@@ -41,6 +51,8 @@ func StartDhcpHandlers(dhcpInfo *DataTracker, serverIp string) error {
 			continue
 		}
 		var sip string
+		var firstIp string
+
 		addrs, err := intf.Addrs()
 		if err != nil {
 			return err
@@ -57,6 +69,9 @@ func StartDhcpHandlers(dhcpInfo *DataTracker, serverIp string) error {
 				continue
 			}
 
+			if firstIp == "" {
+				firstIp = addr.String()
+			}
 			if serverIp != "" && serverIp == addr.String() {
 				sip = addr.String()
 				break
@@ -64,12 +79,19 @@ func StartDhcpHandlers(dhcpInfo *DataTracker, serverIp string) error {
 		}
 
 		if sip == "" {
-			continue
+			if firstIp == "" {
+				continue
+			}
+			sip = firstIp
 		}
-		// Only run the first one that matches
-		go RunDhcpHandler(dhcpInfo, intf, sip)
-		break
+
+		ii := ipinfo{
+			intf: intf,
+			myIp: sip,
+		}
+		ifs = append(ifs, ii)
 	}
+	go RunDhcpHandler(dhcpInfo, ifs)
 	return nil
 }
 
