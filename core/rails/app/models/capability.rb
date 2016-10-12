@@ -23,6 +23,8 @@ class Capability < ActiveRecord::Base
     self.reload
   end
 
+  validates_format_of     :name, :with=>/[A-Z_]/, :message => "Capabilities must be CAPS_LETTERS"
+
   private :load_uuid
 
   has_many        :users,    through: :user_tenant_capabilities 

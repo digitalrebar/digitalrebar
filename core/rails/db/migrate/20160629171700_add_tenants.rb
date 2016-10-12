@@ -28,7 +28,7 @@ class AddTenants < ActiveRecord::Migration
       t.uuid        :uuid, nill: false, unique: true, default: 'gen_random_uuid()'
       t.text        :name, null: false, unique: true
       t.text        :description, default: ""
-      t.text        :source, null: false
+      t.text        :source, null: false, default: 'user-defined'
       t.timestamps
     end
 
