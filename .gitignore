@@ -18,4 +18,4 @@
 /digitalrebar-ux/
 /doc/
 dev.mode
-compose/docker-compose.yml.bak
+deploy/compose/docker-compose.yml.bak
