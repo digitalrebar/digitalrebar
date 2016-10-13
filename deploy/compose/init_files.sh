@@ -4,6 +4,11 @@ if which sudo 2>/dev/null >/dev/null ; then
     SUDO=sudo
 fi
 
+SED="sed -i"
+if [[ $(uname -s) == Darwin ]] ; then
+	SED="sed -i .bak"
+fi
+
 SERVICES="network-server logging-service"
 
 function usage {
@@ -39,7 +44,7 @@ function set_var_in_common_env {
   local var=$1
   local value=$2
 
-  sed -i -e "s/^${var}=.*/${var}=${value}/" common.env
+  $SED -e "s/^${var}=.*/${var}=${value}/" common.env
 }
 
 FILES="base.yml trust-me.yml"
@@ -189,12 +194,12 @@ for i in $FILES; do
     # Fix Access Mode
     cat "$fname" >> docker-compose.yml
 done
-sed -i "/START ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/,/END ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/d" docker-compose.yml
+$SED -e "/START ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/,/END ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/d" docker-compose.yml
 
 if [[ ! $DEV_MODE = Y ]]; then
-    sed -i "/START DEV_MODE/,/END DEV_MODE/d" docker-compose.yml
+    $SED -e "/START DEV_MODE/,/END DEV_MODE/d" docker-compose.yml
 fi
-sed -i -e "/ACCESS_MODE/d" -e '/DEV_MODE/d' docker-compose.yml
+$SED -e "/ACCESS_MODE/d" -e '/DEV_MODE/d' docker-compose.yml
 
 if [[ $REMOVE_FILES ]] ; then
 	rm -f $REMOVE_FILES
