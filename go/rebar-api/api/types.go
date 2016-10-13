@@ -146,7 +146,7 @@ func (c *Client) BaseCreate(o Crudder) error {
 	if err != nil {
 		return err
 	}
-	uri := "/" + o.ApiPath()
+	uri := o.ApiPath()
 	outbuf, err := c.request("POST", uri, inbuf)
 	if err != nil {
 		return err
@@ -176,7 +176,7 @@ func (c *Client) Create(o Crudder, toMerge interface{}) error {
 // It is intended to be used for object types where we have special-case handling on the server side
 // for parameters that are not part of the basic object definition.
 func (c *Client) Import(o Crudder, inBuf []byte) error {
-	uri := "/" + o.ApiPath()
+	uri := o.ApiPath()
 	buf, err := c.request("POST", uri, inBuf)
 	if err != nil {
 		return err

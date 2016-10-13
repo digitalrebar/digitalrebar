@@ -97,6 +97,7 @@ func (c *Client) basicRequest(method, uri string, objIn []byte) (resp *http.Resp
 	if objIn != nil {
 		body = bytes.NewReader(objIn)
 	}
+	log.Printf("uri: %s, url: %s", uri, c.URL+uri)
 	// Construct the http.Request.
 	req, err := http.NewRequest(method, c.URL+uri, body)
 	if err != nil {
@@ -113,7 +114,6 @@ func (c *Client) basicRequest(method, uri string, objIn []byte) (resp *http.Resp
 	}
 	req.Header.Set("User-Agent", "gobar/v1.0")
 	req.Header.Set("Accept", "application/json")
-	log.Printf("basicRequest: uri %s", uri)
 	resp, err = c.Do(req)
 	if err == nil {
 		return

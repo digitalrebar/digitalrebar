@@ -61,7 +61,7 @@ func (b *BootEnv) ApiName() string {
 	return "bootenvs"
 }
 
-func (b *Bootenv) ApiPath() string {
+func (b *BootEnv) ApiPath() string {
 	return path.Join(API_PATH, b.ApiName())
 }
 
