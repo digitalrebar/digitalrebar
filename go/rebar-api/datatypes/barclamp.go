@@ -2,6 +2,7 @@ package datatypes
 
 import (
 	"errors"
+	"path"
 
 	"github.com/guregu/null"
 )
@@ -98,7 +99,7 @@ type barclampImport struct {
 
 type BarclampImport struct {
 	Barclamp barclampImport `json:"barclamp",yaml:"barclamp"`
-	Rebar  struct {
+	Rebar    struct {
 		Layout float64 `json:"layout",yaml:"layout"`
 	} `json:"rebar",yaml:"rebar"`
 	Jigs       []jigImport    `json:"jigs",yaml:"jigs"`
@@ -160,4 +161,8 @@ func (o *BarclampImport) FixupYAMLImport() error {
 
 func (o *Barclamp) ApiName() string {
 	return "barclamps"
+}
+
+func (o *Barclamp) ApiPath() string {
+	return path.Join(API_PATH, o.ApiName())
 }

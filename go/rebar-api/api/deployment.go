@@ -56,8 +56,8 @@ func (c *Client) Deployments(scope ...Deploymenter) (res []*Deployment, err erro
 	res = make([]*Deployment, 0)
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = urlFor(scope[i])
+		paths[i] = fragTo(scope[i])
 	}
 	paths = append(paths, "deployments")
-	return res, c.List(path.Join(paths...), &res)
+	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
 }

@@ -29,9 +29,9 @@ type Roler interface {
 func (c *Client) Roles(scope ...Roler) (res []*Role, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = urlFor(scope[i])
+		paths[i] = fragTo(scope[i])
 	}
 	paths = append(paths, "roles")
 	res = make([]*Role, 0)
-	return res, c.List(path.Join(paths...), &res)
+	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
 }

@@ -1,6 +1,10 @@
 package datatypes
 
-import "github.com/guregu/null"
+import (
+	"path"
+
+	"github.com/guregu/null"
+)
 
 type HammerActions struct {
 	Power    []string `json:"power"`
@@ -37,4 +41,8 @@ type Hammer struct {
 
 func (o *Hammer) ApiName() string {
 	return "hammers"
+}
+
+func (o *Hammer) ApiPath() string {
+	return path.Join(API_PATH, o.ApiName())
 }

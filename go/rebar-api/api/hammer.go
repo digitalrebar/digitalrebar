@@ -24,8 +24,8 @@ func (c *Client) Hammers(scope ...Hammerer) (res []*Hammer, err error) {
 	res = make([]*Hammer, 0)
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = urlFor(scope[i])
+		paths[i] = fragTo(scope[i])
 	}
 	paths = append(paths, "hammers")
-	return res, c.List(path.Join(paths...), &res)
+	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
 }

@@ -88,7 +88,7 @@ func makeCommandTree(singularName string,
 		Short: fmt.Sprintf("List all %v", name),
 		Run: func(c *cobra.Command, args []string) {
 			objs := []interface{}{}
-			if err := session.List(maker().ApiName(), &objs); err != nil {
+			if err := session.List(maker().ApiPath(), &objs); err != nil {
 				log.Fatalf("Error listing %v: %v", name, err)
 			}
 			fmt.Println(prettyJSON(objs))
@@ -106,7 +106,7 @@ func makeCommandTree(singularName string,
 			if err := json.Unmarshal([]byte(args[0]), &vals); err != nil {
 				log.Fatalf("Matches not valid JSON\n%v", err)
 			}
-			if err := session.Match(maker().ApiName(), vals, &objs); err != nil {
+			if err := session.Match(maker().ApiPath(), vals, &objs); err != nil {
 				log.Fatalf("Error getting matches for %v\nError:%v\n", singularName, err)
 			}
 			fmt.Println(prettyJSON(objs))

@@ -1,5 +1,7 @@
 package datatypes
 
+import "path"
+
 type Event struct {
 	SimpleID
 	EventSelectors []string               `json:"event_selectors"`
@@ -11,6 +13,10 @@ type Event struct {
 
 func (o *Event) ApiName() string {
 	return "events"
+}
+
+func (o *Event) ApiPath() string {
+	return path.Join(API_PATH, o.ApiName())
 }
 
 // AddressID is used for NetworkAllocation and NetworkRouter, as they
@@ -55,6 +61,10 @@ func (o *EventSink) ApiName() string {
 	return "event_sinks"
 }
 
+func (o *EventSink) ApiPath() string {
+	return path.Join(API_PATH, o.ApiName())
+}
+
 type EventSelector struct {
 	SimpleID
 	EventSinkID int64                  `json:"event_sink_id"`
@@ -64,4 +74,8 @@ type EventSelector struct {
 
 func (o *EventSelector) ApiName() string {
 	return "event_selectors"
+}
+
+func (o *EventSelector) ApiPath() string {
+	return path.Join(API_PATH, o.ApiName())
 }

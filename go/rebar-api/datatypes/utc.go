@@ -1,5 +1,7 @@
 package datatypes
 
+import "path"
+
 type UserTenantCapability struct {
 	SimpleID
 	UserID       int64 `json:"user_id"`
@@ -9,4 +11,8 @@ type UserTenantCapability struct {
 
 func (o *UserTenantCapability) ApiName() string {
 	return "user_tenant_capabilities"
+}
+
+func (o *UserTenantCapability) ApiPath() string {
+	return path.Join(API_PATH, o.ApiName())
 }

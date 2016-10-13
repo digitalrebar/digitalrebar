@@ -34,10 +34,10 @@ func (c *Client) Attribs(scope ...Attriber) (res []*Attrib, err error) {
 	res = make([]*Attrib, 0)
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = urlFor(scope[i])
+		paths[i] = fragTo(scope[i])
 	}
 	paths = append(paths, "attribs")
-	return res, c.List(path.Join(paths...), &res)
+	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
 }
 
 // GetAttrib gets an attrib in the context of an Attriber.  The
@@ -57,7 +57,7 @@ func (c *Client) GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, e
 		log.Panic(err)
 	}
 	res.SetId(id)
-	uri := urlFor(o, urlFor(res))
+	uri := urlFor(o, fragTo(res))
 	if bucket != "" {
 		uri = fmt.Sprintf("%v?bucket=%v", uri, bucket)
 	}
@@ -85,7 +85,7 @@ func (c *Client) SetAttrib(o Attriber, a *Attrib, bucket string) error {
 	if bucket == "" {
 		bucket = "user"
 	}
-	uri := urlFor(o, urlFor(a))
+	uri := urlFor(o, fragTo(a))
 	uri = fmt.Sprintf("%v?bucket=%v", uri, bucket)
 	patch, err := MakePatch(a)
 	if err != nil {

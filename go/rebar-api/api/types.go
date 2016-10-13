@@ -59,6 +59,7 @@ func (o *apiHelper) setClient(c *Client) {
 type Crudder interface {
 	Id() (string, error)
 	ApiName() string
+	ApiPath() string
 	SetId(string) error
 	setLastJSON([]byte)
 	lastJSON() []byte
@@ -68,13 +69,21 @@ type Crudder interface {
 	setClient(*Client)
 }
 
+func fragTo(o Crudder, parts ...string) string {
+	id, err := o.Id()
+	if err != nil {
+		log.Panic(err)
+	}
+	return path.Join(o.ApiName(), id, path.Join(parts...))
+}
+
 // Calculate the API endpoint that should be used to reference this object.
 func urlFor(o Crudder, parts ...string) string {
 	id, err := o.Id()
 	if err != nil {
 		log.Panic(err)
 	}
-	return path.Join(append([]string{o.ApiName(), id}, parts...)...)
+	return path.Join(append([]string{o.ApiPath(), id}, parts...)...)
 }
 
 func (c *Client) unmarshal(path string, buf []byte, o Crudder) error {
@@ -94,7 +103,7 @@ func (c *Client) unmarshal(path string, buf []byte, o Crudder) error {
 // defaults.  It returns the path used to fetch the sample JSON, the
 // JSON itself, and an error.
 func (c *Client) SampleJSON(o Crudder) (string, []byte, error) {
-	uri := path.Join(o.ApiName(), "sample")
+	uri := path.Join(o.ApiPath(), "sample")
 	buf, err := c.request("GET", uri, nil)
 	return uri, buf, err
 }
@@ -137,7 +146,7 @@ func (c *Client) BaseCreate(o Crudder) error {
 	if err != nil {
 		return err
 	}
-	uri := o.ApiName()
+	uri := o.ApiPath()
 	outbuf, err := c.request("POST", uri, inbuf)
 	if err != nil {
 		return err
@@ -167,7 +176,7 @@ func (c *Client) Create(o Crudder, toMerge interface{}) error {
 // It is intended to be used for object types where we have special-case handling on the server side
 // for parameters that are not part of the basic object definition.
 func (c *Client) Import(o Crudder, inBuf []byte) error {
-	uri := o.ApiName()
+	uri := o.ApiPath()
 	buf, err := c.request("POST", uri, inBuf)
 	if err != nil {
 		return err

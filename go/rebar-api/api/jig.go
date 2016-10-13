@@ -24,8 +24,8 @@ func (c *Client) Jigs(scope ...Jigger) (res []*Jig, err error) {
 	res = make([]*Jig, 0)
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = urlFor(scope[i])
+		paths[i] = fragTo(scope[i])
 	}
 	paths = append(paths, "jigs")
-	return res, c.List(path.Join(paths...), &res)
+	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
 }

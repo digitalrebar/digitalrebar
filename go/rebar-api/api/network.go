@@ -64,11 +64,11 @@ type Networker interface {
 func (c *Client) Networks(scope ...Networker) (res []*Network, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = urlFor(scope[i])
+		paths[i] = fragTo(scope[i])
 	}
 	paths = append(paths, "networks")
 	res = make([]*Network, 0)
-	return res, c.List(path.Join(paths...), &res)
+	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
 }
 
 // NetworkRange wraps datatypes.NetworkRange to provide the client API
@@ -97,11 +97,11 @@ type NetworkRanger interface {
 func (c *Client) NetworkRanges(scope ...NetworkRanger) (res []*NetworkRange, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = urlFor(scope[i])
+		paths[i] = fragTo(scope[i])
 	}
 	paths = append(paths, "network_ranges")
 	res = make([]*NetworkRange, 0)
-	return res, c.List(path.Join(paths...), &res)
+	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
 }
 
 // NetworkAllocation wraps datatypes.NetworkAllocation to provide the client API.
@@ -141,11 +141,11 @@ type NetworkAllocater interface {
 func (c *Client) NetworkAllocations(scope ...NetworkAllocater) (res []*NetworkAllocation, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = urlFor(scope[i])
+		paths[i] = fragTo(scope[i])
 	}
 	paths = append(paths, "network_allocations")
 	res = make([]*NetworkAllocation, 0)
-	return res, c.List(path.Join(paths...), &res)
+	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
 }
 
 // NetworkRouter wraps datatypes.NetworkRouter to provide the client API.
@@ -172,9 +172,9 @@ type NetworkRouterer interface {
 func (c *Client) NetworkRouters(scope ...NetworkRouterer) (res []*NetworkRouter, err error) {
 	paths := make([]string, len(scope))
 	for i := range scope {
-		paths[i] = urlFor(scope[i])
+		paths[i] = fragTo(scope[i])
 	}
 	paths = append(paths, "network_routers")
 	res = make([]*NetworkRouter, 0)
-	return res, c.List(path.Join(paths...), &res)
+	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
 }
