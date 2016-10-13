@@ -17,3 +17,5 @@
 /rackn-workloads/
 /digitalrebar-ux/
 /doc/
+dev.mode
+compose/docker-compose.yml.bak
