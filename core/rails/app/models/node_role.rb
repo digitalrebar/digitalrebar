@@ -155,6 +155,11 @@ class NodeRole < ActiveRecord::Base
       order('cohort ASC, id ASC')
   end
 
+  def all_hard_children
+    NodeRole.where("id in (select child_id from node_role_all_pcms where parent_id = ? and soft = false)",id).
+      order('cohort ASC, id ASC')
+  end
+
   # lookup i18n version of state
   def state_name
     NodeRole.state_name(state)
@@ -237,7 +242,7 @@ class NodeRole < ActiveRecord::Base
       query_parts = []
       tenative_cohort = 0
       rents.each do |rent|
-        query_parts << "(#{rent.id}, #{res.id})"
+        query_parts << "(#{rent.id}, #{res.id}, false)"
         tenative_cohort = rent.cohort + 1 if rent.cohort > tenative_cohort
       end
       r.preceeds_parents.each do |pr|
@@ -245,7 +250,7 @@ class NodeRole < ActiveRecord::Base
         pnr ||= NodeRole.find_by(deployment_id: d.id, role_id: pr.id) unless r.implicit?
         if pnr
           Rails.logger.info("NodeRole: Role #{pr.name} preceeds #{r.name}, binding #{res.id} to #{pnr.id}")
-          query_parts << "(#{pnr.id}, #{res.id})"
+          query_parts << "(#{pnr.id}, #{res.id}, true)"
         end
       end
       r.preceeds_children.each do |pr|
@@ -253,20 +258,20 @@ class NodeRole < ActiveRecord::Base
         tnr ||= NodeRole.find_by(deployment_id: d.id, role_id: pr.id) unless pr.implicit?
         if tnr
           Rails.logger.info("NodeRole: Role #{pr.name} preceeds #{r.name}, binding #{tnr.id} to #{res.id}")
-          query_parts << "(#{res.id}, #{tnr.id})"
+          query_parts << "(#{res.id}, #{tnr.id}, true)"
         end
       end
 
       unless query_parts.empty?
-        ActiveRecord::Base.connection.execute("INSERT INTO node_role_pcms (parent_id, child_id) VALUES #{query_parts.join(', ')}")
+        ActiveRecord::Base.connection.execute("INSERT INTO node_role_pcms (parent_id, child_id, soft) VALUES #{query_parts.join(', ')}")
       end
       res.cohort = tenative_cohort
       if res.role.cluster?
         cluster_peer_children = NodeRole.where('id in (select distinct child_id from node_role_pcms where parent_id in (select id from node_roles where deployment_id = ? AND role_id = ? AND id != ?))',
                                                res.deployment_id, res.role_id, res.id)
         unless cluster_peer_children.empty?
-          query_parts = cluster_peer_children.map{|c|"(#{res.id}, #{c.id})"}.join(', ')
-          ActiveRecord::Base.connection.execute("INSERT INTO node_role_pcms (parent_id, child_id) VALUES #{query_parts}")
+          query_parts = cluster_peer_children.map{|c|"(#{res.id}, #{c.id}, true)"}.join(', ')
+          ActiveRecord::Base.connection.execute("INSERT INTO node_role_pcms (parent_id, child_id, soft) VALUES #{query_parts}")
           cluster_peer_children.each do |c|
             next if c.cohort > res.cohort
             c.update_cohort
@@ -711,16 +716,16 @@ class NodeRole < ActiveRecord::Base
       end
       # If, we have no children not on the same node, or
       # all our children are PROPOSED and have never been run, we can be deleted.
-      if all_children.where.not(node_id: node_id).count == 0
+      if all_hard_children.where.not(node_id: node_id).count == 0
         Rails.logger.info("NodeRole: #{name} only has children on the same node, it is deletable")
         deletable = true
       end
-      if all_children.where.not(state: PROPOSED, run_count: 0).count == 0
+      if all_hard_children.where.not(state: PROPOSED, run_count: 0).count == 0
         Rails.logger.info("NodeRole: #{name} only has children that are PROPOSED and have never run, it is deletable")
         deletable = true
       end
       return false unless deletable
-      all_children.order("cohort DESC").each do |c|
+      all_hard_children.order("cohort DESC").each do |c|
         c.destroy
       end
       # if we can destroy, then we also need to run the sync_on_delete method
