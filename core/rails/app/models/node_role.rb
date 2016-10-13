@@ -160,6 +160,11 @@ class NodeRole < ActiveRecord::Base
       order('cohort ASC, id ASC')
   end
 
+  def hard_children
+    NodeRole.where("id in (select child_id from node_role_pcms where parent_id = ? and soft = false)",id).
+      order('cohort ASC, id ASC')
+  end
+
   # lookup i18n version of state
   def state_name
     NodeRole.state_name(state)
@@ -243,7 +248,7 @@ class NodeRole < ActiveRecord::Base
       tenative_cohort = 0
       rents.each do |rent|
         query_parts << "(#{rent.id}, #{res.id}, false)"
-        tenative_cohort = rent.cohort + 1 if rent.cohort > tenative_cohort
+        tenative_cohort = rent.cohort + 1 if rent.cohort >= tenative_cohort
       end
       r.preceeds_parents.each do |pr|
         pnr = NodeRole.find_by(node_id: n.id, role_id: pr.id)
@@ -251,14 +256,17 @@ class NodeRole < ActiveRecord::Base
         if pnr
           Rails.logger.info("NodeRole: Role #{pr.name} preceeds #{r.name}, binding #{res.id} to #{pnr.id}")
           query_parts << "(#{pnr.id}, #{res.id}, true)"
+          tenative_cohort = pnr.cohort + 1 if pnr.cohort >= tenative_cohort
         end
       end
+      run_update_cohort = false
       r.preceeds_children.each do |pr|
         tnr = NodeRole.find_by(node_id: n.id, role_id: pr.id)
         tnr ||= NodeRole.find_by(deployment_id: d.id, role_id: pr.id) unless pr.implicit?
         if tnr
           Rails.logger.info("NodeRole: Role #{pr.name} preceeds #{r.name}, binding #{tnr.id} to #{res.id}")
           query_parts << "(#{res.id}, #{tnr.id}, true)"
+          run_update_cohort = true
         end
       end
 
@@ -279,6 +287,7 @@ class NodeRole < ActiveRecord::Base
         end
       end
       res.save!
+      res.update_cohort if run_update_cohort
       res.rebind_attrib_parents
       Event.fire(res, obj_class: 'role', obj_id: res.role.name, event: 'on_node_bind')
     end
@@ -710,7 +719,7 @@ class NodeRole < ActiveRecord::Base
     NodeRole.transaction do
       # If we are a leaf node, we can be destroyed.
       deletable = false
-      if children.count == 0
+      if hard_children.count == 0
         Rails.logger.info("NodeRole: #{name} has no children, we can delete it.")
         return true
       end
