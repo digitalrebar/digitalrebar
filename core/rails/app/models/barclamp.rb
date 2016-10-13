@@ -266,6 +266,11 @@ class Barclamp < ActiveRecord::Base
           end
         end if r && role['events']
       end if bc['roles']
+      # We updated roles and for some reason, the links don't get recursed properly through normal adds.
+      # So, loop all roles and update cohorts.
+      Role.all.each do |r|
+        r.update_cohort
+      end if bc['roles']
       bc['attribs'].each do |attrib|
         Rails.logger.info("Importing attrib #{attrib['name']} for barclamp #{barclamp.name}")
         attrib_type_candidates = []
