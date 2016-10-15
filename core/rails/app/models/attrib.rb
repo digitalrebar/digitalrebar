@@ -154,8 +154,12 @@ class Attrib < ActiveRecord::Base
   def get(from_orig,source=:all, committed=false)
     d = simple_get(from_orig,source,committed)
     if d.nil?
-      d = self.default["value"]
-      Rails.logger.debug("Attrib: Got #{self.name}: default #{d.inspect}")
+      begin
+        d = self.default["value"]
+        Rails.logger.debug("Attrib: Got #{self.name}: default #{d.inspect}")
+      rescue
+        Rails.logger.warn("Attrib: Got #{self.name} and resolve default property")
+      end
     end
     return d
   end
