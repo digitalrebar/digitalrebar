@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"path"
 
@@ -21,7 +20,7 @@ import (
 
 type challenge interface {
 	parseChallenge(resp *http.Response) error
-	authorize(method, uri string, req *http.Request) error
+	authorize(req *http.Request) error
 }
 
 // Client wraps http.Client to add our auth primitives.
@@ -29,6 +28,11 @@ type Client struct {
 	*http.Client
 	Challenge challenge
 	URL       string
+	trusted   bool
+}
+
+func (c *Client) Trusted() bool {
+	return c.trusted
 }
 
 // The Rebar API is exposed over a digest authenticated HTTP(s)
@@ -43,7 +47,7 @@ func TrustedSession(URL, username string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	res := &Client{URL: URL, Client: c, Challenge: challengeTrusted(username)}
+	res := &Client{URL: URL, Client: c, Challenge: challengeTrusted(username), trusted: true}
 	user := &User{}
 	if err := res.Fetch(user, username); err != nil {
 		return nil, fmt.Errorf("Unable to verify existence of %s user, cannot use trusted session: %v", username, err)
@@ -51,7 +55,7 @@ func TrustedSession(URL, username string) (*Client, error) {
 	return res, nil
 }
 
-// Session establishes a new connection to Rebar.  You must call
+// Session establishes a new connection to Rebar.  You must cal
 // this function before using any other functions in the rebar
 // package.  Session stores its information in a private global variable.
 func Session(URL, User, Password string) (*Client, error) {
@@ -59,8 +63,9 @@ func Session(URL, User, Password string) (*Client, error) {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	c := &Client{
-		URL:    URL,
-		Client: &http.Client{Transport: tr},
+		URL:     URL,
+		Client:  &http.Client{Transport: tr},
+		trusted: false,
 	}
 	// retrieve the digest info from the 301 message
 	resp, e := c.Head(c.URL + path.Join(datatypes.API_PATH, "digest"))
@@ -91,19 +96,38 @@ func Session(URL, User, Password string) (*Client, error) {
 	return c, nil
 }
 
-func (c *Client) basicRequest(method, uri string, objIn []byte) (resp *http.Response, err error) {
-	var body io.Reader
+func (c *Client) basicRequest(req *http.Request) (resp *http.Response, err error) {
+	auth := false
+	for {
+		err = c.Challenge.authorize(req)
+		if err != nil {
+			return nil, err
+		}
+		resp, err = c.Do(req)
+		if err != nil || resp.StatusCode != 401 || auth {
+			return
+		}
+		auth = true
+		resp.Body.Close()
+		err = c.Challenge.parseChallenge(resp)
+		if err != nil {
+			return nil, err
+		}
+	}
+}
 
+// Request makes a general call to the Rebar API.
+// method is the raw HTTP method to use
+// uri is the section of the API to call.
+// objIn is the raw data to be passed in the request body
+// objOut is the raw request body (if any)
+// err is the error of any occurred.
+func (c *Client) request(method, uri string, objIn []byte) (objOut []byte, err error) {
+	var body io.Reader
 	if objIn != nil {
 		body = bytes.NewReader(objIn)
 	}
-	log.Printf("uri: %s, url: %s", uri, c.URL+uri)
-	// Construct the http.Request.
 	req, err := http.NewRequest(method, c.URL+uri, body)
-	if err != nil {
-		return nil, err
-	}
-	err = c.Challenge.authorize(method, uri, req)
 	if err != nil {
 		return nil, err
 	}
@@ -114,43 +138,12 @@ func (c *Client) basicRequest(method, uri string, objIn []byte) (resp *http.Resp
 	}
 	req.Header.Set("User-Agent", "gobar/v1.0")
 	req.Header.Set("Accept", "application/json")
-	resp, err = c.Do(req)
-	if err == nil {
-		return
-	}
-	if resp != nil {
-		resp.Body.Close()
-	}
-	return nil, err
-}
-
-// Request makes a general call to the Rebar API.
-// method is the raw HTTP method to use
-// uri is the section of the API to call.
-// objIn is the raw data to be passed in the request body
-// objOut is the raw request body (if any)
-// err is the error of any occurred.
-func (c *Client) request(method, uri string, objIn []byte) (objOut []byte, err error) {
-	resp, err := c.basicRequest(method, uri, objIn)
+	resp, err := c.basicRequest(req)
 	if err != nil {
 		return nil, err
 	}
 	if resp.Body != nil {
 		defer resp.Body.Close()
-	}
-
-	if resp.StatusCode == 401 {
-		err = c.Challenge.parseChallenge(resp)
-		if err != nil {
-			return nil, err
-		}
-		resp, err = c.basicRequest(method, uri, objIn)
-		if err != nil {
-			return nil, err
-		}
-		if resp.Body != nil {
-			defer resp.Body.Close()
-		}
 	}
 	objOut, err = ioutil.ReadAll(resp.Body)
 	if err != nil {

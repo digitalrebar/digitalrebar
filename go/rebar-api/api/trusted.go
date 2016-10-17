@@ -11,7 +11,7 @@ func (c challengeTrusted) parseChallenge(resp *http.Response) error {
 }
 
 // This only works from inside the trust boundary at rev-proxy
-func (c challengeTrusted) authorize(method, uri string, req *http.Request) error {
+func (c challengeTrusted) authorize(req *http.Request) error {
 	req.Header.Set("X-Authenticated-Username", string(c))
 	return nil
 }
