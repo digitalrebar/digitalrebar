@@ -26,7 +26,7 @@ func init() {
 		Run: func(c *cobra.Command, args []string) {
 			objs := []interface{}{}
 			obj := &api.ProvisionerBootEnv{}
-			if err := session.List(obj.ApiPath(), &objs); err != nil {
+			if err := session.List(session.UrlPath(obj), &objs); err != nil {
 				log.Fatalf("Error listing provisioner boot environments: %v", err)
 			}
 			fmt.Println(prettyJSON(objs))
@@ -105,7 +105,7 @@ func init() {
 		Run: func(c *cobra.Command, args []string) {
 			objs := []interface{}{}
 			obj := &api.ProvisionerTemplate{}
-			if err := session.List(obj.ApiPath(), &objs); err != nil {
+			if err := session.List(session.UrlPath(obj), &objs); err != nil {
 				log.Fatalf("Error listing provisioner templates: %v", err)
 			}
 			fmt.Println(prettyJSON(objs))
@@ -221,7 +221,7 @@ func init() {
 		Run: func(c *cobra.Command, args []string) {
 			objs := []interface{}{}
 			obj := &api.ProvisionerMachine{}
-			if err := session.List(obj.ApiPath(), &objs); err != nil {
+			if err := session.List(session.UrlPath(obj), &objs); err != nil {
 				log.Fatalf("Error listing provisioner machines: %v", err)
 			}
 			fmt.Println(prettyJSON(objs))

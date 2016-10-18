@@ -8,4 +8,5 @@ type UserTenantCapability struct {
 	datatypes.UserTenantCapability
 	Timestamps
 	apiHelper
+	rebarSrc
 }

@@ -1,16 +1,13 @@
 package api
 
-import (
-	"path"
-
-	"github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
-)
+import "github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 
 // Role wraps datatypes.Role to provide the client API.
 type Role struct {
 	datatypes.Role
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 func (o *Role) attribs()         {}
@@ -31,7 +28,8 @@ func (c *Client) Roles(scope ...Roler) (res []*Role, err error) {
 	for i := range scope {
 		paths[i] = fragTo(scope[i])
 	}
-	paths = append(paths, "roles")
+	r := &Role{}
+	paths = append(paths, r.ApiName())
 	res = make([]*Role, 0)
-	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
+	return res, c.List(c.UrlFor(r, paths...), &res)
 }

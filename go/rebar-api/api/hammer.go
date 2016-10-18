@@ -1,16 +1,13 @@
 package api
 
-import (
-	"path"
-
-	"github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
-)
+import "github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 
 // Hammer wraps datatypes.Hammer to provide client API functionality
 type Hammer struct {
 	datatypes.Hammer
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 // Hammerer is anything that a Hammer can be bound to.
@@ -26,6 +23,7 @@ func (c *Client) Hammers(scope ...Hammerer) (res []*Hammer, err error) {
 	for i := range scope {
 		paths[i] = fragTo(scope[i])
 	}
-	paths = append(paths, "hammers")
-	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
+	h := &Hammer{}
+	paths = append(paths, h.ApiName())
+	return res, c.List(c.UrlFor(h, paths...), &res)
 }

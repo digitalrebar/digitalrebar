@@ -1,15 +1,12 @@
 package api
 
-import (
-	"path"
-
-	"github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
-)
+import "github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 
 type NodeRole struct {
 	datatypes.NodeRole
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 func (o *NodeRole) attribs() {}
@@ -24,14 +21,15 @@ func (c *Client) NodeRoles(scope ...NodeRoler) (res []*NodeRole, err error) {
 	for i := range scope {
 		paths[i] = fragTo(scope[i])
 	}
-	paths = append(paths, "node_roles")
+	nr := &NodeRole{}
+	paths = append(paths, nr.ApiName())
 	res = make([]*NodeRole, 0)
-	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
+	return res, c.List(c.UrlFor(nr, paths...), &res)
 }
 
 // Force the noderole to retry
 func (o *NodeRole) Retry() error {
-	uri := urlFor(o, "retry")
+	uri := o.client().UrlTo(o, "retry")
 	buf, err := o.client().request("PUT", uri, nil)
 	if err != nil {
 		return err

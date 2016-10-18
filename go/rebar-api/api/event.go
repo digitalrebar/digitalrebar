@@ -8,16 +8,19 @@ type Event struct {
 	datatypes.Event
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 type EventSink struct {
 	datatypes.EventSink
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 type EventSelector struct {
 	datatypes.EventSelector
 	Timestamps
 	apiHelper
+	rebarSrc
 }

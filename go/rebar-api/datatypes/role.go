@@ -1,7 +1,5 @@
 package datatypes
 
-import "path"
-
 // Role is a discrete unit of functionality that can be run on or
 // against a Node.  If you want to install, configure, or monitor
 // something on a Node, a Role is what you need to write to
@@ -68,8 +66,4 @@ type Role struct {
 
 func (o *Role) ApiName() string {
 	return "roles"
-}
-
-func (o *Role) ApiPath() string {
-	return path.Join(API_PATH, o.ApiName())
 }

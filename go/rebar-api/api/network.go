@@ -14,6 +14,7 @@ type Network struct {
 	datatypes.Network
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 // Role gets the Rebar Role that is responsible for configuring the
@@ -66,9 +67,10 @@ func (c *Client) Networks(scope ...Networker) (res []*Network, err error) {
 	for i := range scope {
 		paths[i] = fragTo(scope[i])
 	}
-	paths = append(paths, "networks")
+	n := &Network{}
+	paths = append(paths, n.ApiName())
 	res = make([]*Network, 0)
-	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
+	return res, c.List(c.UrlFor(n, paths...), &res)
 }
 
 // NetworkRange wraps datatypes.NetworkRange to provide the client API
@@ -76,6 +78,7 @@ type NetworkRange struct {
 	datatypes.NetworkRange
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 // Network returns the Network that owns this NetworkRange
@@ -99,9 +102,10 @@ func (c *Client) NetworkRanges(scope ...NetworkRanger) (res []*NetworkRange, err
 	for i := range scope {
 		paths[i] = fragTo(scope[i])
 	}
-	paths = append(paths, "network_ranges")
+	nr := &NetworkRange{}
+	paths = append(paths, nr.ApiName())
 	res = make([]*NetworkRange, 0)
-	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
+	return res, c.List(c.UrlFor(nr, paths...), &res)
 }
 
 // NetworkAllocation wraps datatypes.NetworkAllocation to provide the client API.
@@ -109,6 +113,7 @@ type NetworkAllocation struct {
 	datatypes.NetworkAllocation
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 // Node returns the Node that this NetowrkAllocation is bound to, if any.
@@ -143,9 +148,10 @@ func (c *Client) NetworkAllocations(scope ...NetworkAllocater) (res []*NetworkAl
 	for i := range scope {
 		paths[i] = fragTo(scope[i])
 	}
-	paths = append(paths, "network_allocations")
+	na := &NetworkAllocation{}
+	paths = append(paths, na.ApiName())
 	res = make([]*NetworkAllocation, 0)
-	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
+	return res, c.List(c.UrlFor(na, paths...), &res)
 }
 
 // NetworkRouter wraps datatypes.NetworkRouter to provide the client API.
@@ -153,6 +159,7 @@ type NetworkRouter struct {
 	datatypes.NetworkRouter
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 // Network returns the Network that this NetworkRouter belongs to.
@@ -174,7 +181,8 @@ func (c *Client) NetworkRouters(scope ...NetworkRouterer) (res []*NetworkRouter,
 	for i := range scope {
 		paths[i] = fragTo(scope[i])
 	}
-	paths = append(paths, "network_routers")
+	nr := &NetworkRouter{}
+	paths = append(paths, nr.ApiName())
 	res = make([]*NetworkRouter, 0)
-	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
+	return res, c.List(c.UrlFor(nr, paths...), &res)
 }

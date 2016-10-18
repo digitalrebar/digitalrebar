@@ -8,4 +8,5 @@ type Capability struct {
 	datatypes.Capability
 	Timestamps
 	apiHelper
+	rebarSrc
 }

@@ -1,7 +1,5 @@
 package datatypes
 
-import "path"
-
 type Tenant struct {
 	SimpleID
 	Name        string `json:"name"`
@@ -11,8 +9,4 @@ type Tenant struct {
 
 func (o *Tenant) ApiName() string {
 	return "tenants"
-}
-
-func (o *Tenant) ApiPath() string {
-	return path.Join(API_PATH, o.ApiName())
 }

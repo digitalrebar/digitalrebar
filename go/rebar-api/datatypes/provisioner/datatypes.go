@@ -1,11 +1,7 @@
 package provisioner
 
-import "path"
-
 // TemplateInfo holds information on the templates in the boot
 // environment that will be expanded into files.
-
-const API_PATH = "/provisioner"
 
 type TemplateInfo struct {
 	Name string // Name of the template
@@ -61,10 +57,6 @@ func (b *BootEnv) ApiName() string {
 	return "bootenvs"
 }
 
-func (b *BootEnv) ApiPath() string {
-	return path.Join(API_PATH, b.ApiName())
-}
-
 // Template represents a template that will be associated with a boot environment.
 type Template struct {
 	UUID     string // UUID is a unique identifier for this template.
@@ -83,10 +75,6 @@ func (t *Template) SetId(s string) error {
 
 func (t *Template) ApiName() string {
 	return "templates"
-}
-
-func (t *Template) ApiPath() string {
-	return path.Join(API_PATH, t.ApiName())
 }
 
 // Machine represents a single bare-metal system that the provisioner
@@ -111,8 +99,4 @@ func (m *Machine) SetId(s string) error {
 
 func (m *Machine) ApiName() string {
 	return "machines"
-}
-
-func (m *Machine) ApiPath() string {
-	return path.Join(API_PATH, m.ApiName())
 }

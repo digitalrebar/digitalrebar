@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"path"
 
 	"github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 )
@@ -12,6 +11,7 @@ type Deployment struct {
 	datatypes.Deployment
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 // Parent fetches the parent of the Deployment, if it has one.
@@ -29,7 +29,7 @@ func (o *Deployment) Parent() (res *Deployment, err error) {
 // reinstalling the OS and all roles on all the nodes in the
 // deployment.
 func (o *Deployment) Redeploy() error {
-	uri := urlFor(o, "redeploy")
+	uri := o.client().UrlTo(o, "redeploy")
 	buf, err := o.client().request("PUT", uri, nil)
 	if err != nil {
 		return err
@@ -58,6 +58,7 @@ func (c *Client) Deployments(scope ...Deploymenter) (res []*Deployment, err erro
 	for i := range scope {
 		paths[i] = fragTo(scope[i])
 	}
+	d := &Deployment{}
 	paths = append(paths, "deployments")
-	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
+	return res, c.List(c.UrlFor(d, paths...), &res)
 }

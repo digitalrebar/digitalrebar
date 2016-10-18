@@ -107,7 +107,7 @@ func cleanNode(node *dr.Node) error {
 		"node_id":       node.ID,
 		"deployment_id": node.DeploymentID,
 	}
-	if err := dr.Match(tmpl.ApiName(), matcher, &toRemove); err != nil {
+	if err := dr.Match(tmpl.ApiPath(), matcher, &toRemove); err != nil {
 		return fmt.Errorf("Failed to fetch noderoles to remove from %s: %v", node.Name, err)
 	}
 	for i := len(toRemove); i > 0; i-- {

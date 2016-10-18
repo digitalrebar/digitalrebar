@@ -85,7 +85,7 @@ func main() {
 		logger.Fatalf("Error talking to Consul: %v", err)
 	}
 
-	rebarClient, err = client.Trusted("system", true)
+	rebarClient, err = api.TrustedSession("system", true)
 	if err != nil {
 		logger.Fatalf("Error creating trusted Rebar API client: %v", err)
 	}

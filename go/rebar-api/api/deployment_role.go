@@ -1,16 +1,13 @@
 package api
 
-import (
-	"path"
-
-	"github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
-)
+import "github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 
 // DeploymentRole wraps datatypes.DeploymentRole to add client API functionality.
 type DeploymentRole struct {
 	datatypes.DeploymentRole
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 // Satisfy salient interfaces.
@@ -47,5 +44,7 @@ func (c *Client) DeploymentRoles(scope ...DeploymentRoler) (res []*DeploymentRol
 	}
 	paths = append(paths, "deployment_roles")
 	res = make([]*DeploymentRole, 0)
-	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
+	dr := &DeploymentRole{}
+
+	return res, c.List(c.UrlFor(dr, paths...), &res)
 }

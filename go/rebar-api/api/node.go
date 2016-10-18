@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"path"
 
 	"github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 )
@@ -13,11 +12,12 @@ type Node struct {
 	datatypes.Node
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 // PowerActions gets the available power actions for this node.
 func (o *Node) PowerActions() ([]string, error) {
-	buf, err := o.client().request("GET", urlFor(o, "power"), nil)
+	buf, err := o.client().request("GET", o.client().UrlTo(o, "power"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func (o *Node) Move(depl *Deployment) error {
 
 // Power performs a power management action for the node.
 func (o *Node) Power(action string) error {
-	_, err := o.client().request("PUT", fmt.Sprintf("%v?poweraction=%v", urlFor(o, "power"), action), nil)
+	_, err := o.client().request("PUT", fmt.Sprintf("%v?poweraction=%v", o.client().UrlTo(o, "power"), action), nil)
 	return err
 }
 
@@ -57,7 +57,7 @@ func (o *Node) ActiveBootstate() string {
 // Redeploy has a node redeploy itself from scratch.  This includes wiping out the
 // filesystems, reconfiguring hardware, and reinstalling the OS and all roles.
 func (o *Node) Redeploy() error {
-	uri := urlFor(o, "redeploy")
+	uri := o.client().UrlTo(o, "redeploy")
 	buf, err := o.client().request("PUT", uri, nil)
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func (o *Node) Redeploy() error {
 // deployment the node is currently a member of or any of that
 // deployment's parents.
 func (o *Node) Scrub() error {
-	uri := urlFor(o, "scrub")
+	uri := o.client().UrlTo(o, "scrub")
 	buf, err := o.client().request("PUT", uri, nil)
 	if err != nil {
 		return err
@@ -108,7 +108,9 @@ func (c *Client) Nodes(scope ...Noder) (res []*Node, err error) {
 	for i := range scope {
 		paths[i] = fragTo(scope[i])
 	}
-	paths = append(paths, "nodes")
+	n := &Node{}
+	paths = append(paths, n.ApiName())
 	res = make([]*Node, 0)
-	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
+
+	return res, c.List(c.UrlFor(n, paths...), &res)
 }

@@ -6,8 +6,6 @@ import (
 	"strconv"
 )
 
-const API_PATH = "/api/v2"
-
 var (
 	IDNotSet = errors.New("ID not set")
 	SetIDErr = errors.New("SetId can only be used on an un-IDed object")

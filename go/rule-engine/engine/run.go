@@ -203,7 +203,7 @@ func (c *RunContext) Process() error {
 				log.Panicf("Cannot happen: trusted client with no username")
 			}
 			var err error
-			client, err = rebar.TrustedSession(c.Engine.Client.URL, c.ruleset.Username)
+			client, err = rebar.TrustedSession(c.ruleset.Username, true)
 			if err != nil {
 				log.Panicf("Failed to establis trusted session impersonating %s", c.ruleset.Username)
 			}

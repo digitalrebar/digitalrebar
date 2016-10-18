@@ -202,7 +202,7 @@ func init() {
 					}
 					vals["network_id"] = network.ID
 					netRanges := []*api.NetworkRange{}
-					if err := session.Match(netRange.ApiName(), vals, &netRanges); err != nil {
+					if err := session.Match(session.UrlPath(netRange), vals, &netRanges); err != nil {
 						log.Fatalf("Unable to fetch ranges matching %#v\n%v\n", netRange, err)
 					}
 					if len(netRanges) != 1 {

@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 	"log"
-	"path"
 
 	"github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
 )
@@ -14,6 +13,7 @@ type Attrib struct {
 	datatypes.Attrib
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 // Attriber defines what is needed to get and set attribs on an
@@ -27,7 +27,7 @@ type Attriber interface {
 
 // Attribs gets all the Attribs from a location in the API.  If paths
 // is empty, then all Attribs will be fetched, otherwise the paths
-// will be joined with "attribs" and we will attempt to fetch the
+// will be joined with "attribs" and we will attempt to fetch theavail
 // Attribs from there.  This behaviour exists because the REST API
 // allows you to perform scoped fetches.
 func (c *Client) Attribs(scope ...Attriber) (res []*Attrib, err error) {
@@ -36,8 +36,9 @@ func (c *Client) Attribs(scope ...Attriber) (res []*Attrib, err error) {
 	for i := range scope {
 		paths[i] = fragTo(scope[i])
 	}
-	paths = append(paths, "attribs")
-	return res, c.List(path.Join(datatypes.API_PATH, path.Join(paths...)), &res)
+	a := &Attrib{}
+	paths = append(paths, a.ApiName())
+	return res, c.List(c.UrlFor(a, paths...), &res)
 }
 
 // GetAttrib gets an attrib in the context of an Attriber.  The
@@ -57,7 +58,7 @@ func (c *Client) GetAttrib(o Attriber, a *Attrib, bucket string) (res *Attrib, e
 		log.Panic(err)
 	}
 	res.SetId(id)
-	uri := urlFor(o, fragTo(res))
+	uri := c.UrlTo(o, fragTo(res))
 	if bucket != "" {
 		uri = fmt.Sprintf("%v?bucket=%v", uri, bucket)
 	}
@@ -85,7 +86,7 @@ func (c *Client) SetAttrib(o Attriber, a *Attrib, bucket string) error {
 	if bucket == "" {
 		bucket = "user"
 	}
-	uri := urlFor(o, fragTo(a))
+	uri := c.UrlTo(o, fragTo(a))
 	uri = fmt.Sprintf("%v?bucket=%v", uri, bucket)
 	patch, err := MakePatch(a)
 	if err != nil {
@@ -100,19 +101,19 @@ func (c *Client) SetAttrib(o Attriber, a *Attrib, bucket string) error {
 
 // Propose readies an Attriber to accept new values via SetAttrib.
 func (c *Client) Propose(o Attriber) error {
-	outbuf, err := c.request("PUT", urlFor(o, "propose"), nil)
+	outbuf, err := c.request("PUT", c.UrlTo(o, "propose"), nil)
 	if err != nil {
 		return err
 	}
-	return c.unmarshal(urlFor(o), outbuf, o)
+	return c.unmarshal(c.UrlTo(o), outbuf, o)
 }
 
 // Commit makes the values set on the Attriber via SetAttrib visible
 // to the rest of the Rebar infrastructure.
 func (c *Client) Commit(o Attriber) error {
-	outbuf, err := c.request("PUT", urlFor(o, "commit"), nil)
+	outbuf, err := c.request("PUT", c.UrlTo(o, "commit"), nil)
 	if err != nil {
 		return err
 	}
-	return c.unmarshal(urlFor(o), outbuf, o)
+	return c.unmarshal(c.UrlTo(o), outbuf, o)
 }

@@ -2,7 +2,6 @@ package datatypes
 
 import (
 	"errors"
-	"path"
 
 	"github.com/guregu/null"
 )
@@ -161,8 +160,4 @@ func (o *BarclampImport) FixupYAMLImport() error {
 
 func (o *Barclamp) ApiName() string {
 	return "barclamps"
-}
-
-func (o *Barclamp) ApiPath() string {
-	return path.Join(API_PATH, o.ApiName())
 }

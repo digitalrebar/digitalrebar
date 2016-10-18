@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
 )
@@ -590,16 +592,24 @@ func (b *BootEnv) RebuildRebarData() error {
 		return err
 	}
 
-	drs := []*api.DeploymentRole{}
-	matcher := make(map[string]interface{})
-	matcher["role_id"] = role.ID
-	matcher["deployment_id"] = deployment.ID
-	if err := rebarClient.Match("deployment_roles", matcher, &drs); err != nil {
-		return err
-	}
-
 	var tgt api.Attriber
-	tgt = drs[0]
+	for {
+		drs := []*api.DeploymentRole{}
+		matcher := make(map[string]interface{})
+		matcher["role_id"] = role.ID
+		matcher["deployment_id"] = deployment.ID
+		dr := &api.DeploymentRole{}
+		if err := rebarClient.Match(rebarClient.UrlPath(dr), matcher, &drs); err != nil {
+			return err
+		}
+		if len(drs) != 0 {
+			tgt = drs[0]
+			break
+		}
+		log.Printf("Waiting for provisioner-service (%v) to show up in system(%v)", role.ID, deployment.ID)
+		log.Printf("drs: %#v, err: %#v", drs, err)
+		time.Sleep(5 * time.Second)
+	}
 
 	attrib := &api.Attrib{}
 	attrib.SetId("provisioner-available-oses")
