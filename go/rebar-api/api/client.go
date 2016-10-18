@@ -49,7 +49,8 @@ func (c *Client) UrlFor(o apiSrc, parts ...string) string {
 	if c.trusted {
 		c.ocMutex.Lock()
 		defer c.ocMutex.Unlock()
-		uri, ok := c.objPathCache[o.serviceSrc()]
+		var ok bool
+		uri, ok = c.objPathCache[o.serviceSrc()]
 		if !ok {
 			cClient, err := client.Consul(true)
 			if err != nil {
@@ -117,10 +118,11 @@ func TrustedSession(username string, wait bool) (*Client, error) {
 		if err != nil {
 			return nil, err
 		}
+		challenge := &challengeTrusted{username: username}
 		res := &Client{
 			URL:          fmt.Sprintf("https://%s:%d", apiAddr, apiPort),
 			Client:       c,
-			Challenge:    challengeTrusted(username),
+			Challenge:    challenge,
 			trusted:      true,
 			objPathCache: map[string]string{},
 		}
@@ -128,6 +130,11 @@ func TrustedSession(username string, wait bool) (*Client, error) {
 		if err := res.Fetch(user, username); err != nil {
 			return nil, fmt.Errorf("Unable to verify existence of %s user, cannot use trusted session: %v", username, err)
 		}
+		caps, err := user.Capabilities()
+		if err != nil {
+			return nil, fmt.Errorf("Failed to fetch capability map for user %s: %v", username, err)
+		}
+		challenge.caps = caps
 		return res, nil
 	}
 }
