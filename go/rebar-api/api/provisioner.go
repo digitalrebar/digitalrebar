@@ -32,3 +32,7 @@ type ProvisionerMachine struct {
 	apiHelper
 	provisionerSrc
 }
+
+type ProvisionerIso struct {
+	provisionerSrc
+}

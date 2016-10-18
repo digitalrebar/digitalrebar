@@ -181,8 +181,9 @@ func Session(URL, User, Password string) (*Client, error) {
 	return c, nil
 }
 
-func (c *Client) basicRequest(req *http.Request) (resp *http.Response, err error) {
+func (c *Client) BasicRequest(req *http.Request) (resp *http.Response, err error) {
 	auth := false
+	req.Header.Set("User-Agent", "gobar/v1.0")
 	for {
 		err = c.Challenge.authorize(req)
 		if err != nil {
@@ -221,9 +222,8 @@ func (c *Client) request(method, uri string, objIn []byte) (objOut []byte, err e
 	} else {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	req.Header.Set("User-Agent", "gobar/v1.0")
 	req.Header.Set("Accept", "application/json")
-	resp, err := c.basicRequest(req)
+	resp, err := c.BasicRequest(req)
 	if err != nil {
 		return nil, err
 	}
