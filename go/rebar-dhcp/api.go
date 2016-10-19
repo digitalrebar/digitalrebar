@@ -1,12 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"strings"
 
+	"github.com/VictorLowther/jsonpatch"
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/digitalrebar/digitalrebar/go/common/cert"
 	"github.com/digitalrebar/digitalrebar/go/common/multi-tenancy"
@@ -133,6 +136,57 @@ func (fe *Frontend) UpdateSubnet(w rest.ResponseWriter, r *rest.Request) {
 	}
 	if err := r.DecodeJsonPayload(s); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	fe.DhcpInfo.Lock()
+	if err, code := fe.DhcpInfo.ReplaceSubnet(subnetName, s); err != nil {
+		fe.DhcpInfo.Unlock()
+		rest.Error(w, err.Error(), code)
+		return
+	}
+	fe.DhcpInfo.Unlock()
+	w.WriteJson(s)
+}
+
+func (fe *Frontend) PatchSubnet(w rest.ResponseWriter, r *rest.Request) {
+	subnetName := r.PathParam("id")
+	s := &Subnet{}
+	if r.Body == nil {
+		rest.Error(w, "Must have body", http.StatusBadRequest)
+		return
+	}
+	net, found := fe.DhcpInfo.Subnets[subnetName]
+	if !found {
+		rest.Error(w, "Not Found", http.StatusNotFound)
+		return
+	}
+	capMap, err := multitenancy.NewCapabilityMap(r.Request)
+	if err != nil {
+		log.Printf("Failed to get capmap from request: %v\n", err)
+		rest.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	if !capMap.HasCapability(net.TenantId, "SUBNET_UPDATE") {
+		if !capMap.HasCapability(net.TenantId, "SUBNET_READ") {
+			rest.Error(w, "Not Found", http.StatusNotFound)
+		} else {
+			rest.Error(w, "Forbidden", http.StatusForbidden)
+		}
+		return
+	}
+	patch, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	oldBuf, _ := json.Marshal(net)
+	newBuf, err, loc := jsonpatch.ApplyJSON(oldBuf, patch)
+	if err != nil {
+		rest.Error(w, fmt.Sprintf("Failed to apply patch at %d: %v", loc, err), http.StatusBadRequest)
+		return
+	}
+	if err := json.Unmarshal(newBuf, s); err != nil {
+		rest.Error(w, fmt.Sprintf("Patch created invalid object: %v", err), http.StatusBadRequest)
 		return
 	}
 	fe.DhcpInfo.Lock()
@@ -314,12 +368,21 @@ func (fe *Frontend) NextServer(w rest.ResponseWriter, r *rest.Request) {
 
 func (fe *Frontend) RunServer(blocking bool) http.Handler {
 	api := rest.NewApi()
-	api.Use(rest.DefaultDevStack...)
+	api.Use(&rest.AccessLogApacheMiddleware{},
+		&rest.TimerMiddleware{},
+		&rest.RecorderMiddleware{},
+		&rest.PoweredByMiddleware{},
+		&rest.RecoverMiddleware{
+			EnableResponseStackTrace: true,
+		},
+		&rest.JsonIndentMiddleware{},
+	)
 	router, err := rest.MakeRouter(
 		rest.Get("/subnets", fe.GetAllSubnets),
 		rest.Get("/subnets/#id", fe.GetSubnet),
 		rest.Post("/subnets", fe.CreateSubnet),
 		rest.Put("/subnets/#id", fe.UpdateSubnet),
+		rest.Patch("/subnets/#id", fe.PatchSubnet),
 		rest.Delete("/subnets/#id", fe.DeleteSubnet),
 		rest.Post("/subnets/#id/bind", fe.BindSubnet),
 		rest.Delete("/subnets/#id/bind/#mac", fe.UnbindSubnet),
