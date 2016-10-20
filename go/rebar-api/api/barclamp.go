@@ -8,10 +8,12 @@ type Barclamp struct {
 	datatypes.Barclamp
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 // Barclamps returns all of the Barclamps.
 func (c *Client) Barclamps() (res []*Barclamp, err error) {
 	res = make([]*Barclamp, 0)
-	return res, c.List("barclamps", &res)
+	bc := &Barclamp{}
+	return res, c.List(c.UrlPath(bc), &res)
 }

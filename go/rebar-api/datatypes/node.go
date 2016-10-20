@@ -1,7 +1,5 @@
 package datatypes
 
-import "path"
-
 // Node represents a system (real or virtual) that Rebar can manage.
 type Node struct {
 	NameID
@@ -49,8 +47,4 @@ type Node struct {
 
 func (o *Node) ApiName() string {
 	return "nodes"
-}
-
-func (o *Node) ApiPath() string {
-	return path.Join(API_PATH, o.ApiName())
 }

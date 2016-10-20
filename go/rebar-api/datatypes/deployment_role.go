@@ -1,7 +1,5 @@
 package datatypes
 
-import "path"
-
 // DeploymentRoles represent a binding of a Role to a Deployment.
 // They are where the deployment-specific configuration information
 // for Roles are stored (as Attribs on the DeploymentRole).
@@ -20,8 +18,4 @@ type DeploymentRole struct {
 
 func (o *DeploymentRole) ApiName() string {
 	return "deployment_roles"
-}
-
-func (o *DeploymentRole) ApiPath() string {
-	return path.Join(API_PATH, o.ApiName())
 }

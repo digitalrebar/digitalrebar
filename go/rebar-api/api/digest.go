@@ -64,7 +64,7 @@ func (c *challengeDigest) resp(method, uri, cnonce string) (string, error) {
 }
 
 // source https://code.google.com/p/mlab-ns2/source/browse/gae/ns/digest/digest.go#178
-func (c *challengeDigest) authorize(method, uri string, req *http.Request) error {
+func (c *challengeDigest) authorize(req *http.Request) error {
 	// Note that this is only implemented for MD5 and NOT MD5-sess.
 	// MD5-sess is rarely supported and those that do are a big mess.
 	if c.Algorithm != "MD5" {
@@ -75,14 +75,14 @@ func (c *challengeDigest) authorize(method, uri string, req *http.Request) error
 	if c.Qop != "auth" && c.Qop != "" {
 		return fmt.Errorf("Alg not implemented")
 	}
-	resp, err := c.resp(method, uri, "")
+	resp, err := c.resp(req.Method, req.URL.EscapedPath(), "")
 	if err != nil {
 		return fmt.Errorf("Alg not implemented")
 	}
 	sl := []string{fmt.Sprintf(`username="%s"`, c.Username)}
 	sl = append(sl, fmt.Sprintf(`realm="%s"`, c.Realm))
 	sl = append(sl, fmt.Sprintf(`nonce="%s"`, c.Nonce))
-	sl = append(sl, fmt.Sprintf(`uri="%s"`, uri))
+	sl = append(sl, fmt.Sprintf(`uri="%s"`, req.URL.EscapedPath()))
 	sl = append(sl, fmt.Sprintf(`response="%s"`, resp))
 	if c.Algorithm != "" {
 		sl = append(sl, fmt.Sprintf(`algorithm="%s"`, c.Algorithm))

@@ -1,7 +1,5 @@
 package datatypes
 
-import "path"
-
 // Provider represents a provisioning system that lets us create and delete Nodes
 type Provider struct {
 	NameID
@@ -18,8 +16,4 @@ type Provider struct {
 
 func (o *Provider) ApiName() string {
 	return "providers"
-}
-
-func (o *Provider) ApiPath() string {
-	return path.Join(API_PATH, o.ApiName())
 }

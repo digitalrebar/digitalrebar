@@ -8,10 +8,12 @@ type DnsNameFilter struct {
 	datatypes.DnsNameFilter
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 // DnsNameFilters lists all the DNS name filters in the system.
 func (c *Client) DnsNameFilters() (res []*DnsNameFilter, err error) {
 	res = make([]*DnsNameFilter, 0)
-	return res, c.List("dns_name_filters", &res)
+	dnf := &DnsNameFilter{}
+	return res, c.List(c.UrlPath(dnf), &res)
 }

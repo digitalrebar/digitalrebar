@@ -1,10 +1,6 @@
 package datatypes
 
-import (
-	"path"
-
-	"github.com/guregu/null"
-)
+import "github.com/guregu/null"
 
 // Jigs use Hammers to perform (hopefully) idempotent actions on Nodes
 // on behalf of Roles through NodeRoles.
@@ -20,8 +16,4 @@ type Jig struct {
 
 func (o *Jig) ApiName() string {
 	return "jigs"
-}
-
-func (o *Jig) ApiPath() string {
-	return path.Join(API_PATH, o.ApiName())
 }

@@ -13,22 +13,79 @@ import (
 	"log"
 	"net/http"
 	"path"
+	"sync"
+	"time"
 
 	"github.com/VictorLowther/jsonpatch"
 	"github.com/digitalrebar/digitalrebar/go/common/cert"
-	"github.com/digitalrebar/digitalrebar/go/rebar-api/datatypes"
+	"github.com/digitalrebar/go-common/client"
+	"github.com/digitalrebar/go-common/service"
 )
 
 type challenge interface {
 	parseChallenge(resp *http.Response) error
-	authorize(method, uri string, req *http.Request) error
+	authorize(req *http.Request) error
 }
 
 // Client wraps http.Client to add our auth primitives.
 type Client struct {
 	*http.Client
-	Challenge challenge
-	URL       string
+	Challenge    challenge
+	URL          string
+	trusted      bool
+	objPathCache map[string]string
+	ocMutex      sync.Mutex
+}
+
+func (c *Client) Trusted() bool {
+	return c.trusted
+}
+
+// UrlFor is the path to the API endpoint that this object came from.
+//
+// c.UrlFor(foo) -> https://endpoint:port/o.pathPrefix(c.trusted)
+func (c *Client) UrlFor(o apiSrc, parts ...string) string {
+	uri := c.URL
+	if c.trusted {
+		c.ocMutex.Lock()
+		defer c.ocMutex.Unlock()
+		var ok bool
+		uri, ok = c.objPathCache[o.serviceSrc()]
+		if !ok {
+			cClient, err := client.Consul(true)
+			if err != nil {
+				log.Fatalf("Unable to talk to Consul: %v", err)
+			}
+			objSrc, err := service.Find(cClient, o.serviceSrc(), "")
+			if err != nil {
+				log.Fatalf("Cannot find service %s in Consul: %v", o.serviceSrc(), err)
+			}
+			if len(objSrc) == 0 {
+				log.Fatalf("No services registered for %s: %v", o.serviceSrc(), err)
+			}
+			objAddr, objPort := service.Address(objSrc[0])
+			uri = fmt.Sprintf("https://%s:%d", objAddr, objPort)
+			c.objPathCache[o.serviceSrc()] = uri
+		}
+	}
+	return uri + path.Join(append([]string{"/", o.pathPrefix(c.trusted)}, parts...)...)
+}
+
+// UrlPath is the path to the API endpoint for this class of object.
+//
+// UrlPath(foo) -> https://endpoint:port/o.pathPrefix(c.trusted)/foo.ApiName()
+func (c *Client) UrlPath(o Crudder, parts ...string) string {
+	return c.UrlFor(o, append([]string{o.ApiName()}, parts...)...)
+}
+
+// UrlTo is the path to the API endpoint for a specific object
+// UrlPath(foo) -> https://endpoint:port/o.pathPrefix(c.trusted)/foo.ApiName()/foo.Id()
+func (c *Client) UrlTo(o Crudder, parts ...string) string {
+	id, err := o.Id()
+	if err != nil {
+		log.Panic(err)
+	}
+	return c.UrlPath(o, append([]string{id}, parts...)...)
 }
 
 // The Rebar API is exposed over a digest authenticated HTTP(s)
@@ -38,20 +95,51 @@ type Client struct {
 // TrustedSession builds a Client that can only operate inside the local trust zone.
 // It assumes that there is a local Consul server that it can use to look up the
 // trust-me service and the internal endpoint for the Rebar API.
-func TrustedSession(URL, username string) (*Client, error) {
-	c, err := cert.Client("internal", "rebar-client")
+func TrustedSession(username string, wait bool) (*Client, error) {
+	cClient, err := client.Consul(wait)
 	if err != nil {
 		return nil, err
 	}
-	res := &Client{URL: URL, Client: c, Challenge: challengeTrusted(username)}
-	user := &User{}
-	if err := res.Fetch(user, username); err != nil {
-		return nil, fmt.Errorf("Unable to verify existence of %s user, cannot use trusted session: %v", username, err)
+	for {
+		apiService, err := service.Find(cClient, "rebar-api", "")
+		if err != nil {
+			return nil, fmt.Errorf("RebarClient: Error talking to local Consul: %v", err)
+		}
+		if len(apiService) == 0 {
+			if wait {
+				log.Println("Rebar API service not registered yet")
+				time.Sleep(10 * time.Second)
+				continue
+			}
+			return nil, fmt.Errorf("RebarClient: Rebar API not registered with Consul")
+		}
+		apiAddr, apiPort := service.Address(apiService[0])
+		c, err := cert.Client("internal", "rebar-client")
+		if err != nil {
+			return nil, err
+		}
+		challenge := &challengeTrusted{username: username}
+		res := &Client{
+			URL:          fmt.Sprintf("https://%s:%d", apiAddr, apiPort),
+			Client:       c,
+			Challenge:    challenge,
+			trusted:      true,
+			objPathCache: map[string]string{},
+		}
+		user := &User{}
+		if err := res.Fetch(user, username); err != nil {
+			return nil, fmt.Errorf("Unable to verify existence of %s user, cannot use trusted session: %v", username, err)
+		}
+		caps, err := user.Capabilities()
+		if err != nil {
+			return nil, fmt.Errorf("Failed to fetch capability map for user %s: %v", username, err)
+		}
+		challenge.caps = caps
+		return res, nil
 	}
-	return res, nil
 }
 
-// Session establishes a new connection to Rebar.  You must call
+// Session establishes a new connection to Rebar.  You must cal
 // this function before using any other functions in the rebar
 // package.  Session stores its information in a private global variable.
 func Session(URL, User, Password string) (*Client, error) {
@@ -59,11 +147,13 @@ func Session(URL, User, Password string) (*Client, error) {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	c := &Client{
-		URL:    URL,
-		Client: &http.Client{Transport: tr},
+		URL:     URL,
+		Client:  &http.Client{Transport: tr},
+		trusted: false,
 	}
 	// retrieve the digest info from the 301 message
-	resp, e := c.Head(c.URL + path.Join(datatypes.API_PATH, "digest"))
+	rs := rebarSrc{}
+	resp, e := c.Head(c.URL + path.Join(rs.pathPrefix(c.trusted), "digest"))
 	if e != nil {
 		return nil, e
 	}
@@ -91,37 +181,25 @@ func Session(URL, User, Password string) (*Client, error) {
 	return c, nil
 }
 
-func (c *Client) basicRequest(method, uri string, objIn []byte) (resp *http.Response, err error) {
-	var body io.Reader
-
-	if objIn != nil {
-		body = bytes.NewReader(objIn)
-	}
-	log.Printf("uri: %s, url: %s", uri, c.URL+uri)
-	// Construct the http.Request.
-	req, err := http.NewRequest(method, c.URL+uri, body)
-	if err != nil {
-		return nil, err
-	}
-	err = c.Challenge.authorize(method, uri, req)
-	if err != nil {
-		return nil, err
-	}
-	if method == "PATCH" {
-		req.Header.Set("Content-Type", jsonpatch.ContentType)
-	} else {
-		req.Header.Set("Content-Type", "application/json")
-	}
+func (c *Client) BasicRequest(req *http.Request) (resp *http.Response, err error) {
+	auth := false
 	req.Header.Set("User-Agent", "gobar/v1.0")
-	req.Header.Set("Accept", "application/json")
-	resp, err = c.Do(req)
-	if err == nil {
-		return
-	}
-	if resp != nil {
+	for {
+		err = c.Challenge.authorize(req)
+		if err != nil {
+			return nil, err
+		}
+		resp, err = c.Do(req)
+		if err != nil || resp.StatusCode != 401 || auth {
+			return
+		}
+		auth = true
 		resp.Body.Close()
+		err = c.Challenge.parseChallenge(resp)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return nil, err
 }
 
 // Request makes a general call to the Rebar API.
@@ -131,26 +209,26 @@ func (c *Client) basicRequest(method, uri string, objIn []byte) (resp *http.Resp
 // objOut is the raw request body (if any)
 // err is the error of any occurred.
 func (c *Client) request(method, uri string, objIn []byte) (objOut []byte, err error) {
-	resp, err := c.basicRequest(method, uri, objIn)
+	var body io.Reader
+	if objIn != nil {
+		body = bytes.NewReader(objIn)
+	}
+	req, err := http.NewRequest(method, uri, body)
+	if err != nil {
+		return nil, err
+	}
+	if method == "PATCH" {
+		req.Header.Set("Content-Type", jsonpatch.ContentType)
+	} else {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	req.Header.Set("Accept", "application/json")
+	resp, err := c.BasicRequest(req)
 	if err != nil {
 		return nil, err
 	}
 	if resp.Body != nil {
 		defer resp.Body.Close()
-	}
-
-	if resp.StatusCode == 401 {
-		err = c.Challenge.parseChallenge(resp)
-		if err != nil {
-			return nil, err
-		}
-		resp, err = c.basicRequest(method, uri, objIn)
-		if err != nil {
-			return nil, err
-		}
-		if resp.Body != nil {
-			defer resp.Body.Close()
-		}
 	}
 	objOut, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -163,19 +241,17 @@ func (c *Client) request(method, uri string, objIn []byte) (objOut []byte, err e
 }
 
 // list is a helper specialized to get lists of objects.
-func (c *Client) list(res interface{}, uri ...string) (err error) {
-	buf, err := c.request("GET", path.Join(uri...), nil)
+func (c *Client) list(res interface{}, uri string) (err error) {
+	buf, err := c.request("GET", uri, nil)
 	if err != nil {
 		return err
 	}
 	return json.Unmarshal(buf, &res)
 }
 
-func (c *Client) match(vals map[string]interface{}, res interface{}, uri ...string) (err error) {
+func (c *Client) match(vals map[string]interface{}, res interface{}, uri string) (err error) {
 	inbuf, err := json.Marshal(vals)
-	buf, err := c.request("POST",
-		path.Join(path.Join(uri...), "match"),
-		inbuf)
+	buf, err := c.request("POST", uri+"/match", inbuf)
 	if err != nil {
 		return nil
 	}

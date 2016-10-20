@@ -1,10 +1,6 @@
 package datatypes
 
-import (
-	"path"
-
-	"github.com/guregu/null"
-)
+import "github.com/guregu/null"
 
 // Network holds configuration for a specific network.
 type Network struct {
@@ -67,10 +63,6 @@ func (o *Network) ApiName() string {
 	return "networks"
 }
 
-func (o *Network) ApiPath() string {
-	return path.Join(API_PATH, o.ApiName())
-}
-
 // NetworkRange defines a specific range of allocatable addresses in a
 // Network.  All address allocation for a Node must come from one
 // specific Range per Network.  NetworkRanges are allowed to have
@@ -102,10 +94,6 @@ type NetworkRange struct {
 
 func (o *NetworkRange) ApiName() string {
 	return "network_ranges"
-}
-
-func (o *NetworkRange) ApiPath() string {
-	return path.Join(API_PATH, o.ApiName())
 }
 
 // AddressID is used for NetworkAllocation and NetworkRouter, as they
@@ -151,10 +139,6 @@ func (o *NetworkAllocation) ApiName() string {
 	return "network_allocations"
 }
 
-func (o *NetworkAllocation) ApiPath() string {
-	return path.Join(API_PATH, o.ApiName())
-}
-
 // NetworkRouter holds the address that should be used to route
 // traffic out of the network it is associated with.
 type NetworkRouter struct {
@@ -166,8 +150,4 @@ type NetworkRouter struct {
 
 func (o *NetworkRouter) ApiName() string {
 	return "network_routers"
-}
-
-func (o *NetworkRouter) ApiPath() string {
-	return path.Join(API_PATH, o.ApiName())
 }

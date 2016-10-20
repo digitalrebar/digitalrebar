@@ -55,10 +55,11 @@ func init() {
 				log.Fatalln("Failed to fetch network:", err)
 			}
 			allocations := []*api.NetworkAllocation{}
+			allocation := &api.NetworkAllocation{}
 			matcher := make(map[string]interface{})
 			matcher["network_id"] = net.ID
 			matcher["node_id"] = node.ID
-			if err := session.Match("network_allocations", matcher, &allocations); err != nil {
+			if err := session.Match(session.UrlPath(allocation), matcher, &allocations); err != nil {
 				log.Fatalln("Failed to fetch allocations:", err)
 			}
 			addresses := make([]string, len(allocations))

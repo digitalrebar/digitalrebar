@@ -1,7 +1,5 @@
 package datatypes
 
-import "path"
-
 // NodeRole represents the binding of a Role to a Node in a Deployment.
 // All of them together are linked in a graph that defines how everything
 // in the cluster is related.
@@ -37,10 +35,6 @@ type NodeRole struct {
 
 func (o *NodeRole) ApiName() string {
 	return "node_roles"
-}
-
-func (o *NodeRole) ApiPath() string {
-	return path.Join(API_PATH, o.ApiName())
 }
 
 const (

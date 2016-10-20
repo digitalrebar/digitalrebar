@@ -16,6 +16,7 @@ type User struct {
 	datatypes.User
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 // PasswordChangeToken is an auxillary struct used for the secure
@@ -50,12 +51,13 @@ func (p *PasswordChangeToken) UnmarshalJSON(buf []byte) error {
 // Users returns all the Users in the system
 func (c *Client) Users() (res []*User, err error) {
 	res = make([]*User, 0)
-	return res, c.List("users", &res)
+	u := &User{}
+	return res, c.List(c.UrlPath(u), &res)
 }
 
 // StartPasswordReset fetches a PasswordChangeToken for this user.
 func (u *User) StartPasswordReset() (*PasswordChangeToken, error) {
-	buf, err := u.client().request("GET", urlFor(u, "start_password_reset"), nil)
+	buf, err := u.client().request("GET", u.client().UrlTo(u, "start_password_reset"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +87,7 @@ func (u *User) CompletePasswordReset(tok *PasswordChangeToken, newPassword strin
 		base64.StdEncoding.EncodeToString(pubKey[:]),
 		base64.StdEncoding.EncodeToString(nonce[:]),
 		base64.StdEncoding.EncodeToString(encPayload))
-	_, err = u.client().request("POST", urlFor(u, "complete_password_reset"), []byte(body))
+	_, err = u.client().request("POST", u.client().UrlTo(u, "complete_password_reset"), []byte(body))
 	if err != nil {
 		return err
 	}
@@ -94,7 +96,7 @@ func (u *User) CompletePasswordReset(tok *PasswordChangeToken, newPassword strin
 
 // Capabilities fetches the capability map for this user.
 func (u *User) Capabilities() (*map[string]interface{}, error) {
-	buf, err := u.client().request("GET", urlFor(u, "capabilities"), nil)
+	buf, err := u.client().request("GET", u.client().UrlTo(u, "capabilities"), nil)
 	if err != nil {
 		return nil, err
 	}

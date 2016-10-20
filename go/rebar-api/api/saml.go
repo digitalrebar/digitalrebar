@@ -175,7 +175,7 @@ func find_form_data(r io.Reader) (*string, url.Values, error) {
 	return &url, inputs, nil
 }
 
-func (c *challengeSAML) authorize(method, uri string, req *http.Request) error {
+func (c *challengeSAML) authorize(req *http.Request) error {
 	req.Header.Set("DR-AUTH-TOKEN", c.Token)
 	req.Header.Set("DR-AUTH-USER", c.Username)
 	return nil

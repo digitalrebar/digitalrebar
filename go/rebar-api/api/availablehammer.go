@@ -7,6 +7,7 @@ type AvailableHammer struct {
 	datatypes.AvailableHammer
 	Timestamps
 	apiHelper
+	rebarSrc
 }
 
 func (o *AvailableHammer) hammers() {}
@@ -15,5 +16,6 @@ func (o *AvailableHammer) hammers() {}
 // bound to a node.
 func (c *Client) AvailableHammers() (res []*AvailableHammer, err error) {
 	res = make([]*AvailableHammer, 0)
-	return res, c.List("available_hammers", &res)
+	ah := &AvailableHammer{}
+	return res, c.List(c.UrlPath(ah), &res)
 }

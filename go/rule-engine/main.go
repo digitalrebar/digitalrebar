@@ -245,7 +245,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create backing store %s at %s: %v", backingStore, dataDir, err)
 	}
-	rebarClient, err := client.Trusted("system", true)
+	rebarClient, err := api.TrustedSession("system", true)
 	if err != nil {
 		log.Fatalf("Error creating Rebar API client: %v", err)
 	}

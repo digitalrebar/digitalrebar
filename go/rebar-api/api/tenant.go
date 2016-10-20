@@ -8,4 +8,5 @@ type Tenant struct {
 	datatypes.Tenant
 	Timestamps
 	apiHelper
+	rebarSrc
 }

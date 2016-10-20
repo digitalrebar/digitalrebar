@@ -1,9 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
+	"os"
 
 	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
 	"github.com/spf13/cobra"
@@ -26,7 +30,7 @@ func init() {
 		Run: func(c *cobra.Command, args []string) {
 			objs := []interface{}{}
 			obj := &api.ProvisionerBootEnv{}
-			if err := session.List(obj.ApiPath(), &objs); err != nil {
+			if err := session.List(session.UrlPath(obj), &objs); err != nil {
 				log.Fatalf("Error listing provisioner boot environments: %v", err)
 			}
 			fmt.Println(prettyJSON(objs))
@@ -105,7 +109,7 @@ func init() {
 		Run: func(c *cobra.Command, args []string) {
 			objs := []interface{}{}
 			obj := &api.ProvisionerTemplate{}
-			if err := session.List(obj.ApiPath(), &objs); err != nil {
+			if err := session.List(session.UrlPath(obj), &objs); err != nil {
 				log.Fatalf("Error listing provisioner templates: %v", err)
 			}
 			fmt.Println(prettyJSON(objs))
@@ -221,7 +225,7 @@ func init() {
 		Run: func(c *cobra.Command, args []string) {
 			objs := []interface{}{}
 			obj := &api.ProvisionerMachine{}
-			if err := session.List(obj.ApiPath(), &objs); err != nil {
+			if err := session.List(session.UrlPath(obj), &objs); err != nil {
 				log.Fatalf("Error listing provisioner machines: %v", err)
 			}
 			fmt.Println(prettyJSON(objs))
@@ -239,6 +243,137 @@ func init() {
 				log.Fatalf("Failed to fetch provisioner machine%v: %v", args[0], err)
 			}
 			fmt.Println(prettyJSON(obj))
+		},
+	})
+	isos := &cobra.Command{
+		Use:   "isos",
+		Short: "Commands to manage ISO files on the provisioner",
+	}
+	provisioner.AddCommand(isos)
+	isos.AddCommand(&cobra.Command{
+		Use:   "list",
+		Short: "List all uploaded ISOs",
+		Run: func(c *cobra.Command, args []string) {
+			objs := []string{}
+			obj := &api.ProvisionerIso{}
+			req, err := http.NewRequest("GET", session.UrlFor(obj, "isos"), nil)
+			if err != nil {
+				log.Fatalf("Error creating HTTP request: %v", err)
+			}
+			req.Header.Set("Accept", "application/json")
+			req.Header.Set("Content-Type", "application/json")
+			resp, err := session.BasicRequest(req)
+			if err != nil {
+				log.Fatalf("Error listing provisioner ISO files: %v", err)
+			}
+
+			buf, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Fatalf("Error listing provisioner ISO files: %v", err)
+			}
+			err = json.Unmarshal(buf, &objs)
+			if err != nil {
+				log.Fatalf("Error listing provisioner ISO files: %v", err)
+			}
+			resp.Body.Close()
+			fmt.Println(prettyJSON(objs))
+		},
+	})
+	isos.AddCommand(&cobra.Command{
+		Use:   "download [name] to [file]",
+		Short: "Download the ISO with [name] to [file]",
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 3 {
+				log.Fatalf("%v requires 2 arguments", c.UseLine())
+			}
+			tgt, err := os.Create(args[2])
+			if err != nil {
+				log.Fatalf("Error fetching ISO file: %v", err)
+			}
+			obj := &api.ProvisionerIso{}
+			req, err := http.NewRequest("GET", session.UrlFor(obj, "isos", args[0]), nil)
+			if err != nil {
+				log.Fatalf("Error creating HTTP request: %v", err)
+			}
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/octet-stream")
+			resp, err := session.BasicRequest(req)
+			if err != nil {
+				log.Fatalf("Error fetching ISO file: %v", err)
+			}
+			if resp.StatusCode >= 300 {
+				resp.Body.Close()
+				log.Fatalf("Error fetching ISO file: %v", resp.Status)
+			}
+			copied, err := io.Copy(tgt, resp.Body)
+			if err != nil {
+				os.Remove(args[2])
+				log.Fatalf("Failed saving ISO file: %v", err)
+			}
+			if resp.ContentLength != -1 && resp.ContentLength != copied {
+				os.Remove(args[2])
+				log.Fatalf("Download of ISO file %s interrupted, %d/%d bytes saved", args[2], copied, resp.ContentLength)
+			}
+			resp.Body.Close()
+			tgt.Close()
+			fmt.Printf("ISO %s downloaded to %s", args[0], args[2])
+		},
+	})
+	isos.AddCommand(&cobra.Command{
+		Use:   "upload [file] as [name]",
+		Short: " Upload [file] to the provisioner with [name]",
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 3 {
+				log.Fatalf("%v requires 2 arguments", c.UseLine())
+			}
+			obj := &api.ProvisionerIso{}
+			src, err := os.Open(args[0])
+			if err != nil {
+				log.Fatalf("Cannot open ISO %s for upload: %v", args[0], err)
+			}
+			s, err := src.Stat()
+			if err != nil {
+				log.Fatalf("Cannot stat ISO %s for upload: %v", args[0], err)
+			}
+			req, err := http.NewRequest("POST", session.UrlFor(obj, "isos", args[2]), nil)
+			if err != nil {
+				log.Fatalf("Error creating HTTP request: %v", err)
+			}
+			req.Header.Set("Content-Type", "application/octet-stream")
+			req.Header.Set("Accept", "application/json")
+			req.ContentLength = s.Size()
+			req.Body = src
+			resp, err := session.BasicRequest(req)
+			src.Close()
+			if err != nil {
+				log.Fatalf("Failed to upload file: %v", err)
+			}
+			if resp.StatusCode >= 300 {
+				log.Fatalf("Failed to upload file: %v", resp.Status)
+			}
+			resp.Body.Close()
+			fmt.Printf("ISO %s uploaded to %s", args[0], args[2])
+		},
+	})
+	isos.AddCommand(&cobra.Command{
+		Use:   "destroy [name]",
+		Short: "Destroy ISO file with [name]",
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 1 {
+				log.Fatalf("%v requires 1 arg", c.UseLine())
+			}
+			obj := &api.ProvisionerIso{}
+			req, err := http.NewRequest("DELETE", session.UrlFor(obj, "isos", args[0]), nil)
+			req.Header.Set("Accept", "application/json")
+			req.Header.Set("Content-Type", "application/json")
+			resp, err := session.BasicRequest(req)
+			if err != nil {
+				log.Fatalf("Failed to delete ISO %s: %v", args[0], err)
+			}
+			if resp.StatusCode >= 300 {
+				log.Fatalf("Failed to delete ISO %s: %v", args[0], resp.Status)
+			}
+			fmt.Printf("ISO %s deleted", args[0])
 		},
 	})
 }

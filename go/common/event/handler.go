@@ -29,7 +29,7 @@ func NewSink(c *api.Client, uri string, h Handler) (*Sink, error) {
 	sink.h = h
 	matcher := map[string]interface{}{"endpoint": uri}
 	matches := []*api.EventSink{}
-	if err := c.Match(sink.s.ApiName(), matcher, &matches); err != nil {
+	if err := c.Match(c.UrlPath(sink.s), matcher, &matches); err != nil {
 		return nil, err
 	}
 
@@ -93,7 +93,7 @@ func (s *Sink) EventSelectors(c *api.Client) ([]*api.EventSelector, error) {
 	matcher := map[string]interface{}{"event_sink_id": s.s.ID}
 	matches := []*api.EventSelector{}
 	selector := &api.EventSelector{}
-	err := c.Match(selector.ApiName(), matcher, &matches)
+	err := c.Match(c.UrlPath(selector), matcher, &matches)
 	return matches, err
 }
 

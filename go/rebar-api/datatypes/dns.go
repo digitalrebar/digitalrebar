@@ -1,10 +1,6 @@
 package datatypes
 
-import (
-	"path"
-
-	"github.com/guregu/null"
-)
+import "github.com/guregu/null"
 
 type DnsNameEntry struct {
 	NameID
@@ -16,10 +12,6 @@ type DnsNameEntry struct {
 
 func (o *DnsNameEntry) ApiName() string {
 	return "dns_name_entries"
-}
-
-func (o *DnsNameEntry) ApiPath() string {
-	return path.Join(API_PATH, o.ApiName())
 }
 
 type DnsNameFilter struct {
@@ -34,8 +26,4 @@ type DnsNameFilter struct {
 
 func (o *DnsNameFilter) ApiName() string {
 	return "dns_name_filters"
-}
-
-func (o *DnsNameFilter) ApiPath() string {
-	return path.Join(API_PATH, o.ApiName())
 }

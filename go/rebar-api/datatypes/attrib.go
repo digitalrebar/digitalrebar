@@ -1,10 +1,6 @@
 package datatypes
 
-import (
-	"path"
-
-	"github.com/guregu/null"
-)
+import "github.com/guregu/null"
 
 // Attrib encapsualtes the concept of per-thing user settable
 // parameters that can be overridden in a generic fashion. The way it
@@ -83,8 +79,4 @@ type Attrib struct {
 // operations.
 func (o *Attrib) ApiName() string {
 	return "attribs"
-}
-
-func (o *Attrib) ApiPath() string {
-	return path.Join(API_PATH, o.ApiName())
 }
