@@ -41,6 +41,8 @@ class Node < ActiveRecord::Base
   validates_format_of     :name, :with=>FQDN_RE, :message => I18n.t("db.fqdn", :default=>"Name must be a fully qualified domain name.")
   validates_length_of     :name, :maximum => 255
 
+  validate :check_profiles
+
   has_and_belongs_to_many :groups, :join_table => "node_groups", :foreign_key => "node_id"
 
   has_many    :node_roles,         :dependent => :destroy
@@ -397,6 +399,20 @@ class Node < ActiveRecord::Base
     end
   end
 
+  def from_profiles
+    res = {}
+    return res unless profiles
+    profiles.reverse.each do |profile_name|
+      profile = Profile.find_by!(name: profile_name)
+      profile.values.each do |k,v|
+        attr = Attrib.find_by!(name: k)
+        res.deep_merge!(attr.template(v))
+      end               
+    end
+    res
+  end
+      
+
   def redeploy!
     Rails.logger.debug("Starting Redeploy for #{name}")
     Node.transaction do
@@ -605,6 +621,12 @@ class Node < ActiveRecord::Base
       end
       self.provider.delete_node(self)
     end
+  end
+
+  def check_profiles
+    profiles.each do |profile|
+      errors.add(:profiles, "#{profile} does not exist") unless Profile.exists?(name: profile)
+    end if profiles
   end
 
   def load_uuid

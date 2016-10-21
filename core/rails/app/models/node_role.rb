@@ -461,6 +461,7 @@ class NodeRole < ActiveRecord::Base
   def all_my_data
     res = {}
     res.deep_merge!(wall)
+    res.deep_merge!(node.from_profiles)
     res.deep_merge!(sysdata)
     res.deep_merge!(data)
     res
@@ -473,6 +474,7 @@ class NodeRole < ActiveRecord::Base
   def all_committed_data
     res = deployment_role.all_committed_data
     res.deep_merge!(wall)
+    res.deep_merge!(node.from_profiles)
     res.deep_merge!(sysdata)
     res.deep_merge!(committed_data)
     res

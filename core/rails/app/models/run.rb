@@ -92,7 +92,7 @@ class NodeRoleRun < Que::Job
       # Extract any new desired node attribs from the returned wall info
       nr.barclamp.attribs.where(role_id: nil).each do |a|
         val = a.simple_get(nr)
-        next if val.nil?
+        next if val.nil? || a.simple_get(nr.node) == val
         a.set(nr.node,val)
       end
       # Handle updating our global idea about reservations if our wall has any.

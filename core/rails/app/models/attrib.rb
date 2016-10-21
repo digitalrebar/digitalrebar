@@ -102,7 +102,7 @@ class Attrib < ActiveRecord::Base
             case source
             when :note then from.notes
             when :proposed,:committed,:hint,:user then from.hint
-            when :all then from.discovery.deep_merge(from.hint)
+            when :all then from.discovery.deep_merge(from.from_profiles).deep_merge(from.hint)
             else from.discovery
             end
           when from.is_a?(DeploymentRole)
