@@ -18,8 +18,8 @@ import (
 
 	"github.com/VictorLowther/jsonpatch"
 	"github.com/digitalrebar/digitalrebar/go/common/cert"
-	"github.com/digitalrebar/go-common/client"
-	"github.com/digitalrebar/go-common/service"
+	"github.com/digitalrebar/digitalrebar/go/common/client"
+	"github.com/digitalrebar/digitalrebar/go/common/service"
 )
 
 type challenge interface {
