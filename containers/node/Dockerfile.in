@@ -1,17 +1,14 @@
-FROM ubuntu:14.04
-
-# TORUN
-
-ENV GOPATH /go
+FROM gcr.io/google_containers/ubuntu-slim:0.5
 
 ARG DR_TAG
+
 # Set our command
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 
 # Get packages
 RUN apt-get update \
-  && apt-get -y install git jq openssh-server curl \
-  && curl -fgL -o '/tmp/chef.deb' 'http://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef_11.12.8-1_amd64.deb' \
+  && apt-get -y --no-install-recommends install git jq openssh-server curl ca-certificates \
+  && curl -fgL -o '/tmp/chef.deb' 'https://packages.chef.io/stable/ubuntu/12.04/chef_12.16.42-1_amd64.deb' \
   && dpkg -i /tmp/chef.deb \
   && rm -f /tmp/chef.deb
 ADD http://localhost:28569/${DR_TAG}/linux/amd64/rebar /usr/local/bin/rebar

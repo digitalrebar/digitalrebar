@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-set -e
+[[ $DEBUG ]] && set -x
+
 # Requires GOPATH to be set and will use it
 
 branch="$(git symbolic-ref -q HEAD)"

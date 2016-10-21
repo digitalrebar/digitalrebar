@@ -39,7 +39,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   puts "==========================================================="
 
   config.vm.define "client", autostart:false do |client|
-  
+
     client.vm.box = ADMIN_OS_BOX
     client.vm.provider "virtualbox" do |vb|
       vb.memory = SLAVE_RAM

@@ -1,8 +1,8 @@
 #!/bin/bash
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 set -e
-set -x
 set -o pipefail
+[[ $DEBUG ]] && set -x
 
 if [[ -d /usr/local/dev/bin ]]; then
     export PATH="/usr/local/dev/bin:$PATH"

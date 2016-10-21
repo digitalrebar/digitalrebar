@@ -18,7 +18,7 @@ if [[ $first_start ]]; then
 fi
 chmod 400 /etc/goiardi/server.key /etc/goiardi/server.crt /etc/goiardi/*.key
 
-/go/bin/goiardi -c /etc/goiardi/goiardi.conf &
+/usr/local/bin/goiardi -c /etc/goiardi/goiardi.conf &
 
 if [[ $first_start ]]; then
     count=0

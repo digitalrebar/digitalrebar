@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+[[ $DEBUG ]] && set -x
+
 #
 # NOTE: When building on MAC, you must set SWS_LISTEN_ADDR to your docker
 # bridge IP (e.g. 192.168.99.1) and accept the mac firewall port allowance.
@@ -265,13 +267,30 @@ if [[ ${#CONTAINERS_TO_BUILD[@]} == 0 ]]; then
     exit 0
 fi
 
+if [ -z ${GOPATH+x} ]; then
+    echo "Please configure \$GOPATH variable"
+    exit 1
+fi
+
 if ! which sws; then
     go get -u github.com/VictorLowther/sws
+fi
+
+if ! which sws; then
+    echo "Please verify \$GOPTAH/bin is in \$PATH"
+    exit 1
 fi
 
 SWS_LISTEN_ADDR=${SWS_LISTEN_ADDR:-localhost}
 sws -listen ${SWS_LISTEN_ADDR}:28569 -site ../go/bin &
 trap 'kill %1' INT TERM EXIT KILL
+
+# install required go binaries
+binpath="$CONTAINER_DIR/../go/bin/$DR_TAG/linux/amd64"
+mkdir -p "$binpath"
+GOBIN="$binpath" GOOS="linux" GOARCH="amd64" go get github.com/ctdk/goiardi
+GOBIN="$binpath" GOOS="linux" GOARCH="amd64" go get github.com/VictorLowther/intelamt/amttool
+GOBIN="$binpath" GOOS="linux" GOARCH="amd64" go get github.com/VictorLowther/wsman/wscli
 
 for container in $(sort_containers "${!CONTAINERS_TO_BUILD[@]}"); do
     [[ ${BUILT_CONTAINERS[$container]} ]] || build_container "$container" || break
