@@ -261,6 +261,8 @@ class DeploymentsController < ApplicationController
           # collect nodes per deployment
           n = find_key_cap(Node,node["id"], cap("UPDATE","NODE"))
           node["roles"].each { |r| roles[r][:nodes] << n.id }
+          # add profiles
+          n.profiles += (node["profiles"]) if node["profiles"]
           # and put node in deployment if it's not
           if n.deployment_id != deployment.id
             n.deployment_id = deployment.id
@@ -288,6 +290,7 @@ class DeploymentsController < ApplicationController
                                   tenant_id: @current_user.current_tenant_id,
                                   deployment_id: deployment.id,
                                   provider_id: provider.id,
+                                  profiles: node["profiles"]
                                   allocated: false,
                                   alive: false,
                                   system: false,
