@@ -232,6 +232,7 @@ class NodesController < ApplicationController
       params.require(:provider_id)
       params[:tenant_id] ||= @current_user.current_tenant_id
       params[:variant] ||= provider.variant_default
+      params[:profiles] ||= []
       validate_create(params[:tenant_id])
       hints = params[:hints] || {}
       Rails.logger.info("Node create params: #{params.inspect}")
@@ -248,7 +249,8 @@ class NodesController < ApplicationController
                                          :bootenv,
                                          :variant,
                                          :arch,
-                                         :os_family))
+                                         :os_family,
+                                         :profiles))
       # Keep suport for mac and ip hints in short form around for legacy Sledgehammer purposes
       # This kinda-sorta bypasses network cap checking, but it is just too useful.
       default_net = Network.lookup_network(params[:ip]) if params[:ip]
@@ -273,7 +275,7 @@ class NodesController < ApplicationController
       @node = find_key_cap(model,params[:id],cap("UPDATE")).lock!
       ## Add better handling of deployment and tenant changing
       if request.patch?
-        patch(@node,%w{name description target_role_id deployment_id allocated available alive bootenv tenant_id})
+        patch(@node,%w{name description target_role_id deployment_id allocated available alive bootenv tenant_id profiles})
       else
         params[:node_deployment].each { |k,v| params[k] = v } if params.has_key? :node_deployment
         params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
@@ -289,7 +291,8 @@ class NodesController < ApplicationController
                                                :allocated,
                                                :available,
                                                :alive,
-                                               :bootenv))
+                                               :bootenv,
+                                               :profiles))
       end
       validate_update_for(@node)
     end

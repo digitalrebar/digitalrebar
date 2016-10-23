@@ -313,6 +313,7 @@ Rebar::Application.routes.draw do
             get :children
             resources :attribs
           end
+          resources :profiles
           resources :roles do
             collection do
               get 'sample'

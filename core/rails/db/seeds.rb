@@ -120,7 +120,12 @@ ActiveRecord::Base.transaction do
    [ "BARCLAMP_CREATE",      "Create Barclamp" ],
    [ "BARCLAMP_READ",        "Read Barclamp" ],
    [ "BARCLAMP_UPDATE",      "Update Barclamp" ],
-   [ "BARCLAMP_DESTROY",     "Destroy Barclamp" ]
+   [ "BARCLAMP_DESTROY",     "Destroy Barclamp" ],
+
+   [ "PROFILE_CREATE",      "Create Profile" ],
+   [ "PROFILE_READ",        "Read Profile" ],
+   [ "PROFILE_UPDATE",      "Update Profile" ],
+   [ "PROFILE_DESTROY",     "Destroy Profile" ]
   ].each do |row|
     Capability.find_or_create_by!(name: row[0], description: row[1], source: "rebar-api")
   end

@@ -41,8 +41,9 @@ type Node struct {
 	// "linux", "freebsd", "windows", etc.
 	OsFamily string `json:"os_family"`
 	// The ID of the provider that is responsible for node provisioning.
-	ProviderID int64 `json:"provider_id"`
-	TenantID   int64 `json:"tenant_id,omitempty"`
+	ProviderID int64    `json:"provider_id"`
+	TenantID   int64    `json:"tenant_id,omitempty"`
+	Profiles   []string `json:"profiles"`
 }
 
 func (o *Node) ApiName() string {
