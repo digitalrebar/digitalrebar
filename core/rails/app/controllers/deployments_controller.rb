@@ -290,7 +290,7 @@ class DeploymentsController < ApplicationController
                                   tenant_id: @current_user.current_tenant_id,
                                   deployment_id: deployment.id,
                                   provider_id: provider.id,
-                                  profiles: node["profiles"]
+                                  profiles: node["profiles"],
                                   allocated: false,
                                   alive: false,
                                   system: false,
