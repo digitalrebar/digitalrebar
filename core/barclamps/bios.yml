@@ -33,6 +33,7 @@ roles:
       - rebar-managed-node
     requires:
       - provisioner-service
+      - rebar-inventory
     attribs:
       - name: bios-set-mapping
         map: 'bios/set_mapping'
