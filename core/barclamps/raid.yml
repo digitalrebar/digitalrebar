@@ -90,6 +90,7 @@ roles:
     preceeds:
       - rebar-managed-node
     requires:
+      - rebar-inventory
       - raid-tools-install
     attribs:
       - name: raid-detected-controllers
