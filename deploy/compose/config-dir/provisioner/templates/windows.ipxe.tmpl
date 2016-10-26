@@ -1,0 +1,9 @@
+#!ipxe
+
+kernel {{.Env.PathFor "http" .Env.Kernel}} {{.BootParams}}
+imgfetch {{.Env.PathFor "http" "boot/bcd"}}                     BCD
+imgfetch {{.Env.PathFor "http" "boot/boot.sdi"}}                boot.sdi
+imgfetch {{.Env.PathFor "http" "sources/boot.wim"}}             boot.wim
+imgstat
+prompt
+boot
