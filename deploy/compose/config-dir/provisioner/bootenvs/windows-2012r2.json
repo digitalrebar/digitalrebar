@@ -1,0 +1,33 @@
+{
+    "Name": "windows-2012r2-install",
+    "TenantId": 1,
+    "OS": {
+        "Name": "windows-2012r2",
+        "IsoFile": "en_windows_server_2012_r2_vl_x64_dvd_3319595.iso",
+        "IsoSha256": "306b2176906da6677f8ea0a112776f5977a668e99022e8379b63349db92ce5b6"
+    },
+    "Kernel": "wimboot",
+    "Initrds": [ "boot/bcd", "boot/boot.sdi", "sources/boot.wim" ],
+    "BootParams": "pause",
+    "RequiredParams": [
+        "logging_servers",
+        "ntp_servers",
+        "operating-system-disk",
+        "provisioner-default-password-hash",
+        "proxy-servers",
+        "rebar-access_keys",
+        "rebar-machine_key"
+    ],
+    "Templates": [
+        {
+            "Name": "pxelinux",
+            "Path": "pxelinux.cfg/{{.Machine.HexAddress}}",
+            "UUID": "windows.pxelinux.tmpl"
+        },
+        {
+            "Name": "ipxe",
+            "Path": "{{.Machine.Address}}.ipxe",
+            "UUID": "windows.ipxe.tmpl"
+        }
+    ]
+}

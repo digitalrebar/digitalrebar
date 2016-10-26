@@ -119,21 +119,24 @@ class UsersController < ApplicationController
   end
 
   def digest_password
-    @user = find_key_cap(model, params[:id], cap("READ_DIGEST"))
+    @user = User.find_key(params[:id])
+    @user = find_key_cap(model, params[:id],cap("READ_DIGEST")) if @user.id != current_user.id
     render api_show @user.encrypted_password
   end
 
   def capabilities
     data = {}
     model.transaction do
-      @user = find_key_cap(model, params[:id], cap("READ_CAPABILITIES"))
+      @user = User.find_key(params[:id])
+      @user = find_key_cap(model, params[:id],cap("READ_CAPABILITIES")) if @user.id != current_user.id
       data = @user.cap_map
     end
     render json: data
   end
 
   def show
-    @user = find_key_cap(model, params[:id], cap("READ"))
+    @user = User.find_key(params[:id])
+    @user = find_key_cap(model, params[:id],cap("READ")) if @user.id != current_user.id
     respond_to do |format|
       format.html { } # show.html.erb
       format.json { render api_show @user }

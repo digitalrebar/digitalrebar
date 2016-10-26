@@ -12,11 +12,12 @@ ADD http://localhost:28569/${DR_TAG}/linux/amd64/provisioner-mgmt /usr/local/bin
 ADD http://localhost:28569/${DR_TAG}/linux/amd64/sign-it /usr/local/bin/
 ADD https://s3-us-west-2.amazonaws.com/rackn-busybox/busybox /tmp/busybox
 ADD http://downloads.sourceforge.net/project/elilo/elilo/elilo-3.16/elilo-3.16-all.tar.gz /tmp/elilo.tar.gz
-ADD  https://www.kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.xz /tmp/syslinux-6.03.tar.xz
+ADD https://s3.amazonaws.com/opencrowbar/provisioner/syslinux-6.03.tar.xz /tmp/syslinux-6.03.tar.xz
 # for esxi
-ADD https://www.kernel.org/pub/linux/utils/boot/syslinux/3.xx/syslinux-3.86.tar.xz /tmp/syslinux-3.86.tar.xz
+ADD https://s3.amazonaws.com/opencrowbar/provisioner/syslinux-3.86.tar.xz /tmp/syslinux-3.86.tar.xz
 ADD http://boot.ipxe.org/ipxe.efi /tmp/ipxe.efi
-ADD  http://boot.ipxe.org/ipxe.pxe /tmp/ipxe.pxe
+ADD http://boot.ipxe.org/ipxe.pxe /tmp/ipxe.pxe
+ADD https://git.ipxe.org/releases/wimboot/wimboot-2.5.2.tar.bz2 /tmp/wimboot-2.5.2.tar.bz2
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 COPY start-up.sh udhcpc_config stage1_init /tmp/
 COPY explode_iso.sh /
@@ -26,8 +27,8 @@ RUN mkdir -p /opt/provisioner-mgmt
 RUN chmod 755 /usr/local/bin/*
 
 # Set our command
-ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
+ENTRYPOINT ["/sbin/docker-entrypoint.sh"]       
 
 # Get Latest Go
-RUN apt-get -y update && apt-get -y install bsdtar createrepo xz-utils unzip bsdmainutils
+RUN apt-get -y update && apt-get -y install bsdtar createrepo xz-utils unzip bsdmainutils p7zip-full
 RUN apt-get -y purge make build-essential
