@@ -32,6 +32,7 @@ type Client struct {
 	*http.Client
 	Challenge    challenge
 	URL          string
+	User         *User
 	trusted      bool
 	objPathCache map[string]string
 	ocMutex      sync.Mutex
@@ -134,6 +135,7 @@ func TrustedSession(username string, wait bool) (*Client, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Failed to fetch capability map for user %s: %v", username, err)
 		}
+		res.User = user
 		challenge.caps = caps
 		return res, nil
 	}
@@ -142,7 +144,7 @@ func TrustedSession(username string, wait bool) (*Client, error) {
 // Session establishes a new connection to Rebar.  You must cal
 // this function before using any other functions in the rebar
 // package.  Session stores its information in a private global variable.
-func Session(URL, User, Password string) (*Client, error) {
+func Session(URL, username, Password string) (*Client, error) {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
@@ -164,12 +166,12 @@ func Session(URL, User, Password string) (*Client, error) {
 	// We may be SAML Auth
 	if resp.StatusCode == 200 {
 		c.Challenge = &challengeSAML{
-			Username: User,
+			Username: username,
 			Password: Password,
 		}
 	} else {
 		c.Challenge = &challengeDigest{
-			Username: User,
+			Username: username,
 			Password: Password,
 		}
 	}
@@ -177,6 +179,10 @@ func Session(URL, User, Password string) (*Client, error) {
 	err := c.Challenge.parseChallenge(resp)
 	if err != nil {
 		return nil, err
+	}
+	c.User = &User{}
+	if err := c.Fetch(c.User, username); err != nil {
+		return nil, fmt.Errorf("Unable to verify existence of %s user: %v", username, err)
 	}
 	return c, nil
 }

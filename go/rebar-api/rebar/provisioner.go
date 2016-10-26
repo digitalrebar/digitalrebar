@@ -169,6 +169,7 @@ func init() {
 			if session.SetId(obj, args[2]) != nil {
 				log.Fatalf("Failed to parse ID %v for a provisioner template", args[2])
 			}
+			obj.TenantId = int(session.User.CurrentTenantID)
 			buf, err := ioutil.ReadFile(args[0])
 			if err != nil {
 				log.Fatalf("Unable to read %s: %v", args[0], err)
