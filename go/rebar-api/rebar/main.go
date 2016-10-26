@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -82,7 +83,7 @@ func makeCommandTree(singularName string,
 		Use:   name,
 		Short: fmt.Sprintf("Access CLI commands relating to %v", name),
 	}
-	commands := make([]*cobra.Command, 8)
+	commands := make([]*cobra.Command, 9)
 	commands[0] = &cobra.Command{
 		Use:   "list",
 		Short: fmt.Sprintf("List all %v", name),
@@ -143,12 +144,23 @@ func makeCommandTree(singularName string,
 	commands[4] = &cobra.Command{
 		Use:   "create [json]",
 		Short: fmt.Sprintf("Create a new %v with the passed-in JSON", singularName),
+		Long:  `As a useful shortcut, you can pass '-' to indicate that the JSON should be read from stdin`,
 		Run: func(c *cobra.Command, args []string) {
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument\n", c.UseLine())
 			}
+			var buf []byte
+			var err error
+			if args[0] == "-" {
+				buf, err = ioutil.ReadAll(os.Stdin)
+				if err != nil {
+					log.Fatalf("Error reading from stdin: %v", err)
+				}
+			} else {
+				buf = []byte(args[0])
+			}
 			obj := maker()
-			if err := session.Import(obj, []byte(args[0])); err != nil {
+			if err := session.Import(obj, buf); err != nil {
 				log.Fatalf("Unable to create new %v: %v\n", singularName, err)
 			}
 			fmt.Println(prettyJSON(obj))
@@ -157,6 +169,7 @@ func makeCommandTree(singularName string,
 	commands[5] = &cobra.Command{
 		Use:   "update [id] [json]",
 		Short: fmt.Sprintf("Unsafely update %v by id with the passed-in JSON", singularName),
+		Long:  `As a useful shortcut, you can pass '-' to indicate that the JSON should be read from stdin`,
 		Run: func(c *cobra.Command, args []string) {
 			if len(args) != 2 {
 				log.Fatalf("%v requires 2 arguments\n", c.UseLine())
@@ -165,7 +178,18 @@ func makeCommandTree(singularName string,
 			if err := session.Fetch(obj, args[0]); err != nil {
 				log.Fatalf("Failed to fetch %v\n%v\n", singularName, err)
 			}
-			if err := session.UpdateJSON(obj, []byte(args[1])); err != nil {
+			var buf []byte
+			var err error
+			if args[1] == "-" {
+				buf, err = ioutil.ReadAll(os.Stdin)
+				if err != nil {
+					log.Fatalf("Error reading from stdin: %v", err)
+				}
+			} else {
+				buf = []byte(args[1])
+			}
+
+			if err := session.UpdateJSON(obj, buf); err != nil {
 				log.Fatalf("Unable to patch %v\n%v\n", args[0], err)
 			}
 
@@ -216,6 +240,20 @@ func makeCommandTree(singularName string,
 				log.Fatalf("Unable to destroy %v %v\nError: %v\n", singularName, args[0], err)
 			}
 			fmt.Printf("Deleted %v %v\n", singularName, args[0])
+		},
+	}
+	commands[8] = &cobra.Command{
+		Use:   "exists [id]",
+		Short: fmt.Sprintf("See if a %v exists by id", singularName),
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 1 {
+				log.Fatalf("%v requires 1 argument\n", c.UseLine())
+			}
+			obj := maker()
+			if err := session.Fetch(obj, args[0]); err != nil {
+				log.Fatalf("Failed to fetch %v: %v\n%v\n", singularName, args[0], err)
+			}
+			os.Exit(0)
 		},
 	}
 

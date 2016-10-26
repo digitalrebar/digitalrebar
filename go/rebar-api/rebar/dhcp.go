@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
@@ -40,6 +42,7 @@ func init() {
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument", c.UseLine())
 			}
+
 			obj := &api.DhcpSubnet{}
 			if err := session.Fetch(obj, args[0]); err != nil {
 				log.Fatalf("Failed to fetch dhcp boot environment %v: %v", args[0], err)
@@ -54,8 +57,18 @@ func init() {
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument", c.UseLine())
 			}
+			var buf []byte
+			var err error
+			if args[0] == "-" {
+				buf, err = ioutil.ReadAll(os.Stdin)
+				if err != nil {
+					log.Fatalf("Error reading from stdin: %v", err)
+				}
+			} else {
+				buf = []byte(args[0])
+			}
 			obj := &api.DhcpSubnet{}
-			if err := session.Import(obj, []byte(args[0])); err != nil {
+			if err := session.Import(obj, buf); err != nil {
 				log.Fatalf("Unable to create new subnet: %v", err)
 			}
 			fmt.Println(prettyJSON(obj))
@@ -68,11 +81,21 @@ func init() {
 			if len(args) != 2 {
 				log.Fatalf("%v requires 2 arguments", c.UseLine())
 			}
+			var buf []byte
+			var err error
+			if args[1] == "-" {
+				buf, err = ioutil.ReadAll(os.Stdin)
+				if err != nil {
+					log.Fatalf("Error reading from stdin: %v", err)
+				}
+			} else {
+				buf = []byte(args[1])
+			}
 			obj := &api.DhcpSubnet{}
 			if err := session.Fetch(obj, args[0]); err != nil {
 				log.Fatalf("Failed to fetch subnet: %v", err)
 			}
-			if err := session.UpdateJSON(obj, []byte(args[1])); err != nil {
+			if err := session.UpdateJSON(obj, buf); err != nil {
 				log.Fatalf("Unable to patch subnet %v: %v", args[0], err)
 			}
 			fmt.Println(prettyJSON(obj))
