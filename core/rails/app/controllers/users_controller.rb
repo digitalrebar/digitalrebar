@@ -120,7 +120,7 @@ class UsersController < ApplicationController
 
   def digest_password
     @user = User.find_key(params[:id])
-    @user = find_key_cap(model, params[:id],cap("UPDATE")) if @user.id != current_user.id
+    @user = find_key_cap(model, params[:id],cap("READ_DIGEST")) if @user.id != current_user.id
     render api_show @user.encrypted_password
   end
 
@@ -128,7 +128,7 @@ class UsersController < ApplicationController
     data = {}
     model.transaction do
       @user = User.find_key(params[:id])
-      @user = find_key_cap(model, params[:id],cap("UPDATE")) if @user.id != current_user.id
+      @user = find_key_cap(model, params[:id],cap("READ_CAPABILITIES")) if @user.id != current_user.id
       data = @user.cap_map
     end
     render json: data
@@ -136,7 +136,7 @@ class UsersController < ApplicationController
 
   def show
     @user = User.find_key(params[:id])
-    @user = find_key_cap(model, params[:id],cap("UPDATE")) if @user.id != current_user.id
+    @user = find_key_cap(model, params[:id],cap("READ")) if @user.id != current_user.id
     respond_to do |format|
       format.html { } # show.html.erb
       format.json { render api_show @user }
