@@ -51,14 +51,38 @@ func init() {
 		},
 	})
 	bootEnv.AddCommand(&cobra.Command{
+		Use:   "exists [name]",
+		Short: "Test to see if the provisioner boot environment with the specific name exists",
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 1 {
+				log.Fatalf("%v requires 1 argument", c.UseLine())
+			}
+			obj := &api.ProvisionerBootEnv{}
+			if err := session.Fetch(obj, args[0]); err != nil {
+				log.Fatalf("Failed to fetch provisioner boot environment %v: %v", args[0], err)
+			}
+			os.Exit(0)
+		},
+	})
+	bootEnv.AddCommand(&cobra.Command{
 		Use:   "create [json]",
 		Short: "Create a new provisioner boot environment with the passed-in JSON",
 		Run: func(c *cobra.Command, args []string) {
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument", c.UseLine())
 			}
+			var buf []byte
+			var err error
+			if args[0] == "-" {
+				buf, err = ioutil.ReadAll(os.Stdin)
+				if err != nil {
+					log.Fatalf("Error reading from stdin: %v", err)
+				}
+			} else {
+				buf = []byte(args[0])
+			}
 			obj := &api.ProvisionerBootEnv{}
-			if err := session.Import(obj, []byte(args[0])); err != nil {
+			if err := session.Import(obj, buf); err != nil {
 				log.Fatalf("Unable to create new boot environment: %v", err)
 			}
 			fmt.Println(prettyJSON(obj))
@@ -71,11 +95,21 @@ func init() {
 			if len(args) != 2 {
 				log.Fatalf("%v requires 2 arguments", c.UseLine())
 			}
+			var buf []byte
+			var err error
+			if args[1] == "-" {
+				buf, err = ioutil.ReadAll(os.Stdin)
+				if err != nil {
+					log.Fatalf("Error reading from stdin: %v", err)
+				}
+			} else {
+				buf = []byte(args[1])
+			}
 			obj := &api.ProvisionerBootEnv{}
 			if err := session.Fetch(obj, args[0]); err != nil {
 				log.Fatalf("Failed to fetch boot environment: %v", err)
 			}
-			if err := session.UpdateJSON(obj, []byte(args[1])); err != nil {
+			if err := session.UpdateJSON(obj, buf); err != nil {
 				log.Fatalf("Unable to patch boot environment %v: %v", args[0], err)
 			}
 			fmt.Println(prettyJSON(obj))
@@ -130,6 +164,20 @@ func init() {
 		},
 	})
 	template.AddCommand(&cobra.Command{
+		Use:   "exists [uuid]",
+		Short: "Test to see if the provisioner template with the specific uuid exists",
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 1 {
+				log.Fatalf("%v requires 1 argument", c.UseLine())
+			}
+			obj := &api.ProvisionerTemplate{}
+			if err := session.Fetch(obj, args[0]); err != nil {
+				log.Fatalf("Failed to fetch provisioner template %v: %v", args[0], err)
+			}
+			os.Exit(0)
+		},
+	})
+	template.AddCommand(&cobra.Command{
 		Use:   "dump [uuid]",
 		Short: "Show the provisioner template with the specific name as raw text",
 		Run: func(c *cobra.Command, args []string) {
@@ -151,8 +199,18 @@ func init() {
 			if len(args) != 1 {
 				log.Fatalf("%v requires 1 argument", c.UseLine())
 			}
+			var buf []byte
+			var err error
+			if args[0] == "-" {
+				buf, err = ioutil.ReadAll(os.Stdin)
+				if err != nil {
+					log.Fatalf("Error reading from stdin: %v", err)
+				}
+			} else {
+				buf = []byte(args[0])
+			}
 			obj := &api.ProvisionerTemplate{}
-			if err := session.Import(obj, []byte(args[0])); err != nil {
+			if err := session.Import(obj, buf); err != nil {
 				log.Fatalf("Unable to create new template: %v", err)
 			}
 			fmt.Println(prettyJSON(obj))
@@ -160,7 +218,7 @@ func init() {
 	})
 	template.AddCommand(&cobra.Command{
 		Use:   "upload [file] as [uuid]",
-		Short: "Upload a template from the local filesystem, and give it the uuid",
+		Short: "Upload a template from the local filesystem (or stdin if -), and give it the uuid",
 		Run: func(c *cobra.Command, args []string) {
 			if len(args) != 3 {
 				log.Fatalf("%v requires 2 arguments", c.UseLine())
@@ -170,7 +228,13 @@ func init() {
 				log.Fatalf("Failed to parse ID %v for a provisioner template", args[2])
 			}
 			obj.TenantId = int(session.User.CurrentTenantID)
-			buf, err := ioutil.ReadFile(args[0])
+			var buf []byte
+			var err error
+			if args[0] == "-" {
+				buf, err = ioutil.ReadAll(os.Stdin)
+			} else {
+				buf, err = ioutil.ReadFile(args[0])
+			}
 			if err != nil {
 				log.Fatalf("Unable to read %s: %v", args[0], err)
 			}
@@ -188,11 +252,21 @@ func init() {
 			if len(args) != 2 {
 				log.Fatalf("%v requires 2 arguments", c.UseLine())
 			}
+			var buf []byte
+			var err error
+			if args[1] == "-" {
+				buf, err = ioutil.ReadAll(os.Stdin)
+				if err != nil {
+					log.Fatalf("Error reading from stdin: %v", err)
+				}
+			} else {
+				buf = []byte(args[1])
+			}
 			obj := &api.ProvisionerTemplate{}
 			if err := session.Fetch(obj, args[0]); err != nil {
 				log.Fatalf("Failed to fetch template: %v", err)
 			}
-			if err := session.UpdateJSON(obj, []byte(args[1])); err != nil {
+			if err := session.UpdateJSON(obj, buf); err != nil {
 				log.Fatalf("Unable to patch template %v: %v", args[0], err)
 			}
 			fmt.Println(prettyJSON(obj))
