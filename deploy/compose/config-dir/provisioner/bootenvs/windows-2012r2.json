@@ -3,11 +3,11 @@
     "TenantId": 1,
     "OS": {
         "Name": "windows-2012r2",
-        "IsoFile": "en_windows_server_2012_r2_vl_x64_dvd_3319595.iso",
-        "IsoSha256": "306b2176906da6677f8ea0a112776f5977a668e99022e8379b63349db92ce5b6"
+        "IsoFile": "rebar-win2012r2.iso",
+        "IsoSha256": "7e413b107d80cc0f16e289e5c1aba22751eb01d713de48a5cf08f7f35fdc8e12"
     },
     "Kernel": "wimboot",
-    "Initrds": [ "boot/bcd", "boot/boot.sdi", "sources/boot.wim" ],
+    "Initrds": [ "boot/bcd", "boot/boot.sdi", "rebar-winpe.wim" ],
     "BootParams": "pause",
     "RequiredParams": [
         "logging_servers",
