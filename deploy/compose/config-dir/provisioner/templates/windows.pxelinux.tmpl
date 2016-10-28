@@ -1,4 +1,4 @@
 DEFAULT wimbootpe
 LABEL wimbootpe
      com32 linux.c32 {{.Env.PathFor "tftp" .Env.Kernel}}
-     append initrdfile={{.Env.PathFor "tftp" "bcd"}}@BCD,{{.Env.PathFor "tftp" "boot/boot.sdi"}},{{.Env.PathFor "tftp" "sources/boot.wim"}}
+     append initrdfile={{.Env.PathFor "tftp" "bcd"}}@BCD,{{.Env.PathFor "tftp" "boot/boot.sdi"}},{{.Env.PathFor "tftp" "sources/rebar-winpe.wim"}}@boot.wim

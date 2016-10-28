@@ -16,7 +16,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-var machineKey, fileRoot, provisionerURL, commandURL string
+var machineKey, fileRoot, provisionerURL, commandURL, ourAddress string
 var backEndType string
 var apiPort, staticPort, tftpPort int
 var backend storageBackend
@@ -141,7 +141,7 @@ func main() {
 			continue
 		}
 
-		ourAddress, _ := service.Address(svc[0])
+		ourAddress, _ = service.Address(svc[0])
 		provisionerURL = fmt.Sprintf("http://%s:%d", ourAddress, staticPort)
 		break
 	}
