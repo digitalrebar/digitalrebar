@@ -30,5 +30,7 @@ RUN chmod 755 /usr/local/bin/*
 ENTRYPOINT ["/sbin/docker-entrypoint.sh"]       
 
 # Get Latest Go
-RUN apt-get -y update && apt-get -y install bsdtar createrepo xz-utils unzip bsdmainutils p7zip-full
+RUN apt-get -y update && apt-get -y install bsdtar createrepo xz-utils unzip bsdmainutils p7zip-full samba
 RUN apt-get -y purge make build-essential
+
+COPY smb.conf /etc/samba/smb.conf

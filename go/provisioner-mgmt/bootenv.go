@@ -31,6 +31,10 @@ type RenderData struct {
 	TenantId       int      // The Tenant that this BootEnv belongs in
 }
 
+func (r *RenderData) ProvisionerAddress() string {
+	return ourAddress
+}
+
 // BootParams is a helper function that expands the BootParams
 // template from the boot environment.
 func (r *RenderData) BootParams() (string, error) {
