@@ -21,7 +21,6 @@ mkdir -p vendor_src
 glide i
 
 arches=("amd64")
-oses=("linux" "darwin")
 packages=("github.com/digitalrebar/digitalrebar/go/certificates/sign-it"
 	  "github.com/digitalrebar/digitalrebar/go/certificates/trust-me"
 	  "github.com/digitalrebar/digitalrebar/go/rebar-dhcp"
@@ -31,12 +30,15 @@ packages=("github.com/digitalrebar/digitalrebar/go/certificates/sign-it"
 	  "github.com/digitalrebar/digitalrebar/go/rebar-api/rebar"
 	  "github.com/digitalrebar/digitalrebar/go/forwarder"
 	  "github.com/digitalrebar/digitalrebar/go/provisioner-mgmt")
+declare -A oses
+oses["github.com/digitalrebar/digitalrebar/go/rebar-api/rebar"]="linux darwin windows"
 
 for arch in "${arches[@]}"; do
-    for os in "${oses[@]}"; do
-        binpath="bin/$DR_TAG/$os/$arch"
-        mkdir -p "$binpath"
-        for pkg in "${packages[@]}"; do
+    for pkg in "${packages[@]}"; do
+        for os in ${oses[$pkg]:-linux}; do
+            echo "Building ${pkg##*/} for ${arch} ${os}"
+            binpath="bin/$DR_TAG/$os/$arch"
+            mkdir -p "$binpath"
             GOOS="$os" GOARCH="$arch" go build -o "${binpath}/${pkg##*/}" "$pkg"
         done
     done
