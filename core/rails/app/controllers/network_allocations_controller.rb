@@ -59,7 +59,7 @@ class NetworkAllocationsController < ::ApplicationController
                 find_key_cap(Node, params[:node_id] || params[:node], cap("READ","NODE")).
                   network_allocations.visible(cap("READ"),@current_user.id)
               else
-                visble(model,cap("READ"))
+                visible(model,cap("READ"))
               end
     end
     respond_to do |format|
