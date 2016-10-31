@@ -28,6 +28,11 @@
             "Name": "ipxe",
             "Path": "{{.Machine.Address}}.ipxe",
             "UUID": "windows.ipxe.tmpl"
+        },
+        {
+            "Name": "start-install",
+            "Path": "{{.Machine.Path}}/stage1.ps1",
+            "UUID": "stage1.cmd.tmpl"
         }
     ]
 }
