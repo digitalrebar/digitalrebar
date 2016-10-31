@@ -17,6 +17,24 @@ class NodesController < ApplicationController
   self.model = Node
   self.cap_base = "NODE"
 
+  def whoami
+    # For now, don't bother using the mac addresses
+    # macs = params[:macs] || []
+    Rails.logger.warn("Addrs: #{params[:addrs]}")
+    addrs = params[:addrs] || []
+    res = Node.where(["hint #>> '{provider,control_address}' in (?)",addrs])
+    if res.length == 1
+      render api_show(res[0])
+    else
+      # Giess based on connection information
+      Rails.logger.warn("X-Forwarded-For: #{request.headers["X-Forwarded-For"]}")
+      Rails.logger.warn("Remote IP: #{request.remote_ip}")
+      src = request.headers["X-Forwarded-For"]
+      src ||= request.remote_ip
+      render api_show(NetworkAllocation.find_key(src).node)
+    end
+  end
+
   # We allow nodes to match on arbitrary node-bound attribs
   # as well as native model attributes.
   # This makes simple API queries easier to express

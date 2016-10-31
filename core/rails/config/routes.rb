@@ -278,6 +278,7 @@ Rebar::Application.routes.draw do
             collection do
               get 'sample'
               post 'match'
+              post :whoami
             end
             resources :node_roles
             resources :hammers

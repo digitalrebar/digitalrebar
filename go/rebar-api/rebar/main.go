@@ -287,23 +287,22 @@ func main() {
 			}
 		}
 	}
-	vers := &cobra.Command{
+	app.AddCommand(&cobra.Command{
 		Use:   "version",
 		Short: "Rebar CLI Command Version",
 		Run: func(cmd *cobra.Command, args []string) {
 			log.Printf("Version: %v", version)
 		},
-	}
-
-	ping := &cobra.Command{
+	})
+	app.AddCommand(&cobra.Command{
 		Use:   "ping",
 		Short: "Test to see if we can connect to the Rebar API endpoint",
 		Run: func(cmd *cobra.Command, args []string) {
 			log.Printf("Able to connect to Rebar at %v (user: %v)", endpoint, username)
 		},
-	}
+	})
 
-	converge := &cobra.Command{
+	app.AddCommand(&cobra.Command{
 		Use:   "converge [deployment]",
 		Short: "Wait for all the noderoles to become active (optionally by deployment), and fail if any error out",
 		Run: func(c *cobra.Command, args []string) {
@@ -339,10 +338,17 @@ func main() {
 				time.Sleep(10 * time.Second)
 			}
 		},
-	}
-	app.AddCommand(converge)
-	app.AddCommand(ping)
-	app.AddCommand(vers)
-
+	})
+	app.AddCommand(&cobra.Command{
+		Use:   "whoami",
+		Short: "Get node information for this node if it is found",
+		Run: func(c *cobra.Command, args []string) {
+			res, err := api.Whoami(session)
+			if err != nil {
+				log.Fatalf("Cannot determine what node this is: %v", err)
+			}
+			fmt.Println(prettyJSON(res))
+		},
+	})
 	app.Execute()
 }
