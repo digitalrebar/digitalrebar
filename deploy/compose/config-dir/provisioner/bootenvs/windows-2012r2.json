@@ -4,11 +4,11 @@
     "OS": {
         "Name": "windows-2012r2",
         "IsoFile": "rebar-win2012r2.iso",
-        "IsoSha256": "7e413b107d80cc0f16e289e5c1aba22751eb01d713de48a5cf08f7f35fdc8e12"
+        "IsoSha256": "8ce9f9b23aaf397913d927c7fda3343d411f6846ef7b94f29b51108e95c46f6e"
     },
     "Kernel": "wimboot",
     "Initrds": [ "boot/bcd", "boot/boot.sdi", "rebar-winpe.wim" ],
-    "BootParams": "pause",
+    "BootParams": "",
     "RequiredParams": [
         "logging_servers",
         "ntp_servers",
@@ -16,7 +16,9 @@
         "provisioner-default-password-hash",
         "proxy-servers",
         "rebar-access_keys",
-        "rebar-machine_key"
+        "rebar-machine_key",
+        "operating-system-license-key",
+        "operating-system-install-flavor"
     ],
     "Templates": [
         {
@@ -33,6 +35,11 @@
             "Name": "start-install",
             "Path": "{{.Machine.Path}}/stage1.ps1",
             "UUID": "stage1.cmd.tmpl"
+        },
+        {
+            "Name": "unattend.xml",
+            "Path": "{{.Machine.Path}}/unattend.xml",
+            "UUID": "2012r2-unattend.xml.tmpl"
         }
     ]
 }

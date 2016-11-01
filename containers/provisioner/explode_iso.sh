@@ -44,6 +44,8 @@ case $os_name in
             # Windows needs wimboot, so extract it.  This must be kept in sync with
             # the version of wimboot we have made available in the Dockerfile.
             tar xf /tmp/wimboot-2.5.2.tar.bz2 wimboot-2.5.2/wimboot -O > wimboot
+            # Fix up permissions so things can execute
+            chmod -R 555 .
         )
         ;;
         
