@@ -26,8 +26,15 @@ class BarclampRebar::Jig < Jig
   end
 
   def run(nr,data)
+    # pull metadata from barclamp
+    role_yaml = nr.role.barclamp.metadata || {}
+    # override with role metadata
+    role_yaml.merge! nr.role.metadata
+
     local_scripts = File.join nr.barclamp.source_path, 'script', 'roles', nr.role.name
-    die "No local scripts @ #{local_scripts}" unless File.exists?(local_scripts)
+    if role_yaml['scripts'].nil?
+      die "No local scripts @ #{local_scripts}" unless File.exists?(local_scripts)
+    end
     remote_tmpdir,err,ok = nr.node.ssh("mktemp -d /tmp/scriptjig-XXXXXX")
     remote_tmpdir.strip!
     if remote_tmpdir.empty? || !ok.success?
@@ -38,7 +45,17 @@ class BarclampRebar::Jig < Jig
     File.open(File.join(local_tmpdir,"attrs.json"),"w") do |f|
       JSON.dump(data,f)
     end
-    FileUtils.cp_r(local_scripts,local_tmpdir)
+    if role_yaml['scripts'].nil?
+      FileUtils.cp_r(local_scripts,local_tmpdir)
+    else
+      script_dir = File.join(local_tmpdir, nr.role.name)
+      FileUtils.mkdir_p(script_dir)
+      role_yaml['scripts'].each_with_index do |s, ii|
+        File.open(File.join(script_dir,"%02d-script.sh" % ii),"w") do |f|
+          f.write(s)
+        end
+      end
+    end 
     FileUtils.cp('/opt/digitalrebar/core/script/runner',local_tmpdir)
     out,err,ok = nr.node.scp_to("#{local_tmpdir}/.","#{remote_tmpdir}","-r")
     die("Copy failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?

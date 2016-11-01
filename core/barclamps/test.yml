@@ -24,6 +24,20 @@ barclamp:
   license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
+  - name: test-script-meta
+    jig: script
+    metadata:
+      scripts:
+        - |
+          #!/bin/bash
+          echo "Test hEre 1"
+
+          exit 0
+        - |
+          #!/bin/bash
+          echo "Test hEre 2"
+
+          exit 0
   - name: test-ansible-playbook
     jig: ansible-playbook
     attribs:
