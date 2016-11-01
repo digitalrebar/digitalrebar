@@ -224,6 +224,19 @@ roles:
         schema:
           type: str
           required: true
+      - name: operating-system-license-key
+        description: "The license key that should be used to activate the operating system. Mainly used for RHEL and Windows."
+        map: 'rebar/provisioner/os_license_key'
+        schema:
+          type: str
+          required: false
+      - name: operating-system-install-flavor
+        description: "The flavor of the OS to install.  Mainly used for Windows"
+        map: 'rebar/provisioner/os_flavor'
+        schema:
+          type: str
+          required: false
+
 attribs:
  - name: provisioner-active-bootstate
    description: 'The bootstate that the provisioner last configured the node to use'

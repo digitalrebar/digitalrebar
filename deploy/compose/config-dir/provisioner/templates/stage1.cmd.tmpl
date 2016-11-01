@@ -1,2 +1,15 @@
-Q:\{{.Env.OS.Name}}\install\setup.exe /unattend:Q:\machines\{{.Machine.UUID}}\unattend.xml
+write-host "Starting Windows install..."
+Q:\{{.Env.OS.Name}}\install\setup.exe /noreboot /unattend:Q:\machines\{{.Machine.UUID}}\unattend.xml
 
+
+$setupRunning = $true
+while ($setupRunning) {
+      Start-Sleep -Seconds 10
+      Get-Process -Name setup
+      $setupRunning = $?
+}
+write-host "Updating boot environment"
+rebar nodes update {{.Machine.UUID}} '{""""bootenv"""": """"local""""}'
+
+write-host "Rebooting system"
+Restart-Computer
