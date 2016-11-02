@@ -36,6 +36,16 @@ class BarclampCluster::MakeCa < LocalRole
     if !status.success?
       raise "Error: #{out}\n#{err}\n"
     end
+    runlog << "Success\n#{out}Save Generated Date:"
+    attribname = "#{nr.role.name}-time"
+    begin
+      # add the time to the node role
+      gendate = Time.now.to_s
+      Attrib.set(attribname, nr, gendate)
+      runlog << "Generated at `#{gendate}`.\n"
+    rescue
+      runlog << "NOTE: No `#{attribname}` attribute for #{nr.name}, not saving file time value.\nRUNLOG:\n#{runlog}\n"
+    end
     runlog << "Success\n#{out}"
     nr.runlog = runlog.join("")
     nr.save!
