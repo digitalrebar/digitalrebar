@@ -1,0 +1,57 @@
+# Windows 2012 R2 Image Support #
+
+This directory contains the utility scripts and profiles needed to
+enable Digital Rebar to install Windows 2012 R2 on to managed hosts.
+
+## Supported Windows 2012 R2 Image Flavors ##
+
+* Windows 2012 R2 Standard 
+* Windows 2012 R2 Standard Core
+* Windows 2012 R2 Datacenter
+* Windows 2012 R2 Datacenter Core
+
+## Prerequisites Required to Create Image ##
+
+* A Windows 7, 8, 10 or Server 2008R2, 2012, or 2012R2 system to act
+  as a technician workstation.
+* The technician workstation must have the Windows 8.1 AIK installed
+  to the default location.  You can download the AIK from:
+  https://www.microsoft.com/en-us/download/details.aspx?id=39982
+* A Windows 2012 R2 install ISO image.  You can download evaluation
+  images from:
+  https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2012-r2
+* Any drivers needed to install Windows on the target systems.
+
+## Procedure for creating a Rebar-compatible Windows install image ##
+
+All these steps should take place on the technician workstation, and
+assume that the user is logged in to the Administrator account.  They
+also assume that you are working from
+C:\Users\Administrator\Desktop\2012r2, and they will refer to it as `2012r2`.
+They will also refer to the downloaded Windows ISO as `winsrc.iso`
+
+* Ensure you have `winsrc.iso` in `2012r2`.
+
+* Copy any drivers that are required to install Windows on your target hardware 
+  into 2012r2/Drivers.  You can copy any number of drivers into that directory,
+  as long as they are for Windows 2012r2 amd64.  The drivers must be expanded -- 
+  they should have the .inf and .sys files, and there should be one driver per 
+  directory under the Drivers directory.  The drivers will be installed by the
+  Add-WindowsDriver powershell cmdlet -- see the documentation for that cmdlet
+  if you encounter any difficulties.  If you will be testing in a VM, you will
+  need to include the appropriate drivers.  For KVM or Xen-based vms, the 
+  virtio drivers from https://fedoraproject.org/wiki/Windows_Virtio_Drivers
+  will come in handy.
+  
+* Ensure that the `build-2012r2-iso.ps1` command from this directory is
+  present in `2012r2`.
+  
+* Open a command prompt, and cd into `2012r2`.
+
+* Run the following command:
+  `powershell -executionpolicy bypass build-2012r2-iso.ps1 winsrc.iso`
+  
+  This command will take several minutes to finish, and at the end you
+  will have an ISO named `rebar-windows-2012r2.iso` and a checksup
+  file named `rebar-windows-2012r2.iso.sha256sum`.
+
