@@ -67,12 +67,66 @@ if(!$adk) {
     write-host "Found ADK for Windows 8.1 in the default install location."
 }
 
-
 # Set some basic location information 
 $cwd    = get-currentdirectory
 $output = join-path $cwd "rebar-winpe"
 $mount  = join-path $cwd "rebar-winpe-mount"
 $srcisoloc = $cwd + '\' + $srcisoname
+
+# Download a current copy of the rebar CLI
+# Download the Rebar CLI and place it in the winpe image
+write-host "Downloading current copy of the Rebar CLI"
+Invoke-WebRequest -Uri 'https://s3-us-west-2.amazonaws.com/rebar-bins/master/windows/amd64/rebar' -Outfile "${cwd}\rebar.exe"
+
+$authenticated = $false
+
+while (!$authenticated) {
+    if (!$env:REBAR_ENDPOINT) {
+        $endpoint = read-host -Prompt "Enter the URL of the Rebar admin node: "
+        [Environment]::SetEnvironmentVariable("REBAR_ENDPOINT", $endpoint, "User")
+        $env:REBAR_ENDPOINT = [Environment]::GetEnvironmentVariable("REBAR_ENDPOINT", "User")
+        write-host $REBAR_ENDPOINT
+    }
+
+    if (!$env:REBAR_KEY) {
+        $username = read-host -Prompt "Enter your Rebar username: "
+        $password = read-host -Prompt "Enter your Rebar password: "
+        [Environment]::SetEnvironmentVariable("REBAR_KEY", "${username}:${password}", "User")
+        $env:REBAR_KEY = [Environment]::GetEnvironmentVariable("REBAR_KEY", "User")
+        write-host $env:REBAR_KEY
+    }
+    & .\rebar.exe ping
+    $authenticated = ($LASTEXITCODE -eq 0)
+    if (!$authenticated) {
+        Remove-Item Env:\REBAR_ENDPOINT
+        Remove-Item Env:\REBAR_KEY
+        [Environment]::SetEnvironmentVariable("REBAR_KEY", $null, "User")
+        [Environment]::SetEnvironmentVariable("REBAR_ENDPOINT", $null, "User")
+    }
+}
+
+# Get the machine-install key
+$keyattr = (& .\rebar.exe deployments get system attrib rebar-machine_key) |
+  out-string |
+  convertfrom-json
+
+if (-Not $keyattr -Or -Not $keyattr.value) {
+    write-error "Unable to retrieve the machine key from Rebar"
+    exit 1
+}
+
+$machine_key = $keyattr.value
+
+# Get the address of the provisioner
+$provisionerattr = (& .\rebar.exe deployments get system attrib provisioner-webservers) |
+  out-string |
+  convertfrom-json
+
+if (-Not $provisionerattr -Or -Not $provisionerattr.value) {
+    write-error "Unable to retrieve the provisioner address from Rebar"
+    exit 1
+}
+$provisioner_address = $provisionerattr.value[0].address
 
 #Check for and mount the source iso
 if(check-validisoname $srcisoname) {
@@ -183,47 +237,38 @@ $drivers  = join-path $cwd "Drivers"
 Add-WindowsDriver -Path $mount -Driver "$drivers" -Recurse
 Copy-Item $drivers $mount
 
-# Download the Rebar CLI and place it in the winpe image
-write-host "Adding Rebar CLI to the WinPE Image"
-Invoke-WebRequest -Uri 'https://s3-us-west-2.amazonaws.com/rebar-bins/master/windows/amd64/rebar' -Outfile "${mount}\Windows\rebar.exe"
+Copy-Item (Join-Path $cwd "rebar.exe") (Join-Path $mount "Windows\rebar.exe")
 
 write-host "Writing stage0.ps1 startup script to winpe.wim"
 $file = join-path $mount "stage0.ps1"
-set-content $file @'
+set-content $file @"
 # -*- powershell -*-#
 
-# This is arguably the wrong thing to do, but it will work well enough for
-# initial prototyping.
-$server = get-wmiobject win32_networkadapterconfiguration |
-  where { $_.ipaddress -and
-          $_.dhcpenabled -eq "true" -and
-          $_.dhcpleaseobtained } |
-            select -uniq -first 1 -expandproperty dhcpserver
-$env:REBAR_ENDPOINT = "https://${server}"
-$env:REBAR_KEY = "rebar:rebar1"
+`$env:REBAR_ENDPOINT = "$env:REBAR_ENDPOINT"
+`$env:REBAR_KEY = "$machine_key"
 
 # Figure out who we are
-$node = (& rebar whoami) |out-string |convertfrom-json
-if (-Not $node -Or -Not $node.uuid) {
+`$node = (& rebar whoami) |out-string |convertfrom-json
+if (-Not `$node -Or -Not `$node.uuid) {
     write-host "Failed to figure out who we are.  Exiting"
     exit
 }
 
-$uuid = $node.uuid
-$name = $node.name
-$share = "\\${server}\tftpboot"
-$install = "Q:\machines\${uuid}\stage1.ps1"
-write-host "I am ${name}"
-$shareMounted = false
-write-host "Mounting share ${share} at Q:"
-while (-Not $shareMounted) {
-    New-SmbMapping -LocalPath Q: -RemotePath $share
-    $shareMounted = $?
+`$uuid = `$node.uuid
+`$name = `$node.name
+`$share = "\\${provisioner_address}\tftpboot"
+`$install = "Q:\machines\`${uuid}\stage1.ps1"
+write-host "I am `${name}"
+$shareMounted = $false
+write-host "Mounting share `${share} at Q:"
+while (-Not `$shareMounted) {
+    New-SmbMapping -LocalPath Q: -RemotePath `$share
+    `$shareMounted = `$?
     Start-Sleep -Seconds 10
 }
 write-host "Running stage1 installer"
-& $install
-'@
+& `$install
+"@
 
 write-host "Writing Windows\System32\startnet.cmd script to winpe.wim"
 $file = join-path $mount "Windows\System32\startnet.cmd"
@@ -310,8 +355,4 @@ $installwimloc = $cwd + '\install.wim'
 Remove-Item $bootwimloc
 Remove-Item $installwimloc
 
-# Calculate the SHA256sum of the generated ISO
-Write-Host "Calculating SHA256 of ${destisoname}"
-$hash = Get-Filehash -Algorithm SHA256 -Path $destisodirectory
-$file = Join-Path $cwd "${destisoname}.sha256sum"
-set-content $file $hash.hash.ToLower()
+write-host "You can update boot environments with .\update-bootenv [bootenv-name] ${destisoname}"

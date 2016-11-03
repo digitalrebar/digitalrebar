@@ -1,12 +1,13 @@
 #!/bin/bash
 
-echo "Explode iso $1 $2 $3"
+echo "Explode iso $1 $2 $3 $4"
 
 rhelish_re='^(redhat|centos|fedora)'
 
-os_name=$1
-iso=$2
-os_install_dir=$3
+os_name="$1"
+iso="$2"
+os_install_dir="$3"
+expected_sha="$4"
 
 echo "Extracting $iso for $os_name"
 [[ -d "${os_install_dir}.extracting" ]] && rm -rf "${os_install_dir}.extracting"
@@ -61,9 +62,10 @@ if [[ $os_name =~ $rhelish_re ]]; then
         createrepo -g "${groups[-1]}" .
     )
 fi
-touch "${os_install_dir}.extracting/.${os_name}.rebar_canary"
-[[ -d "${os_install_dir}" ]] && rm -rf "${os_install_dir}"
+printf '%s' "$expected_sha" > "${os_install_dir}.extracting/.${os_name}.rebar_canary"
+[[ -d "${os_install_dir}" ]] && mv "${os_install_dir}" "${os_install_dir}.deleting"
 mv "${os_install_dir}.extracting" "${os_install_dir}"
+rm -rf "${os_install_dir}.deleting"
 
 if which selinuxenabled && selinuxenabled; then
     restorecon -R -F /tftpboot
