@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -337,8 +338,9 @@ func (b *BootEnv) explodeIso() error {
 	}
 	// Have we already exploded this?  If file exists, then good!
 	canaryPath := b.PathFor("disk", "."+b.OS.Name+".rebar_canary")
-	if _, err := os.Stat(canaryPath); err == nil {
-		logger.Printf("Explode ISO: Skipping %s becausing canary file, %s, in place\n", b.Name, canaryPath)
+	buf, err := ioutil.ReadFile(canaryPath)
+	if err == nil && len(buf) != 0 && string(bytes.TrimSpace(buf)) == b.OS.IsoSha256 {
+		logger.Printf("Explode ISO: Skipping %s becausing canary file, %s, in place and has proper SHA256\n", b.Name, canaryPath)
 		return nil
 	}
 
@@ -348,28 +350,30 @@ func (b *BootEnv) explodeIso() error {
 		return nil
 	}
 
-	// Sha256sum iso for correctness
-	if b.OS.IsoSha256 != "" {
-		f, err := os.Open(isoPath)
-		if err != nil {
-			return fmt.Errorf("Explode ISO: For %s, failed to open iso file %s: %v", b.Name, isoPath, err)
-		} else {
-			defer f.Close()
-			hasher := sha256.New()
-			if _, err := io.Copy(hasher, f); err != nil {
-				return fmt.Errorf("Explode ISO: For %s, failed to read iso file %s: %v", b.Name, isoPath, err)
-			}
-			hash := hex.EncodeToString(hasher.Sum(nil))
-			if hash != b.OS.IsoSha256 {
-				return fmt.Errorf("iso: Iso checksum bad.  Re-download image: %s: actual: %v expected: %v", isoPath, hash, b.OS.IsoSha256)
-			}
-		}
+	f, err := os.Open(isoPath)
+	if err != nil {
+		return fmt.Errorf("Explode ISO: For %s, failed to open iso file %s: %v", b.Name, isoPath, err)
+	}
+	defer f.Close()
+	hasher := sha256.New()
+	if _, err := io.Copy(hasher, f); err != nil {
+		return fmt.Errorf("Explode ISO: For %s, failed to read iso file %s: %v", b.Name, isoPath, err)
+	}
+	hash := hex.EncodeToString(hasher.Sum(nil))
+	// This will wind up being saved along with the rest of the
+	// hash because explodeIso is called by OnChange before the struct gets saved.
+	if b.OS.IsoSha256 == "" {
+		b.OS.IsoSha256 = hash
+	}
+
+	if hash != b.OS.IsoSha256 {
+		return fmt.Errorf("iso: Iso checksum bad.  Re-download image: %s: actual: %v expected: %v", isoPath, hash, b.OS.IsoSha256)
 	}
 
 	// Call extract script
 	// /explode_iso.sh b.OS.Name isoPath path.Dir(canaryPath)
 	cmdName := "/explode_iso.sh"
-	cmdArgs := []string{b.OS.Name, isoPath, path.Dir(canaryPath)}
+	cmdArgs := []string{b.OS.Name, isoPath, path.Dir(canaryPath), b.OS.IsoSha256}
 	if _, err := exec.Command(cmdName, cmdArgs...).Output(); err != nil {
 		return fmt.Errorf("Explode ISO: Exec command failed for %s: %s\n", b.Name, err)
 	}
