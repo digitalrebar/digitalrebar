@@ -22,13 +22,15 @@ enable Digital Rebar to install Windows 2012 R2 on to managed hosts.
   https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2012-r2
 * Any drivers needed to install Windows on the target systems.
 
-## Procedure for creating a Rebar-compatible Windows install image ##
+## Creating a Rebar-compatible Windows install image ##
 
 All these steps should take place on the technician workstation, and
 assume that the user is logged in to the Administrator account.  They
 also assume that you are working from
-C:\Users\Administrator\Desktop\2012r2, and they will refer to it as `2012r2`.
+`C:\Users\Administrator\Desktop\2012r2`, and they will refer to it as `2012r2`.
 They will also refer to the downloaded Windows ISO as `winsrc.iso`
+
+* Copy the entire contents of the directory containing this README into `2012r2`.
 
 * Ensure you have `winsrc.iso` in `2012r2`.
 
@@ -51,7 +53,50 @@ They will also refer to the downloaded Windows ISO as `winsrc.iso`
 * Run the following command:
   `powershell -executionpolicy bypass build-2012r2-iso.ps1 winsrc.iso`
   
-  This command will take several minutes to finish, and at the end you
-  will have an ISO named `rebar-windows-2012r2.iso` and a checksup
-  file named `rebar-windows-2012r2.iso.sha256sum`.
+  This command will ask you for https:// endpoint of the Rebar admin
+  server and your Rebar username and password.  It will take several
+  minutes to finish, and at the end you will have an ISO named
+  `rebar-windows-2012r2.iso`.  This ISO can only be used with the
+  Rebar install you specified, as it embeds the install-specific
+  machine-install credentials along with the address of the
+  provisioner service that install uses.  If either of them change,
+  you will need to rebuild the .iso.  This is a technical limitation
+  that may go away in the future.
+  
+## Installing the Rebar-compatible Windows install image ##
+
+These steps assume you have just finished creating the Rebar
+compatible windows install image.
+
+* Run the following command: 
+  `powershell -executionpolicy bypass update-bootenv.ps1 windows-2012r2-install rebar-windows-2012r2.iso`
+  
+  This will upload `rebar-windows-2012r2.iso` to the Rebar
+  provisioner, and update the `windows-2012r2-install` boot
+  environment to use the newly-uploaded .iso.
+
+* Edit the Windows profiles in `2012r2\profiles` to match your infrastructure.
+  
+  The only thing that may need changing in these profiles is the
+  `operating-system-license-key` value.  The default values are GLVK
+  product keys, which expect there to be a KMS volume license service
+  available in your environment to complete the Windows activation
+  process (as described in
+  <https://technet.microsoft.com/en-us/library/jj612867(v=ws.11).aspx>).
+  If you are using a different form of volume licensing, you should
+  enter the appropriate volume license key there instead.
+  
+* Upload the profiles with the Rebar CLI.
+
+  For each profile:
+  
+  `rebar profiles create - < 2012r2/profile.json`
+
+## Using the Windows install image to install Windows on to Rebar managed nodes ##
+
+* Update the nodes you wish to install Windows on to using the Windows profile of your choice
+
+  `rebar nodes update node.name '{"profiles: ["your-chosen-Windows-profile"]}"`
+  
+* Bind the rebar-installed-node role to the node, and commit the node.
 
