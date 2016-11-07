@@ -88,9 +88,11 @@ class AttribsController < ApplicationController
       attrib = model.find_key(params[:id])
       target = find_target("UPDATE")
       if target.nil?
-        # We do not allow updating attribs outside the context of
-        # some other object.
-        render api_not_supported 'put', 'attribs/:id'
+        # Target is nil because we didn't have a specifier (not found throws an exception)
+        # Try to update the actual attribute object
+        attrib = find_key_cap(model,params[:id],cap("UPDATE")).lock!
+        simple_update(attrib, %w{default map description order schema role_id barclamp_id name})
+        render json: attrib.as_json, content_type: cb_content_type(attrib, "obj")
         return
       end
       target.lock!
