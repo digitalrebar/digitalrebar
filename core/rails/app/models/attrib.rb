@@ -255,6 +255,7 @@ class Attrib < ActiveRecord::Base
       case
       when to.is_a?(Hash) then to.deep_merge(to_merge)
       when to.is_a?(Node)
+        val = self.get(to,:all,true)
         case target
         when :note then to.note_update(to_merge)
         when :discovery then to.discovery_update(to_merge)
@@ -264,7 +265,7 @@ class Attrib < ActiveRecord::Base
         to.node_roles.order("cohort ASC").each do |nr|
           next unless RoleRequireAttrib.find_by(role_id: nr.role_id, attrib_name: self.name)
           poke(nr)
-        end if target != :note
+        end if target != :note && self.get(to,:all,true) != val
       when to.is_a?(Role)
         case target
         when :note then to.note_update(to_merge)
@@ -288,6 +289,7 @@ class Attrib < ActiveRecord::Base
           to.data_update(to_merge)
         end
       when to.is_a?(NodeRole)
+        val = self.get(to,:all,true)
         case target
         when :note then to.note_update(to_merge)
         when :system then to.sysdata_update(to_merge)
@@ -296,6 +298,10 @@ class Attrib < ActiveRecord::Base
           to.wall_update(to_merge)
         else raise("#{target} is not a valid target to write noderole data to!")
         end
+        to.children.order("cohort ASC").each do |nr|
+          next unless RoleRequireAttrib.find_by(role_id: nr.role_id, attrib_name: self.name)
+          poke(nr)
+        end if target != :note && self.get(to,:all,true) != val
       else raise("Cannot write attribute data to #{to.class.to_s}")
       end
     end
