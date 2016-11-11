@@ -83,7 +83,7 @@ class DeploymentsController < ApplicationController
   def update
     Deployment.transaction do
       @deployment = find_key_cap(model,params[:id],cap("UPDATE")).lock!
-      simple_update(@deployment,%w{name description tenant_id})
+      simple_update(@deployment,%w{name description tenant_id}, %w{state})
     end
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment.id) }
@@ -94,7 +94,7 @@ class DeploymentsController < ApplicationController
   def destroy
     model.transaction do
       @deployment = find_key_cap(model, params[:id], cap("DESTROY"))
-      if @deployment.system? # "cannot destroy system deployments" 
+      if @deployment.system? # "cannot destroy system deployments"
         api_not_supported("delete", @deployments)
       else
         @deployment.destroy
@@ -333,7 +333,7 @@ class DeploymentsController < ApplicationController
 
     # assign nodes roles to deployment (cannot be in the top transaction)
     #
-    # Roles should be applied in role_apply_order and then whatever is left in cohort order 
+    # Roles should be applied in role_apply_order and then whatever is left in cohort order
     # (for lack of anything else)
     rao = params["role_apply_order"] || []
     rkeys = roles.keys

@@ -103,7 +103,15 @@ class ApplicationController < ActionController::Base
   #
   # This method MUST be called within a transaction, and obj MUST be locked in order
   # to guarantee that the requested changes happen atomically.
-  def patch(obj, permitted_attribs)
+  #
+  # This is REALLY BAD and MUST stop.  We have objects in the model that
+  # have derived values with the same named attribute in the database.  The
+  # values are DIFFERENT!!!  This breaks all patch operations. I'm looking
+  # at you Deployment.state.  IT IS BUSTED.  To avoid, changing the models to fix
+  # the issue everywhere we do this, I'm adding noset_attribs to force patch
+  # to never set them.
+  #
+  def patch(obj, permitted_attribs, noset_attribs = [])
     patch = JSON.parse(request.raw_post)
     Rails.logger.debug(obj.as_json)
     Rails.logger.debug(request.raw_post)
@@ -113,6 +121,8 @@ class ApplicationController < ActionController::Base
     res.keys.each do |k|
       # Ignore synthetic keys
       next unless obj.has_attribute?(k)
+      # Skip noset attribs because STUPID!
+      next if noset_attribs.member?(k)
       # Nothing changed, OK.
       next if obj[k] == res[k]
       if permitted_attribs.member?(k)
@@ -124,9 +134,9 @@ class ApplicationController < ActionController::Base
     obj.save!
   end
 
-  def simple_update(obj, attrs)
+  def simple_update(obj, attrs, noset_attribs = [])
     if request.patch?
-      patch(obj, attrs)
+      patch(obj, attrs, noset_attribs)
     else
       obj.update_attributes!(params.permit(attrs.map{|i|i.to_sym}))
     end
