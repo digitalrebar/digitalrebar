@@ -1,0 +1,11 @@
+{
+  "deployment": {
+    "name": "system"
+  },
+  "roles": [
+    "ipmi-flash",
+    "bios-flash",
+    "bios-discover"
+  ],
+  "attributes": []
+}
