@@ -482,7 +482,7 @@ roles:
       - name: ipmi-password
         description: "The password for the IPMI user."
         map: 'ipmi/bmc_password'
-        default: 'calvin'
+        default: 'cr0wBar!'
         schema:
           type: str
           required: true
