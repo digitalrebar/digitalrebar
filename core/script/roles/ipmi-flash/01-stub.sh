@@ -15,8 +15,9 @@ rev_lt() {
     IFS='.-_' read -a val_a <<< "$1"
     IFS='.-_' read -a val_b <<< "$2"
     for ((i=0; i<${#val_a[@]}; i++)); do
-         [[ ${val_a[$i]} < ${val_b[$i]} ]] && return 0
+         (( ${val_a[$i]} == ${val_b[$i]} )) || return $(( ${val_a[$i]} >= ${val_b[$i]} ))
     done
+    # One day handle dissimilar array lengths
     return 1
 }
 
@@ -26,6 +27,9 @@ for v in "${!PARAMS[@]}"; do
     VALUES["$v"]="$(read_attribute "${PARAMS[$v]}")"
 done
 
+found_one=false
+found_one_version=""
+found_one_package=""
 while read -r entry; do
     match=true
     found=true
@@ -50,16 +54,26 @@ while read -r entry; do
         esac
     done
     if [[ $found = true ]]; then
-        printf 'Package %s is valid for this system\n' "$package"
-        break
+        found_one=true
+        found_one_version=$version
+        found_one_package=$package
+        if [[ $match = true ]]; then
+            printf 'Package %s is valid for this system\n' "$package"
+            break
+        else
+            printf 'Package %s is valid for this system, but old or current.  Keep looking ...\n' "$package"
+        fi
     else
+        match=false
         printf 'Package %s is not valid for this system\n' "$package"
     fi
 done < <(jq -r -c '.[]' <<< "$(read_attribute 'ipmi/firmware_updates')")
-if [[ $found = false ]]; then
+if [[ $found_one = false ]]; then
     echo "No IPMI firmware update found for this system"
     exit 0
 fi
+verson=$found_one_version
+package=$found_one_package
 write_attribute 'ipmi/firmware_applicable_version' "$version"
 write_attribute 'ipmi/firmware_applicable_package' "$package"
 if [[ $match = false ]]; then
