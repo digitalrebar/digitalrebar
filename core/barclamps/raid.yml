@@ -150,6 +150,7 @@ roles:
                 "stripe_size": { type: int }
                 "size": { type: scalar, required: true }
                 "disks": { type: int, required: false }
+                "controller_index": { type: int, required: false }
                 "disks_type":
                   type: str
                   enum:

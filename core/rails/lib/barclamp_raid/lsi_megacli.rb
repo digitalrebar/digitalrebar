@@ -291,6 +291,21 @@ module BarclampRaid
       when "raid0","raid1","raid5","raid6"
         cmd << "-CfgLdAdd"
         cmd << "-r#{raid_level[-1]}[#{candidates.map{|c|c.id}.join(',')}]"
+
+        clearcmd = ["-PDMakeGood",
+               "-PhysDrv",
+               "[#{candidates.map{|c|c.id}.join(',')}]",
+               "-Force",
+               "-a#{cid}"]
+        begin
+          lines = run_tool(0, nil, clearcmd)
+          lines.each do |line|
+            @logger << line
+          end if @logger
+        rescue
+          # Ignore for now
+          @logger << "Failed to make good for #{candidates.map{|c|c.id}.join(',')} - may be okay" if @logger
+        end
       when "raid00","raid10","raid50","raid60"
         # Bucketize disks according to the number of spans we want
         disks_per_span = (disks / spans).floor
@@ -305,6 +320,22 @@ module BarclampRaid
         cmd << "-CfgSpanAdd"
         cmd << "-r#{raid_level[-2..-1]}"
         arrays.each_index do |idx|
+          # Try to make each array good.
+          clearcmd = ["-PDMakeGood",
+                 "-PhysDrv",
+                 "[#{arrays[idx].join(',')}]",
+                 "-Force",
+                 "-a#{cid}"]
+          begin
+            lines = run_tool(0, nil, clearcmd)
+            lines.each do |line|
+              @logger << line
+            end if @logger
+          rescue
+            # Ignore for now
+            @logger << "Failed to make good for #{arrays[idx].join(',')} - may be okay" if @logger
+          end
+
           cmd << "-array#{idx}[#{arrays[idx].join(',')}]"
         end
       else
