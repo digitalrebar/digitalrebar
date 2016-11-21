@@ -38,7 +38,7 @@ while read -r entry; do
             'ipmi-firmware-rev')
                 printf "Testing firmware version '%s' against '%s'\n" "$v" "$val"
                 version=$val
-                if ! rev_lt "$val" "${VALUES[$v]}"; then
+                if ! rev_lt "${VALUES[$v]}" "$val"; then
                     match=false
                 fi;;
             *)
