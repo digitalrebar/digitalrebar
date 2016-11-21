@@ -187,7 +187,7 @@ class BarclampDhcp::MgmtService < Service
     Rails.logger.info("dhcp-mgmt on_network_allocation_create - mac_list #{mac_list}")
     mac_list.each do |mac|
       begin
-        self.class.bind_node_ip_mac(na.network.name, mac, na.address.addr, na.node.bootenv, loader)
+        self.class.bind_node_ip_mac(na,mac,loader)
       rescue Exception => e
         Rails.logger.warn("Tring to remove DHCP binding for #{mac}: #{e.message}")
       end
@@ -273,7 +273,11 @@ class BarclampDhcp::MgmtService < Service
     TrustedClient.new("#(url)/subnets/#{name}").delete
   end
 
-  def self.bind_node_ip_mac(name, mac, ip, bootenv, loader)
+  def self.bind_node_ip_mac(allocation, mac, loader)
+    name = allocation.network.name
+    ip = allocation.address.addr
+    bootenv = allocation.node.bootenv
+    hostname = allocation.node.shortname
 
     Rails.logger.info("dhcp-mgmt bind_node_ip_mac - #{name} #{mac} #{ip} #{bootenv} #{loader}")
 
@@ -295,6 +299,7 @@ class BarclampDhcp::MgmtService < Service
       end unless loader
       options[67] = bootloader(boot_program)
     end
+    options[12] = hostname
     options.each do |k,v|
       hash["options"] ||= []
       hash["options"] << { "id" => k, "value" => v }
