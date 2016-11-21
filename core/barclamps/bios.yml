@@ -334,7 +334,7 @@ roles:
              "system_product":
                "__sm_leaf": true,
                "op": "regex"
-               "match": "^PowerEdge (M.|R.|T[34])[23]0"
+               "match": "^PowerEdge (M.|R.|T[34]|FC6)[23]0"
             "role": "bios-dell-rseries-configure"
             "configs":
               - "name": "default"
@@ -513,6 +513,8 @@ roles:
                   type: str
                   required: true
         default:
+          # Place sequential updates in order from older to newer in this list and the
+          # system will roll up to the latest by applying each in order.
           - package: 'X7SPA3_719.zip'
             package-sha256sum: 'd430644616bbb7f608b88f87d6ddd6c8ed096cd68d76b8930426d413fab2aa01'
             package-source: 'http://www.supermicro.com/about/policies/disclaimer.cfm?url=/support/resources/getfile.aspx?ID=2691'
@@ -539,7 +541,65 @@ roles:
             script: |
               #!/usr/bin/env bash
               chmod 755 "$package"
-              "$package" -q -r
+              ./"$package" -q -r
+              case $? in
+                  0)  # No reboot required.
+                      exit 0;;
+                  1)  # The update failed.
+                      exit 1;;
+                  2)  # Update suceeded, system needs a reboot.
+                      reboot; sleep 600;;
+                  3)  # Dependency error, system already up to date
+                      echo "System up to date, but should have been caught by pre-version check"
+                      exit 0;;
+                  4|5) # Update not applicable to the system
+                      echo "Update $package not applicable to this system, but not caught by qualification checking"
+                      exit 1;;
+                  6) # System is automatically rebooting
+                     sleep 600;;
+                  *) # Update package is corrupt or Something Weird happened.
+                     echo "Unexpected exit status $?, something weird happened"
+                     exit 1;;
+              esac
+          - package: BIOS_DC9XJ_LN_2.1.7.BIN
+            package-source: 'http://downloads.dell.com/FOLDER03775688M/1/BIOS_DC9XJ_LN_2.1.7.BIN'
+            package-sha256sum: 'd043e74ef3d720248251acc8bee22e83837e91db9b2f47423484850d9ba28509'
+            bios-version: '2.1.7'
+            system_manufacturer: 'Dell Inc.'
+            system_product: 'PowerEdge FC630'
+            script: |
+              #!/usr/bin/env bash
+              chmod 755 "$package"
+              ./"$package" -q -r
+              case $? in
+                  0)  # No reboot required.
+                      exit 0;;
+                  1)  # The update failed.
+                      exit 1;;
+                  2)  # Update suceeded, system needs a reboot.
+                      reboot; sleep 600;;
+                  3)  # Dependency error, system already up to date
+                      echo "System up to date, but should have been caught by pre-version check"
+                      exit 0;;
+                  4|5) # Update not applicable to the system
+                      echo "Update $package not applicable to this system, but not caught by qualification checking"
+                      exit 1;;
+                  6) # System is automatically rebooting
+                     sleep 600;;
+                  *) # Update package is corrupt or Something Weird happened.
+                     echo "Unexpected exit status $?, something weird happened"
+                     exit 1;;
+              esac
+          - package: BIOS_T4FMH_LN_2.2.5.BIN
+            package-source: 'http://downloads.dell.com/FOLDER03919045M/1/BIOS_T4FMH_LN_2.2.5.BIN'
+            package-sha256sum: '44851ffeffc11fa9f3a69775b945249f6d09756a4538c49a975a9d9134627608'
+            bios-version: '2.2.5'
+            system_manufacturer: 'Dell Inc.'
+            system_product: 'PowerEdge FC630'
+            script: |
+              #!/usr/bin/env bash
+              chmod 755 "$package"
+              ./"$package" -q -r
               case $? in
                   0)  # No reboot required.
                       exit 0;;

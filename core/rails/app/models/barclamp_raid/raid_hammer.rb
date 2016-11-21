@@ -132,9 +132,16 @@ class BarclampRaid::RaidHammer < Hammer
     end
     # Some day, modify the configuration of changed ones, if their requested config changed.
     # Crete new volumes.
+    failed = false
     new_volumes.each do |v|
+      logger << "Building #{v}"
       new_vol = nil
-      current_controllers.each do |c|
+      current_controllers.each_with_index do |c,index|
+        logger << "Trying to put #{v} on #{index} - #{c}"
+        if !v["controller_index"].nil? and v["controller_index"] != index
+          logger << "Skipping #{index} #{c} not #{v["controller_index"]}"
+          next
+        end
         begin
           logger << "Creating new volume #{v}\n"
           new_vol = c.create_vd(v)
@@ -153,8 +160,11 @@ class BarclampRaid::RaidHammer < Hammer
       else
         Rails.logger.error("Unable to create #{v} on any raid controller!\n")
         logger << "Unable to create #{v} on any raid controller!\n"
+        failed = true
       end
     end
+
+    raise logger if failed
 
     current_volumes
   end

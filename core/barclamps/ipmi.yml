@@ -367,6 +367,8 @@ roles:
                   type: str
                   required: true
         default:
+          # Place sequential updates in order from older to newer in this list and the
+          # system will roll up to the latest by applying each in order.
           - package: 'iDRAC-with-Lifecycle-Controller_Firmware_W719V_LN_2.32.31.30_A00.BIN'
             package-sha256sum: 'e1d287f8a0e098cd4bbe25e60519c4765bbcf28a52f24157d73a81cf8011456e'
             package-source: 'http://downloads.dell.com/FOLDER03799556M/1/iDRAC-with-Lifecycle-Controller_Firmware_W719V_LN_2.32.31.30_A00.BIN'
@@ -375,6 +377,37 @@ roles:
             ipmi-device-id: "32"
             ipmi-device-rev: "1"
             ipmi-firmware-rev: "2.32"
+            script: |
+              #!/usr/bin/env bash
+              chmod 755 "$package"
+              "$package" -q -r
+              case $? in
+                  0)  # No reboot required.
+                      exit 0;;
+                  1)  # The update failed.
+                      exit 1;;
+                  2)  # Update suceeded, system needs a reboot.
+                      reboot; sleep 600;;
+                  3)  # Dependency error, system already up to date
+                      echo "System up to date, but should have been caught by pre-version check"
+                      exit 0;;
+                  4|5) # Update not applicable to the system
+                      echo "Update $package not applicable to this system, but not caught by qualification checking"
+                      exit 1;;
+                  6) # System is automatically rebooting
+                     sleep 600;;
+                  *) # Update package is corrupt or Something Weird happened.
+                     echo "Unexpected exit status $?, something weird happened"
+                     exit 1;;
+              esac
+          - package: 'iDRAC-with-Lifecycle-Controller_Firmware_WH24V_LN_2.40.40.40_A00.BIN'
+            package-sha256sum: '06fe74fcb854694fe3d3b49785c48d1a708aac1ee1ad87c203722ca0054aa339'
+            package-source: 'http://downloads.dell.com/FOLDER03884199M/1/iDRAC-with-Lifecycle-Controller_Firmware_WH24V_LN_2.40.40.40_A00.BIN'
+            ipmi-mfgr-id: "674"
+            ipmi-product-id: "256 (0x0100)"
+            ipmi-device-id: "32"
+            ipmi-device-rev: "1"
+            ipmi-firmware-rev: "2.40"
             script: |
               #!/usr/bin/env bash
               chmod 755 "$package"
