@@ -151,6 +151,7 @@ roles:
                 "size": { type: scalar, required: true }
                 "disks": { type: int, required: false }
                 "controller_index": { type: int, required: false }
+                "force_good": { type: bool, required: false }
                 "disks_type":
                   type: str
                   enum:
