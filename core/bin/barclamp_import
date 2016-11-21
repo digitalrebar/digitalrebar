@@ -132,7 +132,10 @@ $rule_engine = nil
 
 loop do
   rev_proxies, code = REST.get("http://localhost:8500/v1/catalog/service/rebar-rev-proxy-service")
-  next if code != 200 || rev_proxies[0].nil?
+  if code != 200 || rev_proxies[0].nil?
+    sleep 1
+    next
+  end
   addr = rev_proxies[0]["ServiceAddress"]
   addr = rev_proxies[0]["Address"] unless addr and !addr.empty?
   $rule_engine = "https://#{addr}/rule-engine/api/v0/rulesets/"

@@ -17,7 +17,7 @@
 set -x
 exec 2>&1
 exec >>/target/root/post-install.log
-{{if .Param "proxy-servers"}}
+{{if .Param "use-proxy"}}
 echo "Acquire::http::Proxy \"{{index (.Param "proxy-servers") 0 "url"}}\";" >/target/etc/apt/apt.conf.d/00-proxy
 {{end}}
 
@@ -37,7 +37,7 @@ fi
 cat >/target/etc/gemrc <<EOF
 :sources:
 - http://rubygems.org/
-gem: --no-ri --no-rdoc --bindir /usr/local/bin {{if .Param "proxy-servers"}} --http-proxy="{{index (.Param "proxy-servers") 0 "url"}}"{{end}}
+gem: --no-ri --no-rdoc --bindir /usr/local/bin {{if .Param "use-proxy"}} --http-proxy="{{index (.Param "proxy-servers") 0 "url"}}"{{end}}
 EOF
 
 cp /target/etc/gemrc /target/root/.gemrc
@@ -53,7 +53,7 @@ EOF
 echo "PermitRootLogin without-password" >> /target/etc/ssh/sshd_config
 echo "AcceptEnv http_proxy https_proxy no_proxy" >> /target/etc/ssh/sshd_config
 
-{{if .Param "proxy-servers"}}
+{{if .Param "use-proxy"}}
 # Setup a proxy for the environment
 echo "http_proxy={{index (.Param "proxy-servers") 0 "url"}}" >> /target/etc/environment
 echo "https_proxy={{index (.Param "proxy-servers") 0 "url"}}" >> /target/etc/environment

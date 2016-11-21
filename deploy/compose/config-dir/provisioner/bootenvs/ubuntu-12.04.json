@@ -21,6 +21,7 @@
         "provisioner-default-user",
         "provisioner-use-local-security",
         "proxy-servers",
+        "use-proxy",
         "rebar-access_keys",
         "rebar-machine_key"
     ],

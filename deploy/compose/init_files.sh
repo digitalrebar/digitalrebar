@@ -51,6 +51,7 @@ FILES="base.yml trust-me.yml"
 REMOVE_FILES=""
 ACCESS_MODE="FORWARDER"
 PROVISION_IT="NO"
+PROXY_IT="NO"
 
 if [[ -f tag ]]; then
     DR_TAG="$(cat tag)"
@@ -132,6 +133,7 @@ while [[ $1 == -* ]] ; do
     --webproxy)
       FILES="$FILES webproxy.yml"
       SERVICES+=" proxy-service"
+      PROXY_IT="YES"
       ;;
     --revproxy)
       FILES="$FILES revproxy.yml"
@@ -234,12 +236,23 @@ fi
 CONSUL_JOIN="$CONSUL_ADVERTISE"
 # Make access.env for Variables.
 cat >access.env <<EOF
+USE_OUR_PROXY=$PROXY_IT
 EXTERNAL_IP=$EXTERNAL_IP
 FORWARDER_IP=$FORWARDER_IP
 CONSUL_JOIN=$CONSUL_JOIN
 DR_START_TIME=$(date +%s)
 RUN_NTP=$RUN_NTP
 EOF
+
+# Add proxies from this environment to the containers.
+# Need to do similar things
+if [[ $http_proxy && $PROXY_IT = NO ]]; then
+    cat >>access.env <<EOF
+UPSTREAM_HTTP_PROXY=$http_proxy
+UPSTREAM_HTTPS_PROXY=$https_proxy
+UPSTREAM_NO_PROXY=$no_proxy
+EOF
+fi
 
 cat >services.env <<EOF
 SERVICES=$SERVICES
