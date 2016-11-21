@@ -3,7 +3,7 @@
 [[ -f /tmp/.repo_update ]] && rm /tmp/.repo_update
 
 case $OS_TYPE in
-    redhat|fedora|centos)
+    rhel|redhat|fedora|centos)
         mkdir -p /etc/yum.repos.d
         [[ -f /etc/yum/pluginconf.d/fastestmirror.conf ]] && \
             sed -i '/^enabled/ s/1/0/' /etc/yum/pluginconf.d/fastestmirror.conf
@@ -31,7 +31,7 @@ declare -A pkg_sources
 
 if [[ $(read_attribute 'rebar/providers/use_proxy') = true ]]; then
     case $OS_TYPE in
-        redhat|fedora|centos)
+        rhel|redhat|fedora|centos)
             if ! grep -F -q "proxy=http" /etc/yum.conf; then
                 echo "proxy=${http_proxy}" >> /etc/yum.conf
             else
@@ -93,7 +93,7 @@ done
 
 if [[ -f /tmp/.repo_update ]]; then
     case $OS_TYPE in
-        redhat|fedora|centos) yum clean expire-cache;;
+        rhel|redhat|fedora|centos) yum clean expire-cache;;
         debian|ubuntu) apt-get -y update;;
 
     esac
