@@ -67,7 +67,7 @@ rebar_api:
     - ~/.cache/digitalrebar/tftpboot:/tftpboot
     - ./data-dir/bin:/usr/local/dev/bin
     # development mapping for playbook authors
-    # example: - ./digitalrebar/kompos8:/var/cache/rebar/ansible_playbook/k8
+    # - ../../digitalrebar-workloads/:/var/cache/rebar/ansible_playbook/k8
   env_file:
     - ./common.env
     - ./access.env
@@ -91,8 +91,8 @@ cloudwrap:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./data-dir/bin:/usr/local/dev/bin
     # debugging maps
-    #- ../containers/cloudwrap/cloudwrap/api.rb:/opt/cloudwrap/api.rb
-    #- ../containers/cloudwrap/cloudwrap/common.rb:/opt/cloudwrap/common.rb
+    # - ../../containers/cloudwrap/cloudwrap/api.rb:/opt/cloudwrap/api.rb
+    # - ../../containers/cloudwrap/cloudwrap/common.rb:/opt/cloudwrap/common.rb
   env_file:
     - ./common.env
     - ./access.env
