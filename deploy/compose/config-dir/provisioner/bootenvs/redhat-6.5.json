@@ -15,6 +15,7 @@
         "operating-system-disk",
         "provisioner-default-password-hash",
         "proxy-servers",
+        "use-proxy",
         "rebar-access_keys",
         "rebar-machine_key"
     ],

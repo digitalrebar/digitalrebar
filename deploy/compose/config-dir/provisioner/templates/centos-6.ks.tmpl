@@ -2,7 +2,7 @@
 install
 url --url {{ .Env.OS.InstallUrl }}
 # Add support for our local proxy.
-repo --name="CentOS"  --baseurl={{ .Env.OS.InstallUrl }} {{if .Param "proxy-servers"}} --proxy="{{index (.Param "proxy-servers") 0 "url"}}"{{end}} --cost=100
+repo --name="CentOS"  --baseurl={{ .Env.OS.InstallUrl }} {{if .Param "use-proxy"}} --proxy="{{index (.Param "proxy-servers") 0 "url"}}"{{end}} --cost=100
 key --skip
 lang en_US.UTF-8
 keyboard us
@@ -68,7 +68,7 @@ name=Rebar Epel Repo
 baseurl=http://mirrors.kernel.org/fedora-epel/6/x86_64/
 gpgcheck=0
 EOF
-{{if .Param "proxy-servers"}}
+{{if .Param "use-proxy"}}
 echo "proxy={{index (.Param "proxy-servers") 0 "url"}}" >> /etc/yum.conf
 {{end}}
 sed -i '/^enabled/ s/1/0/' /etc/yum/pluginconf.d/fastestmirror.conf
@@ -77,7 +77,7 @@ sed -i '/^enabled/ s/1/0/' /etc/yum/pluginconf.d/fastestmirror.conf
 cat >/etc/gemrc <<EOF
 :sources:
 - http://rubygems.org/
-gem: --no-ri --no-rdoc --bindir /usr/local/bin {{if .Param "proxy-servers"}} --http-proxy="{{index (.Param "proxy-servers") 0 "url"}}"{{end}}
+gem: --no-ri --no-rdoc --bindir /usr/local/bin {{if .Param "use-proxy"}} --http-proxy="{{index (.Param "proxy-servers") 0 "url"}}"{{end}}
 EOF
 
 cp /etc/gemrc /root/.gemrc
@@ -123,7 +123,7 @@ echo "PermitRootLogin without-password" >> /etc/ssh/sshd_config
 # Allow client to pass http proxy environment variables
 echo "AcceptEnv http_proxy https_proxy no_proxy" >> /etc/ssh/sshd_config
 
-{{if .Param "proxy-servers"}}
+{{if .Param "use-proxy"}}
 # Setup a proxy for the environment
 echo "http_proxy={{index (.Param "proxy-servers") 0 "url"}}" >> /etc/environment
 echo "https_proxy={{index (.Param "proxy-servers") 0 "url"}}" >> /etc/environment

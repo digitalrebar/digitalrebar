@@ -93,7 +93,7 @@ attribs:
   - name: use-proxy
     description: 'Whether the node should attempt to use the proxy service'
     map: 'rebar/providers/use_proxy'
-    default: true
+    default: false
     schema:
       type: bool
       required: true

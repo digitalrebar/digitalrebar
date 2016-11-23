@@ -3,17 +3,38 @@ MAINTAINER Victor Lowther <victor@rackn.com>
 
 ARG DR_TAG
 
-ENV SQUID_VERSION=3.3.8 \
-    SQUID_CACHE_DIR=/var/spool/squid3 \
+ENV SQUID_CACHE_DIR=/var/spool/squid3 \
     SQUID_LOG_DIR=/var/log/squid3 \
     SQUID_USER=proxy
+COPY rules.patch /tmp
+ADD http://archive.ubuntu.com/ubuntu/pool/main/s/squid3/squid3_3.5.12-1ubuntu8.dsc /tmp/squid-build/squid3_3.5.12-1ubuntu8.dsc
+ADD http://archive.ubuntu.com/ubuntu/pool/main/s/squid3/squid3_3.5.12.orig.tar.gz /tmp/squid-build/squid3_3.5.12.orig.tar.gz
+ADD http://archive.ubuntu.com/ubuntu/pool/main/s/squid3/squid3_3.5.12-1ubuntu8.debian.tar.xz /tmp/squid-build/squid3_3.5.12-1ubuntu8.debian.tar.xz
 
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 80F70E11F0F0D5F10CB20E62F5DA5F09C3173AA6 \
- && echo "deb http://ppa.launchpad.net/brightbox/squid-ssl/ubuntu trusty main" >> /etc/apt/sources.list \
- && apt-get update \
- && apt-get install -y squid3-ssl=${SQUID_VERSION}* \
- && mv /etc/squid3/squid.conf /etc/squid3/squid.conf.dist \
- && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get -y install libecap3 devscripts build-essential \
+       fakeroot debhelper dh-autoreconf cdbs squid3 squid-langpack \
+       nettle-dev libgnutls28-dev libssl-dev libdbi-perl \
+       libldap2-dev libpam0g-dev libdb-dev libsasl2-dev libcppunit-dev \
+       libkrb5-dev  comerr-dev  libcap2-dev libecap3-dev libexpat1-dev \
+       libxml2-dev libnetfilter-conntrack-dev dh-apparmor bash \
+    && cd /tmp/squid-build \
+    && dpkg-source -x squid3_3.5.12-1ubuntu8.dsc \
+    && patch squid3-3.5.12/debian/rules < /tmp/rules.patch \
+    && cd squid3-3.5.12 && dpkg-buildpackage -rfakeroot -b -jauto \
+    && cd /tmp/squid-build \
+    && dpkg --install squid-common_3.5.12-1ubuntu8_all.deb \
+    && dpkg --install squid_3.5.12-1ubuntu8_amd64.deb \
+    && dpkg --install squidclient_3.5.12-1ubuntu8_amd64.deb \
+    && cd .. \
+    && rm -rf /tmp/squid-build \
+    && apt-get purge -y --auto-remove  devscripts build-essential fakeroot debhelper \
+               dh-autoreconf cdbs nettle-dev libgnutls28-dev libssl-dev libldap2-dev \
+               libpam0g-dev libsasl2-dev libcppunit-dev libkrb5-dev comerr-dev \
+               libcap2-dev libecap3-dev libexpat1-dev libxml2-dev \
+               libnetfilter-conntrack-dev dh-apparmor \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY squid.conf /tmp/squid.conf
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/

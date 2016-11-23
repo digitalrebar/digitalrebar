@@ -15,6 +15,7 @@
         "ntp_servers",
         "operating-system-disk",
         "provisioner-default-password-hash",
+        "use-proxy",
         "proxy-servers",
         "rebar-access_keys",
         "rebar-machine_key"

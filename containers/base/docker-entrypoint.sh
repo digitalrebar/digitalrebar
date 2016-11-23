@@ -1,8 +1,8 @@
 #!/bin/bash
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 set -e
-set -x
 set -o pipefail
+[[ $DEBUG ]] && set -x
 
 if [[ -d /usr/local/dev/bin ]]; then
     export PATH="/usr/local/dev/bin:$PATH"
@@ -36,26 +36,41 @@ rebar() {
 # be able to talk to the outside world.  It relies the proxy being registered and alive,
 # and it will wait until it is before proceeding.
 with_local_proxy() {
-    if [[ ! $(get_service consul) ]]; then
-        echo "with_local_proxy called before consul is up!"
-        echo "$0 must execute after 10 in the entrypoint script ordering"
-        echo "This is a deadlock situation"
-        sleep 600
-        exit 1
+    if [[ $USE_OUR_PROXY = YES ]]; then
+        if [[ ! $(get_service consul) ]]; then
+            echo "with_local_proxy called before consul is up!"
+            echo "$0 must execute after 10 in the entrypoint script ordering"
+            echo "This is a deadlock situation"
+            sleep 600
+            exit 1
+        fi
+        local blob=""
+        while true; do
+            local blob=$(get_service proxy-service)
+            [[ $blob && $blob != '[]' ]] && break
+            sleep 5
+        done
+        local addr=$(jq -r '.[0] |.ServiceAddress' <<< "$blob")
+        [[ $addr ]] || addr=$(jq '.[0] |.Address' <<< "$blob")
+        local port=$(jq -r '.[0] |.ServicePort' <<< "$blob")
+        export HTTP_PROXY="http://$addr:$port"
+        export HTTPS_PROXY="$HTTP_PROXY"
+        export http_proxy="$HTTP_PROXY"
+        export https_proxy="$HTTP_PROXY"
+        return 0
     fi
-    local blob=""
-    while true; do
-        local blob=$(get_service proxy-service)
-        [[ $blob && $blob != '[]' ]] && break
-        sleep 5
-    done
-    local addr=$(jq -r '.[0] |.ServiceAddress' <<< "$blob")
-    [[ $addr ]] || addr=$(jq '.[0] |.Address' <<< "$blob")
-    local port=$(jq -r '.[0] |.ServicePort' <<< "$blob")
-    export HTTP_PROXY="http://$addr:$port"
-    export HTTPS_PROXY="$HTTP_PROXY"
-    export http_proxy="$HTTP_PROXY"
-    export https_proxy="$HTTP_PROXY"
+    if [[ $UPSTREAM_HTTP_PROXY ]]; then
+        export HTTP_PROXY="$UPSTREAM_HTTP_PROXY"
+        export http_proxy="$HTTP_PROXY"
+    fi
+    if [[ $UPSTREAM_HTTPS_PROXY ]]; then
+        export HTTPS_PROXY="$UPSTREAM_HTTPS_PROXY"
+        export https_proxy="$HTTPS_PROXY"
+    fi
+    if [[ $UPSTREAM_NO_PROXY ]]; then
+        export NO_PROXY="$UPSTREAM_NO_PROXY"
+        export no_proxy="$UPSTREAM_NO_PROXY"
+    fi
 }
 
 make_service() {

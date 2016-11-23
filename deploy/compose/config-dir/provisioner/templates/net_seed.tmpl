@@ -22,7 +22,7 @@ d-i mirror/protocol string {{.ParseUrl "scheme" .Env.OS.InstallUrl}}
 d-i mirror/http/hostname string {{.ParseUrl "host" .Env.OS.InstallUrl}}
 d-i mirror/http/directory string {{.ParseUrl "path" .Env.OS.InstallUrl}}
 {{end}}
-{{if .Param "proxy-servers"}}
+{{if .Param "use-proxy"}}
 d-i mirror/http/proxy string {{index (.Param "proxy-servers") 0 "url"}}
 {{else}}
 d-i mirror/http/proxy string
