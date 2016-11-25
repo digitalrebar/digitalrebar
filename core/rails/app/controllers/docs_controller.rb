@@ -30,7 +30,7 @@ class DocsController < ApplicationController
     if params.has_key? :alive            
       render json: {}, status => :no_content
     else
-      @file = Rails.configuration.rebar.eula_base || '../LICENSE.md'
+      @file = Rails.configuration.rebar.eula_base || '../../LICENSE.md'
       if File.exist? @file
         @raw = IO.read(@file)
         fix_encoding! unless @raw.valid_encoding?
