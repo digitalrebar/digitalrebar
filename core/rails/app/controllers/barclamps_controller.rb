@@ -58,7 +58,12 @@ class BarclampsController < ApplicationController
     params.require(:value)
     model.transaction do
       validate_create
-      @barclamp = Barclamp.import_or_update(params[:value], @current_user.current_tenant_id)
+      bc = params[:value]
+      unless bc.is_a?(Hash)
+        bc = YAML::load(bc)
+      end
+      bc['barclamp']['source_path'] ||= 'API_uploaded'
+      @barclamp = Barclamp.import_or_update(bc, @current_user.current_tenant_id)
     end
     respond_to do |format|
       format.html {  }
