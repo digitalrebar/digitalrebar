@@ -320,6 +320,44 @@ func (fe *Frontend) UnbindSubnet(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func (fe *Frontend) UnleaseSubnet(w rest.ResponseWriter, r *rest.Request) {
+	subnetName := r.PathParam("id")
+	mac := r.PathParam("mac")
+	mac = strings.ToLower(mac)
+	fe.DhcpInfo.Lock()
+
+	subnet, found := fe.DhcpInfo.Subnets[subnetName]
+	if !found {
+		fe.DhcpInfo.Unlock()
+		rest.Error(w, "Not Found", http.StatusNotFound)
+		return
+	}
+	capMap, err := multitenancy.NewCapabilityMap(r.Request)
+	if err != nil {
+		log.Printf("Failed to get capmap from request: %v\n", err)
+		rest.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+	if !capMap.HasCapability(subnet.TenantId, "SUBNET_UPDATE") {
+		if !capMap.HasCapability(subnet.TenantId, "SUBNET_READ") {
+			rest.Error(w, "Not Found", http.StatusNotFound)
+		} else {
+			rest.Error(w, "Forbidden", http.StatusForbidden)
+		}
+		fe.DhcpInfo.Unlock()
+		return
+	}
+
+	err, code := fe.DhcpInfo.DeleteLease(subnetName, mac)
+	if err != nil {
+		fe.DhcpInfo.Unlock()
+		rest.Error(w, err.Error(), code)
+		return
+	}
+	fe.DhcpInfo.Unlock()
+	w.WriteHeader(http.StatusOK)
+}
+
 func (fe *Frontend) NextServer(w rest.ResponseWriter, r *rest.Request) {
 	subnetName := r.PathParam("id")
 	nextServer := NextServer{}
@@ -386,6 +424,7 @@ func (fe *Frontend) RunServer(blocking bool) http.Handler {
 		rest.Delete("/subnets/#id", fe.DeleteSubnet),
 		rest.Post("/subnets/#id/bind", fe.BindSubnet),
 		rest.Delete("/subnets/#id/bind/#mac", fe.UnbindSubnet),
+		rest.Delete("/subnets/#id/lease/#mac", fe.UnleaseSubnet),
 		rest.Put("/subnets/#id/next_server/#ip", fe.NextServer),
 	)
 	if err != nil {

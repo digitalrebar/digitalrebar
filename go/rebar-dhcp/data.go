@@ -185,6 +185,22 @@ func (dt *DataTracker) DeleteBinding(subnetName, mac string) (error, int) {
 	return nil, http.StatusOK
 }
 
+func (dt *DataTracker) DeleteLease(subnetName, mac string) (error, int) {
+	lsubnet := dt.Subnets[subnetName]
+	if lsubnet == nil {
+		return errors.New("Subnet Not Found"), http.StatusNotFound
+	}
+
+	b := lsubnet.Leases[mac]
+	if b == nil {
+		return errors.New("Lease Not Found"), http.StatusNotFound
+	}
+
+	delete(lsubnet.Leases, mac)
+	dt.save_data()
+	return nil, http.StatusOK
+}
+
 func (dt *DataTracker) SetNextServer(subnetName string, ip net.IP, nextServer NextServer) (error, int) {
 	lsubnet := dt.Subnets[subnetName]
 	if lsubnet == nil {
