@@ -174,6 +174,32 @@ func init() {
 		},
 	})
 	subnet.AddCommand(&cobra.Command{
+		Use:   "unlease [name] from [macaddr]",
+		Short: "Remove address lease with [macaddr] from subnet [name]",
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 3 {
+				log.Fatalf("%v requires 2 args", c.UseLine())
+			}
+			obj := &api.DhcpSubnet{}
+			if session.SetId(obj, args[0]) != nil {
+				log.Fatalf("Failed to parse ID %v for a dhcp subnet", args[0])
+			}
+			req, err := http.NewRequest("DELETE", session.UrlTo(obj, "lease", args[2]), nil)
+			if err != nil {
+				log.Fatalf("Failed to create HTTP request: %v", err)
+			}
+			resp, err := session.BasicRequest(req)
+			if err != nil {
+				log.Fatalf("Error deleting lease %s from %s: %v", args[2], args[0], err)
+			}
+			resp.Body.Close()
+			if resp.StatusCode >= 300 {
+				log.Fatalf("Error deleting lease for %s: %s", args[0], resp.Status)
+			}
+			fmt.Printf("Deleted lease %s in %s", args[2], args[0])
+		},
+	})
+	subnet.AddCommand(&cobra.Command{
 		Use:   "nextserver [name] is [address]",
 		Short: "Set the next-server parameter for subnet [name] to [address]",
 		Run: func(c *cobra.Command, args []string) {
