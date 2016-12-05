@@ -288,6 +288,8 @@ trap 'kill %1' INT TERM EXIT KILL
 # install required go binaries
 binpath="$CONTAINER_DIR/../go/bin/$DR_TAG/linux/amd64"
 mkdir -p "$binpath"
+os=linux
+arch=amd64
 GOOS="$os" GOARCH="$arch" go build -o "${binpath}/goiardi" "github.com/ctdk/goiardi"
 GOOS="$os" GOARCH="$arch" go build -o "${binpath}/amttool" "github.com/VictorLowther/intelamt/amttool"
 GOOS="$os" GOARCH="$arch" go build -o "${binpath}/wscli" "github.com/VictorLowther/wsman/wscli"
