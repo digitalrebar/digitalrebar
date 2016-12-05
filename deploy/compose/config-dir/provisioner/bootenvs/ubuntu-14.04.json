@@ -22,7 +22,8 @@
         "provisioner-use-local-security",
         "proxy-servers",
         "rebar-access_keys",
-        "rebar-machine_key"
+        "rebar-machine_key",
+        "use-proxy"
     ],
     "Templates": [
         {
