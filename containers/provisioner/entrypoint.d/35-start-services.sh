@@ -4,5 +4,5 @@
 provisioner-mgmt \
     --api-port "$APIPORT" \
     --static-port "${WEBPORT}" \
-    --tftp-port 69 \
+    --tftp-port "$TFTPPORT" \
     --file-root "$TFTPROOT" &
