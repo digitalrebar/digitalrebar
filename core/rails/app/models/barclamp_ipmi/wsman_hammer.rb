@@ -118,7 +118,7 @@ class BarclampIpmi::WsmanHammer < Hammer
       optimize = '-q' if opts['optimize']
 
       out,err = '',''
-      cmd = %Q{/go/bin/wscli -e '#{@endpoint}' -u '#{@username}' -p '#{@password}' -a #{action} #{optimize} #{res} #{meth} #{selector} #{data}}
+      cmd = %Q{wscli -e '#{@endpoint}' -u '#{@username}' -p '#{@password}' -a #{action} #{optimize} #{res} #{meth} #{selector} #{data}}
       Rails.logger.debug(cmd)
       status = Open4::popen4ext(true,cmd) do |pid,stdin,stdout,stderr|
         stdin.close
