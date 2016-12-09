@@ -629,6 +629,7 @@ roles:
             obj_id: bios-supermicro-configure
     flags:
       - leaverunlog
+      - implicit
     requires:
       - bios-flash
       - rebar-managed-node
@@ -656,6 +657,7 @@ roles:
     jig: role-provided
     flags:
       - leaverunlog
+      - implicit
     requires:
       - bios-flash
       - rebar-managed-node
