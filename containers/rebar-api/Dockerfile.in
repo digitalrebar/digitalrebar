@@ -51,5 +51,6 @@ RUN curl -fgL -o '/tmp/chef.deb' \
 
 ADD http://localhost:28569/${DR_TAG}/linux/amd64/amttool /usr/local/bin/amttool
 ADD http://localhost:28569/${DR_TAG}/linux/amd64/wscli /usr/local/bin/wscli
+RUN chmod 755 /usr/local/bin/*
 
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/

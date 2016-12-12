@@ -74,7 +74,7 @@ roles:
                   "Advanced|Boot Feature|Bootup NumLock State": "01 (On)"
                   "Advanced|Boot Feature|INT19 Trap Response": "01 (Immediate)"
                   "Advanced|Boot Feature|Power Button Function": "01 (Instant Off)"
-                  "Advanced|Boot Feature|Quiet Boot": 1
+                  "Advanced|Boot Feature|Quiet Boot": "1"
                   "Advanced|Boot Feature|Re-try Boot": "00 (Disabled)"
                   "Advanced|Boot Feature|Restore on AC Power Loss": "02 (Last State)"
                   "Advanced|Boot Feature|Wait For \"F1\" If Error": "01 (Enabled)"
@@ -93,8 +93,8 @@ roles:
                   "Advanced|CPU Configuration|Advanced Power Management Configuration|Energy Performance BIAS setting.": "07 (Balanced Performance)"
                   "Advanced|CPU Configuration|Advanced Power Management Configuration|Energy Performance Tuning": "01 (Disable)"
                   "Advanced|CPU Configuration|Advanced Power Management Configuration|Power Technology": "01 (Energy Efficient)"
-                  "Advanced|CPU Configuration|Clock Spread Spectrum": 0
-                  "Advanced|CPU Configuration|Cores Enabled": 0
+                  "Advanced|CPU Configuration|Clock Spread Spectrum": "0"
+                  "Advanced|CPU Configuration|Cores Enabled": "0"
                   "Advanced|CPU Configuration|DCU IP Prefetcher": "01 (Enable)"
                   "Advanced|CPU Configuration|DCU Streamer Prefetcher": "01 (Enable)"
                   "Advanced|CPU Configuration|Direct Cache Access (DCA)": "02 (Auto)"
@@ -152,7 +152,7 @@ roles:
                   "Advanced|Chipset Configuration|North Bridge|Memory RAS Configuration|Memory Rank Sparing": "00 (Disabled)"
                   "Advanced|Chipset Configuration|North Bridge|Memory RAS Configuration|Multi Rank Sparing": "04 (Auto)"
                   "Advanced|Chipset Configuration|North Bridge|Memory RAS Configuration|Patrol Scrub": "01 (Enable)"
-                  "Advanced|Chipset Configuration|North Bridge|Memory RAS Configuration|Patrol Scrub Interval": 24
+                  "Advanced|Chipset Configuration|North Bridge|Memory RAS Configuration|Patrol Scrub Interval": "24"
                   "Advanced|Chipset Configuration|North Bridge|Memory RAS Configuration|RAS Mode": "00 (Independent)"
                   "Advanced|Chipset Configuration|North Bridge|QPI Configuration|QPI General Configuration|COD Enable": "00 (Disable)"
                   "Advanced|Chipset Configuration|North Bridge|QPI Configuration|QPI General Configuration|Early Snoop": "02 (Auto)"
@@ -220,41 +220,41 @@ roles:
                   "Advanced|SATA Configuration|SATA AHCI ALPM": "01 (Enabled)"
                   "Advanced|SATA Configuration|SATA Controller": "01 (Enabled)"
                   "Advanced|SATA Configuration|SATA RAID Option ROM/UEFI Driver": "02 (Legacy)"
-                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection": 0
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection": "0"
                   "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Bits per second": "07 (115200)"
                   "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Data Bits": "08 (8)"
                   "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Flow Control": "00 (None)"
                   "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Legacy OS Redirection Resolution": "01 (80x25)"
                   "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Parity": "01 (None)"
                   "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Putty KeyPad": "01 (VT100)"
-                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Recorder Mode": 0
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Recorder Mode": "0"
                   "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Redirection After BIOS POST": "00 (Always Enable)"
-                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Resolution 100x31": 1
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Resolution 100x31": "1"
                   "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Stop Bits": "01 (1)"
                   "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 Terminal Type": "01 (VT100+)"
-                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 VT-UTF8 Combo Key Support": 1
-                  "Advanced|Serial Port Console Redirection|EMS Console Redirection": 0
+                  "Advanced|Serial Port Console Redirection|COM1 Console Redirection Settings|COM1 VT-UTF8 Combo Key Support": "1"
+                  "Advanced|Serial Port Console Redirection|EMS Console Redirection": "0"
                   "Advanced|Serial Port Console Redirection|EMS Console Redirection Settings|EMS Bits per second": "07 (115200)"
                   "Advanced|Serial Port Console Redirection|EMS Console Redirection Settings|EMS Flow Control": "00 (None)"
                   "Advanced|Serial Port Console Redirection|EMS Console Redirection Settings|EMS Terminal Type": "02 (VT-UTF8)"
                   "Advanced|Serial Port Console Redirection|EMS Console Redirection Settings|Out-of-Band Mgmt Port": "00 (COM1)"
-                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection": 1
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection": "1"
                   "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Bits per second": "07 (115200)"
                   "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Data Bits": "08 (8)"
                   "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Flow Control": "00 (None)"
                   "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Legacy OS Redirection Resolution": "01 (80x25)"
                   "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Parity": "01 (None)"
                   "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Putty KeyPad": "01 (VT100)"
-                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Recorder Mode": 0
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Recorder Mode": "0"
                   "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Redirection After BIOS POST": "00 (Always Enable)"
-                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Resolution 100x31": 1
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Resolution 100x31": "1"
                   "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Stop Bits": "01 (1)"
                   "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL Terminal Type": "01 (VT100+)"
-                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL VT-UTF8 Combo Key Support": 1
+                  "Advanced|Serial Port Console Redirection|SOL/COM2 Console Redirection Settings|SOL VT-UTF8 Combo Key Support": "1"
                   "Advanced|Super IO Configuration|Serial Port 1 Configuration|Change Port 1 Settings": "00 (Auto)"
-                  "Advanced|Super IO Configuration|Serial Port 1 Configuration|Serial Port 1": 1
+                  "Advanced|Super IO Configuration|Serial Port 1 Configuration|Serial Port 1": "1"
                   "Advanced|Super IO Configuration|Serial Port 2 Configuration|Change Port 2 Settings": "00 (Auto)"
-                  "Advanced|Super IO Configuration|Serial Port 2 Configuration|Serial Port 2": 1
+                  "Advanced|Super IO Configuration|Serial Port 2 Configuration|Serial Port 2": "1"
                   "Advanced|Super IO Configuration|Serial Port 2 Configuration|Serial Port 2 Attribute": "03 (SOL)"
                   "Advanced|Trusted Computing|Device Select": "02 (Auto)"
                   "Advanced|Trusted Computing|Pending Operation": "00 (None)"
@@ -318,9 +318,9 @@ roles:
                   "Boot|USB Key special boot instance": "00 (Boot Option #1)"
                   "Event Logs|Change SMBIOS Event Log Settings|Erase Event Log": "00 (No)"
                   "Event Logs|Change SMBIOS Event Log Settings|Log System Boot Event": "00 (Disabled)"
-                  "Event Logs|Change SMBIOS Event Log Settings|MECI": 1
-                  "Event Logs|Change SMBIOS Event Log Settings|METW": 60
-                  "Event Logs|Change SMBIOS Event Log Settings|Memory Corr. Error Threshold": 10
+                  "Event Logs|Change SMBIOS Event Log Settings|MECI": "1"
+                  "Event Logs|Change SMBIOS Event Log Settings|METW": "60"
+                  "Event Logs|Change SMBIOS Event Log Settings|Memory Corr. Error Threshold": "10"
                   "Event Logs|Change SMBIOS Event Log Settings|Memory Corrected Error Enabling": "00 (Disable)"
                   "Event Logs|Change SMBIOS Event Log Settings|PCI-Ex Error Enable": "00 (No)"
                   "Event Logs|Change SMBIOS Event Log Settings|Runtime Error Logging Support": "01 (Enable)"
@@ -629,6 +629,7 @@ roles:
             obj_id: bios-supermicro-configure
     flags:
       - leaverunlog
+      - implicit
     requires:
       - bios-flash
       - rebar-managed-node
@@ -656,6 +657,7 @@ roles:
     jig: role-provided
     flags:
       - leaverunlog
+      - implicit
     requires:
       - bios-flash
       - rebar-managed-node

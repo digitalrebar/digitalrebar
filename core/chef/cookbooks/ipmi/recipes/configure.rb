@@ -159,21 +159,19 @@ if node["quirks"].member?("ipmi-hard-reset-after-config")
   end
 end
 
-if node["rebar_wall"]["status"]["ipmi"]["net_changed"] && node[:ipmi][:use_dhcp]
-  Chef::Log.info("Waiting 30 seconds for DHCP lease to be acquired")
-  sleep 30
-end
-laninfo = IPMI.laninfo(node)
-if laninfo.empty?
-  Chef::Log.info("Cannot validate that BMC is remotely accessible")
-  return
-end
-
-node.set[:rebar_wall][:ipmi][:laninfo] = laninfo
-
-
-ruby_block "Mark IPMI as configured" do
+ruby_block "Regather IPMI info and mark configured" do
   block do
-    node.set[:ipmi][:configured] = true
+    if node["rebar_wall"]["status"]["ipmi"]["net_changed"] && node[:ipmi][:use_dhcp]
+      Chef::Log.info("Waiting 30 seconds for DHCP lease to be acquired")
+      sleep 30
+    end
+    laninfo = IPMI.laninfo(node)
+    if laninfo.empty?
+      Chef::Log.info("Cannot validate that BMC is remotely accessible")
+    else
+      node.set[:rebar_wall][:ipmi][:laninfo] = laninfo
+      node.set[:ipmi][:configured] = true
+    end
   end
 end
+
