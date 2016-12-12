@@ -51,7 +51,6 @@ import:
   - plugin
   - terraform
 - package: github.com/kmanley/go-http-auth
-  version: ~0.3.0
 - package: github.com/pborman/uuid
   version: ~1.0.0
 - package: github.com/satori/go.uuid
