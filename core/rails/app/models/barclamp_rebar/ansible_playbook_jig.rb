@@ -100,9 +100,34 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     File.open("#{CACHE_DIR}/lock", File::RDWR|File::CREAT, 0644) do |f1|
       f1.flock(File::LOCK_EX)
 
-      # Put sort in place
+      # Put source in place
       role_yaml['playbook_src_paths'].each do |dir, info|
         piece_part = "#{role_cache_dir}/#{dir}"
+
+        # generate role files if they are in the metadata
+        if info =~ /^metadata$/
+          %w[handlers tasks templates].each do |p|
+            if role_yaml[p]
+              out, err, status = exec_cmd("mkdir -p #{piece_part}/#{p}")
+              # replace the file each time
+              role_yaml[p].each do |file, contents|
+                # add endings if missing
+                f = if file =~ /.yml$|.j2$/
+                  file
+                elsif p == 'templates'
+                  file + ".j2"
+                else
+                  file + ".yml"
+                end
+                f2 = File.open("#{piece_part}/#{p}/#{f}", "w")
+                f2.write(contents)
+                f2.close
+                Rails.logger.info "ZEHICLE #{f}"
+              end
+            end
+          end
+        end
+
         if !File.exists?(piece_part)
           # If we are told galaxy, then load it into ansible.
           if info =~ /^galaxy:/
@@ -122,12 +147,13 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
             local_scripts = File.join nr.barclamp.source_path, 'ansible-playbooks', 'roles', nr.role.name
             FileUtils.cp_r("#{local_scripts}/#{info}/.", "#{piece_part}")
           end
-
         else
           if info =~ /^galaxy:/
             # Update galaxy repos??
           elsif info =~ /^http/
             # Update git repos??
+          elsif info =~ /^metadata$/
+            # action is above, do nothing
           else
             local_scripts = File.join nr.barclamp.source_path, 'ansible-playbooks', 'roles', nr.role.name
             FileUtils.cp_r("#{local_scripts}/#{info}/.", "#{piece_part}")
