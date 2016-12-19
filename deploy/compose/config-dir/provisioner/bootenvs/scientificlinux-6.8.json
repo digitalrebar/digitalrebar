@@ -1,0 +1,50 @@
+{
+    "Name": "scientificlinux-6.8-install",
+    "TenantId": 1,
+    "OS": {
+        "Name": "scientificlinux-6.8",
+        "IsoFile": "SL-68-x86_64-2016-06-29-DVD-DL.iso",
+        "IsoUrl": "http://ftp1.scientificlinux.org/linux/scientific/6.8/x86_64/iso/SL-68-x86_64-2016-06-29-DVD-DL.iso",
+        "IsoSha256": "ada95b0e920612a5a9c56e268515a9965663377407a7897167be7a2efdade804"
+    },
+    "Kernel": "images/pxeboot/vmlinuz",
+    "Initrds": [ "images/pxeboot/initrd.img" ],
+    "BootParams": "ksdevice=bootif ks={{.Machine.Url}}/compute.ks method={{.Env.OS.InstallUrl}}",
+    "RequiredParams": [
+        "logging_servers",
+        "ntp_servers",
+        "operating-system-disk",
+        "provisioner-default-password-hash",
+        "use-proxy",
+        "proxy-servers",
+        "rebar-access_keys",
+        "rebar-machine_key"
+    ],
+    "Templates": [
+        {
+            "Name": "pxelinux",
+            "Path": "pxelinux.cfg/{{.Machine.HexAddress}}",
+            "UUID": "default-pxelinux.tmpl"
+        },
+        {
+            "Name": "elilo",
+            "Path": "{{.Machine.HexAddress}}.conf",
+            "UUID": "default-elilo.tmpl"
+        },
+        {
+            "Name": "ipxe",
+            "Path": "{{.Machine.Address}}.ipxe",
+            "UUID": "default-ipxe.tmpl"
+        },
+        {
+            "Name": "compute.ks",
+            "Path": "{{.Machine.Path}}/compute.ks",
+            "UUID": "centos-6.ks.tmpl"
+        },
+        {
+            "Name": "rebar_join.sh",
+            "Path": "{{.Machine.Path}}/rebar_join.sh",
+            "UUID": "rebar-join.sh.tmpl"
+        }
+    ]
+}
