@@ -57,7 +57,7 @@ fi
 OS_NAME="$OS_TYPE-$OS_VER"
 
 case $OS_TYPE in
-    centos|redhat|fedora) OS_FAMILY="rhel";;
+    centos|redhat|fedora|rhel|scientificlinux) OS_FAMILY="rhel";;
     debian|ubuntu) OS_FAMILY="debian";;
     *) OS_FAMILY=$OS_TYPE;;
 esac
@@ -103,6 +103,7 @@ gen_subs() {
     local res=()
     res+=("$OS_NAME")
     case $OS_TYPE in
+        scientificlinux) res+=("centos-$OS_VER" "$OS_TYPE" "centos");;
         redhat) res+=("centos-$OS_VER" "$OS_TYPE" "centos");;
         centos) res+=("redhat-$OS_VER" "$OS_TYPE" "redhat");;
         fedora) res+=("$OS_TYPE" redhat centos);;
