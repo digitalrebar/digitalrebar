@@ -1,0 +1,50 @@
+{
+    "Name": "centos-7.3.1611-install",
+    "TenantId": 1,
+    "OS": {
+        "Name": "centos-7.3.1611",
+        "IsoFile": "CentOS-7-x86_64-Minimal-1611.iso",
+        "IsoUrl": "http://mirrors.kernel.org/centos/7.3.1611/isos/x86_64/CentOS-7-x86_64-Minimal-1611.iso",
+        "IsoSha256": "27bd866242ee058b7a5754e83d8ee8403e216b93d130d800852a96f41c34d86a"
+    },
+    "Kernel": "images/pxeboot/vmlinuz",
+    "Initrds": [ "images/pxeboot/initrd.img" ],
+    "BootParams": "ksdevice=bootif ks={{.Machine.Url}}/compute.ks method={{.Env.OS.InstallUrl}} inst.geoloc=0",
+    "RequiredParams": [
+        "logging_servers",
+        "ntp_servers",
+        "operating-system-disk",
+        "provisioner-default-password-hash",
+        "proxy-servers",
+        "use-proxy",
+        "rebar-access_keys",
+        "rebar-machine_key"
+    ],
+    "Templates": [
+        {
+            "Name": "pxelinux",
+            "Path": "pxelinux.cfg/{{.Machine.HexAddress}}",
+            "UUID": "default-pxelinux.tmpl"
+        },
+        {
+            "Name": "elilo",
+            "Path": "{{.Machine.HexAddress}}.conf",
+            "UUID": "default-elilo.tmpl"
+        },
+        {
+            "Name": "ipxe",
+            "Path": "{{.Machine.Address}}.ipxe",
+            "UUID": "default-ipxe.tmpl"
+        },
+        {
+            "Name": "compute.ks",
+            "Path": "{{.Machine.Path}}/compute.ks",
+            "UUID": "centos-7.ks.tmpl"
+        },
+        {
+            "Name": "rebar_join.sh",
+            "Path": "{{.Machine.Path}}/rebar_join.sh",
+            "UUID": "rebar-join.sh.tmpl"
+        }
+    ]
+}
