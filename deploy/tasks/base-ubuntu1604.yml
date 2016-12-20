@@ -30,9 +30,22 @@
     sudo: yes
     when: "'--provisioner' in dr_services"
 
+  - name: Detect if AppArmor is working.
+    command: service apparmor status
+    register: apparmor_status
+    failed_when: false
+    changed_when: false
+  - name: Detect if AppArmor is working.
+    command: service apparmor status
+    register: apparmor_status
+    failed_when: false
+    changed_when: false
+  - debug: var=apparmor_status
   - name: stop apparmor
     command: sudo service apparmor teardown
     sudo: yes
+    when: "apparmor_status.rc != 3"
   - name: remove apparmor
     command: sudo update-rc.d -f apparmor remove
     sudo: yes
+    when: "apparmor_status.rc != 3"
