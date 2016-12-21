@@ -41,15 +41,22 @@ class BarclampIpmi::Configure < Role
     authenticator = Attrib.get('ipmi-password',nr.node)
     endpoint = Attrib.get('ipmi-address',nr)
 
-    unless nr.node.hammers.find_by(type: "BarclampIpmi::IpmiHammer")
+    # if we rerun, we need to update the endpoints.
+    h = nr.node.hammers.find_by(type: "BarclampIpmi::IpmiHammer")
+    unless h
       # We must have a configured IPMI controller to operate.
       Hammer.bind(manager_name: "ipmi",
                        username: username,
                        authenticator: authenticator,
                        endpoint: endpoint,
                        node: nr.node)
+    else
+      h.endpoint = endpoint
+      h.save
     end
-    unless nr.node.hammers.find_by(type: "BarclampIpmi::WsmanHammer")
+
+    h = nr.node.hammers.find_by(type: "BarclampIpmi::WsmanHammer")
+    unless h
       endpoint = BarclampIpmi::WsmanHammer.probe(nr.node)
       return unless endpoint
       Hammer.bind(manager_name: "wsman",
@@ -57,6 +64,14 @@ class BarclampIpmi::Configure < Role
                        authenticator: authenticator,
                        endpoint: endpoint,
                        node: nr.node)
+    else
+      endpoint = BarclampIpmi::WsmanHammer.probe(nr.node)
+      unless endpoint
+        h.destroy
+        return
+      end
+      h.endpoint = endpoint
+      h.save
     end
   end
 end
