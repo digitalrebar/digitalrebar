@@ -35,11 +35,6 @@
     register: apparmor_status
     failed_when: false
     changed_when: false
-  - name: Detect if AppArmor is working.
-    command: service apparmor status
-    register: apparmor_status
-    failed_when: false
-    changed_when: false
   - debug: var=apparmor_status
   - name: stop apparmor
     command: sudo service apparmor teardown
