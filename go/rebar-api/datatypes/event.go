@@ -21,12 +21,8 @@ type EventSinkID struct {
 	Endpoint string `json:"endpoint"`
 }
 
-// Id returns this attrib's ID or Name as a string.
-// The REST API allows them to be used interchangeably.
+// Id returns this attrib's ID.
 func (o *EventSinkID) Id() (string, error) {
-	if o.Endpoint != "" {
-		return o.Endpoint, nil
-	}
 	return o.SimpleID.Id()
 }
 
