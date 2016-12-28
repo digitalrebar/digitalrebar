@@ -1,0 +1,27 @@
+ Providing RAID and BIOS Utilities
+ =================================
+  
+ The locations and names in this document were updated December 2016.  Please check the RAID barclamp configuration file for the latest information: https://github.com/digitalrebar/digitalrebar/blob/master/core/barclamps/raid.yml
+ 
+ If you save files here AND change ../isos/copy_isos.no to to copy_isos.yes then they will be *automatically downloaded* for you when you run the Ansible script locally.
+ 
+ Downloading the BIOS Utility
+ -----------------------------
+ 
+ Visit Broadcom looking for the SAS2IRCU_P20 utility at https://www.broadcom.com
+ 
+ This link will search for it directly: https://www.broadcom.com/broadcom-search?q=8.07.14_megacli.zip
+ 
+ If the file downloads with dashes (8-07-14) then please change it to dots!
+
+ You must accept the EULA to download this file (that is why it cannot be packaged into the install for you).
+ 
+ 
+ Downloading the RAID Utility
+ ----------------------------
+ 
+ Visit Broadcom looking for the SAS2IRCU_P20 utility at https://www.broadcom.com
+ 
+ This link will search for it directly: https://www.broadcom.com/broadcom-search?q=sas2ircu_p20.zip
+ 
+ You must accept the EULA to download this file (that is why it cannot be packaged into the install for you).
