@@ -26,9 +26,9 @@ SS_URL=$PROV_SLEDGEHAMMER_URL/$PROV_SLEDGEHAMMER_SIG
 SS_DIR=${TFTPROOT}/sledgehammer/$PROV_SLEDGEHAMMER_SIG
 mkdir -p "$SS_DIR"
 if [[ ! -e $SS_DIR/sha1sums ]]; then
-    (with_local_proxy; curl -fgL -o "$SS_DIR/sha1sums" "$SS_URL/sha1sums")
+    (unset USE_OUR_PROXY; with_local_proxy; curl -fgL -o "$SS_DIR/sha1sums" "$SS_URL/sha1sums")
     while read f; do
-        (with_local_proxy; curl -fgL -o "$SS_DIR/$f" "$SS_URL/$f")
+        (unset USE_OUR_PROXY; with_local_proxy; curl -fgL -o "$SS_DIR/$f" "$SS_URL/$f")
     done < <(awk '{print $2}' <"$SS_DIR/sha1sums")
     if ! (cd "$SS_DIR" && sha1sum -c sha1sums); then
         echo "Download of sledgehammer failed or is corrupt!"
