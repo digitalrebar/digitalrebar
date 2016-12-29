@@ -105,26 +105,24 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
         piece_part = "#{role_cache_dir}/#{dir}"
 
         # generate role files if they are in the metadata
-        if info =~ /^metadata$/
-          %w[handlers tasks templates].each do |p|
-            if role_yaml[p]
-              out, err, status = exec_cmd("mkdir -p #{piece_part}/#{p}")
-              # replace the file each time
-              role_yaml[p].each do |file, contents|
-                # add endings if missing
-                f = if file =~ /.yml$|.j2$/
-                  file
-                elsif p == 'templates'
-                  file + ".j2"
-                else
-                  file + ".yml"
-                end
-                f2 = File.open("#{piece_part}/#{p}/#{f}", "w")
-                f2.write(contents)
-                f2.close
-                Rails.logger.info "ZEHICLE #{f}"
-              end
+        if info == "metadata"
+          # clear past run because we replace the file each time
+          out, err, status = exec_cmd("rm -rf #{piece_part}")
+          role_yaml["files"].each do |item|
+            type = item["type"] || "tasks"
+            out, err, status = exec_cmd("mkdir -p #{piece_part}/#{type}")
+            # add endings if missing
+            file = item["file"] || "main"
+            f = if file =~ /.yml$|.j2$/
+              file
+            elsif type == 'templates'
+              file + ".j2"
+            else
+              file + ".yml"
             end
+            f2 = File.open("#{piece_part}/#{type}/#{f}", "w")
+            f2.write(item["body"])
+            f2.close
           end
         end
 
