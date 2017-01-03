@@ -121,7 +121,10 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
               file + ".yml"
             end
             f2 = File.open("#{piece_part}/#{type}/#{f}", "w")
-            f2.write(item["body"])
+            body = item["body"]
+            # allow body to be array for readability
+            body = body.join("\n") if body.kind_of?(Array)
+            f2.write(body)
             f2.close
           end
         end
