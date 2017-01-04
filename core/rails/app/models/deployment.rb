@@ -146,7 +146,7 @@ class Deployment < ActiveRecord::Base
   # Do this by changing its state from COMMITTED to PROPOSED.
   def propose
     Deployment.transaction do
-      raise "Cannot propose  a system deployment" if system?
+      # ALLOWING SYSTEM TO PROPOSE WILL HALT SYSTEM ACTION WHILE PROPOSED > raise "Cannot propose  a system deployment" if system?
       write_attribute("state",PROPOSED)
       save!
     end
