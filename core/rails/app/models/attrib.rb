@@ -216,10 +216,8 @@ class Attrib < ActiveRecord::Base
   # Poke a noderole to make it rerun because an attrib it wants has changed.
   #
   def poke(nr)
-    if nr.runnable? && (nr.transition? || nr.active?)
-      Rails.logger.info("Attrib: #{self.name} poking NodeRole #{nr.name}")
-      nr.send(:block_or_todo)
-    end
+    Rails.logger.info("Attrib: #{self.name} poking NodeRole #{nr.name}")
+    nr.send(:block_or_todo)
   end
 
   private
@@ -248,14 +246,13 @@ class Attrib < ActiveRecord::Base
     kwalify_validate(value) if target == :user
     to_merge = template(value)
     to = __resolve(to_orig)
-    current = self.get(to,target)
-    Rails.logger.debug("Attrib: Attempting to update #{name} on #{to.class.name}:#{to.name} from #{current.inspect} to #{value.inspect} with #{to_merge.inspect}")
+    val = Marshal.load(Marshal.dump(self.get(to,:all,true)))
+    Rails.logger.debug("Attrib: Attempting to update #{name} in #{target} on #{to.class.name}:#{to.name} from #{val.inspect} to #{value.inspect} with #{to_merge.inspect}")
     Attrib.transaction do
-      Rails.logger.debug("Attrib: updating #{name} on #{to.class.name}:#{to.name} to #{value}")
+      Rails.logger.debug("Attrib: updating #{name} in #{target} on #{to.class.name}:#{to.name} to #{value}")
       case
       when to.is_a?(Hash) then to.deep_merge(to_merge)
       when to.is_a?(Node)
-        val = self.get(to,:all,true)
         case target
         when :note then to.note_update(to_merge)
         when :discovery then to.discovery_update(to_merge)
@@ -265,7 +262,7 @@ class Attrib < ActiveRecord::Base
         to.node_roles.order("cohort ASC").each do |nr|
           next unless RoleRequireAttrib.find_by(role_id: nr.role_id, attrib_name: self.name)
           poke(nr)
-        end if target != :note && self.get(to,:all,true) != val
+        end if target != :note && value != val
       when to.is_a?(Role)
         case target
         when :note then to.note_update(to_merge)
@@ -276,20 +273,21 @@ class Attrib < ActiveRecord::Base
           poke(nr)
         end if target != :note
       when to.is_a?(DeploymentRole)
-        val = self.get(to,:all,true)
         case target
         when :note then to.note_update(to_merge)
         when :system, :wall
           to.wall_update(to_merge)
-          # Poke all the noderoles in this deployment that get data from this deployment role.
-          to.noderoles.order("cohort ASC").each do |nr|
-            poke(nr)
-          end unless self.get(to,:all,true) == val
         else
           to.data_update(to_merge)
         end
+        # Poke all the noderoles in this deployment that get data from this deployment role.
+        to.noderoles.order("cohort ASC").each do |dnr|
+          dnr.children.order("cohort ASC").each do |nr|
+            next unless RoleRequireAttrib.find_by(role_id: nr.role_id, attrib_name: self.name)
+            poke(nr)
+          end
+        end if target != :note && value != val
       when to.is_a?(NodeRole)
-        val = self.get(to,:all,true)
         case target
         when :note then to.note_update(to_merge)
         when :system then to.sysdata_update(to_merge)
@@ -301,7 +299,7 @@ class Attrib < ActiveRecord::Base
         to.children.order("cohort ASC").each do |nr|
           next unless RoleRequireAttrib.find_by(role_id: nr.role_id, attrib_name: self.name)
           poke(nr)
-        end if target != :note && self.get(to,:all,true) != val
+        end if target != :note && value != val
       else raise("Cannot write attribute data to #{to.class.to_s}")
       end
     end
