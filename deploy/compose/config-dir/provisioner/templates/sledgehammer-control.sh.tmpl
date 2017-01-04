@@ -51,7 +51,9 @@ cp /etc/gemrc /root/.gemrc
 
 mkdir -p /root/.ssh
 cat >/root/.ssh/authorized_keys <<EOF
+### BEGIN GENERATED CONTENT
 {{ range $key := .Param "rebar-access_keys" }}{{$key}}{{ end }}
+### END GENERATED CONTENT
 EOF
 
 # Mark us as alive.

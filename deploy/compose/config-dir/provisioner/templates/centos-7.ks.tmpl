@@ -113,7 +113,9 @@ if [ ! -f "$rsyslog_dir/10-rebar-client.conf" ]; then
 fi
 mkdir -p /root/.ssh
 cat >/root/.ssh/authorized_keys <<EOF
+### BEGIN GENERATED CONTENT
 {{ range $key := .Param "rebar-access_keys" }}{{$key}}{{ end }}
+### END GENERATED CONTENT
 EOF
 echo "PermitRootLogin without-password" >> /etc/ssh/sshd_config
 echo "AcceptEnv http_proxy https_proxy no_proxy" >> /etc/ssh/sshd_config
