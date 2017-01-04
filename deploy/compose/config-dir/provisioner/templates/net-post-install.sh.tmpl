@@ -47,7 +47,9 @@ wget -q {{.Machine.Url}}/rebar_join.sh -O- > /target/etc/init.d/rebar_join
 mkdir -p /target/root/.ssh
 
 cat >/target/root/.ssh/authorized_keys <<EOF
+### BEGIN GENERATED CONTENT
 {{ range $key := .Param "rebar-access_keys" }}{{$key}}{{ end }}
+### END GENERATED CONTENT
 EOF
 
 echo "PermitRootLogin without-password" >> /target/etc/ssh/sshd_config

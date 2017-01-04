@@ -117,7 +117,9 @@ echo "$REBAR_UUID" > /etc/rebar-uuid
 
 mkdir -p /root/.ssh
 cat >/root/.ssh/authorized_keys <<EOF
+### BEGIN GENERATED CONTENT
 {{ range $key := .Param "rebar-access_keys" }}{{$key}}{{ end }}
+### END GENERATED CONTENT
 EOF
 echo "PermitRootLogin without-password" >> /etc/ssh/sshd_config
 # Allow client to pass http proxy environment variables

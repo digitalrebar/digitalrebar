@@ -282,6 +282,7 @@ class Attrib < ActiveRecord::Base
         end
         # Poke all the noderoles in this deployment that get data from this deployment role.
         to.noderoles.order("cohort ASC").each do |dnr|
+          poke(dnr)
           dnr.children.order("cohort ASC").each do |nr|
             next unless RoleRequireAttrib.find_by(role_id: nr.role_id, attrib_name: self.name)
             poke(nr)
