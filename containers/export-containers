@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+[[ $DEBUG ]] && set -x
+
+set -o pipefail
+
+#
+# NOTE: When building on MAC, you must set SWS_LISTEN_ADDR to your docker
+# bridge IP (e.g. 192.168.99.1) and accept the mac firewall port allowance.
+#
+
+if ! [[ $1 ]]; then
+    echo "First arg must be name of the file to save the images to!"
+    exit 1
+fi
+
+export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+[[ $DR_TAG ]] || export DR_TAG="master"
+declare -A CONTAINERS
+CONTAINERS['digitalrebar/base']='base'
+CONTAINERS['digitalrebar/deploy-service-wrapper']='service-wrapper'
+CONTAINERS['digitalrebar/dr_dns']='dns'
+CONTAINERS['digitalrebar/dr_forwarder']='forwarder'
+CONTAINERS['digitalrebar/dr_goiardi']='goiardi'
+CONTAINERS['digitalrebar/dr_ntp']='ntp'
+CONTAINERS['digitalrebar/dr_postgres']='postgres'
+CONTAINERS['digitalrebar/dr_provisioner']='provisioner'
+CONTAINERS['digitalrebar/dr_rebar_api']='rebar-api'
+CONTAINERS['digitalrebar/dr_rebar_dhcp']='rebar-dhcp'
+CONTAINERS['digitalrebar/dr_webproxy']='webproxy'
+CONTAINERS['digitalrebar/cloudwrap']='cloudwrap'
+CONTAINERS['digitalrebar/dr_node']='node'
+CONTAINERS['digitalrebar/logging']='logging'
+CONTAINERS['digitalrebar/dr_rev_proxy']='rebar-rev-proxy'
+CONTAINERS['digitalrebar/dr_trust_me']='trust-me'
+#CONTAINERS['digitalrebar/slave']='slave'
+CONTAINERS['digitalrebar/rule-engine']='rule-engine'
+
+images=()
+# First, pull the containers
+for c in "${!CONTAINERS[@]}"; do
+    images+=("${c}:${DR_TAG}")
+    docker pull "${c}:${DR_TAG}"
+done
+
+# Next, save them
+docker save "${images[@]}" |xz -T0 -1 > "$1"

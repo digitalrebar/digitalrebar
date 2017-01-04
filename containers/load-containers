@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -o pipefail
+set -e
+
+if ! [[ $1 ]]; then
+    echo "First arg must be the name of the file to load images from!"
+    exit 1
+fi
+
+if [[ ! -f $1 ]]; then
+    echo "$1 does not exist"
+    exit 1
+fi
+
+xz -d -c "$1" |docker load
