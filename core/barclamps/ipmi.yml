@@ -322,6 +322,7 @@ roles:
       - ipmi-mfgr-id
       - ipmi-product-id
       - provisioner-webservers
+      - skip_flash
     attribs:
       - name: ipmi-firmware-applied
         map: 'ipmi/firmware_updated'
