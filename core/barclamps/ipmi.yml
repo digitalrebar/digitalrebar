@@ -315,6 +315,8 @@ roles:
     requires:
       - ipmi-discover
     wants-attribs:
+      - ipmi-wanted-version
+      - ipmi-firmware-history
       - ipmi-enable
       - ipmi-firmware-rev
       - ipmi-device-id
@@ -324,14 +326,9 @@ roles:
       - provisioner-webservers
       - skip_flash
     attribs:
-      - name: ipmi-firmware-applied
-        map: 'ipmi/firmware_updated'
-        description: "Whether a IPMI update was applied to this system"
-      - name: ipmi-firmware-applicable-version
-        map: 'ipmi/firmware_applicable_version'
-        description: 'The IPMI version that is applicable to this system.'
-      - name: ipmi-firmware-applicable-package
-        map: 'ipmi/firmware_applicable_package'
+      - name: ipmi-firmware-applicable
+        map: 'ipmi/firmware_applicable'
+        description: 'The IPMI versions that are applicable to this system. (JSON)'
       - name: ipmi-firmware-list
         description: "List of firmware updates available"
         map: 'ipmi/firmware_updates'
@@ -380,8 +377,11 @@ roles:
             ipmi-firmware-rev: "2.32"
             script: |
               #!/usr/bin/env bash
+              if [[ $forceit == true ]] ; then
+                  FORCE="-f"
+              fi
               chmod 755 "$package"
-              "$package" -q -r
+              "$package" -q -r $FORCE
               case $? in
                   0)  # No reboot required.
                       exit 0;;
@@ -411,8 +411,11 @@ roles:
             ipmi-firmware-rev: "2.40"
             script: |
               #!/usr/bin/env bash
+              if [[ $forceit == true ]] ; then
+                  FORCE="-f"
+              fi
               chmod 755 "$package"
-              "$package" -q -r
+              "$package" -q -r $FORCE
               case $? in
                   0)  # No reboot required.
                       exit 0;;
@@ -538,4 +541,14 @@ attribs:
     schema:
       type: bool
       required: true
+  - name: ipmi-wanted-version
+    map: 'ipmi/wanted-version'
+    description: 'The desired version of the IPMI subsystem.'
+    default: "latest"
+    schema:
+      type: str
+      required: true
+  - name: ipmi-firmware-history
+    map: 'ipmi/firmware_history'
+    description: "IPMI update history of applied updates"
 
