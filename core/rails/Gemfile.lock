@@ -479,6 +479,7 @@ DEPENDENCIES
   maruku
   net-http-digest_auth
   net-ssh
+  nio4r (~> 1.2, >= 1.2.0)
   open4
   pg
   puma (~> 2.15.2)
@@ -497,4 +498,4 @@ DEPENDENCIES
   xml-simple
 
 BUNDLED WITH
-   1.12.5
+   1.13.6
