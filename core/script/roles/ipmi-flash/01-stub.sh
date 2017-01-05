@@ -21,6 +21,12 @@ rev_lt() {
     return 1
 }
 
+skip_flash="$(read_attribute 'rebar/skip_flash')"
+if [[ $skip_flash = true ]]; then
+    echo "Skipping IPMI flash due to skip_flash being true"
+    exit 0
+fi
+
 declare -A VALUES
 
 for v in "${!PARAMS[@]}"; do

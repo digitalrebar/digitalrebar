@@ -462,6 +462,7 @@ roles:
       - baseboard_manufacturer
       - baseboard_product_name
       - provisioner-webservers
+      - skip_flash
     attribs:
       - name: bios-firmware-applied
         map: 'bios/firmware_updated'

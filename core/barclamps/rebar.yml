@@ -296,6 +296,9 @@ hammers:
 
 attribs:
   # Rebar Core
+  - name: ohai
+    map: 'ohai'
+    description: 'All data returned for node by Ohai'
   - name: bios-vendor
     map: 'ohai/dmi/bios/vendor'
     description: 'BIOS vendor'
@@ -368,6 +371,13 @@ attribs:
     schema:
       type: bool
       required: false
+  - name: skip_flash
+    map: 'rebar/skip_flash'
+    description: 'Skip trying to flash firmware'
+    schema:
+      type: bool
+      required: true
+    default: false
   # Node specific hints.
   - name: 'hint-admin-macs'
     description: 'Hint for Admin MAC addresses'
