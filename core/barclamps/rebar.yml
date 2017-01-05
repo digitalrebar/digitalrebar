@@ -296,6 +296,9 @@ hammers:
 
 attribs:
   # Rebar Core
+  - name: ohai
+    map: 'ohai'
+    description: 'All data returned for node by Ohai'
   - name: bios-vendor
     map: 'ohai/dmi/bios/vendor'
     description: 'BIOS vendor'
