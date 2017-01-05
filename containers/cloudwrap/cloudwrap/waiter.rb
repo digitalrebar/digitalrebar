@@ -182,11 +182,11 @@ loop do
         server.ssh("sudo -- service sshd restart")
         Tempfile.open("cloudwrap-keys") do |f|
           pubkeys = JSON.parse(`rebar deployments get system attrib rebar-access_keys`)
-          f.puts("### BEGIN GENERATED CONTENT")
+#          f.puts("### BEGIN GENERATED CONTENT")
           pubkeys['value'].each_value do |v|
             f.puts(v.strip)
           end
-          f.puts("### END GENERATED CONTENT")
+#          f.puts("### END GENERATED CONTENT")
           f.flush
           f.fsync
           server.scp(f.path,"/tmp/rebar_keys")
@@ -209,11 +209,11 @@ loop do
         log "Put keys to node"
         Tempfile.open("cloudwrap-keys") do |f|
           pubkeys = JSON.parse(`rebar deployments get system attrib rebar-access_keys`)
-          f.puts("### BEGIN GENERATED CONTENT")
+#          f.puts("### BEGIN GENERATED CONTENT")
           pubkeys['value'].each_value do |v|
             f.puts(v.strip)
           end
-          f.puts("### END GENERATED CONTENT")
+#          f.puts("### END GENERATED CONTENT")
           f.flush
           f.fsync
           begin
