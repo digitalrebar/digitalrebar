@@ -13,7 +13,7 @@ COPY ssh_config /home/rebar/.ssh/config
 COPY rebar-runner.json /etc/consul.d/rebar-runner.json
 
 RUN apt-get -y update \
-  && apt-get -y install software-properties-common\
+  && apt-get -y install software-properties-common wget \
   && apt-add-repository ppa:brightbox/ruby-ng \
   && add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc)-backports main restricted universe multiverse" \
   && add-apt-repository "deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main" \
@@ -28,6 +28,7 @@ RUN pip install --upgrade pip
 RUN pip install dnspython
 RUN gem install bundler \
   && gem install net-http-digest_auth \
+  && gem install nio4r -v 1.2.0 \
   && gem install berkshelf -v 4.3.5
 RUN test -d /opt/digitalrebar || git clone https://github.com/digitalrebar/digitalrebar /opt/digitalrebar \
   && mkdir -p /var/run/rebar /var/cache/rebar/cookbooks /var/cache/rebar/gems /var/cache/rebar/bin /var/log/rebar \
