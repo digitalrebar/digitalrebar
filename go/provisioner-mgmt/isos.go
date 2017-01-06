@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -32,6 +33,22 @@ func getIso(c *gin.Context, fileRoot, name string) {
 	c.File(isoName)
 }
 
+func reloadBootenvsForIso(name string) {
+	env := &BootEnv{}
+	newEnv := &BootEnv{}
+	for _, blob := range backend.list(env) {
+		if err := json.Unmarshal(blob, env); err != nil {
+			continue
+		}
+		if env.Available || env.OS.IsoFile != name {
+			continue
+		}
+		json.Unmarshal(blob, newEnv)
+		newEnv.Available = true
+		backend.save(newEnv, env)
+	}
+}
+
 func uploadIso(c *gin.Context, fileRoot, name string) {
 	if c.Request.Header.Get(`Content-Type`) != `application/octet-stream` {
 		c.JSON(http.StatusUnsupportedMediaType, NewError(fmt.Sprintf("upload: iso %s must have content-type application/octet-stream", name)))
@@ -54,7 +71,7 @@ func uploadIso(c *gin.Context, fileRoot, name string) {
 	}
 	if c.Request.ContentLength != 0 && copied != c.Request.ContentLength {
 		os.Remove(isoTmpName)
-		c.JSON(http.StatusBadRequest, NewError(fmt.Sprintf("upload: Failed to upload entire file: %d bytes expected, %d bytes recieved", name, c.Request.ContentLength, copied)))
+		c.JSON(http.StatusBadRequest, NewError(fmt.Sprintf("upload: Failed to upload entire file %s: %d bytes expected, %d bytes recieved", name, c.Request.ContentLength, copied)))
 	}
 	os.Remove(isoName)
 	os.Rename(isoTmpName, isoName)
@@ -62,6 +79,7 @@ func uploadIso(c *gin.Context, fileRoot, name string) {
 		Name string
 		Size int64
 	}{name, copied}
+	go reloadBootenvsForIso(name)
 	c.JSON(http.StatusCreated, res)
 }
 
