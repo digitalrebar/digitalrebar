@@ -30,6 +30,7 @@ install-*.log
 /compose/tag
 /compose/data-dir
 /compose/docker-compose-common.dev
+/compose/galaxy
 
 /containers/tree_bag
 
