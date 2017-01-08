@@ -230,8 +230,31 @@ class Attrib < ActiveRecord::Base
   end
 
   def make_writable_if_schema
-    return if schema.nil? || schema == ""
-    update(writable: true)
+    # if the schema is set, assume writable
+    # if not, set the schema reasable, but do not make writable!
+    if schema.nil? || schema == ""
+      if default["value"].nil?
+        update(schema: {type: "string", required: false})
+      elsif ["true", "false"].include? default["value"]
+        update(schema: {type: "bool", required: false})
+      elsif ["true", "false"].include? default["value"].to_s
+        update(schema: {type: "bool", required: false})
+      elsif default["value"].kind_of?(Integer)
+        update(schema: {type: "int", required: false})
+      elsif default["value"].kind_of?(Hash)
+        update(schema: {type: "map", required: false, mapping: {:"=" => {type: "str"}}})
+      elsif default["value"].kind_of?(Array)
+        update(schema: {type: "seq", required: false, sequence: {type: "str"}})
+      elsif default["value"].start_with? "{"
+        update(schema: {type: "map", required: false, mapping: {:"=" => {type: "str"}}})
+      elsif default["value"].start_with? "["
+        update(schema: {type: "seq", required: false, sequence: {type: "str"}})
+      else
+        update(schema: {type: "string", required: false})
+      end
+    else
+      update(writable: true)
+    end
   end
 
   def __set_and_save(to_orig, value, target=:system)
