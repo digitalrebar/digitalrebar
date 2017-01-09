@@ -36,3 +36,7 @@ type ProvisionerMachine struct {
 type ProvisionerIso struct {
 	provisionerSrc
 }
+
+type ProvisionerFile struct {
+	provisionerSrc
+}

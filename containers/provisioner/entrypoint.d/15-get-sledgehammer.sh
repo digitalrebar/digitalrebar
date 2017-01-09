@@ -9,7 +9,7 @@ if [[ ! $PROV_SLEDGEHAMMER_URL ]] ; then
   exit 1
 fi
 
-for d in files machines pxelinux.cfg; do
+for d in isos files machines pxelinux.cfg; do
     mkdir -p "${TFTPROOT}/$d"
 done
 

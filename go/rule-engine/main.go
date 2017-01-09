@@ -147,7 +147,7 @@ func updateRuleset(c *gin.Context) {
 		return
 	}
 	if oldRuleSet.TenantID != newRuleSet.TenantID {
-		log.Printf("Cannot change tenant ID from %d to %s for ruleset %s",
+		log.Printf("Cannot change tenant ID from %d to %d for ruleset %s",
 			oldRuleSet.TenantID,
 			newRuleSet.TenantID,
 			name)
@@ -209,6 +209,7 @@ func main() {
 	flag.StringVar(&dataDir, "dataloc", "/var/cache/rule-engine", "Path to store data at")
 	flag.BoolVar(&version, "version", false, "Print version and exit")
 	flag.BoolVar(&rbvFlag, "rbv", false, "Print rebar version and exit")
+
 	flag.BoolVar(&debug, "debug", false, "Whether to run in debug mode")
 	flag.Parse()
 	if version {
