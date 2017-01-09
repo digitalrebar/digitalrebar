@@ -37,7 +37,7 @@ class RolesController < ApplicationController
     opts = {}
     if params.key? :barclamp_id
       barclamp = find_key_cap(Barclamp, params[:barclamp_id],cap("READ"))
-      opts[:barcamp_id] = barclamp.id
+      opts[:barclamp_id] = barclamp.id
     end
     if params.key? :role_id
       role = find_key_cap(Role, params[:role_id],cap("READ"))
