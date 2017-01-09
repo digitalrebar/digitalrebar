@@ -12,16 +12,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func testCap(c *gin.Context, tenant int, op string) bool {
+	cap, capOK := c.Get("Capabilities")
+	if !capOK {
+		return false
+	}
+	capSet, ok := cap.(multitenancy.CapabilityMap)
+	if !ok {
+		return false
+	}
+	return capSet.HasCapability(tenant, op)
+}
+
 func listThings(c *gin.Context, thing keySaver) {
 	objType := thing.typeName()
-
-	capMap, err := multitenancy.NewCapabilityMap(c.Request)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError,
-			NewError(fmt.Sprintf("list: failed to get the capmap: %v", err)))
-		return
-	}
-
 	things := backend.list(thing)
 	res := make([]interface{}, 0, len(things))
 	for _, obj := range things {
@@ -51,7 +55,7 @@ func listThings(c *gin.Context, thing keySaver) {
 			return
 		}
 
-		if capMap.HasCapability(int(tf), objType+"_READ") {
+		if testCap(c, int(tf), objType+"_READ") {
 			res = append(res, buf)
 		}
 	}
@@ -76,29 +80,23 @@ func createThing(c *gin.Context, newThing keySaver) {
 		newThing.setTenantId(tid)
 	}
 
-	capMap, err := multitenancy.NewCapabilityMap(c.Request)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError,
-			NewError(fmt.Sprintf("list: failed to get the capmap: %v", err)))
-		return
-	}
 	finalStatus := http.StatusCreated
 	oldThing := newThing.newIsh()
 	if err := backend.load(oldThing); err == nil {
 		logger.Printf("backend: Updating %v %d\n", oldThing.key(), oldThing.tenantId())
 		logger.Printf("backend: Updating new %v %d\n", newThing.key(), newThing.tenantId())
-		if !capMap.HasCapability(oldThing.tenantId(), objType+"_UPDATE") {
+		if !testCap(c, oldThing.tenantId(), objType+"_UPDATE") {
 			c.Data(http.StatusForbidden, gin.MIMEJSON, nil)
 			return
 		}
-		if !capMap.HasCapability(newThing.tenantId(), objType+"_UPDATE") {
+		if !testCap(c, newThing.tenantId(), objType+"_UPDATE") {
 			c.Data(http.StatusForbidden, gin.MIMEJSON, nil)
 			return
 		}
 		finalStatus = http.StatusAccepted
 	} else {
 		logger.Printf("backend: Creating %v %d\n", newThing.key(), newThing.tenantId())
-		if !capMap.HasCapability(newThing.tenantId(), objType+"_CREATE") {
+		if !testCap(c, newThing.tenantId(), objType+"_CREATE") {
 			c.Data(http.StatusForbidden, gin.MIMEJSON, nil)
 			return
 		}
@@ -114,18 +112,7 @@ func createThing(c *gin.Context, newThing keySaver) {
 
 func getThing(c *gin.Context, thing keySaver) {
 	objType := thing.typeName()
-
-	if err := backend.load(thing); err != nil {
-		c.Data(http.StatusNotFound, gin.MIMEJSON, nil)
-		return
-	}
-	capMap, err := multitenancy.NewCapabilityMap(c.Request)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError,
-			NewError(fmt.Sprintf("list: failed to get the capmap: %v", err)))
-		return
-	}
-	if !capMap.HasCapability(thing.tenantId(), objType+"_READ") {
+	if !testCap(c, thing.tenantId(), objType+"_READ") {
 		c.Data(http.StatusNotFound, gin.MIMEJSON, nil)
 		return
 	}
@@ -136,17 +123,11 @@ func getThing(c *gin.Context, thing keySaver) {
 func updateThing(c *gin.Context, oldThing, newThing keySaver) {
 	objType := newThing.typeName()
 
-	capMap, err := multitenancy.NewCapabilityMap(c.Request)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError,
-			NewError(fmt.Sprintf("list: failed to get the capmap: %v", err)))
-		return
-	}
 	if err := backend.load(oldThing); err != nil {
 		c.Data(http.StatusForbidden, gin.MIMEJSON, nil)
 		return
 	}
-	if !capMap.HasCapability(oldThing.tenantId(), objType+"_UPDATE") {
+	if !testCap(c, oldThing.tenantId(), objType+"_UPDATE") {
 		c.Data(http.StatusForbidden, gin.MIMEJSON, nil)
 		return
 	}
@@ -179,7 +160,7 @@ func updateThing(c *gin.Context, oldThing, newThing keySaver) {
 		return
 	}
 
-	if !capMap.HasCapability(newThing.tenantId(), objType+"_UPDATE") {
+	if !testCap(c, newThing.tenantId(), objType+"_UPDATE") {
 		c.Data(http.StatusForbidden, gin.MIMEJSON, nil)
 		return
 	}
@@ -193,17 +174,11 @@ func updateThing(c *gin.Context, oldThing, newThing keySaver) {
 
 func deleteThing(c *gin.Context, thing keySaver) {
 	objType := thing.typeName()
-	capMap, err := multitenancy.NewCapabilityMap(c.Request)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError,
-			NewError(fmt.Sprintf("list: failed to get the capmap: %v", err)))
-		return
-	}
 	if err := backend.load(thing); err != nil {
 		c.Data(http.StatusConflict, gin.MIMEJSON, nil)
 		return
 	}
-	if !capMap.HasCapability(thing.tenantId(), objType+"_DESTROY") {
+	if !testCap(c, thing.tenantId(), objType+"_DESTROY") {
 		c.Data(http.StatusConflict, gin.MIMEJSON, nil)
 		return
 	}

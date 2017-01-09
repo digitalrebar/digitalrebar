@@ -1,13 +1,16 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/digitalrebar/digitalrebar/go/common/cert"
 	"github.com/digitalrebar/digitalrebar/go/common/client"
+	multitenancy "github.com/digitalrebar/digitalrebar/go/common/multi-tenancy"
 	"github.com/digitalrebar/digitalrebar/go/common/service"
 	"github.com/digitalrebar/digitalrebar/go/common/version"
 	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
@@ -25,6 +28,38 @@ var logger *log.Logger
 var username, password, endpoint string
 var hostString string
 var versionFlag bool
+
+func getUser(c *gin.Context) *api.User {
+	name, ok := c.Get("User")
+	if !ok {
+		c.AbortWithError(http.StatusExpectationFailed, errors.New("Failed to fetch user"))
+	}
+	n, ok := name.(string)
+	if !ok {
+		c.AbortWithError(http.StatusExpectationFailed,
+			errors.New("Failed to fetch user"))
+	}
+	user := &api.User{}
+	if err := rebarClient.Fetch(user, n); err != nil {
+		c.AbortWithError(http.StatusExpectationFailed,
+			fmt.Errorf("Failed to fetch user: %v", err))
+	}
+	return user
+}
+
+func capMiddleware(c *gin.Context) {
+	cmap, err := multitenancy.NewCapabilityMap(c.Request)
+	if err != nil {
+		c.AbortWithError(http.StatusPreconditionFailed, err)
+	}
+	c.Set("Capabilities", cmap)
+	user := c.Request.Header.Get("X-Authenticated-Username")
+	if user == "" {
+		c.AbortWithError(http.StatusPreconditionFailed, errors.New("No username fetched"))
+	}
+	c.Set("User", user)
+	c.Next()
+}
 
 func popMachine(param string) *Machine {
 	if _, err := uuid.FromString(param); err == nil {
@@ -155,10 +190,43 @@ func main() {
 		logger.Fatalf("Unknown storage backend type %v\n", backEndType)
 	}
 
+	ourCaps := []string{
+		"MACHINE_CREATE",
+		"MACHINE_READ",
+		"MACHINE_UPDATE",
+		"MACHINE_DESTROY",
+		"BOOTENV_CREATE",
+		"BOOTENV_READ",
+		"BOOTENV_UPDATE",
+		"BOOTENV_DESTROY",
+		"TEMPLATE_CREATE",
+		"TEMPLATE_READ",
+		"TEMPLATE_UPDATE",
+		"TEMPLATE_DESTROY",
+		"PROVISIONER_FILE_CREATE",
+		"PROVISIONER_FILE_READ",
+		"PROVISIONER_FILE_DESTROY",
+	}
+
+	for _, capName := range ourCaps {
+		cap := &api.Capability{}
+		cap.Name = capName
+		if err := rebarClient.Read(cap); err != nil {
+			log.Printf("Creating capability %s", capName)
+			cap.Description = "Allow access to the provisioner"
+			cap.Source = "Provisioner"
+			cap.Name = capName
+			if err := rebarClient.BaseCreate(cap); err != nil {
+				log.Fatalf("Failed to create capability %s: %v", capName, err)
+			}
+		}
+	}
+
 	mgmtApi := gin.Default()
 	if err != nil {
 		logger.Fatal(err)
 	}
+	mgmtApi.Use(capMiddleware)
 	// bootenv methods
 	mgmtApi.GET("/bootenvs",
 		func(c *gin.Context) {
@@ -240,6 +308,24 @@ func main() {
 	mgmtApi.DELETE("/isos/:name",
 		func(c *gin.Context) {
 			deleteIso(c, fileRoot, c.Param(`name`))
+		})
+
+	// Files methods
+	mgmtApi.GET("/files",
+		func(c *gin.Context) {
+			listFiles(c, fileRoot)
+		})
+	mgmtApi.GET("/files/:name",
+		func(c *gin.Context) {
+			getFile(c, fileRoot, c.Param(`name`))
+		})
+	mgmtApi.POST("/files/:name",
+		func(c *gin.Context) {
+			uploadFile(c, fileRoot, c.Param(`name`))
+		})
+	mgmtApi.DELETE("/files/:name",
+		func(c *gin.Context) {
+			deleteFile(c, fileRoot, c.Param(`name`))
 		})
 
 	s, err := cert.Server("internal", "provisioner-mgmt-service")

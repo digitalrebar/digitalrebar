@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
@@ -449,6 +450,142 @@ func init() {
 				log.Fatalf("Failed to delete ISO %s: %v", args[0], resp.Status)
 			}
 			fmt.Printf("ISO %s deleted", args[0])
+		},
+	})
+	files := &cobra.Command{
+		Use:   "files",
+		Short: "Commands to manage FILE files on the provisioner",
+	}
+	provisioner.AddCommand(files)
+	files.AddCommand(&cobra.Command{
+		Use:   "list",
+		Short: "List all uploaded FILEs",
+		Run: func(c *cobra.Command, args []string) {
+			objs := []string{}
+			obj := &api.ProvisionerFile{}
+			tgt := "/"
+			if len(args) > 0 {
+				tgt = args[0]
+			}
+
+			req, err := http.NewRequest("GET", session.UrlFor(obj, fmt.Sprintf("files?path=%s", url.QueryEscape(tgt))), nil)
+			if err != nil {
+				log.Fatalf("Error creating HTTP request: %v", err)
+			}
+			req.Header.Set("Accept", "application/json")
+			req.Header.Set("Content-Type", "application/json")
+			resp, err := session.BasicRequest(req)
+			if err != nil {
+				log.Fatalf("Error listing provisioner FILE files: %v", err)
+			}
+
+			buf, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Fatalf("Error listing provisioner FILE files: %v", err)
+			}
+			err = json.Unmarshal(buf, &objs)
+			if err != nil {
+				log.Fatalf("Error listing provisioner FILE files: %v", err)
+			}
+			resp.Body.Close()
+			fmt.Println(prettyJSON(objs))
+		},
+	})
+	files.AddCommand(&cobra.Command{
+		Use:   "download [name] to [file]",
+		Short: "Download the FILE with [name] to [file]",
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 3 {
+				log.Fatalf("%v requires 2 arguments", c.UseLine())
+			}
+			tgt, err := os.Create(args[2])
+			if err != nil {
+				log.Fatalf("Error fetching FILE file: %v", err)
+			}
+			obj := &api.ProvisionerFile{}
+			req, err := http.NewRequest("GET", session.UrlFor(obj, "files", args[0]), nil)
+			if err != nil {
+				log.Fatalf("Error creating HTTP request: %v", err)
+			}
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept", "application/octet-stream")
+			resp, err := session.BasicRequest(req)
+			if err != nil {
+				log.Fatalf("Error fetching FILE file: %v", err)
+			}
+			if resp.StatusCode >= 300 {
+				resp.Body.Close()
+				log.Fatalf("Error fetching FILE file: %v", resp.Status)
+			}
+			copied, err := io.Copy(tgt, resp.Body)
+			if err != nil {
+				os.Remove(args[2])
+				log.Fatalf("Failed saving FILE file: %v", err)
+			}
+			if resp.ContentLength != -1 && resp.ContentLength != copied {
+				os.Remove(args[2])
+				log.Fatalf("Download of FILE file %s interrupted, %d/%d bytes saved", args[2], copied, resp.ContentLength)
+			}
+			resp.Body.Close()
+			tgt.Close()
+			fmt.Printf("FILE %s downloaded to %s", args[0], args[2])
+		},
+	})
+	files.AddCommand(&cobra.Command{
+		Use:   "upload [file] as [name]",
+		Short: " Upload [file] to the provisioner with [name]",
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 3 {
+				log.Fatalf("%v requires 2 arguments", c.UseLine())
+			}
+			obj := &api.ProvisionerFile{}
+			src, err := os.Open(args[0])
+			if err != nil {
+				log.Fatalf("Cannot open FILE %s for upload: %v", args[0], err)
+			}
+			s, err := src.Stat()
+			if err != nil {
+				log.Fatalf("Cannot stat FILE %s for upload: %v", args[0], err)
+			}
+			req, err := http.NewRequest("POST", session.UrlFor(obj, "files", args[2]), nil)
+			if err != nil {
+				log.Fatalf("Error creating HTTP request: %v", err)
+			}
+			req.Header.Set("Content-Type", "application/octet-stream")
+			req.Header.Set("Accept", "application/json")
+			req.ContentLength = s.Size()
+			req.Body = src
+			resp, err := session.BasicRequest(req)
+			src.Close()
+			if err != nil {
+				log.Fatalf("Failed to upload file: %v", err)
+			}
+			if resp.StatusCode >= 300 {
+				log.Fatalf("Failed to upload file: %v", resp.Status)
+			}
+			resp.Body.Close()
+			fmt.Printf("FILE %s uploaded to %s", args[0], args[2])
+		},
+	})
+	files.AddCommand(&cobra.Command{
+		Use:   "destroy [name]",
+		Short: "Destroy FILE file with [name]",
+		Run: func(c *cobra.Command, args []string) {
+			if len(args) != 1 {
+				log.Fatalf("%v requires 1 arg", c.UseLine())
+			}
+			obj := &api.ProvisionerFile{}
+			req, err := http.NewRequest("DELETE", session.UrlFor(obj, "files", args[0]), nil)
+			req.Header.Set("Accept", "application/json")
+			req.Header.Set("Content-Type", "application/json")
+			resp, err := session.BasicRequest(req)
+			if err != nil {
+				log.Fatalf("Failed to delete FILE %s: %v", args[0], err)
+			}
+			if resp.StatusCode >= 300 {
+				log.Fatalf("Failed to delete FILE %s: %v", args[0], resp.Status)
+			}
+			fmt.Printf("FILE %s deleted", args[0])
 		},
 	})
 }
