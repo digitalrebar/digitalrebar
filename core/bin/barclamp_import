@@ -258,6 +258,7 @@ class Barclamp < RebarProxy
       yml = File.join(path,"rebar.yml")
     end
     raise "No rebar.yml at #{path}" unless File.exists?(yml)
+    debug("Loading file #{yml}")
     settings = YAML.load_file(yml)
     settings['barclamp']['source_path'] = File.realpath(path)
     bc, res = REST.get("#{self.path}/#{settings['barclamp']['name']}")
