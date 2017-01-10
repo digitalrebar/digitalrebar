@@ -238,7 +238,7 @@ class Barclamp < ActiveRecord::Base
           attrib_ui_renderer = attrib['ui_renderer'] || Attrib::UI_RENDERER
           attrib_map = attrib['map'] || attrib_name.gsub("-","/")
           attrib_default = attrib['default']
-          attrib_writable = !!attrib['schema']
+          attrib_writable = attrib['writable'] || !!attrib['schema']
           a = attrib_type.find_or_create_by!(name: attrib_name)
           a.update_attributes!(description: attrib_desc,
                                map: attrib_map,
