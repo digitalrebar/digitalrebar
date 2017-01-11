@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if ! which glide &>/dev/null; then
+    echo "Please install Glide! https://glide.sh"
+    break
+fi
+
 [[ $DEBUG ]] && set -x
 
 # Requires GOPATH to be set and will use it

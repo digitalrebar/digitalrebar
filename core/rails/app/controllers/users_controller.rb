@@ -24,16 +24,6 @@ class UsersController < ApplicationController
   skip_before_filter :rebar_auth, :only => [:options]
   skip_before_filter :authenticate_user!, :only => [:options]
 
-  def cors_headers
-    access_control = {
-      'Access-Control-Allow-Origin' => request.headers["HTTP_ORIGIN"],
-      'Access-Control-Allow-Headers' => 'X-Requested-With,Content-Type,Cookie,Authorization,WWW-Authenticate', # If-Modified-Since,If-None-Match,
-      'Access-Control-Allow-Credentials' => true,
-      'Access-Control-Expose-Headers' => 'WWW-Authenticate, Set-Cookie, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Allow-Origin'
-    }
-    access_control.each{ |k, v| response.headers[k] = v } if request.headers["HTTP_ORIGIN"]
-  end
-
   def digest
     if request.get? or request.post? or request.head?
       if request.headers["HTTP_ORIGIN"]
@@ -58,8 +48,6 @@ class UsersController < ApplicationController
 
   # CORS header method - not used for rev_proxy
   def options
-    cors_headers
-    response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS,PATCH,HEAD'
     render :nothing => true, :status => :no_content
   end
 

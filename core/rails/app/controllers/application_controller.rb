@@ -369,23 +369,12 @@ class ApplicationController < ActionController::Base
 
   protected
 
-  def cors_headers
-    access_control = {
-      'Access-Control-Allow-Origin' => request.headers["HTTP_ORIGIN"],
-      'Access-Control-Allow-Headers' => 'X-Requested-With,Content-Type,Cookie,Authorization,WWW-Authenticate', # If-Modified-Since,If-None-Match,
-      'Access-Control-Allow-Credentials' => true,
-      'Access-Control-Expose-Headers' => 'WWW-Authenticate, Set-Cookie, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Allow-Origin'
-    }
-    access_control.each{ |k, v| response.headers[k] = v } if request.headers["HTTP_ORIGIN"]
-  end
-
   def digest_request?
     request.headers["HTTP_AUTHORIZATION"] && request.headers["HTTP_AUTHORIZATION"].starts_with?('Digest username=')
   end
 
   def digest_auth!
     u = nil
-    cors_headers
     authed = authenticate_or_request_with_http_digest(User::DIGEST_REALM) do |username|
       u = User.find_by!(username: username, system: false)
       session[:digest_user] = u.username
@@ -408,9 +397,9 @@ class ApplicationController < ActionController::Base
 
   #return true if we digest signed in
   def rebar_auth
-    Rails.logger.debug("peercert: #{request.headers["puma.socket"].peercert}")
-    Rails.logger.info("username header: #{request.headers["HTTP_X_AUTHENTICATED_USERNAME"]}")
-    Rails.logger.info("capability header: #{request.headers["HTTP_X_AUTHENTICATED_CAPABILITY"]}")
+    #Rails.logger.debug("peercert: #{request.headers["puma.socket"].peercert}")
+    Rails.logger.debug("username header: #{request.headers["HTTP_X_AUTHENTICATED_USERNAME"]}")
+    Rails.logger.debug("capability header: #{request.headers["HTTP_X_AUTHENTICATED_CAPABILITY"]}")
     case
     when !request.headers["HTTP_X_AUTHENTICATED_USERNAME"].nil?
       unless request.headers["puma.socket"].peercert ||

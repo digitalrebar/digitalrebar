@@ -46,18 +46,21 @@ roles:
         map: 'cluster/name'
         description: 'Name used for Cluster'
         default: 'default'
-        type: str
-        pattern: /^\[?[a-z]\]*/
+        schema:
+          type: str
+          pattern: /^\[?[a-z]\]*/
       - name: cluster-active-only
         map: 'cluster/active-only'
         description: 'Use addresses from Active NodeRoles only?'
         default: false
-        type: bool
+        schema:
+          type: bool
       - name: cluster-network
         map: 'cluster/network'
         description: 'Network used for Cluster'
         default: 'node-control-address'
-        type: str
+        schema:
+          type: str
       - name: cluster-addresses
         description: "All addresses of the Cluster nodes"
         map: 'cluster/addresses'
@@ -80,5 +83,6 @@ roles:
       - name: cluster-address
         map: 'cluster/address'
         description: 'IP of Node for Cluster'      
-        type: str
-        pattern: /\[?[0-9a-f:.]*\]?:?[0-9]*/
+        schema:
+          type: str
+          pattern: /\[?[0-9a-f:.]*\]?:?[0-9]*/
