@@ -95,6 +95,7 @@ func NewMultipleHostReverseProxy(reg Registry, tlsConfig *tls.Config) http.Handl
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		addCorsHeader(w, req)
 		(&httputil.ReverseProxy{
 			Director: func(req *http.Request) {
 				req.URL.Scheme = "https"

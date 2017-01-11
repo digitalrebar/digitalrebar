@@ -50,11 +50,10 @@ func addCorsHeader(w http.ResponseWriter, req *http.Request) {
 	origin := req.Header.Get("Origin")
 	if origin != "" {
 		w.Header().Set("Access-Control-Allow-Origin", origin)
-		w.Header().Set("Access-Control-Allow-Headers", "DR-AUTH-TOKEN,X-Requested-With,Content-Type,Cookie,Authorization,WWW-Authenticate") // If-Modified-Since,If-None-Match,
-		w.Header().Set("Access-Control-Allow-Headers", "DR-USER-TOKEN,X-Requested-With,Content-Type,Cookie,Authorization,WWW-Authenticate") // If-Modified-Since,If-None-Match,
+		w.Header().Set("Access-Control-Allow-Headers", "Origin,DR-USER-TOKEN,DR-AUTH-TOKEN,X-Requested-With,Content-Type,Cookie,Authorization,WWW-Authenticate, X-Return-Attributes") // If-Modified-Since,If-None-Match,
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Expose-Headers", "DR-AUTH-TOKEN,WWW-Authenticate, Set-Cookie, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Allow-Origin")
-		w.Header().Set("Access-Control-Expose-Headers", "DR-USER-TOKEN,WWW-Authenticate, Set-Cookie, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Allow-Origin")
+		w.Header().Set("Access-Control-Expose-Headers", "DR-USER-TOKEN,DR-AUTH-TOKEN,WWW-Authenticate, Set-Cookie, Access-Control-Allow-Headers, Access-Control-Allow-Credentials, Access-Control-Allow-Origin, X-Return-Attributes")
+		w.Header().Set("X-Frame-Options", "ALLOW-FROM "+origin)
 	}
 }
 
