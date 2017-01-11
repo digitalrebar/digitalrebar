@@ -279,14 +279,14 @@ class Barclamp < RebarProxy
         Barclamp.new(child).do_update_Json({'value' => settings})
       end
     end
-    classifier = File.join(path, "classifier.yml")
-    if File.exists?(classifier) && !$rule_engine.nil?
+    rulesetFile = File.join(path, "rule-engine.yml")
+    if File.exists?(rulesetFile) && !$rule_engine.nil?
       # We have a classifier, load it.
-      debug("Loading classifier ruleset from #{classifier}")
-      ruleset = YAML.load_file(classifier)
+      debug("Loading classifier ruleset from #{rulesetFile}")
+      ruleset = YAML.load_file(rulesetFile)
       _, code = REST.post($rule_engine,ruleset)
       if code <= 300
-        debug("Classifier ruleset #{ruleset["Name"]} loaded to #{$rule_engine}")
+        debug("Rule Engine ruleset #{ruleset["Name"]} loaded to #{$rule_engine}")
       else
         debug("Failed to load ruleset #{ruleset["Name"]}")
       end
