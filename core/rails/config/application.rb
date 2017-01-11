@@ -42,7 +42,7 @@ module Rebar
       config.action_controller.perform_caching             = true
       config.action_view.cache_template_loading            = true
       config.active_support.deprecation = :notify
-      config.action_controller.allow_forgery_protection    = true
+      config.action_controller.allow_forgery_protection    = false
       config.eager_load = true    
       config.log_level = :info
       config.rebar.devmode = false
