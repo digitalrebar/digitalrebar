@@ -240,7 +240,11 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
         end
         f.write("  roles:\n")
         role_role_map[nr.role.name].each do |rname|
-          f.write("  - #{rname}\n")
+          if rname.is_a?(String)
+            f.write("  - #{rname}\n")
+          else
+            f.write("  - { role: \"#{rname["role"]}\", when: \"#{rname["when"]}\" }\n")
+          end
         end
       end
     else
