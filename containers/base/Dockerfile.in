@@ -7,7 +7,7 @@ ARG DR_TAG
 RUN mkdir -p /usr/local/sbin/ /usr/local/entrypoint.d /etc/rebar-data \
     && apt-get update \
     && apt-get -y dist-upgrade \
-    && apt-get install -y bash curl ca-certificates unzip git jq build-essential wget iproute2 --no-install-recommends \
+    && apt-get install -y bash curl ca-certificates unzip git jq build-essential wget iproute2 less vim --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
