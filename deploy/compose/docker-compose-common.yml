@@ -68,6 +68,7 @@ rebar_api:
     - ./data-dir/bin:/usr/local/dev/bin
     # development mapping for playbook authors
     # - ../../digitalrebar-workloads/:/var/cache/rebar/ansible_playbook/k8
+    # - ./galaxy:/etc/ansible/roles/  # reminder: sudo chown root:root galaxy
   env_file:
     - ./common.env
     - ./access.env
