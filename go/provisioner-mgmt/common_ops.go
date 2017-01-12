@@ -112,6 +112,11 @@ func createThing(c *gin.Context, newThing keySaver) {
 
 func getThing(c *gin.Context, thing keySaver) {
 	objType := thing.typeName()
+
+	if err := backend.load(thing); err != nil {
+		c.Data(http.StatusNotFound, gin.MIMEJSON, nil)
+		return
+	}
 	if !testCap(c, thing.tenantId(), objType+"_READ") {
 		c.Data(http.StatusNotFound, gin.MIMEJSON, nil)
 		return
