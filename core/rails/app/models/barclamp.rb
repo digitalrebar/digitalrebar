@@ -203,15 +203,18 @@ class Barclamp < ActiveRecord::Base
                              leaverunlog: flags.include?('leaverunlog'),
                              metadata:    role_metadata,
                              icon:        icon)
+        RoleRequire.where(role_id: r.id).delete_all  # cleanup before insert
         prerequisites.each do |rr|
           Rails.logger.info("Making #{r.name} depend on #{rr}")
           RoleRequire.find_or_create_by!(role_id: r.id, requires: rr)
         end
+        RoleRequire.where(role_id: ar.id).delete_all  # cleanup before insert
         attaches.each do |ar_name|
           ar = Role.find_by!(name: ar_name)
           Rails.logger.info("Making #{r.name} depend on #{ar.name}")
           RoleRequire.find_or_create_by!(role_id: ar.id, requires: r.name)
         end
+        RolePreceed.where(role_id: r.id).delete_all  # cleanup before insert
         role_preceeds.each do |p_name|
           Rails.logger.info("Making #{r.name} preceed #{p_name}")
           RolePreceed.find_or_create_by!(role_id: r.id, preceeds: p_name)
