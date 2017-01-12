@@ -127,7 +127,6 @@ container_is_up_to_date() (
     [[ $pc && ${BUILT_CONTAINERS[$pc]} ]] && return 1
     # We are forcing a rebuild, it needs rebuilding.
     [[ $FORCE_BUILD == true ]] && return 1
-    [[ $ALWAYS_PULL = true ]] && docker pull "$1:$DR_TAG"
     # It does not have a last-built-image-id, it needs building.
     [[ -f $repo_dir/last-built-image-id ]] || return 1
     cd "$repo_dir"
@@ -292,6 +291,12 @@ os="linux"
 arch="amd64"
 GOOS="$os" GOARCH="$arch" go build -o "${binpath}/amttool" "github.com/VictorLowther/intelamt/amttool"
 GOOS="$os" GOARCH="$arch" go build -o "${binpath}/wscli" "github.com/VictorLowther/wsman/wscli"
+
+if [[ $ALWAYS_PULL ]]; then
+    for container in "${!CONTAINERS[@]}"; do
+        docker pull "$1:$DR_TAG" || exit 1
+    done
+fi
 
 for container in $(sort_containers "${!CONTAINERS_TO_BUILD[@]}"); do
     [[ ${BUILT_CONTAINERS[$container]} ]] || build_container "$container" || break
