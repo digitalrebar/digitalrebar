@@ -116,7 +116,8 @@ echo ###################################################################
 cat > /etc/systemd/system/sledgehammer.service << EOF_initscript
 [Unit]
 Description=Sledgehammer startup script
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=oneshot
