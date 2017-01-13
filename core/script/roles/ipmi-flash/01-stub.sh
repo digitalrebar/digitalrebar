@@ -7,7 +7,7 @@ PARAMS['ipmi-product-id']='rebar_wall/ipmi/bmcinfo/product_id'
 PARAMS['ipmi-device-id']='rebar_wall/ipmi/bmcinfo/device_id'
 PARAMS['ipmi-device-rev']='rebar_wall/ipmi/bmcinfo/device_rev'
 
-wanted_version=$(read_attribte "ipmi/wanted-version")
+wanted_version=$(read_attribute "ipmi/wanted-version")
 
 rev_lt() {
     # $1 = current firmware rev
