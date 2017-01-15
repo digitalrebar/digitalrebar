@@ -73,6 +73,7 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
   end
 
   def run(nr,data)
+
     # pull metadata from barclamp
     role_yaml = nr.role.barclamp.metadata || {}
     # override with role metadata
@@ -184,6 +185,9 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
       value = get_value(nr.node, nr, data, am['name'])
       set_value(data, am['path'], value)
     end if role_yaml['attribute_map']
+
+    # we don't want null values the data set because Ansible prefers them to just be undefined (missing)
+    data.delete_if {|key, value| value.nil? }
 
     File.open("#{rundir}/rebar.json", 'w') do |f|
       JSON.dump(data,f)
