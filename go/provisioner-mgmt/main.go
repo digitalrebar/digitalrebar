@@ -315,15 +315,15 @@ func main() {
 		func(c *gin.Context) {
 			listFiles(c, fileRoot)
 		})
-	mgmtApi.GET("/files/:name",
+	mgmtApi.GET("/files/*name",
 		func(c *gin.Context) {
 			getFile(c, fileRoot, c.Param(`name`))
 		})
-	mgmtApi.POST("/files/:name",
+	mgmtApi.POST("/files/*name",
 		func(c *gin.Context) {
 			uploadFile(c, fileRoot, c.Param(`name`))
 		})
-	mgmtApi.DELETE("/files/:name",
+	mgmtApi.DELETE("/files/*name",
 		func(c *gin.Context) {
 			deleteFile(c, fileRoot, c.Param(`name`))
 		})

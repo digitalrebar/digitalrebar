@@ -43,7 +43,7 @@ bring_up_admin_containers
 
 echo "Bringing containers up.  Exiting the shell will kill and remove the containers"
 export PS1="(docker-compose) $PS1"
-export REBAR_ENDPOINT="https://127.0.0.1:3000"
+export REBAR_ENDPOINT="https://127.0.0.1"
 export REBAR_KEY="rebar:rebar1"
 /bin/bash -i
 tear_down_admin_containers
