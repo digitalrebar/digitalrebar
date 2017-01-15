@@ -65,7 +65,12 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     inventory_map.each do |am|
       next if am['when'] and !eval_condition(node, nr, data, am['when'])
       value = get_value(node, nr, data, am['name'])
-      answer += " #{am['path']}=#{value}"
+
+      if am['path'] == 'ansible_default_ipv4/address'
+        answer += " ansible_default_ipv4='{\"address\"=\"#{value}\"}'"
+      else
+        answer += " #{am['path']}=#{value}"
+      end
     end
 
     answer += "\n"
@@ -262,7 +267,24 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     # Run one node (Default)
     nodestring = "-l #{nr.node.name}"
     # unless deplyoment scope - then run all nodes
-    nodestring = "" if role_yaml['playbook_scope'] == 'deployment'
+    if role_yaml['playbook_scope'] == 'deployment'
+      nodestring = ""
+    elsif role_yaml['playbook_scope'] == 'node'
+      # Already the default
+    elsif role_yaml['playbook_scope'] != ''
+      r = Role.find_by(name: role_yaml['playbook_scope'])
+      die "playbook_scope must be a valid role" unless r
+
+      nrs = NodeRole.peers_by_role(nr.deployment, r)
+      die "playbook_scope role must have assigned nodes" if nrs.nil? or nrs.empty?
+
+      nodestring = "-l"
+      comma=" "
+      nrs.each do |nnr|
+        nodestring += "#{comma}#{nnr.node.name}"
+        comma = ","
+      end
+    end
 
     out,err,ok = exec_cmd("cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook #{nodestring} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} #{rns_string}", nr)
     die("Running: cd #{role_cache_dir}/#{role_yaml['playbook_path']} ; ansible-playbook #{nodestring} -i #{rundir}/inventory.ini --extra-vars \"@#{rundir}/rebar.json\" #{role_file} #{rns_string}\nScript jig run for #{nr.role.name} on #{nr.node.name} failed! (status = #{$?.exitstatus})\nOut: #{out}\nErr: #{err}") unless ok.success?
@@ -406,10 +428,20 @@ private
     val
   end
 
+  def get_node_field(node, nr, command)
+    args = command.split(/[\)\(\.,]/)
+
+    val = nil
+    val = node.name if args[1] == 'name'
+    val = node.bootenv if args[1] == 'bootenv'
+    val
+  end
+
   # possible custom commands are:
   #   ipaddress([all|v4_only|v6_only], attribute, [default,public,private]).[ifname|cidr|address]
   #   nodes_with_role(k8scontrail-master).<command applied to all nodes joined by " ">
   #   first_node_with_role(k8scontrail-master).<command applied to node>
+  #   field(field) - field from node.field
   def process_command(node, nr, command)
     answer = nil
 
@@ -418,6 +450,7 @@ private
     answer = get_nodes(node, nr, command) if command.starts_with?('nodes_with_role(')
     answer = count_nodes(node, nr, command) if command.starts_with?('count_nodes_with_role(')
     answer = get_first_node(node, nr, command) if command.starts_with?('first_node_with_role(')
+    answer = get_node_field(node, nr, command) if command.starts_with?('field(')
 
     answer
   end
