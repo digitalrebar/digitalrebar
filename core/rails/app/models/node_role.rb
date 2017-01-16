@@ -174,7 +174,10 @@ class NodeRole < ActiveRecord::Base
     args ||= {}
     args[:except] = [ :proposed_data, :committed_data, :sysdata, :wall, :notes ]
     args[:methods] = :node_error
-    super(args)
+    o = super(args)
+    o['_role_name'] = self.role.name
+    o['_role_icon'] = self.role.icon
+    o
   end
 
   def self.state_name(state)
