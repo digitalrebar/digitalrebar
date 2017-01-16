@@ -38,7 +38,12 @@ class DeploymentRole < ActiveRecord::Base
   def as_json(args = nil)
     args ||= {}
     args[:except] = [ :proposed_data, :committed_data, :wall, :notes]
-    super(args).merge({"proposed" => proposed?})
+    o = super(args)
+    o['proposed'] = self.proposed?
+    o['_proposed'] = self.proposed?
+    o['_role_name'] = self.role.name
+    o['_role_icon'] = self.role.icon
+    o
   end
 
   # convenience methods
