@@ -56,6 +56,18 @@ class Jig < ActiveRecord::Base
     Jig.where(:name=>jig, :active=>true).length > 0
   end
 
+  # allows a nooprole to coerce the icon for a node
+  def self.node_icon(nr)
+    if nr.state == 0 and nr.role.replace_node_icon
+      Node.transaction do
+        n = nr.node
+        n.icon = nr.role.icon
+        n.save!
+      end
+    end
+
+  end
+
   # OVERRIDE with actual methods
   def delete_node(node)
     Rails.logger.debug("jig.delete_node(#{node.name}) not implemented for #{self.class}.  This may be OK")
@@ -119,18 +131,11 @@ end
 class NoopJig < Jig
 
   def stage_run(nr)
+    Jig.node_icon nr
     return nr.all_my_data
   end
 
   def run(nr,data)
-    # allows a nooprole to coerce the icon for a node
-    if nr.role.replace_node_icon
-      Node.transaction do
-        n = nr.node
-        n.icon = nr.role.icon
-        n.save!
-      end
-    end
     return true
   end
 
