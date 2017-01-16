@@ -217,7 +217,7 @@ class Attrib < ActiveRecord::Base
   #
   def poke(nr)
     Rails.logger.info("Attrib: #{self.name} poking NodeRole #{nr.name}")
-    nr.send(:block_or_todo)
+    nr.send(:block_or_todo) if !nr.proposed?
   end
 
   private
