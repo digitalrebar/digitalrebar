@@ -381,7 +381,7 @@ roles:
                   FORCE="-f"
               fi
               chmod 755 "$package"
-              "$package" -q -r $FORCE
+              ./"$package" -q -r $FORCE
               case $? in
                   0)  # No reboot required.
                       exit 0;;
@@ -415,7 +415,7 @@ roles:
                   FORCE="-f"
               fi
               chmod 755 "$package"
-              "$package" -q -r $FORCE
+              ./"$package" -q -r $FORCE
               case $? in
                   0)  # No reboot required.
                       exit 0;;
