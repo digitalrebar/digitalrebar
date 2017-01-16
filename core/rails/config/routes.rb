@@ -91,7 +91,6 @@ Rebar::Application.routes.draw do
     get 'import(/:id)'  => 'support#import', :as => :utils_import
     get 'upload/:id'    => 'support#upload', :as => :utils_upload
     get 'restart/:id'   => 'support#restart', :as => :restart
-    get 'digest'        => "support#digest"
     get 'fail'          => "support#fail"
     get 'settings'      => "support#settings", :as => :utils_settings
     put 'settings(/:id/:value)' => "support#settings_put", :as => :utils_settings_put
@@ -118,6 +117,7 @@ Rebar::Application.routes.draw do
         scope 'status' do
           get "nodes(/:id)" => "nodes#status", :as => :nodes_status
           get "deployments(/:id)" => "deployments#status", :as => :deployments_status
+          get "matrix(/:id)" => "deployments#matrix", :as => :deployments_matrix
           get "heartbeat" => "support#heartbeat", :as => :heartbeat_status
           get "inventory(/:id)" => "inventory#index"
           match "active" => "node_roles#status", via: [:get, :put]

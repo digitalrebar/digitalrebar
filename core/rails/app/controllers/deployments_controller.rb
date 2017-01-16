@@ -106,8 +106,57 @@ class DeploymentsController < ApplicationController
     end
   end
 
+  # GET /api/status/matix
+  def matrix
+
+    d = find_key_cap(model, params[:id], cap("READ")) rescue nil
+    raise "Deployment must be provided" unless d
+
+    out = { id: d.id,
+            name: d.name,
+            description: d.description,
+            tenant_id: d.tenant_id,
+            state: d.state,
+            parent_id: d.parent_id,
+            services: [],
+            deployment_roles: {},
+            nodes: {}}
+
+    d.system_node.node_roles.each do |service|
+      out[:services] << { id: service.id, role_id: service.role_id, state: service.state, name: service.role.name, icon: service.role.icon }
+    end
+
+    deployment_roles = []
+    d.deployment_roles.each do |dr|
+      deployment_roles << { id: dr.id, role_id: dr.role_id, name: dr.role.name, cohort: dr.role.cohort, icon: dr.role.icon}
+    end
+    deployment_roles = deployment_roles.sort {|left, right| left[:cohort] <=> right[:cohort]}
+    # we want to track the column for each node role
+    cols = {}
+    deployment_roles.each_with_index do |c, i|
+      ind = i.to_s.rjust(4, "0")
+      out[:deployment_roles][ind] = c
+      cols[c[:role_id]] = ind
+    end
+
+    d.nodes.each do |n|
+      next if n.is_system?
+      next if params[:node_id] and params[:node_id] != n.id.to_s
+      roles = {}
+      n.node_roles.each do |nr|
+        next if nr.deployment_id != d.id
+        roles[cols[nr.role_id]] = { id: nr.id, role_id: nr.role_id, state: nr.state }
+      end
+      out[:nodes][n.id] = { id: n.id, name: n.name, description: n.description, state: n.state, available: n.available, alive: n.alive, provider_id: n.provider_id, icon: n.icon, roles: roles}
+
+    end
+
+    render api_array out.to_json
+  end
+
   # GET /api/status/deployments
   def status
+
     deployment = find_key_cap(model, params[:id], cap("READ")) rescue nil
     out = {
       node_roles: {},
