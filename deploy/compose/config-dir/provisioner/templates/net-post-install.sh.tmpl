@@ -151,7 +151,7 @@ esac
 printf "%s\n" "${repocontents[@]}" > "$repofile"
 apt-get -y --force-yes update
 apt-get -y --force-yes remove apparmor
-apt-get -y --force-yes install ntpdate jq curl
+apt-get -y --force-yes install ntpdate jq curl python
 (cd /bin; curl -fgl -O "{{.ProvisionerURL}}/files/rebar"; chmod 755 rebar)
 export REBAR_ENDPOINT="{{.CommandURL}}"
 export REBAR_KEY="{{.Param "rebar-machine_key"}}"

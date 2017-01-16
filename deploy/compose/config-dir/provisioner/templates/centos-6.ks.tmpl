@@ -94,7 +94,7 @@ if [ ! -f "$rsyslog_dir/10-rebar-client.conf" ]; then
     fi
 fi
 
-yum -y install jq
+yum -y install jq python
 
 node_json="$(rebar nodes show "{{.Machine.UUID}}")" && \
     HOSTNAME="$(jq -r '.name' <<<"$node_json")" && \
