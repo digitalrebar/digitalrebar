@@ -71,7 +71,7 @@ echo "proxy={{index (.Param "proxy-servers") 0 "url"}}" >> /etc/yum.conf
 sed -i '/^enabled/ s/1/0/' /etc/yum/pluginconf.d/fastestmirror.conf
 
 # Install ntpdate
-yum -y install ntpdate jq
+yum -y install ntpdate jq python
 
 node_json="$(rebar nodes show "{{.Machine.UUID}}")" && \
     HOSTNAME="$(jq -r '.name' <<<"$node_json")" && \
