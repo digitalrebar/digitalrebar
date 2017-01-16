@@ -294,6 +294,15 @@ class BarclampRebar::AnsiblePlaybookJig < Jig
     new_wall = {}
     nr.update!(wall: new_wall)
 
+    # allows a nooprole to coerce the icon for a node
+    if nr.role.replace_node_icon
+      Node.transaction do
+        n = nr.node
+        n.icon = nr.role.icon
+        n.save!
+      end
+    end
+    
     # Clean up after ourselves.
     system("rm -rf '#{rundir}'")
     system("rm -f '#{role_cache_dir}/#{role_yaml['playbook_path']}/#{role_file}'") if clean_role_file
