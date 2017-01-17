@@ -19,6 +19,7 @@ module BarclampRaid
     @@vol_re = /Virtual Drive:\s*(\d+)\s*\(Target Id:\s*(\d+)\)/
     @@disk_re = /PD:\s*(\d+)\s*Information/
     @@adapter_line = /^Adapter #(\d+)$/
+    @@encl_line = /^Enclosure Device ID: (\d+)/
 
     # Parse a controller specific set of lines from -AdpAllInfo -aAll
     # There is a wealth of info ignored because the other controllers
@@ -171,6 +172,25 @@ module BarclampRaid
       parse_disks(controller,run_tool(0, nil, ["-PDlist", "-a#{controller.id}"]))
     end
 
+    def jbods(controller)
+      res = []
+      disks(controller).reject{|d|d.status != "JBOD"}.each do |d|
+        v = Hash.new
+        v["id"]= "#{d.enclosure}:#{d.slot}"
+        v["disks"] = [d]
+        v["name"] = "synthetic-jbod-#{d.enclosure}:#{d.slot}"
+        v["status"] = "Optimal"
+        v["vol_size"] = d.disk_size
+        v["controller"] = controller
+        v["raid_level"] = "jbod"
+        v["stripe_size"] = 0
+        v["span_length"] = 1
+        v["spans"] = 1
+       res << BarclampRaid::Volume.new(v)
+      end
+      return res
+    end
+
     VOL_KEY_MAP = {
       "Name" => "name",
       "State" => "status",
@@ -183,6 +203,7 @@ module BarclampRaid
       "Span Depth" => "spans"
     }
 
+    
     def parse_volume(controller,lines)
       volume_lines = []
       disk_lines = []
@@ -257,7 +278,7 @@ module BarclampRaid
     end
 
     def volumes(controller)
-      parse_volumes(controller,run_tool(0, nil, ["-ldpdinfo", "-a#{controller.id}"]))
+      parse_volumes(controller,run_tool(0, nil, ["-ldpdinfo", "-a#{controller.id}"])) + jbods(controller)
     end
 
     def create_vd(controller, volume)
@@ -288,6 +309,12 @@ module BarclampRaid
       cmd = []
       raid_level = "raid0" if raid_level == "jbod" && !controller.native_jbod
       case raid_level
+      when "jbod"
+        # JBODs don't get unique names
+        name = "synthetic-jbod-#{candidates[0].id}"
+        cmd << "-PDMakeJBOD"
+        cmd << "-PhysDrv"
+        cmd << "[#{candidates[0].id}]"
       when "raid0","raid1","raid5","raid6"
         cmd << "-CfgLdAdd"
         cmd << "-r#{raid_level[-1]}[#{candidates.map{|c|c.id}.join(',')}]"
@@ -345,29 +372,39 @@ module BarclampRaid
       else
         raise "Raid level #{raid_level} Not Implemented"
       end
-      cmd << "-strpsz#{stripe_size}"
-      if size != "min" && size != "max"
-        # Size must be passed in megabytes, and 100 megs seems to be the smallest size.
-        size = (BarclampRaid.size_to_bytes(size) / MEGA).ceil
-        size = 100 if size < 100
-        cmd << "-sz#{size}"
+      if raid_level == "jbod"
+        
+        run_tool(0, nil, cmd).each do |l|
+          @logger << l
+        end
+        if volume["boot"]
+          _set_boot_pd(controller, candidates[0].id)
+        end
+      else
+        cmd << "-strpsz#{stripe_size}"
+        if size != "min" && size != "max"
+          # Size must be passed in megabytes, and 100 megs seems to be the smallest size.
+          size = (BarclampRaid.size_to_bytes(size) / MEGA).ceil
+          size = 100 if size < 100
+          cmd << "-sz#{size}"
+        end
+        # Create the array, and grab the VD# we created.
+        vdline = run_tool(0, nil, cmd).detect{|l|l =~ /Created VD/}
+        vol_id = vdline.match(/Created VD (\d+)/)[1]
+        name ||= "rebar_vol_#{vol_id}"
+        # Now, name the volume and disable PD caching.
+        ["-Name #{name}","DisDskCache",].each do |param|
+          cmd = ["-LDSetProp",
+                 param,
+                 "-L#{vol_id}",
+                 "-a#{cid}"]
+          lines = run_tool(0, nil, cmd)
+          lines.each do |line|
+            @logger << line
+          end if @logger
+        end
+        _set_boot_ld(controller, vol_id) if volume["boot"]
       end
-      cmd << ["-a#{cid}"]
-      # Create the array, and grab the VD# we created.
-      vdline = run_tool(0, nil, cmd).detect{|l|l =~ /Created VD/}
-      vol_id = vdline.match(/Created VD (\d+)/)[1]
-      # Now, name the volume and disable PD caching.
-      ["-Name #{name||"rebar_vol_#{vol_id}"}","DisDskCache",].each do |param|
-        cmd = ["-LDSetProp",
-               param,
-               "-L#{vol_id}",
-               "-a#{cid}"]
-        lines = run_tool(0, nil, cmd)
-        lines.each do |line|
-          @logger << line
-        end if @logger
-      end
-      _set_boot(controller, vol_id) if volume["boot"]
       volumes = self.refresh_controller(controller)
 
       # Return the actual volume per api contract.
@@ -376,16 +413,34 @@ module BarclampRaid
       end
     end
 
+    def _delete_vd(volume)
+      args=[]
+      args = if /^synthetic-jbod/ === volume.name
+               ["-PDMakeGood",
+                "-PhysDrv",
+                "[#{volume.id}]",
+                "-Force",
+                "-a#{volume.controller.id}"]
+             else
+               ["-CfgLdDel",
+                "-L#{volume.id}",
+                "-force",
+                "-a#{volume.controller.id}"]
+             end
+      run_tool(0,nil,args)
+    end
+                            
     def delete_vd(volume)
       @logger << "Delete VD on #{volume.controller.name} for #{volume.id}\n" if @logger
-      lines = run_tool(0, nil, ["-CfgLdDel", "-L#{volume.id}", "-force","-a#{volume.controller.id}"])
+      lines = _delete_vd(volume) 
       lines.each do |line|
         @logger << line
       end if @logger
       self.refresh_controller(volume.controller)
     end
+        
 
-    def _set_boot(controller, volume_id)
+    def _set_boot(controller, volume_id, runargs)
       @logger << "setting boot volume on #{controller.name} for #{volume_id}\n" if @logger
       #### set a bood drive.
       ## - If there is any kind of volume info, pick first volume
@@ -395,8 +450,20 @@ module BarclampRaid
       end if @logger
     end
 
+    def _set_boot_ld(controller, volume_id)
+      _set_boot(controller, volume_id, ["-adpBootDrive", "-set", "-l#{volume_id}", "-a#{controller.id}"])
+    end
+
+    def _set_boot_pd(controller, volume_id)
+      _set_boot(controller, volume_id, ["-adpBootDrive", "-set", "-physdrv[#{volume_id}]", "-a#{controller.id}"])
+    end
+
     def set_boot(controller, volume)
-      _set_boot(controller,volume.id)
+      if /^synthetic-jbod/ === volume.name
+        _set_boot_pd(controller, volume.id)
+      else
+        _set_boot_ld(controller, volume.id)
+      end
     end
 
     def clear_controller_config(controller, type)
