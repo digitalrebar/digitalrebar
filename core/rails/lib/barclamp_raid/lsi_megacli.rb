@@ -387,12 +387,13 @@ module BarclampRaid
           size = (BarclampRaid.size_to_bytes(size) / MEGA).ceil
           size = 100 if size < 100
           cmd << "-sz#{size}"
-        end    
+        end
         # Create the array, and grab the VD# we created.
         vdline = run_tool(0, nil, cmd).detect{|l|l =~ /Created VD/}
         vol_id = vdline.match(/Created VD (\d+)/)[1]
+        name ||= "rebar_vol_#{vol_id}"
         # Now, name the volume and disable PD caching.
-        ["-Name #{name||"rebar_vol_#{vol_id}"}","DisDskCache",].each do |param|
+        ["-Name #{name}","DisDskCache",].each do |param|
           cmd = ["-LDSetProp",
                  param,
                  "-L#{vol_id}",
@@ -412,9 +413,26 @@ module BarclampRaid
       end
     end
 
+    def _delete_vd(volume)
+      args=[]
+      args = if /^synthetic-jbod/ === volume.name
+               ["-PDMakeGood",
+                "-PhysDrv",
+                "[#{volume.id}.join(',')}]",
+                "-Force",
+                "-a#{volume.controller.id}"]
+             else
+               ["-CfgLdDel",
+                "-L#{volume.id}",
+                "-force",
+                "-a#{volume.controller.id}"]
+             end
+      run_tool(0,nil,args)
+    end
+                            
     def delete_vd(volume)
       @logger << "Delete VD on #{volume.controller.name} for #{volume.id}\n" if @logger
-      lines = run_tool(0, nil, ["-CfgLdDel", "-L#{volume.id}", "-force","-a#{volume.controller.id}"])
+      lines = _delete_vd(volume) 
       lines.each do |line|
         @logger << line
       end if @logger
