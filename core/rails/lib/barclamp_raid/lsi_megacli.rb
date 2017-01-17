@@ -174,13 +174,14 @@ module BarclampRaid
 
     def jbods(controller)
       res = []
-      disks(controller).reject{|d|d.state != "JBOD"}.each do |d|
+      disks(controller).reject{|d|d.status != "JBOD"}.each do |d|
         v = Hash.new
         v["id"]= "#{d.enclosure}:#{d.slot}"
         v["disks"] = [d]
         v["name"] = "synthetic-jbod-#{d.enclosure}:#{d.slot}"
-        v["state"] = "Optimal"
-        v["size"] = d.disk_size
+        v["status"] = "Optimal"
+        v["vol_size"] = d.disk_size
+        v["controller"] = controller
         v["raid_level"] = "jbod"
         v["stripe_size"] = 0
         v["span_length"] = 1
