@@ -68,6 +68,12 @@ module BarclampRaid
                          value
                        end
       end
+      # Force all percs to fall back to single-disk RAID0
+      # as they are apparently lying when they claim to support
+      # the enable jbod operation
+      if  /^perc/i === res["product_name"]
+        res["native_jbod"] = false
+      end
       res["supported_raid_levels"] << "jbod" unless res["supported_raid_levels"].include?("jbod")
       # Get the PCI bus info with /opt/MegaRAID/MegaCli/MegaCli64 -AdpGetPciInfo -a#{cid}
       run_tool(0, nil, ["-AdpGetPciInfo", "-a#{cid}"]).each do |line|
