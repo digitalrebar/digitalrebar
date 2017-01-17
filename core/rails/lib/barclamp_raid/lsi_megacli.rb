@@ -418,7 +418,7 @@ module BarclampRaid
       args = if /^synthetic-jbod/ === volume.name
                ["-PDMakeGood",
                 "-PhysDrv",
-                "[#{volume.id}.join(',')}]",
+                "[#{volume.id}]",
                 "-Force",
                 "-a#{volume.controller.id}"]
              else
