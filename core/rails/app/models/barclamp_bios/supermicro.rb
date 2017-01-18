@@ -43,8 +43,8 @@ class BarclampBios::Supermicro < BarclampBios::Driver
     return @settings if @settings
     res = Hash.new
 
-    tmp = Tmpfile.new("smc_bios")
-    out, status = smc("-c GetCurrentBiosCfgTextFile --overwrite --file #{tmp.path}")
+    tmp = Tempfile.new("sum_bios")
+    out, status = sum("-c GetCurrentBiosCfgTextFile --overwrite --file #{tmp.path}")
     if status != 0
       raise "Failed to get BIOS settings: #{out}"
     end
@@ -56,7 +56,7 @@ class BarclampBios::Supermicro < BarclampBios::Driver
     option_re=/\*?(([0-9a-fA-F]+) \(.+)/
     header = ''
     lines.each do |l|
-      line = l.strip
+      line = l.strip 
       next if line.empty? || line[0] == '#'
       i = Hash.new
       case
@@ -77,11 +77,9 @@ class BarclampBios::Supermicro < BarclampBios::Driver
           i["current_value"] = val if md[2] == i["current_value"]
         end
         if i["validator"].empty?
-          i["validator"] = (0..65536)
-          i["current_value"] = i["current_value"].to_i(16)
+          i["validator"] = {"length" => (2...4), "regex" => /^[0-9a-fA-F]/}
         end
-          
-        res[i["name"]] = i
+        res[i["name"]] = BarclampBios::Setting.new(i)
       end
     end
     @settings = res
@@ -103,7 +101,7 @@ class BarclampBios::Supermicro < BarclampBios::Driver
         buckets[header][var] = setting.split(' ')[0]
       end
     end
-    tmp = Tmpfile.new("smc_bios")
+    tmp = Tempfile.new("sum_bios")
     buckets.each do |header, vals|
       tmp.puts "[#{header}]"
       vals.each do |k,v|
@@ -112,7 +110,7 @@ class BarclampBios::Supermicro < BarclampBios::Driver
       tmp.puts ''
     end
     tmp.close
-    out, status = smc("-c ChangeBiosCfg --file #{tmp.path} --reboot")
+    out, status = sum("-c ChangeBiosCfg --file #{tmp.path} --reboot")
     if status != 0
       raise "Failed to change BIOS settings: #{out}"
     end
