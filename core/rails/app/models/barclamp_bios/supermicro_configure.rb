@@ -21,7 +21,7 @@
 # Implement everything needed to manage the attributes we care about on
 # a Supermicro box
 
-class BarclampBios::SupermicroConfigure < Role
+class BarclampBios::SupermicroConfigure < BarclampBios::Configure
 
   def on_proposed(nr)
     sum_archive = Attrib.get('bios-sum-archive',nr)
