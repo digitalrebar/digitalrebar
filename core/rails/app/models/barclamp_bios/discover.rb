@@ -33,16 +33,26 @@ class BarclampBios::Discover < Role
       nr.node.attribs.each do |a|
         matchhash[a.name] = a.get(nr.node)
       end
-      # Get our matchers, score them, 
-      matched = Attrib.get("bios-set-mapping",nr).map do |a|
-        runlog << "Scoring #{a.inspect}"
-        a["score"] = StructureMatch.new(a["match"]).score(matchhash)
-        runlog << "match #{a["match"]} scored #{a["score"]}"
-        a
-      end.max{|a,b|a["score"] <=> b["score"]}
-      # If our score is less than zero, then nothing matched.
-      if matched["score"] <= 0
+      # Get our matchers, score them,
+      Attrib.get("bios-set-mapping",nr).map do |a|
+        runlog << "Testing #{a["match"].inspect}"
+        match = true
+        a["match"].each do |k,v|
+          match = matchhash.has_key?(k) &&
+                  v[0] == "/" &&
+                  v[-1] == "/" &&
+                  Regexp.compile(v[1..-2]).match(matchhash[k])
+          break unless match
+        end
+        if match
+          runlog << "Matched #{a["match"].inspect}"
+          matched = a
+          break
+        end
+      end
+      unless matched
         runlog << "Cannot find a BIOS config set for #{nr.node.name}"
+        runlog << "BIOS settings will not be modified"
         nr.runlog = runlog.join("\n")
         return
       end

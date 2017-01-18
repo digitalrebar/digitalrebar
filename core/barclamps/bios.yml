@@ -59,9 +59,9 @@ roles:
                             =: { type: str }
         default:
           - "match":
-              "chassis_manufacturer": "Supermicro"
-              "system_manufacturer": "iXsystems"
-              "system_product": "42X848"
+              "chassis_manufacturer": "/^Supermicro$/"
+              "system_manufacturer": "/^iXsystems$"
+              "system_product": "/^42X848$/"
             "role": "bios-supermicro-configure"
             "configs":
               - "name": "default"
@@ -330,11 +330,8 @@ roles:
                   "IPMI|System Event Log|SEL Components": "01 (Enabled)"
                   "IPMI|System Event Log|When SEL is Full": "00 (Do Nothing)"
           - "match":
-             "system_manufacturer": "Dell Inc."
-             "system_product":
-               "__sm_leaf": true,
-               "op": "regex"
-               "match": "^PowerEdge (M.|R.|T[34]|FC6)[23]0"
+             "system_manufacturer": "/^Dell Inc.$/"
+             "system_product": "/^PowerEdge (M.|R.|T[34]|FC6)[23]0/"
             "role": "bios-dell-rseries-configure"
             "configs":
               - "name": "default"
