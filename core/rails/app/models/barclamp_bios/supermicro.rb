@@ -43,7 +43,7 @@ class BarclampBios::Supermicro < BarclampBios::Driver
     return @settings if @settings
     res = Hash.new
 
-    tmp = Tmpfile.new("smc_bios")
+    tmp = Tempfile.new("smc_bios")
     out, status = smc("-c GetCurrentBiosCfgTextFile --overwrite --file #{tmp.path}")
     if status != 0
       raise "Failed to get BIOS settings: #{out}"
@@ -103,7 +103,7 @@ class BarclampBios::Supermicro < BarclampBios::Driver
         buckets[header][var] = setting.split(' ')[0]
       end
     end
-    tmp = Tmpfile.new("smc_bios")
+    tmp = Tempfile.new("smc_bios")
     buckets.each do |header, vals|
       tmp.puts "[#{header}]"
       vals.each do |k,v|
