@@ -99,6 +99,10 @@ func main() {
 		"file-root",
 		"/tftpboot",
 		"Root of filesystem we should manage")
+	flag.StringVar(&ourAddress,
+		"static-ip",
+		"192.168.124.11",
+		"IP address to advertise for the static HTTP file server")
 	flag.Parse()
 	logger = log.New(os.Stderr, "provisioner-mgmt", log.LstdFlags|log.Lmicroseconds|log.LUTC)
 
@@ -165,21 +169,8 @@ func main() {
 		true); err != nil {
 		log.Fatalf("Failed to register provisioner-tftp-service with Consul: %v", err)
 	}
-	// Figure out our service address
-
-	for {
-		svc, err := service.Find(consulClient, "provisioner", "")
-		if err != nil {
-			log.Fatalf("Error talking to Consul: %v", err)
-		}
-		if len(svc) == 0 {
-			continue
-		}
-
-		ourAddress, _ = service.Address(svc[0])
-		provisionerURL = fmt.Sprintf("http://%s:%d", ourAddress, staticPort)
-		break
-	}
+	// Fill out our service address
+	provisionerURL = fmt.Sprintf("http://%s:%d", ourAddress, staticPort)
 
 	switch backEndType {
 	case "consul":
