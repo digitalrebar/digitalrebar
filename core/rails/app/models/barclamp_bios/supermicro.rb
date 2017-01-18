@@ -81,7 +81,7 @@ class BarclampBios::Supermicro < BarclampBios::Driver
           i["current_value"] = i["current_value"].to_i(16)
         end
           
-        res[i["name"]] = i
+        res[i["name"]] = BarclampBios::Setting.new(i)
       end
     end
     @settings = res
