@@ -56,7 +56,7 @@ class BarclampBios::Supermicro < BarclampBios::Driver
     option_re=/\*?(([0-9a-fA-F]+) \(.+)/
     header = ''
     lines.each do |l|
-      line = l.strip
+      line = l.strip 
       next if line.empty? || line[0] == '#'
       i = Hash.new
       case
@@ -77,10 +77,8 @@ class BarclampBios::Supermicro < BarclampBios::Driver
           i["current_value"] = val if md[2] == i["current_value"]
         end
         if i["validator"].empty?
-          i["validator"] = (0..65536)
-          i["current_value"] = i["current_value"].to_i(16)
+          i["validator"] = {"length" => (2...4), "regex" => /^[0-9a-fA-F]/}
         end
-          
         res[i["name"]] = BarclampBios::Setting.new(i)
       end
     end
