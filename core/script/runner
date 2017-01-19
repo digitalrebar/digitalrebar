@@ -257,6 +257,17 @@ get_keys() {
     fi
 }
 
+lookup_attrib_map() {
+    local v
+    v="$(jq -r -c ".[\"${1}\"]" < "$TMPDIR/maps.json")"
+    if [[ $v = null ]]; then
+        echo "Failed to find map for attrib $1" >&2
+        exit 1
+    fi
+    printf '%s' "$v"
+}
+
+# read_attribute is for the map of the attrib, not the name.
 read_attribute() {
     local -a keys
     local i
@@ -278,10 +289,19 @@ read_attribute() {
     fi
 }
 
+# get_attribute gets attrib values by name, not the map.
+get_attr() {
+    read_attribute "$(lookup_attrib_map "$1")"
+}
+
 read_attribute_file_content() {
     read_attribute "$1" > "$2"
     # The write content stripped the newline - in rails
     echo "" >> "$2"
+}
+
+get_attr_content() {
+    read_attribute_file_content  "$(lookup_attrib_map "$1")" "$2"
 }
 
 write_attribute() {
@@ -290,10 +310,18 @@ write_attribute() {
     printf "%s" "$2" > "$loc/wall"
 }
 
+put_attr() {
+    write_attribute "$(lookup_attrib_map "$1")" "$2"
+}
+
 write_attribute_file_content() {
     local loc="$TMPDIR/attrs/$1"
     mkdir -p "$loc"
     cp $2 "$loc/wall"
+}
+
+put_attr_content() {
+    write_attribute_file_content "$(lookup_attrib_map "$1")" "$2"
 }
 
 addr_port() {

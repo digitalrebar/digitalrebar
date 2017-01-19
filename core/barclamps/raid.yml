@@ -109,6 +109,7 @@ roles:
       - destructive
     requires:
       - raid-discover
+      - firmware-flash
       - rebar-managed-node
     preceeds:
       - rebar-hardware-configured
