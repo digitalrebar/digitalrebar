@@ -101,6 +101,7 @@ while read -r fw_test; do
                 exit 1
             fi
             if rev_eq "$pkg_ver" "$target_version"; then
+                export downgrade=true
                 pkg_tgt="$(jq -r -c '.package' <<< "$pkg")"
                 break
             fi

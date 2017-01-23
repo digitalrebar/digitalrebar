@@ -49,7 +49,7 @@ attribs:
         source: 'https://downloads.dell.com/FOLDER04020316M/1/iDRAC-with-Lifecycle-Controller_Firmware_XTPX4_LN_2.41.40.40_A00.BIN'
         script: |
           #!/usr/bin/env bash
-          if [[ $forceit == true ]] ; then
+          if [[ $downgrade == true ]] ; then
             FORCE="-f"
           fi
           chmod 755 "$package"
@@ -106,7 +106,7 @@ attribs:
         source: 'http://downloads.dell.com/FOLDER02804892M/1/T320_BIOS_8H9VP_LN_2.4.2.BIN'
         script: |
           #!/usr/bin/env bash
-          if [[ $forceit == true ]] ; then
+          if [[ $downgrade == true ]] ; then
                FORCE="-f"
           fi
           chmod 755 "$package"
@@ -135,7 +135,7 @@ attribs:
         source: 'http://downloads.dell.com/FOLDER03775688M/1/BIOS_DC9XJ_LN_2.1.7.BIN'
         script: |
           #!/usr/bin/env bash
-          if [[ $forceit == true ]] ; then
+          if [[ $downgrade == true ]] ; then
                FORCE="-f"
           fi
           chmod 755 "$package"
@@ -164,7 +164,7 @@ attribs:
         source: 'http://downloads.dell.com/FOLDER03919045M/1/BIOS_T4FMH_LN_2.2.5.BIN'
         script: |
           #!/usr/bin/env bash
-          if [[ $forceit == true ]] ; then
+          if [[ $downgrade == true ]] ; then
                FORCE="-f"
           fi
           chmod 755 "$package"
