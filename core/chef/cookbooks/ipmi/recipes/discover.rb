@@ -23,29 +23,23 @@ include_recipe "ipmi::ipmitool"
 
 ruby_block "discover ipmi" do
   block do
-    unless IPMI.supported?(node)
-      Chef::Log.info("BMC not supported.")
-      return
+    supported = IPMI.supported?(node)
+    Chef::Log.info("BMC not supported.") unless supported 
+    access = supported && IPMI.ensure_access(node)
+    Chef::Log.info("Could not ensure BMC support is loaded.") unless access
+    if access
+      mcinfo = IPMI.mc_info(node)
+      Chef::Log.info("Cannot validate that systems has a BMC.") unless mcinfo.empty?
+      laninfo = IPMI.laninfo(node)
+      Chef::Log.info("Cannot validate that BMC is remotely accessible") unless laninfo.empty?
     end
-    unless IPMI.ensure_access(node)
-      Chef::Log.info("Could not ensure BMC support is loaded.")
-      return
+    if access && !mcinfo.empty? && !laninfo.empty?
+      Chef::Log.info("BMC on #{node[:fqdn]} is useable, marking it as enabled.")
+      node.set[:rebar_wall] ||= Mash.new
+      node.set[:rebar_wall][:ipmi] ||= Mash.new
+      node.set[:rebar_wall][:ipmi][:bmcinfo] = mcinfo
+      node.set[:rebar_wall][:ipmi][:laninfo] = laninfo
+      node.set[:ipmi][:bmc_enable] = true
     end
-    mcinfo = IPMI.mc_info(node)
-    if mcinfo.empty?
-      Chef::Log.info("Cannot validate that systems has a BMC.")
-      return
-    end
-    laninfo = IPMI.laninfo(node)
-    if laninfo.empty?
-      Chef::Log.info("Cannot validate that BMC is remotely accessible")
-      return
-    end
-    Chef::Log.info("BMC on #{node[:fqdn]} is useable, marking it as enabled.")
-    node.set[:rebar_wall] ||= Mash.new
-    node.set[:rebar_wall][:ipmi] ||= Mash.new
-    node.set[:rebar_wall][:ipmi][:bmcinfo] = mcinfo
-    node.set[:rebar_wall][:ipmi][:laninfo] = laninfo
-    node.set[:ipmi][:bmc_enable] = true
   end
 end
