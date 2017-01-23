@@ -274,7 +274,7 @@ class NodeRole < ActiveRecord::Base
       end
 
       unless query_parts.empty?
-        ActiveRecord::Base.connection.execute("INSERT INTO node_role_pcms (parent_id, child_id, soft) VALUES #{query_parts.join(', ')}")
+        ActiveRecord::Base.connection.execute("INSERT INTO node_role_pcms (parent_id, child_id, soft) VALUES #{query_parts.join(', ')} ON CONFLICT DO NOTHING")
       end
       res.cohort = tenative_cohort
       if res.role.cluster?
@@ -282,7 +282,7 @@ class NodeRole < ActiveRecord::Base
                                                res.deployment_id, res.role_id, res.id)
         unless cluster_peer_children.empty?
           query_parts = cluster_peer_children.map{|c|"(#{res.id}, #{c.id}, true)"}.join(', ')
-          ActiveRecord::Base.connection.execute("INSERT INTO node_role_pcms (parent_id, child_id, soft) VALUES #{query_parts}")
+          ActiveRecord::Base.connection.execute("INSERT INTO node_role_pcms (parent_id, child_id, soft) VALUES #{query_parts} ON CONFLICT DO NOTHING")
           cluster_peer_children.each do |c|
             next if c.cohort > res.cohort
             c.update_cohort
