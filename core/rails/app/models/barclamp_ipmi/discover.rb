@@ -39,17 +39,14 @@ class BarclampIpmi::Discover < Role
     nr.node.merge_quirks(quirklist)
 
     icr_role = Role.find_by!(name: 'ipmi-configure')
-    icf_role = Role.find_by!(name: 'ipmi-flash')
-    ipmi_flash = nr.node.node_roles.find_by(role_id: icf_role.id)
+    chc_role = Role.find_by!(name: 'rebar-hardware-configured')
     ipmi_config = nr.node.node_roles.find_by(role_id: icr_role.id)
-    do_commit = false
     unless ipmi_config
       Rails.logger.info("Adding ipmi-configure role to #{nr.node.name}")
       # Force the config role into the same deployment as the discover role
-      ipmi_config = icr_role.add_to_node_in_deployment(nr.node, nr.deployment)
-      ipmi_flash = nr.node.node_roles.find_by(role_id: icf_role.id)
-      do_commit = true
+      ipmi_config = icr_role.add_to_node(nr.node)
     end
+    chc_role.add_to_node(nr.node)
 
     # If we do not have a BMC network defined, we cannot continue.
     # lookup up a BMC network-based upon the category/group of the admin network.
@@ -65,12 +62,10 @@ class BarclampIpmi::Discover < Role
     if !bmcnet
       if Attrib.get('ipmi-configure-networking',ipmi_config)
         Attrib.set('ipmi-configure-networking',ipmi_config, false)
-        do_commit = true
       end
     else
       unless Attrib.get('ipmi-configure-networking',ipmi_config) 
         Attrib.set('ipmi-configure-networking',ipmi_config, true)
-        do_commit = true
       end
       if bmcnet.conduit == "bmc"
         # All BMCs should get addresses from the host range.
@@ -91,13 +86,8 @@ class BarclampIpmi::Discover < Role
       elsif bmcnet.conduit == "dhcp"
         unless Attrib.get('ipmi-use-dhcp',ipmi_config)
           Attrib.set('ipmi-use-dhcp',ipmi_config, true)
-          do_commit = true
         end
       end
-    end
-    if do_commit
-      ipmi_flash.commit!
-      ipmi_config.commit!
     end
   end
 end

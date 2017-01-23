@@ -61,13 +61,11 @@ class BarclampBios::Discover < Role
       # bios configuration role.
       Attrib.set_without_save('bios-config-sets',nr,matched["configs"],:wall)
       bc_role = Role.find_by!(name: matched["role"])
-      bf_role = Role.find_by!(name: 'bios-flash')
       chc_role = Role.find_by!(name: 'rebar-hardware-configured')
       unless nr.node.node_roles.find_by(role_id: bc_role.id)
         runlog << "Adding #{bc_role.name} to #{nr.node.name}"
-        bf_noderole = bf_role.add_to_node(nr.node)
-        bc_noderole = bc_role.add_to_node(nr.node)
-        chc_noderole = chc_role.add_to_node(nr.node)
+        bc_role.add_to_node(nr.node)
+        chc_role.add_to_node(nr.node)
         nr.runlog = runlog.join("\n")
       end
     else

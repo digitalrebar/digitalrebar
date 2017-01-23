@@ -42,6 +42,16 @@ class BarclampRebar::Jig < Jig
     end
     local_tmpdir = %x{mktemp -d /tmp/local-scriptjig-XXXXXX}.strip
     Rails.logger.info("Using local temp dir: #{local_tmpdir}")
+    n2m = Hash.new
+    nr.role.wanted_attribs.each do |a|
+      n2m[a.name] = a.map
+    end
+    nr.role.attribs.each do |a|
+      n2m[a.name] = a.map
+    end
+    File.open(File.join(local_tmpdir,"maps.json"),"w") do |f|
+      JSON.dump(n2m,f)
+    end
     File.open(File.join(local_tmpdir,"attrs.json"),"w") do |f|
       JSON.dump(data,f)
     end

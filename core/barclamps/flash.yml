@@ -1,0 +1,330 @@
+# Copyright (c) 2017 RackN, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+barclamp:
+  name: flash
+  display: Firmware Flasher
+  version: "2.E"
+
+rebar:
+  layout: 1
+
+attribs:
+  - name: skip-flash
+    map: 'rebar/skip_flash'
+    description: 'Skip trying to flash firmware'
+    schema:
+      type: bool
+      required: true
+    default: false
+  - name: firmware-target-versions
+    map: 'rebar/firmware_targets'
+    description: |
+      A map of firmware type: version.
+      If an entry for a type is missing, the flasher will assume you want the latest version.
+    schema:
+      type: map
+      mapping:
+        =:
+          type: str
+          required: true
+    default: {}
+  - name: firmware-packages
+    map: 'rebar/firmware_packages'
+    description: 'The map of packages that Rebar knows how to flash'
+    default:
+      'iDRAC-with-Lifecycle-Controller_Firmware_XTPX4_LN_2.41.40.40_A00.BIN':
+        sha256sum: '3446d95353373156741b3b6b92515c4747728f57de6d735be6ff3d0fa7bd5d22'
+        source: 'https://downloads.dell.com/FOLDER04020316M/1/iDRAC-with-Lifecycle-Controller_Firmware_XTPX4_LN_2.41.40.40_A00.BIN'
+        script: |
+          #!/usr/bin/env bash
+          if [[ $downgrade == true ]] ; then
+            FORCE="-f"
+          fi
+          chmod 755 "$package"
+          ./"$package" -q -r $FORCE
+          case $? in
+              0)  # No reboot required.
+                    exit 0;;
+              1)  # The update failed.
+                  exit 1;;
+              2)  # Update suceeded, system needs a reboot.
+                  reboot; sleep 600;;
+              3)  # Dependency error, system already up to date
+                  echo "System up to date, but should have been caught by pre-version check"
+                  exit 0;;
+              4|5) # Update not applicable to the system
+                  echo "Update $package not applicable to this system, but not caught by qualification checking"                   exit 1;;
+              6) # System is automatically rebooting
+                 sleep 600;;
+              *) # Update package is corrupt or Something Weird happened.
+                 echo "Unexpected exit status $?, something weird happened"
+                exit 1;;
+          esac
+      'SMT_316.zip':
+        sha256sum: '07e82a8a2c83cea9cf567297b5cc87334f602bd919fa43ad070bad55e3cfe775'
+        source: 'http://www.supermicro.com/about/policies/disclaimer.cfm?url=/support/resources/getfile.aspx?ID=2815'
+        script: |
+          #!/usr/bin/env bash
+          unzip -j "$package" 'SMT_316.bin' 'Linux 1.15/lUpdate' 'Linux 1.15/unload_ipmi_driver.sh'
+          chmod 755 lUpdate unload_ipmi_driver.sh
+          ./unload_ipmi_driver.sh
+          if ! ./lUpdate -f SMT_316.bin -i kcs -r y; then
+              echo "Update failed!"
+              exit 1
+          fi
+          echo "Update succeeded.  Will reboot after IPMI controller reboots"
+          sleep 60
+          reboot
+      'X7SPA3_719.zip':
+        sha256sum: 'd430644616bbb7f608b88f87d6ddd6c8ed096cd68d76b8930426d413fab2aa01'
+        source: 'http://www.supermicro.com/about/policies/disclaimer.cfm?url=/support/resources/getfile.aspx?ID=2691'
+        script: |
+          #!/usr/bin/env bash
+          unzip -j "$package" 'X7SPA3.719/X7SPA3.719'
+          if ! flashrom -p internal -w X7SPA3.719 -o flash.log; then
+              echo "Flash failed!"
+              cat flash.log
+              exit 1
+          fi
+          echo "Flash succeeded.  Rebooting."
+          reboot
+          sleep 600
+      'T320_BIOS_8H9VP_LN_2.4.2.BIN':
+        sha256sum: '70514af312ffb7bdd43b9c736497ab0509094afde1fb9e26db7620c8dc31b300'
+        source: 'http://downloads.dell.com/FOLDER02804892M/1/T320_BIOS_8H9VP_LN_2.4.2.BIN'
+        script: |
+          #!/usr/bin/env bash
+          if [[ $downgrade == true ]] ; then
+               FORCE="-f"
+          fi
+          chmod 755 "$package"
+          ./"$package" -q -r $FORCE
+          case $? in
+              0)  # No reboot required.
+                  exit 0;;
+              1)  # The update failed.
+                  exit 1;;
+              2)  # Update suceeded, system needs a reboot.
+                  reboot; sleep 600;;
+              3)  # Dependency error, system already up to date
+                  echo "System up to date, but should have been caught by pre-version check"
+                  exit 0;;
+              4|5) # Update not applicable to the system
+                  echo "Update $package not applicable to this system, but not caught by qualification checking"
+                  exit 1;;
+              6) # System is automatically rebooting
+                 sleep 600;;
+              *) # Update package is corrupt or Something Weird happened.
+                 echo "Unexpected exit status $?, something weird happened"
+                exit 1;;
+          esac
+      'BIOS_DC9XJ_LN_2.1.7.BIN':
+        sha256sum: 'd043e74ef3d720248251acc8bee22e83837e91db9b2f47423484850d9ba28509'
+        source: 'http://downloads.dell.com/FOLDER03775688M/1/BIOS_DC9XJ_LN_2.1.7.BIN'
+        script: |
+          #!/usr/bin/env bash
+          if [[ $downgrade == true ]] ; then
+               FORCE="-f"
+          fi
+          chmod 755 "$package"
+          ./"$package" -q -r $FORCE
+          case $? in
+              0)  # No reboot required.
+                  exit 0;;
+              1)  # The update failed.
+                  exit 1;;
+              2)  # Update suceeded, system needs a reboot.
+                  reboot; sleep 600;;
+              3)  # Dependency error, system already up to date
+                  echo "System up to date, but should have been caught by pre-version check"
+                  exit 0;;
+              4|5) # Update not applicable to the system
+                  echo "Update $package not applicable to this system, but not caught by qualification checking"
+                  exit 1;;
+              6) # System is automatically rebooting
+                 sleep 600;;
+              *) # Update package is corrupt or Something Weird happened.
+                 echo "Unexpected exit status $?, something weird happened"
+                exit 1;;
+          esac
+      'BIOS_T4FMH_LN_2.2.5.BIN':
+        sha256sum: '44851ffeffc11fa9f3a69775b945249f6d09756a4538c49a975a9d9134627608'
+        source: 'http://downloads.dell.com/FOLDER03919045M/1/BIOS_T4FMH_LN_2.2.5.BIN'
+        script: |
+          #!/usr/bin/env bash
+          if [[ $downgrade == true ]] ; then
+               FORCE="-f"
+          fi
+          chmod 755 "$package"
+          ./"$package" -q -r $FORCE
+          case $? in
+              0)  # No reboot required.
+                  exit 0;;
+              1)  # The update failed.
+                  exit 1;;
+              2)  # Update suceeded, system needs a reboot.
+                  reboot; sleep 600;;
+              3)  # Dependency error, system already up to date
+                  echo "System up to date, but should have been caught by pre-version check"
+                  exit 0;;
+              4|5) # Update not applicable to the system
+                  echo "Update $package not applicable to this system, but not caught by qualification checking"
+                  exit 1;;
+              6) # System is automatically rebooting
+                 sleep 600;;
+              *) # Update package is corrupt or Something Weird happened.
+                 echo "Unexpected exit status $?, something weird happened"
+                exit 1;;
+          esac
+    schema:
+      type: map
+      mapping:
+        =:
+          type: map
+          mapping:
+            sha256sum:
+              type: str
+              required: true
+            source:
+              type: str
+              required: true
+            flash-script:
+              type: str
+              required: true
+    
+  - name: firmware-selection-tests
+    map: 'rebar/firmware_tests'
+    description: 'The list of selection tests that Rebar knows about to pick firmware to flash'
+    schema:
+      type: seq
+      sequence:
+        - type: map
+          mapping:
+            test:
+              type: str
+              required: true
+            current-version-script:
+              type: str
+              required: true
+            packages:
+              type: seq
+              required: true
+              sequence:
+                - type: map
+                  mapping:
+                    version:
+                      type: str
+                      required: true
+                    package:
+                      type: str
+                      required: true
+                    upgrade-fence:
+                      type: bool
+                      required: false
+                    downgrade-fence:
+                      type: bool
+                      required: false
+            match:
+              type: map
+              required: true
+              mapping:
+                =:
+                  type: str
+                  required: true
+        
+                  
+    default:
+      - test: 'Supermicro X7SPA-HF Bios'
+        current-version-script: |
+          #!/usr/bin/env bash
+          get_attr bios-version
+        packages:
+          - version: '1.2b'
+            package: 'X7SPA3_719.zip'
+        match:
+          baseboard_manufacturer: 'Supermicro'
+          baseboard_product_name: 'X7SPA-HF'
+      - test: 'Dell PowerEdge T320 Bios'
+        current-version-script: |
+          #!/usr/bin/env bash
+          get_attr bios-version
+        packages:
+          - package: 'T320_BIOS_8H9VP_LN_2.4.2.BIN'
+            version: '2.4.2'
+        match:
+          system_manufacturer: 'Dell Inc.'
+          system_product: 'PowerEdge T320'
+      - test: 'Dell PowerEdge FC630 Bios'
+        current-version-script: |
+          #!/usr/bin/env bash
+          get_attr bios-version
+        packages:
+          - version: '2.1.7'
+            package: 'BIOS_DC9XJ_LN_2.1.7.BIN'
+          - version: '2.2.5'
+            package: 'BIOS_T4FMH_LN_2.2.5.BIN'
+        match:
+          system_manufacturer: 'Dell Inc.'
+          system_product: 'PowerEdge FC630'
+      - test: 'Dell PowerEdge T320 iDRAC'
+        current-version-script: |
+          #!/usr/local/bin/env bash
+          get_attr ipmi-firmware-rev
+        packages:
+          - package: 'iDRAC-with-Lifecycle-Controller_Firmware_XTPX4_LN_2.41.40.40_A00.BIN'
+            version: '2.41'
+        match:
+          system_manufacturer: 'Dell Inc.'
+          system_product: 'PowerEdge T320'
+      - test: 'Supermicro  X7SPA-HF IPMI'
+        current-version-script: |
+          #!/usr/local/bin/env bash
+          get_attr ipmi-firmware-rev
+        packages:
+          - package: 'SMT_316.zip'
+            version: '3.16'
+        match:
+          baseboard_manufacturer: 'Supermicro'
+          baseboard_product_name: 'X7SPA-HF'
+        
+roles:
+  - name: firmware-flash
+    jig: script
+    flags:
+      - implicit
+    requires:
+      - ipmi-discover
+      - bios-discover
+      - raid-discover
+    wants-attribs:
+      - skip-flash
+      - bios-vendor
+      - bios-version
+      - bios-revision
+      - system_manufacturer
+      - system_product
+      - baseboard_manufacturer
+      - baseboard_product_name
+      - provisioner-webservers
+      - ipmi-enable
+      - ipmi-firmware-rev
+      - ipmi-device-id
+      - ipmi-device-rev
+      - ipmi-mfgr-id
+      - ipmi-product-id
+      - raid-detected-controllers
+      - firmware-target-versions
+      - firmware-packages
+      - firmware-selection-tests
