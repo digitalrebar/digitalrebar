@@ -90,10 +90,10 @@ func main() {
 	signal.Notify(killChan, syscall.SIGTERM)
 	signal.Notify(killChan, syscall.SIGINT)
 	// Fire up the listener
-	router.POST("/", gin.WrapH(ruleEngine.Sink))
 	if err := ruleEngine.RegisterSink(fmt.Sprintf("http://%s/", listen)); err != nil {
 		log.Fatalf("Failed to register event sink: %v", err)
 	}
+	router.POST("/", gin.WrapH(ruleEngine.Sink))
 	go func() {
 		err := router.Run(listen)
 		if err != nil {
