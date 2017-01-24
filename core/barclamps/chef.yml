@@ -54,6 +54,31 @@ roles:
           type: seq
           sequence:
             - type: str
+      - name: chef-client-sources
+        description: 'The URL that systems should use to download the Chef client'
+        map: 'chefjig/client_download/sources'
+        schema:
+          type: map
+          mapping:
+            =:
+              type: map
+              mapping:
+                source:
+                  type: str
+                  required: true
+                sha256:
+                  type: str
+                  required: true
+        default:
+          centos:
+            source: 'https://packages.chef.io/files/stable/chef/12.18.31/el/6/chef-12.18.31-1.el6.x86_64.rpm'
+            sha256: 'd97c3a2279366816cfbdb22916d0952b9da1627a1653b42d3ef71022619473e4'
+          ubuntu:
+            source: 'https://packages.chef.io/files/stable/chef/12.18.31/ubuntu/12.04/chef_12.18.31-1_amd64.deb'
+            sha256: '4fdabf0ae37c999795bef5e97133c1b78182129edec28c17ccf9ca6661dcc754'
+          debian:
+            source: 'https://packages.chef.io/files/stable/chef/12.18.31/debian/6/chef_12.18.31-1_amd64.deb'
+            sha256: '256cfc4f3a567967bbe6c3712c8708298e76aaf6fcccecfdaf4e46eb47b01310'
   - name: chef-client
     jig: script
     description: 'Provides a chef client.'
@@ -78,6 +103,8 @@ roles:
             obj_id: chef-client
     wants-attribs:
       - chef-servers
+      - provisioner-webservers
+      - chef-client-sources
   - name: chef-solo
     jig: script
     description: 'Configures chef-solo for a node.'
@@ -96,3 +123,4 @@ attribs:
     description: 'The private key that this node should use to authenticate with the chef server'
     map: 'chefjig/client/key'
     ui_renderer: 'barclamp_chef/attribs/client_key'
+      
