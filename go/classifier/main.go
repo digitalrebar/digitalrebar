@@ -36,6 +36,7 @@ func main() {
 	flag.StringVar(&rulePath, "rules", "classifier.yml", "Rules for this classifier to use.")
 	flag.StringVar(&listen, "listen", ":35000", "Address:port to listen for events on.")
 	flag.BoolVar(&debug, "debug", false, "Whether to run in debug mode")
+	flag.Parse()
 
 	if debug {
 		jsonselect.EnableLogger()
@@ -110,7 +111,7 @@ func main() {
 	if err := yaml.Unmarshal(body, &rs); err != nil {
 		log.Fatalf("Invalid initial ruleset: %v", err)
 	}
-
+	rs.Active = true
 	rs, err = ruleEngine.AddRuleSet(rs)
 	if err != nil {
 		log.Fatalf("Error using initial ruleset: %v", err)
