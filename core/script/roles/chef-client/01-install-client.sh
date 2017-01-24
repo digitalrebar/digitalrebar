@@ -13,7 +13,7 @@ fi
 client_src=''
 if ! which chef-client; then
     case $OS_TYPE in
-        centos_redhat|fedora|rhel|scientificlinux)
+        centos|redhat|fedora|rhel|scientificlinux)
             client_src='.centos';;
         *) client_src=".${OS_TYPE}";;
     esac
@@ -34,6 +34,11 @@ if ! which chef-client; then
         echo "   rebar provisioner files upload $client_pkg to chef/$client_pkg"
     else
         echo "Failed to download Chef client, cannot continue"
+        echo "Please consider caching it on the provisioner by:"
+        echo "   curl -fgLO $client_upstream"
+        echo "   rebar provisioner files upload $client_pkg to chef/$client_pkg"
+        echo
+        echo "This will allow the provisioner to serve the Chef client package directly"
         exit 1
     fi
     if ! sha256sum -c <(printf '%s  %s' "$client_sha256" "$client_pkg"); then
@@ -41,7 +46,7 @@ if ! which chef-client; then
         exit 1
     fi
     case $OS_TYPE in
-        redhat|centos)
+        centos|redhat|fedora|rhel|scientificlinux)
             yum -y install "$client_pkg";;
         ubuntu|debian)
             dpkg -i "$client_pkg";;
