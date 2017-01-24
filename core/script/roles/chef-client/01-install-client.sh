@@ -1,65 +1,60 @@
 #!/bin/bash
 chef_url="$(read_attribute "chefjig/server/url")"
-chef_client="$(read_attribute "chefjig/client/name")"
-chef_key="$(read_attribute "chefjig/client/key")"
+chef_client="$(read_attribute chefjig/client/name)"
+chef_key="$(read_attribute chefjig/client/key)"
+sources="$(get_attr chef-client-sources)"
+provisioner="$(get_attr provisioner-webservers |jq -r -c '.[0] | .url')"
 
 if ! [[ $chef_url && $chef_client && $chef_key ]]; then
     echo "Missing required attribs!"
     exit 1
 fi
 
-if [[ -f /etc/os-release ]]; then
-  . /etc/os-release
-fi
-
+client_src=''
 if ! which chef-client; then
-    if [[ -f /etc/redhat-release || -f /etc/centos-release ]]; then
-        yum install -y glibc.i686
-        curl -fgLO https://opscode-omnibus-packages.s3.amazonaws.com/el/6/i686/chef-11.18.12-1.el6.i686.rpm
-        yum install -y chef-11.18.12-1.el6.i686.rpm
-
-        # Fix ohai to work on centos7.1
-        cd /opt/chef/embedded/lib/ruby/gems/1.9.1/gems/ohai-7.4.1/lib/ohai/plugins/linux/
-        yum install -y patch
-        patch <<EOF
---- platform.rb
-+++ platform.rb
-@@ -38,6 +38,9 @@
-       contents = File.read("/etc/enterprise-release").chomp
-       platform "oracle"
-       platform_version get_redhatish_version(contents)
-+    elsif File.exists?('/etc/centos-release')
-+      platform "centos"
-+      platform_version File.read("/etc/centos-release").scan(/(\d+|\.+)/).join
-     elsif File.exists?("/etc/debian_version")
-     # Ubuntu and Debian both have /etc/debian_version
-     # Ubuntu should always have a working lsb, debian does not by default
-EOF
-        cd -
-
-    elif [[ -d /etc/apt ]]; then
-        cd /tmp
-        # Stick with 11.x for now.
-        curl -fgLO http://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/10.04/x86_64/chef_11.18.12-1_amd64.deb
-        dpkg -i chef_11.18.12-1_amd64.deb
-    elif [[ -f /etc/SuSE-release ]]; then
-        zypper install -y -l chef
-    elif [[ "x$NAME" == "xCoreOS" ]]; then
-        webserver=$(read_attribute "rebar/provisioner/server/webservers/0/url")
-        if [[ ! $webserver ]]; then
-            echo "Cannot figure out the URL to poll to see if we are ready to reboot!"
-            exit 1
-        fi
-        mkdir -p /opt
-        cd /opt
-        wget --quiet "http://$webserver/files/coreos-chef.tgz"
-        tar -zxf coreos-chef.tgz
-        cd -
-        mkdir -p /etc/profile.d
-        echo 'export PATH="$PATH:/opt/chef/bin"' > /etc/profile.d/chef_path.sh
-    else
-        die "Staged on to unknown OS media!"
+    case $OS_TYPE in
+        centos|redhat|fedora|rhel|scientificlinux)
+            client_src='.centos';;
+        *) client_src=".${OS_TYPE}";;
+    esac
+    if [[ $client_src == null || $client_src = '' ]]; then
+        echo "Cannot determine where to install Chef from"
+        exit 1
     fi
+    client_upstream="$(jq -r -c "$client_src | .source" <<< "$sources")"
+    client_sha256="$(jq -r -c "$client_src | .sha256" <<< "$sources")"
+    client_pkg="${client_upstream##*/}"
+    # See if we can get the package from the provisioner first
+    if curl -fglO "$provisioner/files/chef/$client_pkg"; then
+        echo "Chef client cached on the provisioner, will use it."
+    elif curl -fgLO "$client_upstream"; then
+        echo "Chef client $client_pkg downloaded from upstream."
+        echo "Please consider caching it on the provisioner by:"
+        echo "   curl -fgLO $client_upstream"
+        echo "   rebar provisioner files upload $client_pkg to chef/$client_pkg"
+    else
+        echo "Failed to download Chef client, cannot continue"
+        echo "Please consider caching it on the provisioner by:"
+        echo "   curl -fgLO $client_upstream"
+        echo "   rebar provisioner files upload $client_pkg to chef/$client_pkg"
+        echo
+        echo "This will allow the provisioner to serve the Chef client package directly"
+        exit 1
+    fi
+    if ! sha256sum -c <(printf '%s  %s' "$client_sha256" "$client_pkg"); then
+        echo "Invalid checksum for $client_pkg"
+        exit 1
+    fi
+    case $OS_TYPE in
+        centos|redhat|fedora|rhel|scientificlinux)
+            yum -y install "$client_pkg";;
+        ubuntu|debian)
+            dpkg -i "$client_pkg";;
+        suse|sles|opensuse)
+            zypper install -y -l "$client_pkg";;
+        *)
+            echo "No idea how to install on $OS_TYPE";;
+    esac
 fi
 
 mkdir -p "/etc/chef"
