@@ -200,7 +200,7 @@ attribs:
             source:
               type: str
               required: true
-            flash-script:
+            script:
               type: str
               required: true
     
