@@ -48,7 +48,8 @@ exec > /root/post-install.log 2>&1
 set -x
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 (cd /bin; curl -fgl -O "{{.ProvisionerURL}}/files/rebar"; chmod 755 rebar)
-
+(cd /usr/local/bin; curl -fgL -O "{{.ProvisionerURL}}/files/jq"; chmod 755 jq)
+export PATH="$PATH:/usr/local/bin"
 export REBAR_ENDPOINT="{{.CommandURL}}"
 export REBAR_KEY="{{.Param "rebar-machine_key"}}"
 echo "$REBAR_KEY" >/etc/rebar.install.key
@@ -60,18 +61,6 @@ name=Rebar Base Repo
 baseurl={{.Env.OS.InstallUrl}}
 gpgcheck=0
 EOF
-
-# epel must be enabled to install jq.
-cat >/etc/yum.repos.d/rebar-epel.repo <<EOF
-[rebar-epel]
-name=Rebar Epel Repo
-baseurl=http://mirrors.kernel.org/fedora-epel/6/x86_64/
-gpgcheck=0
-EOF
-{{if .Param "use-proxy"}}
-echo "proxy={{index (.Param "proxy-servers") 0 "url"}}" >> /etc/yum.conf
-{{end}}
-sed -i '/^enabled/ s/1/0/' /etc/yum/pluginconf.d/fastestmirror.conf
 
 # Make sure we can install gems
 cat >/etc/gemrc <<EOF
@@ -94,7 +83,7 @@ if [ ! -f "$rsyslog_dir/10-rebar-client.conf" ]; then
     fi
 fi
 
-yum -y install jq python
+yum -y install python
 
 node_json="$(rebar nodes show "{{.Machine.UUID}}")" && \
     HOSTNAME="$(jq -r '.name' <<<"$node_json")" && \
@@ -143,7 +132,6 @@ chmod +x /etc/init.d/rebar_join.sh
 ln -s /etc/init.d/rebar_join.sh /etc/rc3.d/S80rebar
 ln -s /etc/init.d/rebar_join.sh /etc/rc5.d/S80rebar
 ln -s /etc/init.d/rebar_join.sh /etc/rc2.d/S80rebar
-rm /etc/yum.repos.d/rebar-epel.repo
 
 # boot to runlevel 3 by default
 sed -i -e '/initdefault/ s/5/3/' /etc/inittab

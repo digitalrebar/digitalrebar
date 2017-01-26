@@ -26,6 +26,7 @@
 # Spin while we wait for the interface to come up.
 set -x
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
+export PATH="$PATH:/usr/local/bin"
 
 echo "Waiting on our network interface to come up..."
 while ! ip addr | grep -v " lo" | grep -q "inet "

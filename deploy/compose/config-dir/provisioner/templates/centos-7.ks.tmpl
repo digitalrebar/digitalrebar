@@ -46,6 +46,8 @@ exec > /root/post-install.log 2>&1
 set -x
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 (cd /bin; curl -fgl -O "{{.ProvisionerURL}}/files/rebar"; chmod 755 rebar)
+(cd /usr/local/bin; curl -fgL -O "{{.ProvisionerURL}}/files/jq"; chmod 755 jq)
+export PATH="$PATH:/usr/local/bin"
 export REBAR_ENDPOINT="{{.CommandURL}}"
 export REBAR_KEY="{{.Param "rebar-machine_key"}}"
 echo "$REBAR_KEY" >/etc/rebar.install.key
@@ -58,20 +60,8 @@ baseurl={{.Env.OS.InstallUrl}}
 gpgcheck=0
 EOF
 
-# epel must be enabled to install jq.
-cat >/etc/yum.repos.d/rebar-epel.repo <<EOF
-[rebar-epel]
-name=Rebar Epel Repo
-baseurl=http://mirrors.kernel.org/fedora-epel/7/x86_64/
-gpgcheck=0
-EOF
-{{if .Param "use-proxy"}}
-echo "proxy={{index (.Param "proxy-servers") 0 "url"}}" >> /etc/yum.conf
-{{end}}
-sed -i '/^enabled/ s/1/0/' /etc/yum/pluginconf.d/fastestmirror.conf
-
 # Install ntpdate
-yum -y install ntpdate jq python
+yum -y install ntpdate python
 
 node_json="$(rebar nodes show "{{.Machine.UUID}}")" && \
     HOSTNAME="$(jq -r '.name' <<<"$node_json")" && \
@@ -157,7 +147,6 @@ systemctl enable rebar
 # to the network, not NetworkManager
 chkconfig NetworkManager off || :
 chkconfig network on || :
-rm /etc/yum.repos.d/rebar-epel.repo
 
 rebar nodes update "$REBAR_UUID" '{"bootenv": "local"}'
 while [[ $(rebar nodes get "$REBAR_UUID" attrib provisioner-active-bootstate |jq -r '.value') != local ]]; do
