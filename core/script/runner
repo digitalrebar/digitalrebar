@@ -11,7 +11,7 @@ export ROLE=$2
 # os-identifier can be either an OS_TYPE or an OS_NAME
 
 declare -A pkgs svcs
-
+declare -a _os_alts
 # Figure out what Linux distro we are running on.
 export OS_TYPE= OS_VER= OS_NAME=
 
@@ -98,20 +98,31 @@ add_svcalt() {
     fi
 }
 
-# Generate valid alternate OS names based on the current OS.
-gen_subs() {
-    local res=()
-    res+=("$OS_NAME")
-    case $OS_TYPE in
-        scientificlinux) res+=("centos-$OS_VER" "$OS_TYPE" "centos");;
-        redhat) res+=("centos-$OS_VER" "$OS_TYPE" "centos");;
-        centos) res+=("redhat-$OS_VER" "$OS_TYPE" "redhat");;
-        fedora) res+=("$OS_TYPE" redhat centos);;
-        ubuntu) res+=("$OS_TYPE" debian);;
-        debian) res+=("$OS_TYPE" ubuntu);;
-    esac
-    echo "${res[@]}"
+__os_alts=()
+os_alt_vappend() {
+    local __os
+    local vapp
+    for vapp in "-${OS_VER}" "-${OS_VER%%.*}" ""; do
+        for __os in "$@"; do
+            __os_alts+=("${__os}${vapp}")
+        done
+    done
 }
+
+os_alt_vappend "$OS_TYPE"
+case $OS_TYPE in
+    scientificlinux)
+        os_alt_vappend "$OS_TYPE" rhel;;
+    redhat)
+        os_alt_vappend "$OS_TYPE" rhel;;
+    centos)
+        os_alt_vappend "$OS_TYPE" rhel;;
+    ubuntu)
+        os_alt_vappend "$OS_TYPE"
+        __os_alts+=("debian");;
+    debian) os_alt_vappend "$OS_TYPE";;
+    *) __os_alts=("$OS_NAME");;
+esac
 
 # Lookup the proper name of the package for this OS based on the alts.
 lookup_package() {
@@ -125,7 +136,7 @@ lookup_package() {
     while read osrel alt; do
         pkgalts["$osrel"]="$alt"
     done <<< "$pkgline"
-    for osrel in $(gen_subs); do
+    for osrel in "${__os_alts[@]}"; do
         if [[ ${pkgalts["$osrel"]} ]]; then
             printf '%s' "${pkgalts[$osrel]}"
             return
@@ -146,7 +157,7 @@ lookup_service() {
     while read osrel alt; do
         svcalts["$osrel"]="$alt"
     done <<< "$svcline"
-    for osrel in $(gen_subs); do
+    for osrel in "${__os_alts[@]}"; do
         if [[ ${svcalts["$osrel"]} ]]; then
             printf '%s' "${svcalts[$osrel]}"
             return

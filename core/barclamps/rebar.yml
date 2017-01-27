@@ -199,96 +199,371 @@ roles:
         description: 'The repositories that should be used to install packages from by default'
         map: 'rebar/package_repos'
         schema:
-          type: seq
+          type: map
           required: true
-          sequence:
-            - type: map
+          mapping:
+            =:
+              type: map
               mapping:
                 name:
                   type: str
+                  required: true
+                priority:
+                  type: int
                   required: true
                 description:
                   type: str
                   required: true
                 disabled:
                   type: bool
-                  required: false
-                oses:
-                  type: seq
                   required: true
-                  sequence:
-                    - type: map
-                      required: true
+                oses:
+                  type: map
+                  required: true
+                  mapping:
+                    =:
+                      type: map
                       mapping:
-                        os:
+                        contents:
                           type: str
                           required: true
-                        repos:
-                          type: seq
-                          required: true
-                          sequence:
-                            - type: str
         default:
-          - name: epel
-            description: 'Extra Packages for Enterprise Linux'
+          default:
+            description: 'The default repos to install packages from'
+            priority: 10
+            disabled: false
             oses:
-              - os: redhat-6
-                repos:
-                  - bare http://mirrors.kernel.org/fedora-epel/6/x86_64/
-              - os: centos-6
-                repos:
-                  - bare http://mirrors.kernel.org/fedora-epel/6/x86_64/
-              - os: centos-7
-                repos:
-                  - bare http://mirrors.kernel.org/fedora-epel/7/x86_64/
-          - name: saltstack
+              scientificlinux-6:
+                contents: |
+                  [sl]
+                  name=Scientific Linux $releasever - $basearch
+                  baseurl=http://ftp.scientificlinux.org/linux/scientific/$releasever/$basearch/os/
+                  http://ftp1.scientificlinux.org/linux/scientific/$releasever/$basearch/os/
+                  http://ftp2.scientificlinux.org/linux/scientific/$releasever/$basearch/os/
+                  ftp://ftp.scientificlinux.org/linux/scientific/$releasever/$basearch/os/
+                  #mirrorlist=http://ftp.scientificlinux.org/linux/scientific/mirrorlist/sl-base-6.txt
+                  enabled=1
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-sl file:///etc/pki/rpm-gpg/RPM-GPG-KEY-sl6 file:///etc/pki/rpm-gpg/RPM-GPG-KEY-cern
+
+                  [sl-security]
+                  name=Scientific Linux $releasever - $basearch - security updates
+                  baseurl=http://ftp.scientificlinux.org/linux/scientific/$releasever/$basearch/updates/security/
+                  http://ftp1.scientificlinux.org/linux/scientific/$releasever/$basearch/updates/security/
+                  http://ftp2.scientificlinux.org/linux/scientific/$releasever/$basearch/updates/security/
+                  ftp://ftp.scientificlinux.org/linux/scientific/$releasever/$basearch/updates/security/
+                  #mirrorlist=http://ftp.scientificlinux.org/linux/scientific/mirrorlist/sl-security-6.txt
+                  enabled=1
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-sl file:///etc/pki/rpm-gpg/RPM-GPG-KEY-sl6 file:///etc/pki/rpm-gpg/RPM-GPG-KEY-cern
+
+                  [sl-source]
+                  name=Scientific Linux $releasever - Source
+                  baseurl=http://ftp.scientificlinux.org/linux/scientific/$releasever/SRPMS/
+                  http://ftp1.scientificlinux.org/linux/scientific/$releasever/SRPMS/
+                  http://ftp2.scientificlinux.org/linux/scientific/$releasever/SRPMS/
+                  ftp://ftp.scientificlinux.org/linux/scientific/$releasever/SRPMS/
+                  enabled=0
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-sl file:///etc/pki/rpm-gpg/RPM-GPG-KEY-sl6 file:///etc/pki/rpm-gpg/RPM-GPG-KEY-cern
+
+                  [sl6x]
+                  name=Scientific Linux 6x - $basearch
+                  baseurl=http://ftp.scientificlinux.org/linux/scientific/6x/$basearch/os/
+                  http://ftp1.scientificlinux.org/linux/scientific/6x/$basearch/os/
+                  http://ftp2.scientificlinux.org/linux/scientific/6x/$basearch/os/
+                  ftp://ftp.scientificlinux.org/linux/scientific/6x/$basearch/os/
+                  #mirrorlist=http://ftp.scientificlinux.org/linux/scientific/mirrorlist/sl-base-6x.txt
+                  enabled=1
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-sl file:///etc/pki/rpm-gpg/RPM-GPG-KEY-sl6 file:///etc/pki/rpm-gpg/RPM-GPG-KEY-cern
+
+                  [sl6x-security]
+                  name=Scientific Linux 6x - $basearch - security updates
+                  baseurl=http://ftp.scientificlinux.org/linux/scientific/6x/$basearch/updates/security/
+                  http://ftp1.scientificlinux.org/linux/scientific/6x/$basearch/updates/security/
+                  http://ftp2.scientificlinux.org/linux/scientific/6x/$basearch/updates/security/
+                  ftp://ftp.scientificlinux.org/linux/scientific/6x/$basearch/updates/security/
+                  #mirrorlist=http://ftp.scientificlinux.org/linux/scientific/mirrorlist/sl-security-6x.txt
+                  enabled=1
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-sl file:///etc/pki/rpm-gpg/RPM-GPG-KEY-sl6 file:///etc/pki/rpm-gpg/RPM-GPG-KEY-cern
+
+                  [sl6x-fastbugs]
+                  name=Scientific Linux 6x - $basearch - fastbug updates
+                  baseurl=http://ftp.scientificlinux.org/linux/scientific/6x/$basearch/updates/fastbugs/
+                  http://ftp1.scientificlinux.org/linux/scientific/6x/$basearch/updates/fastbugs/
+                  http://ftp2.scientificlinux.org/linux/scientific/6x/$basearch/updates/fastbugs/
+                  ftp://ftp.scientificlinux.org/linux/scientific/6x/$basearch/updates/fastbugs/
+                  #mirrorlist=http://ftp.scientificlinux.org/linux/scientific/mirrorlist/sl-fastbugs-6x.txt
+                  enabled=0
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-sl file:///etc/pki/rpm-gpg/RPM-GPG-KEY-sl6 file:///etc/pki/rpm-gpg/RPM-GPG-KEY-cern
+
+                  [sl-addons]
+                  name=Scientific Linux Addon Packages
+                  baseurl=http://ftp.scientificlinux.org/linux/scientific/$releasever/$basearch/addons
+                  http://ftp1.scientificlinux.org/linux/scientific/$releasever/$basearch/addons
+                  http://ftp2.scientificlinux.org/linux/scientific/$releasever/$basearch/addons
+                  ftp://ftp.scientificlinux.org/linux/scientific/$releasever/$basearch/addons
+                  enabled=0
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-sl file:///etc/pki/rpm-gpg/RPM-GPG-KEY-sl6 file:///etc/pki/rpm-gpg/RPM-GPG-KEY-cern
+              centos-7:
+                contents: |
+                  [base]
+                  name=CentOS-$releasever - Base
+                  mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os&infra=$infra
+                  #baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+                  #released updates
+                  [updates]
+                  name=CentOS-$releasever - Updates
+                  mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=updates&infra=$infra
+                  #baseurl=http://mirror.centos.org/centos/$releasever/updates/$basearch/
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+                  #additional packages that may be useful
+                  [extras]
+                  name=CentOS-$releasever - Extras
+                  mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
+                  #baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+                  #additional packages that extend functionality of existing packages
+                  [centosplus]
+                  name=CentOS-$releasever - Plus
+                  mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=centosplus&infra=$infra
+                  #baseurl=http://mirror.centos.org/centos/$releasever/centosplus/$basearch/
+                  gpgcheck=1
+                  enabled=0
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+                  [cr]
+                  name=CentOS-$releasever - cr
+                  baseurl=http://mirror.centos.org/centos/$releasever/cr/$basearch/
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+                  enabled=0
+
+                  [base-debuginfo]
+                  name=CentOS-7 - Debuginfo
+                  baseurl=http://debuginfo.centos.org/7/$basearch/
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-Debug-7
+                  enabled=0
+
+                  [fasttrack]
+                  name=CentOS-7 - fasttrack
+                  mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=fasttrack&infra=$infra
+                  #baseurl=http://mirror.centos.org/centos/$releasever/fasttrack/$basearch/
+                  gpgcheck=1
+                  enabled=0
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+                  [base-source]
+                  name=CentOS-$releasever - Base Sources
+                  baseurl=http://vault.centos.org/centos/$releasever/os/Source/
+                  gpgcheck=1
+                  enabled=0
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+                  #released updates
+                  [updates-source]
+                  name=CentOS-$releasever - Updates Sources
+                  baseurl=http://vault.centos.org/centos/$releasever/updates/Source/
+                  gpgcheck=1
+                  enabled=0
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+                  #additional packages that may be useful
+                  [extras-source]
+                  name=CentOS-$releasever - Extras Sources
+                  baseurl=http://vault.centos.org/centos/$releasever/extras/Source/
+                  gpgcheck=1
+                  enabled=0
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentS-7
+
+                  #additional packages that extend functionality of existing packages
+                  [centosplus-source]
+                  name=CentOS-$releasever - Plus Sources
+                  baseurl=http://vault.centos.org/centos/$releasever/centosplus/Source/
+                  gpgcheck=1
+                  enabled=0
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7
+
+              ubuntu-14.04:
+                contents: |
+                  deb http://us.archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse
+                  deb-src http://us.archive.ubuntu.com/ubuntu/ trusty main restricted universe multiverse
+                  deb http://us.archive.ubuntu.com/ubuntu/ trusty-updates main restricted universe multiverse
+                  deb-src http://us.archive.ubuntu.com/ubuntu/ trusty-updates main restricted universe multiverse
+                  deb http://archive.canonical.com/ubuntu trusty partner
+                  deb-src http://archive.canonical.com/ubuntu trusty partner
+                  deb http://extras.ubuntu.com/ubuntu trusty main
+                  deb-src http://extras.ubuntu.com/ubuntu trusty main
+                  deb http://security.ubuntu.com/ubuntu trusty-security main restricted universe multiverse
+                  deb-src http://security.ubuntu.com/ubuntu trusty-security main restricted universe multiverse
+              redhat-6:
+                contents: |
+                  [rhel-source]
+                  name=Red Hat Enterprise Linux $releasever - $basearch - Source
+                  baseurl=ftp://ftp.redhat.com/pub/redhat/linux/enterprise/$releasever/en/os/SRPMS/
+                  enabled=0
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+                  [rhel-source-beta]
+                  name=Red Hat Enterprise Linux $releasever Beta - $basearch - Source
+                  baseurl=ftp://ftp.redhat.com/pub/redhat/linux/beta/$releasever/en/os/SRPMS/
+                  enabled=0
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta,file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+              centos-6:
+                contents: |
+                  [base]
+                  name=CentOS-$releasever - Base
+                  mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os&infra=$infra
+                  #baseurl=http://mirror.centos.org/centos/$releasever/os/$basearch/
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+
+                  #released updates
+                  [updates]
+                  name=CentOS-$releasever - Updates
+                  mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=updates&infra=$infra
+                  #baseurl=http://mirror.centos.org/centos/$releasever/updates/$basearch/
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+
+                  #additional packages that may be useful
+                  [extras]
+                  name=CentOS-$releasever - Extras
+                  mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
+                  #baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+
+                  #additional packages that extend functionality of existing packages
+                  [centosplus]
+                  name=CentOS-$releasever - Plus
+                  mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=centosplus&infra=$infra
+                  #baseurl=http://mirror.centos.org/centos/$releasever/centosplus/$basearch/
+                  gpgcheck=1
+                  enabled=0
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+
+                  #contrib - packages by Centos Users
+                  [contrib]
+                  name=CentOS-$releasever - Contrib
+                  mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=contrib&infra=$infra
+                  #baseurl=http://mirror.centos.org/centos/$releasever/contrib/$basearch/
+                  gpgcheck=1
+                  enabled=0
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+
+                  [base-debuginfo]
+                  name=CentOS-6 - Debuginfo
+                  baseurl=http://debuginfo.centos.org/6/$basearch/
+                  gpgcheck=1
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-Debug-6
+                  enabled=0
+
+                  [fasttrack]
+                  name=CentOS-6 - fasttrack
+                  mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=fasttrack&infra=$infra
+                  #baseurl=http://mirror.centos.org/centos/$releasever/fasttrack/$basearch/
+                  gpgcheck=1
+                  enabled=0
+                  gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6
+
+              ubuntu-16.04:
+                contents: |
+                  deb http://us.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse
+                  deb-src http://us.archive.ubuntu.com/ubuntu/ xenial main restricted universe multiverse
+                  deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse
+                  deb-src http://us.archive.ubuntu.com/ubuntu/ xenial-updates main restricted universe multiverse
+                  deb http://archive.canonical.com/ubuntu xenial partner
+                  deb-src http://archive.canonical.com/ubuntu xenial partner
+                  deb http://security.ubuntu.com/ubuntu xenial-security main restricted universe multiverse
+                  deb-src http://security.ubuntu.com/ubuntu xenial-security main restricted universe multiverse
+          epel:
+            description: 'Extra Packages for Enterprise Linux'
+            priority: 20
+            disabled: false
+            oses:
+              rhel-6:
+                contents: |
+                  [rebar-epel]
+                  name=Rebar epel Repo
+                  baseurl=http://mirrors.kernel.org/fedora-epel/6/x86_64/
+                  gpgcheck=0
+              rhel-7:
+                contents: |
+                  [rebar-epel]
+                  name=Rebar epel Repo
+                  baseurl=http://mirrors.kernel.org/fedora-epel/7/x86_64/
+                  gpgcheck=0
+          saltstack:
+            priority: 20
+            disabled: false
             description: 'Installation source for up-to-date Saltstack binaries'
             oses:
-              - os: ubuntu-12.04
-                repos:
-                  - deb http://ppa.launchpad.net/saltstack/salt/ubuntu precise main
-              - os: ubuntu-14.04
-                repos:
-                  - deb http://ppa.launchpad.net/saltstack/salt/ubuntu trusty main
-              - os: ubuntu-15.04
-                repos:
-                  - deb http://ppa.launchpad.net/saltstack/salt/ubuntu vivid main
-          - name: vbernat
+              ubuntu-12.04:
+                contents: |
+                  deb http://ppa.launchpad.net/saltstack/salt/ubuntu precise main
+              ubuntu-14.04:
+                contents: |
+                  deb http://ppa.launchpad.net/saltstack/salt/ubuntu trusty main
+              ubuntu-15.04:
+                contents: |
+                  deb http://ppa.launchpad.net/saltstack/salt/ubuntu vivid main
+          vbernat:
+            priority: 20
+            disabled: false
             description: 'vbernat is where we download lldpd for systems that do not have it.'
             oses:
-              - os: centos-6
-                repos:
-                  - bare http://download.opensuse.org/repositories/home:/vbernat/CentOS_CentOS-6/
-              - os: redhat-6
-                repos:
-                  - bare http://download.opensuse.org/repositories/home:/vbernat/RedHat_RHEL-6/
-              - os: centos-7
-                repos:
-                  - bare http://download.opensuse.org/repositories/home:/vbernat/CentOS_7/
-          - name: bsdtar
+              rhel-6:
+                contents: |
+                  [rebar-vbernat]
+                  name=Rebar vbernat Repo
+                  baseurl=http://download.opensuse.org/repositories/home:/vbernat/CentOS_CentOS-6/
+                  gpgcheck=0
+              rhel-7:
+                contents: |
+                  [rebar-vbernat]
+                  name=Rebar vbernat Repo
+                  baseurl=http://download.opensuse.org/repositories/home:/vbernat/CentOS_7/
+                  gpgcheck=0
+          bsdtar:
+            priority: 20
+            disabled: false
             description: 'bsdtar is our one stop shop for all decompression needs'
             oses:
-              - os: centos-6
-                repos:
-                  - bare http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
-              - os: redhat-6
-                repos:
-                  - bare http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
-          - name: draios
+              rhel-6:
+                contents: |
+                  [rebar-bsdtar]
+                  name=Rebar bsdtar Repo
+                  baseurl=http://download.opensuse.org/repositories/home:/AndreasStieger:/branches:/Archiving/CentOS_CentOS-6/
+                  gpgcheck=0
+          draios:
+            priority: 20
+            disabled: false
             description: 'Up to date Ruby packages'
             oses:
-              - os: ubuntu
-                repos:
-                  - deb http://download.draios.com/stable/deb stable-amd64/
-              - os: debian
-                repos:
-                  - deb http://download.draios.com/stable/deb stable-amd64/
-              - os: redhat
-                repos:
-                  - bare http://download.draios.com/stable/rpm/x86_64
-              - os: centos
-                repos:
-                  - bare http://download.draios.com/stable/rpm/x86_64
+              ubuntu:
+                contents: |
+                  deb http://download.draios.com/stable/deb stable-amd64/
+              rhel:
+                contents: |
+                  [rebar-draios]
+                  name=Rebar draios Repo
+                  baseurl=http://download.draios.com/stable/rpm/x86_64
+                  gpgcheck=0
 hammers:
   - name: 'ssh'
     type: 'SecureShellHammer'

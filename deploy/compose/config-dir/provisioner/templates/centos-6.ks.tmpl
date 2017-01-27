@@ -54,6 +54,8 @@ export REBAR_ENDPOINT="{{.CommandURL}}"
 export REBAR_KEY="{{.Param "rebar-machine_key"}}"
 echo "$REBAR_KEY" >/etc/rebar.install.key
 
+(cd /etc/yum.repos.d; rm -f * || :)
+
 # Use the install repo from the provisioner for local package installation
 cat >/etc/yum.repos.d/00-rebar-base.repo <<EOF
 [rebar-base]
