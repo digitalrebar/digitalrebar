@@ -106,7 +106,7 @@ class NetworkRangesController < ::ApplicationController
                          visible(model, cap("UPDATE")).
                            find_by!(name: params[:name], network_id: net.id).lock!
                        end
-      simple_update(@network_range,%w{name first last conduit vlan team_mode overlap use_vlan use_bridge use_team tenant_id})
+      simple_update(@network_range,%w{name first last conduit vlan team_mode overlap use_vlan use_bridge use_team tenant_id anon_lease_time bound_lease_time allow_anon_leases allow_bound_leases})
     end
     render api_show @network_range
   end
