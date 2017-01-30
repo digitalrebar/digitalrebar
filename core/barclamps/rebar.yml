@@ -100,6 +100,13 @@ roles:
     provides:
       - rebar-managed-node
       - rebar-installed-node
+  - name: ansible-client
+    description: "Provide enough to run ansible"
+    flags:
+      - implicit
+    jig: script
+    requires:
+      - rebar-package-sources
   - name: rebar-inventory
     description: "Rebar Inventory"
     flags:
