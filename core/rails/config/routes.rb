@@ -24,6 +24,8 @@ Rebar::Application.routes.draw do
     end
   end
 
+  get 'bypass' => 'support#bypass', as: :bypass
+
   # UI resources (should generally match the API paths)
   get "annealer", :to => "node_roles#anneal", :as => :annealer
   resources :attribs
@@ -352,5 +354,5 @@ Rebar::Application.routes.draw do
     eval(bc_mount, binding)
   end
 
-  root :to => 'dashboard#layercake'
+  root :to => 'support#bypass'
 end
