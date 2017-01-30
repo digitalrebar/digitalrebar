@@ -19,6 +19,10 @@ class SupportController < ApplicationController
   def eula
   end
   
+  def bypass
+    redirect_to "/ux"
+  end
+
   # used to pass a string into the debug logger to help find specificall calls  
   def marker
     Rails.logger.info "\nMARK >>>>> #{params[:id]} <<<<< KRAM\n"
