@@ -308,6 +308,7 @@ roles:
                         - ipmi-crossed-access-channels
                         - ipmi-immutable-rootname
                         - ipmi-immutable-root
+                        - ipmi-hard-reset-after-config
   - name: ipmi-configure
     jig: chef
     requires:

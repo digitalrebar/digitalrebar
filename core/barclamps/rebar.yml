@@ -205,9 +205,6 @@ roles:
             =:
               type: map
               mapping:
-                name:
-                  type: str
-                  required: true
                 priority:
                   type: int
                   required: true
