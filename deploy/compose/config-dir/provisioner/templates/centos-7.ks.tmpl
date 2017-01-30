@@ -63,7 +63,7 @@ gpgcheck=0
 EOF
 
 # Install ntpdate
-yum -y install ntpdate python
+yum -y install ntpdate
 
 node_json="$(rebar nodes show "{{.Machine.UUID}}")" && \
     HOSTNAME="$(jq -r '.name' <<<"$node_json")" && \

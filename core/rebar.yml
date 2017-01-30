@@ -71,6 +71,7 @@ jigs:
   - name: ansible-playbook
     class: 'BarclampRebar::AnsiblePlaybookJig'
     description: "Allow Rebar to run an Ansible playbook against a node"
+    implementor: ansible-client
   - name: ansible
     class: 'BarclampRebar::AnsibleJig'
     description: "Allow Rebar to run an Ansible command/module against a node"

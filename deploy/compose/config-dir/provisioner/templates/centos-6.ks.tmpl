@@ -85,8 +85,6 @@ if [ ! -f "$rsyslog_dir/10-rebar-client.conf" ]; then
     fi
 fi
 
-yum -y install python
-
 node_json="$(rebar nodes show "{{.Machine.UUID}}")" && \
     HOSTNAME="$(jq -r '.name' <<<"$node_json")" && \
     REBAR_UUID="$(jq -r '.uuid' <<< "$node_json")" 
