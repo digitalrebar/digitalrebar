@@ -227,6 +227,17 @@ class Attrib < ActiveRecord::Base
     validate_schema(schema).each do |e|
       errors.add(:schema,"[#{e.path}]: #{e.message}")
     end
+    unless default.nil? || default["value"].nil?
+      test_schema = wrap_schema(schema)
+      test_value = { name => default["value"] }
+      validator = Kwalify::Validator.new(test_schema)
+      res = validator.validate(test_value)
+      res.each do |e|
+        errors.add(:default, "Schema: #{test_schema.inspect}")
+        errors.add(:default, "Val: #{test_value.inspect}")
+        errors.add(:default, "[#{e.path}]: #{e.message}")
+      end if res && !res.empty?
+    end
   end
 
   def make_writable_if_schema
