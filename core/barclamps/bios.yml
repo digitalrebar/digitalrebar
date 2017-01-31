@@ -60,7 +60,7 @@ roles:
         default:
           - "match":
               "baseboard_manufacturer": "/^Supermicro$/"
-              "baseboard_product_name": "/^X9DRW-7TPF\+$/"
+              "baseboard_product_name": '/^X9DRW-7TPF\+$/'
             "role": "bios-supermicro-configure"
             "configs":
               - "name": "default"
