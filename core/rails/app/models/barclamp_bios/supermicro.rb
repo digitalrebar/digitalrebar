@@ -98,7 +98,7 @@ class BarclampBios::Supermicro < BarclampBios::Driver
       when setting.proposed_value.is_a?(Numeric)
         buckets[header][var] = setting.proposed_value.to_int.to_s(16)
       else
-        buckets[header][var] = setting.split(' ')[0]
+        buckets[header][var] = setting.proposed_value.split(' ')[0]
       end
     end
     tmp = Tempfile.new("sum_bios")
