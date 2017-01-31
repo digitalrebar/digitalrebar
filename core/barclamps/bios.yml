@@ -233,11 +233,11 @@ roles:
                   "IPMI|System Event Log|SEL Components": "01 (Enabled)"
                   "IPMI|System Event Log|Erase SEL": "00 (No)"
                   "IPMI|System Event Log|When SEL is Full": "00 (Do Nothing)"
-                  "Boot|1st Boot Device": "0000 (CD/DVD)"
+                  "Boot|1st Boot Device": "0004 (Network)"
                   "Boot|2nd Boot Device": "0001 (Hard Disk)"
                   "Boot|3rd Boot Device": "0002 (USB Hard Disk)"
                   "Boot|4th Boot Device": "0003 (Removable)"
-                  "Boot|5th Boot Device": "0004 (Network)"
+                  "Boot|5th Boot Device": "0000 (CD/DVD)"
                   "Boot|6th Boot Device": "0005 (UEFI)"
                   "Security|Password Check": "00 (Setup)"
           - "match":
@@ -247,6 +247,8 @@ roles:
             "role": "bios-supermicro-configure"
             "configs":
               - "name": "default"
+                # Adapted from /usr/local/bin/sum -c GetDefaultBiosCfgTextFile
+                # where the sum tool is the Supermicro Update Manager
                 "settings":
                   "Advanced|ACPI Settings|High Precision Event Timer": "01 (Enabled)"
                   "Advanced|ACPI Settings|NUMA": "01 (Enabled)"
