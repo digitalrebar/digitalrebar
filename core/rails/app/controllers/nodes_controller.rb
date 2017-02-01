@@ -292,25 +292,17 @@ class NodesController < ApplicationController
     Node.transaction do
       @node = find_key_cap(model,params[:id],cap("UPDATE")).lock!
       ## Add better handling of deployment and tenant changing
+      params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
+      params[:tenant_id] = Tenant.find_key(params[:tenant]).id if params.has_key? :tenant
       if request.patch?
         patch(@node,%w{name description target_role_id deployment_id allocated available alive bootenv tenant_id profiles})
       else
-        params[:node_deployment].each { |k,v| params[k] = v } if params.has_key? :node_deployment
-        params[:deployment_id] = Deployment.find_key(params[:deployment]).id if params.has_key? :deployment
-        if params.has_key?(:deployment_id) && params.has_key?(:old_deployment_id)
-          old_deployment = Deployment.find_key(params[:old_deployment_id])
-          raise "Node is not in old deployment #{params[:old_deployment_id]}" unless @node.deployment == old_deployment
+        simple_update(@node,%w{name description target_role_id deployment_id allocated available alive bootenv tenant_id profiles})
+        # UGLY UGLY HACK because profiles are not being updated by simple_update (but it works in patch)
+        if params.has_key? :profiles
+          @node.profiles = params[:profiles]
+          @node.save!
         end
-        @node.update_attributes!(params.permit(:name,
-                                               :description,
-                                               :target_role_id,
-					       :tenant_id,
-                                               :deployment_id,
-                                               :allocated,
-                                               :available,
-                                               :alive,
-                                               :bootenv,
-                                               :profiles))
       end
       validate_update_for(@node)
     end
