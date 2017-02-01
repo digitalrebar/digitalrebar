@@ -297,8 +297,14 @@ class NodesController < ApplicationController
       if request.patch?
         patch(@node,%w{name description target_role_id deployment_id allocated available alive bootenv tenant_id profiles})
       else
+        # Validates node moves from UX
+        params[:node_deployment].each { |k,v| params[k] = v } if params.has_key? :node_deployment
+        if params.has_key?(:deployment_id) && params.has_key?(:old_deployment_id)
+          old_deployment = Deployment.find_key(params[:old_deployment_id])
+          raise "Node is not in old deployment #{params[:old_deployment_id]}" unless @node.deployment == old_deployment
+        end
         simple_update(@node,%w{name description target_role_id deployment_id allocated available alive bootenv tenant_id profiles})
-        # UGLY UGLY HACK because profiles are not being updated by simple_update (but it works in patch)
+         # UGLY UGLY HACK because profiles are not being updated by simple_update (but it works in patch)
         if params.has_key? :profiles
           @node.profiles = params[:profiles]
           @node.save!
