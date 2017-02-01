@@ -37,7 +37,7 @@ class BarclampBios::Dellrseries < BarclampBios::Driver
     return @settings if @settings
     res = Hash.new
     @@namespaces.each do |ns|
-      update_log("Gathering info from #{ns}")
+      # update_log("Gathering info from #{ns}")
       items = @client.enumerate(ns).Items
       next unless items
       last_part = ns.split('/').last
@@ -76,7 +76,7 @@ class BarclampBios::Dellrseries < BarclampBios::Driver
           raise("Cannot handle BIOS settings of type #{last_part}")
         end
         raise "Aiee!!! Duplicate #{self.inspect} setting #{i["name"]}" if res[i["name"]]
-        update_log("Found item: #{item.AttributeName.text} value: #{item.CurrentValue.text}")
+        # update_log("Found item: #{item.AttributeName.text} value: #{item.CurrentValue.text}")
         res[i["name"]] = BarclampBios::Setting.new(i)
       end
     end
