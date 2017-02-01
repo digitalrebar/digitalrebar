@@ -36,9 +36,38 @@ class BarclampBios::Configure < Role
     end
     # Throw out irrelavent settings or settings that do not need to change.
     settings = @driver.settings
+    missing_settings = final_config.keys - settings.keys
+    unconfigured_settings = settings.keys - final_config.keys
     final_config.select! do |k,v|
-      settings.has_key?(k) && settings[k].current_value != v
+      if settings.has_key?(k)
+        update_log(nr, "BIOS: #{k}: Have #{settings[k].current_value}, want #{v}")
+        settings[k].current_value != v
+      else
+        missing_settings << k
+        false
+      end
     end
+
+    # If missing_settings is not empty, then the config we selected wants to set
+    # keys that the current system does not support.
+    unless missing_settings.empty?
+      update_log(nr, "BIOS does not support these settings:")
+      missing_settings.each do |v|
+        update_log(nr, "    #{v}")
+      end
+    end
+
+    unless unconfigured_settings.empty?
+      update_log(nr, "BIOS has settings we will not configure:")
+      unconfigured_settings.each do |v|
+        update_log(nr, "    #{v}")
+      end
+    end
+    
+    unless missing_settings.empty? && unconfigured_settings.empty?
+      update_log(nr, "You may want to generate a more accurate BIOS profile for this system")
+    end
+    
     # If we threw away everything, we have nothing to do.
     if final_config.empty?
       update_log(nr, "BIOS already configured for #{cfg_target}")
