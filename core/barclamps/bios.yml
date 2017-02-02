@@ -628,6 +628,21 @@ roles:
         description: 'The permitted BIOS configurations for this node.'
     wants-attribs:
       - provisioner-webservers
+  - name: bios-configure
+    jig: noop
+    flags:
+      - implicit
+    requires:
+      - bios-discover
+    attribs:
+      - name: bios-configuration
+        map: 'bios/config'
+        description: "The desired BIOS configuration for this node."
+        default: [ "default" ]
+        schema:
+          type: seq
+          sequence:
+            - type: str
   - name: bios-supermicro-configure
     jig: role-provided
     events:
@@ -641,12 +656,13 @@ roles:
       - implicit
     requires:
       - firmware-flash
-      - rebar-managed-node
+      - bios-configure
     preceeds:
       - rebar-hardware-configured
     wants-attribs:
       - bios-config-sets
       - ipmi-macaddr
+      - bios-configuration
     attribs:
       - name: bios-sum-archive
         map: 'bios/supermicro/sum_archive'
@@ -669,21 +685,12 @@ roles:
       - implicit
     requires:
       - firmware-flash
-      - rebar-managed-node
+      - bios-configure
     preceeds:
       - rebar-hardware-configured
     wants-attribs:
       - bios-config-sets
-    attribs:
-      - name: bios-configuration
-        map: 'bios/config'
-        description: "The desired BIOS configuration for this node."
-        default: [ "default" ]
-        schema:
-          type: seq
-          sequence:
-            - type: str
-
+      - bios-configuration
 extra_files:
   # These files must be kept in sync with the ones in bc-template-bios.json
   # RKR: Files and links updated as of July 2nd 2013
