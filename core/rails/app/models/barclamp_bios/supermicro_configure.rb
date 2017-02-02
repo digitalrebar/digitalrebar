@@ -31,7 +31,7 @@ class BarclampBios::SupermicroConfigure < BarclampBios::Configure
     end
     bin_path = "/usr/local/bin/sum"
     unless File.exists?(bin_path) && File.executable?(bin_path)
-      Dir.mktempdir do |dir|
+      Dir.mktmpdir do |dir|
         Dir.chdir(dir) do
           unless system "tar xzf #{archive_path}"
             raise "Failed to extract #{archive_path}"
