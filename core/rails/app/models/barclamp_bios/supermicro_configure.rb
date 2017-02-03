@@ -23,30 +23,6 @@
 
 class BarclampBios::SupermicroConfigure < BarclampBios::Configure
 
-  def on_proposed(nr)
-    sum_archive = Attrib.get('bios-sum-archive',nr)
-    archive_path = "/opt/digitalrebar/#{sum_archive}"
-    unless File.exists?(archive_path)
-      raise "Missing Supermicro Update Manager utility (#{archive_path})"
-    end
-    bin_path = "/usr/local/bin/sum"
-    unless File.exists?(bin_path) && File.executable?(bin_path)
-      Dir.mktmpdir do |dir|
-        Dir.chdir(dir) do
-          unless system "tar xzf #{archive_path}"
-            raise "Failed to extract #{archive_path}"
-          end
-          ents = Dir.glob("*/sum")
-          if ents.length != 1
-            raise "Failed to extract a unique sum binary( #{ents} )"
-          end
-          system("cp #{ents[0]} /usr/local/bin")
-        end
-        system("rm -rf #{dir}/*")
-      end
-    end
-  end
-
   def do_transition(nr, data)
     @driver = BarclampBios::Supermicro.new(nr.node, nr)
     super(nr,data)

@@ -28,7 +28,7 @@ class BarclampBios::Supermicro < BarclampBios::Driver
   def initialize(node, nr)
     super(node, nr)
     @ipmi = @node.hammers.find_by!(name: 'ipmi')
-    @sum = "/usr/local/bin/sum"
+    @sum = "/opt/tools/bin/sum"
     unless File.executable?(@sum)
       raise "SuperMicro Update Manager not installed at #{@sum}"
     end
@@ -123,7 +123,7 @@ class BarclampBios::Supermicro < BarclampBios::Driver
   end
 
   def sum(cmd)
-    res = %x{/usr/local/bin/sum -u #{@ipmi.username} -p #{@ipmi.authenticator} -i #{@ipmi.endpoint} #{cmd}}
+    res = %x{/opt/tools/bin/sum -u #{@ipmi.username} -p #{@ipmi.authenticator} -i #{@ipmi.endpoint} #{cmd}}
     status = $?.exitstatus
     if status == 80
       # License not activated.  Activate it and try again.
