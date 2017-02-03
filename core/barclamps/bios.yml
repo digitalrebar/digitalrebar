@@ -645,12 +645,6 @@ roles:
             - type: str
   - name: bios-supermicro-configure
     jig: role-provided
-    events:
-      - endpoint: inproc://role:bios-supermicro-configure/on_proposed
-        selectors:
-          - event: on_proposed
-            obj_class: role
-            obj_id: bios-supermicro-configure
     flags:
       - leaverunlog
       - implicit
