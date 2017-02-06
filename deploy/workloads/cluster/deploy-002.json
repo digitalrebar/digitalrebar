@@ -13,6 +13,7 @@
     "provisioner-target_os": "ubuntu-16.04"
   },
   "name": "cluster02",
+  "tenant": "cluster02",
   "public_keys": {
     "cluster02": "ssh-rsa AAAAB..... user@example.com"
   },

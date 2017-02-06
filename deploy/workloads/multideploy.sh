@@ -29,20 +29,41 @@ fi
 for file in workloads/cluster/deploy-*.json
 do
 	echo "============= READING FILE ${file} ===================="
+
 	PROVIDER=$(cat ${file} | jq .provider.name | sed -r 's/\"(.*)-provider"/\1/g')
 	echo "  PROVIDER: creating ${PROVIDER}"
-	PROVIDER_ID=$(rebar providers show "${PROVIDER}-provider" | jq .id)
-	if [[ ! PROVIDER_ID ]] ; then
+	PROVIDER_ID=$(rebar providers match "{\"name\":\"${PROVIDER}-provider\"}" | jq 'map(.id)[0]')
+	if [[ $PROVIDER_ID -gt 0 ]] ; then
+		echo "  PROVIDER: ${PROVIDER} exists as ID ${PROVIDER_ID}. not added"
+	else
+		echo "  PROVIDER: creating ${PROVIDER} from ~/.dr_info file"
 		validate_provider $PROVIDER
 		add_provider
-	else
-		echo "  PROVIDER: ${PROVIDER} exists as ID${PROVIDER_ID}. not added"
+	fi
+
+	TENANT=$(cat ${file} | jq .tenant | sed -r 's/\"(.*)\"/\1/g')
+	if [[ TENANT ]] ; then 
+		echo "  TENANT: Deployment file contains TENANT field"
+		TENANT_ID=$(rebar tenants match "{\"name\":\"${TENANT}\"}" | jq 'map(.id)[0]')
+		if [[ $TENANT_ID -gt 0 ]] ; then
+			echo "  TENANT: ${TENANT} exists as ID $TENANT_ID. not added"
+		else
+			echo "  TENANT: Creating ${TENANT}"
+			TENANT_ID=$(rebar tenants create "{\"name\":\"${TENANT}\", \"parent_id\":1, \"description\":\"added by multicluster script\"}" | jq .id)
+			# remove automatic deployment
+			rebar deployments destroy "tenant-${TENANT}-root"
+		fi
+		echo "  TENANT: Using ID ${TENANT_ID}"
 	fi
 
 	DEPLOYMENT_NAME=$(cat ${file} | jq .name | sed -r 's/\"(.*)\"/\1/g')
 	if [[ ! $DESTROY ]] ; then
 		echo "  DEPLOYMENT: creating ${DEPLOYMENT_NAME}"
 		JSON=$(cat ${file})
+		if [[ TENANT_ID ]] ; then
+			echo "  DEPLOYMENT: Replace Tenant ${TENANT} with ID ${TENANT_ID}"
+			JSON="${JSON/\"tenant\": \"$TENANT\"/\"tenant_id\": $TENANT_ID}"
+		fi
 		DEPLOYMENT_ID=$(rebar deployments create "${JSON}" | jq .id)
 	else
 		DEPLOYMENT_ID=$(rebar deployments show ${DEPLOYMENT_NAME} | jq .id)
