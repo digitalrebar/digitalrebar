@@ -1,5 +1,7 @@
 package datatypes
 
+import "strings"
+
 // Node represents a system (real or virtual) that Rebar can manage.
 type Node struct {
 	NameID
@@ -48,4 +50,9 @@ type Node struct {
 
 func (o *Node) ApiName() string {
 	return "nodes"
+}
+
+func (o *Node) ShortName() string {
+	res := strings.SplitN(o.Name, ".", 2)
+	return res[0]
 }
