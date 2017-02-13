@@ -172,7 +172,7 @@ class Servers
         node = {
           "facility" => (fixed_args[:facility] ? fixed_args[:facility] : "ewr1"),
           "plan" => (fixed_args[:plan] ? fixed_args[:plan] : "baremetal_1"),
-          "operating_system" => (fixed_args[:os] ? fixed_args[:os] : "ubuntu_14_04"),
+          "operating_system" => (fixed_args[:os] ? fixed_args[:os] : "ubuntu_16_04_image"),
           "hostname" => (fixed_args[:hostname] ? fixed_args[:hostname] : "pw-#{date}")
         }
 
