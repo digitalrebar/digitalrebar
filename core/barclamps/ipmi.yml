@@ -389,10 +389,10 @@ extra_files:
 attribs:
   - name: ipmi-shared
     map: 'ipmi/shared_port'
-    description: 'Should the IPMI Port be shared or not for Dell systems'
-    default: false
+    description: 'Value to use as the IPMI Port for Dell systems'
+    default: 'dedicated'
     schema:
-      type: bool
+      type: string
       required: true
   - name: ipmi-wanted-version
     map: 'ipmi/wanted-version'
