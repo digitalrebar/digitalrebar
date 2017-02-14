@@ -16,8 +16,8 @@ func NewSimpleMemoryStore() *SimpleMemoryStore {
 	return &SimpleMemoryStore{v: make(map[string][]byte)}
 }
 
-func (m *SimpleMemoryStore) Sub(loc string) SimpleStore {
-	return NewSimpleMemoryStore()
+func (m *SimpleMemoryStore) Sub(loc string) (SimpleStore, error) {
+	return NewSimpleMemoryStore(), nil
 }
 
 func (m *SimpleMemoryStore) Keys() ([]string, error) {

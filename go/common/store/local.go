@@ -11,21 +11,27 @@ type SimpleLocalStore struct {
 	bucket []byte
 }
 
-func NewSimpleLocalStore(location string) (*SimpleLocalStore, error) {
-	res := &SimpleLocalStore{bucket: []byte("Default")}
-	db, err := bolt.Open(filepath.Clean(filepath.Join(location, "bolt.db")), 0600, nil)
-	if err != nil {
-		return nil, err
+func (b *SimpleLocalStore) init(loc string) error {
+	if b.db == nil {
+		db, err := bolt.Open(filepath.Clean(filepath.Join(loc, "bolt.db")), 0600, nil)
+		if err != nil {
+			return err
+		}
+		b.db = db
 	}
-	res.db = db
-	return res, res.db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists(res.bucket)
+	return b.db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists(b.bucket)
 		return err
 	})
 }
+func NewSimpleLocalStore(location string) (*SimpleLocalStore, error) {
+	res := &SimpleLocalStore{bucket: []byte(`Default`)}
+	return res, res.init(location)
+}
 
-func (b *SimpleLocalStore) Sub(loc string) SimpleStore {
-	return &SimpleLocalStore{db: b.db, bucket: []byte(loc)}
+func (b *SimpleLocalStore) Sub(loc string) (SimpleStore, error) {
+	res := &SimpleLocalStore{db: b.db, bucket: []byte(loc)}
+	return res, res.init("")
 }
 
 func (b *SimpleLocalStore) Keys() ([]string, error) {

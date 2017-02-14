@@ -7,7 +7,7 @@ import "fmt"
 type SimpleStore interface {
 	// Return a new SimpleStore that is subordinate to this one.
 	// What exactly that means depends on the simplestore in question.
-	Sub(string) SimpleStore
+	Sub(string) (SimpleStore, error)
 	// Return the list of keys that this store has
 	Keys() ([]string, error)
 	// Load the data for a particular key

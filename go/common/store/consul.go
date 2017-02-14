@@ -16,8 +16,8 @@ func NewSimpleConsulStore(c *consul.Client, prefix string) (*SimpleConsulStore, 
 	return &SimpleConsulStore{kv: c.KV(), baseKey: prefix}, nil
 }
 
-func (b *SimpleConsulStore) Sub(prefix string) SimpleStore {
-	return &SimpleConsulStore{kv: b.kv, baseKey: path.Join(b.baseKey, prefix)}
+func (b *SimpleConsulStore) Sub(prefix string) (SimpleStore, error) {
+	return &SimpleConsulStore{kv: b.kv, baseKey: path.Join(b.baseKey, prefix)}, nil
 }
 
 func (b *SimpleConsulStore) finalKey(k string) string {

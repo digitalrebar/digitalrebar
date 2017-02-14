@@ -25,8 +25,8 @@ func NewFileBackend(path string) (FileStore, error) {
 	return FileStore(fullPath), nil
 }
 
-func (f FileStore) Sub(path string) SimpleStore {
-	return FileStore(filepath.Join(string(f), path))
+func (f FileStore) Sub(path string) (SimpleStore, error) {
+	return NewFileBackend(filepath.Join(string(f), path))
 }
 
 func (f FileStore) Keys() ([]string, error) {
