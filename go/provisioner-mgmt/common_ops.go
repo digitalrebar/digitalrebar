@@ -9,6 +9,7 @@ import (
 
 	"github.com/VictorLowther/jsonpatch"
 	"github.com/digitalrebar/digitalrebar/go/common/multi-tenancy"
+	"github.com/digitalrebar/digitalrebar/go/common/store"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,7 +27,12 @@ func testCap(c *gin.Context, tenant int, op string) bool {
 
 func listThings(c *gin.Context, thing keySaver) {
 	objType := thing.typeName()
-	things := backend.list(thing)
+	things := [][]byte{}
+	var err error
+	things, err = store.ListRaw(thing.Backend())
+	if err != nil {
+		things = [][]byte{}
+	}
 	res := make([]interface{}, 0, len(things))
 	for _, obj := range things {
 		var buf interface{}
@@ -64,8 +70,8 @@ func listThings(c *gin.Context, thing keySaver) {
 
 func createThing(c *gin.Context, newThing keySaver) {
 	objType := newThing.typeName()
-
-	if err := c.Bind(&newThing); err != nil {
+	var err error
+	if err = c.Bind(&newThing); err != nil {
 		c.JSON(http.StatusBadRequest, NewError(err.Error()))
 		return
 	}
@@ -81,10 +87,11 @@ func createThing(c *gin.Context, newThing keySaver) {
 	}
 
 	finalStatus := http.StatusCreated
-	oldThing := newThing.newIsh()
-	if err := backend.load(oldThing); err == nil {
-		logger.Printf("backend: Updating %v %d\n", oldThing.key(), oldThing.tenantId())
-		logger.Printf("backend: Updating new %v %d\n", newThing.key(), newThing.tenantId())
+	oldThing := newThing.New().(keySaver)
+	saved := false
+	if ok, _ := store.Load(oldThing); ok {
+		logger.Printf("backend: Updating %v %d\n", oldThing.Key(), oldThing.tenantId())
+		logger.Printf("backend: Updating new %v %d\n", newThing.Key(), newThing.tenantId())
 		if !testCap(c, oldThing.tenantId(), objType+"_UPDATE") {
 			c.Data(http.StatusForbidden, gin.MIMEJSON, nil)
 			return
@@ -94,15 +101,17 @@ func createThing(c *gin.Context, newThing keySaver) {
 			return
 		}
 		finalStatus = http.StatusAccepted
+		saved, err = store.Update(newThing)
 	} else {
-		logger.Printf("backend: Creating %v %d\n", newThing.key(), newThing.tenantId())
+		logger.Printf("backend: Creating %v %d\n", newThing.Key(), newThing.tenantId())
 		if !testCap(c, newThing.tenantId(), objType+"_CREATE") {
 			c.Data(http.StatusForbidden, gin.MIMEJSON, nil)
 			return
 		}
 		oldThing = nil
+		saved, err = store.Create(newThing)
 	}
-	if err := backend.save(newThing, oldThing); err != nil {
+	if !saved {
 		logger.Printf("backend: Save failed: %v\n", err)
 		c.JSON(http.StatusConflict, NewError(err.Error()))
 		return
@@ -113,7 +122,7 @@ func createThing(c *gin.Context, newThing keySaver) {
 func getThing(c *gin.Context, thing keySaver) {
 	objType := thing.typeName()
 
-	if err := backend.load(thing); err != nil {
+	if found, _ := store.Load(thing); !found {
 		c.Data(http.StatusNotFound, gin.MIMEJSON, nil)
 		return
 	}
@@ -128,7 +137,7 @@ func getThing(c *gin.Context, thing keySaver) {
 func updateThing(c *gin.Context, oldThing, newThing keySaver) {
 	objType := newThing.typeName()
 
-	if err := backend.load(oldThing); err != nil {
+	if found, _ := store.Load(oldThing); !found {
 		c.Data(http.StatusForbidden, gin.MIMEJSON, nil)
 		return
 	}
@@ -170,7 +179,7 @@ func updateThing(c *gin.Context, oldThing, newThing keySaver) {
 		return
 	}
 
-	if err := backend.save(newThing, oldThing); err != nil {
+	if saved, err := store.Update(newThing); !saved {
 		c.JSON(http.StatusConflict, NewError(err.Error()))
 		return
 	}
@@ -179,7 +188,7 @@ func updateThing(c *gin.Context, oldThing, newThing keySaver) {
 
 func deleteThing(c *gin.Context, thing keySaver) {
 	objType := thing.typeName()
-	if err := backend.load(thing); err != nil {
+	if found, _ := store.Load(thing); found {
 		c.Data(http.StatusConflict, gin.MIMEJSON, nil)
 		return
 	}
@@ -187,8 +196,8 @@ func deleteThing(c *gin.Context, thing keySaver) {
 		c.Data(http.StatusConflict, gin.MIMEJSON, nil)
 		return
 	}
-	if err := backend.remove(thing); err != nil {
-		c.JSON(http.StatusConflict, NewError(fmt.Sprintf("Failed to delete %s: %v", thing.key(), err)))
+	if deleted, err := store.Remove(thing); !deleted {
+		c.JSON(http.StatusConflict, NewError(fmt.Sprintf("Failed to delete %s: %v", thing.Key(), err)))
 		return
 	}
 	c.Data(http.StatusAccepted, gin.MIMEJSON, nil)
