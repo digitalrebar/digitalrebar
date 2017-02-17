@@ -5,16 +5,25 @@ set -e
 
 OCB_MEM=${SLAVE_MEM:-2G}
 OCB_CPUS=${SLAVE_CPUS:-2}
+OCB_DRIVES=${SLAVE_DRIVES:-5}
 bridge_exists "$OCB_BRIDGE" || OCB_BRIDGE=docker0
 
 bridge_exists "$OCB_BRIDGE" || die "No bridge $OCB_BRIDGE to attach to!"
 
 # Create our disk images
-qemu-img create -f raw "$VM_DIR/$VMID.disk" 20G &>/dev/null
-qemu-img create -f qcow2 "$VM_DIR/$VMID-01.disk" 20G &>/dev/null
-qemu-img create -f qcow2 "$VM_DIR/$VMID-02.disk" 20G &>/dev/null
-qemu-img create -f qcow2 "$VM_DIR/$VMID-03.disk" 20G &>/dev/null
-qemu-img create -f qcow2 "$VM_DIR/$VMID-04.disk" 20G &>/dev/null
+if [[ $OCB_DRIVES && $OCB_DRIVES -gt 1 ]]; then
+    echo "starting with a ${OCB_DRIVES} 20G drives"
+    qemu-img create -f raw "$VM_DIR/$VMID.disk" 20G &>/dev/null
+    let OCB_DRIVES=OCB_DRIVES-1
+    while [[ $OCB_DRIVES -lt 1 ]]; do
+        qemu-img create -f qcow2 "$VM_DIR/$VMID-0$OCB_DRIVES.disk" 20G &>/dev/null
+        let OCB_DRIVES=OCB_DRIVES-1
+    done
+else
+    echo "starting with a single 40G drive"
+    qemu-img create -f raw "$VM_DIR/$VMID.disk" 40G &>/dev/null
+fi
+
 makenics
 trap 'cleanup' 0 INT QUIT TERM
 
