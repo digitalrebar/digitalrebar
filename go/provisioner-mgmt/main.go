@@ -7,11 +7,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/digitalrebar/digitalrebar/go/common/cert"
 	"github.com/digitalrebar/digitalrebar/go/common/client"
 	multitenancy "github.com/digitalrebar/digitalrebar/go/common/multi-tenancy"
 	"github.com/digitalrebar/digitalrebar/go/common/service"
+	"github.com/digitalrebar/digitalrebar/go/common/store"
 	"github.com/digitalrebar/digitalrebar/go/common/version"
 	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
 	"github.com/gin-gonic/gin"
@@ -22,7 +24,8 @@ import (
 var machineKey, fileRoot, provisionerURL, commandURL, ourAddress string
 var backEndType string
 var apiPort, staticPort, tftpPort int
-var backend storageBackend
+var backends = map[string]store.SimpleStore{}
+var backendMux = sync.Mutex{}
 var rebarClient *api.Client
 var logger *log.Logger
 var username, password, endpoint string
@@ -171,15 +174,31 @@ func main() {
 	}
 	// Fill out our service address
 	provisionerURL = fmt.Sprintf("http://%s:%d", ourAddress, staticPort)
-
+	var backend store.SimpleStore
 	switch backEndType {
 	case "consul":
-		backend, err = newConsulBackend(machineKey)
+		if consulClient == nil {
+			consulClient, err = client.Consul(true)
+			if err != nil {
+				logger.Fatalf("Error talking to Consul: %v", err)
+			}
+		}
+		backend, err = store.NewSimpleConsulStore(consulClient, machineKey)
 	case "directory":
-		backend, err = newFileBackend(machineKey)
+		backend, err = store.NewFileBackend(machineKey)
+	case "memory":
+		backend = store.NewSimpleMemoryStore()
+		err = nil
+	case "bolt", "local":
+		backend, err = store.NewSimpleLocalStore(machineKey)
 	default:
 		logger.Fatalf("Unknown storage backend type %v\n", backEndType)
 	}
+	if err != nil {
+		logger.Fatalf("Error using backing store %s: %v", backEndType, err)
+	}
+
+	registerBackends(backend)
 
 	ourCaps := []string{
 		"MACHINE_CREATE",

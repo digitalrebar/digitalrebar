@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -9,6 +8,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/digitalrebar/digitalrebar/go/common/store"
 	"github.com/gin-gonic/gin"
 )
 
@@ -45,17 +45,20 @@ func getIso(c *gin.Context, fileRoot, name string) {
 
 func reloadBootenvsForIso(name string) {
 	env := &BootEnv{}
-	newEnv := &BootEnv{}
-	for _, blob := range backend.list(env) {
-		if err := json.Unmarshal(blob, env); err != nil {
+	envs, err := store.List(env)
+	if err != nil {
+		return
+	}
+	for _, blob := range envs {
+		env, ok := blob.(*BootEnv)
+		if !ok {
 			continue
 		}
 		if env.Available || env.OS.IsoFile != name {
 			continue
 		}
-		json.Unmarshal(blob, newEnv)
-		newEnv.Available = true
-		backend.save(newEnv, env)
+		env.Available = true
+		store.Update(env)
 	}
 }
 

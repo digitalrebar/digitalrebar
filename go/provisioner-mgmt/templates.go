@@ -5,11 +5,11 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"path"
 	"strconv"
 	"text/template"
 
 	"github.com/digitalrebar/digitalrebar/go/common/multi-tenancy"
+	"github.com/digitalrebar/digitalrebar/go/common/store"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,12 +21,16 @@ type Template struct {
 	TenantId   int
 }
 
-func (t *Template) prefix() string {
+func (t *Template) Prefix() string {
 	return "templates"
 }
 
-func (t *Template) key() string {
-	return path.Join(t.prefix(), t.UUID)
+func (t *Template) Backend() store.SimpleStore {
+	return getBackend(t)
+}
+
+func (t *Template) Key() string {
+	return t.UUID
 }
 
 func (t *Template) tenantId() int {
@@ -41,9 +45,9 @@ func (t *Template) typeName() string {
 	return "TEMPLATE"
 }
 
-func (t *Template) newIsh() keySaver {
+func (t *Template) New() store.KeySaver {
 	res := &Template{UUID: t.UUID}
-	return keySaver(res)
+	return store.KeySaver(res)
 }
 
 // Parse checks to make sure the template contents are valid according to text/template.
@@ -71,7 +75,7 @@ func createTemplate(c *gin.Context) {
 	oldThing := &Template{UUID: c.Param(`uuid`), TenantId: tenant_id}
 	newThing := &Template{UUID: c.Param(`uuid`), TenantId: tenant_id}
 	var action string
-	if err := backend.load(oldThing); err == nil {
+	if found, _ := store.Load(oldThing); !found {
 		finalStatus = http.StatusAccepted
 		action = "UPDATE"
 	} else {
@@ -92,13 +96,17 @@ func createTemplate(c *gin.Context) {
 		c.Data(http.StatusForbidden, gin.MIMEJSON, nil)
 		return
 	}
-	if err := backend.save(newThing, oldThing); err != nil {
+	if saved, err := store.Update(newThing); !saved {
 		c.JSON(http.StatusInternalServerError, NewError(err.Error()))
 	}
 	c.JSON(finalStatus, newThing)
 }
 
-func (t *Template) onChange(oldThing interface{}) error {
+func (t *Template) BeforeCreate() error {
+	return t.OnChange(nil)
+}
+
+func (t *Template) OnChange(oldThing interface{}) error {
 	if t.Contents == "" || t.UUID == "" {
 		return fmt.Errorf("template: Illegal template %+v", t)
 	}
@@ -108,31 +116,31 @@ func (t *Template) onChange(oldThing interface{}) error {
 
 	if old, ok := oldThing.(*Template); ok && old != nil && old.UUID != t.UUID {
 		return fmt.Errorf("template: Cannot change UUID of %s", t.UUID)
-		machine := &Machine{}
-		machines, err := machine.List()
-		if err == nil {
-			for _, machine := range machines {
-				reRender := false
-				bootEnv := &BootEnv{Name: machine.BootEnv}
-				if err := backend.load(bootEnv); err == nil {
-					for _, template := range bootEnv.Templates {
-						if template.UUID == t.UUID {
-							reRender = true
-							template.contents = t
-							break
-						}
+	}
+	machine := &Machine{}
+	machines, err := machine.List()
+	if err == nil {
+		for _, machine := range machines {
+			reRender := false
+			bootEnv := &BootEnv{Name: machine.BootEnv}
+			if found, _ := store.Load(bootEnv); found {
+				for _, template := range bootEnv.Templates {
+					if template.UUID == t.UUID {
+						reRender = true
+						template.contents = t
+						break
 					}
 				}
-				if reRender {
-					bootEnv.RenderTemplates(machine)
-				}
+			}
+			if reRender {
+				bootEnv.RenderTemplates(machine)
 			}
 		}
 	}
 	return nil
 }
 
-func (t *Template) onDelete() error {
+func (t *Template) BeforeDelete() error {
 	bootenv := &BootEnv{}
 	bootEnvs, err := bootenv.List()
 	if err == nil {
@@ -157,9 +165,5 @@ func (t *Template) Render(dest io.Writer, params interface{}) error {
 	if err := t.parsedTmpl.Execute(dest, params); err != nil {
 		return fmt.Errorf("template: cannot execute %s: %v", t.UUID, err)
 	}
-	return nil
-}
-
-func (t *Template) RebuildRebarData() error {
 	return nil
 }

@@ -1,11 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net"
 	"path"
 	"strings"
+
+	"github.com/digitalrebar/digitalrebar/go/common/store"
 )
 
 // Machine represents a single bare-metal system that the provisioner
@@ -17,6 +18,10 @@ type Machine struct {
 	BootEnv  string                 // The boot environment that the machine should boot into.
 	Params   map[string]interface{} // Any additional parameters that may be needed for template expansion.
 	TenantId int
+}
+
+func (n *Machine) Backend() store.SimpleStore {
+	return getBackend(n)
 }
 
 // HexAddress returns Address in raw hexadecimal format, suitable for
@@ -43,19 +48,19 @@ func (n *Machine) UUID() string {
 }
 
 func (n *Machine) Url() string {
-	return provisionerURL + "/" + n.key()
+	return provisionerURL + "/" + n.Path()
 }
 
-func (n *Machine) prefix() string {
+func (n *Machine) Prefix() string {
 	return "machines"
 }
 
 func (n *Machine) Path() string {
-	return path.Join(n.prefix(), n.UUID())
+	return path.Join(n.Prefix(), n.UUID())
 }
 
-func (n *Machine) key() string {
-	return n.Path()
+func (n *Machine) Key() string {
+	return n.UUID()
 }
 
 func (n *Machine) tenantId() int {
@@ -70,12 +75,30 @@ func (n *Machine) typeName() string {
 	return "MACHINE"
 }
 
-func (n *Machine) newIsh() keySaver {
+func (n *Machine) New() store.KeySaver {
 	res := &Machine{Name: n.Name, Uuid: n.Uuid}
-	return keySaver(res)
+	return store.KeySaver(res)
 }
 
-func (n *Machine) onChange(oldThing interface{}) error {
+func (n *Machine) BeforeSave() error {
+	addr := net.ParseIP(n.Address)
+	if addr != nil {
+		addr = addr.To4()
+	}
+	if addr == nil {
+		return fmt.Errorf("machine: %s  is not a valid IPv4 address", n.Address)
+	}
+	bootEnv := &BootEnv{Name: n.BootEnv}
+	if found, err := store.Load(bootEnv); !found {
+		return err
+	}
+	if err := bootEnv.RenderTemplates(n); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (n *Machine) OnChange(oldThing store.KeySaver) error {
 	if old, ok := oldThing.(*Machine); ok && old != nil {
 		if old.Uuid != "" {
 			if old.Uuid != n.Uuid {
@@ -85,50 +108,30 @@ func (n *Machine) onChange(oldThing interface{}) error {
 			return fmt.Errorf("machine: Cannot change name of machine %s", old.Name)
 		}
 		oldBootEnv := &BootEnv{Name: old.BootEnv}
-		if err := backend.load(oldBootEnv); err != nil {
+		if found, err := store.Load(oldBootEnv); !found {
 			return err
 		}
 		oldBootEnv.DeleteRenderedTemplates(old)
 	}
-	addr := net.ParseIP(n.Address)
-	if addr != nil {
-		addr = addr.To4()
-	}
-	if addr == nil {
-		return fmt.Errorf("machine: %s  is not a valid IPv4 address", n.Address)
-	}
-	bootEnv := &BootEnv{Name: n.BootEnv}
-	if err := backend.load(bootEnv); err != nil {
-		return err
-	}
-	if err := bootEnv.RenderTemplates(n); err != nil {
-		return err
-	}
 	return nil
 }
 
-func (n *Machine) onDelete() error {
+func (n *Machine) AfterDelete() {
 	bootEnv := &BootEnv{Name: n.BootEnv}
-	if err := backend.load(bootEnv); err != nil {
-		return err
+	if found, _ := store.Load(bootEnv); found {
+		bootEnv.DeleteRenderedTemplates(n)
 	}
-	bootEnv.DeleteRenderedTemplates(n)
-	return nil
 }
 
 func (b *Machine) List() ([]*Machine, error) {
-	things := backend.list(b)
+	things, err := store.List(b)
+	if err != nil {
+		return nil, err
+	}
 	res := make([]*Machine, len(things))
 	for i, blob := range things {
-		machine := &Machine{}
-		if err := json.Unmarshal(blob, machine); err != nil {
-			return nil, err
-		}
+		machine := blob.(*Machine)
 		res[i] = machine
 	}
 	return res, nil
-}
-
-func (b *Machine) RebuildRebarData() error {
-	return nil
 }

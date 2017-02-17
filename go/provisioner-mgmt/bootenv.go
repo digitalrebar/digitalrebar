@@ -4,11 +4,9 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -19,6 +17,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/digitalrebar/digitalrebar/go/common/store"
 	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
 )
 
@@ -127,6 +126,10 @@ type BootEnv struct {
 	Errors         []string
 }
 
+func (b *BootEnv) Backend() store.SimpleStore {
+	return getBackend(b)
+}
+
 func (b *BootEnv) Error() string {
 	return strings.Join(b.Errors, "\n")
 }
@@ -180,7 +183,7 @@ func (b *BootEnv) parseTemplates() {
 		templateParams.pathTmpl = pathTmpl.Option("missingkey=error")
 		if templateParams.contents == nil {
 			tmpl := &Template{UUID: templateParams.UUID}
-			if err := backend.load(tmpl); err != nil {
+			if found, err := store.Load(tmpl); !found {
 				b.Errorf("bootenv: Error loading template %s for %s: %v",
 					templateParams.UUID,
 					templateParams.Name,
@@ -219,12 +222,12 @@ func (b *BootEnv) JoinInitrds(proto string) string {
 	return strings.Join(fullInitrds, " ")
 }
 
-func (b *BootEnv) prefix() string {
+func (b *BootEnv) Prefix() string {
 	return "bootenvs"
 }
 
-func (b *BootEnv) key() string {
-	return path.Join(b.prefix(), b.Name)
+func (b *BootEnv) Key() string {
+	return path.Join(b.Prefix(), b.Name)
 }
 
 func (b *BootEnv) tenantId() int {
@@ -239,9 +242,9 @@ func (b *BootEnv) typeName() string {
 	return "BOOTENV"
 }
 
-func (b *BootEnv) newIsh() keySaver {
+func (b *BootEnv) New() store.KeySaver {
 	res := &BootEnv{Name: b.Name}
-	return keySaver(res)
+	return store.KeySaver(res)
 }
 
 // RenderPaths renders the paths of the templates for this machine.
@@ -412,7 +415,11 @@ func (b *BootEnv) validateFile(f *FileData) error {
 	return nil
 }
 
-func (b *BootEnv) onChange(oldThing interface{}) error {
+func (b *BootEnv) OnCreate() error {
+	return b.OnChange(nil)
+}
+
+func (b *BootEnv) OnChange(oldThing interface{}) error {
 	seenPxeLinux := false
 	seenELilo := false
 	seenIPXE := false
@@ -518,7 +525,7 @@ func (b *BootEnv) onChange(oldThing interface{}) error {
 	return nil
 }
 
-func (b *BootEnv) onDelete() error {
+func (b *BootEnv) BeforeDelete() error {
 	b.Errors = []string{}
 	machine := &Machine{}
 	machines, err := machine.List()
@@ -534,19 +541,27 @@ func (b *BootEnv) onDelete() error {
 }
 
 func (b *BootEnv) List() ([]*BootEnv, error) {
-	things := backend.list(b)
+	things, err := store.List(b)
+	if err != nil {
+		return nil, err
+	}
 	res := make([]*BootEnv, len(things))
 	for i, blob := range things {
-		bootenv := &BootEnv{}
-		if err := json.Unmarshal(blob, bootenv); err != nil {
-			return nil, err
-		}
-		res[i] = bootenv
+		env := blob.(*BootEnv)
+		res[i] = env
 	}
 	return res, nil
 }
 
-func (b *BootEnv) RebuildRebarData() error {
+func (b *BootEnv) AfterSave() {
+	b.RebuildRebarData()
+}
+
+func (b *BootEnv) AfterDelete() {
+	b.RebuildRebarData()
+}
+
+func (b *BootEnv) RebuildRebarData() {
 	preferredOses := map[string]int{
 		"centos-7.3.1611": 0,
 		"centos-7.2.1511": 1,
@@ -567,12 +582,17 @@ func (b *BootEnv) RebuildRebarData() error {
 	attrPref := 1000
 
 	if !b.Available {
-		return b.errorOrNil()
+		return
 	}
 
 	bes, err := b.List()
 	if err != nil {
-		return err
+		logger.Fatalf("Error getting boot environments: %v", err)
+	}
+
+	if bes == nil || len(bes) == 0 {
+		logger.Printf("No boot environments, nothing to do")
+		return
 	}
 
 	for _, be := range bes {
@@ -595,12 +615,14 @@ func (b *BootEnv) RebuildRebarData() error {
 
 	deployment := &api.Deployment{}
 	if err := rebarClient.Fetch(deployment, "system"); err != nil {
-		return err
+		logger.Printf("Failed to lload system deployment: %v", err)
+		return
 	}
 
 	role := &api.Role{}
 	if err := rebarClient.Fetch(role, "provisioner-service"); err != nil {
-		return err
+		logger.Printf("Failed to fetch provisioner-service: %v", err)
+		return
 	}
 
 	var tgt api.Attriber
@@ -611,14 +633,15 @@ func (b *BootEnv) RebuildRebarData() error {
 		matcher["deployment_id"] = deployment.ID
 		dr := &api.DeploymentRole{}
 		if err := rebarClient.Match(rebarClient.UrlPath(dr), matcher, &drs); err != nil {
-			return err
+			logger.Printf("Failed to find deployment role to update: %v", err)
+			return
 		}
 		if len(drs) != 0 {
 			tgt = drs[0]
 			break
 		}
-		log.Printf("Waiting for provisioner-service (%v) to show up in system(%v)", role.ID, deployment.ID)
-		log.Printf("drs: %#v, err: %#v", drs, err)
+		logger.Printf("Waiting for provisioner-service (%v) to show up in system(%v)", role.ID, deployment.ID)
+		logger.Printf("drs: %#v, err: %#v", drs, err)
 		time.Sleep(5 * time.Second)
 	}
 
@@ -626,27 +649,32 @@ func (b *BootEnv) RebuildRebarData() error {
 	attrib.SetId("provisioner-available-oses")
 	attrib, err = rebarClient.GetAttrib(tgt, attrib, "")
 	if err != nil {
-		return err
+		logger.Printf("Failed to fetch provisioner-available-oses: %v", err)
+		return
 	}
 	attrib.Value = attrValOSes
 	if err := rebarClient.SetAttrib(tgt, attrib, ""); err != nil {
-		return err
+		logger.Printf("Failed to update provisioner-available-oses: %v", err)
+		return
 	}
 
 	attrib = &api.Attrib{}
 	attrib.SetId("provisioner-default-os")
 	attrib, err = rebarClient.GetAttrib(tgt, attrib, "")
 	if err != nil {
-		return err
+		logger.Printf("Failed to get default OS: %v:", err)
+		return
 	}
 	attrib.Value = attrValOS
 	if err := rebarClient.SetAttrib(tgt, attrib, ""); err != nil {
-		return err
+		logger.Printf("Failed to set default OS: %v", err)
+		return
 	}
 
 	if err := rebarClient.Commit(tgt); err != nil {
-		return err
+		logger.Printf("Failed to commit changes: %v", err)
+		return
 	}
 
-	return nil
+	return
 }
