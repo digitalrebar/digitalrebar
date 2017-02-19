@@ -56,6 +56,10 @@ func (f FileStore) Load(key string) ([]byte, error) {
 	return ioutil.ReadFile(f.name(key))
 }
 
+func (f FileStore) List() ([][]byte, error) {
+	return genericList(f)
+}
+
 func (f FileStore) Save(key string, val []byte) error {
 	file, err := os.Create(f.name(key))
 	if err != nil {

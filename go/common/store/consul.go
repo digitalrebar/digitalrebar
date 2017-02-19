@@ -26,11 +26,26 @@ func (b *SimpleConsulStore) finalKey(k string) string {
 
 func (b *SimpleConsulStore) Keys() ([]string, error) {
 	keys, _, err := b.kv.Keys(b.baseKey, "", nil)
+	if err != nil {
+		return nil, err
+	}
 	res := make([]string, len(keys))
 	for i := range keys {
 		res[i] = strings.TrimPrefix(keys[i], b.baseKey+"/")
 	}
-	return res, err
+	return res, nil
+}
+
+func (b *SimpleConsulStore) List() ([][]byte, error) {
+	pairs, _, err := b.kv.List(b.baseKey, nil)
+	if err != nil {
+		return nil, err
+	}
+	res := make([][]byte, len(pairs))
+	for i := range pairs {
+		res[i] = pairs[i].Value
+	}
+	return res, nil
 }
 
 func (b *SimpleConsulStore) Load(key string) ([]byte, error) {

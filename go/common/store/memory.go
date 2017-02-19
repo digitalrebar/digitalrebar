@@ -31,6 +31,18 @@ func (m *SimpleMemoryStore) Keys() ([]string, error) {
 	return res, nil
 }
 
+func (m *SimpleMemoryStore) List() ([][]byte, error) {
+	m.RLock()
+	res := make([][]byte, 0, len(m.v))
+	for _, v := range m.v {
+		val := make([]byte, len(v))
+		copy(val, v)
+		res = append(res, val)
+	}
+	m.RUnlock()
+	return res, nil
+}
+
 func (m *SimpleMemoryStore) Load(key string) ([]byte, error) {
 	m.RLock()
 	v, ok := m.v[key]

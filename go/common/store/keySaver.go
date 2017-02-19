@@ -111,38 +111,29 @@ func load(s SimpleStore, k KeySaver, key string, runhook bool) (bool, error) {
 // ListRaw returns a slice of byte slices, one for each Key in the
 // SimpleStore
 func ListRaw(s SimpleStore) ([][]byte, error) {
-	keys, err := s.Keys()
-	if err != nil {
-		return nil, err
-	}
-	res := make([][]byte, len(keys))
-	for i, k := range keys {
-		buf, err := s.Load(k)
-		if err != nil {
-			return nil, err
-		}
-		res[i] = buf
-	}
-	return res, nil
+	return s.List()
 }
 
 // List returns a slice of KeySavers, which can then be cast
 // back to whatever type is appropriate by the calling code.
 func List(ref KeySaver) ([]KeySaver, error) {
 	s := ref.Backend()
-	keys, err := s.Keys()
+	vals, err := ListRaw(s)
 	if err != nil {
 		return nil, err
 	}
-	res := make([]KeySaver, len(keys))
-	for i, k := range keys {
+	res := make([]KeySaver, len(vals))
+	for i := range vals {
 		v := ref.New()
-		loaded, err := load(s, v, k, true)
-		if loaded && err == nil {
-			res[i] = v
-			continue
+		if err := json.Unmarshal(vals[i], &v); err != nil {
+			return nil, err
 		}
-		return nil, err
+		if h, ok := v.(LoadHooker); ok {
+			if err := h.OnLoad(); err != nil {
+				return nil, err
+			}
+		}
+		res[i] = v
 	}
 	return res, nil
 }
