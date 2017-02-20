@@ -1,9 +1,6 @@
 package store
 
-import (
-	"sort"
-	"sync"
-)
+import "sync"
 
 // MemoryStore provides an in-memory implementation of SimpleStore
 // for testing purposes
@@ -27,7 +24,18 @@ func (m *SimpleMemoryStore) Keys() ([]string, error) {
 		res = append(res, k)
 	}
 	m.RUnlock()
-	sort.Strings(res)
+	return res, nil
+}
+
+func (m *SimpleMemoryStore) List() ([][]byte, error) {
+	m.RLock()
+	res := make([][]byte, 0, len(m.v))
+	for _, v := range m.v {
+		val := make([]byte, len(v))
+		copy(val, v)
+		res = append(res, val)
+	}
+	m.RUnlock()
 	return res, nil
 }
 
@@ -50,7 +58,12 @@ func (m *SimpleMemoryStore) Save(key string, val []byte) error {
 
 func (m *SimpleMemoryStore) Remove(key string) error {
 	m.Lock()
-	delete(m.v, key)
+	_, ok := m.v[key]
+	if ok {
+		delete(m.v, key)
+		m.Unlock()
+		return nil
+	}
 	m.Unlock()
-	return nil
+	return NotFound(key)
 }

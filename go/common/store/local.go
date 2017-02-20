@@ -47,6 +47,18 @@ func (b *SimpleLocalStore) Keys() ([]string, error) {
 	return res, err
 }
 
+func (b *SimpleLocalStore) List() ([][]byte, error) {
+	res := [][]byte{}
+	err := b.db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket(b.bucket)
+		return bucket.ForEach(func(k, v []byte) error {
+			res = append(res, v)
+			return nil
+		})
+	})
+	return res, err
+}
+
 func (b *SimpleLocalStore) Load(key string) ([]byte, error) {
 	var res []byte
 	err := b.db.View(func(tx *bolt.Tx) error {
@@ -70,6 +82,9 @@ func (b *SimpleLocalStore) Save(key string, val []byte) error {
 func (b *SimpleLocalStore) Remove(key string) error {
 	return b.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(b.bucket)
+		if res := bucket.Get([]byte(key)); res == nil {
+			return NotFound(key)
+		}
 		return bucket.Delete([]byte(key))
 	})
 }
