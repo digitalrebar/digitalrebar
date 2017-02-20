@@ -5,9 +5,9 @@
         "Name": "ubuntu-16.04",
         "Family": "ubuntu",
         "Version": "16.04",
-        "IsoFile": "ubuntu-16.04.1-server-amd64.iso",
-        "IsoUrl": "http://mirrors.kernel.org/ubuntu-releases/16.04/ubuntu-16.04.1-server-amd64.iso",
-        "IsoSha256": "29a8b9009509b39d542ecb229787cdf48f05e739a932289de9e9858d7c487c80"
+        "IsoFile": "ubuntu-16.04.2-server-amd64.iso",
+        "IsoUrl": "http://mirrors.kernel.org/ubuntu-releases/16.04/ubuntu-16.04.2-server-amd64.iso",
+        "IsoSha256": "737ae7041212c628de5751d15c3016058b0e833fdc32e7420209b76ca3d0a535"
     },
     "Kernel": "install/netboot/ubuntu-installer/amd64/linux",
     "Initrds": [ "install/netboot/ubuntu-installer/amd64/initrd.gz" ],
