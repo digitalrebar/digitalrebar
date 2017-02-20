@@ -51,7 +51,7 @@ func (b *SimpleLocalStore) List() ([][]byte, error) {
 	res := [][]byte{}
 	err := b.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(b.bucket)
-		bucket.ForEach(func(k, v []byte) error {
+		return bucket.ForEach(func(k, v []byte) error {
 			res = append(res, v)
 			return nil
 		})
@@ -82,6 +82,9 @@ func (b *SimpleLocalStore) Save(key string, val []byte) error {
 func (b *SimpleLocalStore) Remove(key string) error {
 	return b.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(b.bucket)
+		if res := bucket.Get([]byte(key)); res == nil {
+			return NotFound(key)
+		}
 		return bucket.Delete([]byte(key))
 	})
 }
