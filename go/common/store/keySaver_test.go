@@ -149,6 +149,22 @@ func testStore(t *testing.T) {
 	} else if len(ents) != 0 {
 		t.Errorf("Too many entries in store: wanted 0, got %d", len(ents))
 	}
+	ok, err := Create(&tv)
+	if !ok {
+		t.Errorf("Failed to create an entry for the list test: %v", err)
+	}
+	nents, err := List(&tv)
+	if err != nil {
+		t.Errorf("Error listing the entries for the list test: %v", err)
+	} else if len(nents) != 1 {
+		t.Errorf("Expected 1 entry, got %d", len(nents))
+	}
+	keys, err := currentStore.Keys()
+	if err != nil {
+		t.Errorf("Error getting keys for the keys test: %v", err)
+	} else if len(keys) != 1 {
+		t.Errorf("Expected 1 key, got %d", len(keys))
+	}
 }
 
 func TestMemoryStore(t *testing.T) {
