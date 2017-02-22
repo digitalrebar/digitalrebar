@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sort"
 	"time"
 
 	"github.com/digitalrebar/digitalrebar/go/rebar-api/api"
@@ -478,6 +479,80 @@ func actionNode(v interface{}) (action, error) {
 	}, nil
 }
 
+func actionProfile(v interface{}) (action, error) {
+	tgt, ok := v.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Profile requires a map")
+	}
+	nodeIdThing, ok := tgt["NodeID"]
+	if !ok {
+		return nil, fmt.Errorf("Profile needs a NodeID")
+	}
+	opThing, ok := tgt["Op"]
+	if !ok {
+		return nil, fmt.Errorf("Profile needs an Op")
+	}
+	op, ok := opThing.(string)
+	if !ok {
+		return nil, fmt.Errorf("Profile Op must be a String")
+	}
+	switch op {
+	case "Set", "Append", "Remove":
+	default:
+		return nil, fmt.Errorf("Profile Op %s invalid.  Must be one of Set, Append, or Remove", op)
+	}
+	profilesThing, ok := tgt["Profiles"]
+	if !ok {
+		return nil, fmt.Errorf("Profile needs Profiles")
+	}
+	profilesPartial, ok := profilesThing.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Profile Profiles must be a list")
+	}
+	profiles := make([]string, len(profilesPartial))
+	for i := range profilesPartial {
+		pstr, ok := profilesPartial[i].(string)
+		if !ok {
+			return nil, fmt.Errorf("Profile Profiles members must be strings")
+		}
+		profiles[i] = pstr
+	}
+	return func(c *RunContext) error {
+		nodeIdVar, err := c.getVar(nodeIdThing)
+		if err != nil {
+			return err
+		}
+		id, ok := nodeIdVar.(string)
+		if !ok {
+			return fmt.Errorf("NodeID does not resolve to a String")
+		}
+		node := &api.Node{}
+		if err := c.Client.Fetch(node, id); err != nil {
+			return fmt.Errorf("Failed to fetch Node %s: %v", id, err)
+		}
+		switch op {
+		case "Set":
+			node.Profiles = profiles
+		case "Append":
+			node.Profiles = append(node.Profiles, profiles...)
+		case "Remove":
+			sort.Strings(profiles)
+			res := []string{}
+			for _, p := range node.Profiles {
+				i := sort.SearchStrings(profiles, p)
+				if i == len(profiles) || profiles[i] != p {
+					res = append(res, p)
+				}
+			}
+			node.Profiles = res
+		}
+		if err := c.Client.Update(node); err != nil {
+			return fmt.Errorf("Failed to apply profile updates to Node")
+		}
+		return nil
+	}, nil
+}
+
 func resolveAction(e *Engine, rs *RuleSet, ruleIdx int, a map[string]interface{}) (action, error) {
 	if len(a) != 1 {
 		return nil, fmt.Errorf("Actions have exactly one key")
@@ -501,6 +576,8 @@ func resolveAction(e *Engine, rs *RuleSet, ruleIdx int, a map[string]interface{}
 			return actionCommit(v)
 		case "SetAttrib":
 			return setAttrib(v)
+		case "Profile":
+			return actionProfile(v)
 		case "Stop":
 			return actionStop()
 		case "Return":

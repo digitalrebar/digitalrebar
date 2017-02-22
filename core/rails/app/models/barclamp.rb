@@ -293,6 +293,11 @@ class Barclamp < ActiveRecord::Base
                              schema: attrib_writable ? attrib['schema']: nil,
                              barclamp_id: barclamp.id)
       end if bc['attribs']
+      bc['profiles'].each do |profile|
+        Rails.logger.info("Importing profile #{profile['name']} for barclamp #{barclamp.name}")
+        p = Profile.find_or_create_by!(name: profile['name'])
+        p.update_attributes!(values: profile['values'])
+      end if bc['profiles']
       barclamp
     end
   end
