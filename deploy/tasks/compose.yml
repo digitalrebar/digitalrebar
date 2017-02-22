@@ -64,11 +64,11 @@
     synchronize: src=./tftpboot dest={{home_dir.stdout}}/.cache/digitalrebar rsync_path="rsync"
     when: "'--provisioner' in dr_services and local_isos.stat.exists"
 
-  - name: download Ubuntu ISO (SLOW, see https://github.com/digitalrebar/digitalrebar/tree/master/deploy/containers/provisioner/update-nodes/bootenvs)
+  - name: "download {{ubuntu_iso.OS.IsoFile}} (SLOW from {{ubuntu_iso.OS.IsoUrl}})"
     get_url: url="{{ubuntu_iso.OS.IsoUrl}}" dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/{{ubuntu_iso.OS.IsoFile}}" checksum="sha256:{{ubuntu_iso.OS.IsoSha256}}"
     when: "'--provisioner' in dr_services and not local_isos.stat.exists"
 
-  - name: download Centos ISO (SLOW, see https://github.com/digitalrebar/digitalrebar/tree/master/deploy/containers/provisioner/update-nodes/bootenvs)
+  - name: "download {{centos_iso.OS.IsoFile}} (SLOW from {{centos_iso.OS.IsoUrl}})"
     get_url: url="{{centos_iso.OS.IsoUrl}}" dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/{{centos_iso.OS.IsoFile}}" checksum="sha256:{{centos_iso.OS.IsoSha256}}"
     when: "'--provisioner' in dr_services and not local_isos.stat.exists"
 
