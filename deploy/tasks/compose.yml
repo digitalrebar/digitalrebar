@@ -65,11 +65,11 @@
     when: "'--provisioner' in dr_services and local_isos.stat.exists"
 
   - name: download Ubuntu ISO (SLOW, see https://github.com/digitalrebar/digitalrebar/tree/master/deploy/containers/provisioner/update-nodes/bootenvs)
-    get_url: url=http://mirrors.kernel.org/ubuntu-releases/16.04/ubuntu-16.04.2-server-amd64.iso dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/ubuntu-16.04.1-server-amd64.iso" checksum="sha256:737ae7041212c628de5751d15c3016058b0e833fdc32e7420209b76ca3d0a535"
+    get_url: url="{{ubuntu_iso.OS.IsoUrl}}" dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/{{ubuntu_iso.OS.IsoFile}}" checksum="sha256:{{ubuntu_iso.OS.IsoSha256}}"
     when: "'--provisioner' in dr_services and not local_isos.stat.exists"
 
   - name: download Centos ISO (SLOW, see https://github.com/digitalrebar/digitalrebar/tree/master/deploy/containers/provisioner/update-nodes/bootenvs)
-    get_url: url=http://mirrors.kernel.org/centos/7.3.1611/isos/x86_64/CentOS-7-x86_64-Minimal-1611.iso dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/CentOS-7-x86_64-Minimal-1511.iso" checksum="sha256:27bd866242ee058b7a5754e83d8ee8403e216b93d130d800852a96f41c34d86a"
+    get_url: url="{{centos_iso.OS.IsoUrl}}" dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/{{centos_iso.OS.IsoFile}}" checksum="sha256:{{centos_iso.OS.IsoSha256}}"
     when: "'--provisioner' in dr_services and not local_isos.stat.exists"
 
   - name: Make code dirs
