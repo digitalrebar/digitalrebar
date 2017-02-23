@@ -51,7 +51,7 @@ if ! which aws &>/dev/null; then
 fi
 
 if [[ -e ~/.aws/credentials ]]; then
-	PROVIDER_AWS_ACCESS_KEY_IDEY=$(cat ~/.aws/credentials | grep aws_access_key_id | awk -F" = " '{print $2}')
+	PROVIDER_AWS_ACCESS_KEY_ID=$(cat ~/.aws/credentials | grep aws_access_key_id | awk -F" = " '{print $2}')
 	PROVIDER_AWS_SECRET_ACCESS_KEY=$(cat ~/.aws/credentials | grep aws_secret_access_key | awk -F" = " '{print $2}')
 else
 	echo "You must have an AWS credentials file, run the aws client!"
