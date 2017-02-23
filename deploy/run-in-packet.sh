@@ -39,7 +39,7 @@ else
     node="{
   \"facility\": \"ewr1\",
   \"plan\": \"baremetal_1\",
-  \"operating_system\": \"ubuntu_14_04\",
+  \"operating_system\": \"ubuntu_16_04_image\",
   \"hostname\": \"${NODENAME}\"
 }"
 
