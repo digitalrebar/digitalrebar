@@ -13,6 +13,7 @@
       - git
       - curl
       - wget
+      - rsync
       - psmisc
       - python
       - python-pycurl
