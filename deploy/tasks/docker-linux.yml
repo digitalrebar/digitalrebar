@@ -5,11 +5,13 @@
     when: ansible_service_mgr == "systemd"
   - name: Get Docker
     get_url: url=https://get.docker.com/ dest=/tmp/docker.sh validate_certs=False
-    sudo: yes
+    become: yes
   - name: Prep Docker
-    command: sudo chmod 755 /tmp/docker.sh
+    command: chmod 755 /tmp/docker.sh
+    become: yes
   - name: Install Docker [SLOW]
-    command: sudo /tmp/docker.sh
+    command: /tmp/docker.sh
+    become: yes
     args:
       creates: /usr/bin/docker
   - name: install docker-engine-selinux
@@ -17,18 +19,20 @@
     with_items:
       - docker-engine-selinux
     when: (ansible_distribution == "RedHat" or ansible_distribution == "CentOS") and ansible_distribution_major_version == "7"
-    sudo: yes
+    become: yes
 
   - name: restart docker service
     service: name=docker state=started
-    sudo: yes
+    become: yes
 
   - name: Get Docker Compose
     get_url: url="https://github.com/docker/compose/releases/download/1.7.1/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }}" dest=/usr/local/bin/docker-compose mode=0755
-    sudo: yes
+    become: yes
 
   - name: Allow docker access (without reboot)
-    command: sudo chmod 666 /var/run/docker.sock
+    command: chmod 666 /var/run/docker.sock
+    become: yes
 
   - name: Allow docker access after reboot
-    command: "sudo usermod -a -G docker $USER"
+    command: "usermod -a -G docker $USER"
+    become: yes
