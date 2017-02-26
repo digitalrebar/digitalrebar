@@ -97,6 +97,10 @@ if [[ $DEPLOY = CLONE ]] ; then
   EXTRA_VARS="\"dr_clone_deploy\": \"true\","
 fi
 
+if [[ $CLOUD ]] ; then
+  START_VARS="\"cloud_type\": \"$CLOUD\","
+fi
+
 if [[ $DR_TAG ]] ; then
   TAG_VARS="\"dr_tag\": \"$DR_TAG\","
 fi
@@ -131,6 +135,7 @@ JSON_STRING="{
   ${ENV_VAR}
   ${ACCESS_VAR}
   ${EXTRA_VARS}
+  ${START_VARS}
   ${TAG_VARS}
   ${CLA_VAR}
   ${CON_VAR}
@@ -171,4 +176,4 @@ fi
 
 echo "=== HELPFUL COMMANDS ==="
 echo "repeat Ansible run: ansible-playbook -i /tmp/run-in-hosts.$$ --extra-vars \"$JSON_STRING\" digitalrebar.yml ${LC}"
-echo "Digital Rebar UI https://${IP} (for RackN UX try https://${IP}/ux/ )"
+echo "Digital Rebar UI https://${IP}"

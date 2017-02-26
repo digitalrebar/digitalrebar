@@ -64,13 +64,16 @@
     synchronize: src=./tftpboot dest={{home_dir.stdout}}/.cache/digitalrebar rsync_path="rsync"
     when: "'--provisioner' in dr_services and local_isos.stat.exists"
 
+  - debug: msg="Installing in {{cloud_type}}...Skipping SLOW Provisioner ISOs"
+    when: cloud_type is defined
+
   - name: "download {{ubuntu_iso.OS.IsoFile}} (SLOW from {{ubuntu_iso.OS.IsoUrl}})"
     get_url: url="{{ubuntu_iso.OS.IsoUrl}}" dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/{{ubuntu_iso.OS.IsoFile}}" checksum="sha256:{{ubuntu_iso.OS.IsoSha256}}"
-    when: "'--provisioner' in dr_services and not local_isos.stat.exists"
+    when: "'--provisioner' in dr_services and not local_isos.stat.exists and cloud_type is not defined"
 
   - name: "download {{centos_iso.OS.IsoFile}} (SLOW from {{centos_iso.OS.IsoUrl}})"
     get_url: url="{{centos_iso.OS.IsoUrl}}" dest="{{home_dir.stdout}}/.cache/digitalrebar/tftpboot/isos/{{centos_iso.OS.IsoFile}}" checksum="sha256:{{centos_iso.OS.IsoSha256}}"
-    when: "'--provisioner' in dr_services and not local_isos.stat.exists"
+    when: "'--provisioner' in dr_services and not local_isos.stat.exists and cloud_type is not defined"
 
   - name: Make cache dirs for RAID drivers
     command: mkdir -p {{home_dir.stdout}}/.cache/digitalrebar/tftpboot/files/raid
@@ -171,7 +174,7 @@
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
     tags: stop
 
-  - name: Compose up containers
+  - name: "STARTING Digital Rebar!!! (Compose up -d containers)"
     shell: "DR_TAG={{dr_tag}} /usr/local/bin/docker-compose up -d"
     args:
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
