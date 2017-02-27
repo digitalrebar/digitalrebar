@@ -67,7 +67,7 @@ fi
 
 PROVIDER=${PROVIDER:-"aws"}
 if which rebar &>/dev/null; then
-	PROVIDER_ID=$(rebar providers match "{\"name\":\"${PROVIDER}-provider\"}" | jq 'map(.id)[0]')
+	PROVIDER_ID=$(rebar -E "https://$ADMIN_IP" providers match "{\"name\":\"${PROVIDER}-provider\"}" | jq 'map(.id)[0]')
 else
 	echo "Using CURL.  You can also install the Rebar CLI, see http://digital-rebar.readthedocs.io/en/latest/clients/cli.html"
 fi
