@@ -77,11 +77,11 @@
 
   - name: Make cache dirs for RAID drivers
     command: mkdir -p {{home_dir.stdout}}/.cache/digitalrebar/tftpboot/files/raid
-    when: "'--provisioner' in dr_services"
+    when: "'--provisioner' in dr_services and cloud_type is not defined"
 
   - name: "push RAID/BIOS if in local ~/.cache/digitalrebar/tftpboot/files/raid"
     synchronize: src=~/.cache/digitalrebar/tftpboot/files/raid dest={{home_dir.stdout}}/.cache/digitalrebar/tftpboot/files/raid rsync_path="rsync"
-    when: "'--provisioner' in dr_services"
+    when: "'--provisioner' in dr_services and cloud_type is not defined"
 
   - local_action: stat path=~/.netrc
     register: netrc_path
