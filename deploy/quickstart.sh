@@ -105,6 +105,18 @@ case $OS_TYPE in
     *) OS_FAMILY=$OS_TYPE;;
 esac
 
+# Detect when we are in a cloud
+case $(sudo dmidecode -s bios-version) in
+    '4.2.amazon' )
+        CLOUD="--cloud=AWS"
+        echo "Cloud Install Detected: Running in Amazon"
+        ;;
+    'Google' )
+        CLOUD="--cloud=GOOGLE"
+        echo "Cloud Install Detected: Running in Google"
+        ;;
+esac
+
 #
 # Functions that help validate or start things.
 # 
@@ -118,6 +130,7 @@ validate_tools() {
 
     if [[ ! -e ~/.ssh/id_rsa ]] ; then
         echo "SSH key missing so we are adding one for you"
+        echo "Hint: Copy your own key to ~/digitalrebar/deploy/compose/config-dir/api/config/ssh_keys/my_key.key before Rebar starts"
         ssh-keygen -t rsa -f ~/.ssh/id_rsa -P '' 2>/dev/null >/dev/null
     fi
 
@@ -246,8 +259,13 @@ rebar() {
 
 validate_tools
 
-git clone https://github.com/digitalrebar/digitalrebar
+if [[ ! -e 'digitalrebar' ]] ; then
+    git clone https://github.com/digitalrebar/digitalrebar
+else
+    echo "NOTE: Digital Rebar directory detected, NOT cloning or updating code."
+fi
+
 cd digitalrebar/deploy
-./run-in-system.sh $ACCESS $IPADDR --deploy-admin=local $@
+./run-in-system.sh $ACCESS $IPADDR $CLOUD --deploy-admin=local $@
 echo "!!! QUICK START REMINDER !!!"
 echo "You must use the EXTERNAL IP ADDRESS (not the one shown above) to access Digital Rebar"
