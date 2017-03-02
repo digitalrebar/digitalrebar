@@ -774,6 +774,24 @@ roles:
       - name: bios-config-sets
         map: 'bios/config_sets'
         description: 'The permitted BIOS configurations for this node.'
+        schema:
+          type: seq
+          sequence:
+            - type: map
+              mapping:
+                name:
+                  type: str
+                  required: true
+                parent:
+                  type: str
+                  required: false
+                settings:
+                  type: map
+                  required: true
+                  mapping:
+                    =:
+                      type: str
+
     wants-attribs:
       - provisioner-webservers
   - name: bios-configure
