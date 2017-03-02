@@ -388,6 +388,7 @@ module BarclampRaid
           size = 100 if size < 100
           cmd << "-sz#{size}"
         end
+        cmd << "-a#{cid}"
         # Create the array, and grab the VD# we created.
         vdline = run_tool(0, nil, cmd).detect{|l|l =~ /Created VD/}
         vol_id = vdline.match(/Created VD (\d+)/)[1]
