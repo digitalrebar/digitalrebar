@@ -77,11 +77,11 @@
 
   - name: Make cache dirs for RAID drivers
     command: mkdir -p {{home_dir.stdout}}/.cache/digitalrebar/tftpboot/files/raid
-    when: "'--provisioner' in dr_services"
+    when: "'--provisioner' in dr_services and cloud_type is not defined"
 
   - name: "push RAID/BIOS if in local ~/.cache/digitalrebar/tftpboot/files/raid"
     synchronize: src=~/.cache/digitalrebar/tftpboot/files/raid dest={{home_dir.stdout}}/.cache/digitalrebar/tftpboot/files/raid rsync_path="rsync"
-    when: "'--provisioner' in dr_services"
+    when: "'--provisioner' in dr_services and cloud_type is not defined"
 
   - local_action: stat path=~/.netrc
     register: netrc_path
@@ -182,15 +182,15 @@
   - debug: msg="Expected IP {{dr_external_ip | ipaddr('address')}}"
     when: dr_access_mode == "HOST" and ansible_version is defined and {{ansible_version.full|version_compare('1.9.0', '>=')}}
 
-  - name: HOSTMODE wait until Digital Rebar service is up [1 upto 40 minutes]
-    wait_for: host="{{dr_external_ip | ipaddr('address')}}" port=3000 delay=60 timeout=2400
+  - name: HOSTMODE wait until Digital Rebar service is up [1 upto 20 minutes]
+    wait_for: host="{{dr_external_ip | ipaddr('address')}}" delay=60 timeout=1200
     when: dr_access_mode == "HOST" and ansible_version is defined and {{ansible_version.full|version_compare('1.9.0', '>=')}}
 
   - debug: msg="Expected IP {{ansible_default_ipv4.address}}"
     when: dr_access_mode == "FORWARDER" and ansible_version is defined and {{ansible_version.full|version_compare('1.9.0', '>=')}}
 
-  - name: FORWARDER wait until Digital Rebar service is up [1 upto 40 minutes]
-    wait_for: host="{{ansible_default_ipv4.address}}" port=3000 delay=60 timeout=2400
+  - name: FORWARDER wait until Digital Rebar service is up [1 upto 20 minutes]
+    wait_for: host="{{ansible_default_ipv4.address}}" delay=60 timeout=1200
     when: dr_access_mode == "FORWARDER" and ansible_version is defined and {{ansible_version.full|version_compare('1.9.0', '>=')}}
 
   - name: wait for admin convergence [1 upto 20 minutes]
