@@ -16,6 +16,8 @@
 /digitalrebar-workloads/
 /rackn-workloads/
 /digitalrebar-ux/
+/rocket-skates/
+/rocket-skates-dev/
 /doc/
 dev.mode
 deploy/compose/docker-compose.yml.bak
