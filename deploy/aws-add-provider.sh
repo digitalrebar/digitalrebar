@@ -40,11 +40,6 @@ else
 fi
 
 
-if ! which jq &>/dev/null; then
-	echo "Must have JQ"
-	exit 1
-fi
-
 if ! which aws &>/dev/null; then
 	echo "Must have aws client installed"
 	exit 1
@@ -65,17 +60,9 @@ else
 	exit 1
 fi
 
-PROVIDER=${PROVIDER:-"aws"}
-if which rebar &>/dev/null; then
-	PROVIDER_ID=$(rebar -E "https://$ADMIN_IP" providers match "{\"name\":\"${PROVIDER}-provider\"}" | jq 'map(.id)[0]')
-else
-	echo "Using CURL.  You can also install the Rebar CLI, see http://digital-rebar.readthedocs.io/en/latest/clients/cli.html"
-fi
-
-
 JSON="{
-  \"name\": \"${PROVIDER}-provider\",
-  \"description\": \"AWS Provider\",
+  \"name\": \"aws-provider\",
+  \"description\": \"Quickstart AWS Provider\",
   \"type\": \"AwsProvider\",
   \"auth_details\": {
     \"provider\": \"AWS\",
@@ -85,12 +72,24 @@ JSON="{
   }
 }"
 
+# check to see if provider already exists
+PROVIDER=$(curl -sL -o /dev/null -w "%{http_code}" --insecure --digest -u "${CREDENTIALS}" -X GET "https://$ADMIN_IP/api/v2/providers/aws-provider")
 
-if [[ $PROVIDER_ID -gt 0 ]] ; then
-	echo "PROVIDER: ${PROVIDER} exists as ID ${PROVIDER_ID}. not added"
-	echo "PROVIDER: To remove: rebar providers destroy $PROVIDER_ID"
+if [[ $PROVIDER -eq "200" ]] ; then
+	echo "PROVIDER: aws-provider exists. not added"
 else
-	echo "PROVIDER: creating ${PROVIDER}-provider from ~/.aws/* files"
-	PROVIDER_ID=$(curl --insecure --digest -u "${CREDENTIALS}" -X POST -H "Accept: application/json" -H "Content-Type: application/json" -d "${JSON}" "https://$ADMIN_IP/api/v2/providers" | jq .id)
-    echo "PROVIDER: created ${PROVIDER}-provider with ID $PROVIDER_ID"
+	echo "PROVIDER: creating aws-provider from ~/.aws/* files"
+	curl --insecure --digest -u "${CREDENTIALS}" -X POST -H "Accept: application/json" -H "Content-Type: application/json" -d "${JSON}" "https://$ADMIN_IP/api/v2/providers"
+
+    # check to see if provider already exists
+    PROVIDER=$(curl -sL -o /dev/null -w "%{http_code}" --insecure --digest -u "${CREDENTIALS}" -X GET "https://$ADMIN_IP/api/v2/providers/aws-provider")
+
+    if [[ $PROVIDER -eq "200" ]] ; then
+        echo "PROVIDER: aws-provider created"
+    else
+        echo "PROVIDER: error $PROVIDER creating provider"
+    fi
+    
 fi
+
+
