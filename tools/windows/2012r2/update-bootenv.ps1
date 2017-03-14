@@ -12,6 +12,7 @@ param(
 # Calculate the SHA256sum of the generated ISO.
 Write-Host "Calculating SHA256 of ${destisoname}"
 $hash = Get-Filehash -Algorithm SHA256 -Path $destisoname
+$hashVal = $hash.hash.ToLower()
 $bootenv = (& .\rebar.exe provisioner bootenvs show $bootenv_name) |out-string |convertfrom-json
 
 if (-not $bootenv -or -not $bootenv.OS.IsoSha256) {
@@ -19,19 +20,11 @@ if (-not $bootenv -or -not $bootenv.OS.IsoSha256) {
     exit 1
 }
 
-if ($bootenv.OS.IsoSha256 -eq $hash.hash.ToLower()) {
+if ($bootenv.OS.IsoSha256 -eq $hashVal) {
      write-host "SHA256 unchanged, exiting early."
      exit 0
 }
 
-write-host "Uploading ${destisoname} to Rebar"
-& .\rebar.exe provisioner isos upload $destisoname as $bootenv.OS.IsoFile
-if ($LASTEXITCODE -ne 0) {
-    write-error "Failed to upload ISO"
-    exit 1
-}
-
-$hashVal = $hash.hash.ToLower()
 write-host "Updating ${bootenv_name} ISO SHA256 to ${hashVal}"
 @"
 { "OS": {"IsoSha256": "${hashVal}"}}
@@ -41,3 +34,11 @@ if ($LASTEXITCODE -ne 0) {
     write-error "Failed to update ${bootenv_name}"
     exit 1
 }
+
+write-host "Uploading ${destisoname} to Rebar"
+& .\rebar.exe provisioner isos upload $destisoname as $bootenv.OS.IsoFile
+if ($LASTEXITCODE -ne 0) {
+    write-error "Failed to upload ISO"
+    exit 1
+}
+
