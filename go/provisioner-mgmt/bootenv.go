@@ -419,7 +419,7 @@ func (b *BootEnv) OnCreate() error {
 	return b.OnChange(nil)
 }
 
-func (b *BootEnv) OnChange(oldThing interface{}) error {
+func (b *BootEnv) OnChange(oldThing store.KeySaver) error {
 	seenPxeLinux := false
 	seenELilo := false
 	seenIPXE := false
