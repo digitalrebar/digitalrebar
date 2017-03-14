@@ -106,7 +106,7 @@ func (t *Template) BeforeCreate() error {
 	return t.OnChange(nil)
 }
 
-func (t *Template) OnChange(oldThing interface{}) error {
+func (t *Template) OnChange(oldThing store.KeySaver) error {
 	if t.Contents == "" || t.UUID == "" {
 		return fmt.Errorf("template: Illegal template %+v", t)
 	}
