@@ -336,7 +336,7 @@ class DeploymentsController < ApplicationController
             newnode = Node.create!( name: name,
                                   description: node["description"] || t("useradded", :user => @current_user.username),
                                   admin: false,
-                                  tenant_id: @current_user.current_tenant_id,
+                                  tenant_id: deployment.tenant_id,
                                   deployment_id: deployment.id,
                                   provider_id: provider.id,
                                   profiles: node["profiles"],
