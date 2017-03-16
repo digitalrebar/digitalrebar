@@ -1,6 +1,7 @@
 package store
 
 import (
+	"os"
 	"path/filepath"
 
 	"github.com/boltdb/bolt"
@@ -13,7 +14,11 @@ type SimpleLocalStore struct {
 
 func (b *SimpleLocalStore) init(loc string) error {
 	if b.db == nil {
-		db, err := bolt.Open(filepath.Clean(filepath.Join(loc, "bolt.db")), 0600, nil)
+		finalLoc := filepath.Clean(loc)
+		if err := os.MkdirAll(finalLoc, 0755); err != nil {
+			return err
+		}
+		db, err := bolt.Open(filepath.Join(finalLoc, "bolt.db"), 0600, nil)
 		if err != nil {
 			return err
 		}
