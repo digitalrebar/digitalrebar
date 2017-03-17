@@ -652,6 +652,7 @@ rm -rf ss1
 echo $SIGNATURE.squashfs |cpio -o -R 0:0 --format=newc >/mnt/tftpboot/stage2.img
 
 (cd /mnt/tftpboot; sha1sum vmlinuz0 *.img >sha1sums)
+(cd /mnt/tftpboot; bsdtar -cf sledgehammer-$SIGNATURE.tar sha1sums vmlinuz0 *.img)
 EOF
 chmod 755 "$CHROOT/mnt/make_sledgehammer" "$CHROOT/mnt/stage1_init" "$CHROOT/mnt/udhcpc_config"
 in_chroot ln -s /proc/self/mounts /etc/mtab
@@ -659,7 +660,7 @@ in_chroot /mnt/make_sledgehammer
 cp -af "$CHROOT$SYSTEM_TFTPBOOT_DIR/"* "$SLEDGEHAMMER_IMAGE_DIR"
 in_chroot rm -rf $SYSTEM_TFTPBOOT_DIR
 
-if [[ -f $SLEDGEHAMMER_IMAGE_DIR/stage2.img ]]; then
+if [[ -f $SLEDGEHAMMER_IMAGE_DIR/sledgehammer-$signature.tar ]]; then
     echo "New sledgehammer image in $SLEDGEHAMMER_IMAGE_DIR"
     echo "It has signature $signature"
     echo "To use it locally, modify PROV_SLEDGEHAMMER_SIG in deploy/compose/common.env to use it."
