@@ -63,6 +63,18 @@ class OpenStackProvider < CloudProvider
         length: 30,
         name: I18n.t('os-region-name', scope: "providers.show.openstack" )
       },
+      :"os-user-domain-name" => {
+        type: "text",
+        default: "",
+        length: 30,
+        name: "User Domain Name"
+      },
+      :"os-identity-api-version" => {
+        type: "text",
+        default: "",
+        length: 5,
+        name: "Identity API version"
+      },
       :"os-ssh-user" => {
         type: "text",
         default: "centos ubuntu root",
