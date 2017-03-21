@@ -132,17 +132,17 @@ module OpenStack
   # provide the base CLI interface with correct flags
   def self.base(endpoint, cmd, with_result=true)
 
-    full_cmd = "openstack --os-username \'#{endpoint['os-username']}\' " \
-                    "--os-password \'#{endpoint['os-password']}\' " \
-                    "--os-project-name \'#{endpoint['os-project-name']}\' " \
-                    "--os-region-name \'#{endpoint['os-region-name']}\' " \
-                    "--os-auth-url \'#{endpoint['os-auth-url']}\' " \
-                    "#{cmd}"
+    debug = os_debug(endpoint)
+    endpoint.delete 'os-debug'
+    endpoint.delete 'os-ssh-user'
+    params = ""
+    endpoint.each {|k,v| params += "--#{k} \'#{v}\' " if k =~ /os-/ and v.length > 0}
+    full_cmd = "openstack #{params} #{cmd}"
     full_cmd += " -f json" if with_result   
 
     o = nil
     raw = %x[#{full_cmd}] rescue "ERROR: Command not executed"
-    unless os_debug(endpoint)
+    unless debug
       log "OpenStack --os-auth-url \'#{endpoint['os-auth-url']}\' #{cmd}\nOpenStack Returned: #{raw}"
     else
       log "OpenStack DEBUG executed command\n#{full_cmd}"
@@ -150,7 +150,7 @@ module OpenStack
     end
     # we always ask for a JSON result if we wanted a result
     o = (JSON.parse(raw) rescue {}) if with_result
-    log "OpenStack DEBUG result\n#{o.inspect}" if with_result and os_debug(endpoint)
+    log "OpenStack DEBUG result\n#{o.inspect}" if with_result and debug
     return o
 
   end
