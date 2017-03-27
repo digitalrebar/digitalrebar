@@ -50,7 +50,7 @@ class BarclampCluster::ServiceRole < Role
       # look up network type from attrib maps
       # use node-control-address or private-node-control-address
       # for internal networking, you can use v4/network_name or v6/network_name
-      map = Attrib.get(netname,nr) || "node-control-address"
+      map = Attrib.get(netname,nr) || "node-control-address" rescue "node-control-address"
       filter = Attrib.get(filtername,nr) || "private" rescue "private"
       filter = filter.to_sym
       Rails.logger.debug("For #{nr.role.name}, using network #{map}")
