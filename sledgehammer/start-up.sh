@@ -84,7 +84,8 @@ if ! [[ $(ip -4 -o addr show dev $BOOTDEV) =~ $bootdev_ip_re ]]; then
 fi
 
 while ! [[ -x /tmp/start-up.sh ]]; do
-    curl -sfL -o /tmp/start-up.sh "$PROVISIONER_WEB/nodes/start-up.sh" || :
+    curl -sfL -o /tmp/start-up.sh "$PROVISIONER_WEB/machines/start-up.sh" || \
+        curl -sfL -o /tmp/start-up.sh "$PROVISIONER_WEB/nodes/start-up.sh" || :
     if grep -q '/tmp/control.sh' /tmp/start-up.sh && \
         head -1 /tmp/start-up.sh | grep -q '^#!/bin/bash'; then
         chmod 755 /tmp/start-up.sh

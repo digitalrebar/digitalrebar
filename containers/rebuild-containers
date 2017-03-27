@@ -40,6 +40,7 @@ declare -A UNKNOWN_CONTAINERS
 declare -A PARENT_CONTAINER_REBUILT
 declare -A CONTAINERS_TO_SKIP
 declare -A PULLED_CONTAINERS
+declare -A FORCE_BUILD_CONTAINERS
 
 branch="$(git symbolic-ref -q HEAD)"
 branch="${branch##refs/heads/}"
@@ -122,7 +123,7 @@ branch_exists() { git show-ref --quiet --verify --heads -- "refs/heads/$1"; }
 # Test to see if a container does not need to be rebuilt.
 container_is_up_to_date() (
     # We are forcing a rebuild, it needs rebuilding.
-    [[ $FORCE_BUILD == true && ${CONTAINERS_TO_BUILD[$1]} ]] && return 1
+    [[ ${FORCE_BUILD_CONTAINERS[$1]} == true && ${CONTAINERS_TO_BUILD[$1]} ]] && return 1
     # It does not have a last-built-image-id, it needs building.
     [[ -f $repo_dir/last-built-image-id ]] || return 1
     cd "$repo_dir"
@@ -166,7 +167,7 @@ build_container() {
     echo "Building container $1"
     local buildargs=("-t" "${1}:${DR_TAG}")
     buildargs+=("--build-arg" "DR_TAG=${DR_TAG}")
-    [[ $FORCE_BUILD = true ]] && buildargs+=("--no-cache")
+    [[ ${FORCE_BUILD_CONTAINERS[$1]} = true ]] && buildargs+=("--no-cache")
     if ! (
             cd "$repo_dir" && \
                 sed -e "/ADD / s/localhost/${SWS_LISTEN_ADDR}/" -e "/FROM digitalrebar/ s/\$/:${DR_TAG}/" <Dockerfile.in >Dockerfile && \
@@ -317,6 +318,12 @@ if [[ $ALWAYS_PULL ]]; then
     for container in "${!CONTAINERS[@]}"; do
         docker pull "$container:$DR_TAG" || exit 1
         PULLED_CONTAINERS[$container]=true
+    done
+fi
+
+if [[ $FORCE_BUILD = true ]]; then
+    for container in "${!CONTAINERS_TO_BUILD[@]}"; do
+        FORCE_BUILD_CONTAINERS[$container]=true
     done
 fi
 
