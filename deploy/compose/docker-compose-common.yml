@@ -71,6 +71,7 @@ rebar_api:
     - ./config-dir/api/config:/opt/digitalrebar/core/config
     - ~/.cache/digitalrebar/tftpboot:/tftpboot
     - ./data-dir/bin:/usr/local/dev/bin
+    - ./data-dir/rebar-logs:/var/log
     - ./config-dir/tools:/opt/tools
     # development mapping for playbook authors
     # - ../../digitalrebar-workloads/:/var/cache/rebar/ansible_playbook/k8

@@ -31,8 +31,8 @@ RUN gem install bundler \
   && gem install nio4r -v 1.2.0 \
   && gem install berkshelf -v 4.3.5
 RUN test -d /opt/digitalrebar || git clone https://github.com/digitalrebar/digitalrebar /opt/digitalrebar \
-  && mkdir -p /var/run/rebar /var/cache/rebar/cookbooks /var/cache/rebar/gems /var/cache/rebar/bin /var/log/rebar \
-  && chown -R rebar:rebar /opt/digitalrebar /var/run/rebar /var/cache/rebar /var/log/rebar /home/rebar/.ssh \
+  && mkdir -p /var/run/rebar /var/cache/rebar/cookbooks /var/cache/rebar/gems /var/cache/rebar/ \
+  && chown -R rebar:rebar /opt/digitalrebar /var/run/rebar /var/cache/rebar /home/rebar/.ssh \
   && chmod 755 /home/rebar/.ssh 
 RUN su -l -c 'cd /opt/digitalrebar/core/rails; bundle install --path /var/cache/rebar/gems --standalone --binstubs /var/cache/rebar/bin' rebar
 RUN ln -s /var/cache/rebar/bin/puma /usr/bin/puma \
