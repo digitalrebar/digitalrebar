@@ -3,7 +3,7 @@
 set -e 
 . "${0%/*}/kvm_lib.sh"
 
-OCB_MEM=${SLAVE_MEM:-2G}
+OCB_MEM=${SLAVE_MEM:-4G}
 OCB_CPUS=${SLAVE_CPUS:-2}
 OCB_DRIVES=${SLAVE_DRIVES:-5}
 bridge_exists "$OCB_BRIDGE" || OCB_BRIDGE=docker0
@@ -15,7 +15,7 @@ if [[ $OCB_DRIVES && $OCB_DRIVES -gt 1 ]]; then
     echo "starting with a ${OCB_DRIVES} 20G drives"
     qemu-img create -f raw "$VM_DIR/$VMID.disk" 20G &>/dev/null
     let OCB_DRIVES=OCB_DRIVES-1
-    while [[ $OCB_DRIVES -lt 1 ]]; do
+    while [[ $OCB_DRIVES -gt 1 ]]; do
         qemu-img create -f qcow2 "$VM_DIR/$VMID-0$OCB_DRIVES.disk" 20G &>/dev/null
         let OCB_DRIVES=OCB_DRIVES-1
     done
