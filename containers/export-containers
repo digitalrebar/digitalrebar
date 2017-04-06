@@ -16,31 +16,36 @@ fi
 
 export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 [[ $DR_TAG ]] || export DR_TAG="master"
-declare -A CONTAINERS
-CONTAINERS['digitalrebar/base']='base'
-CONTAINERS['digitalrebar/deploy-service-wrapper']='service-wrapper'
-CONTAINERS['digitalrebar/dr_dns']='dns'
-CONTAINERS['digitalrebar/dr_forwarder']='forwarder'
-CONTAINERS['digitalrebar/dr_goiardi']='goiardi'
-CONTAINERS['digitalrebar/dr_ntp']='ntp'
-CONTAINERS['digitalrebar/dr_postgres']='postgres'
-CONTAINERS['digitalrebar/dr_provisioner']='provisioner'
-CONTAINERS['digitalrebar/dr_rebar_api']='rebar-api'
-CONTAINERS['digitalrebar/dr_rebar_dhcp']='rebar-dhcp'
-CONTAINERS['digitalrebar/dr_webproxy']='webproxy'
-CONTAINERS['digitalrebar/cloudwrap']='cloudwrap'
-CONTAINERS['digitalrebar/dr_node']='node'
-CONTAINERS['digitalrebar/logging']='logging'
-CONTAINERS['digitalrebar/dr_rev_proxy']='rebar-rev-proxy'
-CONTAINERS['digitalrebar/dr_trust_me']='trust-me'
-#CONTAINERS['digitalrebar/slave']='slave'
-CONTAINERS['digitalrebar/rule-engine']='rule-engine'
+CONTAINERS=('digitalrebar/base'
+            'digitalrebar/deploy-service-wrapper'
+            'digitalrebar/dr_dns'
+            'digitalrebar/dr_forwarder'
+            'digitalrebar/dr_goiardi'
+            'digitalrebar/dr_ntp'
+            'digitalrebar/dr_postgres'
+            'digitalrebar/dr_provisioner'
+            'digitalrebar/dr_rebar_api'
+            'digitalrebar/dr_rebar_dhcp'
+            'digitalrebar/dr_webproxy'
+            'digitalrebar/cloudwrap'
+            'digitalrebar/dr_node'
+            'digitalrebar/logging'
+            'digitalrebar/dr_rev_proxy'
+            'digitalrebar/dr_trust_me'
+            'digitalrebar/rule-engine'
+            'gliderlabs/consul'
+           )
 
 images=()
 # First, pull the containers
-for c in "${!CONTAINERS[@]}"; do
-    images+=("${c}:${DR_TAG}")
-    docker pull "${c}:${DR_TAG}"
+for c in "${CONTAINERS[@]}"; do
+    if [[ ${c%/*} = digitalrebar ]]; then
+        tag="${DR_TAG}"
+    else
+        tag=latest
+    fi
+    images+=("${c}:${tag}")
+    docker pull "${c}:${tag}"
 done
 
 # Next, save them
