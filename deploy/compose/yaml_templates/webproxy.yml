@@ -2,5 +2,3 @@ webproxy:
   extends:
     file: docker-compose-common.yml
     service: webproxy
-  ports:
-    - "3128:3128"

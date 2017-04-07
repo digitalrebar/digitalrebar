@@ -2,4 +2,3 @@ dhcp:
   extends:
     file: docker-compose-common.yml
     service: dhcp
-  net: "host"

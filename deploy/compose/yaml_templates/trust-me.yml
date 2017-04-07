@@ -2,5 +2,3 @@ trust_me:
   extends:
     file: docker-compose-common.yml
     service: trust_me
-  ports:
-    - "8888:8888"

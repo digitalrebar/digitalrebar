@@ -14,6 +14,6 @@ if ! kv_get digitalrebar/private/goiardi/rebar_key &>/dev/null; then
 fi
 
 
-chef_ip="${FORWARDER_IP:-${EXTERNAL_IP}}"
+chef_ip="${EXTERNAL_IP}"
 set_service_attrib chef-service chef-servers "{\"value\": [\"https://${chef_ip%%/*}:4646\"]}"
 make_service "chef" "4646" '{"script": "pidof goiardi", "interval": "10s"}'

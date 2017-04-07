@@ -2,7 +2,6 @@ consul:
   extends:
     file: docker-compose-common.yml
     service: consul
-  net: host
   command: agent -config-dir=/etc/consul.d -data-dir=/tmp/consul -server -bootstrap
 
 postgres:
@@ -14,19 +13,11 @@ logging:
   extends:
     file: docker-compose-common.yml
     service: logging
-  ports:
-    - "514:514"
-    - "514/udp:514/udp"
-    - "2514:2514"
 
 rebar_api:
   extends:
     file: docker-compose-common.yml
     service: rebar_api
-  links:
-    - postgres:database
-  ports:
-    - "3000:3000"
 
 rule-engine:
   extends:
@@ -37,5 +28,3 @@ cloudwrap:
   extends:
     file: docker-compose-common.yml
     service: cloudwrap
-  ports:
-    - "3030:3030"

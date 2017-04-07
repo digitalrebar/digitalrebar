@@ -6,5 +6,3 @@ revproxy:
   volumes:
     - ./digitalrebar/digitalrebar-ux:/opt/digitalrebar-ux
 {{ END DEV_MODE }}
-  ports:
-    - "443:443"

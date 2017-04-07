@@ -1,6 +1,7 @@
 consul:
   image: gliderlabs/consul
   restart: always
+  net: host
   volumes:
     - ./config-dir/consul/server-default.json:/etc/consul.d/default.json
     - ./config-dir/consul/server-advertise.json:/etc/consul.d/server-advertise.json
@@ -14,6 +15,7 @@ consul:
 trust_me:
   image: digitalrebar/dr_trust_me:${DR_TAG}
   restart: always
+  net: host
   privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
@@ -26,6 +28,7 @@ trust_me:
 postgres:
   image: digitalrebar/dr_postgres:${DR_TAG}
   restart: always
+  net: host
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/postgres/initdb.d:/docker-entrypoint-initdb.d
@@ -39,6 +42,7 @@ postgres:
 webproxy:
   image: digitalrebar/dr_webproxy:${DR_TAG}
   restart: always
+  net: host
   privileged: true
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
@@ -51,6 +55,7 @@ webproxy:
 goiardi:
   image: digitalrebar/dr_goiardi:${DR_TAG}
   restart: always
+  net: host
   volumes:
     - ./data-dir/goiardi:/var/cache/goiardi
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
@@ -63,6 +68,7 @@ goiardi:
 rebar_api:
   image: digitalrebar/dr_rebar_api:${DR_TAG}
   restart: always
+  net: host
   privileged: true
   volumes:
     - ./digitalrebar:/opt/digitalrebar
@@ -84,6 +90,7 @@ ntp:
   image: digitalrebar/dr_ntp:${DR_TAG}
   privileged: true
   restart: always
+  net: host
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/tools:/opt/tools
@@ -95,6 +102,7 @@ cloudwrap:
   image: digitalrebar/cloudwrap:${DR_TAG}
   privileged: true
   restart: always
+  net: host
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./data-dir/bin:/usr/local/dev/bin
@@ -109,6 +117,7 @@ cloudwrap:
 dns:
   image: digitalrebar/dr_dns:${DR_TAG}
   restart: always
+  net: host
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/bind/named.conf:/etc/bind/named.conf.tmpl
@@ -122,6 +131,7 @@ dhcp:
   image: digitalrebar/dr_rebar_dhcp:${DR_TAG}
   restart: always
   privileged: true
+  net: host
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./data-dir/bin:/usr/local/dev/bin
@@ -134,6 +144,7 @@ provisioner:
   image: digitalrebar/dr_provisioner:${DR_TAG}
   privileged: true
   restart: always
+  net: host
   volumes:
     - ./config-dir/provisioner:/opt/provisioner-mgmt
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
@@ -148,6 +159,7 @@ logging:
   image: digitalrebar/logging:${DR_TAG}
   privileged: true
   restart: always
+  net: host
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./data-dir/node-logs:/var/log/nodes
@@ -197,26 +209,11 @@ cadvisor:
   ports:
     - "8181:8080"
 
-forwarder:
-  image: digitalrebar/dr_forwarder:${DR_TAG}
-  restart: always
-  privileged: true
-  volumes:
-    - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
-    - ./data-dir/bin:/usr/local/dev/bin
-    - ./config-dir/tools:/opt/tools
-  env_file:
-    - ./common.env
-
-    - ./access.env
-  ports:
-    - "3000:3000"
-    - "443:443"
-
 revproxy:
   image: digitalrebar/dr_rev_proxy:${DR_TAG}
   privileged: true
   restart: always
+  net: host
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/rev-proxy/db-store.json:/etc/rev-proxy/db-store.json
@@ -236,6 +233,7 @@ node:
 rule-engine:
   image: digitalrebar/rule-engine:${DR_TAG}
   restart: always
+  net: host
   volumes:
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./data-dir/bin:/usr/local/dev/bin

@@ -26,6 +26,13 @@ if ! which docker-compose &>/dev/null; then
     die "Please install docker-compose!"
 fi
 
+if [[ ! $EXTERNAL_IP ]]; then
+    dev=$(ip -4 route show default | egrep -o 'dev [^ ]+')
+    EXTERNAL_IP=$(ip -4 -o addr show $dev |head -1 |egrep -o 'inet [^ ]+')
+    EXTERNAL_IP="${EXTERNAL_IP#inet }"
+    echo "No EXTERNAL_IP set, using $EXTERNAL_IP"
+    export EXTERNAL_IP
+fi
 rebar() {
     docker exec compose_rebar_api_1 rebar -E https://127.0.0.1:3000 -U rebar -P rebar1 "$@"
 }
@@ -50,7 +57,7 @@ converge() {
     return 1
 }
 
-known_containers=(provisioner dhcp ntp dns dns-mgmt revproxy chef webproxy logging debug node access)
+known_containers=(provisioner dhcp ntp dns dns-mgmt revproxy chef webproxy logging debug node)
 
 declare -A containers
 
@@ -67,7 +74,6 @@ docker_admin_default_containers() {
     [[ ${containers["chef"]} ]] || containers["chef"]=true
     [[ ${containers["webproxy"]} ]] || containers["webproxy"]=true
     [[ ${containers["revproxy"]} ]] || containers["revproxy"]=true
-    [[ ${containers["access"]} ]] || containers["access"]=HOST
 }
 
 args=()

@@ -2,7 +2,3 @@ goiardi:
   extends:
     file: docker-compose-common.yml
     service: goiardi
-  links:
-    - postgres:database
-  ports:
-    - "4646:4646"

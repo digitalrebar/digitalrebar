@@ -2,5 +2,3 @@ node:
   extends:
     file: docker-compose-common.yml
     service: node
-  links:
-    - rebar_api:rebar_api

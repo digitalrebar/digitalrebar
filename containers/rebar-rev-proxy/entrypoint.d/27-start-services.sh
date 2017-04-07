@@ -27,10 +27,6 @@ if [[ $REVPROXY_SAML_IDP_SSO_DESC_URL ]] ; then
 	SAMLIDPSSODESCURL="-samlIdpssodescurl $REVPROXY_SAML_IDP_SSO_DESC_URL"
 fi
 
-if [[ $FORWARDER_IP && $forwarder ]]; then
-  FORWARDER_FLAG="-forwarder"
-fi
-
 run_forever() (
   while true; do
     "$@"
@@ -40,7 +36,6 @@ run_forever() (
 
 make_service "rebar-rev-proxy" $REVPROXY_PORT '{"script": "pidof rebar-rev-proxy", "interval": "10s"}'
 rebar-rev-proxy --externalIp ${EXTERNAL_IP%%/*} \
-	$FORWARDER_FLAG \
 	$LISTENPORT \
 	$AUTHFILTER \
 	$REALM \
@@ -49,6 +44,3 @@ rebar-rev-proxy --externalIp ${EXTERNAL_IP%%/*} \
 	$SAMLIDPSSOURL \
 	$SAMLIDPSSODESCURL && exit 0
 exit 1
-
-
-

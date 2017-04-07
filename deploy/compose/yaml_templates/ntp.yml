@@ -2,6 +2,3 @@ ntp:
   extends:
     file: docker-compose-common.yml
     service: ntp
-  ports:
-    - "123/udp:123/udp"
-    - "123:123"

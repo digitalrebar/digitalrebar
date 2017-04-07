@@ -77,11 +77,9 @@ make_service() {
     # $1 = service name.
     # $2 = port to check on
     # $3 = check fragment%s
-    if [[ $FORWARDER_IP ]]; then
-        printf '{"name":"internal-%s-service","port":%s,"tags":["deployment:%s"],"check":%s}' "$1" "$2" "$SERVICE_DEPLOYMENT" "$3"
-    else
-        printf '{"name":"%s-service","port":%s,"address":"%s","tags":["deployment:%s"],"check":%s}' "$1" "$2" "${EXTERNAL_IP%%/*}" "$SERVICE_DEPLOYMENT" "$3"
-    fi | curl -X PUT http://localhost:8500/v1/agent/service/register --data-binary @-
+    printf '{"name":"%s-service","port":%s,"address":"%s","tags":["deployment:%s"],"check":%s}' \
+           "$1" "$2" "${EXTERNAL_IP%%/*}" "$SERVICE_DEPLOYMENT" "$3" | \
+        curl -X PUT http://localhost:8500/v1/agent/service/register --data-binary @-
 }
 
 make_revproxied_service() {
@@ -90,9 +88,9 @@ make_revproxied_service() {
     # $3 = check fragment
     local name="${1%-mgmt}"
     printf '^%s/(.*)' "$name" |kv_put "digitalrebar/public/revproxy/${1}-service/matcher"
-    printf '{"name":"%s-service","port":%s,"tags":["revproxy", "deployment:%s"],"check":%s}' "$1" "$2" "$SERVICE_DEPLOYMENT" "$3" | \
+    printf '{"name":"%s-service","port":%s,"tags":["revproxy", "deployment:%s"],"check":%s}' \
+           "$1" "$2" "$SERVICE_DEPLOYMENT" "$3" | \
         curl -X PUT http://localhost:8500/v1/agent/service/register --data-binary @-
-    
 }
 
 bind_service() {

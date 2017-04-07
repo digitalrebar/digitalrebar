@@ -2,4 +2,3 @@ provisioner:
   extends:
     file: docker-compose-common.yml
     service: provisioner
-  net: "host"

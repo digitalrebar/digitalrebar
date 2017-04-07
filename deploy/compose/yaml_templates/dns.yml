@@ -2,6 +2,3 @@ dns:
   extends:
     file: docker-compose-common.yml
     service: dns
-  ports:
-    - "53/udp:53/udp"
-    - "6754/tcp:6754/tcp"
