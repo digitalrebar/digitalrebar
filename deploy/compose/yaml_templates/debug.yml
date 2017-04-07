@@ -1,6 +1,4 @@
-
 cadvisor:
   extends:
     file: docker-compose-common.yml
     service: cadvisor
-

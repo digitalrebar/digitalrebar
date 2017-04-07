@@ -67,7 +67,7 @@ docker_admin_default_containers() {
     [[ ${containers["chef"]} ]] || containers["chef"]=true
     [[ ${containers["webproxy"]} ]] || containers["webproxy"]=true
     [[ ${containers["revproxy"]} ]] || containers["revproxy"]=true
-    [[ ${containers["access"]} ]] || containers["access"]=FORWARDER
+    [[ ${containers["access"]} ]] || containers["access"]=HOST
 }
 
 args=()
@@ -86,13 +86,6 @@ while (( $# > 0 )); do
         --tag)
             export DR_TAG="$2"
             shift;;
-        --access)
-            case $2 in
-                HOST|FORWARDER)
-                    containers["access"]="$2"
-                    shift;;
-                *) containers["access"]="FORWARDER";;
-                esac;;
         --*)
             a="${arg#--}"
             is_set=false
@@ -185,9 +178,6 @@ bring_up_admin_containers() {
 
     if [ "$NO_PULL" == "" ] ; then
         docker-compose pull
-    fi
-    if [[ ${containers["access"]} = FORWARDER && $(uname -s) != Darwin && $(uname -s) != "MINGW64_NT-10.0" ]]; then
-        $SUDO modprobe nf_nat_tftp
     fi
     docker-compose up -d
     # enable development mode

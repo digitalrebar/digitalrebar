@@ -13,7 +13,6 @@ declare -A CONTAINERS
 CONTAINERS['digitalrebar/base']='base'
 CONTAINERS['digitalrebar/deploy-service-wrapper']='service-wrapper'
 CONTAINERS['digitalrebar/dr_dns']='dns'
-CONTAINERS['digitalrebar/dr_forwarder']='forwarder'
 CONTAINERS['digitalrebar/dr_goiardi']='goiardi'
 CONTAINERS['digitalrebar/dr_ntp']='ntp'
 CONTAINERS['digitalrebar/dr_postgres']='postgres'

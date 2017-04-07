@@ -89,9 +89,7 @@ fi
 
 echo "Device IP = $IP/$CIDR"
 
-if [[ $ACCESS = HOST ]] ; then
-  ACCESS_VAR="\"dr_access_mode\": \"HOST\", \"dr_external_ip\": \"$IP/$CIDR\","
-fi
+ACCESS_VAR="\"dr_access_mode\": \"HOST\", \"dr_external_ip\": \"$IP/$CIDR\","
 
 if [[ $DEPLOY = CLONE ]] ; then
   EXTRA_VARS="\"dr_clone_deploy\": \"true\","

@@ -1,4 +1,3 @@
-
 consul:
   image: gliderlabs/consul
   restart: always
@@ -163,7 +162,7 @@ elasticsearch:
   volumes:
     - ./config-dir/elasticsearch:/usr/share/elasticsearch/config
     - ./data-dir/bin:/usr/local/dev/bin
-    
+
 logstash:
   image: logstash
   volumes:

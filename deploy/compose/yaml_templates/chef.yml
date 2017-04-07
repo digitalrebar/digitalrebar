@@ -1,15 +1,8 @@
-
 goiardi:
   extends:
     file: docker-compose-common.yml
     service: goiardi
   links:
     - postgres:database
-{{ START ACCESS_MODE==FORWARDER }}
-    - forwarder:forwarder
-{{ END ACCESS_MODE==FORWARDER }}
-{{ START ACCESS_MODE==HOST }}
   ports:
     - "4646:4646"
-{{ END ACCESS_MODE==HOST }}
-

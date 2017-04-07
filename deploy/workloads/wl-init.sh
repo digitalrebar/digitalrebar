@@ -241,7 +241,6 @@ help_options["--admin-ip=<CIDRIP>"]="Admin IP to use - some providers don't need
 help_options["--deploy-admin=<environment>"]="Environment to run the admin node in (packet|system|local)"
 help_options["--device-id=<String>"]="Device ID of the admin node to use (allows command running for packet)"
 help_options["--dr_tag=<TAG>"]="The build tag to use for digitalrebar. default: latest"
-help_options["--access=<HOST|FORWARDER>"]="Mode to run the admin node in"
 help_options["--rebar-user=<String>"]="Username to access the rebar system"
 help_options["--rebar-password=<String>"]="Password to access the rebar system"
 

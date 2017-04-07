@@ -1,16 +1,15 @@
 #!/bin/bash
 
 usage() {
-	echo "Usage: $0 [--access=<MODE>] [--admin-ip=<admin ip>] [--con-provisioner] [--con-dhcp]"
+	echo "Usage: $0 [--admin-ip=<admin ip>] [--con-provisioner] [--con-dhcp]"
 	echo "Defaults are: "
-	echo "  MODE = HOST (instead of FORWARDER)"
 	echo "  admin ip = IP of interface with the default gateway or first global address"
 	echo "  No DHCP or Provisioner Components"
 	exit 1
 }
 
 IPADDR=""
-ACCESS=""
+ACCESS="HOST"
 args=()
 while (( $# > 0 )); do
     arg="$1"
@@ -24,9 +23,6 @@ while (( $# > 0 )); do
             args+=("$arg");;
         --admin-ip)
             IPADDR=$arg
-            ;;
-        --access)
-            ACCESS=$arg
             ;;
         --help|-h)
             usage
@@ -48,10 +44,6 @@ set -- "${args[@]}"
 
 if [[ $DEBUG == true ]] ; then
     set -x
-fi
-
-if [[ $ACCESS == "" ]] ; then
-    ACCESS="--access=HOST"
 fi
 
 if [[ $IPADDR == "" ]] ; then

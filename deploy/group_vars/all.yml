@@ -55,35 +55,15 @@ dr_workloads:
 # dr_rackn_username: 
 # dr_rackn_password: 
 
-#
-# Access Modes
-#   The admin containers can be setup to use one of the Host's IP as an access point or
-#   another IP that is local to the host and bridged into other environments.  The latter
-#   case uses a Forwarder to front the other containers.
-#
-# access_mode:  HOST|FORWARDER
-#
-#   Two additional variables are used to define the access points.
+#   One variable defines the external access point:
 #
 # external_ip = The CIDR IP for the external access point.
-# forwarder_ip = The CIDR IP of the forwarder if forwarding is used.
-#
-#   When using FORWARDER access mode, external_ip should match forwarder_ip and
-#   the forwarder_ip will (but not required) to be on an admin network.
-#
-# This is the default that matches original install implementations
-#
-# Default FORWARDER configuration
-#   IPs are set to match the_admin.json.forwarder file
-#   The admin network is only added if the provisioner is enabled
-dr_access_mode: FORWARDER
 dr_external_ip: 192.168.124.11/24
-dr_forwarder_ip: 192.168.124.11/24
+
 #
 # Default HOST (Mac environment) configuration
 #   IPs are set to match the_admin.json.mac file
 #   The admin network is only added if the provisioner is enabled
-#dr_access_mode: HOST
 #dr_external_ip: 192.168.99.100/24
 
 # Used to add kvm tools to the host for provisining testing

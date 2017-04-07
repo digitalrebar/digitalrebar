@@ -1,4 +1,3 @@
-
 #
 # workloads/wl-lib.sh - Provides a library of functions for all workloads
 #
@@ -477,8 +476,8 @@ use_workload() {
     ! [[ ! ${workloads[$1]} || ${workloads[$1]} == false ]]
 }
 
-DEFAULT_ACCESS=${DEFAULT_ACCESS:-FORWARDER}
-ACCESS=${ACCESS:-$DEFAULT_ACCESS}
+DEFAULT_ACCESS=HOST
+ACCESS="$DEFAULT_ACCESS"
 DEPLOY_ADMIN=${DEPLOY_ADMIN:-system}
 branch="$(git symbolic-ref -q HEAD)"
 branch="${branch##refs/heads/}"

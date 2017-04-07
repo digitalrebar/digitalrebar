@@ -1,33 +1,28 @@
 --- 
-  - name: Load tftp nat module
-    modprobe: name=nf_nat_tftp state=present
-    when: dr_access_mode == "FORWARDER" and ansible_os_family != "Darwin"
-    become: yes
-
   # Stop services that get in the way of progress.
   - name: Stop ntp
     service: name=ntp state=stopped enabled=no
-    when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
+    when: ansible_os_family != "Darwin"
     ignore_errors: yes
     become: yes
   - name: Stop ntpd
     service: name=ntpd state=stopped enabled=no
-    when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
+    when: ansible_os_family != "Darwin"
     ignore_errors: yes
     become: yes
   - name: Stop chronyd
     service: name=chronyd state=stopped enabled=no
-    when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
+    when: ansible_os_family != "Darwin"
     ignore_errors: yes
     become: yes
   - name: Stop dnsmasq
     command: killall dnsmasq
     ignore_errors: yes
-    when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
+    when: ansible_os_family != "Darwin"
     become: yes
   - name: Restart Docker (again)
     service: name=docker state=restarted
-    when: dr_access_mode == "HOST" and ansible_os_family != "Darwin"
+    when: ansible_os_family != "Darwin"
     become: yes
 
   - name: record home
@@ -120,7 +115,7 @@
       creates: "{{home_dir.stdout}}/digitalrebar/deploy/compose/digitalrebar/digitalrebar-ux"
 
   - name: init compose files
-    command: ./init_files.sh --tag {{ dr_tag }} --external_ip {{ dr_external_ip }} --forwarder_ip {{ dr_forwarder_ip | default("0.0.0.0/24") }}  --access {{ dr_access_mode }} {{ dr_services| default([]) | join(" ") }} {{ dr_classifiers| default([]) | join(" ") }}
+    command: ./init_files.sh --tag {{ dr_tag }} --external_ip {{ dr_external_ip }} --forwarder_ip {{ dr_forwarder_ip | default("0.0.0.0/24") }} {{ dr_services| default([]) | join(" ") }} {{ dr_classifiers| default([]) | join(" ") }}
     args:
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
 
@@ -180,18 +175,11 @@
       chdir: "{{home_dir.stdout}}/digitalrebar/deploy/compose"
 
   - debug: msg="Expected IP {{dr_external_ip | ipaddr('address')}}"
-    when: dr_access_mode == "HOST" and ansible_version is defined and {{ansible_version.full|version_compare('1.9.0', '>=')}}
+    when: ansible_version is defined and {{ansible_version.full|version_compare('1.9.0', '>=')}}
 
   - name: HOSTMODE wait until Digital Rebar service is up [1 upto 20 minutes]
     wait_for: host="{{dr_external_ip | ipaddr('address')}}" delay=60 timeout=1200
-    when: dr_access_mode == "HOST" and ansible_version is defined and {{ansible_version.full|version_compare('1.9.0', '>=')}}
-
-  - debug: msg="Expected IP {{ansible_default_ipv4.address}}"
-    when: dr_access_mode == "FORWARDER" and ansible_version is defined and {{ansible_version.full|version_compare('1.9.0', '>=')}}
-
-  - name: FORWARDER wait until Digital Rebar service is up [1 upto 20 minutes]
-    wait_for: host="{{ansible_default_ipv4.address}}" delay=60 timeout=1200
-    when: dr_access_mode == "FORWARDER" and ansible_version is defined and {{ansible_version.full|version_compare('1.9.0', '>=')}}
+    when: ansible_version is defined and {{ansible_version.full|version_compare('1.9.0', '>=')}}
 
   - name: wait for admin convergence [1 upto 20 minutes]
     command: "{{home_dir.stdout}}/digitalrebar/deploy/scripts/wait_for_rebar.sh"

@@ -15,7 +15,6 @@ function usage {
     echo "Usage: $0 <flags> [options docker-compose flags/commands]"
     echo "  -h or --help - help (this)"
     echo "  --clean - cleans up directory and exits"
-    echo "  --access <HOST|FORWARDER> # Defines how the admin containers should be accessed"
     echo "  --dhcp # Adds the dhcp component"
     echo "  --provisioner # Adds the provisioner component"
     echo "  --dns # Adds the dns component"
@@ -27,10 +26,7 @@ function usage {
     echo "  --debug # Adds the cadviser components"
     echo "  --node # Adds the node component"
     echo "  --tag <TAG> # Uses that tag for builds and trees. default: latest"
-    echo
     echo "  --external_ip <CIDR Address, default: 192.168.124.11/24> "
-    echo "  --forwarder_ip <CIDR Address, default: 192.168.124.11/24> "
-    echo "       forwarder_ip is ignored if HOST access mode is used."
     echo
     echo " If additional arguments are provided, they are passed to docker-compose"
     echo " Otherwise nothing is run and just files are setup."
@@ -47,9 +43,9 @@ function set_var_in_common_env {
   $SED -e "s/^${var}=.*/${var}=${value}/" common.env
 }
 
-FILES="base.yml trust-me.yml"
+FILES=(base.yml trust-me.yml)
 REMOVE_FILES=""
-ACCESS_MODE="FORWARDER"
+ACCESS_MODE="HOST"
 PROVISION_IT="NO"
 PROXY_IT="NO"
 
@@ -67,7 +63,7 @@ RUN_NTP="NO"
 while [[ $1 == -* ]] ; do
   arg=$1
   shift
-  
+
   case $arg in
       --help)
       usage
@@ -82,10 +78,6 @@ while [[ $1 == -* ]] ; do
         $SUDO rm -rf data-dir
       exit 0
       ;;
-    --access)
-      ACCESS_MODE=$1
-      shift
-      ;;
     --tag)
       DR_TAG=$1
       shift
@@ -99,87 +91,68 @@ while [[ $1 == -* ]] ; do
       shift
       ;;
     --provisioner)
-      FILES="$FILES provisioner.yml"
+      FILES+=(provisioner.yml)
       PROVISION_IT="YES"
       SERVICES+=" provisioner-service"
       ;;
     --ntp)
-      FILES="$FILES ntp.yml"
+      FILES+=(ntp.yml)
       SERVICES+=" ntp-service"
       RUN_NTP="YES"
       ;;
     --chef)
-      FILES="$FILES chef.yml"
+      FILES+=(chef.yml)
       SERVICES+=" chef-service"
       ;;
     --dhcp)
-      FILES="$FILES dhcp.yml"
+      FILES+=(dhcp.yml)
       SERVICES+=" dhcp-mgmt_service dhcp-service"
       ;;
     --dns)
       if [[ $ADD_DNS != true ]] ; then
-          FILES="$FILES dns.yml"
+          FILES+=(dns.yml)
       fi
       SERVICES+=" dns-service"
       ADD_DNS=true
       ;;
     --dns-mgmt)
       if [[ $ADD_DNS != true ]] ; then
-          FILES="$FILES dns.yml"
+          FILES+=(dns.yml)
       fi
       SERVICES+=" dns-mgmt_service"
       ADD_DNS=true
       ;;
     --webproxy)
-      FILES="$FILES webproxy.yml"
+      FILES+=(webproxy.yml)
       SERVICES+=" proxy-service"
       PROXY_IT="YES"
       ;;
     --revproxy)
-      FILES="$FILES revproxy.yml"
+      FILES+=(revproxy.yml)
       ;;
     --debug)
-      FILES="$FILES debug.yml"
+      FILES+=(debug.yml)
       ;;
     --logging)
-      FILES="$FILES logging.yml"
+      FILES+=(logging.yml)
       ;;
     --node)
-      FILES="$FILES node.yml"
+      FILES+=(node.yml)
       ;;
   esac
 
 done
 
-if [ "$ACCESS_MODE" == "FORWARDER" ] ; then
-    EXTERNAL_IP=${EXTERNAL_IP:-192.168.124.11/24}
-    FORWARDER_IP=${FORWARDER_IP:-192.168.124.11/24}
-    ACCESS_MODE_SED_DELETE="HOST"
-    MYPWD=`pwd`
-    cd config-dir/api/config/networks
-    rm -f the_admin.json || :
-    rm -f the_bmc.json || :
-    if [[ $PROVISION_IT = YES ]] ; then
-        [[ -f the_admin.json.forwarder ]] && ln -s the_admin.json.forwarder the_admin.json
-        [[ -f the_bmc.json.forwarder ]] && ln -s the_bmc.json.forwarder the_bmc.json
-    fi
-    cd $MYPWD
-elif [ "$ACCESS_MODE" == "HOST" ] ; then
-    EXTERNAL_IP=${EXTERNAL_IP:-192.168.99.100/24}
-    FORWARDER_IP=
-    ACCESS_MODE_SED_DELETE="FORWARDER"
-    MYPWD=`pwd`
-    cd config-dir/api/config/networks
-    rm -f the_admin.json || :
-    rm -f the_bmc.json || :
-    if [[ $PROVISION_IT = YES ]] ; then
-        [[ -f the_admin.json.mac ]] && ln -s the_admin.json.mac the_admin.json
-    fi
-    cd $MYPWD
-else
-    echo "ACCESS MODE: $ACCESS_MODE is not HOST or FORWARDER"
-    exit 1
+EXTERNAL_IP=${EXTERNAL_IP:-192.168.99.100/24}
+FORWARDER_IP=
+MYPWD=`pwd`
+cd config-dir/api/config/networks
+rm -f the_admin.json || :
+rm -f the_bmc.json || :
+if [[ $PROVISION_IT = YES ]] ; then
+    [[ -f the_admin.json.mac ]] && ln -s the_admin.json.mac the_admin.json
 fi
+cd $MYPWD
 
 if [[ -x ../../go/bin/$DR_TAG/linux/amd64/rebar ]]; then
     mkdir -p data-dir/bin
@@ -188,15 +161,14 @@ fi
 
 # Process templates and build one big yml file for now.
 rm -f docker-compose.yml
-for i in $FILES; do
-    fname=$i
+for i in "${FILES[@]}"; do
+    fname="$i"
     if [[ $i != /* ]] ; then
-	fname=yaml_templates/$i
+        fname="yaml_templates/$i"
     fi
     # Fix Access Mode
     cat "$fname" >> docker-compose.yml
 done
-$SED -e "/START ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/,/END ACCESS_MODE==${ACCESS_MODE_SED_DELETE}/d" docker-compose.yml
 
 if [[ ! $DEV_MODE = Y ]]; then
     $SED -e "/START DEV_MODE/,/END DEV_MODE/d" docker-compose.yml
