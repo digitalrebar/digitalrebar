@@ -1,7 +1,6 @@
 #!/bin/bash
-cat >> /etc/consul.d/cloudwrap.json <<EOF
+curl -X PUT http://localhost:8500/v1/agent/service/register --data-binary @- <<EOF
 {
-  "service": {
     "name": "cloudwrap",
     "tags": [ "deployment:$SERVICE_DEPLOYMENT" ],
     "port": 3030,
@@ -9,7 +8,6 @@ cat >> /etc/consul.d/cloudwrap.json <<EOF
       "http": "http://localhost:3030",
       "interval": "10s"
     }
-  }
 }
 EOF
 
@@ -20,7 +18,6 @@ run_forever() (
     done
 )
 
-consul reload
 cd /opt/cloudwrap
 
 touch api.log waiter.log

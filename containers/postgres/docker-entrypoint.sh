@@ -16,24 +16,6 @@ chown -R postgres "$PGDATA"
 chmod g+s /run/postgresql
 chown -R postgres /run/postgresql
 
-declare -a join
-if grep -q consul /etc/hosts; then
-    # If there is a consul host entry, join it.
-    join=(--retry-join consul)
-elif [[ $CONSUL_JOIN ]]; then
-    # Otherwise, try $CONSUL_JOIN
-    join=()
-    for j in $CONSUL_JOIN; do
-        join+=(--retry-join "$j")
-    done
-else
-    # Finally, see if there is a consul running on our gateway and try to join it
-    join=(--retry-join $(ip route show scope global |awk '/default/ {print $3}'))
-fi
-consul agent --config-dir /etc/consul.d --data-dir /data "${join[@]}" &
-unset join
-unset j
-
 answer=""
 # We need consul to converge on a leader.
 # This can take a little time, so we ask for
@@ -146,6 +128,7 @@ fi
 
 set_listen_addresses '*'
 
+curl -X PUT http://localhost:8500/v1/agent/service/register --data-binary @- < /etc/consul.d/database.json
 echo
 echo 'PostgreSQL init process complete; ready for start up.'
 echo

@@ -81,4 +81,3 @@ make_service "dns" "53" "{\"script\": \"dig @$dns_ip $dns_ip >/dev/null 2>&1\", 
 bind_service dns-service
 set_service_attrib dns-service dns-domain "{\"value\": \"$BASE_DOMAINNAME\"}"
 set_service_attrib dns-service dns_servers "${attr}"
-
