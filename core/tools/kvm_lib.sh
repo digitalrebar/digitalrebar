@@ -9,9 +9,7 @@ export PS4='${BASH_SOURCE}@${LINENO}(${FUNCNAME[0]}): '
 # Commands we have to run under sudo -n
 SUDO_CMDS="/sbin/brctl ip umount mount"
 # Commands we need to run as $USER
-NEEDED_CMDS="ruby gem screen qemu-img sudo"
-# Gems we have to have installed.
-NEEDED_GEMS="json net-http-digest_auth"
+NEEDED_CMDS="screen qemu-img sudo"
 
 # Find out what KVM is called locally.
 for KVM in kvm qemu-kvm qemu-system-x86_64 ''; do
@@ -41,17 +39,6 @@ for cmd in $SUDO_CMDS; do
     echo "Please make sure that $USER has passwordless sudo rights to run:"
     printf "%s " $(for cmd in $SUDO_CMDS; do which "$cmd"; done)
     echo
-    exit 1
-done
-
-for gem in $NEEDED_GEMS; do
-    gem list |grep -q $gem && continue
-    if [ -d /etc/apt ] ; then
-      dpkg --list | grep -q "ruby-${gem/_/-}" && continue
-    fi
-    echo "Missing required gem $gem."
-    echo "Please make sure the following gems are installed:"
-    echo "$NEEDED_GEMS"
     exit 1
 done
 

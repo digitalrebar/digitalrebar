@@ -128,7 +128,12 @@ fi
 
 set_listen_addresses '*'
 
-curl -X PUT http://localhost:8500/v1/agent/service/register --data-binary @- < /etc/consul.d/database.json
+
+
+curl -X PUT http://localhost:8500/v1/agent/service/register --data-binary @- <<EOF
+{"name": "rebar-database", "tags": ["postgres"], "port": 5432}
+EOF
+
 echo
 echo 'PostgreSQL init process complete; ready for start up.'
 echo

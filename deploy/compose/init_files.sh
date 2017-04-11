@@ -74,7 +74,7 @@ while [[ $1 == -* ]] ; do
       exit 0
       ;;
     --clean)
-        rm -f access.env services.env dc docker-compose.yml config-dir/api/config/networks/the_admin.json config-dir/api/config/networks/the_bmc.json tag
+        rm -f access.env services.env dc docker-compose.yml tag config-dir/api/config/networks/*.json
         $SUDO rm -rf data-dir
       exit 0
       ;;
@@ -145,13 +145,21 @@ done
 
 EXTERNAL_IP=${EXTERNAL_IP:-192.168.99.100/24}
 FORWARDER_IP=
-MYPWD=`pwd`
+MYPWD=$PWD
+
 cd config-dir/api/config/networks
-rm -f the_admin.json || :
-rm -f the_bmc.json || :
-if [[ $PROVISION_IT = YES ]] ; then
-    [[ -f the_admin.json.mac ]] && ln -s the_admin.json.mac the_admin.json
+if [[ $(echo *.json) = '*.json' ]]; then
+    if [[ ! -d $HOME/.cache/digitalrebar/networks ]]; then
+        echo "No networks predefined."
+        echo "If you always want to precreate networks in Digital Rebar,"
+        echo "please place approporiate definitions in $HOME/.cache/digitalrebar/networks"
+        echo
+        echo "$PWD/network.json.example is a useful starting point"
+    else
+        cp "$HOME/.cache/digitalrebar/networks/"*.json .
+    fi
 fi
+
 cd $MYPWD
 
 if [[ -x ../../go/bin/$DR_TAG/linux/amd64/rebar ]]; then

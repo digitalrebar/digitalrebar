@@ -29,7 +29,7 @@ RUN mkdir -p /opt/provisioner-mgmt
 RUN chmod 755 /usr/local/bin/*
 
 # Set our command
-ENTRYPOINT ["/sbin/docker-entrypoint.sh"]       
+ENTRYPOINT ["/sbin/docker-entrypoint.sh"]
 
 RUN apt-get -y update \
     && apt-get -y install bsdtar createrepo xz-utils unzip bsdmainutils p7zip-full samba \

@@ -33,6 +33,7 @@ if [[ ! $EXTERNAL_IP ]]; then
     echo "No EXTERNAL_IP set, using $EXTERNAL_IP"
     export EXTERNAL_IP
 fi
+
 rebar() {
     docker exec compose_rebar_api_1 rebar -E https://127.0.0.1:3000 -U rebar -P rebar1 "$@"
 }
