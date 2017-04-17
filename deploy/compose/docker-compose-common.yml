@@ -8,6 +8,7 @@ consul:
     - ./data-dir/consul/:/tmp/consul/
     - ./data-dir/bin:/usr/local/dev/bin
     - ./config-dir/tools:/opt/tools
+    - /var/run/docker.sock:/var/run/docker.sock
   env_file:
     - ./common.env
     - ./access.env

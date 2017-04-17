@@ -210,8 +210,9 @@ func main() {
 		Port: 8888,
 		Tags: []string{"deployment:system"},
 		Check: &consul.AgentServiceCheck{
-			Script:   "/usr/local/bin/test_tm_up.sh",
-			Interval: "10s",
+			HTTP:          `https://localhost:8888/api/v1/cfssl/info`,
+			TLSSkipVerify: true,
+			Interval:      "10s",
 		},
 	}
 	if err := service.Register(client, reg, false); err != nil {

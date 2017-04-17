@@ -32,6 +32,10 @@ rebar() {
     command rebar -T -U system "$@"
 }
 
+cid() {
+    sed -E 's@.*/docker/([0-9a-f]+)$@\1@' </proc/1/cgroup |head -1
+}
+
 # This should only be called in a subshell where we want a command to
 # be able to talk to the outside world.  It relies the proxy being registered and alive,
 # and it will wait until it is before proceeding.
@@ -73,12 +77,21 @@ with_local_proxy() {
     fi
 }
 
+dockerise_check() {
+    local scriptchk='"script":'
+    if [[ $1 =~ $scriptchk ]]; then
+        jq ". + {\"docker_container_id\": \"$(cid)\"}"
+    else
+        jq '.'
+    fi <<< "$1"
+}
+
 make_service() {
     # $1 = service name.
     # $2 = port to check on
     # $3 = check fragment%s
     printf '{"name":"%s-service","port":%s,"address":"%s","tags":["deployment:%s"],"check":%s}' \
-           "$1" "$2" "${EXTERNAL_IP%%/*}" "$SERVICE_DEPLOYMENT" "$3" | \
+           "$1" "$2" "${EXTERNAL_IP%%/*}" "$SERVICE_DEPLOYMENT" "$(dockerise_check "$3")" | \
         curl -X PUT http://localhost:8500/v1/agent/service/register --data-binary @-
 }
 
@@ -89,7 +102,7 @@ make_revproxied_service() {
     local name="${1%-mgmt}"
     printf '^%s/(.*)' "$name" |kv_put "digitalrebar/public/revproxy/${1}-service/matcher"
     printf '{"name":"%s-service","port":%s,"tags":["revproxy", "deployment:%s"],"check":%s}' \
-           "$1" "$2" "$SERVICE_DEPLOYMENT" "$3" | \
+           "$1" "$2" "$SERVICE_DEPLOYMENT" "$(dockerise_check "$3")" | \
         curl -X PUT http://localhost:8500/v1/agent/service/register --data-binary @-
 }
 

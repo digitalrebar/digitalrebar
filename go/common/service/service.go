@@ -38,9 +38,7 @@ func Register(client *api.Client, svc *api.AgentServiceRegistration, allowExtern
 			return err
 		}
 	}
-	if allowExternal && os.Getenv("FORWARDER_IP") != "" {
-		svc.Name = "internal-" + svc.Name
-	} else if extIP := os.Getenv("EXTERNAL_IP"); extIP != "" && allowExternal {
+	if extIP := os.Getenv("EXTERNAL_IP"); extIP != "" {
 		ip, _, err := net.ParseCIDR(extIP)
 		if err != nil {
 			return fmt.Errorf("service.Register: EXTERNAL_IP not CIDR: %v", err)

@@ -5,8 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"sync"
 
 	"github.com/digitalrebar/digitalrebar/go/common/cert"
@@ -131,7 +133,7 @@ func main() {
 	if err != nil {
 		logger.Fatalf("Error creating trusted Rebar API client: %v", err)
 	}
-
+	staticAddr := net.JoinHostPort(ourAddress, strconv.Itoa(staticPort))
 	// Register service with Consul before continuing
 	if err = service.Register(consulClient,
 		&consul.AgentServiceRegistration{
@@ -139,7 +141,7 @@ func main() {
 			Tags: []string{"deployment:system"},
 			Port: staticPort,
 			Check: &consul.AgentServiceCheck{
-				HTTP:     fmt.Sprintf("http://[::]:%d/", staticPort),
+				HTTP:     fmt.Sprintf("http://%s/", staticAddr),
 				Interval: "10s",
 			},
 		},
@@ -153,7 +155,7 @@ func main() {
 			Tags: []string{"revproxy"}, // We want to be exposed through the revproxy
 			Port: apiPort,
 			Check: &consul.AgentServiceCheck{
-				HTTP:     fmt.Sprintf("http://[::]:%d/", staticPort),
+				HTTP:     fmt.Sprintf("http://%s/", staticAddr),
 				Interval: "10s",
 			},
 		},
@@ -165,7 +167,7 @@ func main() {
 			Name: "provisioner-tftp-service",
 			Port: tftpPort,
 			Check: &consul.AgentServiceCheck{
-				HTTP:     fmt.Sprintf("http://[::]:%d/", staticPort),
+				HTTP:     fmt.Sprintf("http://%s/", staticAddr),
 				Interval: "10s",
 			},
 		},
@@ -173,7 +175,7 @@ func main() {
 		log.Fatalf("Failed to register provisioner-tftp-service with Consul: %v", err)
 	}
 	// Fill out our service address
-	provisionerURL = fmt.Sprintf("http://%s:%d", ourAddress, staticPort)
+	provisionerURL = fmt.Sprintf("http://%s", staticAddr)
 	var backend store.SimpleStore
 	switch backEndType {
 	case "consul":

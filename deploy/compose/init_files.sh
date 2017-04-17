@@ -224,6 +224,12 @@ DR_START_TIME=$(date +%s)
 RUN_NTP=$RUN_NTP
 EOF
 
+if [[ $DOCKER_HOST ]]; then
+    cat >>access.env <<EOF
+DOCKER_HOST=$DOCKER_HOST
+EOF
+fi
+
 # Add proxies from this environment to the containers.
 # Need to do similar things
 if [[ $http_proxy && $PROXY_IT = NO ]]; then

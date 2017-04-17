@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -261,10 +262,6 @@ func main() {
 		Name: "rule-engine-service",
 		Tags: []string{"revproxy", "revproxyapi"}, // We want to be exposed through the revproxy
 		Port: port,
-		Check: &consul.AgentServiceCheck{
-			Script:   "pidof rule-engine",
-			Interval: "10s",
-		},
 	}
 	if err = service.Register(cClient, reg, false); err != nil {
 		log.Fatalf("Failed to register with Consul: %v", err)
@@ -280,7 +277,7 @@ func main() {
 			continue
 		}
 		lAddr, lPort := service.Address(svc[0])
-		listen = fmt.Sprintf("%s:%d", lAddr, lPort)
+		listen = net.JoinHostPort(lAddr, strconv.Itoa(lPort))
 		break
 	}
 
