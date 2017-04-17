@@ -19,17 +19,17 @@
 
 # The barclamp section defines metadata for the workload as a whole.
 barclamp:
-  
+
   # The name of the workload. Workload names must be unique, and
   # the workload name will be used when refering to it via the API.
   name: template
-  
+
   # The user friendly name of the workload.
   display: "Template"
-  
+
   # An one-line description of the workload
   description: "An example workload, useable as a template for other workloads."
-  
+
   # The license the workload as a whole is distributed under.
   # Unless otherwise indicated on a file-by-file basis, all files that are
   # part of this worload have the same license.
@@ -37,7 +37,7 @@ barclamp:
 
   # The URL to the full legal text of the license this workload is distributed under.
   license_url: "http://www.apache.org/licenses/LICENSE-2.0"
-  
+
   # The copyright holder and date of this workload.
   copyright: "RackN, Inc 2016"
 
@@ -54,7 +54,7 @@ rebar:
 # digitalrebar/core.  You can rely on any installation of Digital Rebar to have these
 # jigs available to use to implement role specific functionality.
 #jigs:
-  
+
   # The script jig is the second simplest of the jigs to use.
   # Just create scripts under script/<role name>/*.sh, mark them as executable,
   # and the jig will run them in ascending lexical order.  The script jig provides
@@ -226,7 +226,7 @@ roles:
     # is also bound to that role.  Ones that are defined at the top level of a rebar.yml
     # will always get their data from a node directly.
     attribs:
-      
+
       - name: template-value-1
         # Each attribute must have a name, and the name must be unique.
 
@@ -253,7 +253,7 @@ roles:
         schema:
           type: str
           required: true
-          
+
   - name: template-echo-a-value-with-a-script
     # As the name implies, this role will just echo a value by running a script
     # on a node.  The value to echo will be the one stored in the 'template-value-1'
@@ -293,3 +293,8 @@ attribs:
       type: bool
       required: true
     default: false
+
+profiles:
+  - name: template-profile-1
+    values:
+      provisioner-target_os: centos-7.3.1611
