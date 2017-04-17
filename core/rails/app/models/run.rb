@@ -46,11 +46,16 @@ end
 
 class NodeRoleRun < Que::Job
 
+  def log
+    @@log ||= ActiveSupport::Logger.new("/var/log/rebar/runs.log")
+    @@log
+  end
+
   def run(run_id)
-    Rails.logger.info("Run: Starting queued job #{run_id}")
+    log.info("Run: Starting queued job #{run_id}")
     job = Run.find(run_id) rescue nil
     unless job
-      Rails.logger.error("Run: Queued job #{run_id} vanished from the database!")
+      log.error("Run: Queued job #{run_id} vanished from the database!")
       destroy
       return
     end
@@ -63,19 +68,20 @@ class NodeRoleRun < Que::Job
         nr = NodeRole.where(id: job.node_role_id).lock("FOR NO KEY UPDATE").first
         nr.transition!
         if nr.role.destructive && (nr.run_count > 0)
-          Rails.logger.info("Run: Queued job #{job.id} for #{nr.id} skipped due to destructiveness")
+          log.info("Run: Queued job #{job.id} for #{nr.id} skipped due to destructiveness")
           nr.active! if nr.node.alive? && nr.node.available? && mark_active
           job.delete
           destroy
           return
         end
       end
-      Rails.logger.info("Run: Queued job #{job.id} for #{nr.id} running!")
+      log.info("Run: Queued job #{job.id} for #{nr.name} running!")
       run_return = nr.jig.run(nr,job.run_data["data"])
       # mark the run as active unless it returns the :async symbol
       # when a jig returns this flag, then it needs to retry the node role for it to continue
       mark_active = run_return != :async
-      Rails.logger.info("Run: Queued job #{job.id} for #{nr.id} finished, no exceptions raised.")
+      log.info("Run: log for job #{job.id}:\n#{nr.runlog}\nLog for #{job.id} end")
+      log.info("Run: Queued job #{job.id} for #{nr.id} finished, no exceptions raised.")
     rescue StandardError => e
       NodeRole.transaction do
         nr = NodeRole.where(id: job.node_role_id).lock("FOR NO KEY UPDATE").first
@@ -84,8 +90,10 @@ class NodeRoleRun < Que::Job
         job.delete
         destroy
       end
-      Rails.logger.info("Run: Queued job #{job.id} for #{nr.name} failed, exceptions raised.")
-      Rails.logger.error("#{e.class.name}: #{e.message}\nBacktrace:\n#{e.backtrace.join("\n")}")
+      log.error("Run: log for job #{job.id}:\n#{nr.runlog}\n")
+      log.error("Run: NodeRole #{nr.name} errored")
+      log.error("Run: Queued job #{job.id} for #{nr.name} failed, exceptions raised.")
+      log.error("#{e.class.name}: #{e.message}\nBacktrace:\n#{e.backtrace.join("\n")}")
       return
     end
     NodeRole.transaction do
@@ -109,7 +117,8 @@ class NodeRoleRun < Que::Job
         res.deep_merge!(nr.wall["rebar_wall"]["reservations"])
         nr.node.hint_update({"reservations" => res})
       end
-      Rails.logger.info("Run: Deleting finished job #{job.id}")
+      log.info("Run: NodeRole #{nr.name} active")
+      log.info("Run: Deleting finished job #{job.id}")
       nr.active! if nr.node.alive? && nr.node.available? && mark_active
       job.delete
       destroy
