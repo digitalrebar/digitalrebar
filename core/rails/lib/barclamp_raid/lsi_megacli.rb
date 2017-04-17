@@ -203,7 +203,7 @@ module BarclampRaid
       "Span Depth" => "spans"
     }
 
-    
+
     def parse_volume(controller,lines)
       volume_lines = []
       disk_lines = []
@@ -315,6 +315,7 @@ module BarclampRaid
         cmd << "-PDMakeJBOD"
         cmd << "-PhysDrv"
         cmd << "[#{candidates[0].id}]"
+        cmd << "-a#{cid}"
       when "raid0","raid1","raid5","raid6"
         cmd << "-CfgLdAdd"
         cmd << "-r#{raid_level[-1]}[#{candidates.map{|c|c.id}.join(',')}]"
@@ -373,7 +374,6 @@ module BarclampRaid
         raise "Raid level #{raid_level} Not Implemented"
       end
       if raid_level == "jbod"
-        
         run_tool(0, nil, cmd).each do |l|
           @logger << l
         end
@@ -430,16 +430,16 @@ module BarclampRaid
              end
       run_tool(0,nil,args)
     end
-                            
+
     def delete_vd(volume)
       @logger << "Delete VD on #{volume.controller.name} for #{volume.id}\n" if @logger
-      lines = _delete_vd(volume) 
+      lines = _delete_vd(volume)
       lines.each do |line|
         @logger << line
       end if @logger
       self.refresh_controller(volume.controller)
     end
-        
+
 
     def _set_boot(controller, volume_id, runargs)
       @logger << "setting boot volume on #{controller.name} for #{volume_id}\n" if @logger
