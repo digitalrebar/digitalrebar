@@ -18,8 +18,8 @@ if ! which docker &>/dev/null; then
     die "Please install Docker!"
 fi
 
-if (which selinuxenabled && selinuxenabled) &>/dev/null; then
-    die "SELinux is enabled!  It does not play nice with some of our containers, please disable it."
+if (which sestatus && sestatus |egrep -q '^Current mode:.*enforcing') &>/dev/null; then
+    die "SELinux is enforcing!  It does not play nice with some of our containers, please disable it."
 fi
 
 if ! which docker-compose &>/dev/null; then
