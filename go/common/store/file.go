@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -36,7 +37,7 @@ func (f FileStore) Keys() ([]string, error) {
 	}
 	names, err := d.Readdirnames(0)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("dir keys: readdir error %#v", err)
 	}
 	res := make([]string, 0, len(names))
 	for _, name := range names {

@@ -25,13 +25,13 @@ type SimpleStore interface {
 func genericList(s SimpleStore) ([][]byte, error) {
 	keys, err := s.Keys()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error getting keys: %#v", err)
 	}
 	res := make([][]byte, len(keys))
 	for i := range keys {
 		val, err := s.Load(keys[i])
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Error loading key: %#v", err)
 		}
 		res[i] = val
 	}
