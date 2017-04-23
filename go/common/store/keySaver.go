@@ -26,6 +26,17 @@ type KeySaver interface {
 	Backend() SimpleStore
 }
 
+// Serializer should be implemented by all types that
+// want to be marshalled and unmarshalled in a format other than JSON.
+//
+// Encode will encode the object and return a byte array containing the marshalled format.
+//
+// Decode will overwrite the current object with the one contained in the passed byte array.
+type Serializer interface {
+	Encode() ([]byte, error)
+	Decode([]byte) error
+}
+
 //LoadHooker is the interface that things can satisfy if they want to
 //run a hook against an object each time it is loaded from a
 //Backend().  OnLoad() will be called after the object has been loaded
@@ -99,7 +110,12 @@ func load(s SimpleStore, k KeySaver, key string, runhook bool) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if err := json.Unmarshal(buf, &k); err != nil {
+	if ser, ok := k.(Serializer); ok {
+		err = ser.Decode(buf)
+	} else {
+		err = json.Unmarshal(buf, &k)
+	}
+	if err != nil {
 		return false, err
 	}
 	if h, ok := k.(LoadHooker); runhook && ok {
@@ -125,7 +141,12 @@ func List(ref KeySaver) ([]KeySaver, error) {
 	res := make([]KeySaver, len(vals))
 	for i := range vals {
 		v := ref.New()
-		if err := json.Unmarshal(vals[i], &v); err != nil {
+		if ser, ok := v.(Serializer); ok {
+			err = ser.Decode(vals[i])
+		} else {
+			err = json.Unmarshal(vals[i], &v)
+		}
+		if err != nil {
 			return nil, err
 		}
 		if h, ok := v.(LoadHooker); ok {
@@ -170,7 +191,13 @@ func save(s SimpleStore, k KeySaver) (bool, error) {
 			return false, err
 		}
 	}
-	buf, err := json.Marshal(k)
+	var buf []byte
+	var err error
+	if ser, ok := k.(Serializer); ok {
+		buf, err = ser.Encode()
+	} else {
+		buf, err = json.Marshal(k)
+	}
 	if err != nil {
 		return false, err
 	}
