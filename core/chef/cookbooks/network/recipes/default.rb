@@ -28,19 +28,6 @@ net_re = /\/pci(.+)\/net\/(.+)$/
 net_sysfs = "/sys/class/net"
 raise "This recipe only works on Linux" unless File.directory?(net_sysfs)
 
-# Sigh -- chef_gem behaviour is too flaky to rely on.
-# Fake it if we are running the omnibus version of Chef.
-if File.directory?("/opt/chef/embedded")
-  if Dir.glob("/opt/chef/embedded/lib/ruby/gems/**/cstruct*/").empty?
-    Chef::Log.info("Manually installing cstruct gem")
-    unless system("/opt/chef/embedded/bin/gem install --no-ri --no-rdoc cstruct")
-      raise "Could not install cstruct gem!"
-    end
-    Gem.clear_paths
-  end
-else
-  chef_gem "cstruct"
-end
 require "socket"
 require "cstruct"
 
@@ -247,6 +234,9 @@ def resolve_conduit(conduit)
   if node["rebar_ohai"]["in_docker"]
     return ["eth0"]
   end
+  if conduit.start_with?('raw:')
+    return [conduit[4..-1]]
+  end
   known_ifs = node["rebar"]["sorted_ifs"]
   speeds = %w{10m 100m 1g 10g}
   intf_re = /^([-+?]?)(\d{1,3}[mg])(\d+)$/
@@ -295,6 +285,7 @@ node["rebar"]["network"]["addresses"].keys.sort{|a,b|
   network = node["rebar"]["network"]["addresses"][addr]
   # Skip BMC conduits.
   next if network["conduit"] == "bmc"
+  next if network["conduit"] == "dhcp"
   # This will wind up being the interfaces that the address will be bound to.
   net_ifs = Array.new
   # This is the basic interfaces that the conduit definition implies we should use.
