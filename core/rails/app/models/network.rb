@@ -99,7 +99,7 @@ class Network < ActiveRecord::Base
   def self.check_sanity(n)
     res = []
     # First, check the conduit to be sure it is sane.
-    intf_re =  /^bmc$|^dhcp$|^([-+?]?)(\d{1,3}[mg])(\d+)$/
+    intf_re =  /^raw:|^bmc$|^dhcp$|^([-+?]?)(\d{1,3}[mg])(\d+)$/
     if n.conduit.nil? || n.conduit.empty?
       res << [:conduit, "Conduit definition cannot be empty"]
       intfs = []

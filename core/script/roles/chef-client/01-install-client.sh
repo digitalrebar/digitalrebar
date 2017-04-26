@@ -4,6 +4,8 @@ chef_client="$(read_attribute chefjig/client/name)"
 chef_key="$(read_attribute chefjig/client/key)"
 sources="$(get_attr chef-client-sources)"
 provisioner="$(get_attr provisioner-webservers |jq -r -c '.[0] | .url')"
+chef_cstruct="cstruct-1.0.1.gem"
+chef_cstruct_url="https://rubygems.org/downloads/$chef_cstruct"
 
 if ! [[ $chef_url && $chef_client && $chef_key ]]; then
     echo "Missing required attribs!"
@@ -55,6 +57,28 @@ if ! which chef-client; then
         *)
             echo "No idea how to install on $OS_TYPE";;
     esac
+fi
+
+if curl -fglO "$provisioner/files/chef/$chef_cstruct"; then
+    echo "Chef cstruct gem cached on the provisioner, will use it."
+elif curl -fgLO "$chef_cstruct_url"; then
+    echo "Chef cstruct gem downloaded from upstream."
+    echo "Please consider caching it on the provisioner by:"
+    echo "   curl -fgLO $chef_cstruct_url"
+    echo "   rebar provisioner files upload $chef_cstruct to chef/$chef_cstruct"
+else
+    echo "Failed to download Chef cstruct gem, cannot continue"
+    echo "Please consider caching it on the provisioner by:"
+    echo "   curl -fgLO $chef_cstruct_url"
+    echo "   rebar provisioner files upload $chef_cstruct to chef/$chef_cstruct"
+    echo
+    echo "This will allow the provisioner to serve the Chef cstruct gem directly"
+    exit 1
+fi
+if [[ -e /opt/chef/embedded ]] ; then
+    /opt/chef/embedded/bin/gem install --no-ri --no-rdoc --local $chef_cstruct
+else
+    gem install --no-ri --no-rdoc --local $chef_cstruct
 fi
 
 mkdir -p "/etc/chef"
