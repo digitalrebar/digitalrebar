@@ -24,15 +24,31 @@ attribs:
   - name: skip-flash
     map: 'rebar/skip_flash'
     description: 'Skip trying to flash firmware'
+    documentation: |
+      Skip Flash
+      ----------
+
+      skip-flash tells Rebar to skip performing any flash operations on
+      a machine.   It can be either true or false.
     schema:
       type: bool
       required: true
     default: false
   - name: firmware-target-versions
     map: 'rebar/firmware_targets'
-    description: |
-      A map of firmware type: version.
-      If an entry for a type is missing, the flasher will assume you want the latest version.
+    description: 'A map of firmware test:version'
+    documentation: |
+      Firmware Target Versions
+      ------------------------
+
+      firmware-target-versions is a per-machine attrib that contains
+      a map of firmware-test -> version overrides, where firmware-test is the
+      name of a test field in the list of tests in the firmware-selection-tests
+      attrib.
+
+      This attrib allows you to pin firmware versions for a specific machine -- in the
+      absence of an entry for a firmware test in this attrib, the firmware-flash role
+      will try to flash up to the latest firmware update package available for a matching test.
     schema:
       type: map
       mapping:
@@ -43,6 +59,31 @@ attribs:
   - name: firmware-packages
     map: 'rebar/firmware_packages'
     description: 'The map of packages that Rebar knows how to flash'
+    documentation: |
+      Firmware Package Information
+      ----------------------------
+
+      The firmware-packages attrib contains all of the firmware packages that
+      Digital Rebar knows how to flash, regardless of system type.  It consists
+      of a JSON object that maps the full filename of the firmware update package
+      to metadata about that package. The metadata is defined as follows:
+
+      ::
+        {
+          "source": "The full URL the firmware update package should be downloaded from",
+          "sha256sum": "The SHA256 checksum of the firmware update package",
+          "script": "The script that will be invoked by the firmware-flash role to apply the firmware update"
+        }
+
+      The firmware-flash role expects to be able to download the firmware
+      update package from the provisioner (at $provisioner/files/firmware/$package_name).
+      In order to make the update package available, you need to download the update
+      package from its source, and then upload it to the provisioner with:
+
+      * ``rebar provisioner files upload $downloaded_file as firmware/$package_name``
+
+      The script that applies the firmware update package should take care to reboot the system
+      if that is required to complete the firmware update.
     default:
       'iDRAC-with-Lifecycle-Controller_Firmware_XTPX4_LN_2.41.40.40_A00.BIN':
         sha256sum: '3446d95353373156741b3b6b92515c4747728f57de6d735be6ff3d0fa7bd5d22'
@@ -65,7 +106,8 @@ attribs:
                   echo "System up to date, but should have been caught by pre-version check"
                   exit 0;;
               4|5) # Update not applicable to the system
-                  echo "Update $package not applicable to this system, but not caught by qualification checking"                   exit 1;;
+                  echo "Update $package not applicable to this system, but not caught by qualification checking"
+                  exit 1;;
               6) # System is automatically rebooting
                  sleep 600;;
               *) # Update package is corrupt or Something Weird happened.
@@ -203,7 +245,7 @@ attribs:
             script:
               type: str
               required: true
-    
+
   - name: firmware-selection-tests
     map: 'rebar/firmware_tests'
     description: 'The list of selection tests that Rebar knows about to pick firmware to flash'
@@ -243,8 +285,71 @@ attribs:
                 =:
                   type: str
                   required: true
-        
-                  
+    documentation: |
+      Firmware Selection Tests
+      ------------------------
+
+      The ``firmware-selection-tests`` attrib is used by the ``firmware-flash`` role to
+      determine what firmware update packages (as defined by the ``firmware-packages`` attrib)
+      should be applied to a given system.  It consists of a lists of tests with the
+      following structure:
+
+      A map of firmware type: version.
+      If an entry for a type is missing, the flasher will assume you want the latest version.
+      ::
+        {
+          "test": "The name of the test."
+          "current-version-script": "A shell script that gets the current version of the firmware in question."
+          "packages" [
+            {
+              "package": "The name of the package in the firmware-packages attrib",
+              "version": "The version of the package",
+              "downgrade-fence": true or false,
+              "upgrade-fence": true or false
+            }
+          ],
+          "match": {
+            "dmi_attrib": "value that must match",
+            "other_dmi_attrib": "value that must match"
+          }
+        }
+
+      The packages section of the test structure can contain any number of packages that
+      can be flashed for the specific test.  The packages list must be ordered in ascending version
+      order with the earliest version at the top.
+
+      The keys of each individual entry in the packages list:
+
+      * "package" is the name of the package in the firmware-packages attrib.
+        If there is no matching entry in the firmware-packages attrib and this
+        package was chosen to be run, the update will fail.
+      * "version" is the version of the firmware update package.  The version string
+        should be vaguely semver-ish.
+      * "downgrade-fence" indicates that the formware in question cannot be downgraded
+        past this version.
+      * "upgrade-fence" indicates that this package must be flashed when upgrading to
+        a later version.
+
+      The match section consists of an object whose keys are the names of node attribs, and
+      the values are the exact values that the attrib in question must match exactly.  These
+      are what determines if a given test is applicable to a given system.  The attrib names
+      must be in the following list:
+
+      * bios-vendor
+      * bios-version
+      * bios-revision
+      * system_manufacturer
+      * system_product
+      * baseboard_manufacturer
+      * baseboard_product_name
+      * ipmi-enable
+      * ipmi-firmware-rev
+      * ipmi-device-id
+      * ipmi-device-rev
+      * ipmi-mfgr-id
+      * ipmi-product-id
+      * raid-detected-controllers
+
     default:
       - test: 'Supermicro X7SPA-HF Bios'
         current-version-script: |
@@ -298,7 +403,7 @@ attribs:
         match:
           baseboard_manufacturer: 'Supermicro'
           baseboard_product_name: 'X7SPA-HF'
-        
+
 roles:
   - name: firmware-flash
     jig: script
@@ -328,3 +433,11 @@ roles:
       - firmware-target-versions
       - firmware-packages
       - firmware-selection-tests
+    documentation: |
+      Firmware Flash
+      --------------
+
+      The firmware-flash role is responsible for flashing firmware of all types on a node,
+      subject to the following restrictions:
+
+      * All flash operations must be able to run in a Centos 7.x environment.
