@@ -20,6 +20,7 @@ ADD http://boot.ipxe.org/ipxe.efi /tmp/ipxe.efi
 ADD http://boot.ipxe.org/ipxe.pxe /tmp/ipxe.pxe
 ADD https://git.ipxe.org/releases/wimboot/wimboot-2.5.2.tar.bz2 /tmp/wimboot-2.5.2.tar.bz2
 ADD https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 /tmp/jq
+ADD https://rubygems.org/downloads/cstruct-1.0.1.gem /tmp/cstruct-1.0.1.gem
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/
 COPY start-up.sh udhcpc_config stage1_init /tmp/
 COPY explode_iso.sh /

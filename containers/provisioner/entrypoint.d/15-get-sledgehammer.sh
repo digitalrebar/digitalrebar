@@ -9,7 +9,7 @@ if [[ ! $PROV_SLEDGEHAMMER_URL ]] ; then
   exit 1
 fi
 
-for d in isos files machines pxelinux.cfg; do
+for d in isos files machines pxelinux.cfg files/chef; do
     mkdir -p "${TFTPROOT}/$d"
 done
 
@@ -19,6 +19,7 @@ if ! [[ -L $TFTPROOT/nodes ]]; then
 fi
 cp "$(which rebar)" "${TFTPROOT}/files/rebar"
 cp /tmp/jq "${TFTPROOT}/files/jq"
+cp /tmp/cstruct-1.0.1.gem "${TFTPROOT}/files/chef"
 cp /tmp/start-up.sh "${TFTPROOT}/nodes/start-up.sh"
 cp /tmp/ipxe.* "${TFTPROOT}"
 
