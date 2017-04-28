@@ -22,6 +22,10 @@ rebar:
 
 roles:
   - name: raid-tools-install
+    description: 'Install RAID management tools on a managed node'
+    documentation: |
+      The raid-tools-install role is responsible for installing all tools needed
+      to manage the RAID adaptors in the system.
     jig: chef
     requires:
       - provisioner-service
@@ -36,6 +40,14 @@ roles:
     attribs:
       - name: raid-drivers
         description: 'The backend drivers that the RAID barclamp can use'
+        documentation: |
+          Raid Drivers
+          ------------
+
+          This describes how to install the executable files for the RAID drivers
+          the RAID management subsystem knows how to handle.  Modifying this
+          may break the RAID subsystem, so do not modify this unless you know
+          what you are doing.
         map: 'raid/drivers'
         ui_renderer: 'barclamp_raid/attribs/raid_tools_install'
         schema:
@@ -83,6 +95,11 @@ roles:
     wants-attribs:
       - provisioner-webservers
   - name: raid-discover
+    description: 'Discover and inventory hardware RAID controllers on the system'
+    documentation: |
+      The raid-discover role is responsible for detecting ant hardware RAID controllers
+      attached to the system and performing a basicn inventory of them.  The
+      results will be saved to the raid-detected-controllers attrib.
     jig: role-provided
     flags:
       - discovery
@@ -95,6 +112,148 @@ roles:
     attribs:
       - name: raid-detected-controllers
         description: "The RAID controllers that were detected on this node."
+        documentation: |
+          The raid-detected-controllers attrib holds information on all of the
+          hardware raid controllers Rebar is able to manage on a node. It consists
+          of a list of objects that describe the detected information for each controller.
+
+          A sample is below::
+
+            [
+              {
+                "bus": 8,
+                "device": 0,
+                "device_id": "005b",
+                "driver_name": "megacli",
+                "firmware_package": "21.3.2-0005",
+                "firmware_version": "3.131.05-4520",
+                "function": 0,
+                "id": "0",
+                "native_jbod": false,
+                "product_name": "PERC H710 Adapter",
+                "raid_capable": true,
+                "serial_number": "45D00BX",
+                "sub_device_id": "1f35",
+                "sub_vendor_id": "1028",
+                "supported_raid_levels": [
+                  "raid0",
+                  "raid1",
+                  "raid5",
+                  "raid6",
+                  "raid10",
+                  "raid50",
+                  "raid60",
+                  "jbod"
+                ],
+                "vendor_id": "1000",
+                "disks": [
+                  {
+                    "controller_id": "0",
+                    "disk_size": 4.99558383616e+11,
+                    "driver_name": "megacli",
+                    "enclosure": "",
+                    "media_type": "disk",
+                    "protocol": "sata",
+                    "sas_address": "0x4433221107000000",
+                    "slot": "0",
+                    "status": "Online, Spun Up"
+                  },
+                  {
+                    "controller_id": "0",
+                    "disk_size": 4.99558383616e+11,
+                    "driver_name": "megacli",
+                    "enclosure": "",
+                    "media_type": "disk",
+                    "protocol": "sata",
+                    "sas_address": "0x4433221106000000",
+                    "slot": "1",
+                    "status": "Online, Spun Up"
+                  },
+                  {
+                    "controller_id": "0",
+                    "disk_size": 4.99558383616e+11,
+                    "driver_name": "megacli",
+                    "enclosure": "",
+                    "media_type": "disk",
+                    "protocol": "sata",
+                    "sas_address": "0x4433221105000000",
+                    "slot": "2",
+                    "status": "Online, Spun Up"
+                  },
+                  {
+                    "controller_id": "0",
+                    "disk_size": 4.99558383616e+11,
+                    "driver_name": "megacli",
+                    "enclosure": "",
+                    "media_type": "disk",
+                    "protocol": "sata",
+                    "sas_address": "0x4433221104000000",
+                    "slot": "3",
+                    "status": "Online, Spun Up"
+                  }
+                ],
+                "volumes": [
+                  {
+                    "controller_id": "0",
+                    "driver_name": "megacli",
+                    "id": "0",
+                    "name": "os",
+                    "raid_level": "raid10",
+                    "span_length": 2,
+                    "spans": 2,
+                    "status": "Optimal",
+                    "stripe_size": 65536,
+                    "vol_size": 9.99116767232e+11
+                    "disks": [
+                      {
+                        "controller_id": "0",
+                        "disk_size": 4.99558383616e+11,
+                        "driver_name": "megacli",
+                        "enclosure": "",
+                        "media_type": "disk",
+                        "protocol": "sata",
+                        "sas_address": "0x4433221107000000",
+                        "slot": "0",
+                        "status": "Online, Spun Up"
+                      },
+                      {
+                        "controller_id": "0",
+                        "disk_size": 4.99558383616e+11,
+                        "driver_name": "megacli",
+                        "enclosure": "",
+                        "media_type": "disk",
+                        "protocol": "sata",
+                        "sas_address": "0x4433221106000000",
+                        "slot": "1",
+                        "status": "Online, Spun Up"
+                      },
+                      {
+                        "controller_id": "0",
+                        "disk_size": 4.99558383616e+11,
+                        "driver_name": "megacli",
+                        "enclosure": "",
+                        "media_type": "disk",
+                        "protocol": "sata",
+                        "sas_address": "0x4433221105000000",
+                        "slot": "2",
+                        "status": "Online, Spun Up"
+                      },
+                      {
+                        "controller_id": "0",
+                        "disk_size": 4.99558383616e+11,
+                        "driver_name": "megacli",
+                        "enclosure": "",
+                        "media_type": "disk",
+                        "protocol": "sata",
+                        "sas_address": "0x4433221104000000",
+                        "slot": "3",
+                        "status": "Online, Spun Up"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
         map: 'rebar_wall/raid/controllers'
       - name: raid-debug
         description: "Whether to run the RAID recipes with debugging enabled"
@@ -103,6 +262,12 @@ roles:
         schema:
           type: bool
   - name: raid-configure
+    description: 'Configure RAID volumes on a node'
+    documentation: |
+      raid-configure is responsible for configuring RAID volumes (if raid-enable is true)
+      according to the specification provided by the raid-wanted-volumes attrib.
+
+      The creation process is detailed in the documentation for the raid-wanted-volumes attrib.
     jig: role-provided
     flags:
       - implicit
@@ -136,6 +301,7 @@ roles:
           format:
 
           ::
+
             {
               "name": "name of the volume",
               "raid_level": "target raid level",
@@ -240,6 +406,13 @@ roles:
         map: 'raid/volumes/configured'
   - name: raid-post-configure
     jig: chef
+    description: 'Update ohai data after the RAID volumes are configured.'
+    documentation: |
+      After the RAID volumes have been created by the raid-configure role,
+      the ohai data stored for the OS visible disks will be out of date.
+      raid-post-conifgure is responsible for rerunning chef-client in order
+      to gather updated ohai data representing the current disk configuration
+      as seen by the OS.
     requires:
       - raid-configure
     preceeds:

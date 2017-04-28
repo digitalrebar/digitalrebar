@@ -81,6 +81,18 @@ roles:
           type: str
   - name: ipmi-discover
     jig: chef
+    description: "Discover and inventory the local IPMI controller"
+    documentation: |
+      ipmi-discover is responsible for discovering and inventorying the local
+      IPMI controller for the system if one is present.  It tries to gather
+      information about the IPMI controller using ipmitool in-band communication, which
+      sidesteps the whole question about how you perform out-of-band discovery and
+      trying to guess the appropriate default usernames and passwords.
+
+      If we discover an IPMI controller, we perform a basic inventory of it and determine
+      what (if any) quirks the IPMI controller has (such as requiring a delay between commands,
+      whether one of the users is immutable, whether the channels used for network config
+      are messed up (and how), etc).
     preceeds:
       - rebar-managed-node
     requires:
@@ -139,6 +151,30 @@ roles:
         map: 'rebar_wall/ipmi/laninfo/macaddr'
       - name: ipmi-quirklist
         description: 'List of interesting quirks to use when talking to IPMI controllers'
+        documentation: |
+          IPMI controllers tend to have interesting and widely-spread bugs in their implementation.
+          ipmi-quirklist is a compilation of ones we have encountered in the wild.  Each
+          quirk represents a special-case that the ipmi-configure code must take into account
+          when configuring the IPMI controller to ensure that we wind up with an operational
+          and properly configured IPMI controller.  The quirks we have cataloged are as follows:
+
+          * "ipmi-nodelay" indicates that you do not have to sleep for a certain amount of
+            time in between ipmitool invocations.  That this is a quirk instead of the default
+            says volumes in and of itself about BMC firmware quality in general.
+          * "ipmi-dell-dedicated-nic" indicates that a Dell-specific ipmitool command should
+            be used to flip the IPMI controller between using its own dedicated nic and piggybacking
+            on the internal nics.
+          * "ipmi-crossed-access-channels" indicates that the channels used to configure the LAN
+            controller are miswired, and that certian channel-control settings should be modified
+            accrodingly.
+          * "ipmi-hard-reset-after-config" indicates that the IPMI controller must be hard
+            reset after issuing configuration settings before the new settings are actually
+            applied.
+          * "ipmi-immutable-rootname" indicates that the preconfigured admin user in slot 2
+            cannot have its name changed.
+          * "ipmi-immutable-root" indicates that the preconifgured admin user in slot 2 cannot
+            be changed at all, and we must create the user that Rebar will access the controller
+            remotely with in slot 3 instead.
         map: 'ipmi/quirks'
         default:
           "dell-rseries":
@@ -311,6 +347,14 @@ roles:
                         - ipmi-hard-reset-after-config
   - name: ipmi-configure
     jig: chef
+    description: 'Allow Rebar to control the node via IPMI'
+    documentation: |
+      ipmi-configure is responsible granting admin rights to the user that Rebar will
+      use to access the node.  It will reset the user in siot 2 (or 3 if the IPMI controller
+      has the ipmi-immutable-root quirk) to have the username and password specified
+      by the ipmi-username and ipmi-password attribs and give that user admin rights
+      when accessed over the lan.  It will also configure the LAN interface for the IPMI
+      controller if desired.
     requires:
       - firmware-flash
       - rebar-managed-node

@@ -12,11 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# This file contains the logic needed to do BIOS configuration and
-# updates for Dell Poweredge R-series gear.
-# It assumes that we can talk to the IPMI controller embedded on the system,
-# and that the system has WSMAN enabled.
 
 # Implement everything needed to manage the attributes we care about on
 # a Supermicro box using Supermicro Update Manager

@@ -25,6 +25,28 @@ rebar:
 
 roles:
   - name: bios-discover
+    description: 'Discover information about the BIOS'
+    documentation: |
+      bios-discover is responsible for figuring out what low-level configuration
+      method (if any) should be used to manipulate BIOS settings on a node, and select
+      a reasonable default configuration for the system BIOS.
+
+      The BIOS subsystem knows how to configure BIOS settings for two system types:
+
+      * Dell PowerEdge R gear (12th gen and up) via direct interaction with WSMAN on the iDRAC.
+        Systems using this method will have the bios-dell-rseries-configure role bound
+        to them by the bios-discover role.
+      * SuperMicro gear via SuperMicro Update Manager via the IPMI controller.  Systems
+        using this method will have the bios-supermicro-configure role bound to them
+        by the bios-discover role.
+
+      The bios-discover role works by scanning the default BIOS configurations
+      provided by the bios-set-mapping attrib to find out if a matching BIOS config set is defined.
+      If one is, the appropriate low-level bios conifg role is bound to the node, and the
+      bios-config-sets attrib is set to the matched BIOS config set.
+
+      If no matching BIOS config sets are found, then the bios-discover role succeeds without
+      doing anything.
     jig: role-provided
     flags:
       - implicit
@@ -39,6 +61,71 @@ roles:
         map: 'bios/set_mapping'
         ui_renderer: 'barclamp_bios/attribs/set_mapping'
         description: "Mapping of chassis manufacturers and product names to config sets"
+        documentation: |
+          The bios-set-mapping attrib is responsible for providing all the information needed
+          to determine what low-level BIOS config system must be used for any given system,
+          as well as providing a reasonable set of default settings for the system.
+          It consists of an array of test objects with the following format::
+
+            {
+              "match": {
+                "a-system-attrib": "value or regex to match"
+                ...
+                }
+              "role": "low-level-bios-config-role-for-this-system"
+              "configs": [
+                {
+                  "name": "config-name"
+                  "parent": "config-this-inherits-settings-from"
+                  "settings": {
+                    "bios-setting": "desired-value"
+                    ...
+                  }
+                }
+              ]
+            }
+
+          The stanzas of the test object have the following meanings:
+
+          * "match" in the test object contains an object whose keys
+            are the name of Rebar attribs to test, and whose values are
+            either regular expressions (if the value is /between slashes/)
+            or the actual value the attrib must have.  If all the values
+            in the match object match with the corresponding values for the
+            attribs specified by the keys of the the match stanza,
+            then the role and BIOS configs will be used for this system and no
+            other tests will be looked at.
+          * "role" in the test object contains the low-level BIOS configuration
+            role that will be bound to the node of the match stanza.
+          * "configs" contains an array of driver-specific BIOS configuration
+            sets that should be used for this system.  This array must contain at least
+            one entry named "default", which will serve as a basic configuration
+            and upon which more task-specific configuration sets can be inherited from.
+
+          The stanzas of each specific BIOS config have the following meanings:
+
+          * "name" is the name of the configuration.  At least one of the
+            configurations must be named "default"
+          * "parent" (if present) is the name of the BIOS configuration that this one
+            will inherit settings from.  Any settings defined in this configuration
+            will override settings from the parent.
+          * "settings" is an object whose keys are the names of discrete BIOS settings
+            and whose values are what the settings should be set to.  The interpretation
+            of the names and values is handled by the low-level BIOS configuration role, and
+            is highly model and driver specific.
+
+          For Dell PowerEdge R series gear, you can use
+          ``digitalrebar/tools/get-dell-poweredge-sample.rb`` to get the current BIOS
+          config settings we support from a running system.  For details on what those settings
+          mean, you should consult the support documentation for that system along with the
+          WSMAN documentation specific to the system from
+          http://en.community.dell.com/techcenter/systems-management/w/wiki/1906.dcim-library-profile
+
+          For SuperMicro gear, you can use
+          ``digitalrebar/tools/get-supermicro-defaults.rb`` to get the BIOS default settings
+          from a running SuperMicro system.  For details on what those settings mean, you should
+          consult the documentation available for the system from SuperMicro along with the
+          SuperMicro Update Manager manual.
         schema:
           type: seq
           sequence:
@@ -773,7 +860,7 @@ roles:
         description: 'All the BIOS configurations the BIOS barclamp knows how to handle'
       - name: bios-config-sets
         map: 'bios/config_sets'
-        description: 'The permitted BIOS configurations for this node.'
+        description: 'The permitted BIOS configurations for this node, chosen from bios-set-mapping'
         schema:
           type: seq
           sequence:
@@ -795,6 +882,10 @@ roles:
     wants-attribs:
       - provisioner-webservers
   - name: bios-configure
+    description: 'Provides a common place to get the desired config sets'
+    documentation: |
+      bios-configure provides a place in the node-role graph for the low-level BIOS config
+      roles to get list of bios configs to apply to a node.
     jig: noop
     flags:
       - implicit
@@ -803,7 +894,11 @@ roles:
     attribs:
       - name: bios-configuration
         map: 'bios/config'
-        description: "The desired BIOS configuration for this node."
+        description: "The BIOS configuration sets to apply to this node."
+        documentation: |
+          bios-configuration contains a list of bios configs to apply to this node.
+          This list consists of names of bios configs that were chosen as applicable for this
+          system from bios-set-mapping and saved in bios-config-sets.
         default: [ "default" ]
         schema:
           type: seq
@@ -811,6 +906,18 @@ roles:
             - type: str
   - name: bios-supermicro-configure
     jig: role-provided
+    description: 'Low-level bios conifg role for SuperMicro systems'
+    documentation: |
+      bios-supermicro-configure is the low level BIOS config role for all
+      systems that are configurable by SuperMicro Update Manager.  This includes
+      most systems sold by SuperMicro through various OEMs.
+
+      In order to use this role, you must provide a copy of SuperMicro Update
+      Manager, which is licensed and purchasable from SuperMicro or from your OEM.
+
+      Additionally, the systems must be activated and licensed to be managed by SuperMicro.
+      Most OEMs will activate the licenses on the system before shipping if the
+      licensed was purchased from the system.
     flags:
       - leaverunlog
       - implicit
@@ -827,12 +934,20 @@ roles:
       - name: bios-sum-archive
         map: 'bios/supermicro/sum_archive'
         description: 'The name of the SuperMicro Update Manager utility'
+        documentation: |
+          In order for bios-supermicro-configure to function, Rebar needs to have an available
+          copy of SuperMicro Update Manager present.  We currently support running with
+          sum 1.6.0, which should be placed at ``digitalrebar/deploy/compose/config-dir/tools``
+          before starting the Rebar API container.
         default: 'sum_1.6.0_Linux_x86_64_20160128.tar.gz'
         schema:
           type: str
       - name: bios-sum-licenses
         map: 'bios/supermicro/sum_licenses'
         description: "The license keys for the SuperMicro systems"
+        documentation: |
+          Automatic activation of licenses for SuperMicro Update Manager has not been
+          fully implemented yet.
         schema:
           type: map
           mapping:
@@ -840,6 +955,11 @@ roles:
               type: str
   - name: bios-dell-rseries-configure
     jig: role-provided
+    description: 'Low-level BIOS config driver for Dell Poweredge R series gear.'
+    documentation: |
+      bios-dell-rseries-configure provides a low-level BIOS confiuguration driver that
+      talks directly to the WSMAN system on the iDRAC.  It requires that the iDRAC have an
+      active enterprise license key.
     flags:
       - leaverunlog
       - implicit
