@@ -255,9 +255,10 @@ class NodesController < ApplicationController
       hints = params[:hints] || {}
       Rails.logger.info("Node create params: #{params.inspect}")
       @node = Node.create!(params.permit(:name,
+                                         :uuid,
                                          :description,
                                          :admin,
-					 :tenant_id,
+                                         :tenant_id,
                                          :deployment_id,
                                          :provider_id,
                                          :allocated,
