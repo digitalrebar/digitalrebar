@@ -1,6 +1,12 @@
 #!/bin/bash
-if [[ $(whoami) != rebar ]]; then
+# This assumes there is a Rebar user in the container, which may or
+# may not be mapped to root externally.
+if [[ $HOME != */rebar ]]; then
     exec su -l -c "$0" rebar
+fi
+if [[ ! -f .chef/rebar.pem ]]; then
+    echo "No rebar.pem!  Cannot upload cookbooks!"
+    exit 1
 fi
 . /etc/profile
 # Chef/Berks uses Faraday which doesn't work right with proxies.
