@@ -24,31 +24,6 @@ barclamp:
   license_url: "https://github.com/digitalrebar/core/blob/develop/doc/licenses/README.md"
 
 roles:
-  - name: proxy-server
-    jig: chef
-    icon: assignment
-    requires:
-      - consul
-    events:
-      - endpoint: inproc://role:proxy-server/on_network_create
-        selectors:
-          - event: on_network_create
-      - endpoint: inproc://role:proxy-server/on_network_delete
-        selectors:
-          - event: on_network_delete
-    attribs:
-      - name: proxy-upstream_proxy
-        description: "The upstream Web proxy that the proxy on the system will use"
-        map: 'rebar/proxy/server/upstream_proxy'
-        schema:
-          type: str
-          required: true
-          pattern: '/\Ahttp:\/\/.+\z/'
-      - name: proxy-port
-        description: "The port to use as the basis for our proxy"
-        map: 'rebar/proxy/server/port'
-        schema:
-          type: int
   - name: proxy-service
     jig: role-provided
     icon: assignment_returned
