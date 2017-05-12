@@ -15,20 +15,13 @@ unset http_proxy
 unset https_proxy
 unset no_proxy
 set -e
+set -x
 IFS=$'\n'
-while read -r -s berksfile; do
-   /usr/local/bin/berks install -d -b "$berksfile"
-   /usr/local/bin/berks upload -d -b "$berksfile" --no-ssl-verify
-done < <(find /opt/digitalrebar -path '*/chef/cookbooks/Berksfile' || :)
+while read -r -s location; do
+   (cd "$location"; knife cookbook upload --force -a -d -o .)
+done < <(find /opt/digitalrebar -path '*/chef/cookbooks' || :)
 
 roles=($(find /opt/digitalrebar -path '*/chef/roles/*.rb' || :))
 if [[ $roles ]]; then
    knife role from file "${roles[@]}"
 fi
-
-data_bags=($(find /opt/digitalrebar -path '*/chef/data_bags/*' -type d || :))
-for bag in "${data_bags[@]}"; do
-    knife data bags show "${bag##*/}" &>/dev/null || \
-        knife data bag create "${bag##*/}" -d
-    knife data bag from file "${bag##*/}"  "${bag}"
-done

@@ -137,45 +137,6 @@ roles:
           mapping:
             =:
               type: str
-  - name: rebar-api_server
-    jig: chef
-    wants-attribs:
-      - consul-acl-master-token
-    requires:
-      - consul
-  - name: rebar-api_service
-    jig: role-provided
-    flags:
-      - service
-    attribs:
-      - name: rebar-api-servers
-        description: "IP:Port pairs of the Rebar API servers"
-        map: 'rebar/api/servers'
-        schema:
-          type: seq
-          sequence:
-            - type: str
-              pattern: /[0-9a-f:.]*/
-  - name: rebar-job_runner
-    jig: chef
-    wants-attribs:
-      - consul-acl-master-token
-    requires:
-      - consul
-  - name: rebar-job_runner_service
-    jig: role-provided
-    icon: motorcycle
-    flags:
-      - service
-    attribs:
-      - name: rebar-job-runners
-        description: "Addresses of the Rebar Job Runners"
-        map: 'rebar/api/runners'
-        schema:
-          type: seq
-          sequence:
-            - type: str
-              pattern: /[0-9a-f:.]*/
   - name: rebar-joined-node
     description: "Joined Node Ready Checkpoint"
     jig: noop
