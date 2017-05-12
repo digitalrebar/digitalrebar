@@ -1,13 +1,36 @@
 #!/bin/bash
 
-cd ..
-tar -zcf dr-master-code-`date +"%Y%m%d"`.tgz digitalrebar
+set -e
 
-for i in gliderlabs/consul digitalrebar/dr_trust_me:master digitalrebar/dr_postgres:master digitalrebar/dr_webproxy:master digitalrebar/dr_goiardi:master digitalrebar/dr_rebar_api:master digitalrebar/dr_ntp:master digitalrebar/cloudwrap:master digitalrebar/dr_dns:master digitalrebar/dr_rebar_dhcp:master digitalrebar/dr_provisioner:master digitalrebar/logging:master digitalrebar/dr_forwarder:master digitalrebar/dr_rev_proxy:master digitalrebar/dr_node:master digitalrebar/rule-engine:master
-do
-    docker pull $i
-done
+if ! [[ $PWD/tools/build-offline.sh ]]; then
+    echo "build-offline.sh must be run from the root of the Digital Rebar checkout"
+    exit 1
+fi
 
-docker save -o dr-master-containers-`date +"%Y%m%d"`.tgz gliderlabs/consul digitalrebar/dr_trust_me:master digitalrebar/dr_postgres:master digitalrebar/dr_webproxy:master digitalrebar/dr_goiardi:master digitalrebar/dr_rebar_api:master digitalrebar/dr_ntp:master digitalrebar/cloudwrap:master digitalrebar/dr_dns:master digitalrebar/dr_rebar_dhcp:master digitalrebar/dr_provisioner:master digitalrebar/logging:master digitalrebar/dr_forwarder:master digitalrebar/dr_rev_proxy:master digitalrebar/dr_node:master digitalrebar/rule-engine:master
-
-cd -
+tmpdir="$(mktemp -d /tmp/rebar-offline-XXXXXX)" || exit 1
+# Export our containers
+echo "Exporting Digital Rebar containers"
+"./containers/export-containers" "$tmpdir/rebar-containers.tar.xz"
+echo "Copying the Digital Rebar source code"
+git clone --bare . "$tmpdir/digitalrebar.git"
+echo "Fetching the current version of Sledgehammer"
+mkdir "$tmpdir/sledgehammer"
+(
+    . deploy/compose/common.env
+    cacheloc="$HOME/.cache/digitalrebar/tftpboot/sledgehammer/$PROV_SLEDGEHAMMER_SIG"
+    for f in sha1sums vmlinuz0 stage1.img stage2.img; do
+        if [[ -d $cacheloc && -f $cacheloc/$f ]]; then
+           cp "$cacheloc/$f" "$tmpdir/sledgehammer"
+        else
+            (cd "$tmpdir/sledgehammer" && curl -fgLO "$PROV_SLEDGEHAMMER_URL/$PROV_SLEDGEHAMMER_SIG/$f")
+        fi
+    done
+)
+(
+    echo "Archiving to digitalrebar-offline-bits.tar"
+    cd "$tmpdir";
+    tar cf digitalrebar-offline-bits.tar sledgehammer digitalrebar.git rebar-containers.tar.xz
+)
+mv "$tmpdir/digitalrebar-offline-bits.tar" .
+echo "Cleaning up"
+rm -rf "$tmpdir"
