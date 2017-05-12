@@ -16,7 +16,8 @@ RUN apt-get update \
       'https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/10.04/x86_64/chef_11.18.12-1_amd64.deb' \
     && dpkg -i /tmp/chef.deb && rm -f /tmp/chef.deb \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*    
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /root/.cpanm
 
 ADD https://github.com/ctdk/goiardi/releases/download/v0.11.0/goiardi-0.11.0-linux-amd64 /usr/local/bin/goiardi
 ADD https://github.com/ctdk/goiardi/archive/v0.11.0.tar.gz /tmp/goiardi.tar.gz
