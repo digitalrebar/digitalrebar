@@ -69,7 +69,7 @@ rebar_api:
     - ./digitalrebar:/opt/digitalrebar
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
     - ./config-dir/api/config:/opt/digitalrebar/core/config
-    - ~/.cache/digitalrebar/tftpboot:/tftpboot
+    - ./tftpboot:/tftpboot
     - ./data-dir/bin:/usr/local/dev/bin
     - ./data-dir/rebar-logs:/var/log
     - ./config-dir/tools:/opt/tools
@@ -138,7 +138,7 @@ provisioner:
   volumes:
     - ./config-dir/provisioner:/opt/provisioner-mgmt
     - ./config-dir/consul/client-default.json:/etc/consul.d/default.json
-    - ~/.cache/digitalrebar/tftpboot:/tftpboot
+    - ./tftpboot:/tftpboot
     - ./data-dir/bin:/usr/local/dev/bin
     - ./config-dir/tools:/opt/tools
   env_file:
@@ -163,7 +163,7 @@ elasticsearch:
   volumes:
     - ./config-dir/elasticsearch:/usr/share/elasticsearch/config
     - ./data-dir/bin:/usr/local/dev/bin
-    
+
 logstash:
   image: logstash
   volumes:

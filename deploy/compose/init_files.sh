@@ -64,10 +64,23 @@ fi
 ADD_DNS=false
 RUN_NTP="NO"
 
+if [[ ! $DR_TFTPROOT ]]; then
+    if [[ $PWD = ${HOME}/* ]]; then
+        DR_TFTPROOT="${HOME}/.cache/digitalrebar/tftpboot"
+    else
+        DR_TFTPROOT="/var/lib/tftpboot"
+    fi
+fi
+
+mkdir -p "$DR_TFTPROOT"
+
+[[ -e tftpboot ]] || rm -f tftpboot
+ln -sf "${DR_TFTPROOT}" tftpboot
+
 while [[ $1 == -* ]] ; do
   arg=$1
   shift
-  
+
   case $arg in
       --help)
       usage
