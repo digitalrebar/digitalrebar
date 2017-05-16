@@ -16,3 +16,8 @@ else
     chown -R rebar:rebar /home/rebar/.ssh/
     chmod 0400 /home/rebar/.ssh/id_rsa
 fi
+
+if [[ $(awk -F : '/^rebar:/ {print $3}' /etc/passwd) = 0 ]]; then
+    rm -rf /root/.ssh
+    ln -s /home/rebar/.ssh /root/.ssh
+fi
