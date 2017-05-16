@@ -28,9 +28,60 @@ echo "Fetching the current version of Sledgehammer"
     done
 )
 (
+    cd "$tmpdir"
+    echo "Creating initial install script"
+    cat >initial-install.sh <<"EOF"
+#!/usr/bin/env bash
+set -e
+set -o pipefail
+
+srcdir="$PWD"
+
+if ! [[ -f rebar-containers.tar.xz && -d sledgehammer && -d digitalrebar.git ]]; then
+    echo "This script must be run where digitalrebar-offline-bits.tar was extracted"
+    exit 1
+fi
+
+srcdest="/opt/digitalrebar"
+tftpdest="/var/lib/tftpboot"
+
+if ! which docker &>/dev/null; then
+    echo "Docker is not installed."
+    echo "A current docker version is required to run Digital Rebar."
+    echo "You can install Docker from:"
+    echo "https://store.docker.com/search?type=edition&offering=community"
+    exit 1
+fi
+
+if ! which docker-compose &>/dev/null; then
+    echo "docker-compose is not installed."
+    echo "A current version of docker-compose is required to run Digital Rebar"
+    echo "You can download the docker-compose binary for your OS from"
+    echo "https://github.com/docker/compose/releases/download/1.13.0/docker-compose-$(uname -s)-$(uname -m)"
+    exit 1
+fi
+
+if ! [[ -d $srcdest ]]; then
+    echo "Performing initial install of Digital Rebar source into $srcdest"
+    mkdir -p "$srcdest"
+    (cd "$srcdest"; git clone --no-hardlinks "$srcdir/digitalrebar.git" .)
+    echo
+else
+    echo "Digital Rebar source already installed.  Nothing else to do."
+    exit 0
+fi
+
+echo "Installing Sledgehammer discovery and configuration image"
+mkdir -p "$tftpdest"
+cp -f -a -t "$tftpdest" sledgehammer
+
+echo
+echo "Loading initial containers"
+/opt/digitalrebar/containers/load-containers "$srcdir/rebar-containers.tar.xz"
+EOF
+    chmod 755 initial-install.sh
     echo "Archiving to digitalrebar-offline-bits.tar"
-    cd "$tmpdir";
-    tar cf digitalrebar-offline-bits.tar sledgehammer digitalrebar.git rebar-containers.tar.xz
+    tar cf digitalrebar-offline-bits.tar initial-install.sh sledgehammer digitalrebar.git rebar-containers.tar.xz
 )
 mv "$tmpdir/digitalrebar-offline-bits.tar" .
 echo "Cleaning up"
