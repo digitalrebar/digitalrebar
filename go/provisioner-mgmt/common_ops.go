@@ -188,8 +188,8 @@ func updateThing(c *gin.Context, oldThing, newThing keySaver) {
 
 func deleteThing(c *gin.Context, thing keySaver) {
 	objType := thing.typeName()
-	if found, _ := store.Load(thing); found {
-		c.Data(http.StatusConflict, gin.MIMEJSON, nil)
+	if found, _ := store.Load(thing); !found {
+		c.Data(http.StatusNotFound, gin.MIMEJSON, nil)
 		return
 	}
 	if !testCap(c, thing.tenantId(), objType+"_DESTROY") {
