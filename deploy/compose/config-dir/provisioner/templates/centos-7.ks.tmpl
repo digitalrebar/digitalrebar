@@ -149,6 +149,7 @@ systemctl enable rebar
 # to the network, not NetworkManager
 chkconfig NetworkManager off || :
 chkconfig network on || :
+echo 'LINKDELAY=60' >> /etc/sysconfig/network
 
 rebar nodes update "$REBAR_UUID" '{"bootenv": "local"}'
 while [[ $(rebar nodes get "$REBAR_UUID" attrib provisioner-active-bootstate |jq -r '.value') != local ]]; do
