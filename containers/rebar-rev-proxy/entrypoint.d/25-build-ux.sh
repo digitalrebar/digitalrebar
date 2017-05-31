@@ -7,5 +7,5 @@
     if [[ ! -d node_modules ]] ; then
         npm install --dev
     fi
-    [[ -f .using_prebuilt ]] && brunch build
+    [[ -f .using_prebuilt ]] || brunch build
 )
