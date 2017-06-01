@@ -4,9 +4,8 @@
 (
     with_local_proxy
     cd /opt/digitalrebar-ux
-    if [[ ! -d bower_components ]]; then
-        bower --allow-root install --config.interactive=false
-        npm install cssnano-cli html-minifier uglify-js
+    if [[ ! -d node_modules ]] ; then
+        npm install --dev
     fi
-    [[ -f .using_prebuilt ]] || ./build.sh
+    [[ -f .using_prebuilt ]] || brunch build
 )
