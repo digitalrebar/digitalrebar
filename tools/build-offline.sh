@@ -45,12 +45,15 @@ fi
 srcdest="/opt/digitalrebar"
 tftpdest="/var/lib/tftpboot"
 
+err=0
+
 if ! which docker &>/dev/null; then
     echo "Docker is not installed."
     echo "A current docker version is required to run Digital Rebar."
     echo "You can install Docker from:"
     echo "https://store.docker.com/search?type=edition&offering=community"
-    exit 1
+    echo
+    err=1
 fi
 
 if ! which docker-compose &>/dev/null; then
@@ -58,6 +61,19 @@ if ! which docker-compose &>/dev/null; then
     echo "A current version of docker-compose is required to run Digital Rebar"
     echo "You can download the docker-compose binary for your OS from"
     echo "https://github.com/docker/compose/releases/download/1.13.0/docker-compose-$(uname -s)-$(uname -m)"
+    echo
+    err=1
+fi
+
+if ! which git &>/dev/null; then
+    echo "git is not installed."
+    echo "A current version of git is required to install Digital Rebar"
+    echo "Use the package manager to install git."
+    echo
+    err=1
+fi
+
+if [[ $err == 1 ]] ; then
     exit 1
 fi
 
