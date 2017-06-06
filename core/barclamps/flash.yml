@@ -405,14 +405,90 @@ attribs:
           baseboard_product_name: 'X7SPA-HF'
 
 roles:
-  - name: firmware-flash
-    jig: script
+  - name: flash-discover
+    jig: role-provided
+    description: "Detect which system firmware flash method to use."
     flags:
       - implicit
+      - discovery
+    requires:
+      - rebar-inventory
+    preceeds:
+      - bios-discover
+  - name: dell-firmware-flash
+    jig: script
+    description: 'Dell firmware update utilizing the DSU process'
+    documentation: |
+      Dell Firmware Flash
+      -------------------
+
+      The dell-firmware-flash role updates all of the firmware on a supported Dell PowerEdge
+      system that can be performed without user intervention.  It uses the DSU update process
+      as outlined at http://linux.dell.com/repo/hardware/.
+
+      It default to using http://linux.dell.com/repo/hardware/dsu/ as the source for the
+      DSU program and the firmware updates to apply -- by using these repositories, your Dell
+      PowerEdge gear will be kept up-to-date with the latest firmware.  This role also provides
+      attribs that allow you to override which firmware block release to use and which site
+      to pull firmware updates from.
+    flags:
+      - implicit
+    conflicts:
+      - firmware-flash
+    provides:
+      - firmware-flash
     requires:
       - ipmi-discover
       - bios-discover
       - raid-discover
+      - flash-discover
+    wants-attribs:
+      - skip-flash
+    attribs:
+      - name: dell-dsu-block-release
+        map: dell/firmware/block_release
+        description: 'The block release to pull firmware from.  Defaults to the latest block release.'
+        documentation: |
+          Dell DSU Block Release
+          ----------------------
+
+          The dell-dsu-block-release attrib tells the Dell firmware update process which block
+          release to pull firmware from.  If left unspecified, it will default to the latest
+          block release.
+        default: ''
+        schema:
+          type: str
+          required: false
+      - name: dell-dsu-base-url
+        map: dell/firmware/base_url
+        default: "http://linux.dell.com/repo/hardware/dsu"
+        description: 'The base URL that the DSU tool will pull updates from'
+        documentation: |
+          Dell DSU Base URL
+          -----------------
+
+          The dell-dsu-base-url attrib tells the Dell firmware update process where the OS
+          dependent and OS independent repos it should pull packages and BIOS updates from are at.
+          It defaults to linux.dell.com/repo/harware/dsu/.
+          If the dell-dsu-block-release attrib is set, the value of that attrib will be appended
+          to the URL.
+        schema:
+          type: str
+          required: false
+      - name: dell-dsu-inventory
+        map: dell/firmware/firmware-inventory
+        description: "The final firmware inventory of the system"
+  - name: firmware-flash
+    jig: script
+    flags:
+      - implicit
+    conflicts:
+      - dell-firmware-flash
+    requires:
+      - ipmi-discover
+      - bios-discover
+      - raid-discover
+      - flash-discover
     wants-attribs:
       - skip-flash
       - bios-vendor
@@ -440,4 +516,5 @@ roles:
       The firmware-flash role is responsible for flashing firmware of all types on a node,
       subject to the following restrictions:
 
+      * There is no system-specific firmware flash method, like the Dell firmware flasher
       * All flash operations must be able to run in a Centos 7.x environment.

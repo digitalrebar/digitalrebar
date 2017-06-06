@@ -1,5 +1,5 @@
 #!/bin/bash
-if [[ $(whoami) != rebar ]]; then
+if [[ $(whoami) != rebar && $(awk -F : '/^rebar:/ {print $3}' /etc/passwd) != 0 ]]; then
     su -l -c "$0 $*" rebar
     exit $?
 fi
