@@ -37,6 +37,11 @@ class BarclampIpmi::Configure < Role
   end
 
   def on_active(nr)
+    unless Attrib.get("enable-ipmi-subsystem",nr.node)
+      Rails.logger.info("BMC not enabled on #{nr.node.name} - system-wide")
+      return
+    end
+
     username = Attrib.get('ipmi-username',nr.node)
     authenticator = Attrib.get('ipmi-password',nr.node)
     endpoint = Attrib.get('ipmi-address',nr)

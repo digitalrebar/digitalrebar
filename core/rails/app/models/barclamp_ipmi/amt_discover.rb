@@ -16,6 +16,10 @@
 class BarclampIpmi::AmtDiscover < Role
 
   def on_active(nr)
+    unless Attrib.get("enable-amt-subsystem",nr.node)
+      Rails.logger.info("AMT not enabled on #{nr.node.name} - system-wide")
+      return
+    end
     return unless nr.wall['amt']['enable']
     config_role = Role.find_by!(name: 'amt-configure')
     return if NodeRole.find_by(node_id: nr.node_id, role_id: config_role.id)

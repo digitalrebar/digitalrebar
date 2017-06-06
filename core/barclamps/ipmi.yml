@@ -61,6 +61,8 @@ roles:
         default: false
         schema:
           type: bool
+    wants-attribs:
+      - enable-amt-subsystem
   - name: amt-configure
     jig: role-provided
     type: 'BarclampIpmi::AmtConfigure'
@@ -70,6 +72,7 @@ roles:
     preceeds:
       - rebar-hardware-configured
     wants-attribs:
+      - enable-amt-subsystem
       - node-control-address
       - amt-enable
     attribs:
@@ -345,6 +348,8 @@ roles:
                         - ipmi-immutable-rootname
                         - ipmi-immutable-root
                         - ipmi-hard-reset-after-config
+    wants-attribs:
+      - enable-ipmi-subsystem
   - name: ipmi-configure
     jig: chef
     description: 'Allow Rebar to control the node via IPMI'
@@ -359,6 +364,7 @@ roles:
       - firmware-flash
       - rebar-managed-node
     wants-attribs:
+      - enable-ipmi-subsystem
       - ipmi-enable
       - ipmi-detected-params
       - ipmi-shared

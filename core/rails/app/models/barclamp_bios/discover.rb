@@ -25,8 +25,15 @@ require 'structurematch'
 class BarclampBios::Discover < Role
 
   def do_transition(nr,data)
-    # Start by making a hash of all our attribs for matching purposes
     runlog = []
+    unless Attrib.get("enable-bios-subsystem",nr.node)
+        runlog << "BIOS subsystem is not enabled. Skipping this function."
+        runlog << "Set enable-bios-subsystem to true and rerun role to start BIOS processing."
+        nr.runlog = runlog.join("\n")
+        return
+    end
+
+    # Start by making a hash of all our attribs for matching purposes
     matched = Attrib.get("bios-config-sets",nr,:wall)
     unless matched
       matchhash = {}

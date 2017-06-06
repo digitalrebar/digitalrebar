@@ -17,6 +17,11 @@ require 'structurematch'
 class BarclampIpmi::Discover < Role
 
   def on_active(nr)
+    unless Attrib.get("enable-ipmi-subsystem",nr.node)
+      Rails.logger.info("BMC not enabled on #{nr.node.name} - system-wide")
+      return
+    end
+
     # Do nothing unless we discovered that we can use a BMC on this node.
     unless nr.wall["ipmi"]["bmc_enable"]
       Rails.logger.info("BMC not enabled on #{nr.node.name}")

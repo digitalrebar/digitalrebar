@@ -881,6 +881,7 @@ roles:
 
     wants-attribs:
       - provisioner-webservers
+      - enable-bios-subsystem
   - name: bios-configure
     description: 'Provides a common place to get the desired config sets'
     documentation: |
@@ -904,6 +905,9 @@ roles:
           type: seq
           sequence:
             - type: str
+    wants-attribs:
+      - provisioner-webservers
+      - enable-bios-subsystem
   - name: bios-supermicro-configure
     jig: role-provided
     description: 'Low-level bios conifg role for SuperMicro systems'
@@ -930,6 +934,7 @@ roles:
       - bios-config-sets
       - ipmi-macaddr
       - bios-configuration
+      - enable-bios-subsystem
     attribs:
       - name: bios-sum-archive
         map: 'bios/supermicro/sum_archive'
@@ -971,6 +976,7 @@ roles:
     wants-attribs:
       - bios-config-sets
       - bios-configuration
+      - enable-bios-subsystem
 extra_files:
   # These files must be kept in sync with the ones in bc-template-bios.json
   # RKR: Files and links updated as of July 2nd 2013

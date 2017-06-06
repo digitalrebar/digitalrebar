@@ -16,6 +16,13 @@
 class BarclampIpmi::AmtConfigure < Role
 
   def do_transition(nr, data)
+    enabled = Attrib.get("enable-amt-subsystem",nr.node)
+    if !enabled
+      nr.runlog << "AMT subsystem is not enabled. Skipping this function.\n"
+      nr.runlog << "Set enable-amt-subsystem to true and rerun role to start AMT processing.\n"
+      return
+    end
+
     if nr.node.hammers.find_by(name: 'amt')
       nr.runlog = "AMT already configured"
       return
@@ -73,5 +80,5 @@ class BarclampIpmi::AmtConfigure < Role
     nr.runlog << "\nconfigured.\n"
 
   end
-  
+
 end

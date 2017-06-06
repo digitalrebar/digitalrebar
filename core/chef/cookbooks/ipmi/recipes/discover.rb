@@ -19,6 +19,11 @@
 node.set[:ipmi][:bmc_enable] = false
 return if node[:rebar_ohai][:in_docker]
 
+unless node[:rebar][:hw_support][:enable_ipmi]
+  Chef::Log.info("IPMI not enabled by subsystem, refusing to do anything.")
+  return
+end
+
 include_recipe "ipmi::ipmitool"
 
 ruby_block "discover ipmi" do

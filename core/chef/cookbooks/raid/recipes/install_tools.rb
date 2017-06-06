@@ -13,6 +13,11 @@
 # limitations under the License.
 #
 
+unless node[:rebar][:hw_support][:enable_raid]
+  Chef::Log.info("RAID not enabled by subsystem, refusing to do anything.")
+  return
+end
+
 # This is a little bit of a hack for now.
 return if node[:platform] == "coreos" || node[:rebar_ohai][:in_docker]
 

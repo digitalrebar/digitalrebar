@@ -94,6 +94,7 @@ roles:
             "linux_installcode": "cd /usr/sbin && unzip -j -o '/tmp/SAS2IRCU_P20.zip' 'SAS2IRCU_P20/sas2ircu_linux_x86_rel/sas2ircu' && chmod 755 sas2ircu"
     wants-attribs:
       - provisioner-webservers
+      - enable-raid-subsystem
   - name: raid-discover
     description: 'Discover and inventory hardware RAID controllers on the system'
     documentation: |
@@ -261,6 +262,8 @@ roles:
         default: false
         schema:
           type: bool
+    wants-attribs:
+      - enable-raid-subsystem
   - name: raid-configure
     description: 'Configure RAID volumes on a node'
     documentation: |
@@ -404,6 +407,8 @@ roles:
       - name: raid-configured-volumes
         description: "The current RAID volumes on this node"
         map: 'raid/volumes/configured'
+    wants-attribs:
+      - enable-raid-subsystem
   - name: raid-post-configure
     jig: chef
     description: 'Update ohai data after the RAID volumes are configured.'

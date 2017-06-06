@@ -16,6 +16,12 @@
 class BarclampRaid::Discover < Role
 
   def do_transition(nr, data)
+    enabled = Attrib.get('enable-raid-subsystem',nr.node)
+    unless enabled
+      update_log(nr, "enable-raid-subsystem not enabled, skipping raid discover")
+      return true
+    end
+
     update_log(nr, "Detecting Raid Controllers")
     controllers = nr.node.actions[:raid].detect(nr).map{|c|c.to_hash} || []
     Attrib.set('raid-detected-controllers',nr,controllers,:wall)
@@ -35,8 +41,8 @@ class BarclampRaid::Discover < Role
     chc_role = Role.find_by!(name: 'rebar-hardware-configured')
 
     # Force these nodes into the same deployment
-    rpc_noderole = rpc_role.add_to_node(nr.node)
-    chc_noderole = chc_role.add_to_node(nr.node)
+    rpc_role.add_to_node(nr.node)
+    chc_role.add_to_node(nr.node)
   end
 
   def update_log(nr, string)

@@ -27,6 +27,12 @@ class BarclampBios::Configure < Role
   # @param nr [NodeRole] The noderole that we are acting on behalf of.
   # @param data [Hash] The merged attrib data that we should use for configuration.
   def do_transition(nr,data)
+    unless Attrib.get("enable-bios-subsystem",nr.node)
+      update_log(nr, "BIOS subsystem is not enabled. Skipping this function.")
+      update_log(nr, "Set enable-bios-subsystem to true and rerun role to start BIOS processing.")
+      return true
+    end
+
     cfg_target = Attrib.get('bios-configuration',data)
     configs = Attrib.get('bios-config-sets',data)
     applied_configs = []

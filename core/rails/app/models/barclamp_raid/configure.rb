@@ -16,6 +16,11 @@
 class BarclampRaid::Configure < Role
 
   def do_transition(nr, data)
+    enabled = Attrib.get('enable-raid-subsystem',nr.node)
+    unless enabled
+      update_log(nr, "enable-raid-subsystem not enabled, skipping raid config")
+      return true
+    end
     enabled = Attrib.get('raid-enable',nr)
     unless enabled
       update_log(nr, "raid-configure not enabled, skipping raid config")
