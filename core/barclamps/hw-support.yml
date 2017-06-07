@@ -29,7 +29,7 @@ roles:
       hardware-support
       ----------------
 
-      The hardware-support role contains flags for enabling or disabling the four hardware
+      The hardware-support role contains flags for enabling or disabling these hardware
       subsystems, bios, raid, ipmi, amt, and flash.
     attribs:
       - name: enable-flash-subsystem
