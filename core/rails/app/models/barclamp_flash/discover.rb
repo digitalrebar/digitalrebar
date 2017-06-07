@@ -16,6 +16,12 @@
 class BarclampFlash::Discover < Role
 
   def do_transition(nr, data)
+    unless Attrib.get("enable-flash-subsystem",nr.node)
+        update_runlog("Flash subsystem is not enabled. Skipping this function.")
+        update_runlog("Set enable-flash-subsystem to true and rerun role to start Flash processing.")
+        return
+    end
+
     update_log(nr, "Determining Flash System to use:")
     mfgr = Attrib.get("baseboard_manufacturer",nr.node)
     rpc_role = if mfgr == 'Dell Inc.'
@@ -24,8 +30,8 @@ class BarclampFlash::Discover < Role
       Role.find_by!(name: 'firmware-flash')
     end
     chc_role = Role.find_by!(name: 'rebar-hardware-configured')
-    rpc_noderole = rpc_role.add_to_node(nr.node)
-    chc_noderole = chc_role.add_to_node(nr.node)
+    rpc_role.add_to_node(nr.node)
+    chc_role.add_to_node(nr.node)
     update_log(nr, "Added dell-firmware-flash role to node")
   end
 

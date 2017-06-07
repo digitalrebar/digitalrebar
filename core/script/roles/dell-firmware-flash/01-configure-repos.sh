@@ -1,7 +1,12 @@
 #!/bin/bash
 
-skip_flash="$(get_attr skip-flash)"
+enable_flash=$(read_attribute 'rebar/hw_support/enable_flash')
+if [[ $enable_flash == false ]]; then
+    echo "Disabling flash because system-wide settings"
+    exit 0
+fi
 
+skip_flash="$(get_attr skip-flash)"
 if [[ $skip_flash = true ]]; then
     echo "Skipping all flash operations due to skip-flash being true"
     exit 0

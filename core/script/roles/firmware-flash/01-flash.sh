@@ -43,6 +43,12 @@ rev_gte() {
     rev_eq "$1" "$2" || (($? == 1))
 }
 
+enable_flash=$(read_attribute 'rebar/hw_support/enable_flash')
+if [[ $enable_flash == false ]]; then
+    echo "Disabling flash because system-wide settings"
+    exit 0
+fi
+
 if [[ $(get_attr 'skip-flash') == true ]]; then
     echo "Skipping all flash operations because skip-flash is true"
     exit 0

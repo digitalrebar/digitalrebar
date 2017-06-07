@@ -17,7 +17,6 @@ class BarclampRaid::ToolsInstall < Role
 
   def on_active(nr)
     enabled = Attrib.get('enable-raid-subsystem',nr.node)
-    Rails.logger.fatal("GREG: here: #{enabled}")
     unless enabled
       update_log(nr, "enable-raid-subsystem not enabled, skipping raid hammer creation")
       return

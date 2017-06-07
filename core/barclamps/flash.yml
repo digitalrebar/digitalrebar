@@ -411,6 +411,8 @@ roles:
     flags:
       - implicit
       - discovery
+    wants-attribs:
+      - enable-flash-subsystem
     requires:
       - rebar-inventory
     preceeds:
@@ -443,6 +445,7 @@ roles:
       - raid-discover
       - flash-discover
     wants-attribs:
+      - enable-flash-subsystem
       - skip-flash
     attribs:
       - name: dell-dsu-block-release
@@ -490,6 +493,7 @@ roles:
       - raid-discover
       - flash-discover
     wants-attribs:
+      - enable-flash-subsystem
       - skip-flash
       - bios-vendor
       - bios-version
