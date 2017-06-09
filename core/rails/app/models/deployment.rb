@@ -29,7 +29,7 @@ class Deployment < ActiveRecord::Base
   }
 
   after_create      :load_uuid
-
+  validate          :check_profiles
   def load_uuid
     self.reload
   end
@@ -115,6 +115,24 @@ class Deployment < ActiveRecord::Base
     end
   end
 
+  def all_profiles
+    return profiles || [] if parent.nil?
+    return parent.all_profiles + profiles
+  end
+
+  def from_profiles(target_attribs)
+    res = {}
+    all_profiles.reverse.each do |profile_name|
+      profile = Profile.find_by!(name: profile_name)
+      target_attribs.each do |attr|
+        next unless profile.values.has_key?(attr.name)
+        val = profile.values[attr.name]
+        res.deep_merge!(attr.template(val))
+      end
+    end
+    res
+  end
+
   # returns a hash with all the deployment error status information
   def status
     node_roles.each { |nr| s[nr.id] = nr.status if nr.error?  }
@@ -153,6 +171,12 @@ class Deployment < ActiveRecord::Base
   end
 
   private
+
+   def check_profiles
+    profiles.each do |profile|
+      errors.add(:profiles, "#{profile} does not exist") unless Profile.exists?(name: profile)
+    end if profiles
+  end
 
   def add_phantom_node
     Node.create!(name: "#{name}-phantom.internal.local",

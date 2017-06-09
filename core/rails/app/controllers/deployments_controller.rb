@@ -48,10 +48,10 @@ class DeploymentsController < ApplicationController
 
   def create
     Deployment.transaction do
-      permits = [:name,:parent_id,:description,:tenant_id]
+      permits = [:name,:parent_id,:description,:tenant_id,:profiles]
       if params[:system]
         raise "Only one system deployment permitted" if Deployment.exists?(system: true)
-        permits = [:name,:system,:description,:tenant_id]
+        permits = [:name,:system,:description,:tenant_id, :profiles]
       else
         if params[:parent] || params[:parent_id]
           # This should arguably be UPDATE
@@ -83,7 +83,7 @@ class DeploymentsController < ApplicationController
   def update
     Deployment.transaction do
       @deployment = find_key_cap(model,params[:id],cap("UPDATE")).lock!
-      simple_update(@deployment,%w{name description tenant_id}, %w{state})
+      simple_update(@deployment,%w{name description tenant_id profiles}, %w{state})
     end
     respond_to do |format|
       format.html { redirect_to deployment_path(@deployment.id) }

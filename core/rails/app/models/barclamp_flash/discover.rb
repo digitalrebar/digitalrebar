@@ -17,9 +17,9 @@ class BarclampFlash::Discover < Role
 
   def do_transition(nr, data)
     unless Attrib.get("enable-flash-subsystem",nr.node)
-        update_runlog("Flash subsystem is not enabled. Skipping this function.")
-        update_runlog("Set enable-flash-subsystem to true and rerun role to start Flash processing.")
-        return
+      update_log("Flash subsystem is not enabled. Skipping this function.")
+      update_log("Set enable-flash-subsystem to true and rerun role to start Flash processing.")
+      return
     end
 
     update_log(nr, "Determining Flash System to use:")
