@@ -31,6 +31,8 @@ type Deployment struct {
 	ParentID null.Int `json:"parent_id"`
 	// The ID of the owning tenant
 	TenantID int64 `json:"tenant_id,omitempty"`
+	// The list of profiles that should be used to grab attrib information from
+	Profiles []string `json:"profiles"`
 }
 
 func (o *Deployment) ApiName() string {

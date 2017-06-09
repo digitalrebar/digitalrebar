@@ -401,17 +401,25 @@ class Node < ActiveRecord::Base
 
   def from_profiles
     res = {}
-    return res unless profiles
-    profiles.reverse.each do |profile_name|
+    # Merge in all node-specific attribs contained in deployment profiles for this node.
+    deployment.all_profiles.reverse.each do |profile_name|
+      profile = Profile.find_by!(name: profile_name)
+      profile.values.each do |k,v|
+        attr = Attrib.find_by!(name: k)
+        next unless attr.role_id.nil?
+        res.deep_merge!(attr.template(v))
+      end
+    end
+    (profiles || []).reverse.each do |profile_name|
       profile = Profile.find_by!(name: profile_name)
       profile.values.each do |k,v|
         attr = Attrib.find_by!(name: k)
         res.deep_merge!(attr.template(v))
-      end               
+      end
     end
     res
   end
-      
+
 
   def redeploy!
     Rails.logger.debug("Starting Redeploy for #{name}")
