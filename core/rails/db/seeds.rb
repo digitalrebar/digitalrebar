@@ -168,9 +168,12 @@ ActiveRecord::Base.transaction do
   ["NODE_", "DEPLOYMENT_", "NETWORK_", "CAPABILITY_", "TENANT_", "USER_", "EVENT_", "USER_TENANT", "EVENT_", "ATTRIB_", "ROLE_", "BARCLAMP_", 
             "TEMPLATE_", "BOOTENV_", "SUBNET_", "ZONE_", "MACHINE_"
   ].each do |block|
-    includes = []
-    Capability.where("name like '#{block}%'").each { |cap| includes << cap.name }
-    Capability.create! name: "#{block}ALL", description: "All #{block} Capabilities", source: "cap-groups", includes: includes rescue nil
+    next if Capability.exists?(name: "#{block}ALL")
+    includes = Capability.where("name like '#{block}%'").pluck(:name).to_a
+    Capability.create(name: "#{block}ALL",
+                      description: "All #{block} Capabilities",
+                      source: "cap-groups",
+                      includes: includes)
   end
 
   # create CAP groups
@@ -182,7 +185,11 @@ ActiveRecord::Base.transaction do
     "DR_USER" => { desc: "General", includes: ["DR_READER"] },
     "DR_ADMIN" => { desc: "General Admin", includes: ["DR_USER", "TEMPLATE_ALL", "BOOTENV_ALL", "MACHINE_ALL", "ZONE_ALL", "SUBENET_ALL", "BARCLAMP_ALL"] },
   }.each do |name, cap|
-    Capability.create! name: name, description: "Digital Rebar #{cap[:desc]} Users", source: "dr-groups", includes: cap[:includes] rescue nil
+    next if Capability.exists?(name: name)
+    Capability.create(name: name,
+                      description: "Digital Rebar #{cap[:desc]} Users",
+                      source: "dr-groups",
+                      includes: cap[:includes])
   end
 
   Nav.find_or_create_by(item: 'root', name: 'nav.root', description: 'nav.root_description', path: "main_app.root_path", order: 0, development: true)
