@@ -20,6 +20,12 @@ if ! grep -q 'sledgehammer\.iso' /proc/cmdline; then
     exit 0
 fi
 
+# We don't want to worry about failing due to misconfigured other repos.
+if [[ ! -d /etc/yum.repos.d.bak ]]; then
+    mv /etc/yum.repos.d /etc/yum.repos.d.bak
+    mkdir -p /etc/yum.repos.d
+fi
+
 REPO_NAME=dell-system-update
 url="$baseurl"
 if [[ $release ]]; then
@@ -77,4 +83,10 @@ if [[ $need_reboot = yes ]]; then
     echo "Reboot required, rebooting."
     reboot
 fi
+
+if [[ -d /etc/yum.repos.d.bak ]]; then
+    rm -rf /etc/yum.repos.d
+    mv /etc/yum.repos.d.bak /etc/yum.repos.d
+fi
+
 [[ $failed = no ]]
