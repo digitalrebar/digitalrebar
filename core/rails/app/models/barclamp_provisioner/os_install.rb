@@ -15,14 +15,6 @@
 
 class BarclampProvisioner::OsInstall < Role
 
-  def on_deployment_create(dr)
-    DeploymentRole.transaction do
-      sysdepl = Deployment.system
-      default_os = Attrib.get('provisioner-default-os',sysdepl)
-      Attrib.set('provisioner-target_os', dr, default_os)
-    end
-  end
-
   def on_todo(nr)
     node = nr.node
     return if (["local"].member? node.bootenv) || (nr.run_count > 0)
@@ -44,6 +36,12 @@ class BarclampProvisioner::OsInstall < Role
         Attrib.set('claimed-disks',node,claims)
       end
       target_os = Attrib.get("provisioner-target_os",nr)
+      if target_os.nil? || target_os == ''
+        sysdepl = Deployment.system
+        default_os = Attrib.get('provisioner-default-os',sysdepl)
+        Attrib.set('provisioner-target_os', nr, default_os)
+        target_os = default_os
+      end
       Rails.logger.info("provisioner-install: Trying to install #{target_os} on #{node.name} (bootenv: #{node.bootenv})")
       node.bootenv = "#{target_os}-install"
       node.save!
