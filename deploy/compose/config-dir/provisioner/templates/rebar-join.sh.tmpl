@@ -51,7 +51,7 @@ fi
     chmod 755 rebar
 )
 export REBAR_ENDPOINT="{{.CommandURL}}"
-
+echo "{{.CommandURL}}" > /etc/rebar.endpoint
 
 put_alive() {
     echo "Setting node alive=$1"
