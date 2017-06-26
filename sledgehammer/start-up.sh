@@ -95,10 +95,9 @@ while ! [[ -x /tmp/start-up.sh ]]; do
 done
 DOMAIN=$(dhcp_param "$domain_re")
 DNS_SERVERS=$(dhcp_param "$dns_servers_re")
-if [[ ! ($DOMAIN && $DNS_SERVERS) ]]; then
-    echo "Cannot find domain from the DHCP information"
-    exit 1
-fi
+# Throw some sane-ish defaults into DOMAIN and DNS_SERVERS
+[[ $DOMAIN ]] || DOMAIN="unspecified.domain.local"
+[[ $DNS_SERVERS ]] || DNS_SERVERS="8.8.8.8"
 
 export BOOTDEV PROVISIONER_WEB MAC DOMAIN DNS_SERVERS
 

@@ -21,8 +21,6 @@ audit
 authconfig
 basesystem
 bash
-biosdevname
-btrfs-progs
 comps-extras
 coreutils
 curl
@@ -41,7 +39,6 @@ iproute
 iprutils
 iptables
 iputils
-irqbalance
 jq
 kbd
 kernel
@@ -51,6 +48,7 @@ less
 libsysfs
 linux-firmware
 lldpd
+lshw
 lvm2
 man-db
 mdadm
@@ -77,12 +75,13 @@ ruby-libs.x86_64
 rubygems
 setup
 shadow-utils
+stress
+stress-ng
 sudo
 syslinux
 systemd
 tar
 tcpdump
-tuned
 unzip
 util-linux
 vconfig
@@ -90,7 +89,6 @@ vim-enhanced
 vim-minimal
 wget
 which
-xfsprogs
 yum
 zlib
 %end
