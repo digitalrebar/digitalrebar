@@ -21,13 +21,16 @@ audit
 authconfig
 basesystem
 bash
+bzr
 comps-extras
 coreutils
 curl
 dhclient
 dmidecode
+dpkg
 e2fsprogs
 efibootmgr
+file
 filesystem
 firewalld
 glibc
@@ -65,6 +68,7 @@ pciutils
 plymouth
 policycoreutils
 procps-ng
+python-pip
 rdma
 rootfiles
 rpm
@@ -91,6 +95,27 @@ wget
 which
 yum
 zlib
+%end
+
+%post --nochroot
+
+########################################################################
+# Create a sub-script so the output can be captured
+# Must change "$" to "\$" and "`" to "\`" to avoid shell quoting
+########################################################################
+cat > /root/postnochroot-install << EOF_postnochroot
+#!/bin/bash
+
+cp start-up.sh $INSTALL_ROOT/sbin/sledgehammer-start-up.sh
+chmod +x $INSTALL_ROOT/sbin/sledgehammer-start-up.sh
+cp sshd_config $INSTALL_ROOT/etc/ssh/sshd_config
+cp curtin.tgz $INSTALL_ROOT/root/curtin.tgz
+
+cp dhclient.conf $INSTALL_ROOT/etc
+
+EOF_postnochroot
+
+/bin/bash -x /root/postnochroot-install 2>&1 | tee /root/postnochroot-install.log
 %end
 
 %post
@@ -137,25 +162,15 @@ echo "nameserver 8.8.8.8" > /etc/resolv.conf
 curl -fgLO https://opscode-omnibus-packages.s3.amazonaws.com/el/6/i686/chef-11.18.12-1.el6.i686.rpm
 yum install -y chef-11.18.12-1.el6.i686.rpm
 rm chef-11.18.12-1.el6.i686.rpm
+
+# Setup and install curtin
+tar -xvf /root/curtin.tgz
+cd trunk.dist
+pip install -r requirements.txt
+python ./setup.py install
+cd ..
+rm -rf trunk.dist curtin.tgz
+
 rm -f /etc/resolv.conf
-%end
 
-%post --nochroot
-
-########################################################################
-# Create a sub-script so the output can be captured
-# Must change "$" to "\$" and "`" to "\`" to avoid shell quoting
-########################################################################
-cat > /root/postnochroot-install << EOF_postnochroot
-#!/bin/bash
-
-cp start-up.sh $INSTALL_ROOT/sbin/sledgehammer-start-up.sh
-chmod +x $INSTALL_ROOT/sbin/sledgehammer-start-up.sh
-cp sshd_config $INSTALL_ROOT/etc/ssh/sshd_config
-
-cp dhclient.conf $INSTALL_ROOT/etc
-
-EOF_postnochroot
-
-/bin/bash -x /root/postnochroot-install 2>&1 | tee /root/postnochroot-install.log
 %end
