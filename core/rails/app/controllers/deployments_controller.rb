@@ -122,12 +122,15 @@ class DeploymentsController < ApplicationController
             deployment_roles: {},
             nodes: {}}
 
+    services = []
     d.system_node.node_roles.each do |service|
       out[:services] << { id: service.id, role_id: service.role_id, state: service.state, name: service.role.name, icon: service.role.icon }
+      services << service.role.id  # collect service role ids
     end
 
     deployment_roles = []
     d.deployment_roles.each do |dr|
+      next if services.include? dr.role_id # skip dr so we do not repeat services in the deployment roles list
       deployment_roles << { id: dr.id, role_id: dr.role_id, name: dr.role.name, cohort: dr.role.cohort, icon: dr.role.icon}
     end
     deployment_roles = deployment_roles.sort {|left, right| left[:cohort] <=> right[:cohort]}
