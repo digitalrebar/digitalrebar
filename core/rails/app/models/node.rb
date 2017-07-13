@@ -427,7 +427,7 @@ class Node < ActiveRecord::Base
       Rails.logger.debug("redeploy: reloading #{name}")
       reload
       Rails.logger.debug("redeploy: update bootenv for #{name}")
-      update!(bootenv: "sledgehammer")
+      update!(bootenv: "sledgehammer", available: true, alive: false)
     end
     Rails.logger.debug("redeploy: restart node for #{name}")
     if actions[:power][:cycle]
