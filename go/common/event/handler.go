@@ -50,6 +50,12 @@ func NewSink(c *api.Client, uri string, h Handler) (*Sink, error) {
 // ServeHTTP allows a Sink to hook together an http Server and
 // something we want to handle events.
 func (s *Sink) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusBadRequest)
+		io.WriteString(w, `{"status": 400, "message": "Invalid method. Only POST allowed"}`)
+		return
+	}
 	evt := &Event{}
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
