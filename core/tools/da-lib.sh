@@ -173,12 +173,6 @@ bring_up_admin_containers() {
     fi
 
     cd "$mountdir/deploy/compose"
-    if (which selinuxenabled && which chcon) &>/dev/null && selinuxenabled; then
-        $SUDO chcon -Rt svirt_sandbox_file_t "$mountdir"
-        $SUDO chcon -Rt svirt_sandbox_file_t "$HOME/.cache/digitalrebar/tftpboot"
-    fi
-
-    [[ -d $mountdir/deploy/compose/data-dir ]] && $SUDO rm -rf "$mountdir/deploy/compose/data-dir"
     ./init_files.sh --clean
     make_compose_args
     ./init_files.sh $REAL_COMPOSE_ARGS
