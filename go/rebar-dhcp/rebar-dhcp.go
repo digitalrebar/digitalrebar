@@ -6,6 +6,7 @@ import (
 
 	"github.com/digitalrebar/digitalrebar/go/common/store"
 	"github.com/digitalrebar/digitalrebar/go/common/version"
+	rebar "github.com/digitalrebar/digitalrebar/go/rebar-api/api"
 	consul "github.com/hashicorp/consul/api"
 )
 
@@ -16,6 +17,7 @@ var serverIp string
 var hostString string
 var serverPort int
 var versionFlag bool
+var rebarClient *rebar.Client
 
 func init() {
 	flag.BoolVar(&versionFlag, "version", false, "Print version and exit")
@@ -54,7 +56,11 @@ func main() {
 	default:
 		log.Fatalf("Unknown backing store type %s", backingStore)
 	}
-
+	var err error
+	rebarClient, err = rebar.TrustedSession("system", true)
+	if err != nil {
+		log.Fatal(err)
+	}
 	fe := NewFrontend(bs)
 
 	if err := StartDhcpHandlers(fe.DhcpInfo, serverIp); err != nil {

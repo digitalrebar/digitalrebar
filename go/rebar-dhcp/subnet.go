@@ -12,6 +12,7 @@ import (
 	"text/template"
 	"time"
 
+	rebar "github.com/digitalrebar/digitalrebar/go/rebar-api/api"
 	"github.com/digitalrebar/digitalrebar/go/rebar-dhcp/dhcp"
 	"github.com/willf/bitset"
 )
@@ -188,7 +189,7 @@ func (s *Subnet) UnmarshalJSON(data []byte) error {
 func (subnet *Subnet) freeLease(dt *DataTracker, nic string) {
 	lease := subnet.Leases[nic]
 	if lease != nil {
-		delete(subnet.Leases, nic)
+		lease.ExpireTime = time.Now()
 		dt.save_data()
 	}
 }
@@ -207,16 +208,10 @@ func (subnet *Subnet) findInfo(dt *DataTracker, nic string) (*Lease, *Binding) {
 // This will need to be updated to be more efficient with larger
 // subnets.  Class C and below should be fine, however.
 func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
-	// Free invalid or expired leases
-	used := bitset.New(uint(dhcp.IPRange(subnet.ActiveStart, subnet.ActiveEnd)))
+	activeLen := uint(dhcp.IPRange(subnet.ActiveStart, subnet.ActiveEnd))
+	used := bitset.New(activeLen)
 	saveMe := false
 	for k, v := range subnet.Leases {
-		// If the lease has expired, whack it.
-		if time.Now().After(v.ExpireTime) {
-			delete(subnet.Leases, k)
-			saveMe = true
-			continue
-		}
 		if !subnet.InRange(v.Ip) {
 			if _, found := subnet.Bindings[k]; found {
 				// Lease is out of range, but we have a static binding for
@@ -242,19 +237,50 @@ func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 			v.Valid = true
 			saveMe = true
 		}
-		used.Set(uint(dhcp.IPRange(subnet.ActiveStart, v.Ip) - 1))
+		bts := dhcp.IPRange(subnet.ActiveStart, v.Ip) - 1
+		used = used.Set(uint(bts))
 	}
 	// Make sure that any static bindings in our range are masked out.
 	for _, v := range subnet.Bindings {
 		if subnet.InRange(v.Ip) {
-			used.Set(uint(dhcp.IPRange(subnet.ActiveStart, v.Ip) - 1))
+			used = used.Set(uint(dhcp.IPRange(subnet.ActiveStart, v.Ip) - 1))
 		}
 	}
-	used = used.Complement()
-	bit, success := used.NextSet(0)
-	if success || used.Len() == 0 {
+	bit, success := used.NextClear(0)
+	if (success && bit < activeLen) || used.Len() == 0 {
 		ip := dhcp.IPAdd(subnet.ActiveStart, int(bit))
+		log.Printf("Handing out IP %v", ip)
 		return &ip, true
+	}
+	// Didn't find an IP this way, find the most expired lease and use its IP.
+	var target string
+	for k, v := range subnet.Leases {
+		// If the lease has expired, whack it.
+		if _, ok := subnet.Bindings[k]; ok {
+			continue
+		}
+		if !time.Now().After(v.ExpireTime) {
+			continue
+		}
+		if target == "" || subnet.Leases[k].ExpireTime.After(subnet.Leases[target].ExpireTime) {
+			ref := &rebar.Node{}
+			ipNet := &net.IPNet{}
+			ipNet.IP = v.Ip
+			ipNet.Mask = subnet.Subnet.Mask
+			toMatch := map[string]interface{}{"node-control-address": ipNet.String()}
+			matches := []*rebar.Node{}
+			err := rebarClient.Match(rebarClient.UrlPath(ref), toMatch, &matches)
+			if err == nil && len(matches) > 0 {
+				log.Printf("Expired lease for %s is being used by machine %s", k, matches[0].UUID)
+				continue
+			}
+			target = k
+		}
+	}
+	if target != "" {
+		res := subnet.Leases[target].Ip
+		delete(subnet.Leases, target)
+		return &res, true
 	}
 	return nil, saveMe
 }
@@ -318,12 +344,11 @@ func (s *Subnet) phantomLease(dt *DataTracker, nic string) {
 	addr[0] = 0x00
 	addr[1] = 0x53
 	lease.Valid = false
-	// Phantom leases expire in 30 seconds.  This allows getFreeIP to cycle through
-	// address ranges when a client NAKs a lease.
-	lease.ExpireTime = time.Now().Add(30 * time.Second)
+	lease.ExpireTime = time.Now()
 	lease.Mac = addr.String()
 	delete(s.Leases, nic)
 	s.Leases[lease.Mac] = lease
+	log.Printf("New phantom lease: %#v", lease)
 	dt.save_data()
 }
 

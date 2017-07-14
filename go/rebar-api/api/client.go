@@ -128,8 +128,16 @@ func TrustedSession(username string, wait bool) (*Client, error) {
 			objPathCache: map[string]string{},
 		}
 		user := &User{}
-		if err := res.Fetch(user, username); err != nil {
-			return nil, fmt.Errorf("Unable to verify existence of %s user, cannot use trusted session: %v", username, err)
+		for {
+			err := res.Fetch(user, username)
+			if err == nil {
+				break
+			}
+			if !wait {
+				return nil, fmt.Errorf("Unable to verify existence of %s user, cannot use trusted session: %v", username, err)
+			}
+			log.Printf("Waiting for system user to show up (10s)")
+			time.Sleep(10 * time.Second)
 		}
 		caps, err := user.Capabilities()
 		if err != nil {
