@@ -92,7 +92,25 @@ while [[ $1 == -* ]] ; do
       ;;
     --clean)
         rm -f access.env services.env dc docker-compose.yml config-dir/api/config/networks/the_admin.json config-dir/api/config/networks/the_bmc.json tag
+        (
+            cd "${DR_TFTPROOT}"
+            for cfg in *.ipxe *.conf pxelinux.cfg/*; do
+                [[ -f $cfg ]] || continue
+                case $cfg in
+                    default.ipxe|elilo.conf|pxelinux.cfg/default) continue;;
+                    *) $SUDO rm -- "$cfg";;
+                esac
+            done
+            for cfg in machines/*; do
+                [[ -d $cfg ]] || continue
+                $SUDO rm -rf -- "$cfg"
+                done
+        )
         $SUDO rm -rf data-dir
+        if (which selinuxenabled && which chcon) &>/dev/null && selinuxenabled; then
+            $SUDO chcon -Rt svirt_sandbox_file_t .
+            $SUDO chcon -Rt svirt_sandbox_file_t "${DR_TFTPROOT}"
+        fi
       exit 0
       ;;
     --access)
