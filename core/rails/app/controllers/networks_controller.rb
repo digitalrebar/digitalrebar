@@ -109,11 +109,11 @@ class NetworksController < ::ApplicationController
           # Legacy support for special "host" and "dhcp" range names
           case range_params[:name]
           when "host"
-            range_params[:allow_anon_leases] = false
-            range_params[:allow_bound_leases] = true
+            range_params[:allow_anon_leases] = false if range_params[:allow_anon_leases].nil?
+            range_params[:allow_bound_leases] = true if range_params[:allow_bound_leases].nil?
           when "dhcp"
-            range_params[:allow_anon_leases] = true
-            range_params[:allow_bound_leases] = false
+            range_params[:allow_anon_leases] = true if range_params[:allow_anon_leases].nil?
+            range_params[:allow_bound_leases] = false if range_params[:allow_bound_leases].nil?
           end
           if range_params[:anon_lease_time] && range_params[:anon_lease_time] == 0
             range_params[:anon_lease_time] = 60
