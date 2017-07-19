@@ -68,19 +68,30 @@ else
     if [[ $(ip -4 -o addr show dev $BOOTDEV) =~ $bootdev_ip_re ]]; then
         IP="${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
     fi
+    # Have all interfaces be a part of hint-admin-macs
+    MACS=()
+    for d in /sys/class/net/*; do
+        [[ -f $d/type && $(cat "$d/type") == "1" ]] || continue
+        MACS+=("$(cat "$d/address")")
+    done
+    macline="$(printf '"%s",' "${MACS[@]}")"
+    macline="[${macline%,}]"
     # Create a new node for us,
     # Add the default noderoles we will need, and
     # Let the annealer do its thing.
-    rebar nodes create "{\"name\": \"$HOSTNAME\",
-                         \"mac\": \"$MAC\",
-                         \"ip\": \"$IP\",
-                         \"variant\": \"metal\",
-                         \"provider\": \"metal\",
-                         \"os_family\": \"linux\",
-                         \"arch\": \"$(uname -m)\"}" || {
+    rebar nodes create - <<EOF
+{"name": "$HOSTNAME",
+ "ip": "$IP",
+ "variant": "metal",
+ "provider": "metal",
+ "os_family": "linux",
+ "arch": "$(uname -m)",
+ "hints": { "hint-admin-macs": ${macline}}}
+EOF
+    if [[ $? != 0 ]]; then
         echo "We could not create a node for ourself!"
         exit 1
-    }
+    fi
     REBAR_UUID="$(rebar nodes show "$HOSTNAME" |jq -r '.uuid')"
     # does the rebar-managed-role exist?
     if ! grep -q rebar-managed-node < <(rebar nodes roles $REBAR_UUID); then
