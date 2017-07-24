@@ -33,7 +33,7 @@ CONTAINERS=('digitalrebar/base'
             'digitalrebar/dr_rev_proxy'
             'digitalrebar/dr_trust_me'
             'digitalrebar/rule-engine'
-            'gliderlabs/consul'
+            'library/consul'
            )
 
 images=()

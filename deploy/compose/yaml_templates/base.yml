@@ -4,7 +4,7 @@ consul:
     file: docker-compose-common.yml
     service: consul
   net: host
-  command: agent -config-dir=/etc/consul.d -data-dir=/tmp/consul -server -bootstrap
+  command: agent -server -bootstrap
 
 postgres:
   extends:

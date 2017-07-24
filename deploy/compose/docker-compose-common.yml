@@ -1,13 +1,11 @@
 
 consul:
-  image: gliderlabs/consul
+  image: library/consul
   restart: always
   volumes:
-    - ./config-dir/consul/server-default.json:/etc/consul.d/default.json
-    - ./config-dir/consul/server-advertise.json:/etc/consul.d/server-advertise.json
-    - ./data-dir/consul/:/tmp/consul/
-    - ./data-dir/bin:/usr/local/dev/bin
-    - ./config-dir/tools:/opt/tools
+    - ./config-dir/consul/server-default.json:/consul/config/default.json
+    - ./config-dir/consul/server-advertise.json:/consul/config/server-advertise.json
+    - ./data-dir/consul/:/consul/data/
   env_file:
     - ./common.env
     - ./access.env

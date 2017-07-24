@@ -6,6 +6,7 @@
     "acl_default_policy": "allow",
     "acl_down_policy": "allow",
     "encrypt": "NMXDBhIgIN4naRrrYDt/Qg==",
-    "disable_remote_exec": true
+    "disable_remote_exec": true,
+    "enable_script_checks": true
 }
 
