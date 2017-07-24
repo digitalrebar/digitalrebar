@@ -7,9 +7,6 @@ ENV SQUID_CACHE_DIR=/var/spool/squid3 \
     SQUID_LOG_DIR=/var/log/squid3 \
     SQUID_USER=proxy
 COPY rules.patch /tmp
-ADD http://archive.ubuntu.com/ubuntu/pool/main/s/squid3/squid3_3.5.12-1ubuntu8.dsc /tmp/squid-build/squid3_3.5.12-1ubuntu8.dsc
-ADD http://archive.ubuntu.com/ubuntu/pool/main/s/squid3/squid3_3.5.12.orig.tar.gz /tmp/squid-build/squid3_3.5.12.orig.tar.gz
-ADD http://archive.ubuntu.com/ubuntu/pool/main/s/squid3/squid3_3.5.12-1ubuntu8.debian.tar.xz /tmp/squid-build/squid3_3.5.12-1ubuntu8.debian.tar.xz
 
 RUN apt-get update \
     && apt-get -y install libecap3 devscripts build-essential \
@@ -18,7 +15,11 @@ RUN apt-get update \
        libldap2-dev libpam0g-dev libdb-dev libsasl2-dev libcppunit-dev \
        libkrb5-dev  comerr-dev  libcap2-dev libecap3-dev libexpat1-dev \
        libxml2-dev libnetfilter-conntrack-dev dh-apparmor bash \
+    && mkdir -p /tmp/squid-build \
     && cd /tmp/squid-build \
+    && curl -fgLO http://archive.ubuntu.com/ubuntu/pool/main/s/squid3/squid3_3.5.12-1ubuntu8.dsc \
+    && curl -fgLO  http://archive.ubuntu.com/ubuntu/pool/main/s/squid3/squid3_3.5.12.orig.tar.gz \
+    && curl -fgLO http://archive.ubuntu.com/ubuntu/pool/main/s/squid3/squid3_3.5.12-1ubuntu8.debian.tar.xz \
     && dpkg-source -x squid3_3.5.12-1ubuntu8.dsc \
     && patch squid3-3.5.12/debian/rules < /tmp/rules.patch \
     && cd squid3-3.5.12 && dpkg-buildpackage -rfakeroot -b -jauto \

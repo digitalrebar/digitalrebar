@@ -36,7 +36,7 @@ RUN mkdir -p /var/run/postgresql && chown -R postgres /var/run/postgresql
 
 # Consul for now
 RUN mkdir -p /tmp/consul \
- && wget -O consul.zip https://releases.hashicorp.com/consul/0.7.1/consul_0.7.1_linux_amd64.zip \
+ && wget -O consul.zip https://releases.hashicorp.com/consul/0.9.0/consul_0.9.0_linux_amd64.zip \
  && unzip consul.zip -d /usr/local/bin \
  && rm consul.zip
 

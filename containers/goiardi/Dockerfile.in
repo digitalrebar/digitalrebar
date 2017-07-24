@@ -17,15 +17,16 @@ RUN apt-get update \
     && dpkg -i /tmp/chef.deb && rm -f /tmp/chef.deb \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /root/.cpanm
+    && rm -rf /root/.cpanm \
+    && (rm -rf /tmp/goiardi.tar.gz || :)
 
-ADD https://github.com/ctdk/goiardi/releases/download/v0.11.0/goiardi-0.11.0-linux-amd64 /usr/local/bin/goiardi
-ADD https://github.com/ctdk/goiardi/archive/v0.11.0.tar.gz /tmp/goiardi.tar.gz
+ADD https://github.com/ctdk/goiardi/releases/download/v0.11.5/goiardi-0.11.5-linux-amd64 /usr/local/bin/goiardi
 RUN chmod 755 /usr/local/bin/goiardi \
     && cd /tmp \
-    && tar xf goiardi.tar.gz \
+    && curl -fgLO https://github.com/ctdk/goiardi/archive/v0.11.5.tar.gz \
+    && tar xf v0.11.5.tar.gz \
     && mv goiardi*/sql-files/postgres-bundle . \
-    && rm -rf goiardi*
+    && rm -rf goiardi* v0*
 
 COPY goiardi.conf /tmp
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/

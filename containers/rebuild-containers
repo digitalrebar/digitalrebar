@@ -100,7 +100,7 @@ setup_parents() {
         done
         CONTAINER_RANK[$container]=$rank
     done
-    
+
 }
 
 setup_parents
@@ -109,7 +109,10 @@ build_children_of() {
     # $1 = container whose children should be built.
     local child
     for child in ${CONTAINER_CHILDREN[$1]}; do
-        [[ ${BUILT_CONTAINERS[$child]} ]] || build_container "$child"
+        [[ ${BUILT_CONTAINERS[$child]} ]] && continue
+        FORCE_BUILD_CONTAINERS[$child]=true
+        CONTAINERS_TO_BUILD[$child]=true
+        build_container "$child"
     done
 }
 
@@ -122,10 +125,13 @@ branch_exists() { git show-ref --quiet --verify --heads -- "refs/heads/$1"; }
 
 # Test to see if a container does not need to be rebuilt.
 container_is_up_to_date() (
+    [[ ${CONTAINERS_TO_SKIP[$1]} ]] || [[ ${BUILT_CONTAINERS[$1]} ]] && return 0
     # We are forcing a rebuild, it needs rebuilding.
     [[ ${FORCE_BUILD_CONTAINERS[$1]} == true && ${CONTAINERS_TO_BUILD[$1]} ]] && return 1
     # It does not have a last-built-image-id, it needs building.
     [[ -f $repo_dir/last-built-image-id ]] || return 1
+    local pc=${CONTAINER_PARENTS[$1]}
+    [[ $pc ]] && (! container_is_up_to_date "$pc") && return 1
     cd "$repo_dir"
     local last_changed_rev=$(git rev-list -1 HEAD -- last-built-image-id)
     # This port of the git repo has changed since the last time we built this container,
@@ -140,16 +146,7 @@ container_is_up_to_date() (
 # Build a container if needed.
 build_container() {
     # $1 = container to build
-    [[ ${CONTAINERS_TO_SKIP[$1]} ]] && return 0
-    [[ ${BUILT_CONTAINERS[$1]} ]] && return 0
     [[ ${UNBUILT_CONTAINERS[$1]} ]] && return 1
-    local pc=${CONTAINER_PARENTS[$1]}
-    if [[ $pc ]]; then
-        if ! build_container "$pc"; then
-            UNBUILT_CONTAINERS[$1]="Refusing to build container $1, parent $pc failed build"
-            return 1
-        fi
-    fi
     local repo_dir="$CONTAINER_DIR/${CONTAINERS[$1]}"
     if container_is_up_to_date "$1"; then
         echo "Container $1 does not need rebuilding"

@@ -1,6 +1,7 @@
 {
-  "datacenter": "digitalrebar",
-  "domain": "consul",
-  "encrypt": "NMXDBhIgIN4naRrrYDt/Qg==",
-  "disable_remote_exec": true
+    "datacenter": "digitalrebar",
+    "domain": "consul",
+    "encrypt": "NMXDBhIgIN4naRrrYDt/Qg==",
+    "disable_remote_exec": true,
+    "enable_script_checks": true
 }
