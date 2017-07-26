@@ -321,6 +321,10 @@ write_attribute() {
     printf "%s" "$2" > "$loc/wall"
 }
 
+need_reboot() {
+    write_attribute "rebar_wall/need_reboot" true
+}
+
 put_attr() {
     write_attribute "$(lookup_attrib_map "$1")" "$2"
 }
@@ -341,7 +345,7 @@ addr_port() {
     else
         printf '%s:%d' "$1" "$2"
     fi
-}   
+}
 
 if ! (which jq &>/dev/null || install jq); then
     echo "JQ not installed and not installable.  The script jig requires it to function"

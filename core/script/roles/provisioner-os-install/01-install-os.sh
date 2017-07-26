@@ -51,3 +51,4 @@ while ! rebar nodes get $REBAR_UUID attrib provisioner-active-bootstate |grep -q
     sleep 1
 done
 
+need_reboot

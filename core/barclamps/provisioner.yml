@@ -199,11 +199,6 @@ roles:
           - event: on_todo
             obj_class: role
             obj_id: provisioner-os-install
-      - endpoint: inproc://role:provisioner-os-install/on_active
-        selectors:
-          - event: on_active
-            obj_class: role
-            obj_id: provisioner-os-install
     requires:
       - rebar-managed-node
     flags:

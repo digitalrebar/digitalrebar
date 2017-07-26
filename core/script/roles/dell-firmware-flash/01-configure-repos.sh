@@ -49,7 +49,7 @@ EOF
 
 yum -y install dell-system-update
 
-need_reboot=no
+want_reboot=no
 failed=no
 
 dsu --non-interactive --log-level=1 --output-log-file=/root/dsu.log || \
@@ -62,26 +62,26 @@ dsu --non-interactive --log-level=1 --output-log-file=/root/dsu.log || \
             fi;;
         8)
             echo "Reboot required to finish updates"
-            need_reboot=yes;;
+            want_reboot=yes;;
         25)
             echo "Partial ugrade failure"
             failed=yes;;
         26)
             echo "Partial upgrade failure, but system reboot required"
-            need_reboot=yes
+            want_reboot=yes
             failed=yes;;
         *)
             echo "Unhandleable exit code $?"
-            echo "Lease refer to the DSU manual at http://www.dell.com/support/manuals/uk/en/ukdhs1/system-update-v1.4.0/DSU_UG_1.4/Updating-the-system-using-DSU";;
+            failed=yes
+            echo "Please refer to the DSU manual at http://www.dell.com/support/manuals/uk/en/ukdhs1/system-update-v1.4.0/DSU_UG_1.4/Updating-the-system-using-DSU";;
     esac
 if [[ $failed = yes ]]; then
     echo "Log of failed DSU run:"
     cat /root/dsu.log
 fi
 
-if [[ $need_reboot = yes ]]; then
-    echo "Reboot required, rebooting."
-    reboot
+if [[ $want_reboot = yes ]]; then
+    need_reboot
 fi
 
 if [[ -d /etc/yum.repos.d.bak ]]; then
@@ -89,4 +89,4 @@ if [[ -d /etc/yum.repos.d.bak ]]; then
     mv /etc/yum.repos.d.bak /etc/yum.repos.d
 fi
 
-[[ $failed = no ]]
+[[ $want_reboot = yes || $failed = no ]]
