@@ -69,7 +69,7 @@ class NodeRoleRun < Que::Job
         nr.transition!
         if nr.role.destructive && (nr.run_count > 0)
           log.info("Run: Queued job #{job.id} for #{nr.id} skipped due to destructiveness")
-          nr.active! if nr.node.alive? && nr.node.available? && mark_active
+          nr.active! if nr.node.alive? && mark_active
           job.delete
           destroy
           return
@@ -96,6 +96,7 @@ class NodeRoleRun < Que::Job
       log.error("#{e.class.name}: #{e.message}\nBacktrace:\n#{e.backtrace.join("\n")}")
       return
     end
+    need_reboot = false
     NodeRole.transaction do
       # Extract any new desired node attribs from the returned wall info
       nr.barclamp.attribs.where(role_id: nil).each do |a|
@@ -117,11 +118,15 @@ class NodeRoleRun < Que::Job
         res.deep_merge!(nr.wall["rebar_wall"]["reservations"])
         nr.node.hint_update({"reservations" => res})
       end
+      need_reboot = (nr.wall["rebar_wall"]["need_reboot"] rescue false)
       log.info("Run: NodeRole #{nr.name} active")
       log.info("Run: Deleting finished job #{job.id}")
-      nr.active! if nr.node.alive? && nr.node.available? && mark_active
+      nr.active! if nr.node.alive? && mark_active
       job.delete
       destroy
+      if need_reboot
+        nr.node.power.reboot
+      end
     end
     Run.run!
   end
