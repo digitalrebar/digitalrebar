@@ -13,37 +13,49 @@ while db.nil? do
     password = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/password')
     database = ConsulAccess.getKey('digitalrebar/private/database/digitalrebar/database')
   rescue Exception => e
-    puts("Consul Access failed: #{e.message}")
+    STDERR.puts("Consul Access failed: #{e.message}")
     db = nil
   end
 end
 
-host = db.ServiceAddress 
+host = db.ServiceAddress
 host = db.Address if host.nil? or host.empty?
 host = "database" if host.nil? or host.empty?
 port = db.ServicePort
 port = 5432 if port.nil? or port == 0
 %>
-
-base: &default
+production:
   adapter: postgresql
   username: <%= username %>
   pool: 32
   timeout: 5000
   reaping_frequency: 3
-  host:               <%= host %>
-  port:               <%= port %>
+  host: <%= host %>
+  port: <%= port %>
   database: <%= database %>
   password: <%= password %>
 
-production:
-  <<: *default
-
 development:
-  <<: *default
+  adapter: postgresql
+  username: <%= username %>
+  pool: 32
+  timeout: 5000
+  reaping_frequency: 3
+  host: <%= host %>
+  port: <%= port %>
+  database: <%= database %>
+  password: <%= password %>
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
 # Do not set this db to the same as development or production.
-test: &test
-  <<: *default
+test:
+  adapter: postgresql
+  username: <%= username %>
+  pool: 32
+  timeout: 5000
+  reaping_frequency: 3
+  host: <%= host %>
+  port: <%= port %>
+  database: <%= database %>
+  password: <%= password %>

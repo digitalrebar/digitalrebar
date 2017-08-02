@@ -14,6 +14,7 @@
 
 source 'https://rubygems.org'
 
+gem 'tzinfo'
 gem 'rails', '~> 4.2.0'
 gem 'pg'
 gem 'haml'
@@ -28,7 +29,8 @@ gem 'syslogger'
 gem 'schema_plus'
 gem 'kwalify'
 gem 'maruku'
-gem 'puma', '~> 2.15.2'
+gem 'puma'
+gem 'puma_worker_killer'
 gem 'nio4r', '~> 1.2', '>= 1.2.0'
 gem 'bunny'
 gem 'xml-simple'
@@ -46,7 +48,6 @@ gem 'structurematch', '~> 0.1.1'
 gem 'diplomat'
 gem 'httpclient'
 gem 'rest-client'
-gem 'berkshelf'
 # For RFC 6902 json patch support
 gem 'json-patch'
 # For password change via the API
