@@ -169,7 +169,7 @@ build_container() {
         if [[ $USE_LOCAL_SOURCE = true ]]; then
             cp -a "$DR_DIR/core" "$repo_dir"
         else
-            mkdir -p core
+            mkdir -p "$repo_dir/core"
         fi
     fi
     buildargs+=("--build-arg" "DR_TAG=${DR_TAG}")
