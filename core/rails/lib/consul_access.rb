@@ -40,7 +40,7 @@ class ConsulAccess
     if Diplomat.configuration.acl_token.nil?
       Diplomat.configuration.acl_token = __cb_consul_config["acl_master_token"]
     end
-    Diplomat::Kv.get(key)
+    Diplomat::Kv.get(key)[0][:value]
   end
 
   # Wrap the Diplomat access to set common config/values

@@ -11,6 +11,9 @@ RUN groupadd -r rebar && useradd -r -u 1000 -g rebar -p '$6$afAL.34B$T2WR6zycEe2
 COPY rebar_sudoer /etc/sudoers.d/rebar
 COPY ssh_config /home/rebar/.ssh/config
 COPY rebar-runner.json /etc/consul.d/rebar-runner.json
+COPY core /opt/digitalrebar/core
+RUN test -d /opt/digitalrebar/core/rails \
+    || { rm -rf /opt/digitalrebar; git clone https://github.com/digitalrebar/digitalrebar /opt/digitalrebar; }
 
 RUN apt-get -y update \
   && apt-get -y install software-properties-common wget \
@@ -20,7 +23,7 @@ RUN apt-get -y update \
   && apt-add-repository ppa:ansible/ansible \
   && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
   && apt-get -y update \
-  && apt-get -y --no-install-recommends install ruby2.1 ruby2.1-dev make cmake curl libxml2-dev libcurl4-openssl-dev libssl-dev build-essential jq sudo postgresql-client-9.5 libpq5 libpq-dev autoconf uuid-runtime ipmitool ansible python-netaddr python-dns python-pip ssh tzdata iputils-ping \
+  && apt-get -y --no-install-recommends install ruby2.4 ruby2.4-dev make cmake curl libxml2-dev libcurl4-openssl-dev libssl-dev build-essential jq sudo postgresql-client-9.5 libpq5 libpq-dev autoconf uuid-runtime ipmitool ansible python-netaddr python-dns python-pip ssh tzdata iputils-ping \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -29,8 +32,7 @@ RUN pip install dnspython
 RUN gem install bundler \
   && gem install net-http-digest_auth \
   && gem install nio4r -v 1.2.0
-RUN test -d /opt/digitalrebar || git clone https://github.com/digitalrebar/digitalrebar /opt/digitalrebar \
-  && mkdir -p /var/run/rebar /var/cache/rebar/cookbooks /var/cache/rebar/gems /var/cache/rebar/ \
+RUN mkdir -p /var/run/rebar /var/cache/rebar/cookbooks /var/cache/rebar/gems /var/cache/rebar/ \
   && chown -R rebar:rebar /opt/digitalrebar /var/run/rebar /var/cache/rebar /home/rebar/.ssh \
   && chmod 755 /home/rebar/.ssh
 RUN su -l -c 'cd /opt/digitalrebar/core/rails; bundle install --path /var/cache/rebar/gems --standalone --binstubs /var/cache/rebar/bin' rebar
