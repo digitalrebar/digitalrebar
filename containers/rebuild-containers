@@ -165,8 +165,8 @@ build_container() {
     echo "Building container $1"
     local buildargs=("-t" "${1}:${DR_TAG}")
     if [[ $1 = digitalrebar/dr_rebar_api ]]; then
+        [[ -d $repo_dir/core ]] && rm -rf "${repo_dir}/core" || :
         if [[ $USE_LOCAL_SOURCE = true ]]; then
-            [[ -d $repo_dir/core ]] && rm -rf "${repo_dir}/core" || :
             cp -a "$DR_DIR/core" "$repo_dir"
         else
             mkdir -p core
@@ -208,7 +208,7 @@ any of them change.  It takes the following options:
     --force Force a build even if it appears that the container does
             not need rebuilding.
 
-    --tag if you want to tag the built containers with something 
+    --tag if you want to tag the built containers with something
           other than 'latest'.
 
     --pull if you want to pull containers from the Docker hub before
