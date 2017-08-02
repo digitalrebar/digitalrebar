@@ -1,6 +1,6 @@
 
 consul:
-  image: library/consul
+  image: consul
   restart: always
   volumes:
     - ./config-dir/consul/server-default.json:/consul/config/default.json
