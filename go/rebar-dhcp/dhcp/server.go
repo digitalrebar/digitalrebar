@@ -60,10 +60,13 @@ func Serve(conn ServeConn, handler Handler) error {
 			if err != nil {
 				return err
 			}
-
-			if net.ParseIP(ipStr).Equal(net.IPv4zero) || req.Broadcast() {
-				port, _ := strconv.Atoi(portStr)
-				addr = &net.UDPAddr{IP: net.IPv4bcast, Port: port}
+			port, _ := strconv.Atoi(portStr)
+			if req.GIAddr().Equal(net.IPv4zero) {
+				if net.ParseIP(ipStr).Equal(net.IPv4zero) || req.Broadcast() {
+					addr = &net.UDPAddr{IP: net.IPv4bcast, Port: port}
+				}
+			} else {
+				addr = &net.UDPAddr{IP: req.GIAddr(), Port: port}
 			}
 			if _, e := conn.WriteTo(res, addr); e != nil {
 				return e
