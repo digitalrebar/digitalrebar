@@ -6,9 +6,6 @@ set -e
 OCB_MEM=${SLAVE_MEM:-4G}
 OCB_CPUS=${SLAVE_CPUS:-2}
 OCB_DRIVES=${SLAVE_DRIVES:-5}
-bridge_exists "$OCB_BRIDGE" || OCB_BRIDGE=docker0
-
-bridge_exists "$OCB_BRIDGE" || die "No bridge $OCB_BRIDGE to attach to!"
 
 # Create our disk images
 if [[ $OCB_DRIVES && $OCB_DRIVES -gt 1 ]]; then

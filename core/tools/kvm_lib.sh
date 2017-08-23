@@ -62,24 +62,9 @@ OCB_MEM=4G
 OCB_CPUS=4
 VMID=$$
 
-# IP address of the node that ends up as the admin node.
-OCB_ADMIN_IP=192.168.124.10/24
-OCB_BRIDGE_IP=192.168.124.1/24
 REBAR_KEY="rebar:rebar1"
-
-ADMIN_HOSTNAMES=("cr0wbar.pwns.joo"
-    "vltima.ratio.regvm"
-    "omnia.fines.bon"
-    "admin.smoke.test"
-    "eheyeh.asher.eheyeh"
-    "bork.bork.bork")
-
-ADMIN_HOSTNAME=${ADMIN_HOSTNAMES[$(($RANDOM % ${#ADMIN_HOSTNAMES[@]}))]}
-#debug "Picked $ADMIN_HOSTNAME"
-export OCB_DOMAIN=${ADMIN_HOSTNAME#*.}
-
-: ${OCB_BRIDGE:="rebar-br"}
-NICS_PER_VM=3
+OCB_BRIDGES=(docker0 rebar-br-1 rebar-br-2)
+NICS_PER_VM="${#OCB_BRIDGES[@]}"
 VM_DIR="$HOME/.cache/digitalrebar/vms"
 
 mkdir -p "$VM_DIR"
@@ -101,26 +86,24 @@ update_vm_status() {
     } 66>"$VM_DIR/.$VMID.status.lck"
 }
 
-make_rebar_bridge() {
-    sudo -n brctl show |grep -q "$OCB_BRIDGE" || \
-        sudo -n brctl addbr "$OCB_BRIDGE" || \
-        die "Could not create $OCB_BRIDGE bridge!"
-    # Emulate a switch with STP but no portfast.
-    sudo -n brctl stp "$OCB_BRIDGE" on || \
-        die "Could not enable spanning tree protocol on $OCB_BRIDGE!"
-    sudo -n brctl setfd "$OCB_BRIDGE" 2 || \
-        die "Could not set forwarding time on $OCB_BRIDGE!"
-    sudo -n brctl sethello "$OCB_BRIDGE" 1 || \
-        die "Could not set hello time for $OCB_BRIDGE!"
-    sudo -n ip link set "$OCB_BRIDGE" up || \
-        die "Could not set link on $OCB_BRIDGE up!"
-    sudo -n ip addr add "$OCB_BRIDGE_IP" dev "$OCB_BRIDGE"
+created_bridges=()
+make_rebar_bridges() {
+    for br in "${OCB_BRIDGES[@]}"; do
+        sudo -n brctl show |grep -q "$br" && continue
+        sudo -n brctl addbr "$br" || \
+            die "Could not create $br bridge!"
+        created_bridges+=($br)
+        sudo -n ip link set "$br" up || \
+            die "Could not set link on $br up!"
+    done
 }
 
-kill_rebar_bridge() {
-    sudo -n ip addr flush dev "$OCB_BRIDGE"
-    sudo -n ip link set "$OCB_BRIDGE" down
-    sudo -n brctl delbr "$OCB_BRIDGE"
+kill_rebar_bridges() {
+    for br in "${created_bridges[@]}"; do
+        sudo -n ip addr flush dev "$br"
+        sudo -n ip link set "$br" down
+        sudo -n brctl delbr "$br"
+    done
 }
 
 # Simple unique mac address generation.
@@ -162,10 +145,11 @@ killtap() {
 # and sets vm_nics to the array of macaddr,nic_name pairs.
 vm_nics=()
 makenics(){
+    make_rebar_bridges
     local idx
     for ((idx=0; idx < NICS_PER_VM; idx++));  do
         local nic_name="vm-$VMID-${idx}"
-        maketap "$nic_name" "$OCB_BRIDGE"
+        maketap "$nic_name" "${OCB_BRIDGES[$idx]}"
         getmac
         if [ $idx == 0 ]; then
             local vm_name="d${MACADDR//:/-}"
@@ -182,8 +166,9 @@ makenics(){
 
 killnics(){
     local nic
-    for nic in "${vm_nics[@]}"; do
-        killtap "${nic##*,}" "$OCB_BRIDGE"
+    for idx in "${!vm_nics[@]}"; do
+        nic=${vm_nics[$idx]##*,}
+        killtap "${nic}" "$OCB_BRIDGES[$idx]"
     done
 }
 
@@ -191,6 +176,7 @@ cleanup() {
     set +e
     kill_vm killed
     killnics
+    kill_rebar_bridges
     rm -rf "$VM_DIR/$VMID"*
 }
 
