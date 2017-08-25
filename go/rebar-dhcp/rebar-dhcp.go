@@ -18,6 +18,7 @@ var hostString string
 var serverPort int
 var versionFlag bool
 var rebarClient *rebar.Client
+var prober *Prober
 
 func init() {
 	flag.BoolVar(&versionFlag, "version", false, "Print version and exit")
@@ -62,7 +63,10 @@ func main() {
 		log.Fatal(err)
 	}
 	fe := NewFrontend(bs)
-
+	prober, err = NewProber()
+	if err != nil {
+		log.Fatal(err)
+	}
 	if err := StartDhcpHandlers(fe.DhcpInfo, serverIp); err != nil {
 		log.Fatal(err)
 	}
