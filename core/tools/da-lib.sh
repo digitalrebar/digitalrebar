@@ -67,7 +67,7 @@ docker_admin_default_containers() {
     [[ ${containers["chef"]} ]] || containers["chef"]=true
     [[ ${containers["webproxy"]} ]] || containers["webproxy"]=true
     [[ ${containers["revproxy"]} ]] || containers["revproxy"]=true
-    [[ ${containers["access"]} ]] || containers["access"]=FORWARDER
+    [[ ${containers["access"]} ]] || containers["access"]=HOST
 }
 
 args=()
