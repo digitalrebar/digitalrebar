@@ -66,6 +66,44 @@ roles:
                 "source": { type: str, required: true }
                 "linux_installcode": { type: str, required: true }
         default:
+          - "name": "storcli7"
+            "type": "BarclampRaid::Lsi_Storcli"
+            "raid_levels":
+              - "jbod"
+              - "raid0"
+              - "raid1"
+              - "raid5"
+              - "raid6"
+              - "raid10"
+              - "raid50"
+              - "raid60"
+            "executable": "/opt/MegaRaid/storcli7/storcli64"
+            "archive": "007.0205.0000.0000_Unified_StorCLI.zip"
+            "source": "https://docs.broadcom.com/docs/007.0205.0000.0000_Unified_StorCLI.zip"
+            "linux_installcode": |
+              unzip -j -o 007.0205.0000.0000_Unified_StorCLI.zip Unified_storcli_all_os.zip
+              unzip -j -o Unified_storcli_all_os.zip unified_storcli_all_os/Linux/storcli-007.0205.0000.0000-1.noarch.rpm
+              rpm2cpio storcli-007.0205.0000.0000-1.noarch.rpm | (cd /; cpio -idmv)
+              mv /opt/MegaRAID/storcli /opt/MegaRAID/storcli7
+          - "name": "storcli6"
+            "type": "BarclampRaid::Lsi_Storcli"
+            "raid_levels":
+              - "jbod"
+              - "raid0"
+              - "raid1"
+              - "raid5"
+              - "raid6"
+              - "raid10"
+              - "raid50"
+              - "raid60"
+            "executable": "/opt/MegaRaid/storcli6/storcli64"
+            "archive": "1.23.02_StorCLI.zip"
+            "source": "https://docs.broadcom.com/docs/1.23.02_StorCLI.zip"
+            "linux_installcode": |
+              unzip -j -o 1.23.02_StorCLI.zip storcli_All_OS.zip
+              unzip -j -o storcli_All_OS.zip storcli_All_OS/Linux/storcli-1.23.02-1.noarch.rpm
+              rpm2cpio storcli-1.23.02-1.noarch.rpm | (cd /; cpio -idmv)
+              mv /opt/MegaRAID/storcli /opt/MegaRAID/storcli6
           - "name": "megacli"
             "type": "BarclampRaid::Lsi_Megacli"
             "raid_levels":
@@ -80,7 +118,9 @@ roles:
             "executable": "/opt/MegaRAID/MegaCli/MegaCli64"
             "archive": "8.07.14_MegaCLI.zip"
             "source": "https://docs.broadcom.com/docs/12351587"
-            "linux_installcode": "pkg=Linux/MegaCli-8.07.14-1.noarch.rpm; unzip -j -o 8.07.14_MegaCLI.zip $pkg && rpm2cpio ${pkg##*/} |(cd /; cpio -idmv)"
+            "linux_installcode": |
+              pkg=Linux/MegaCli-8.07.14-1.noarch.rpm
+              unzip -j -o 8.07.14_MegaCLI.zip $pkg && rpm2cpio ${pkg##*/} |(cd /; cpio -idmv)
           - "name": "sas2ircu"
             "type": "BarclampRaid::Lsi_Sas2ircu"
             "raid_levels":

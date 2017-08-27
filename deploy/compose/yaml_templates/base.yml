@@ -22,7 +22,7 @@ logging:
 {{ START ACCESS_MODE==HOST }}
   ports:
     - "514:514"
-    - "514/udp:514/udp"
+    - "514:514/udp"
     - "2514:2514"
 {{ END ACCESS_MODE==HOST }}
 

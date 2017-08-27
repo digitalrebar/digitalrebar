@@ -91,7 +91,7 @@ while [[ $1 == -* ]] ; do
       exit 0
       ;;
     --clean)
-        rm -f access.env services.env dc docker-compose.yml config-dir/api/config/networks/the_admin.json config-dir/api/config/networks/the_bmc.json tag
+        rm -f access.env services.env dc docker-compose.yml config-dir/api/config/networks/*.json tag
         (
             cd "${DR_TFTPROOT}"
             for cfg in *.ipxe *.conf pxelinux.cfg/*; do
@@ -182,35 +182,35 @@ while [[ $1 == -* ]] ; do
 
 done
 
+if [[ ! $EXTERNAL_IP || $EXTERNAL_IP != */* ]]; then
+    echo "$EXTERNAL_IP not set."
+    echo "It must be an IPv4 address in CIDR format, e.g:"
+    echo "    192.168.124.11/24"
+    exit 1
+fi
+
 if [ "$ACCESS_MODE" == "FORWARDER" ] ; then
-    EXTERNAL_IP=${EXTERNAL_IP:-192.168.124.11/24}
-    FORWARDER_IP=${FORWARDER_IP:-192.168.124.11/24}
+    FORWARDER_IP=${FORWARDER_IP:-${EXTERNAL_IP}}
     ACCESS_MODE_SED_DELETE="HOST"
-    MYPWD=`pwd`
-    cd config-dir/api/config/networks
-    rm -f the_admin.json || :
-    rm -f the_bmc.json || :
-    if [[ $PROVISION_IT = YES ]] ; then
-        [[ -f the_admin.json.forwarder ]] && ln -s the_admin.json.forwarder the_admin.json
-        [[ -f the_bmc.json.forwarder ]] && ln -s the_bmc.json.forwarder the_bmc.json
-    fi
-    cd $MYPWD
 elif [ "$ACCESS_MODE" == "HOST" ] ; then
-    EXTERNAL_IP=${EXTERNAL_IP:-192.168.99.100/24}
     FORWARDER_IP=
     ACCESS_MODE_SED_DELETE="FORWARDER"
-    MYPWD=`pwd`
-    cd config-dir/api/config/networks
-    rm -f the_admin.json || :
-    rm -f the_bmc.json || :
-    if [[ $PROVISION_IT = YES ]] ; then
-        [[ -f the_admin.json.mac ]] && ln -s the_admin.json.mac the_admin.json
-    fi
-    cd $MYPWD
 else
     echo "ACCESS MODE: $ACCESS_MODE is not HOST or FORWARDER"
     exit 1
 fi
+(
+    cd config-dir/api/config/networks
+    cp "$HOME/.cache/digitalrebar/networks/"*.json .
+    if [[ $(echo *.json) = '*.sjon' ]]; then
+        echo "No networks predefined."
+        echo "If you always want to precreate networks in Digital Rebar,"
+        echo "please place approporiate definitions in $HOME/.cache/digitalrebar/networks"
+        echo
+        echo "$PWD/network.json.example is a useful starting point"
+    fi
+)
+
 
 if [[ -x ../../go/bin/$DR_TAG/linux/amd64/rebar ]]; then
     mkdir -p data-dir/bin
