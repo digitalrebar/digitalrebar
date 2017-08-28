@@ -35,6 +35,39 @@ func (s *serveIfConn) WriteTo(b []byte, addr net.Addr) (n int, err error) {
 	return s.conn.WriteTo(b, s.cm, addr)
 }
 
+func handleOnePacket(conn *serveIfConn, req Packet, addr net.Addr, handler Handler) {
+	ipStr, portStr, err := net.SplitHostPort(addr.String())
+	if err != nil {
+		return
+	}
+	port, _ := strconv.Atoi(portStr)
+	if req.HLen() > 16 { // Invalid size
+		return
+	}
+	options := req.ParseOptions()
+	t := options[OptionDHCPMessageType]
+	if len(t) != 1 {
+		return
+	}
+	reqType := MessageType(t[0])
+	if reqType < Discover || reqType > Inform {
+		return
+	}
+	res := handler.ServeDHCP(req, reqType, options)
+	if res == nil {
+		return
+	}
+	// If IP not available, broadcast
+	if req.GIAddr().Equal(net.IPv4zero) {
+		if net.ParseIP(ipStr).Equal(net.IPv4zero) || req.Broadcast() {
+			addr = &net.UDPAddr{IP: net.IPv4bcast, Port: port}
+		}
+	} else {
+		addr = &net.UDPAddr{IP: req.GIAddr(), Port: 67}
+	}
+	conn.WriteTo(res, addr)
+}
+
 // Serve takes a ServeConn (such as a net.PacketConn) that it uses for both
 // reading and writing DHCP packets. Every packet is passed to the handler,
 // which processes it and optionally return a response packet for writing back
@@ -58,38 +91,13 @@ func ServeIf2(conn *serveIfConn) error {
 		if n < 240 { // Packet too small to be DHCP
 			continue
 		}
-		req := Packet(buffer[:n])
-		if req.HLen() > 16 { // Invalid size
+		rawPkt := make([]byte, n)
+		if copy(rawPkt, buffer) != n {
+			// Unable to make a copy of this packet.
 			continue
 		}
-		options := req.ParseOptions()
-		var reqType MessageType
-		if t := options[OptionDHCPMessageType]; len(t) != 1 {
-			continue
-		} else {
-			reqType = MessageType(t[0])
-			if reqType < Discover || reqType > Inform {
-				continue
-			}
-		}
-		if res := handler.ServeDHCP(req, reqType, options); res != nil {
-			// If IP not available, broadcast
-			ipStr, portStr, err := net.SplitHostPort(addr.String())
-			if err != nil {
-				return err
-			}
-			port, _ := strconv.Atoi(portStr)
-			if req.GIAddr().Equal(net.IPv4zero) {
-				if net.ParseIP(ipStr).Equal(net.IPv4zero) || req.Broadcast() {
-					addr = &net.UDPAddr{IP: net.IPv4bcast, Port: port}
-				}
-			} else {
-				addr = &net.UDPAddr{IP: req.GIAddr(), Port: port}
-			}
-			if _, e := conn.WriteTo(res, addr); e != nil {
-				return e
-			}
-		}
+		req := Packet(rawPkt[:])
+		go handleOnePacket(conn, req, addr, handler)
 	}
 }
 

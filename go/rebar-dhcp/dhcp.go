@@ -163,26 +163,58 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 	switch msgType {
 
 	case dhcp.Discover:
-		lease, binding := subnet.findOrGetInfo(h.info, nic, p.CIAddr())
-		if lease == nil {
-			log.Printf("%s: Discovery out of IPs for %s, ignoring %v", xid(p), subnet.Name, nic)
-			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
+		var lease *Lease
+		var binding *Binding
+		var fresh bool
+		for {
+			lease, binding, fresh = subnet.findOrGetInfo(h.info, nic, p.CIAddr())
+			if lease == nil {
+				log.Printf("%s: Discovery out of IPs for %s, ignoring %v", xid(p), subnet.Name, nic)
+				return nil
+			}
+			if ignoreAnonymus && binding == nil {
+				log.Printf("%s: Discovery ignoring request from unknown MAC address %s: %v",
+					xid(p),
+					p.CHAddr().String(),
+					nic)
+				return nil
+			}
+			if lease.State != "PROBING" {
+				// We found a lease that already exists,  no need to test
+				// it for extra validity.
+				break
+			}
+			if !fresh {
+				// We are probing to make sure the IP we want to hand out is valid
+				// in abother routine, ignore this packet for now.
+				return nil
+			}
+			h.info.Unlock()
+			addrInUse := <-prober.InUse(lease.Ip, 3*time.Second)
+			h.info.Lock()
+			lease = subnet.Leases[nic]
+			if lease == nil {
+				// Another goroutine already disavowed any knowledge of this lease.
+				return nil
+			}
+			if lease.State == "PROBING" {
+				if addrInUse {
+					// No other goroutine has sent an offer, and the address is in use according to the
+					// ping probe.  Give the IP a phantom lease and try another time.
+					subnet.phantomLease(h.info, nic)
+					continue
+				}
+				// Make a new offer
+				subnet.updateLeaseTime(h.info, lease, 60*time.Second, "OFFER")
+			}
+			break
 		}
-		if ignoreAnonymus && binding == nil {
-			log.Printf("%s: Discovery ignoring request from unknown MAC address %s: %v",
-				xid(p),
-				p.CHAddr().String(),
-				nic)
-			return nil
-		}
-
-		options, leaseTime := subnet.buildOptions(lease, binding, p)
+		options, _ := subnet.buildOptions(lease, binding, p)
 		reply := dhcp.ReplyPacket(p, dhcp.Offer,
 			h.ip,
 			lease.Ip,
-			leaseTime,
+			60*time.Second,
 			options.SelectOrderOrAll(options[dhcp.OptionParameterRequestList]))
-
 		log.Printf("%s: Discovery handing out: %s to %s", xid(p),
 			reply.YIAddr(),
 			reply.CHAddr())
@@ -240,13 +272,13 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 				reqIP,
 				nic,
 				lease.Ip)
-			subnet.updateLeaseTime(h.info, lease, 5*time.Second)
+			subnet.updateLeaseTime(h.info, lease, 5*time.Second, "NAK")
 			return dhcp.ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
 		}
 
 		options, leaseTime := subnet.buildOptions(lease, binding, p)
 
-		subnet.updateLeaseTime(h.info, lease, leaseTime)
+		subnet.updateLeaseTime(h.info, lease, leaseTime, "ACK")
 
 		reply := dhcp.ReplyPacket(p, dhcp.ACK,
 			h.ip,

@@ -43,6 +43,7 @@ type Lease struct {
 	Mac        string    `json:"mac"`
 	Valid      bool      `json:"valid"`
 	ExpireTime time.Time `json:"expire_time"`
+	State      string
 }
 
 func (l *Lease) Phantom() bool {
@@ -285,11 +286,12 @@ func (subnet *Subnet) getFreeIP() (*net.IP, bool) {
 	return nil, saveMe
 }
 
-func (subnet *Subnet) findOrGetInfo(dt *DataTracker, nic string, suggest net.IP) (*Lease, *Binding) {
+func (subnet *Subnet) findOrGetInfo(dt *DataTracker, nic string, suggest net.IP) (*Lease, *Binding, bool) {
 	binding := subnet.Bindings[nic]
 	lease := subnet.Leases[nic]
 
 	if binding == nil {
+		fresh := false
 		if lease == nil {
 			// We have neither a lease nor a binding, create a lease.
 			theip, saveMe := subnet.getFreeIP()
@@ -297,22 +299,24 @@ func (subnet *Subnet) findOrGetInfo(dt *DataTracker, nic string, suggest net.IP)
 				if saveMe {
 					dt.save_data()
 				}
-				return nil, nil
+				return nil, nil, false
 			}
+			fresh = true
 			lease = &Lease{
 				Ip:         *theip,
 				Mac:        nic,
 				Valid:      true,
+				State:      "PROBING",
 				ExpireTime: time.Now().Add(subnet.ActiveLeaseTime),
 			}
 			subnet.Leases[nic] = lease
 			dt.save_data()
 		}
-		return lease, nil
+		return lease, nil, fresh
 	}
 
 	if lease != nil && lease.Ip.Equal(binding.Ip) {
-		return lease, binding
+		return lease, binding, false
 	}
 	lease = &Lease{
 		Ip:         binding.Ip,
@@ -322,11 +326,12 @@ func (subnet *Subnet) findOrGetInfo(dt *DataTracker, nic string, suggest net.IP)
 	}
 	subnet.Leases[nic] = lease
 	dt.save_data()
-	return lease, binding
+	return lease, binding, false
 }
 
-func (s *Subnet) updateLeaseTime(dt *DataTracker, lease *Lease, d time.Duration) {
+func (s *Subnet) updateLeaseTime(dt *DataTracker, lease *Lease, d time.Duration, st string) {
 	lease.ExpireTime = time.Now().Add(d)
+	lease.State = st
 	dt.save_data()
 }
 
@@ -341,10 +346,16 @@ func (s *Subnet) phantomLease(dt *DataTracker, nic string) {
 	}
 	// This is the MAC address range reserved for use in documentation.
 	// We use it to ensure that we don't collide with real mac address ranges.
+	ipBits := []byte(lease.Ip)
 	addr[0] = 0x00
 	addr[1] = 0x53
+	addr[2] = ipBits[0]
+	addr[3] = ipBits[1]
+	addr[4] = ipBits[2]
+	addr[5] = ipBits[3]
 	lease.Valid = false
-	lease.ExpireTime = time.Now()
+	lease.State = "DECLINE"
+	lease.ExpireTime = time.Now().Add(10 * time.Minute)
 	lease.Mac = addr.String()
 	delete(s.Leases, nic)
 	s.Leases[lease.Mac] = lease
