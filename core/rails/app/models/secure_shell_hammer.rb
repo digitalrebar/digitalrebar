@@ -51,7 +51,7 @@ class SecureShellHammer < Hammer
 
   # and it only allows you to reboot a node via its "reboot" command
   def reboot
-    node.update!(alive: false)
+    node.update!(alive: false) if node.available
     run("reboot")
   end
 
