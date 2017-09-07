@@ -53,6 +53,11 @@ fi
 export REBAR_ENDPOINT="{{.CommandURL}}"
 echo "{{.CommandURL}}" > /etc/rebar.endpoint
 
+if [[ $(rebar nodes show $REBAR_UUID |jq -r '.available') != true ]]; then
+    echo "Node not available, doing nothing"
+    exit 0
+fi
+
 put_alive() {
     echo "Setting node alive=$1"
     rebar nodes update "$REBAR_UUID" "{\"alive\": $1, \"bootenv\": \"local\"}"
@@ -61,7 +66,7 @@ put_alive() {
     done
 }
 
-# Force time (some OS already have this done)q
+# Force time (some OS already have this done)
 ntpdate "{{index (.Param "ntp_servers") 0}}" 2>/dev/null >/dev/null
 
 case $1 in
