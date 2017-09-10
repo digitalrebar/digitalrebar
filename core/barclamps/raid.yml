@@ -77,7 +77,7 @@ roles:
               - "raid10"
               - "raid50"
               - "raid60"
-            "executable": "/opt/MegaRaid/storcli7/storcli64"
+            "executable": "/opt/MegaRAID/storcli7/storcli64"
             "archive": "007.0205.0000.0000_Unified_StorCLI.zip"
             "source": "https://docs.broadcom.com/docs/007.0205.0000.0000_Unified_StorCLI.zip"
             "linux_installcode": |
@@ -96,7 +96,7 @@ roles:
               - "raid10"
               - "raid50"
               - "raid60"
-            "executable": "/opt/MegaRaid/storcli6/storcli64"
+            "executable": "/opt/MegaRAID/storcli6/storcli64"
             "archive": "1.23.02_StorCLI.zip"
             "source": "https://docs.broadcom.com/docs/1.23.02_StorCLI.zip"
             "linux_installcode": |
