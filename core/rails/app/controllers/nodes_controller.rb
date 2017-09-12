@@ -162,7 +162,10 @@ class NodesController < ApplicationController
         @group = find_key_cap(Group, params[:group_id], cap("DESTROY", "GROUP"))
         @group.nodes.delete(@node) if @group.nodes.include?(@node)
       end
-      render :text=>I18n.t('api.removed', :item=>'node', :collection=>'group')
+      respond_to do |format|
+        format.html { render :text=>I18n.t('api.removed', :item=>'node', :collection=>'group') }
+        format.json { render api_delete @node }
+      end
       return
     end
     model.transaction do
@@ -226,7 +229,10 @@ class NodesController < ApplicationController
         n = find_key_cap(model, params[:node_id], cap("READ"))
         n.groups << g
       end
-      render :text=>I18n.t('api.added', :item=>g.name, :collection=>'node.groups')
+       respond_to do |format|
+        format.html { render :text=>I18n.t('api.added', :item=>g.name, :collection=>'node.groups') }
+        format.json { render api_show @node }
+      end
       return
     end
     default_net = nil

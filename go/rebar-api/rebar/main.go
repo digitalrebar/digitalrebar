@@ -269,6 +269,7 @@ func makeCommandTree(singularName string,
 	addRolerCommands(singularName, maker, res)
 	addHammererCommands(singularName, maker, res)
 	addJiggerCommands(singularName, maker, res)
+	addGrouperCommands(singularName, maker, res)
 	return res
 }
 

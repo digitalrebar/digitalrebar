@@ -87,6 +87,7 @@ func (o *Node) networks()           {}
 func (o *Node) networkRanges()      {}
 func (o *Node) networkAllocations() {}
 func (o *Node) providers()          {}
+func (o *Node) groups()             {}
 
 // Deployment returns the Deployment the node is in.
 func (o *Node) Deployment() (res *Deployment, err error) {
