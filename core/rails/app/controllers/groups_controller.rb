@@ -53,6 +53,19 @@ class GroupsController < ApplicationController
   end
   
   def update
+    if params.has_key? :node_id
+      Group.transaction do
+        # Both of these should arguably be UPDATE
+        @group = find_key_cap(model, params[:id], cap("UPDATE"))
+        @node = find_key_cap(Node, params[:node_id], cap("READ","NODE"))
+        @node.groups << @group
+      end
+      respond_to do |format|
+        format.html { render :text=>I18n.t('api.added', :item=>@group.name, :collection=>'node.groups') }
+        format.json { render api_show @node }
+      end
+      return
+    end
     params[:category] = params[:category].first if params[:category].kind_of?(Array)
     Group.transaction do
       @group = find_key_cap(model,params[:id], cap("UPDATE"))
@@ -62,11 +75,24 @@ class GroupsController < ApplicationController
   end
 
   def destroy
+    if params.has_key? :node_id
+      model.transaction do
+        # Arguably, these should both be UPDATE
+        @node = find_key_cap(Node, params[:node_id] , cap("READ","NODE"))
+        @group = find_key_cap(model, params[:id], cap("UPDATE"))
+        @group.nodes.delete(@node)
+      end
+      respond_to do |format|
+        format.html { render :text=>I18n.t('api.removed', :item=>'node', :collection=>'group') }
+        format.json { render api_delete @node }
+      end
+      return
+    end
     model.transaction do
       @group = find_key_cap(model, params[:id], cap("DESTROY"))
       @group.destroy
     end
     render api_delete @group
   end
-  
+
 end

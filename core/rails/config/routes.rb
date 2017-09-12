@@ -287,6 +287,7 @@ Rebar::Application.routes.draw do
             resources :attribs
             resources :roles
             resources :network_allocations
+            resources :groups
             put :propose
             put :commit
             match :power, via: [:get, :put]
