@@ -61,6 +61,7 @@ import:
   subpackages:
   - nacl/box
 - package: golang.org/x/net
+  version: 'master'
   subpackages:
   - html
 testImport:
