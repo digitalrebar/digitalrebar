@@ -215,6 +215,8 @@ fi
 if [[ -x ../../go/bin/$DR_TAG/linux/amd64/rebar ]]; then
     mkdir -p data-dir/bin
     cp "../../go/bin/$DR_TAG/linux/amd64/"* data-dir/bin
+else
+    [[ -d data-dir/bin ]] && rm -rf data-dir/bin
 fi
 
 # Process templates and build one big yml file for now.
