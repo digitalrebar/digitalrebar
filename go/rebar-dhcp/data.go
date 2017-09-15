@@ -56,7 +56,7 @@ func (dt *DataTracker) AddSubnet(s *Subnet) (error, int) {
 	}
 
 	dt.Subnets[s.Name] = s
-	dt.save_data()
+	dt.save_data(s.Name)
 	return nil, http.StatusOK
 }
 
@@ -66,7 +66,7 @@ func (dt *DataTracker) RemoveSubnet(subnetName string) (error, int) {
 		return errors.New("Not Found"), http.StatusNotFound
 	}
 	delete(dt.Subnets, subnetName)
-	dt.save_data()
+	dt.remove_data(subnetName)
 	return nil, http.StatusOK
 }
 
@@ -90,7 +90,7 @@ func (dt *DataTracker) ReplaceSubnet(subnetName string, subnet *Subnet) (error, 
 	}
 
 	dt.Subnets[subnet.Name] = subnet
-	dt.save_data()
+	dt.save_data(subnetName)
 	return nil, http.StatusOK
 }
 
@@ -124,26 +124,74 @@ func (ipnet *MyIPNet) UnmarshalText(text []byte) error {
  * Data storage/retrieval functions
  */
 func (dt *DataTracker) load_data() {
-	buf, err := dt.store.Load("subnets")
-	if _, ok := err.(store.NotFound); ok {
+	keys, err := dt.store.Keys()
+	log.Printf("Store keys: %v", keys)
+	if err != nil {
+		log.Panicf("Unable to fetch keys from the backing store")
+	}
+	if len(keys) == 1 && keys[0] == "subnets" {
+		log.Printf("Migrating from v0 store format to v1 store format")
+		buf, err := dt.store.Load("subnets")
+		if err != nil {
+			log.Panicf("Unable to load data from backing store: %s", err)
+		}
+		if err := json.Unmarshal(buf, &dt); err != nil {
+			log.Panicf("Unable to unmarshal data from backing store: %s", err)
+		}
+		for k, v := range dt.Subnets {
+			buf, err := json.Marshal(v)
+			if err != nil {
+				log.Panicf("Unable to marshal subnet %s: %v", k, err)
+			}
+			if err := dt.store.Save(k, buf); err != nil {
+				log.Panicf("Unable to save subnet %s: %v", k, err)
+			}
+		}
+		log.Printf("Migration complete.")
+		dt.store.Remove("subnets")
 		return
 	}
-	if err != nil {
-		log.Panicf("Unable to load data from backing store: %s", err)
+	if dt.Subnets == nil {
+		dt.Subnets = map[string]*Subnet{}
 	}
-	if err := json.Unmarshal(buf, &dt); err != nil {
-		log.Panicf("Unable to unmarshal data from backing store: %s", err)
+	for _, key := range keys {
+		if key == "subnets" {
+			continue
+		}
+		buf, err := dt.store.Load(key)
+		if err != nil {
+			log.Panicf("Unable to load data for subnet %s: %v", key, err)
+		}
+		subnet := &Subnet{}
+		if err := json.Unmarshal(buf, subnet); err != nil {
+			log.Panicf("Unable to unmarshal subnet %s: %v", key, err)
+		}
+		dt.Subnets[key] = subnet
 	}
 }
 
-func (dt *DataTracker) save_data() {
-	buf, err := json.Marshal(dt)
+func (dt *DataTracker) save_data(key string) {
+	subn, ok := dt.Subnets[key]
+	if !ok {
+		return
+	}
+	buf, err := json.Marshal(subn)
 	if err != nil {
 		log.Panicf("Unable to marshal data to save to backing store: %s", err)
 	}
-	if err := dt.store.Save("subnets", buf); err != nil {
+	if err := dt.store.Save(key, buf); err != nil {
 		log.Panicf("Unable to save data to backing store: %s", err)
 	}
+}
+
+func (dt *DataTracker) remove_data(key string) {
+	if _, ok := dt.Subnets[key]; !ok {
+		return
+	}
+	if err := dt.store.Remove(key); err != nil {
+		log.Panicf("Error removing subnet %s: %v", key, err)
+	}
+	delete(dt.Subnets, key)
 }
 
 func (dt *DataTracker) subnetsOverlap(subnet *Subnet) bool {
@@ -165,7 +213,7 @@ func (dt *DataTracker) AddBinding(subnetName string, binding Binding) (error, in
 	}
 
 	lsubnet.Bindings[binding.Mac] = &binding
-	dt.save_data()
+	dt.save_data(subnetName)
 	return nil, http.StatusOK
 }
 
@@ -181,7 +229,7 @@ func (dt *DataTracker) DeleteBinding(subnetName, mac string) (error, int) {
 	}
 
 	delete(lsubnet.Bindings, mac)
-	dt.save_data()
+	dt.save_data(subnetName)
 	return nil, http.StatusOK
 }
 
@@ -197,7 +245,7 @@ func (dt *DataTracker) DeleteLease(subnetName, mac string) (error, int) {
 	}
 
 	delete(lsubnet.Leases, mac)
-	dt.save_data()
+	dt.save_data(subnetName)
 	return nil, http.StatusOK
 }
 
@@ -216,7 +264,7 @@ func (dt *DataTracker) SetNextServer(subnetName string, ip net.IP, nextServer Ne
 	}
 
 	if save_me {
-		dt.save_data()
+		dt.save_data(subnetName)
 	}
 
 	return nil, http.StatusOK

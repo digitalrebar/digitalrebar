@@ -191,7 +191,7 @@ func (subnet *Subnet) freeLease(dt *DataTracker, nic string) {
 	lease := subnet.Leases[nic]
 	if lease != nil {
 		lease.ExpireTime = time.Now()
-		dt.save_data()
+		dt.save_data(subnet.Name)
 	}
 }
 
@@ -297,7 +297,7 @@ func (subnet *Subnet) findOrGetInfo(dt *DataTracker, nic string, suggest net.IP)
 			theip, saveMe := subnet.getFreeIP()
 			if theip == nil {
 				if saveMe {
-					dt.save_data()
+					dt.save_data(subnet.Name)
 				}
 				return nil, nil, false
 			}
@@ -310,7 +310,7 @@ func (subnet *Subnet) findOrGetInfo(dt *DataTracker, nic string, suggest net.IP)
 				ExpireTime: time.Now().Add(subnet.ActiveLeaseTime),
 			}
 			subnet.Leases[nic] = lease
-			dt.save_data()
+			dt.save_data(subnet.Name)
 		}
 		return lease, nil, fresh
 	}
@@ -325,14 +325,14 @@ func (subnet *Subnet) findOrGetInfo(dt *DataTracker, nic string, suggest net.IP)
 		ExpireTime: time.Now().Add(subnet.ReservedLeaseTime),
 	}
 	subnet.Leases[nic] = lease
-	dt.save_data()
+	dt.save_data(subnet.Name)
 	return lease, binding, false
 }
 
 func (s *Subnet) updateLeaseTime(dt *DataTracker, lease *Lease, d time.Duration, st string) {
 	lease.ExpireTime = time.Now().Add(d)
 	lease.State = st
-	dt.save_data()
+	dt.save_data(s.Name)
 }
 
 func (s *Subnet) phantomLease(dt *DataTracker, nic string) {
@@ -360,7 +360,7 @@ func (s *Subnet) phantomLease(dt *DataTracker, nic string) {
 	delete(s.Leases, nic)
 	s.Leases[lease.Mac] = lease
 	log.Printf("New phantom lease: %#v", lease)
-	dt.save_data()
+	dt.save_data(s.Name)
 }
 
 func (s *Subnet) buildOptions(lease *Lease, binding *Binding, p dhcp.Packet) (dhcp.Options, time.Duration) {
