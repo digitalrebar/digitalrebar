@@ -17,8 +17,8 @@ ADD http://boot.ipxe.org/ipxe.pxe /tmp/ipxe.pxe
 ADD https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 /tmp/jq
 RUN cd /tmp \
     && curl -fgL http://downloads.sourceforge.net/project/elilo/elilo/elilo-3.16/elilo-3.16-all.tar.gz -o /tmp/elilo.tar.gz \
-    && curl -fgL https://s3.amazonaws.com/opencrowbar/provisioner/syslinux-6.03.tar.xz -o /tmp/syslinux-6.03.tar.xz \
-    && curl -fgL https://s3.amazonaws.com/opencrowbar/provisioner/syslinux-3.86.tar.xz -o /tmp/syslinux-3.86.tar.xz \
+    && curl -fgL https://s3.amazonaws.com/rackn-sledgehammer/provisioner/syslinux-6.03.tar.xz -o /tmp/syslinux-6.03.tar.xz \
+    && curl -fgL https://s3.amazonaws.com/rackn-sledgehammer/provisioner/syslinux-3.86.tar.xz -o /tmp/syslinux-3.86.tar.xz \
     && curl -fgL https://git.ipxe.org/releases/wimboot/wimboot-2.5.2.tar.bz2 -o /tmp/wimboot-2.5.2.tar.bz2 \
     && curl -fgL https://rubygems.org/downloads/cstruct-1.0.1.gem -o /tmp/cstruct-1.0.1.gem
 COPY entrypoint.d/*.sh /usr/local/entrypoint.d/

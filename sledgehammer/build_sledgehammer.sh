@@ -392,7 +392,9 @@ export PATH=/bin
 export SIGNATURE="::SIGNATURE::"
 echo "Stage1 $SIGNATURE in Busybox"
 echo "You can download a copy of the Busybox source for this version at:"
-echo "http://opencrowbar.s3-website-us-east-1.amazonaws.com/busybox-source.tar.xz"
+echo "http://rackn-sledgehammer.s3-website-us-west-2.amazonaws.com/busybox-source.tar.xz"
+echo "You can download a copy of the wimlib source for this version at:"
+echo "http://rackn-sledgehammer.s3-website-us-west-2.amazonaws.com/wimlib-source.tgz"
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
 mount -t devtmpfs dev /dev
@@ -632,7 +634,7 @@ echo "Making stage1.img"
      (cd lib/firmware; rm -rf radeon)
      find lib |sort |cpio -o -R 0:0 --format=newc |xz -T0 -c >lib.cpio.xz
      rm -rf lib
-     curl -fgL -o bin/busybox http://opencrowbar.s3-website-us-east-1.amazonaws.com/busybox
+     curl -fgL -o bin/busybox http://rackn-sledgehammer.s3-website-us-west-2.amazonaws.com/busybox
      (cd bin; chmod 755 busybox; ./busybox --install .)
      cp ../stage1_init init
      cp ../udhcpc_config usr/share/udhcpc/default.script

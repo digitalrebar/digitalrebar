@@ -33,6 +33,8 @@ efibootmgr
 file
 filesystem
 firewalld
+fuse
+fuse-ntfs-3g
 glibc
 glibc.i686
 gzip
@@ -58,6 +60,8 @@ mdadm
 microcode_ctl
 mktemp
 ncurses
+ntfs-3g
+ntfsprogs
 ntp
 openssh-clients
 openssh-server
@@ -93,6 +97,8 @@ vim-enhanced
 vim-minimal
 wget
 which
+xfsdump
+xfsprogs
 yum
 zlib
 %end
@@ -109,7 +115,6 @@ cat > /root/postnochroot-install << EOF_postnochroot
 cp start-up.sh $INSTALL_ROOT/sbin/sledgehammer-start-up.sh
 chmod +x $INSTALL_ROOT/sbin/sledgehammer-start-up.sh
 cp sshd_config $INSTALL_ROOT/etc/ssh/sshd_config
-cp curtin.tgz $INSTALL_ROOT/root/curtin.tgz
 
 cp dhclient.conf $INSTALL_ROOT/etc
 
@@ -163,6 +168,9 @@ curl -fgLO https://opscode-omnibus-packages.s3.amazonaws.com/el/6/i686/chef-11.1
 yum install -y chef-11.18.12-1.el6.i686.rpm
 rm chef-11.18.12-1.el6.i686.rpm
 
+curl -fgL -o /root/wimlib-bin.tgz http://rackn-sledgehammer.s3-website-us-west-2.amazonaws.com/wimlib-bin.tgz
+curl -fgL -o /root/curtin.tgz  http://rackn-sledgehammer.s3-website-us-west-2.amazonaws.com/curtin.tgz
+
 # Setup and install curtin
 tar -xvf /root/curtin.tgz
 cd trunk.dist
@@ -170,6 +178,11 @@ pip install -r requirements.txt
 python ./setup.py install
 cd ..
 rm -rf trunk.dist curtin.tgz
+
+# Setup wimlib
+cd /
+tar -zxvf /root/wimlib-bin.tgz
+cd -
 
 rm -f /etc/resolv.conf
 
