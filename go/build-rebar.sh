@@ -36,10 +36,12 @@ packages=("github.com/digitalrebar/digitalrebar/go/certificates/sign-it"
 	  "github.com/digitalrebar/digitalrebar/go/rebar-rev-proxy"
 	  "github.com/digitalrebar/digitalrebar/go/rebar-api/rebar"
 	  "github.com/digitalrebar/digitalrebar/go/forwarder"
-	  "github.com/digitalrebar/digitalrebar/go/provisioner-mgmt")
+	  "github.com/digitalrebar/digitalrebar/go/provisioner-mgmt"
+    "github.com/digitalrebar/digitalrebar/go/common/store/convert")
 declare -A oses
 oses["github.com/digitalrebar/digitalrebar/go/rebar-api/rebar"]="linux darwin windows"
 oses["github.com/digitalrebar/digitalrebar/go/classifier"]="linux darwin windows"
+oses["github.com/digitalrebar/digitalrebar/go/common/store/convert"]="linux darwin windows"
 
 for arch in "${arches[@]}"; do
     for pkg in "${packages[@]}"; do
