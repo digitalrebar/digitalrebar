@@ -464,10 +464,10 @@ modprobe squashfs
 mkdir /newinitramfs/.upper /newinitramfs/.work /newinitramfs/.lower
 mount -o ro -t squashfs "/newinitramfs/$SIGNATURE.squashfs" /newinitramfs/.lower || \
     fail "Failed to mount $SIGNATURE.squashfs as Stage2 initramfs"
-test -d "/newinitramfs/.lower/lib/modules/$(uname -r)" || \
+test -d "/newinitramfs/.lower/usr/lib/modules/$(uname -r)" || \
     fail "Stage2 kernel modules do not match running kernel!"
 # This is such a hack
-insmod "/newinitramfs/.lower/lib/modules/$(uname -r)/kernel/fs/overlayfs/overlay.ko" || \
+insmod "/newinitramfs/.lower/usr/lib/modules/$(uname -r)/kernel/fs/overlayfs/overlay.ko.xz" || \
     fail "Failed to load overlayfs kernel module"
 mount -t overlay -olowerdir=/newinitramfs/.lower,upperdir=/newinitramfs/.upper,workdir=/newinitramfs/.work newroot /newinitramfs || \
     fail "Failed to overlay a writeable filesystem over $SIGNATURE.squashfs"
