@@ -124,10 +124,19 @@ EOF_postnochroot
 %end
 
 %post
+# For paranoia's sake
+ln -sf usr/bin bin
+ln -sf usr/sbin sbin
+ln -sf usr/lib lib
+ln -sf usr/lib64 lib64
+rm /sbin/sushell
+ln -sf usr/bin/bash sbin/sushell
+
 
 # Hack to really turn down SELINUX
 sed -i -e 's/\(^SELINUX=\).*$/\1disabled/' /etc/selinux/config
 systemctl enable network
+# systemctl enable debug-shell.service
 systemctl disable kdump
 
 ########################################################################
@@ -180,7 +189,7 @@ cd ..
 rm -rf trunk.dist curtin.tgz
 
 # Setup wimlib
-cd /
+cd /usr
 tar -zxvf /root/wimlib-bin.tgz
 cd -
 
