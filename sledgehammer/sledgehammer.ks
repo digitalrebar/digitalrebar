@@ -34,6 +34,7 @@ file
 filesystem
 firewalld
 fuse
+fuse-libs
 fuse-ntfs-3g
 glibc
 glibc.i686
@@ -192,6 +193,7 @@ rm -rf trunk.dist curtin.tgz
 cd /usr
 tar -zxvf /root/wimlib-bin.tgz
 cd -
+/sbin/ldconfig
 
 rm -f /etc/resolv.conf
 
