@@ -9,7 +9,7 @@ require 'yaml'
 require 'fileutils'
 
 $import_yml = ARGV[0]
-export_dir = ARGV[1]
+$dest = ARGV[1]
 
 raise "No importable YAML file" unless File.exists?($import_yml)
 $settings = YAML.load_file($import_yml)
@@ -25,7 +25,6 @@ $settings = YAML.load_file($import_yml)
 #
 # profiles will be translated into drp profiles.
 
-$dest = File.join(export_dir,$settings["barclamp"]["name"])
 FileUtils.mkdir_p($dest)
 
 def kwalify2jsonschema(input = {})
@@ -92,6 +91,7 @@ end
 
 def handle_role(val)
   res = {}
+  return if val["jig"] == "noop"
   res["Name"] = val["name"]
   res["Description"] = val["description"] || ""
   res["RequiredParams"] = val["wants-attribs"] if val["wants-attribs"]
@@ -118,10 +118,13 @@ def handle_role(val)
       end
     end
   end
-  save(File.join($dest,"tasks",val["name"]+".yml"), res)
   val["attribs"].each do |attr|
+    res["RequiredParams"] ||= []
+    res["RequiredParams"] << attr["name"]
     handle_attrib(attr)
   end if val["attribs"]
+  save(File.join($dest,"tasks",val["name"]+".yml"), res)
+
 end
 
 $settings["attribs"].each do |attr|
