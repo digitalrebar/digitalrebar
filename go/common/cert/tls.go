@@ -10,6 +10,27 @@ import (
 	"os"
 )
 
+var trustedCiphers = []uint16{
+	tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
+	tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
+	tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+	tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+	tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+	tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+	tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
+	tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
+	tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+	tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+	tls.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
+	tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+	tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+	tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+	tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
+	tls.TLS_RSA_WITH_AES_128_CBC_SHA256,
+	tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+	tls.TLS_RSA_WITH_AES_128_CBC_SHA,
+}
+
 func simpleKeys(trustRoot, name string) (*x509.CertPool, *tls.Certificate, error) {
 	ips, err := net.InterfaceAddrs()
 	if err != nil {
@@ -61,8 +82,10 @@ func Server(trustRoot, serverName string) (*http.Server, error) {
 	pool, cert, err := simpleKeys(trustRoot, serverName)
 	return &http.Server{
 		TLSConfig: &tls.Config{
-			ClientCAs:  pool,
-			ClientAuth: tls.RequireAndVerifyClientCert,
+			PreferServerCipherSuites: true,
+			CipherSuites:             trustedCiphers,
+			ClientCAs:                pool,
+			ClientAuth:               tls.RequireAndVerifyClientCert,
 			GetCertificate: func(c *tls.ClientHelloInfo) (*tls.Certificate, error) {
 				return cert, nil
 			},
@@ -77,6 +100,8 @@ func ServeTLS(addr string, handler http.Handler, keypair *tls.Certificate) error
 		Addr:    addr,
 		Handler: handler,
 		TLSConfig: &tls.Config{
+			PreferServerCipherSuites: true,
+			CipherSuites:             trustedCiphers,
 			GetCertificate: func(c *tls.ClientHelloInfo) (*tls.Certificate, error) {
 				return keypair, nil
 			},
@@ -94,8 +119,10 @@ func ServeTrustedTLS(addr string, handler http.Handler, keypair *tls.Certificate
 		Addr:    addr,
 		Handler: handler,
 		TLSConfig: &tls.Config{
-			ClientCAs:  validatorPool,
-			ClientAuth: tls.RequireAndVerifyClientCert,
+			PreferServerCipherSuites: true,
+			CipherSuites:             trustedCiphers,
+			ClientCAs:                validatorPool,
+			ClientAuth:               tls.RequireAndVerifyClientCert,
 			GetCertificate: func(c *tls.ClientHelloInfo) (*tls.Certificate, error) {
 				return keypair, nil
 			},
@@ -130,7 +157,15 @@ func ListenAndServeTLS(addr string, certB, keyB []byte, handler http.Handler) er
 	if err != nil {
 		return err
 	}
-	return http.ListenAndServeTLS(addr, ".tlsCache/certfile", ".tlsCache/keyfile", handler)
+	s := &http.Server{
+		Addr:    addr,
+		Handler: handler,
+		TLSConfig: &tls.Config{
+			PreferServerCipherSuites: true,
+			CipherSuites:             trustedCiphers,
+		},
+	}
+	return s.ListenAndServeTLS(".tlsCache/certfile", ".tlsCache/keyfile")
 }
 
 /*
@@ -147,7 +182,9 @@ func ListenAndServeTLSValidated(addr string, valCertB, certB, keyB []byte, handl
 
 	// Setup HTTPS client
 	tlsConfig := &tls.Config{
-		ClientCAs: caCertPool,
+		PreferServerCipherSuites: true,
+		CipherSuites:             trustedCiphers,
+		ClientCAs:                caCertPool,
 		// NoClientCert
 		// RequestClientCert
 		// RequireAnyClientCert

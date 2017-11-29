@@ -26,6 +26,11 @@ $settings = YAML.load_file($import_yml)
 # profiles will be translated into drp profiles.
 
 FileUtils.mkdir_p($dest)
+IO.write(File.join($dest,"._Name.meta"), $settings["barclamp"]["name"])
+IO.write(
+  File.join($dest,"._Description.meta"),
+  $settings["barclamp"]["description"] || "Automatically generated from the #{$settings["barclamp"]["name"]} barclamp"
+)
 
 def kwalify2jsonschema(input = {})
   res = {}
