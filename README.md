@@ -1,3 +1,17 @@
+
+
+# Digital Rebar version 2 is deprecated.  This version is no longer supported.
+
+Please see the documentation for the new Digital Rebar Provision version 3 (DRPv3) product, at: 
+
+  http://provision.readthedocs.io/en/latest/doc/quickstart.html
+
+The GitHub repo for DRPv3 is at:
+
+  https://github.com/digitalrebar/provision
+
+
+
 # Welcome to [Digital Rebar](http://rebar.digital)
 
 The [Digital Rebar](http://rebar.digital) is a container-ready cloud & hardware provisioning platform that delivers the best of software deployment automation and orchestration without locking you into a single platform or operating system.  Our mission is to embrace the heterogenous nature of cloud and data center operations.
