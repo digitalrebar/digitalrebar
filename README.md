@@ -1,3 +1,9 @@
+# END OF LIFE NOTICE FOR VERSION 2.x
+
+Version 2 of Digital Rebar is no longer being maintained.  All development has shifted to v3 (Digital Rebar Provision) which is being actively supported.  If you need help migrating, please contact RackN for assistance.
+
+Ref: https://github.com/digitalrebar/provision
+
 # Welcome to [Digital Rebar](http://rebar.digital)
 
 The [Digital Rebar](http://rebar.digital) is a container-ready cloud & hardware provisioning platform that delivers the best of software deployment automation and orchestration without locking you into a single platform or operating system.  Our mission is to embrace the heterogenous nature of cloud and data center operations.
